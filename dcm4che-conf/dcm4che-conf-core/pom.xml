@@ -91,6 +91,12 @@
     </dependency> -->
 
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>13.0.1</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -105,12 +111,7 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>13.0.1</version>
-      <scope>provided</scope>
-    </dependency>
+
     <dependency>
       <groupId>de.danielbechler</groupId>
       <artifactId>java-object-diff</artifactId>

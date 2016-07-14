@@ -23,7 +23,7 @@ import java.util.*;
  *
  * @author Roman K
  */
-public class ReferenceIndexingDecorator extends DelegatingConfiguration implements ReferablesIndex {
+public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
     static PathPattern referencePattern = new PathPattern(Configuration.REFERENCE_BY_UUID_PATTERN);
 

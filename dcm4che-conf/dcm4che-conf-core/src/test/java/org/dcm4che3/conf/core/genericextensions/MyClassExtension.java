@@ -40,6 +40,7 @@
 
 package org.dcm4che3.conf.core.genericextensions;
 
+import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
 import org.dcm4che3.conf.core.api.Parent;
 import org.dcm4che3.conf.core.api.SetParentIntoField;
 
@@ -48,7 +49,7 @@ import org.dcm4che3.conf.core.api.SetParentIntoField;
  */
 
 
-public class MyClassExtension {
+public class MyClassExtension extends ConfigurableClassExtension<MyClassExtension>{
 
     @Parent
     private ConfigClassWithExtensions parent;
@@ -59,5 +60,14 @@ public class MyClassExtension {
 
     public ConfigClassWithExtensions getParent() {
         return parent;
+    }
+
+    @Override
+    public void reconfigure(MyClassExtension from) {
+    }
+
+    @Override
+    public Class<MyClassExtension> getBaseClass() {
+        return MyClassExtension.class;
     }
 }

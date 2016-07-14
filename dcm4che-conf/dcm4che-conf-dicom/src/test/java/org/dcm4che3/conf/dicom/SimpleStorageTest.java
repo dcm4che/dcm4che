@@ -96,6 +96,7 @@ public class SimpleStorageTest {
         builder.registerDeviceExtension(HL7DeviceExtension.class);
         builder.registerAEExtension(TCGroupConfigAEExtension.class);
         builder.registerDeviceExtension(SomeDeviceExtension.class);
+        builder.uuidIndexing();
         builder.extensionMerge(true);
         return builder.build();
     }

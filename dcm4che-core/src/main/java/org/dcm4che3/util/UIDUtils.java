@@ -41,10 +41,14 @@ package org.dcm4che3.util;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.UID;
+import org.dcm4che3.data.VR;
+import org.dcm4che3.data.Value;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -149,5 +153,53 @@ public class UIDUtils {
                 } catch (Exception ignore) { }
         }
         return Arrays.copyOf(uids, j);
+    }
+
+    public static int remapUIDs(Attributes attrs, Map<String,String> uidMap) {
+        UIDUtils.Visitor visitor = new UIDUtils.Visitor(uidMap);
+        try {
+            attrs.accept(visitor, true);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return visitor.replaced;
+    }
+
+    private static class Visitor implements Attributes.Visitor {
+        private final Map<String, String> uidMap;
+        private int replaced;
+
+        public Visitor(Map<String, String> uidMap) {
+            this.uidMap = uidMap;
+        }
+
+        @Override
+        public boolean visit(Attributes attrs, int tag, VR vr, Object val) {
+            if (vr != VR.UI || val == Value.NULL)
+                return true;
+
+            String[] ss;
+            if (val instanceof byte[]) {
+                ss = attrs.getStrings(tag);
+                val = ss.length == 1 ? ss[0] : ss;
+            }
+            if (val instanceof String[]) {
+                ss = (String[]) val;
+                for (int i = 0; i < ss.length; i++) {
+                    String uid = uidMap.get(ss[i]);
+                    if (uid != null) {
+                        ss[i] = uid;
+                        replaced++;
+                    }
+                }
+            } else {
+                String uid = uidMap.get(val);
+                if (uid != null) {
+                    attrs.setString(tag, VR.UI, uid);
+                    replaced++;
+                }
+            }
+            return true;
+        }
     }
 }

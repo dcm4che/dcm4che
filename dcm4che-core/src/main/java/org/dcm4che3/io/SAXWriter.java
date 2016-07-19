@@ -173,7 +173,7 @@ public class SAXWriter implements DicomInputHandler {
     }
 
     private void writeAttribute(int tag, VR vr, Object value,
-            SpecificCharacterSet cs, Attributes attrs) throws SAXException {
+            SpecificCharacterSet cs, Attributes attrs) throws SAXException, IOException {
         if (TagUtils.isGroupLength(tag) || TagUtils.isPrivateCreator(tag))
             return;
 
@@ -334,7 +334,7 @@ public class SAXWriter implements DicomInputHandler {
     }
 
     private void writeValues(VR vr, Object val, boolean bigEndian,
-            SpecificCharacterSet cs) throws SAXException {
+            SpecificCharacterSet cs) throws SAXException, IOException {
         if (vr.isStringType())
             val = vr.toStrings(val, bigEndian, cs);
         int vm = vr.vmOf(val);
@@ -390,21 +390,64 @@ public class SAXWriter implements DicomInputHandler {
     }
 
     private void writePNGroup(String qname, PersonName pn,
-            PersonName.Group group) throws SAXException {
+            PersonName.Group group) throws SAXException, IOException {
         if (pn.contains(group)) {
             startElement(qname); 
             writeElement("FamilyName",
-                    pn.get(group, PersonName.Component.FamilyName));
+                    escapeXml(pn.get(group, PersonName.Component.FamilyName)));
             writeElement("GivenName",
-                    pn.get(group, PersonName.Component.GivenName));
+                    escapeXml(pn.get(group, PersonName.Component.GivenName)));
             writeElement("MiddleName",
-                    pn.get(group, PersonName.Component.MiddleName));
+                    escapeXml(pn.get(group, PersonName.Component.MiddleName)));
             writeElement("NamePrefix",
-                    pn.get(group, PersonName.Component.NamePrefix));
+                    escapeXml(pn.get(group, PersonName.Component.NamePrefix)));
             writeElement("NameSuffix",
-                    pn.get(group, PersonName.Component.NameSuffix));
+                    escapeXml(pn.get(group, PersonName.Component.NameSuffix)));
             endElement(qname);
         }
     }
 
+    private String escapeXml(String str) throws IOException {
+        return str == null ? null : escape(str);
+    }
+
+    private String escape(String str) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        int len = str.length();
+        for (int i = 0; i < len; ++i) {
+            char c = str.charAt(i);
+            String entityName = entityName(c);
+            if (entityName == null) {
+                if (c < 32 || c >= 127) {
+                    stringBuilder.append("&#");
+                    stringBuilder.append(Integer.toString(c, 10));
+                    stringBuilder.append(';');
+                } else {
+                    stringBuilder.append(c);
+                }
+            } else {
+                stringBuilder.append('&');
+                stringBuilder.append(entityName);
+                stringBuilder.append(';');
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    private String entityName(char c) {
+        switch (c) {
+            case '\"':
+                return "quot";
+            case '&':
+                return "amp";
+            case '<':
+                return "lt";
+            case '>':
+                return "gt";
+            case '\'':
+                return "apos";
+            default:
+                return null;
+        }
+    }
 }

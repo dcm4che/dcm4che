@@ -69,8 +69,6 @@ public interface DicomConfiguration {
     ApplicationEntity findApplicationEntityByUUID(String uuid) throws ConfigurationException;
 
     /**
-     * DO NOT USE IT YET - not supported.
-     *
      * Looks up a device by UUID
      * @param uuid UUID
      * @return

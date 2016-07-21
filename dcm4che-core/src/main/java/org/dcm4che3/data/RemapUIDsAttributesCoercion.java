@@ -59,7 +59,8 @@ public class RemapUIDsAttributesCoercion implements AttributesCoercion {
 
     @Override
     public void coerce(Attributes attrs, Attributes modified) {
-        UIDUtils.remapUIDs(attrs, uidMap);
+        if (uidMap != null && !uidMap.isEmpty())
+            UIDUtils.remapUIDs(attrs, uidMap);
         if (next != null)
             next.coerce(attrs, modified);
     }

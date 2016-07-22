@@ -137,6 +137,9 @@ public class Code implements Serializable {
     }
 
     public CodeValueType getCodeValueType() {
+    	if (codeValueType == null) {
+    		codeValueType = guessCodeValueType(codeValue);
+    	}
 		return codeValueType;
 	}
 
@@ -202,7 +205,7 @@ public class Code implements Serializable {
 
     public Attributes toItem() {
         Attributes codeItem = new Attributes(codingSchemeVersion != null ? 4 : 3);
-        switch (codeValueType) {
+        switch (getCodeValueType()) {
         case SHORT:
         	codeItem.setString(Tag.CodeValue, VR.SH, codeValue);
         	break;

@@ -332,7 +332,7 @@ public class DicomInputStream extends FilterInputStream
         return includeBulkDataURI;
     }
 
-    public String getAttributePath() {
+    public static String toAttributePath(List<ItemPointer> itemPointers, int tag) {
         StringBuilder sb = new StringBuilder();
         for (ItemPointer itemPointer : itemPointers) {
             sb.append('/').append(TagUtils.toHexString(itemPointer.sequenceTag))
@@ -340,6 +340,10 @@ public class DicomInputStream extends FilterInputStream
         }
         sb.append('/').append(TagUtils.toHexString(tag));
         return sb.toString();
+    }
+
+    public String getAttributePath() {
+        return toAttributePath(itemPointers, tag);
     }
 
     @Override

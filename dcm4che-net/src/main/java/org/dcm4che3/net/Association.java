@@ -317,7 +317,7 @@ public class Association {
             return;
 
         ex = e;
-        LOG.info("{}: i/o exception: {} in State: {}",
+        LOG.warn("{}: i/o exception: {} in State: {}",
                 new Object[] { name, e, state });
         closeSocket();
     }

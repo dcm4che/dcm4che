@@ -44,6 +44,8 @@ import static org.junit.Assert.*;
 import org.dcm4che3.data.SpecificCharacterSet;
 import org.junit.Test;
 
+import java.nio.charset.Charset;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -67,6 +69,12 @@ public class SpecificCharacterSetTest {
             "The 1st line includes 길동.\r\n" +
             "The 2nd line includes 길동, too.\r\n" +
             "The 3rd line.";
+    private static final String CHINESE_PERSON_NAME_GB2312 =
+            "Zhang^XiaoDong=张^小东=";
+    private static final String CHINESE_LONG_TEXT_GB2312 =
+            "1.第一行文字。\r\n" +
+            "2.第一行文字。\r\n" +
+            "3.第一行文字。\r\n";
     private static final String CHINESE_PERSON_NAME_UTF8 =
             "Wang^XiaoDong=王^小東=";
     private static final String CHINESE_PERSON_NAME_GB18030 =
@@ -156,6 +164,29 @@ public class SpecificCharacterSetTest {
             (byte) 0x33, (byte) 0x72, (byte) 0x64, (byte) 0x20, (byte) 0x6c,
             (byte) 0x69, (byte) 0x6e, (byte) 0x65, (byte) 0x2e };
 
+    private static final byte[] CHINESE_PERSON_NAME_GB2312_BYTES = {
+            (byte) 0x5A, (byte) 0x68, (byte) 0x61, (byte) 0x6E, (byte) 0x67,
+            (byte) 0x5E, (byte) 0x58, (byte) 0x69, (byte) 0x61, (byte) 0x6F,
+            (byte) 0x44, (byte) 0x6F, (byte) 0x6E, (byte) 0x67, (byte) 0x3D,
+            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0xD5,
+            (byte) 0xC5, (byte) 0x5E, (byte) 0x1B, (byte) 0x24, (byte) 0x29,
+            (byte) 0x41, (byte) 0xD0, (byte) 0xA1, (byte) 0xB6, (byte) 0xAB,
+            (byte) 0x3D };
+
+    private static final byte[] CHINESE_LONG_TEXT_GB2312_BYTES = {
+            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0x31,
+            (byte) 0x2E, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
+            (byte) 0xD0, (byte) 0xD0, (byte) 0xCE, (byte) 0xC4, (byte) 0xD7,
+            (byte) 0xD6, (byte) 0xA1, (byte) 0xA3, (byte) 0x0D, (byte) 0x0A,
+            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0x32,
+            (byte) 0x2E, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
+            (byte) 0xD0, (byte) 0xD0, (byte) 0xCE, (byte) 0xC4, (byte) 0xD7,
+            (byte) 0xD6, (byte) 0xA1, (byte) 0xA3, (byte) 0x0D, (byte) 0x0A,
+            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0x33,
+            (byte) 0x2E, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
+            (byte) 0xD0, (byte) 0xD0, (byte) 0xCE, (byte) 0xC4, (byte) 0xD7,
+            (byte) 0xD6, (byte) 0xA1, (byte) 0xA3, (byte) 0x0D, (byte) 0x0A };
+
     private static final byte[] CHINESE_PERSON_NAME_UTF8_BYTES = {
             (byte) 0x57, (byte) 0x61, (byte) 0x6e, (byte) 0x67, (byte) 0x5e,
             (byte) 0x58, (byte) 0x69, (byte) 0x61, (byte) 0x6f, (byte) 0x44,
@@ -205,12 +236,21 @@ public class SpecificCharacterSetTest {
                 new String[] { null, "ISO 2022 IR 149" });
     }
 
+    private SpecificCharacterSet gb2312() {
+        return SpecificCharacterSet.valueOf(
+                new String[] { null, "ISO 2022 IR 58" });
+    }
+
     private SpecificCharacterSet utf8() {
         return SpecificCharacterSet.valueOf(new String[] { "ISO_IR 192" });
     }
 
     private SpecificCharacterSet gb18030() {
         return SpecificCharacterSet.valueOf(new String[] { "GB18030" });
+    }
+
+    private SpecificCharacterSet gbk() {
+        return SpecificCharacterSet.valueOf(new String[] { "GBK" });
     }
 
     @Test
@@ -334,6 +374,30 @@ public class SpecificCharacterSetTest {
     }
 
     @Test
+    public void testEncodeChinesePersonNameGB2312() {
+        assertArrayEquals(CHINESE_PERSON_NAME_GB2312_BYTES,
+                gb2312().encode(CHINESE_PERSON_NAME_GB2312, PN_DELIMS));
+    }
+
+    @Test
+    public void testDecodeChinesePersonNameGB2312() {
+        assertEquals(CHINESE_PERSON_NAME_GB2312,
+                gb2312().decode(CHINESE_PERSON_NAME_GB2312_BYTES));
+    }
+
+    @Test
+    public void testEncodeChineseLongTextGB2312() {
+        assertArrayEquals(CHINESE_LONG_TEXT_GB2312_BYTES,
+                gb2312().encode(CHINESE_LONG_TEXT_GB2312, LT_DELIMS));
+    }
+
+    @Test
+    public void testDecodeChineseLongTextGB2312() {
+        assertEquals(CHINESE_LONG_TEXT_GB2312,
+                gb2312().decode(CHINESE_LONG_TEXT_GB2312_BYTES));
+    }
+
+    @Test
     public void testEncodeChinesePersonNameUTF8() {
         assertArrayEquals(CHINESE_PERSON_NAME_UTF8_BYTES,
                 utf8().encode(CHINESE_PERSON_NAME_UTF8, PN_DELIMS));
@@ -355,6 +419,18 @@ public class SpecificCharacterSetTest {
     public void testDecodeChinesePersonNameGB18030() {
         assertEquals(CHINESE_PERSON_NAME_GB18030,
                 gb18030().decode(CHINESE_PERSON_NAME_GB18030_BYTES));
+    }
+
+    @Test
+    public void testEncodeChinesePersonNameGBK() {
+        assertArrayEquals(CHINESE_PERSON_NAME_GB18030_BYTES,
+                gbk().encode(CHINESE_PERSON_NAME_GB18030, PN_DELIMS));
+    }
+
+    @Test
+    public void testDecodeChinesePersonNameGBK() {
+        assertEquals(CHINESE_PERSON_NAME_GB18030,
+                gbk().decode(CHINESE_PERSON_NAME_GB18030_BYTES));
     }
 
 }

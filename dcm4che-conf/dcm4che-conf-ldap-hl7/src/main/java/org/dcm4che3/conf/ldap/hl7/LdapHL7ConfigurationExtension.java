@@ -48,13 +48,14 @@ import org.dcm4che3.net.hl7.HL7Application;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  *
  */
 public class LdapHL7ConfigurationExtension {
 
-    private LdapHL7Configuration config;
+    protected LdapHL7Configuration config;
 
-    public LdapHL7Configuration getHL7Configuration(LdapHL7Configuration config) {
+    public LdapHL7Configuration getHL7Configuration() {
         return config;
     }
 

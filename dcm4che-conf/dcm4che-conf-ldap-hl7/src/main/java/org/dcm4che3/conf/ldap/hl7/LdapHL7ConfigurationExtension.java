@@ -43,24 +43,40 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.ModificationItem;
 
-import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.net.hl7.HL7Application;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface LdapHL7ConfigurationExtension {
+public class LdapHL7ConfigurationExtension {
 
-    void storeTo(HL7Application hl7App, String deviceDN, Attributes attrs);
+    private LdapHL7Configuration config;
 
-    void storeChilds(String appDN, HL7Application hl7App) throws NamingException;
+    public LdapHL7Configuration getHL7Configuration(LdapHL7Configuration config) {
+        return config;
+    }
 
-    void loadFrom(HL7Application hl7App, Attributes attrs) throws NamingException;
+    public void setHL7Configuration(LdapHL7Configuration config) {
+        if (config != null && this.config != null)
+            throw new IllegalStateException("already owned by other HL7 Configuration");
+        this.config = config;
+    }
 
-    void loadChilds(HL7Application hl7App, String appDN) throws NamingException;
+    public LdapDicomConfiguration getDicomConfiguration() {
+        return config != null ? config.getDicomConfiguration() : null;
+    }
 
-    void storeDiffs(HL7Application a, HL7Application b, List<ModificationItem> mods);
+    public void storeTo(HL7Application hl7App, String deviceDN, Attributes attrs) {}
 
-    void mergeChilds(HL7Application prev, HL7Application hl7App, String appDN) throws NamingException;
+    public void storeChilds(String appDN, HL7Application hl7App) throws NamingException {}
+
+    public void loadFrom(HL7Application hl7App, Attributes attrs) throws NamingException {}
+
+    public void loadChilds(HL7Application hl7App, String appDN) throws NamingException {}
+
+    public void storeDiffs(HL7Application a, HL7Application b, List<ModificationItem> mods) {}
+
+    public void mergeChilds(HL7Application prev, HL7Application hl7App, String appDN) throws NamingException {}
 }

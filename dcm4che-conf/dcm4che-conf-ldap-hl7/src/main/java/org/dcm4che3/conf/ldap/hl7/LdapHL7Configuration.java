@@ -76,6 +76,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             new ArrayList<LdapHL7ConfigurationExtension>();
 
     public void addHL7ConfigurationExtension(LdapHL7ConfigurationExtension ext) {
+        ext.setHL7Configuration(this);
         extensions.add(ext);
     }
 
@@ -84,6 +85,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         if (!extensions.remove(ext))
             return false;
 
+        ext.setHL7Configuration(null);
         return true;
     }
 

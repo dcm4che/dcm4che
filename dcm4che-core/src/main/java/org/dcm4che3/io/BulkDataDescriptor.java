@@ -70,6 +70,15 @@ public abstract class BulkDataDescriptor {
                 return itemPointer.size() == 1 
                     && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
             }
+            switch (vr) {
+                case OB:
+                case OD:
+                case OF:
+                case OL:
+                case OW:
+                case UN:
+                    return length > 64;
+            }
             return false;
         }
     };

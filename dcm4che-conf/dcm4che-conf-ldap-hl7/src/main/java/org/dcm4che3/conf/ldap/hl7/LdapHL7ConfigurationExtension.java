@@ -43,6 +43,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.ModificationItem;
 
+import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.hl7.HL7Application;
 
 /**
@@ -53,10 +54,13 @@ public interface LdapHL7ConfigurationExtension {
 
     void storeTo(HL7Application hl7App, String deviceDN, Attributes attrs);
 
-    void loadFrom(HL7Application hl7App, Attributes attrs)
-            throws NamingException;
+    void storeChilds(String appDN, HL7Application hl7App) throws NamingException;
 
-    void storeDiffs(HL7Application a, HL7Application b,
-            List<ModificationItem> mods);
+    void loadFrom(HL7Application hl7App, Attributes attrs) throws NamingException;
 
+    void loadChilds(HL7Application hl7App, String appDN) throws NamingException;
+
+    void storeDiffs(HL7Application a, HL7Application b, List<ModificationItem> mods);
+
+    void mergeChilds(HL7Application prev, HL7Application hl7App, String appDN) throws NamingException;
 }

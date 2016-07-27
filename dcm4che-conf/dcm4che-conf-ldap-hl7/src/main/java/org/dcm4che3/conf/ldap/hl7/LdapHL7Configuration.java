@@ -178,11 +178,16 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         if (hl7Ext == null)
             return;
 
-        for (HL7Application hl7App : hl7Ext.getHL7Applications()) {
-            String appDN = hl7appDN(hl7App.getApplicationName(), deviceDN);
-            config.createSubcontext(appDN,
-                    storeTo(hl7App, deviceDN, new BasicAttributes(true)));
-        }
+        for (HL7Application hl7App : hl7Ext.getHL7Applications())
+            store(hl7App, deviceDN);
+    }
+
+    private void store(HL7Application hl7App, String deviceDN) throws NamingException {
+        String appDN = hl7appDN(hl7App.getApplicationName(), deviceDN);
+        config.createSubcontext(appDN,
+                storeTo(hl7App, deviceDN, new BasicAttributes(true)));
+        for (LdapHL7ConfigurationExtension ext : extensions)
+            ext.storeChilds(appDN, hl7App);
     }
 
     private String hl7appDN(String name, String deviceDN) {
@@ -233,7 +238,8 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         loadFrom(hl7app, attrs);
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
             hl7app.addConnection(LdapUtils.findConnection(connDN, deviceDN, device));
-
+        for (LdapHL7ConfigurationExtension ext : extensions)
+            ext.loadChilds(hl7app, sr.getNameInNamespace());
         return hl7app;
     }
 
@@ -266,9 +272,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         for (HL7Application hl7app : hl7Ext.getHL7Applications()) {
             String appName = hl7app.getApplicationName();
             if (prevHL7Ext == null || !prevHL7Ext.containsHL7Application(appName)) {
-                String appDN = hl7appDN(hl7app.getApplicationName(), deviceDN);
-                config.createSubcontext(appDN,
-                        storeTo(hl7app, deviceDN, new BasicAttributes(true)));
+                store(hl7app, deviceDN);
             } else
                 merge(prevHL7Ext.getHL7Application(appName), hl7app, deviceDN);
         }
@@ -279,6 +283,8 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         String appDN = hl7appDN(app.getApplicationName(), deviceDN);
         config.modifyAttributes(appDN, storeDiffs(prev, app, deviceDN, 
                 new ArrayList<ModificationItem>()));
+        for (LdapHL7ConfigurationExtension ext : extensions)
+            ext.mergeChilds(prev, app, appDN);
     }
 
     private List<ModificationItem> storeDiffs(HL7Application a, HL7Application b,

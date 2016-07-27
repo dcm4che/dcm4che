@@ -504,19 +504,23 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeChilds(deviceDN, device);
         for (ApplicationEntity ae : device.getApplicationEntities()) {
-            String aeDN = aetDN(ae.getAETitle(), deviceDN);
-            createSubcontext(aeDN, storeTo(ae, deviceDN, new BasicAttributes(true)));
-            storeChilds(aeDN, ae);
-            for (LdapDicomConfigurationExtension ext : extensions) {
-                ext.storeChilds(aeDN, ae);
-            }
+            store(ae, deviceDN);
         }
+    }
+
+    private void store(ApplicationEntity ae, String deviceDN) throws NamingException {
+        String aeDN = aetDN(ae.getAETitle(), deviceDN);
+        createSubcontext(aeDN, storeTo(ae, deviceDN, new BasicAttributes(true)));
+        storeChilds(aeDN, ae);
     }
 
     private void storeChilds(String aeDN, ApplicationEntity ae)
             throws NamingException {
         for (TransferCapability tc : ae.getTransferCapabilities())
             createSubcontext(dnOf(tc, aeDN), storeTo(tc, new BasicAttributes(true)));
+
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.storeChilds(aeDN, ae);
     }
 
     @Override
@@ -1605,10 +1609,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         for (ApplicationEntity ae : dev.getApplicationEntities()) {
             String aet = ae.getAETitle();
             if (!prevAETs.contains(aet)) {
-                String aeDN = aetDN(ae.getAETitle(), deviceDN);
-                createSubcontext(aeDN,
-                        storeTo(ae, deviceDN, new BasicAttributes(true)));
-                storeChilds(aeDN, ae);
+                store(ae, deviceDN);
             } else
                 merge(prevDev.getApplicationEntity(aet), ae, deviceDN);
         }

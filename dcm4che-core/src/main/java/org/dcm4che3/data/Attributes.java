@@ -2144,15 +2144,17 @@ public class Attributes implements Serializable {
 
         Attributes filtered = new Attributes();
         for (int tag : tags()) {
-            if (selection.contains(tag)) {
-                if (equalValues(selection, indexOf(tag), selection.indexOf(tag)))
-                        filtered.setValue(tag, getVR(tag), getValue(tag));
+            if (selection.contains(getPrivateCreator(tag),tag)) {
+                if (equalValues(selection, indexOf(getPrivateCreator(tag),tag),
+                        selection.indexOf(getPrivateCreator(tag),tag)))
+                            filtered.setValue(getPrivateCreator(tag),tag, getVR(tag), getValue(tag));
             }
             Attributes nested;
-            if (getVR(tag) == VR.SQ && (nested = getNestedDataset(tag))!=null) {
+            if (getVR(getPrivateCreator(tag),tag) == VR.SQ &&
+                    (nested = getNestedDataset(getPrivateCreator(tag),tag))!=null) {
                 Attributes seq = nested.filter(selection);
                 if (seq.size()>0) {
-                    Sequence sequence = filtered.newSequence(tag,seq.size());
+                    Sequence sequence = filtered.newSequence(getPrivateCreator(tag),tag,seq.size());
                     sequence.add(0,seq);
                 }
             }

@@ -132,7 +132,7 @@
                                          certificates, JKS by default
      -V,--version                        output version information and exit
     -
-    Example: ianscp -b IANSCP:11112
-    => Starts server listening on port 11112, accepting association requests
+    Example: ianscp -b IANSCP:11117
+    => Starts server listening on port 11117, accepting association requests
     with IANSCP as called AE title Instance Available Notifications will be
     stored in the working directory.

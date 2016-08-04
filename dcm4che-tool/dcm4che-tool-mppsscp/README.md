@@ -139,7 +139,7 @@
                                          certificates, JKS by default
      -V,--version                        output version information and exit
     -
-    Example: mppsscp -b MPPSSCP:11112
-    => Starts server listening on port 11112, accepting association requests
+    Example: mppsscp -b MPPSSCP:11116
+    => Starts server listening on port 11116, accepting association requests
     with MPPSSCP as called AE title. Received Modality Performed Procedure
     Step objects will be stored in the working directory.

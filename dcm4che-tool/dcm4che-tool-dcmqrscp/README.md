@@ -205,6 +205,6 @@
      -V,--version                           output version information and
                                             exit
     -
-    Example: dcmqrscp -b DCMQRSCP:11112 --dicomdir /media/cdrom/DICOMDIR
-    => Starts server listening on port 11112, accepting association requests
+    Example: dcmqrscp -b DCMQRSCP:11113 --dicomdir /media/cdrom/DICOMDIR
+    => Starts server listening on port 11113, accepting association requests
     with DCMQRSCP as called AE title.

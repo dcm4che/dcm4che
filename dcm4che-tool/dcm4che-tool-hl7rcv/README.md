@@ -97,5 +97,5 @@
                                          "DateTimeOfMessage" are provided by
                                          default
     -
-    Example: hl7rcv -b 2575
-    => Starts receiver listening on port 11112.
+    Example: hl7rcv -b 2576
+    => Starts receiver listening on port 2576.

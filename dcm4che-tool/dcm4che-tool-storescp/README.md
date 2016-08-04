@@ -151,7 +151,7 @@
                                          certificates, JKS by default
      -V,--version                        output version information and exit
     -
-    Example: storescp -b STORESCP:11112
-    => Starts server listening on port 11112, accepting association requests
+    Example: storescp -b STORESCP:11115
+    => Starts server listening on port 11115, accepting association requests
     with STORESCP as called AE title. Received objects are stored to the
     working directory.

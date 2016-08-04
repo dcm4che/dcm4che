@@ -302,6 +302,10 @@ public class ApplicationEntity implements Serializable {
         return callingAET;
     }
 
+    public boolean isMasqueradeCallingAETitle(String calledAET) {
+        return masqueradeCallingAETs.containsKey(calledAET) || masqueradeCallingAETs.containsKey("*");
+    }
+
     /**
      * Get the Character Set(s) supported by the Network AE for data sets it
      * receives. The value shall be selected from the Defined Terms for Specific

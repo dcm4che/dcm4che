@@ -42,11 +42,13 @@ import java.io.Closeable;
 import java.security.cert.X509Certificate;
 
 import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.ApplicationEntityInfo;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceInfo;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  *
  */
 public interface DicomConfiguration extends Closeable {
@@ -74,6 +76,18 @@ public interface DicomConfiguration extends Closeable {
      * @throws ConfigurationException
      */
     DeviceInfo[] listDeviceInfos(DeviceInfo keys) throws ConfigurationException;
+
+    /**
+     * Query for Application Entities with specified attributes.
+     *
+     * @param keys
+     *            Application Entity attributes which shall match or <code>null</code> to
+     *            get information for all configured Application Entities
+     * @return array of <code>ApplicationEntityInfo</code> objects for configured Application Entity
+     *         with matching attributes
+     * @throws ConfigurationException
+     */
+    ApplicationEntityInfo[] listAETInfos(ApplicationEntityInfo keys) throws ConfigurationException;
 
     String[] listDeviceNames() throws ConfigurationException;
 

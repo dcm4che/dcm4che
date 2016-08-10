@@ -74,14 +74,7 @@ import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.data.Issuer;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DeviceInfo;
-import org.dcm4che3.net.Dimse;
-import org.dcm4che3.net.QueryOption;
-import org.dcm4che3.net.StorageOptions;
-import org.dcm4che3.net.TransferCapability;
+import org.dcm4che3.net.*;
 import org.dcm4che3.net.Connection.Protocol;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
@@ -89,6 +82,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  *
  */
 public final class LdapDicomConfiguration implements DicomConfiguration {
@@ -416,6 +410,22 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 LdapUtils.stringArray(attrs.get("dicomPrimaryDeviceType")));
         deviceInfo.setInstalled(
                 LdapUtils.booleanValue(attrs.get("dicomInstalled"), true));
+    }
+
+    private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs)
+            throws NamingException {
+        aetInfo.setDeviceName(
+                LdapUtils.stringValue(attrs.get("deviceName"), null));
+        aetInfo.setAeTitle(
+                LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
+        aetInfo.setDescription(
+                LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        aetInfo.setApplicationCluster(
+                LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
+        aetInfo.setAssociationInitiator(
+                LdapUtils.booleanValue(attrs.get("dicomAssociationInitiator"), true));
+        aetInfo.setAssociationAcceptor(
+                LdapUtils.booleanValue(attrs.get("dicomAssociationAcceptor"), true));
     }
 
     @Override
@@ -1818,6 +1828,57 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     public void sync() throws ConfigurationException {
         // NOOP
     }
-    
 
+    @Override
+    public synchronized ApplicationEntityInfo[] listAETInfos(ApplicationEntityInfo keys)
+            throws ConfigurationException {
+        if (!configurationExists())
+            return new ApplicationEntityInfo[0];
+
+        ArrayList<ApplicationEntityInfo> results = new ArrayList<ApplicationEntityInfo>();
+        NamingEnumeration<SearchResult> ne = null;
+        try {
+            ne = search(aetsRegistryDN, toFilter(keys), "dicomNetworkAE",
+                    "dicomAETitle",
+                    "dicomAssociationInitiator",
+                    "dicomAssociationAcceptor",
+                    "dicomNetworkConnectionReference",
+                    "dicomDescription",
+                    "dicomApplicationCluster",
+                    "dicomPreferredCalledAETitle",
+                    "dicomPreferredCallingAETitle",
+                    "dicomInstalled",
+                    "dicomSupportedCharacterSet");
+            while (ne.hasMore()) {
+                ApplicationEntityInfo aetInfo = new ApplicationEntityInfo();
+                loadFrom(aetInfo, ne.next().getAttributes());
+                results.add(aetInfo);
+            }
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } finally {
+            LdapUtils.safeClose(ne);
+        }
+        return results.toArray(new ApplicationEntityInfo[results.size()]);
+    }
+
+    private String toFilter(ApplicationEntityInfo keys) {
+        if (keys == null)
+            return "(objectclass=dicomNetworkAE)";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("(&(objectclass=dicomNetworkAE)");
+        appendFilter("dicomAETitle", keys.getAeTitle(), sb);
+        appendFilter("dicomAssociationInitiator", keys.getAssociationInitiator(), sb);
+        appendFilter("dicomAssociationAcceptor", keys.getAssociationAcceptor(), sb);
+        appendFilter("dicomNetworkConnectionReference", keys.getNetworkConnectionReference(), sb);
+        appendFilter("dicomDescription", keys.getDescription(), sb);
+        appendFilter("dicomApplicationCluster", keys.getApplicationCluster(), sb);
+        appendFilter("dicomPreferredCalledAETitle", keys.getPreferredCalledAETitle(), sb);
+        appendFilter("dicomPreferredCallingAETitle", keys.getPreferredCallingAETitle(), sb);
+        appendFilter("dicomInstalled", keys.isInstalled(), sb);
+        appendFilter("dicomSupportedCharacterSet", keys.getSupportedCharacterSet(), sb);
+        sb.append(")");
+        return sb.toString();
+    }
 }

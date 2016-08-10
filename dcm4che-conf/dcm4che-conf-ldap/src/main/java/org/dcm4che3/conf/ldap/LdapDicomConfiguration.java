@@ -415,7 +415,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs)
             throws NamingException {
         aetInfo.setDeviceName(
-                LdapUtils.stringValue(attrs.get("deviceName"), null));
+                LdapUtils.stringValue(attrs.get("dicomDeviceName"), null));
         aetInfo.setAeTitle(
                 LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
         aetInfo.setOtherAETitle(
@@ -1842,7 +1842,18 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ArrayList<ApplicationEntityInfo> results = new ArrayList<ApplicationEntityInfo>();
         NamingEnumeration<SearchResult> ne = null;
         try {
-            ne = search(devicesDN, toFilter(keys), "dicomNetworkAE",
+            if (keys.getDeviceName() != null)
+                ne = search(deviceRef(keys.getDeviceName()), toFilter(keys), "dicomNetworkAE",
+                        "dicomAETitle",
+                        "dicomDeviceName",
+                        "dcmOtherAETitle",
+                        "dicomDescription",
+                        "dicomAssociationInitiator",
+                        "dicomAssociationAcceptor",
+                        "dicomApplicationCluster",
+                        "dicomInstalled");
+            else
+                ne = search(devicesDN, toFilter(keys), "dicomNetworkAE",
                     "dicomAETitle",
                     "dcmOtherAETitle",
                     "dicomDescription",

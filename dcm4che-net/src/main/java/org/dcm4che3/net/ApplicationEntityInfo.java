@@ -49,7 +49,7 @@ public class ApplicationEntityInfo implements Serializable {
     private String deviceName;
     private String description;
     private String aeTitle;
-    private String[] applicationCluster;
+    private String[] applicationCluster = {};
     private Boolean associationInitiator;
     private Boolean associationAcceptor;
     private Boolean installed;

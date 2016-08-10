@@ -52,12 +52,24 @@ public class ApplicationEntityInfo implements Serializable {
     private String[] applicationCluster;
     private Boolean associationInitiator;
     private Boolean associationAcceptor;
-    private String[] networkConnectionReference;
-    private String[] preferredCalledAETitle;
-    private String[] preferredCallingAETitle;
-    private String[] supportedCharacterSet;
-    private boolean installed;
+    private Boolean installed;
+    private String[] otherAETitle;
 
+    public Boolean getInstalled() {
+        return installed;
+    }
+
+    public void setInstalled(Boolean installed) {
+        this.installed = installed;
+    }
+
+    public String[] getOtherAETitle() {
+        return otherAETitle;
+    }
+
+    public void setOtherAETitle(String[] otherAETitle) {
+        this.otherAETitle = otherAETitle;
+    }
 
     public String getDeviceName() {
         return deviceName;
@@ -107,45 +119,6 @@ public class ApplicationEntityInfo implements Serializable {
         this.associationAcceptor = associationAcceptor;
     }
 
-    public String[] getNetworkConnectionReference() {
-        return networkConnectionReference;
-    }
-
-    public void setNetworkConnectionReference(String[] networkConnectionReference) {
-        this.networkConnectionReference = networkConnectionReference;
-    }
-
-    public String[] getPreferredCalledAETitle() {
-        return preferredCalledAETitle;
-    }
-
-    public void setPreferredCalledAETitle(String[] preferredCalledAETitle) {
-        this.preferredCalledAETitle = preferredCalledAETitle;
-    }
-
-    public String[] getPreferredCallingAETitle() {
-        return preferredCallingAETitle;
-    }
-
-    public void setPreferredCallingAETitle(String[] preferredCallingAETitle) {
-        this.preferredCallingAETitle = preferredCallingAETitle;
-    }
-
-    public String[] getSupportedCharacterSet() {
-        return supportedCharacterSet;
-    }
-
-    public void setSupportedCharacterSet(String[] supportedCharacterSet) {
-        this.supportedCharacterSet = supportedCharacterSet;
-    }
-
-    public boolean isInstalled() {
-        return installed;
-    }
-
-    public void setInstalled(boolean installed) {
-        this.installed = installed;
-    }
 
     @Override
     public String toString() {

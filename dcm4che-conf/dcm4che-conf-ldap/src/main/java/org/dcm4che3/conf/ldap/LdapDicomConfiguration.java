@@ -418,14 +418,18 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 LdapUtils.stringValue(attrs.get("deviceName"), null));
         aetInfo.setAeTitle(
                 LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
+        aetInfo.setOtherAETitle(
+                LdapUtils.stringArray(attrs.get("dcmOtherAETitle")));
         aetInfo.setDescription(
                 LdapUtils.stringValue(attrs.get("dicomDescription"), null));
-        aetInfo.setApplicationCluster(
-                LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         aetInfo.setAssociationInitiator(
                 LdapUtils.booleanValue(attrs.get("dicomAssociationInitiator"), true));
         aetInfo.setAssociationAcceptor(
                 LdapUtils.booleanValue(attrs.get("dicomAssociationAcceptor"), true));
+        aetInfo.setInstalled(
+                LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
+        aetInfo.setApplicationCluster(
+                LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
     }
 
     @Override
@@ -1838,17 +1842,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ArrayList<ApplicationEntityInfo> results = new ArrayList<ApplicationEntityInfo>();
         NamingEnumeration<SearchResult> ne = null;
         try {
-            ne = search(aetsRegistryDN, toFilter(keys), "dicomNetworkAE",
+            ne = search(devicesDN, toFilter(keys), "dicomNetworkAE",
                     "dicomAETitle",
+                    "dcmOtherAETitle",
+                    "dicomDescription",
                     "dicomAssociationInitiator",
                     "dicomAssociationAcceptor",
-                    "dicomNetworkConnectionReference",
-                    "dicomDescription",
                     "dicomApplicationCluster",
-                    "dicomPreferredCalledAETitle",
-                    "dicomPreferredCallingAETitle",
-                    "dicomInstalled",
-                    "dicomSupportedCharacterSet");
+                    "dicomInstalled");
             while (ne.hasMore()) {
                 ApplicationEntityInfo aetInfo = new ApplicationEntityInfo();
                 loadFrom(aetInfo, ne.next().getAttributes());
@@ -1868,16 +1869,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
         StringBuilder sb = new StringBuilder();
         sb.append("(&(objectclass=dicomNetworkAE)");
+//        appendFilter("dicomDeviceName", keys.getDeviceName(), sb);
         appendFilter("dicomAETitle", keys.getAeTitle(), sb);
+        appendFilter("dicomDescription", keys.getDescription(), sb);
         appendFilter("dicomAssociationInitiator", keys.getAssociationInitiator(), sb);
         appendFilter("dicomAssociationAcceptor", keys.getAssociationAcceptor(), sb);
-        appendFilter("dicomNetworkConnectionReference", keys.getNetworkConnectionReference(), sb);
-        appendFilter("dicomDescription", keys.getDescription(), sb);
         appendFilter("dicomApplicationCluster", keys.getApplicationCluster(), sb);
-        appendFilter("dicomPreferredCalledAETitle", keys.getPreferredCalledAETitle(), sb);
-        appendFilter("dicomPreferredCallingAETitle", keys.getPreferredCallingAETitle(), sb);
-        appendFilter("dicomInstalled", keys.isInstalled(), sb);
-        appendFilter("dicomSupportedCharacterSet", keys.getSupportedCharacterSet(), sb);
         sb.append(")");
         return sb.toString();
     }

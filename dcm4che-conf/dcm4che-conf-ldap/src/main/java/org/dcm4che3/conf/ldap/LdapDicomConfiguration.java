@@ -1880,8 +1880,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
         StringBuilder sb = new StringBuilder();
         sb.append("(&(objectclass=dicomNetworkAE)");
-//        appendFilter("dicomDeviceName", keys.getDeviceName(), sb);
-        appendFilter("dicomAETitle", keys.getAeTitle(), sb);
+        if (keys.getAeTitle() != null) {
+            sb.append("(|");
+            appendFilter("dicomAETitle", keys.getAeTitle(), sb);
+            appendFilter("dcmOtherAETitle", keys.getAeTitle(), sb);
+            sb.append(")");
+        } else
+            appendFilter("dicomAETitle", keys.getAeTitle(), sb);
         appendFilter("dicomDescription", keys.getDescription(), sb);
         appendFilter("dicomAssociationInitiator", keys.getAssociationInitiator(), sb);
         appendFilter("dicomAssociationAcceptor", keys.getAssociationAcceptor(), sb);

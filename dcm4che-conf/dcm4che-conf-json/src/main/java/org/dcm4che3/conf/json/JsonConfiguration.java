@@ -108,12 +108,14 @@ public class JsonConfiguration {
     public void writeTo(ApplicationEntityInfo aetInfo, JsonGenerator gen) {
         JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();
-        writer.writeNotNull("deviceName", aetInfo.getDeviceName());
+        writer.writeNotNull("dicomDeviceName", aetInfo.getDeviceName());
         writer.writeNotNull("dicomAETitle", aetInfo.getAeTitle());
+        writer.writeNotEmpty("dcmOtherAETitle", aetInfo.getOtherAETitle());
         writer.writeNotNull("dicomDescription", aetInfo.getDescription());
         gen.write("dicomAssociationInitiator", aetInfo.getAssociationInitiator());
         gen.write("dicomAssociationAcceptor", aetInfo.getAssociationAcceptor());
         writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationCluster());
+        writer.writeNotNull("dicomInstalled", aetInfo.getInstalled());
         gen.writeEnd();
     }
 

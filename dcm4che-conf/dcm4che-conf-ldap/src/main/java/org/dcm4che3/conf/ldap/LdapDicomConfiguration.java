@@ -279,11 +279,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
-        SearchControls ctls = new SearchControls();
-        ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        ctls.setCountLimit(1);
-        ctls.setReturningAttributes(StringUtils.EMPTY_STRING);
-        ctls.setReturningObjFlag(false);
+        SearchControls ctls = searchControlSubtreeScope(1, StringUtils.EMPTY_STRING, false);
         NamingEnumeration<SearchResult> ne = null;
         String childDN;
         try {
@@ -299,6 +295,15 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
         String deviceDN = childDN.substring(childDN.indexOf(',') + 1);
         return loadDevice(deviceDN);
+    }
+
+    private SearchControls searchControlSubtreeScope(int countLimit, String[] returningAttrs, boolean returningObjFlag) {
+        SearchControls ctls = new SearchControls();
+        ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        ctls.setCountLimit(countLimit);
+        ctls.setReturningAttributes(returningAttrs);
+        ctls.setReturningObjFlag(returningObjFlag);
+        return ctls;
     }
 
     @Override
@@ -661,11 +666,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
    private boolean findConfiguration() throws ConfigurationException {
         NamingEnumeration<SearchResult> ne = null;
         try {
-            SearchControls ctls = new SearchControls();
-            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            ctls.setCountLimit(1);
-            ctls.setReturningAttributes(StringUtils.EMPTY_STRING);
-            ctls.setReturningObjFlag(false);
+            SearchControls ctls = searchControlSubtreeScope(1, StringUtils.EMPTY_STRING, false);
             ne = ctx.search(
                     baseDN,
                     "(&(objectclass=" + configurationRoot
@@ -1842,25 +1843,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ArrayList<ApplicationEntityInfo> results = new ArrayList<ApplicationEntityInfo>();
         NamingEnumeration<SearchResult> ne = null;
         try {
-            if (keys.getDeviceName() != null)
-                ne = search(deviceRef(keys.getDeviceName()), toFilter(keys), "dicomNetworkAE",
-                        "dicomAETitle",
-                        "dicomDeviceName",
-                        "dcmOtherAETitle",
-                        "dicomDescription",
-                        "dicomAssociationInitiator",
-                        "dicomAssociationAcceptor",
-                        "dicomApplicationCluster",
-                        "dicomInstalled");
-            else
-                ne = search(devicesDN, toFilter(keys), "dicomNetworkAE",
-                    "dicomAETitle",
-                    "dcmOtherAETitle",
-                    "dicomDescription",
-                    "dicomAssociationInitiator",
-                    "dicomAssociationAcceptor",
-                    "dicomApplicationCluster",
-                    "dicomInstalled");
+            ne = searchAE(keys);
             while (ne.hasMore()) {
                 ApplicationEntityInfo aetInfo = new ApplicationEntityInfo();
                 loadFrom(aetInfo, ne.next().getAttributes());
@@ -1872,6 +1855,23 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             LdapUtils.safeClose(ne);
         }
         return results.toArray(new ApplicationEntityInfo[results.size()]);
+    }
+
+    private NamingEnumeration<SearchResult> searchAE(ApplicationEntityInfo keys) throws NamingException {
+        List<String> attrs = new ArrayList<>();
+        attrs.add("dicomNetworkAE");
+        attrs.add("dicomAETitle");
+        attrs.add("dcmOtherAETitle");
+        attrs.add("dicomDescription");
+        attrs.add("dicomAssociationInitiator");
+        attrs.add("dicomAssociationAcceptor");
+        attrs.add("dicomApplicationCluster");
+        attrs.add("dicomInstalled");
+        String[] attrsArray = attrs.toArray(new String[attrs.size()]);
+        SearchControls ctls = searchControlSubtreeScope(0, attrsArray, true);
+        return keys.getDeviceName() != null
+                ? search(deviceRef(keys.getDeviceName()), toFilter(keys), attrsArray)
+                : ctx.search(devicesDN, toFilter(keys), ctls);
     }
 
     private String toFilter(ApplicationEntityInfo keys) {

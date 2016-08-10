@@ -113,7 +113,7 @@ public class JsonConfiguration {
         writer.writeNotNull("dicomDescription", aetInfo.getDescription());
         gen.write("dicomAssociationInitiator", aetInfo.getAssociationInitiator());
         gen.write("dicomAssociationAcceptor", aetInfo.getAssociationAcceptor());
-        writer.writeNotNull("dicomApplicationCluster", aetInfo.getApplicationCluster());
+        writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationCluster());
         gen.writeEnd();
     }
 

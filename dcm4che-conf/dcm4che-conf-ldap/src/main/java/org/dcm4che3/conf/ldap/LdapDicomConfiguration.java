@@ -43,21 +43,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import javax.naming.Context;
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameClassPair;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
+import javax.naming.*;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
@@ -417,10 +405,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 LdapUtils.booleanValue(attrs.get("dicomInstalled"), true));
     }
 
-    private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs)
+    private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs, String deviceName)
             throws NamingException {
-        aetInfo.setDeviceName(
-                LdapUtils.stringValue(attrs.get("dicomDeviceName"), null));
+        aetInfo.setDeviceName(deviceName);
         aetInfo.setAeTitle(
                 LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
         aetInfo.setOtherAETitle(
@@ -1846,7 +1833,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             ne = searchAE(keys);
             while (ne.hasMore()) {
                 ApplicationEntityInfo aetInfo = new ApplicationEntityInfo();
-                loadFrom(aetInfo, ne.next().getAttributes());
+                SearchResult ne1 = ne.next();
+                NameParser parser = ctx.getDirCtx().getNameParser(ne1.getNameInNamespace());
+                Name n = parser.parse(ne1.getNameInNamespace());
+                Enumeration<String> s1 = n.getAll();
+                loadFrom(aetInfo, ne1.getAttributes(), getDeviceName(s1));
                 results.add(aetInfo);
             }
         } catch (NamingException e) {
@@ -1857,9 +1848,18 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return results.toArray(new ApplicationEntityInfo[results.size()]);
     }
 
+    private String getDeviceName(Enumeration<String> s1) {
+        while (s1.hasMoreElements()) {
+            String s2 = s1.nextElement();
+            if (s2.startsWith("dicomDeviceName"))
+                return s2.substring(s2.indexOf("=")+1);
+        }
+        return null;
+    }
+
     private NamingEnumeration<SearchResult> searchAE(ApplicationEntityInfo keys) throws NamingException {
         List<String> attrs = new ArrayList<>();
-        attrs.add("dicomNetworkAE");
+        attrs.add("dicomDeviceName");
         attrs.add("dicomAETitle");
         attrs.add("dcmOtherAETitle");
         attrs.add("dicomDescription");

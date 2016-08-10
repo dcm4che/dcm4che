@@ -10,6 +10,7 @@ import java.util.Hashtable;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  * @since Jan 2016
  */
 class ReconnectDirContext implements Closeable {
@@ -17,7 +18,12 @@ class ReconnectDirContext implements Closeable {
     static final Logger LOG = LoggerFactory.getLogger(ReconnectDirContext.class);
 
     private final Hashtable env;
+
     private DirContext ctx;
+
+    public DirContext getDirCtx() {
+        return ctx;
+    }
 
     public ReconnectDirContext(Hashtable<?,?> env) throws NamingException {
         this.env = (Hashtable) env.clone();

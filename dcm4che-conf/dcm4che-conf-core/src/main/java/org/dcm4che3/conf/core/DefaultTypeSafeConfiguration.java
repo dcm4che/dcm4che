@@ -49,6 +49,7 @@ import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.context.ContextFactory;
 import org.dcm4che3.conf.core.context.LoadingContext;
+import org.dcm4che3.conf.core.context.Referable;
 import org.dcm4che3.conf.core.util.PathPattern;
 
 import java.util.List;
@@ -103,11 +104,11 @@ public class DefaultTypeSafeConfiguration<R> implements TypeSafeConfiguration<R>
         // TODO: proper cast checks!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         // either get existing from the context
-        Future<Object> configObjectFuture = ctx.getConfigObjectFuture(uuid);
-        if (configObjectFuture!=null) {
+        Referable referable = ctx.getReferable(uuid);
+        if (referable!=null) {
 
             // TODO here
-            return (T) vitalizer.resolveFutureOrFail(uuid, configObjectFuture);
+            return (T) referable.getConfObject();
         }
 
         //// or go ahead and load

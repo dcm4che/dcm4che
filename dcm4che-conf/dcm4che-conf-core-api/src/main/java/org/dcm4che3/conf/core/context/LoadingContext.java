@@ -19,7 +19,7 @@ public class LoadingContext extends ProcessingContext {
      *
      * @return
      */
-    private final ConcurrentHashMap<String, Future<Object>> referables = new ConcurrentHashMap<String, Future<Object>>();
+    private final ConcurrentHashMap<String, Referable> referables = new ConcurrentHashMap<String, Referable>();
 
     public LoadingContext(TypeSafeConfiguration typeSafeConfiguration) {
         super(typeSafeConfiguration);
@@ -31,16 +31,22 @@ public class LoadingContext extends ProcessingContext {
 
     /**
      * Behaves like {@link ConcurrentMap#putIfAbsent}
+     *
      * @param uuid config object uuid
-     * @param o the candidate future
+     * @param r    the candidate future
      * @return
      */
-    public Future<Object> registerConfigObjectFutureIfAbsent(String uuid, Future<Object> o) {
-        return referables.putIfAbsent(uuid, o);
+    public Referable registerReferableIfAbsent(String uuid, Referable r) {
+        return referables.putIfAbsent(uuid, r);
+    }
+
+    public Referable getReferable(String uuid) {
+        return referables.get(uuid);
     }
 
     public Future<Object> getConfigObjectFuture(String uuid) {
-        return referables.get(uuid);
+        Referable referable = referables.get(uuid);
+        return referable == null ? null : referable.getConfObjectFuture();
     }
 
 }

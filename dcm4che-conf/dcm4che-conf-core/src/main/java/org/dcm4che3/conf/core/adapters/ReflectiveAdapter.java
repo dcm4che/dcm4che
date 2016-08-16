@@ -46,6 +46,7 @@ import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.context.LoadingContext;
 import org.dcm4che3.conf.core.context.ProcessingContext;
+import org.dcm4che3.conf.core.context.Referable;
 import org.dcm4che3.conf.core.context.SavingContext;
 import org.dcm4che3.conf.core.util.PathFollower;
 import org.slf4j.Logger;
@@ -117,23 +118,31 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
             return confObj;
         }
 
-        // uuid present - need to coordinate with the context
-        SettableFuture<Object> confObjFuture = SettableFuture.create();
-        Future<Object> existingFuture = ctx.registerConfigObjectFutureIfAbsent(uuid, confObjFuture);
+        //// uuid present - need to coordinate with the context
 
-        // if we find this obj in the ctx, just return it
-        if (existingFuture != null) {
+        // first check the context
+        Referable existingReferable = ctx.getReferable(uuid);
+        if (existingReferable != null) {
             // TODO: proper cast!
-            return (T) ctx.getVitalizer().resolveFutureOrFail(uuid, existingFuture);
+            return (T) existingReferable.getConfObject();
         }
 
-        // otherwise it's us who is responsible for loading this object
+        SettableFuture<Object> confObjFuture = SettableFuture.create();
+        T confObj = ctx.getVitalizer().newInstance(clazz);
+        Referable createdReferable = new Referable(confObjFuture, confObj);
+
+        // cover non-atomicity above
+        Referable suddenlyExistingReferable = ctx.registerReferableIfAbsent(uuid, createdReferable);
+        if (suddenlyExistingReferable != null) {
+            // TODO: proper cast!
+            return (T) suddenlyExistingReferable.getConfObject();
+        }
+
+        // now it's for sure me who is responsible for loading this object
         try {
-            T confObj = ctx.getVitalizer().newInstance(clazz);
             populate(configNode, ctx, clazz, confObj, parent, uuid);
             confObjFuture.set(confObj);
             return confObj;
-
         } catch (RuntimeException e) {
             confObjFuture.setException(e);
             throw e;

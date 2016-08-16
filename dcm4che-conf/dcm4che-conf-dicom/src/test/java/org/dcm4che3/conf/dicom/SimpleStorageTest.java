@@ -82,6 +82,8 @@ public class SimpleStorageTest {
             builder.registerExtensionForBaseExtension(extension.getClass(), extension.getBaseClass());
         }
 
+        builder.uuidIndexing();
+
         return builder.build();
 
     }

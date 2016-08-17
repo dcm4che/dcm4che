@@ -42,10 +42,7 @@ package org.dcm4che3.conf.dicom;
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
-import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
-import org.dcm4che3.conf.api.ConfigurationNotFoundException;
-import org.dcm4che3.conf.api.TCConfiguration;
-import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
+import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.DefaultTypeSafeConfiguration;
@@ -90,33 +87,11 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     private final Map<Class, List<Class>> extensionsByClass;
     private final TypeSafeConfiguration<DicomConfigurationRoot> config;
+    private AlternativeTCLoader alternativeTCLoader;
 
-    public CommonDicomConfiguration(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass, Map<Class, ConfigTypeAdapter> customAdapters) {
+    public CommonDicomConfiguration(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass, boolean doCacheTCGroups) {
         this(configurationStorage, extensionsByClass);
-
-        for (Map.Entry<Class, ConfigTypeAdapter> classListEntry : customAdapters.entrySet()) {
-            vitalizer.registerCustomConfigTypeAdapter(classListEntry.getKey(), classListEntry.getValue());
-        }
-
-    }
-
-    /**
-     * Returns a list of registered extensions for a specified base extension class
-     *
-     * @param clazz
-     * @param <T>
-     * @return
-     */
-    @Override
-    public <T> List<Class<? extends T>> getExtensionClassesByBaseClass(Class<T> clazz) {
-        List<Class> classes = extensionsByClass.get(clazz);
-
-        List<Class<? extends T>> list = new ArrayList<Class<? extends T>>();
-
-        if (classes != null)
-            for (Class<?> aClass : classes) list.add((Class<? extends T>) aClass);
-
-        return list;
+        alternativeTCLoader = new AlternativeTCLoader(this, doCacheTCGroups);
     }
 
     public CommonDicomConfiguration(Configuration configStorage, Map<Class, List<Class>> extensionsByClass) {
@@ -143,6 +118,27 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         } catch (ConfigurationException e) {
             throw new RuntimeException("Dicom configuration cannot be initialized", e);
         }
+
+        alternativeTCLoader = new AlternativeTCLoader(this, false);
+    }
+
+    /**
+     * Returns a list of registered extensions for a specified base extension class
+     *
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    @Override
+    public <T> List<Class<? extends T>> getExtensionClassesByBaseClass(Class<T> clazz) {
+        List<Class> classes = extensionsByClass.get(clazz);
+
+        List<Class<? extends T>> list = new ArrayList<Class<? extends T>>();
+
+        if (classes != null)
+            for (Class<?> aClass : classes) list.add((Class<? extends T>) aClass);
+
+        return list;
     }
 
     public static void addCustomAdapters(BeanVitalizer defaultBeanVitalizer) {
@@ -191,6 +187,11 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     @Override
     public void preventDeviceModifications(Device d) {
         readOnlyDevices.put(d, true);
+    }
+
+    @Override
+    public void refreshTCGroups() {
+        alternativeTCLoader.refreshTCGroups();
     }
 
     @Override
@@ -279,7 +280,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             Device device = vitalizer.newConfiguredInstance((Map<String, Object>) deviceConfigurationNode, Device.class);
 
             // perform alternative TC init in case an extension is present
-            new AlternativeTCLoader(this).initGroupBasedTCs(device);
+            alternativeTCLoader.initGroupBasedTCs(device);
 
             return device;
         } catch (ConfigurationNotFoundException e) {
@@ -360,7 +361,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         final Map<String, Object> deviceConfigNode = vitalizer.createConfigNodeFromInstance(device, Device.class);
 
         // wipe out TCs in case an extension is present
-        new AlternativeTCLoader(this).cleanUpTransferCapabilitiesInDeviceNode(device, deviceConfigNode);
+        alternativeTCLoader.cleanUpTransferCapabilitiesInDeviceNode(device, deviceConfigNode);
 
 
         return deviceConfigNode;

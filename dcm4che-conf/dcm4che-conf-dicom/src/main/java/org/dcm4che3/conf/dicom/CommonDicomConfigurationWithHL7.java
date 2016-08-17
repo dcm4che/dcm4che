@@ -39,6 +39,7 @@
  */
 package org.dcm4che3.conf.dicom;
 
+import org.dcm4che3.conf.api.TCGroupsProvider;
 import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
@@ -55,8 +56,8 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
     public CommonDicomConfigurationWithHL7(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass) {
         super(configurationStorage, extensionsByClass);
     }
-    public CommonDicomConfigurationWithHL7(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass, Map<Class, ConfigTypeAdapter> customAdapters) {
-        super(configurationStorage, extensionsByClass, customAdapters);
+    public CommonDicomConfigurationWithHL7(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass, boolean doCacheTCGroups) {
+        super(configurationStorage, extensionsByClass, doCacheTCGroups);
     }
 
 

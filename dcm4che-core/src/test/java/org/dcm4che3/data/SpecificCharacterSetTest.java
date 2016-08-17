@@ -39,20 +39,16 @@
 package org.dcm4che3.data;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
-import org.dcm4che3.data.SpecificCharacterSet;
 import org.junit.Test;
-
-import java.nio.charset.Charset;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class SpecificCharacterSetTest {
 
-    private static final String LT_DELIMS = "\n\f\r";
-    private static final String PN_DELIMS = "^=\\";
     private static final String GERMAN_PERSON_NAME = "Äneas^Rüdiger";
     private static final String FRENCH_PERSON_NAME = "Buc^Jérôme";
     private static final String RUSSIAN_PERSON_NAME = "Люкceмбypг";
@@ -65,19 +61,23 @@ public class SpecificCharacterSetTest {
             "ﾔﾏﾀﾞ^ﾀﾛｳ=山田^太郎=やまだ^たろう";
     private static final String KOREAN_PERSON_NAME =
             "Hong^Gildong=洪^吉洞=홍^길동";
-    private static final String KOREAN_LONG_TEXT = 
-            "The 1st line includes 길동.\r\n" +
-            "The 2nd line includes 길동, too.\r\n" +
-            "The 3rd line.";
+    private static final String KOREAN_LONG_TEXT =
+            "The first line includes 한글.\r\n" +
+            "The second line includes 한글, too.\r\n" +
+            "The third line";
     private static final String CHINESE_PERSON_NAME_GB2312 =
             "Zhang^XiaoDong=张^小东=";
     private static final String CHINESE_LONG_TEXT_GB2312 =
             "1.第一行文字。\r\n" +
-            "2.第一行文字。\r\n" +
-            "3.第一行文字。\r\n";
+            "2.第二行文字。\r\n" +
+            "3.第三行文字。\r\n";
     private static final String CHINESE_PERSON_NAME_UTF8 =
             "Wang^XiaoDong=王^小東=";
-    private static final String CHINESE_PERSON_NAME_GB18030 =
+    private static final String CHINESE_LONG_TEXT_UTF8_GB18030 =
+            "The first line includes 中文.\r\n" +
+            "The second line includes 中文, too.\r\n" +
+            "The third line.";
+    private static final String CHINESE_PERSON_NAME_GB18030_GBK =
             "Wang^XiaoDong=王^小东=";
 
     private static final byte[] GERMAN_PERSON_NAME_BYTE = {
@@ -118,7 +118,7 @@ public class SpecificCharacterSetTest {
             (byte) 0x24, (byte) 0x5e, (byte) 0x24, (byte) 0x40, (byte) 0x1b,
             (byte) 0x28, (byte) 0x42, (byte) 0x5e, (byte) 0x1b, (byte) 0x24,
             (byte) 0x42, (byte) 0x24, (byte) 0x3f, (byte) 0x24, (byte) 0x6d,
-            (byte) 0x24, (byte) 0x26, (byte) 0x1b, (byte) 0x28, (byte) 0x42 };
+            (byte) 0x24, (byte) 0x26 };
 
     private static final byte[] JAPANESE_PERSON_NAME_JISX0201_BYTES = {
             (byte) 0xd4, (byte) 0xcf, (byte) 0xc0, (byte) 0xde, (byte) 0x5e,
@@ -131,8 +131,7 @@ public class SpecificCharacterSetTest {
             (byte) 0x64, (byte) 0x24, (byte) 0x5e, (byte) 0x24, (byte) 0x40,
             (byte) 0x1b, (byte) 0x28, (byte) 0x4a, (byte) 0x5e, (byte) 0x1b,
             (byte) 0x24, (byte) 0x42, (byte) 0x24, (byte) 0x3f, (byte) 0x24,
-            (byte) 0x6d, (byte) 0x24, (byte) 0x26, (byte) 0x1b, (byte) 0x28,
-            (byte) 0x4a };
+            (byte) 0x6d, (byte) 0x24, (byte) 0x26 };
 
     private static final byte[] KOREAN_PERSON_NAME_BYTES = {
             (byte) 0x48, (byte) 0x6f, (byte) 0x6e, (byte) 0x67, (byte) 0x5e,
@@ -146,46 +145,47 @@ public class SpecificCharacterSetTest {
             (byte) 0xb1, (byte) 0xe6, (byte) 0xb5, (byte) 0xbf };
 
     private static final byte[] KOREAN_LONG_TEXT_BYTES = {
-            (byte) 0x1b, (byte) 0x24, (byte) 0x29, (byte) 0x43, (byte) 0x54,
-            (byte) 0x68, (byte) 0x65, (byte) 0x20, (byte) 0x31, (byte) 0x73,
-            (byte) 0x74, (byte) 0x20, (byte) 0x6c, (byte) 0x69, (byte) 0x6e,
-            (byte) 0x65, (byte) 0x20, (byte) 0x69, (byte) 0x6e, (byte) 0x63,
-            (byte) 0x6c, (byte) 0x75, (byte) 0x64, (byte) 0x65, (byte) 0x73,
-            (byte) 0x20, (byte) 0xb1, (byte) 0xe6, (byte) 0xb5, (byte) 0xbf,
-            (byte) 0x2e, (byte) 0x0d, (byte) 0x0a, (byte) 0x1b, (byte) 0x24,
-            (byte) 0x29, (byte) 0x43, (byte) 0x54, (byte) 0x68, (byte) 0x65,
-            (byte) 0x20, (byte) 0x32, (byte) 0x6e, (byte) 0x64, (byte) 0x20,
+            (byte) 0x54, (byte) 0x68, (byte) 0x65, (byte) 0x20, (byte) 0x66,
+            (byte) 0x69, (byte) 0x72, (byte) 0x73, (byte) 0x74, (byte) 0x20,
             (byte) 0x6c, (byte) 0x69, (byte) 0x6e, (byte) 0x65, (byte) 0x20,
             (byte) 0x69, (byte) 0x6e, (byte) 0x63, (byte) 0x6c, (byte) 0x75,
-            (byte) 0x64, (byte) 0x65, (byte) 0x73, (byte) 0x20, (byte) 0xb1,
-            (byte) 0xe6, (byte) 0xb5, (byte) 0xbf, (byte) 0x2c, (byte) 0x20,
+            (byte) 0x64, (byte) 0x65, (byte) 0x73, (byte) 0x20, (byte) 0x1b,
+            (byte) 0x24, (byte) 0x29, (byte) 0x43, (byte) 0xc7, (byte) 0xd1,
+            (byte) 0xb1, (byte) 0xdb, (byte) 0x2e, (byte) 0x0d, (byte) 0x0a,
+            (byte) 0x54, (byte) 0x68, (byte) 0x65, (byte) 0x20, (byte) 0x73,
+            (byte) 0x65, (byte) 0x63, (byte) 0x6f, (byte) 0x6e, (byte) 0x64,
+            (byte) 0x20, (byte) 0x6c, (byte) 0x69, (byte) 0x6e, (byte) 0x65,
+            (byte) 0x20, (byte) 0x69, (byte) 0x6e, (byte) 0x63, (byte) 0x6c,
+            (byte) 0x75, (byte) 0x64, (byte) 0x65, (byte) 0x73, (byte) 0x20,
+            (byte) 0x1b, (byte) 0x24, (byte) 0x29, (byte) 0x43, (byte) 0xc7,
+            (byte) 0xd1, (byte) 0xb1, (byte) 0xdb, (byte) 0x2c, (byte) 0x20,
             (byte) 0x74, (byte) 0x6f, (byte) 0x6f, (byte) 0x2e, (byte) 0x0d,
             (byte) 0x0a, (byte) 0x54, (byte) 0x68, (byte) 0x65, (byte) 0x20,
-            (byte) 0x33, (byte) 0x72, (byte) 0x64, (byte) 0x20, (byte) 0x6c,
-            (byte) 0x69, (byte) 0x6e, (byte) 0x65, (byte) 0x2e };
+            (byte) 0x74, (byte) 0x68, (byte) 0x69, (byte) 0x72, (byte) 0x64,
+            (byte) 0x20, (byte) 0x6c, (byte) 0x69, (byte) 0x6e, (byte) 0x65 };
 
     private static final byte[] CHINESE_PERSON_NAME_GB2312_BYTES = {
-            (byte) 0x5A, (byte) 0x68, (byte) 0x61, (byte) 0x6E, (byte) 0x67,
-            (byte) 0x5E, (byte) 0x58, (byte) 0x69, (byte) 0x61, (byte) 0x6F,
-            (byte) 0x44, (byte) 0x6F, (byte) 0x6E, (byte) 0x67, (byte) 0x3D,
-            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0xD5,
-            (byte) 0xC5, (byte) 0x5E, (byte) 0x1B, (byte) 0x24, (byte) 0x29,
-            (byte) 0x41, (byte) 0xD0, (byte) 0xA1, (byte) 0xB6, (byte) 0xAB,
-            (byte) 0x3D };
+            (byte) 0x5a, (byte) 0x68, (byte) 0x61, (byte) 0x6e, (byte) 0x67,
+            (byte) 0x5e, (byte) 0x58, (byte) 0x69, (byte) 0x61, (byte) 0x6f,
+            (byte) 0x44, (byte) 0x6f, (byte) 0x6e, (byte) 0x67, (byte) 0x3d,
+            (byte) 0x1b, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0xd5,
+            (byte) 0xc5, (byte) 0x5e, (byte) 0x1b, (byte) 0x24, (byte) 0x29,
+            (byte) 0x41, (byte) 0xd0, (byte) 0xa1, (byte) 0xb6, (byte) 0xab,
+            (byte) 0x3d };
 
     private static final byte[] CHINESE_LONG_TEXT_GB2312_BYTES = {
-            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0x31,
-            (byte) 0x2E, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
-            (byte) 0xD0, (byte) 0xD0, (byte) 0xCE, (byte) 0xC4, (byte) 0xD7,
-            (byte) 0xD6, (byte) 0xA1, (byte) 0xA3, (byte) 0x0D, (byte) 0x0A,
-            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0x32,
-            (byte) 0x2E, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
-            (byte) 0xD0, (byte) 0xD0, (byte) 0xCE, (byte) 0xC4, (byte) 0xD7,
-            (byte) 0xD6, (byte) 0xA1, (byte) 0xA3, (byte) 0x0D, (byte) 0x0A,
-            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0x33,
-            (byte) 0x2E, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
-            (byte) 0xD0, (byte) 0xD0, (byte) 0xCE, (byte) 0xC4, (byte) 0xD7,
-            (byte) 0xD6, (byte) 0xA1, (byte) 0xA3, (byte) 0x0D, (byte) 0x0A };
+            (byte) 0x31, (byte) 0x2e, (byte) 0x1b, (byte) 0x24, (byte) 0x29,
+            (byte) 0x41, (byte) 0xb5, (byte) 0xda, (byte) 0xd2, (byte) 0xbb,
+            (byte) 0xd0, (byte) 0xd0, (byte) 0xce, (byte) 0xc4, (byte) 0xd7,
+            (byte) 0xd6, (byte) 0xa1, (byte) 0xa3, (byte) 0x0d, (byte) 0x0a,
+            (byte) 0x32, (byte) 0x2e, (byte) 0x1b, (byte) 0x24, (byte) 0x29,
+            (byte) 0x41, (byte) 0xb5, (byte) 0xda, (byte) 0xb6, (byte) 0xfe,
+            (byte) 0xd0, (byte) 0xd0, (byte) 0xce, (byte) 0xc4, (byte) 0xd7,
+            (byte) 0xd6, (byte) 0xa1, (byte) 0xa3, (byte) 0x0d, (byte) 0x0a,
+            (byte) 0x33, (byte) 0x2e, (byte) 0x1b, (byte) 0x24, (byte) 0x29,
+            (byte) 0x41, (byte) 0xb5, (byte) 0xda, (byte) 0xc8, (byte) 0xfd,
+            (byte) 0xd0, (byte) 0xd0, (byte) 0xce, (byte) 0xc4, (byte) 0xd7,
+            (byte) 0xd6, (byte) 0xa1, (byte) 0xa3, (byte) 0x0d, (byte) 0x0a };
 
     private static final byte[] CHINESE_PERSON_NAME_UTF8_BYTES = {
             (byte) 0x57, (byte) 0x61, (byte) 0x6e, (byte) 0x67, (byte) 0x5e,
@@ -194,7 +194,46 @@ public class SpecificCharacterSetTest {
             (byte) 0x8e, (byte) 0x8b, (byte) 0x5e, (byte) 0xe5, (byte) 0xb0,
             (byte) 0x8f, (byte) 0xe6, (byte) 0x9d, (byte) 0xb1, (byte) 0x3d };
 
-    private static final byte[] CHINESE_PERSON_NAME_GB18030_BYTES = {
+    private static final byte[] CHINESE_LONG_TEXT_UTF8_BYTES = {
+            (byte) 0x54, (byte) 0x68, (byte) 0x65, (byte) 0x20, (byte) 0x66,
+            (byte) 0x69, (byte) 0x72, (byte) 0x73, (byte) 0x74, (byte) 0x20,
+            (byte) 0x6c, (byte) 0x69, (byte) 0x6e, (byte) 0x65, (byte) 0x20,
+            (byte) 0x69, (byte) 0x6e, (byte) 0x63, (byte) 0x6c, (byte) 0x75,
+            (byte) 0x64, (byte) 0x65, (byte) 0x73, (byte) 0x20, (byte) 0xe4,
+            (byte) 0xb8, (byte) 0xad, (byte) 0xe6, (byte) 0x96, (byte) 0x87,
+            (byte) 0x2e, (byte) 0x0d, (byte) 0x0a, (byte) 0x54, (byte) 0x68,
+            (byte) 0x65, (byte) 0x20, (byte) 0x73, (byte) 0x65, (byte) 0x63,
+            (byte) 0x6f, (byte) 0x6e, (byte) 0x64, (byte) 0x20, (byte) 0x6c,
+            (byte) 0x69, (byte) 0x6e, (byte) 0x65, (byte) 0x20, (byte) 0x69,
+            (byte) 0x6e, (byte) 0x63, (byte) 0x6c, (byte) 0x75, (byte) 0x64,
+            (byte) 0x65, (byte) 0x73, (byte) 0x20, (byte) 0xe4, (byte) 0xb8,
+            (byte) 0xad, (byte) 0xe6, (byte) 0x96, (byte) 0x87, (byte) 0x2c,
+            (byte) 0x20, (byte) 0x74, (byte) 0x6f, (byte) 0x6f, (byte) 0x2e,
+            (byte) 0x0d, (byte) 0x0a, (byte) 0x54, (byte) 0x68, (byte) 0x65,
+            (byte) 0x20, (byte) 0x74, (byte) 0x68, (byte) 0x69, (byte) 0x72,
+            (byte) 0x64, (byte) 0x20, (byte) 0x6c, (byte) 0x69, (byte) 0x6e,
+            (byte) 0x65, (byte) 0x2e };
+
+    private static final byte[] CHINESE_LONG_TEXT_GB18030_BYTES = {
+            (byte) 0x54, (byte) 0x68, (byte) 0x65, (byte) 0x20, (byte) 0x66,
+            (byte) 0x69, (byte) 0x72, (byte) 0x73, (byte) 0x74, (byte) 0x20,
+            (byte) 0x6c, (byte) 0x69, (byte) 0x6e, (byte) 0x65, (byte) 0x20,
+            (byte) 0x69, (byte) 0x6e, (byte) 0x63, (byte) 0x6c, (byte) 0x75,
+            (byte) 0x64, (byte) 0x65, (byte) 0x73, (byte) 0x20, (byte) 0xd6,
+            (byte) 0xd0, (byte) 0xce, (byte) 0xc4, (byte) 0x2e, (byte) 0x0d,
+            (byte) 0x0a, (byte) 0x54, (byte) 0x68, (byte) 0x65, (byte) 0x20,
+            (byte) 0x73, (byte) 0x65, (byte) 0x63, (byte) 0x6f, (byte) 0x6e,
+            (byte) 0x64, (byte) 0x20, (byte) 0x6c, (byte) 0x69, (byte) 0x6e,
+            (byte) 0x65, (byte) 0x20, (byte) 0x69, (byte) 0x6e, (byte) 0x63,
+            (byte) 0x6c, (byte) 0x75, (byte) 0x64, (byte) 0x65, (byte) 0x73,
+            (byte) 0x20, (byte) 0xd6, (byte) 0xd0, (byte) 0xce, (byte) 0xc4,
+            (byte) 0x2c, (byte) 0x20, (byte) 0x74, (byte) 0x6f, (byte) 0x6f,
+            (byte) 0x2e, (byte) 0x0d, (byte) 0x0a, (byte) 0x54, (byte) 0x68,
+            (byte) 0x65, (byte) 0x20, (byte) 0x74, (byte) 0x68, (byte) 0x69,
+            (byte) 0x72, (byte) 0x64, (byte) 0x20, (byte) 0x6c, (byte) 0x69,
+            (byte) 0x6e, (byte) 0x65, (byte) 0x2e };
+
+    private static final byte[] CHINESE_PERSON_NAME_GB18030_GBK_BYTES = {
             (byte) 0x57, (byte) 0x61, (byte) 0x6e, (byte) 0x67, (byte) 0x5e,
             (byte) 0x58, (byte) 0x69, (byte) 0x61, (byte) 0x6f, (byte) 0x44,
             (byte) 0x6f, (byte) 0x6e, (byte) 0x67, (byte) 0x3d, (byte) 0xcd,
@@ -222,23 +261,19 @@ public class SpecificCharacterSetTest {
     }
 
     private SpecificCharacterSet jisX0208() {
-        return SpecificCharacterSet.valueOf(
-                new String[] { null, "ISO 2022 IR 87" });
+        return SpecificCharacterSet.valueOf(new String[] { null, "ISO 2022 IR 87" });
     }
 
     private SpecificCharacterSet jisX0201() {
-        return SpecificCharacterSet.valueOf(
-                new String[] { "ISO 2022 IR 13", "ISO 2022 IR 87" });
+        return SpecificCharacterSet.valueOf(new String[] { "ISO 2022 IR 13", "ISO 2022 IR 87" });
     }
 
     private SpecificCharacterSet ksx1001() {
-        return SpecificCharacterSet.valueOf(
-                new String[] { null, "ISO 2022 IR 149" });
+        return SpecificCharacterSet.valueOf(new String[] { null, "ISO 2022 IR 149" });
     }
 
     private SpecificCharacterSet gb2312() {
-        return SpecificCharacterSet.valueOf(
-                new String[] { null, "ISO 2022 IR 58" });
+        return SpecificCharacterSet.valueOf(new String[] { null, "ISO 2022 IR 58" });
     }
 
     private SpecificCharacterSet utf8() {
@@ -256,181 +291,205 @@ public class SpecificCharacterSetTest {
     @Test
     public void testEncodeGermanPersonName() {
         assertArrayEquals(GERMAN_PERSON_NAME_BYTE,
-                iso8859_1().encode(GERMAN_PERSON_NAME, PN_DELIMS));
+                iso8859_1().encode(GERMAN_PERSON_NAME, StringValueType.PN));
     }
 
     @Test
     public void testDecodeGermanPersonName() {
         assertEquals(GERMAN_PERSON_NAME,
-                iso8859_1().decode(GERMAN_PERSON_NAME_BYTE));
+                iso8859_1().decode(GERMAN_PERSON_NAME_BYTE, StringValueType.PN));
     }
 
     @Test
     public void testEncodeFrenchPersonName() {
         assertArrayEquals(FRENCH_PERSON_NAME_BYTE,
-                iso8859_1().encode(FRENCH_PERSON_NAME, PN_DELIMS));
+                iso8859_1().encode(FRENCH_PERSON_NAME, StringValueType.PN));
     }
 
     @Test
     public void testDecodeFrenchPersonName() {
         assertEquals(FRENCH_PERSON_NAME,
-                iso8859_1().decode(FRENCH_PERSON_NAME_BYTE));
+                iso8859_1().decode(FRENCH_PERSON_NAME_BYTE, StringValueType.PN));
     }
 
     @Test
     public void testEncodeRussianPersonName() {
         assertArrayEquals(RUSSIAN_PERSON_NAME_BYTE,
-                iso8859_5().encode(RUSSIAN_PERSON_NAME, PN_DELIMS));
+                iso8859_5().encode(RUSSIAN_PERSON_NAME, StringValueType.PN));
     }
 
     @Test
     public void testDecodeRussianPersonName() {
         assertEquals(RUSSIAN_PERSON_NAME,
-                iso8859_5().decode(RUSSIAN_PERSON_NAME_BYTE));
+                iso8859_5().decode(RUSSIAN_PERSON_NAME_BYTE, StringValueType.PN));
     }
 
     @Test
     public void testEncodeArabicPersonName() {
         assertArrayEquals(ARABIC_PERSON_NAME_BYTE,
-                iso8859_6().encode(ARABIC_PERSON_NAME, PN_DELIMS));
+                iso8859_6().encode(ARABIC_PERSON_NAME, StringValueType.PN));
     }
 
     @Test
     public void testDecodeArabicPersonName() {
         assertEquals(ARABIC_PERSON_NAME,
-                iso8859_6().decode(ARABIC_PERSON_NAME_BYTE));
+                iso8859_6().decode(ARABIC_PERSON_NAME_BYTE, StringValueType.PN));
     }
 
     @Test
     public void testEncodeGreekPersonName() {
         assertArrayEquals(GREEK_PERSON_NAME_BYTE,
-                iso8859_7().encode(GREEK_PERSON_NAME, PN_DELIMS));
+                iso8859_7().encode(GREEK_PERSON_NAME, StringValueType.PN));
     }
 
     @Test
     public void testDecodeGreekPersonName() {
         assertEquals(GREEK_PERSON_NAME,
-                iso8859_7().decode(GREEK_PERSON_NAME_BYTE));
+                iso8859_7().decode(GREEK_PERSON_NAME_BYTE, StringValueType.PN));
     }
 
     @Test
     public void testEncodeHebrewPersonName() {
         assertArrayEquals(HEBREW_PERSON_NAME_BYTE,
-                iso8859_8().encode(HEBREW_PERSON_NAME, PN_DELIMS));
+                iso8859_8().encode(HEBREW_PERSON_NAME, StringValueType.PN));
     }
 
     @Test
     public void testDecodeHebrewPersonName() {
         assertEquals(HEBREW_PERSON_NAME,
-                iso8859_8().decode(HEBREW_PERSON_NAME_BYTE));
+                iso8859_8().decode(HEBREW_PERSON_NAME_BYTE, StringValueType.PN));
     }
 
     @Test
     public void testEncodeJapanesePersonNameASCII() {
         assertArrayEquals(JAPANESE_PERSON_NAME_ASCII_BYTES,
-                jisX0208().encode(JAPANESE_PERSON_NAME_ASCII, PN_DELIMS));
+                jisX0208().encode(JAPANESE_PERSON_NAME_ASCII, StringValueType.PN));
     }
 
     @Test
     public void testDecodeJapanesePersonNameASCII() {
         assertEquals(JAPANESE_PERSON_NAME_ASCII,
-                jisX0208().decode(JAPANESE_PERSON_NAME_ASCII_BYTES));
+                jisX0208().decode(JAPANESE_PERSON_NAME_ASCII_BYTES, StringValueType.PN));
     }
 
-     @Test
+    @Test
     public void testEncodeJapanesePersonNameJISX0201() {
         assertArrayEquals(JAPANESE_PERSON_NAME_JISX0201_BYTES,
-                jisX0201().encode(JAPANESE_PERSON_NAME_JISX0201, PN_DELIMS));
+                jisX0201().encode(JAPANESE_PERSON_NAME_JISX0201, StringValueType.PN));
     }
 
     @Test
     public void testDecodeJapanesePersonNameJISX0201() {
         assertEquals(JAPANESE_PERSON_NAME_JISX0201,
-                jisX0201().decode(JAPANESE_PERSON_NAME_JISX0201_BYTES));
+                jisX0201().decode(JAPANESE_PERSON_NAME_JISX0201_BYTES, StringValueType.PN));
     }
 
     @Test
     public void testEncodeKoreanPersonName() {
         assertArrayEquals(KOREAN_PERSON_NAME_BYTES,
-                ksx1001().encode(KOREAN_PERSON_NAME, PN_DELIMS));
+                ksx1001().encode(KOREAN_PERSON_NAME, StringValueType.PN));
     }
 
     @Test
     public void testDecodeKoreanPersonName() {
         assertEquals(KOREAN_PERSON_NAME,
-                ksx1001().decode(KOREAN_PERSON_NAME_BYTES));
+                ksx1001().decode(KOREAN_PERSON_NAME_BYTES, StringValueType.PN));
     }
 
     @Test
     public void testEncodeKoreanLongText() {
         assertArrayEquals(KOREAN_LONG_TEXT_BYTES,
-                ksx1001().encode(KOREAN_LONG_TEXT, LT_DELIMS));
+                ksx1001().encode(KOREAN_LONG_TEXT, StringValueType.TEXT));
     }
-    
+
     @Test
     public void testDecodeKoreanLongText() {
         assertEquals(KOREAN_LONG_TEXT,
-                ksx1001().decode(KOREAN_LONG_TEXT_BYTES));
+                ksx1001().decode(KOREAN_LONG_TEXT_BYTES, StringValueType.TEXT));
     }
 
     @Test
     public void testEncodeChinesePersonNameGB2312() {
         assertArrayEquals(CHINESE_PERSON_NAME_GB2312_BYTES,
-                gb2312().encode(CHINESE_PERSON_NAME_GB2312, PN_DELIMS));
+                gb2312().encode(CHINESE_PERSON_NAME_GB2312, StringValueType.PN));
     }
 
     @Test
     public void testDecodeChinesePersonNameGB2312() {
         assertEquals(CHINESE_PERSON_NAME_GB2312,
-                gb2312().decode(CHINESE_PERSON_NAME_GB2312_BYTES));
+                gb2312().decode(CHINESE_PERSON_NAME_GB2312_BYTES, StringValueType.PN));
     }
 
     @Test
     public void testEncodeChineseLongTextGB2312() {
         assertArrayEquals(CHINESE_LONG_TEXT_GB2312_BYTES,
-                gb2312().encode(CHINESE_LONG_TEXT_GB2312, LT_DELIMS));
+                gb2312().encode(CHINESE_LONG_TEXT_GB2312, StringValueType.TEXT));
     }
 
     @Test
     public void testDecodeChineseLongTextGB2312() {
         assertEquals(CHINESE_LONG_TEXT_GB2312,
-                gb2312().decode(CHINESE_LONG_TEXT_GB2312_BYTES));
+                gb2312().decode(CHINESE_LONG_TEXT_GB2312_BYTES, StringValueType.TEXT));
     }
 
     @Test
     public void testEncodeChinesePersonNameUTF8() {
         assertArrayEquals(CHINESE_PERSON_NAME_UTF8_BYTES,
-                utf8().encode(CHINESE_PERSON_NAME_UTF8, PN_DELIMS));
+                utf8().encode(CHINESE_PERSON_NAME_UTF8, StringValueType.PN));
     }
 
     @Test
     public void testDecodeChinesePersonNameUTF8() {
         assertEquals(CHINESE_PERSON_NAME_UTF8,
-                utf8().decode(CHINESE_PERSON_NAME_UTF8_BYTES));
+                utf8().decode(CHINESE_PERSON_NAME_UTF8_BYTES, StringValueType.PN));
+    }
+
+    @Test
+    public void testEncodeChineseLongTextUTF8() {
+        assertArrayEquals(CHINESE_LONG_TEXT_UTF8_BYTES,
+                utf8().encode(CHINESE_LONG_TEXT_UTF8_GB18030, StringValueType.TEXT));
+    }
+
+    @Test
+    public void testDecodeChineseLongTextUTF8() {
+        assertEquals(CHINESE_LONG_TEXT_UTF8_GB18030,
+                utf8().decode(CHINESE_LONG_TEXT_UTF8_BYTES, StringValueType.TEXT));
     }
 
     @Test
     public void testEncodeChinesePersonNameGB18030() {
-        assertArrayEquals(CHINESE_PERSON_NAME_GB18030_BYTES,
-                gb18030().encode(CHINESE_PERSON_NAME_GB18030, PN_DELIMS));
+        assertArrayEquals(CHINESE_PERSON_NAME_GB18030_GBK_BYTES,
+                gb18030().encode(CHINESE_PERSON_NAME_GB18030_GBK, StringValueType.PN));
     }
 
     @Test
     public void testDecodeChinesePersonNameGB18030() {
-        assertEquals(CHINESE_PERSON_NAME_GB18030,
-                gb18030().decode(CHINESE_PERSON_NAME_GB18030_BYTES));
+        assertEquals(CHINESE_PERSON_NAME_GB18030_GBK,
+                gb18030().decode(CHINESE_PERSON_NAME_GB18030_GBK_BYTES, StringValueType.PN));
+    }
+
+    @Test
+    public void testEncodeChineseLongTextGB18030() {
+        assertArrayEquals(CHINESE_LONG_TEXT_GB18030_BYTES,
+                gb18030().encode(CHINESE_LONG_TEXT_UTF8_GB18030, StringValueType.TEXT));
+    }
+
+    @Test
+    public void testDecodeChineseLongTextGB18030() {
+        assertEquals(CHINESE_PERSON_NAME_GB18030_GBK,
+                gb18030().decode(CHINESE_PERSON_NAME_GB18030_GBK_BYTES, StringValueType.TEXT));
     }
 
     @Test
     public void testEncodeChinesePersonNameGBK() {
-        assertArrayEquals(CHINESE_PERSON_NAME_GB18030_BYTES,
-                gbk().encode(CHINESE_PERSON_NAME_GB18030, PN_DELIMS));
+        assertArrayEquals(CHINESE_PERSON_NAME_GB18030_GBK_BYTES,
+                gbk().encode(CHINESE_PERSON_NAME_GB18030_GBK, StringValueType.PN));
     }
 
     @Test
     public void testDecodeChinesePersonNameGBK() {
-        assertEquals(CHINESE_PERSON_NAME_GB18030,
-                gbk().decode(CHINESE_PERSON_NAME_GB18030_BYTES));
+        assertEquals(CHINESE_PERSON_NAME_GB18030_GBK,
+                gbk().decode(CHINESE_PERSON_NAME_GB18030_GBK_BYTES, StringValueType.PN));
     }
 
 }

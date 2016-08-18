@@ -39,6 +39,11 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
         uuidToReferableIndex = uuidToSimplePathCache;
     }
 
+    @Override
+    public Path getPathByUUID(String uuid) {
+        return uuidToReferableIndex.get(uuid);
+    }
+
     protected void removeOldReferablesFromIndex(Object oldConfigurationNode) {
         if (oldConfigurationNode instanceof Map) {
             ConfigNodeTraverser.traverseMapNode(oldConfigurationNode, new ConfigNodeTraverser.AConfigNodeFilter() {

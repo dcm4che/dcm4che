@@ -39,6 +39,7 @@
 package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
+import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.ExtensionMergingConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
@@ -205,7 +206,9 @@ public class DicomConfigurationBuilder {
 
         configurationStorage = new DefaultsAndNullFilterDecorator(
                 configurationStorage,
-                allExtensions, CommonDicomConfiguration.createDefaultDicomVitalizer());
+                allExtensions,
+                CommonDicomConfiguration.createDefaultDicomVitalizer()
+        );
 
         return configurationStorage;
     }

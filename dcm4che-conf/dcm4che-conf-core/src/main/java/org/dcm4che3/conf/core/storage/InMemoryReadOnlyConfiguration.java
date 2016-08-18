@@ -43,6 +43,7 @@ package org.dcm4che3.conf.core.storage;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.Nodes;
+import org.dcm4che3.conf.core.api.Path;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -85,6 +86,11 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
     @Override
     public void removeNode(String path) throws ConfigurationException {
         throw new RuntimeException("Configuration is read-only");
+    }
+
+    @Override
+    public Path getPathByUUID(String uuid) {
+        throw new ConfigurationException("Unexpected error - uuid index is missing");
     }
 
     @Override

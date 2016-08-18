@@ -1,8 +1,7 @@
 package org.dcm4che3.conf.api.extensions;
 
-import org.apache.commons.beanutils.PropertyUtils;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.api.internal.ConfigIterators;
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
+import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 
 /**
  *
@@ -10,9 +9,9 @@ import org.dcm4che3.conf.core.api.internal.ConfigIterators;
  */
 public class ReconfiguringIterator {
     public static void reconfigure(Object source, Object target, Class configurableClass) {
-        for (AnnotatedConfigurableProperty property : ConfigIterators.getAllConfigurableFields(configurableClass)) {
+        for (ConfigProperty property : ConfigReflection.getAllConfigurableFields(configurableClass)) {
             try {
-                PropertyUtils.setSimpleProperty(target, property.getName(), PropertyUtils.getSimpleProperty(source, property.getName()));
+                ConfigReflection.setProperty(target, property, ConfigReflection.getProperty(source, property));
             } catch (Exception e) {
                 throw new RuntimeException("Unable to reconfigure instance of class " + property.getRawClass(), e);
             }

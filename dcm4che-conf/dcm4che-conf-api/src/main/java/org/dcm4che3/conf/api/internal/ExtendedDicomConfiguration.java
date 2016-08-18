@@ -40,12 +40,11 @@ package org.dcm4che3.conf.api.internal;
 
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.net.Device;
+import org.dcm4che3.conf.core.api.TypeSafeConfiguration;
+import org.dcm4che3.conf.dicom.DicomConfigurationRoot;
 import org.dcm4che3.net.DeviceInfo;
 
 import java.io.Closeable;
-import java.security.cert.X509Certificate;
-import java.util.Map;
 
 /**
  * This interface is for internal use. For any vendor/external integration purposes, please use DicomConfiguration.
@@ -54,6 +53,8 @@ import java.util.Map;
  *
  */
 public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeable {
+
+    TypeSafeConfiguration<DicomConfigurationRoot> getTypeSafeConfiguration();
 
     /**
      * Indicates whether the configuration backend is initialized
@@ -80,12 +81,6 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
     DeviceInfo[] listDeviceInfos(DeviceInfo keys) throws ConfigurationException;
 
     String deviceRef(String name);
-
-    void persistCertificates(String ref, X509Certificate... certs) throws ConfigurationException;
-
-    void removeCertificates(String ref) throws ConfigurationException;
-
-    X509Certificate[] findCertificates(String dn) throws ConfigurationException;
 
     void close();
 

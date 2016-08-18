@@ -63,8 +63,6 @@ public class SearchTest {
         searchTestForStorage(storage);
     }
 
-
-
     public void searchTestForStorage(Configuration storage) throws ConfigurationException {
 
 

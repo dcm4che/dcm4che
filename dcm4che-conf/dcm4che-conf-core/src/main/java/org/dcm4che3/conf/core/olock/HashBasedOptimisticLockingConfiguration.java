@@ -1,12 +1,11 @@
 package org.dcm4che3.conf.core.olock;
 
 import org.dcm4che3.conf.core.DelegatingConfiguration;
-import org.dcm4che3.conf.core.api.BatchRunner;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
+import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
-import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ADualNodeFilter;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ConfigNodeTypesafeFilter;
 import org.dcm4che3.conf.core.Nodes;
 import org.slf4j.Logger;
@@ -64,8 +63,9 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
 
         // if there is nothing in storage - just persist and leave
         if (nodeInStorage == null) {
-            if (nodeBeingPersisted != null)
+            if (nodeBeingPersisted != null) {
                 ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new CleanupFilter(Configuration.OLOCK_HASH_KEY));
+            }
             delegate.persistNode(path, nodeBeingPersisted, configurableClass);
             return;
         }
@@ -93,7 +93,14 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
 
         //  calculate olock hashes if called with configurableClass
         if (configurableClass != null && configurationNode != null) {
-            ConfigNodeTraverser.traverseNodeTypesafe(configurationNode, new AnnotatedConfigurableProperty(configurableClass), allExtensionClasses, new HashMarkingTypesafeNodeFilter());
+
+            ConfigNodeTraverser.traverseNodeTypesafe(
+                    configurationNode,
+                    ConfigReflection.getDummyPropertyForClass(configurableClass),
+                    allExtensionClasses,
+                    new HashMarkingTypesafeNodeFilter()
+            );
+
             ConfigNodeTraverser.traverseMapNode(configurationNode, new OLockHashCalcFilter());
         }
 
@@ -106,7 +113,7 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
     public static class HashMarkingTypesafeNodeFilter implements ConfigNodeTypesafeFilter {
 
         @Override
-        public boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, AnnotatedConfigurableProperty property) throws ConfigurationException {
+        public boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, ConfigProperty property) throws ConfigurationException {
 
             if (property.isOlockHash()) {
                 containerNode.put(OLOCK_HASH_KEY, NOT_CALCULATED_YET);

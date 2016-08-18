@@ -7,9 +7,6 @@
     <dependencies>
         <module name="org.dcm4che.net" export="true"/>
 
-        <!-- For reconfiguration iterator -->
-        <module name="org.apache.commons.beanutils"/>
-
         <module name="org.slf4j"/>
         <module name="org.dcm4che.conf.core-api" export="true"/>
     </dependencies>

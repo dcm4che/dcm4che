@@ -82,6 +82,8 @@ public class SimpleStorageTest {
             builder.registerExtensionForBaseExtension(extension.getClass(), extension.getBaseClass());
         }
 
+        builder.uuidIndexing();
+
         return builder.build();
 
     }
@@ -96,6 +98,7 @@ public class SimpleStorageTest {
         builder.registerDeviceExtension(HL7DeviceExtension.class);
         builder.registerAEExtension(TCGroupConfigAEExtension.class);
         builder.registerDeviceExtension(SomeDeviceExtension.class);
+        builder.uuidIndexing();
         builder.extensionMerge(true);
         return builder.build();
     }
@@ -135,6 +138,10 @@ public class SimpleStorageTest {
         Iterator search = xCfg.search("/*[contains(prop2,'I am ')]");
         Object o = search.next();
         DeepEqualsDiffer.assertDeepEquals("Search should work. ", o, p1);
+
+
+
+
 
     }
 

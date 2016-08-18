@@ -65,4 +65,9 @@ public interface DicomConfigurationManager extends ExtendedDicomConfiguration, C
      */
     void preventDeviceModifications(Device d);
 
+    /**
+     * Triggers a reload of TC groups
+     */
+    void refreshTCGroups();
+
 }

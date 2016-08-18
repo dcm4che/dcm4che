@@ -41,6 +41,7 @@ package org.dcm4che3.conf.core;
 
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -87,6 +88,11 @@ public class DelegatingConfiguration implements Configuration {
     @Override
     public void removeNode(String path) throws ConfigurationException {
         delegate.removeNode(path);
+    }
+
+    @Override
+    public Path getPathByUUID(String uuid) {
+        return delegate.getPathByUUID(uuid);
     }
 
     @Override

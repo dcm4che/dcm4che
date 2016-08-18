@@ -85,6 +85,7 @@ public interface Configuration extends BatchRunner {
     String WEAK_REFERENCE_KEY = "weakReference";
     String REFERENCE_BY_UUID_PATTERN = "//*[_.uuid='{uuid}']";
 
+
     enum ConfigStorageType {
         JSON_FILE,
         DB_BLOBS;
@@ -144,6 +145,10 @@ public interface Configuration extends BatchRunner {
      * @param path
      */
     void removeNode(String path) throws ConfigurationException;
+
+
+    Path getPathByUUID(String uuid);
+
 
     /**
      * Performs a search on the configuration tree and returns an iterator to configuration nodes that satisfy the search criteria.

@@ -1,8 +1,11 @@
 package org.dcm4che3.conf.core.api.internal;
 
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.context.LoadingContext;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * This API shall NOT be considered stable, it will be refactored without notice.
@@ -18,7 +21,7 @@ public interface BeanVitalizer {
 
     void registerCustomConfigTypeAdapter(Class clazz, ConfigTypeAdapter typeAdapter);
 
-    ConfigTypeAdapter lookupTypeAdapter(AnnotatedConfigurableProperty property) throws ConfigurationException;
+    ConfigTypeAdapter lookupTypeAdapter(ConfigProperty property) throws ConfigurationException;
 
     ConfigTypeAdapter lookupDefaultTypeAdapter(Class clazz) throws ConfigurationException;
 
@@ -34,7 +37,11 @@ public interface BeanVitalizer {
      * @return
      * @throws ConfigurationException
      */
+    @Deprecated
     <T> T newConfiguredInstance(Map<String, Object> configNode, Class<T> clazz) throws ConfigurationException;
+
+    <T> T newConfiguredInstance(Map<String, Object> configurationNode, Class<T> clazz, LoadingContext ctx);
+
 
     /**
      * A factory to create an empty instance. Override e.g. to use CDI or whatever
@@ -45,37 +52,28 @@ public interface BeanVitalizer {
      */
     <T> T newInstance(Class<T> clazz) throws ConfigurationException;
 
-    <T> Map<String, Object> createConfigNodeFromInstance(T object) throws ConfigurationException;
+    Map<String, Object> createConfigNodeFromInstance(Object object) throws ConfigurationException;
 
-    <T> Map<String, Object> createConfigNodeFromInstance(T object, Class configurableClass) throws ConfigurationException;
+    Map<String, Object> createConfigNodeFromInstance(Object object, Class configurableClass) throws ConfigurationException;
 
 
     /*****************/
      /* EXTENSIBILITY */
      /***************/
 
+    //TODO: add factory registration
 
-    void registerContext(Class clazz, Object context);
-
-    <T> T getContext(Class<T> clazz);
+    /**
+     * Returns a list of registered extensions for a specified base extension class
+     */
+    List<Class> getExtensionClassesByBaseClass(Class extensionBaseClass);
 
     /*****************/
      /* REFERENCES */
     /***************/
 
-    /**
-     * Used to resolve circular references while deserializing config.
-     * @param uuid uuid of a configurable object
-     * @param expectedClazz
-     * @return this object, if it was already deserialized or it's deserialization has started (but e.g. is not finished because we are resolving a circular reference)
-     * or null if the object with this uuid was not yet loaded in this load context
-     */
-    <T> T getInstanceFromThreadLocalPoolByUUID(String uuid, Class<T> expectedClazz);
 
-    /**
-     *
-     * @param uuid uuid of a configurable object
-     * @param instance an object that corresponds to the uuid, which deserialization has started
-     */
-    void registerInstanceInThreadLocalPool(String uuid, Object instance);
+    Object resolveFutureOrFail(String uuid, Future<Object> existingFuture);
+
+    Map<String, Object> getSchemaForConfigurableClass(Class<?> clazz);
 }

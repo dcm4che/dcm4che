@@ -11,18 +11,24 @@
     <artifactId>dcm4che-conf-core-api</artifactId>
     <name>dcm4che-conf-core-api</name>
     <packaging>bundle</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+        </dependency>
+    </dependencies>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
-                  <configuration>
+                <configuration>
                     <instructions>
                         <!-- fixme: there are internal class that used externally at these file:
                         dcm4che-3.x\dcm4che-conf\dcm4che-conf-api\src\main\java\org\dcm4che3\conf\api\extensions\ReconfiguringIterator.java
-                            import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
-                            import org.dcm4che3.conf.core.api.internal.ConfigIterators;
+                            import org.dcm4che3.conf.core.api.internal.ConfigProperty               import org.dcm4che3.conf.core.api.internal.ConfigIterators;
                         dcm4che-3.x\dcm4che-conf\dcm4che-conf-api\src\main\java\org\dcm4che3\conf\api\internal\DicomConfigurationManager.java
                             import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
                         

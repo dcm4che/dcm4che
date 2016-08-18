@@ -43,8 +43,6 @@ import org.apache.commons.jxpath.AbstractFactory;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathNotFoundException;
 import org.apache.commons.jxpath.Pointer;
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.util.PathPattern;
 import org.dcm4che3.conf.core.util.XNodeUtil;
 
 import java.util.*;
@@ -118,19 +116,20 @@ public class Nodes {
         if (isPrimitive(node)) return node;
 
         if (node instanceof Collection) {
-            ArrayList<Object> newList = new ArrayList<Object>();
-            for (Object o : (Collection) node) newList.add(deepCloneNode(o));
-            return newList;
+            Collection givenCollection = (Collection) node;
+            ArrayList<Object> newCollection = new ArrayList<Object>(givenCollection.size());
+            for (Object o : givenCollection) newCollection.add(deepCloneNode(o));
+            return newCollection;
         }
 
         if (node instanceof Map) {
-            Map newMap = new TreeMap();
-
-            for (Entry e : (Set<Entry>) ((Map) node).entrySet()) {
-                newMap.put(e.getKey(), deepCloneNode(e.getValue()));
+            Map givenMapNode = (Map) node;
+            Map newMapNode = new TreeMap();
+            for (Entry e : (Set<Entry>) givenMapNode.entrySet()) {
+                newMapNode.put(e.getKey(), deepCloneNode(e.getValue()));
             }
 
-            return newMap;
+            return newMapNode;
         }
 
         throw new IllegalArgumentException("Unexpected node type " + node.getClass());

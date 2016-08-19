@@ -39,7 +39,6 @@
  */
 package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.util.PathPattern;
 
@@ -69,7 +68,9 @@ public enum DicomPath {
     DeviceByNameForRead,
     AETransferCapabilities;
 
-    public static final Path TC_GROUPS_PATH = new Path(Nodes.fromSimpleEscapedPathOrNull("/dicomConfigurationRoot/globalConfiguration/dcmTransferCapabilities"));
+    public static final Path TC_GROUPS_PATH = new Path("dicomConfigurationRoot","globalConfiguration","dcmTransferCapabilities");
+    public static final Path CONFIG_ROOT_PATH = new Path("dicomConfigurationRoot");
+
 
     public static final Map<DicomPath, String> PATHS = new HashMap<DicomPath, String>();
     public static final Map<DicomPath, PathPattern> PATH_PATTERNS = new HashMap<DicomPath, PathPattern>();
@@ -104,6 +105,18 @@ public enum DicomPath {
 
         for (Map.Entry<DicomPath, String> entry : PATHS.entrySet()) {
             PATH_PATTERNS.put(entry.getKey(), new PathPattern(entry.getValue()));
+        }
+    }
+
+    public static Path devicePath(String name) {
+        return new Path("dicomConfigurationRoot", "dicomDevicesRoot", name);
+    }
+
+    public static void validateDevicePath(Path path) {
+        if (path.getPathItems().size()>3 ||
+                !path.getPathItems().get(0).equals("dicomConfigurationRoot") ||
+                !path.getPathItems().get(1).equals("dicomDevicesRoot")) {
+            throw new IllegalArgumentException("Unexpected path:" + path);
         }
     }
 

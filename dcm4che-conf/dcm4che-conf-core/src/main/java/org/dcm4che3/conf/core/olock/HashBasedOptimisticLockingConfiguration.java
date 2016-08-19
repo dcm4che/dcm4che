@@ -3,6 +3,7 @@ package org.dcm4che3.conf.core.olock;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
@@ -55,7 +56,7 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
     }
 
     @Override
-    public void persistNode(final String path, final Map<String, Object> configNode, final Class configurableClass) throws ConfigurationException {
+    public void persistNode(final Path path, final Map<String, Object> configNode, final Class configurableClass) throws ConfigurationException {
         Map<String, Object> nodeBeingPersisted = (Map<String, Object>) Nodes.deepCloneNode(configNode);
 
         // get existing node from storage
@@ -87,7 +88,7 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
 
 
     @Override
-    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
+    public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
 
         Object configurationNode = super.getConfigurationNode(path, configurableClass);
 

@@ -85,7 +85,7 @@ public class DefaultTypeSafeConfiguration<R> implements TypeSafeConfiguration<R>
     @Override
     public <T> T load(Path path, Class<T> clazz, LoadingContext ctx) {
 
-        Object configurationNode = confStorage.getConfigurationNode(path.toString(), clazz);
+        Object configurationNode = confStorage.getConfigurationNode(path, clazz);
 
         if (configurationNode == null) {
             return null;
@@ -114,7 +114,7 @@ public class DefaultTypeSafeConfiguration<R> implements TypeSafeConfiguration<R>
         //// or go ahead and load
 
         Map<String, Object> referencedNode = (Map<String, Object>) confStorage.getConfigurationNode(
-                referencePattern.set("uuid", uuid).path(),
+                confStorage.getPathByUUID(uuid),
                 clazz
         );
 
@@ -127,7 +127,7 @@ public class DefaultTypeSafeConfiguration<R> implements TypeSafeConfiguration<R>
     @Override
     public <T> void save(Path path, T object, Class<T> clazz) {
         Map<String, Object> node = vitalizer.createConfigNodeFromInstance(object, clazz);
-        confStorage.persistNode(path.toString(), node, clazz);
+        confStorage.persistNode(path, node, clazz);
     }
 
     @Override

@@ -44,6 +44,7 @@ import org.dcm4che3.conf.core.ExtensionMergingConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Path;
+import org.dcm4che3.conf.core.index.ReferenceIndexingDecorator;
 import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
 import org.dcm4che3.conf.core.olock.HashBasedOptimisticLockingConfiguration;
 import org.dcm4che3.conf.core.storage.SimpleCachingConfigurationDecorator;
@@ -199,7 +200,7 @@ public class DicomConfigurationBuilder {
             configurationStorage = new ExtensionMergingConfiguration(configurationStorage, allExtensions);
 
         if (uuidIndexing)
-            configurationStorage = new DicomReferenceIndexingDecorator(configurationStorage, new HashMap<String, Path>());
+            configurationStorage = new ReferenceIndexingDecorator(configurationStorage, new HashMap<String, Path>());
 
         if (doOptimisticLocking)
             configurationStorage = new HashBasedOptimisticLockingConfiguration(configurationStorage, allExtensions);

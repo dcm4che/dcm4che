@@ -71,54 +71,18 @@ public class DefaultReferenceAdapter implements ConfigTypeAdapter {
     @Override
     public Object fromConfigNode(Object configNode, ConfigProperty property, LoadingContext ctx, Object parent) throws ConfigurationException {
 
-        // TODO: remove this around beginning 2017 ;)
-        // old deprecated style ref, for backwards-compatibility
-        if (configNode instanceof String) {
+        String uuidRefStr = (String) ((Map) configNode).get(Configuration.REFERENCE_KEY);
 
-            return resolveDeprecatedReference((String) configNode, property, ctx);
-        }
-        // new style
-        else {
-            String uuidRefStr = (String) ((Map) configNode).get(Configuration.REFERENCE_KEY);
-
-            String uuid = null;
-            try {
-                uuid = uuidReferencePath.parse(uuidRefStr).getParam("uuid");
-            } catch (RuntimeException e) {
-                // in case if it's not a map or is null or has no property
-                throw new IllegalArgumentException("Unexpected value for reference property " + property.getAnnotatedName() + ", value" + configNode);
-            }
-
-            return getReferencedConfigurableObject(uuid, ctx, property);
-        }
-    }
-
-    private Object resolveDeprecatedReference(String configNode, ConfigProperty property, LoadingContext ctx) {
-        String refStr = configNode;
-
-        log.warn("Using deprecated reference format for configuration: " + refStr, new ConfigurationException());
-
-        Configuration config = ctx.getTypeSafeConfiguration().getLowLevelAccess();
-        Map<String, Object> referencedNode = (Map<String, Object>) config.getConfigurationNode(refStr, property.getRawClass());
-
-        if (referencedNode == null) {
-            if (property.isWeakReference())
-                return null;
-            else
-                throw new ConfigurationException("Referenced node '" + refStr + "' not found");
-        }
-
-        // there is always uuid
-        String uuid;
+        String uuid = null;
         try {
-            uuid = (String) referencedNode.get(Configuration.UUID_KEY);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("A referable node MUST have a UUID. A node referenced by " + refStr + " does not have UUID property.");
+            uuid = uuidReferencePath.parse(uuidRefStr).getParam("uuid");
+        } catch (RuntimeException e) {
+            // in case if it's not a map or is null or has no property
+            throw new IllegalArgumentException("Unexpected value for reference property " + property.getAnnotatedName() + ", value" + configNode);
         }
 
         return getReferencedConfigurableObject(uuid, ctx, property);
     }
-
 
     @SuppressWarnings("unchecked")
     private Object getReferencedConfigurableObject(String uuid, LoadingContext ctx, ConfigProperty property) {

@@ -2,6 +2,7 @@ package org.dcm4che3.conf.core;
 
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
@@ -26,7 +27,7 @@ public class ExtensionMergingConfiguration extends DelegatingConfiguration {
     }
 
     @Override
-    public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
 
         // make sure we don't delete the extensions we are not aware of
 

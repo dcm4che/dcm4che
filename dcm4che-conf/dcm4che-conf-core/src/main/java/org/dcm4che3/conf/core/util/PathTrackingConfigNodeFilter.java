@@ -7,12 +7,12 @@ import java.util.*;
  */
 public class PathTrackingConfigNodeFilter extends ConfigNodeTraverser.AConfigNodeFilter {
 
-    public PathTrackingConfigNodeFilter(List<String> rootPathItems) {
+    public PathTrackingConfigNodeFilter(List<Object> rootPathItems) {
 
         if (rootPathItems==null)
             throw new IllegalArgumentException("Unexpected error");
 
-        for (String pathItem : rootPathItems) {
+        for (Object pathItem : rootPathItems) {
             path.push(pathItem);
         }
     }

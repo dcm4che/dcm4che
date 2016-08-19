@@ -48,19 +48,18 @@ public class RefIndexingTest {
         sampleBigConf.childMap.put("first", new SampleReferableConfClass("UUID4"));
         sampleBigConf.childMap.put("second", new SampleReferableConfClass("UUID5"));
 
-        configuration.persistNode("/confRoot", vitalizer.createConfigNodeFromInstance(sampleBigConf), null);
+        configuration.persistNode(new Path("confRoot"), vitalizer.createConfigNodeFromInstance(sampleBigConf), null);
 
         // check if uuids are indexed
         Assert.assertEquals(5, uuidToSimplePathCache.size());
 
         PathPattern pathPattern = new PathPattern(Configuration.REFERENCE_BY_UUID_PATTERN);
 
-        Assert.assertEquals("Romeo", ((Map) configuration.getConfigurationNode(pathPattern.set("uuid", "UUID1").path(), null)).get("myName"));
-        Assert.assertEquals("Juliet", ((Map) configuration.getConfigurationNode(pathPattern.set("uuid", "UUID2").path(), null)).get("myName"));
+        Assert.assertEquals("Romeo", ((Map) configuration.getConfigurationNode(configuration.getPathByUUID("UUID1"), null)).get("myName"));
+        Assert.assertEquals("Juliet", ((Map) configuration.getConfigurationNode(configuration.getPathByUUID("UUID2"), null)).get("myName"));
 
-        configuration.removeNode("/confRoot/childList");
+        configuration.removeNode(new Path("confRoot","childList"));
 
-        Assert.assertEquals(null, configuration.getConfigurationNode(pathPattern.set("uuid", "UUID2").path(), null));
         Assert.assertFalse(uuidToSimplePathCache.containsKey("UUID2"));
         Assert.assertFalse(uuidToSimplePathCache.containsKey("UUID3"));
 

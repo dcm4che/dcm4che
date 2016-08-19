@@ -80,8 +80,6 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
      */
     DeviceInfo[] listDeviceInfos(DeviceInfo keys) throws ConfigurationException;
 
-    String deviceRef(String name);
-
     void close();
 
     boolean purgeConfiguration() throws ConfigurationException;

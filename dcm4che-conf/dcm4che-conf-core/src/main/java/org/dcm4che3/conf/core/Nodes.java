@@ -43,6 +43,7 @@ import org.apache.commons.jxpath.AbstractFactory;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathNotFoundException;
 import org.apache.commons.jxpath.Pointer;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.util.XNodeUtil;
 
 import java.util.*;
@@ -59,27 +60,6 @@ public class Nodes {
     public static String concat(String path1, String path2) {
         String res = path1 + "/" + path2;
         return res.replace("///", "/").replace("//", "/");
-    }
-
-    public static void replaceNode(Object rootConfigNode, String path, Object replacementConfigNode) {
-
-        JXPathContext jxPathContext = JXPathContext.newContext(rootConfigNode);
-        jxPathContext.setFactory(new AbstractFactory() {
-            @Override
-            public boolean createObject(JXPathContext context, Pointer pointer, Object parent, String name, int index) {
-                if (parent instanceof Map) {
-                    ((Map<String, Object>) parent).put(name, new TreeMap<String, Object>());
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public boolean declareVariable(JXPathContext context, String name) {
-                return super.declareVariable(context, name);
-            }
-        });
-        jxPathContext.createPathAndSetValue(path, replacementConfigNode);
     }
 
     public static Object getNode(Object rootConfigNode, String path) {
@@ -175,7 +155,7 @@ public class Nodes {
      * <p/>
      * otherwise <b>null</b>
      */
-    public static List<String> simpleOrPersistablePathToPathItemsOrNull(String path) {
+    public static List<Object> simpleOrPersistablePathToPathItemsOrNull(String path) {
 
         List<Map<String, Object>> refItems;
         try {
@@ -184,7 +164,7 @@ public class Nodes {
             return null;
         }
 
-        List<String> pathItems = new ArrayList<String>();
+        List<Object> pathItems = new ArrayList<Object>();
 
         for (Map<String, Object> refItem : refItems) {
 
@@ -220,16 +200,16 @@ public class Nodes {
         return pathItems;
     }
 
-    public static String toSimpleEscapedPath(Iterator<String> items) {
-        ArrayList<String> strings = new ArrayList<String>();
+    public static String toSimpleEscapedPath(Iterator<Object> items) {
+        ArrayList<Object> strings = new ArrayList<Object>();
         while (items.hasNext())
             strings.add(items.next());
         return toSimpleEscapedPath(strings);
     }
 
-    public static String toSimpleEscapedPath(Iterable<String> items) {
+    public static String toSimpleEscapedPath(Iterable<Object> items) {
         String s = "";
-        for (String item : items) s += "/" + item.replace("/", "\\/");
+        for (Object item : items) s += "/" + item.toString().replace("/", "\\/");
         return s;
     }
 
@@ -255,54 +235,83 @@ public class Nodes {
         return list;
     }
 
-    public static Map<String, Object> replaceNode(Map<String, Object> map, Map replacement, List<String> pathItems) {
-        Map<String, Object> m = map;
-        Map<String, Object> subm = m;
-        String name = null;
+    public static Object replaceNode(Map<String, Object> map, Object replacement, List<Object> pathItems) {
+        Object node = map;
+        Object subNode = node;
+        Object name = null;
 
         if (pathItems.isEmpty())
             return replacement;
 
-        for (String pathItem : pathItems) {
+        for (Object pathItem : pathItems) {
             name = pathItem;
-            m = subm;
-            subm = (Map<String, Object>) m.get(name);
-            if (subm == null) {
-                subm = new HashMap<String, Object>();
-                m.put(name, subm);
+
+            node = subNode;
+            subNode = getElement(node, pathItem);
+
+            if (subNode == null) {
+
+                if (!(name instanceof String))
+                    throw new IllegalStateException("Cannot create lists items with replace, path " + pathItems + " , item '" + name + "' , node " + node);
+
+                subNode = Configuration.NodeFactory.emptyNode();
+                ((Map)node).put(name, subNode);
             }
         }
 
-        m.put(name, replacement);
+        ((Map)node).put(name, replacement);
         return map;
     }
 
-    public static void removeNode(Map<String, Object> map, List<String> pathItems) {
-        Map<String, Object> m = map;
-        Map<String, Object> subm = m;
-        String name = null;
+    public static void removeNode(Map<String, Object> map, List<Object> pathItems) {
+        Object node = map;
+        Object subNode = node;
+        Object name = null;
 
-        for (String pathItem : pathItems) {
+        for (Object pathItem : pathItems) {
+
             name = pathItem;
-            m = subm;
-            subm = (Map<String, Object>) m.get(name);
-            if (subm == null) return;
+
+            node = subNode;
+            subNode = getElement(node, pathItem);
+
+            if (subNode == null) return;
         }
 
         // remove leaf
-        m.remove(name);
-    }
-
-    public static boolean nodeExists(Map<String, Object> map, List<String> pathItems) {
-        Map<String, Object> m = map;
-        Map<String, Object> subm;
-
-        for (String pathItem : pathItems) {
-
-            subm = (Map<String, Object>) m.get(pathItem);
-            if (subm == null) return false;
-            m = subm;
+        if (node instanceof List) {
+            ((List) node).remove(name);
+        } else if (node instanceof Map) {
+            ((Map) node).remove(name);
         }
-        return true;
     }
+
+    private static Object getElement(Object node, Object pathItem) {
+        Object subNode;
+        if (node instanceof List && pathItem instanceof Integer) {
+            subNode = ((List) node).get((Integer) pathItem);
+        } else if (node instanceof Map && pathItem instanceof String) {
+            subNode = ((Map) node).get(pathItem);
+        } else
+            throw new IllegalArgumentException("Unexpected node/path: node " + node + " , path item " + pathItem);
+        return subNode;
+    }
+
+    public static boolean nodeExists(Object node, List<Object> pathItems) {
+        return getNode(node, pathItems) != null;
+    }
+
+    public static Object getNode(Object node, List<Object> pathItems) {
+        for (Object pathItem : pathItems) {
+            if (node == null) {
+                return null;
+            } else {
+                node = getElement(node, pathItem);
+            }
+        }
+
+        return node;
+    }
+
+
 }

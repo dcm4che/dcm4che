@@ -41,7 +41,14 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
     @Override
     public Path getPathByUUID(String uuid) {
-        return uuidToReferableIndex.get(uuid);
+
+        Path pathFromIndex = uuidToReferableIndex.get(uuid);
+
+        if ((pathFromIndex == null || pathFromIndex.getPathItems().size() == 0)) {
+            return null;
+        }
+
+        return pathFromIndex;
     }
 
     protected void removeOldReferablesFromIndex(Object oldConfigurationNode) {
@@ -68,7 +75,7 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     /**
      * @return list of duplicate uuid exceptions, list is empty if no duplicates detected
      */
-    protected List<DuplicateUUIDException> addReferablesToIndex(List<String> pathItems, Object configNode) {
+    protected List<DuplicateUUIDException> addReferablesToIndex(List<Object> pathItems, Object configNode) {
 
         final ArrayList<DuplicateUUIDException> uuidDuplicateErrors = new ArrayList<DuplicateUUIDException>();
 
@@ -112,114 +119,40 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
         // TODO add proper handling for lists
     }
 
-    @Override
-    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        PathPattern.PathParser pathParser = referencePattern.parseIfMatches(path);
-        if (pathParser != null) {
 
-            String uuid = pathParser.getParam("uuid");
-            try {
-                return getNodeByUUID(configurableClass, uuid);
-            } catch (ConfIndexOutOfSyncException e) {
-                return super.getConfigurationNode(path, configurableClass);
-            }
-        }
-
-        return super.getConfigurationNode(path, configurableClass);
-    }
-
-    /**
-     * A bit of resilience for the time being.
-     * Returns a node if it is successfully fetched from the cache by indexed path and validated against the uuid
-     */
     protected Object getNodeByUUID(Class configurableClass, String uuid) throws ConfIndexOutOfSyncException {
         Path pathFromIndex = uuidToReferableIndex.get(uuid);
 
         // see the comment on top
-        if (!(pathFromIndex == null || pathFromIndex.getPathItems().size() == 0)) {
-            Object configurationNode = super.getConfigurationNode(pathFromIndex.toSimpleEscapedXPath(), configurableClass);
-
-            // verify correct uuid
-            try {
-                Object detectedUUID = ((Map<String, Object>) configurationNode).get(Configuration.UUID_KEY);
-                if (!uuid.equals(detectedUUID))
-                    throw new ConfIndexOutOfSyncException("Index for UUID (" + uuid + ") points to an object with UUID (" + detectedUUID + ")");
-
-                return configurationNode;
-            } catch (ConfIndexOutOfSyncException e) {
-                throw e;
-            } catch (Exception e) {
-
-                log.error("Configuration UUID index is out of sync - index for uuid " + uuid
-                        + " points to a non-existing node or a node with unexpected type (node = " + configurationNode + ")", e);
-
-                throw new ConfIndexOutOfSyncException();
-            }
-
-
-        } else {
-
-            // not found, try to fall back in case index got outdated for some reason
-            Object node = super.getConfigurationNode(referencePattern.set("uuid", uuid).path(), configurableClass);
-            if (node != null) {
-                log.error("Configuration UUID index is out of sync: uuid '" + uuid + "' not indexed but was found");
-                throw new ConfIndexOutOfSyncException();
-            } else {
-                log.warn("Looked up UUID of non-existing configuration object: '" + uuid);
-                return null;
-            }
+        if ((pathFromIndex == null || pathFromIndex.getPathItems().size() == 0)) {
+            return null;
         }
+
+        return super.getConfigurationNode(pathFromIndex, configurableClass);
     }
 
     @Override
-    public void persistNode(String path, final Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public void persistNode(Path path, final Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
 
         // remove the overwritten referables from index
         removeOldReferablesFromIndex(super.getConfigurationNode(path, null));
 
-        // add newcomer referables to index
-        List<String> pathItems = getPathItemsOrFail(path);
-
-        addReferablesToIndex(pathItems, configNode);
+        addReferablesToIndex(path.getPathItems(), configNode);
 
         super.persistNode(path, configNode, configurableClass);
     }
 
     @Override
-    public void refreshNode(String path) throws ConfigurationException {
+    public void refreshNode(Path path) throws ConfigurationException {
         removeOldReferablesFromIndex(super.getConfigurationNode(path, null));
         super.refreshNode(path);
-        List<String> pathItems = getPathItemsOrFail(path);
-
-        addReferablesToIndex(pathItems, super.getConfigurationNode(path, null));
-    }
-
-    private List<String> getPathItemsOrFail(String path) {
-        List<String> pathItems = Nodes.simpleOrPersistablePathToPathItemsOrNull(path);
-        if (pathItems == null) {
-            throw new ConfigurationException("Unexpected path '" + path + "'");
-        }
-        return pathItems;
+        addReferablesToIndex(path.getPathItems(), super.getConfigurationNode(path, null));
     }
 
     @Override
-    public void removeNode(String path) throws ConfigurationException {
+    public void removeNode(Path path) throws ConfigurationException {
         removeOldReferablesFromIndex(super.getConfigurationNode(path, null));
         super.removeNode(path);
-    }
-
-    @Override
-    public boolean nodeExists(String path) throws ConfigurationException {
-        PathPattern.PathParser pathParser = referencePattern.parseIfMatches(path);
-        if (pathParser != null) {
-
-            Path uuid = uuidToReferableIndex.get(pathParser.getParam("uuid"));
-
-            // see the comment on top
-            return !(uuid == null || uuid.getPathItems().size() == 0);
-        }
-
-        return super.nodeExists(path);
     }
 
     @Override
@@ -244,10 +177,6 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
         }
 
         return super.search(liteXPathExpression);
-    }
-
-    protected Path getPathByUUIDFromIndex(String uuid) {
-        return uuidToReferableIndex.get(uuid);
     }
 
     protected void removeFromCache(String uuid) {

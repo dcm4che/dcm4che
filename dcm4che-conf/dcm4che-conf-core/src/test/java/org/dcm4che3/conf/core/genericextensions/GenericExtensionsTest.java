@@ -47,6 +47,7 @@ import java.util.Map;
 
 import org.dcm4che3.conf.core.DefaultTypeSafeConfiguration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.junit.Assert;
@@ -59,7 +60,7 @@ public class GenericExtensionsTest {
 
 
         final SingleJsonFileConfigurationStorage storage = new SingleJsonFileConfigurationStorage("target/config.json");
-        storage.persistNode("/", new HashMap<String, Object>(), null);
+        storage.persistNode(Path.ROOT, new HashMap<String, Object>(), null);
 
         List myExtensions = new ArrayList();
         myExtensions.add(MyClassFirstExtension.class);
@@ -88,7 +89,7 @@ public class GenericExtensionsTest {
         myStuff.getExtensions().put(MyClassSecondExtension.class, secondExtension);
 
         Map<String, Object> node = vitalizer.createConfigNodeFromInstance(myStuff);
-        storage.persistNode("/", node, ConfigClassWithExtensions.class);
+        storage.persistNode(Path.ROOT, node, ConfigClassWithExtensions.class);
 
         ConfigClassWithExtensions loaded = vitalizer.newConfiguredInstance(node, ConfigClassWithExtensions.class);
         MyClassFirstExtension myClassFirstExtension = (MyClassFirstExtension) loaded.getExtensions().get(MyClassFirstExtension.class);

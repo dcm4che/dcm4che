@@ -43,7 +43,6 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
 import org.dcm4che3.conf.core.api.Configuration;
@@ -105,8 +104,8 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     @Override
-    public synchronized boolean nodeExists(String path) throws ConfigurationException {
-        return Nodes.nodeExists(getConfigurationRoot(), path);
+    public synchronized boolean nodeExists(Path path) throws ConfigurationException {
+        return Nodes.nodeExists(getConfigurationRoot(), path.getPathItems());
     }
 
     @Override
@@ -121,21 +120,21 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     @Override
-    public synchronized Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        Object node = Nodes.getNode(getConfigurationRoot(), path);
+    public synchronized Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
+        Object node = Nodes.getNode(getConfigurationRoot(), path.getPathItems());
         return node;
     }
 
 
     @Override
-    public synchronized void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public synchronized void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
         Map<String, Object> configurationRoot = getConfigurationRoot();
 
 //        if (configurableClass != null)
 //            configNode.put("#class", configurableClass.getName());
 
-        if (!path.equals("/")) {
-            Nodes.replaceNode(configurationRoot, path, configNode);
+        if (!Path.ROOT.equals(path)) {
+            Nodes.replaceNode(configurationRoot, configNode, path.getPathItems());
         } else
             configurationRoot = configNode;
 
@@ -147,7 +146,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
         }
 
 
-        commitToGitIfConfigured(path);
+        commitToGitIfConfigured(path.toSimpleEscapedXPath());
 
         log.info("Configuration updated at path " + path);
 
@@ -196,16 +195,16 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     @Override
-    public void refreshNode(String path) {
+    public void refreshNode(Path path) {
 
     }
 
     @Override
-    public synchronized void removeNode(String path) throws ConfigurationException {
+    public synchronized void removeNode(Path path) throws ConfigurationException {
 
         Map<String, Object> configurationRoot = getConfigurationRoot();
-        Nodes.removeNodes(configurationRoot, path);
-        persistNode("/", configurationRoot, null);
+        Nodes.removeNode(configurationRoot, path.getPathItems());
+        persistNode(Path.ROOT, configurationRoot, null);
 
     }
 

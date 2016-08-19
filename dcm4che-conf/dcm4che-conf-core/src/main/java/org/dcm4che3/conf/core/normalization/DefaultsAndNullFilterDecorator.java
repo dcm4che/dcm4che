@@ -46,6 +46,7 @@ import org.dcm4che3.conf.core.adapters.ArrayTypeAdapter;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.internal.ConfigReflection;
@@ -76,7 +77,7 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
     }
 
     @Override
-    public void persistNode(String path, final Map<String, Object> configNode, final Class configurableClass) throws ConfigurationException {
+    public void persistNode(Path path, final Map<String, Object> configNode, final Class configurableClass) throws ConfigurationException {
 
         ConfigNodeTypesafeFilter filterDefaults = new ConfigNodeTypesafeFilter() {
             @Override
@@ -153,7 +154,7 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
 
     @Override
-    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
+    public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
 
         ConfigNodeTypesafeFilter applyDefaults = new ConfigNodeTypesafeFilter() {
             @Override

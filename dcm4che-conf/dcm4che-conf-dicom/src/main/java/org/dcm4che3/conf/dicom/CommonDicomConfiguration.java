@@ -41,8 +41,12 @@ package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
+import org.dcm4che3.audit.ObjectFactory;
 import org.dcm4che3.audit.RoleIDCode;
-import org.dcm4che3.conf.api.*;
+import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
+import org.dcm4che3.conf.api.TCConfiguration;
+import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.DefaultTypeSafeConfiguration;
@@ -53,7 +57,6 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.TypeSafeConfiguration;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
-import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.dicom.adapters.*;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
@@ -112,7 +115,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         // quick init
         try {
             if (!configurationExists()) {
-                lowLevelConfig.persistNode(DicomPath.ConfigRoot.path(), createInitialConfigRootNode(), null);
+                lowLevelConfig.persistNode(DicomPath.CONFIG_ROOT_PATH, createInitialConfigRootNode(), null);
 
             }
         } catch (ConfigurationException e) {
@@ -160,7 +163,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         HashMap<String, Object> rootNode = new HashMap<String, Object>();
         rootNode.put("dicomDevicesRoot", new HashMap<String, Object>());
 
-        List<String> pathItems = Nodes.fromSimpleEscapedPath(METADATA_ROOT_PATH);
+        List<Object> pathItems = new ArrayList<Object>(METADATA_ROOT_PATH.getPathItems());
         pathItems.remove(0);
 
         Nodes.replaceNode(rootNode, new HashMap(), pathItems);
@@ -174,13 +177,13 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public boolean configurationExists() throws ConfigurationException {
-        return lowLevelConfig.nodeExists(DicomPath.ConfigRoot.path());
+        return lowLevelConfig.nodeExists(DicomPath.CONFIG_ROOT_PATH);
     }
 
     @Override
     public boolean purgeConfiguration() throws ConfigurationException {
         if (!configurationExists()) return false;
-        lowLevelConfig.persistNode(DicomPath.ConfigRoot.path(), new HashMap<String, Object>(), null);
+        lowLevelConfig.persistNode(DicomPath.CONFIG_ROOT_PATH, new HashMap<String, Object>(), null);
         return true;
     }
 
@@ -273,7 +276,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         if (name == null) throw new IllegalArgumentException("Requested device name cannot be null");
 
         try {
-            Object deviceConfigurationNode = lowLevelConfig.getConfigurationNode(deviceRef(name), Device.class);
+            Object deviceConfigurationNode = lowLevelConfig.getConfigurationNode(DicomPath.devicePath(name), Device.class);
             if (deviceConfigurationNode == null)
                 throw new ConfigurationNotFoundException("Device " + name + " not found");
 
@@ -328,7 +331,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         if (readOnlyDevices.containsKey(device)) handleReadOnlyDeviceModification();
 
         if (device.getDeviceName() == null) throw new ConfigurationException("The name of the device must not be null");
-        if (lowLevelConfig.nodeExists(deviceRef(device.getDeviceName())))
+        if (lowLevelConfig.nodeExists(DicomPath.devicePath(device.getDeviceName())))
             throw new ConfigurationAlreadyExistsException("Device " + device.getDeviceName() + " already exists");
         // otherwise it is the same as merge
         merge(device);
@@ -353,7 +356,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
         if (device.getDeviceName() == null) throw new ConfigurationException("The name of the device must not be null");
         Map<String, Object> configNode = createDeviceConfigNode(device);
-        lowLevelConfig.persistNode(deviceRef(device.getDeviceName()), configNode, Device.class);
+        lowLevelConfig.persistNode(DicomPath.devicePath(device.getDeviceName()), configNode, Device.class);
     }
 
     protected Map<String, Object> createDeviceConfigNode(Device device) throws ConfigurationException {
@@ -369,14 +372,9 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public void removeDevice(String name) throws ConfigurationException {
-        lowLevelConfig.removeNode(deviceRef(name));
+        lowLevelConfig.removeNode(DicomPath.devicePath(name));
     }
 
-
-    @Override
-    public String deviceRef(String name) {
-        return DicomPath.DeviceByNameForWrite.set("deviceName", name).path();
-    }
 
     @Override
     public void close() {
@@ -385,7 +383,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public void sync() throws ConfigurationException {
-        lowLevelConfig.refreshNode(DicomPath.ConfigRoot.path());
+        lowLevelConfig.refreshNode(DicomPath.CONFIG_ROOT_PATH);
     }
 
     @Override
@@ -427,12 +425,12 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     @Override
     public void persistTransferCapabilityConfig(TCConfiguration tcConfig) throws ConfigurationException {
         Map<String, Object> configNode = vitalizer.createConfigNodeFromInstance(tcConfig);
-        lowLevelConfig.persistNode(DicomPath.TCGroups.path(), configNode, TCConfiguration.class);
+        lowLevelConfig.persistNode(DicomPath.TC_GROUPS_PATH, configNode, TCConfiguration.class);
     }
 
     @Override
     public TCConfiguration getTransferCapabilityConfig() throws ConfigurationException {
-        Map<String, Object> configurationNode = (Map<String, Object>) lowLevelConfig.getConfigurationNode(DicomPath.TCGroups.path(), TCConfiguration.class);
+        Map<String, Object> configurationNode = (Map<String, Object>) lowLevelConfig.getConfigurationNode(DicomPath.TC_GROUPS_PATH, TCConfiguration.class);
 
         if (configurationNode == null)
             return new TCConfiguration();

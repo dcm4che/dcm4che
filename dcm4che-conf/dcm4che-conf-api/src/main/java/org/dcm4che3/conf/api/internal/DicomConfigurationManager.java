@@ -41,6 +41,7 @@ package org.dcm4che3.conf.api.internal;
 
 import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
 import org.dcm4che3.net.Device;
 
@@ -52,7 +53,7 @@ import java.util.Map;
  */
 public interface DicomConfigurationManager extends ExtendedDicomConfiguration, ConfigurationManager{
 
-    String METADATA_ROOT_PATH = "/dicomConfigurationRoot/metadataRoot/versioning";
+    Path METADATA_ROOT_PATH = new Path("dicomConfigurationRoot","metadataRoot","versioning");
 
     /**
      * Remembers a weak reference to the provided device so that any subsequent call to

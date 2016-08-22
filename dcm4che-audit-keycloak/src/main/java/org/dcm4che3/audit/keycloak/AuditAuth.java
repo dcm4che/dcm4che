@@ -112,9 +112,7 @@ public class AuditAuth {
         AuthInfo info = new AuthInfo(new LineReader(file).getMainInfo());
         BuildActiveParticipant ap1 = new BuildActiveParticipant.Builder(
                 info.getField(AuthInfo.USER_NAME), info.getField(AuthInfo.IP_ADDR)).requester(true).build();
-        BuildActiveParticipant ap2 = new BuildActiveParticipant.Builder(
-                AuditMessages.getAET(log.getDevice().getApplicationAETitles().toArray(
-                    new String[log.getDevice().getApplicationAETitles().size()])),
+        BuildActiveParticipant ap2 = new BuildActiveParticipant.Builder(log.getDevice().getDeviceName(),
                 log.getConnections().get(0).getHostname()).altUserID(log.processID()).requester(false).build();
         AuditMessage msg = AuditMessages.createMessage(getEI(log, event), AuditMessages.getApList(ap1, ap2), null);
         msg.getAuditSourceIdentification().add(log.createAuditSourceIdentification());

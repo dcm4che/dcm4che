@@ -73,7 +73,7 @@ public class DicomConfigurationBuilder {
     private Configuration configurationStorage = null;
     private Map<Class, List<Class>> extensionClassesMap = new HashMap<Class, List<Class>>();
     private boolean doOptimisticLocking = false;
-    private boolean uuidIndexing = true;
+    private boolean uuidIndexing = false;
 
     private void setLdapProps(Hashtable<?, ?> ldapProps) {
         this.ldapProps = ldapProps;

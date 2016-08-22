@@ -293,9 +293,9 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
         // imitate simultaneous changes
 
-        Nodes.replaceNode(configurationNode1, false, new Path("dicomNetworkAE", "DCMQRSCP", "dicomAssociationAcceptor").getPathItems());
-        Nodes.replaceNode(configurationNode2, false, new Path("dicomNetworkAE", "DCMQRSCP", "dicomAssociationInitiator").getPathItems());
-        Nodes.replaceNode(configurationNode3, "12345", new Path("dcmKeyStorePin").getPathItems());
+        Nodes.replacePrimitive(configurationNode1, false, new Path("dicomNetworkAE", "DCMQRSCP", "dicomAssociationAcceptor").getPathItems());
+        Nodes.replacePrimitive(configurationNode2, false, new Path("dicomNetworkAE", "DCMQRSCP", "dicomAssociationInitiator").getPathItems());
+        Nodes.replacePrimitive(configurationNode3, "12345", new Path("dcmKeyStorePin").getPathItems());
 
         // persist some changes from 1st user
         lockedConfig.persistNode(DicomPath.devicePath("dcmqrscp"), configurationNode1, Device.class);

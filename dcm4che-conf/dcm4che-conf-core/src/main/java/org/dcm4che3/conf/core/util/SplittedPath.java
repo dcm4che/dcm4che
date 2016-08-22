@@ -16,9 +16,9 @@ public class SplittedPath {
         this.pathItems = pathItems;
         this.outerPathItems = new ArrayList<Object>();
         this.innerPathitems = new ArrayList<Object>();
-        i = 1;
+        i = 0;
         for (Object name : this.pathItems) {
-            if (i++ <= this.level)
+            if (i++ < this.level)
                 getOuterPathItems().add(name);
             else
                 getInnerPathitems().add(name);

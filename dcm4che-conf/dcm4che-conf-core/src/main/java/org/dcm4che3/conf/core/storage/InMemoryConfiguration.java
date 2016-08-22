@@ -86,7 +86,7 @@ public class InMemoryConfiguration implements Configuration {
     @Override
     public void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
         if (!Path.ROOT.equals(path))
-            Nodes.replaceNode(getConfigurationRoot(), Nodes.deepCloneNode(configNode), path.getPathItems());
+            Nodes.replaceNode(getConfigurationRoot(), (Map<String, Object>) Nodes.deepCloneNode(configNode), path.getPathItems());
         else {
             root.clear();
             root.putAll(configNode);

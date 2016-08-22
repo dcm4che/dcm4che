@@ -132,9 +132,9 @@ public class Nodes {
      * @param path
      * @return
      */
-    public static List<String> getPathItems(String path) {
+    public static List<Object> getPathItems(String path) {
         List<Map<String, Object>> refItems = XNodeUtil.parseReference(path);
-        List<String> names = new ArrayList<String>();
+        List<Object> names = new ArrayList<Object>();
 
         for (Map<String, Object> refItem : refItems) {
             names.add((String) refItem.get("$name"));
@@ -235,7 +235,20 @@ public class Nodes {
         return list;
     }
 
-    public static Object replaceNode(Map<String, Object> map, Object replacement, List<Object> pathItems) {
+    public static void replacePrimitive(Map<String, Object> map, Object replacement, List<Object> pathItems) {
+
+        if (pathItems.isEmpty())
+            throw new IllegalArgumentException("Cannot replace root with a primitive");
+
+        replaceObject(map, replacement, pathItems);
+
+    }
+
+    public static Map<String, Object> replaceNode(Map<String, Object> map, Map<String, Object> replacement, List<Object> pathItems) {
+        return (Map<String, Object>) replaceObject(map, replacement, pathItems);
+    }
+
+    private static Object replaceObject(Map<String, Object> map, Object replacement, List<Object> pathItems) {
         Object node = map;
         Object subNode = node;
         Object name = null;
@@ -262,6 +275,7 @@ public class Nodes {
         ((Map)node).put(name, replacement);
         return map;
     }
+
 
     public static void removeNode(Map<String, Object> map, List<Object> pathItems) {
         Object node = map;

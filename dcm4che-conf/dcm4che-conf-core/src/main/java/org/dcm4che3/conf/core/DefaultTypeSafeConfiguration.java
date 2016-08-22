@@ -105,7 +105,7 @@ public class DefaultTypeSafeConfiguration<R> implements TypeSafeConfiguration<R>
 
         // either get existing from the context
         Referable referable = ctx.getReferable(uuid);
-        if (referable!=null) {
+        if (referable != null) {
 
             // TODO here
             return (T) referable.getConfObject();
@@ -113,8 +113,12 @@ public class DefaultTypeSafeConfiguration<R> implements TypeSafeConfiguration<R>
 
         //// or go ahead and load
 
+        Path pathByUUID = confStorage.getPathByUUID(uuid);
+
+        if (pathByUUID == null) return null;
+
         Map<String, Object> referencedNode = (Map<String, Object>) confStorage.getConfigurationNode(
-                confStorage.getPathByUUID(uuid),
+                pathByUUID,
                 clazz
         );
 

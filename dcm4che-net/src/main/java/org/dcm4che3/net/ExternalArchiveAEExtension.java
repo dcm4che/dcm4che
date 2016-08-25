@@ -69,6 +69,9 @@ public class ExternalArchiveAEExtension extends AEExtension {
             collectionOfReferences = true)
     private Collection<ApplicationEntity> linkedQueryAETs = new ArrayList<ApplicationEntity>();
 
+    @ConfigurableProperty(name = "dcmDefaultForStorage", defaultValue="false")
+    private boolean defaultForStorage = false;
+
     public int getAeFetchPriority() {
         return aeFetchPriority;
     }
@@ -99,5 +102,13 @@ public class ExternalArchiveAEExtension extends AEExtension {
 
     public boolean removeIgnoreSeriesStudyMissmatchErrorsAET(ApplicationEntity ae) {
         return this.linkedQueryAETs.remove(ae);
+    }
+
+    public boolean isDefaultForStorage() {
+        return defaultForStorage;
+    }
+
+    public void setDefaultForStorage(boolean defaultForStorage) {
+        this.defaultForStorage = defaultForStorage;
     }
 }

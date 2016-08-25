@@ -209,11 +209,11 @@ public class StandardElementDictionary extends ElementDictionary {
         case Tag.PatientBirthTime:
             return Tag.PatientBirthDate;
         case Tag.TimeOfSecondaryCapture:
-            return Tag.TimeOfSecondaryCapture;
+            return Tag.DateOfSecondaryCapture;
         case Tag.TimeOfLastCalibration:
-            return Tag.TimeOfLastCalibration;
+            return Tag.DateOfLastCalibration;
         case Tag.TimeOfLastDetectorCalibration:
-            return Tag.TimeOfLastDetectorCalibration;
+            return Tag.DateOfLastDetectorCalibration;
         case Tag.ModifiedImageTime:
             return Tag.ModifiedImageDate;
         case Tag.StudyVerifiedTime:
@@ -244,8 +244,8 @@ public class StandardElementDictionary extends ElementDictionary {
             return Tag.PerformedProcedureStepStartDate;
         case Tag.PerformedProcedureStepEndTime:
             return Tag.PerformedProcedureStepEndDate;
-        case Tag.IssueDateOfImagingServiceRequest:
-            return Tag.IssueTimeOfImagingServiceRequest;
+        case Tag.IssueTimeOfImagingServiceRequest:
+            return Tag.IssueDateOfImagingServiceRequest;
         case Tag.Time:
             return Tag.Date;
         case Tag.PresentationCreationTime:

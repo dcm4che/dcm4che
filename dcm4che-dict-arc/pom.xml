@@ -62,6 +62,24 @@
     </resources>
     <plugins>
       <plugin>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>dictionary</id>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <resourceBundles>
+                <resourceBundle>org.dcm4che:dcm4che-dict:${project.version}</resourceBundle>
+              </resourceBundles>
+              <attachToMain>false</attachToMain>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>xml-maven-plugin</artifactId>
         <executions>
@@ -74,7 +92,7 @@
         <configuration>
           <transformationSets>
             <transformationSet>
-              <dir>${project.basedir}/src/main/xml</dir>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
                 <include>arcelements.xml</include>
               </includes>
@@ -87,7 +105,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>${project.basedir}/src/main/xml</dir>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
                 <include>arcelements.xml</include>
               </includes>
@@ -100,7 +118,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>${project.basedir}/src/main/xml</dir>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
                 <include>arcelements.xml</include>
               </includes>
@@ -139,6 +157,11 @@
     </plugins>
   </build>
   <dependencies>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-dict</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>

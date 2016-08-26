@@ -3,6 +3,7 @@
     xmlns="http://maven.apache.org/remote-resources/1.1.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <remoteResources>
+    <remoteResource>arcelements.xml</remoteResource>
     <remoteResource>commandelements.xml</remoteResource>
     <remoteResource>elements.xml</remoteResource>
     <remoteResource>dataelements.xml</remoteResource>

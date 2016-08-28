@@ -72,9 +72,18 @@ public class JSONWriter implements DicomInputHandler {
 
     private final JsonGenerator gen;
     private final Deque<Boolean> hasItems = new ArrayDeque<Boolean>();
+    private String replaceBulkDataURI;
 
     public JSONWriter(JsonGenerator gen) {
         this.gen = gen;
+    }
+
+    public String getReplaceBulkDataURI() {
+        return replaceBulkDataURI;
+    }
+
+    public void setReplaceBulkDataURI(String replaceBulkDataURI) {
+        this.replaceBulkDataURI = replaceBulkDataURI;
     }
 
     public void write(Attributes attrs) {
@@ -304,7 +313,7 @@ public class JSONWriter implements DicomInputHandler {
     }
 
     private void writeBulkData(BulkData blkdata) {
-        gen.write("BulkDataURI", blkdata.getURI());
+        gen.write("BulkDataURI", replaceBulkDataURI != null ? replaceBulkDataURI : blkdata.getURI());
     }
 
     @Override
@@ -355,5 +364,4 @@ public class JSONWriter implements DicomInputHandler {
     public void endDataset(DicomInputStream dis) throws IOException {
         gen.writeEnd();
     }
-
 }

@@ -47,7 +47,7 @@ import org.dcm4che3.conf.core.context.SavingContext;
 
 import java.util.concurrent.TimeUnit;
 
-public class TimeUnitTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<TimeUnit> {
+public class TimeUnitTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<TimeUnit> {
 
     public TimeUnitTypeAdapter() {
         super("string");

@@ -47,7 +47,7 @@ import org.dcm4che3.conf.core.context.SavingContext;
 
 import java.util.TimeZone;
 
-public class TimeZoneTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<TimeZone> {
+public class TimeZoneTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<TimeZone> {
 
     public TimeZoneTypeAdapter() {
         super("string");

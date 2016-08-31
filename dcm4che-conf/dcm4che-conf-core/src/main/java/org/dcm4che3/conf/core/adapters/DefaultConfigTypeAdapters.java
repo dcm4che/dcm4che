@@ -40,6 +40,8 @@
 package org.dcm4che3.conf.core.adapters;
 
 import org.dcm4che3.conf.core.api.*;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.context.LoadingContext;
 import org.dcm4che3.conf.core.context.ProcessingContext;
@@ -47,6 +49,7 @@ import org.dcm4che3.conf.core.context.SavingContext;
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.validation.ValidationException;
 
+import java.io.ByteArrayOutputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -78,8 +81,7 @@ public class DefaultConfigTypeAdapters {
         if (property.isOlockHash()) {
             // olock prop name is constant
             node = configNode.get(Configuration.OLOCK_HASH_KEY);
-        } else
-        if (property.isUuid()){
+        } else if (property.isUuid()) {
             // uuid prop name is constant
             node = configNode.get(Configuration.UUID_KEY);
         } else {
@@ -176,9 +178,9 @@ public class DefaultConfigTypeAdapters {
                 if (metadata.get("type").equals("integer")) {
                     return normalizeInt(configNode, property);
                 } else if (metadata.get("type").equals("boolean")) {
-                   return normalizeBoolean(configNode, property);
+                    return normalizeBoolean(configNode, property);
                 } else if (metadata.get("type").equals("number")) {
-                   return normalizeNumber(configNode, property);
+                    return normalizeNumber(configNode, property);
                 } else return (T) configNode;
             } catch (ConfigurationException ce) {
                 throw ce;
@@ -186,27 +188,25 @@ public class DefaultConfigTypeAdapters {
                 throw new ConfigurationException("Cannot parse node " + configNode, e);
             }
         }
-        
+
         protected T normalizeInt(Object configNode, ConfigProperty property) throws ConfigurationException {
             if (configNode == null) {
                 throw new ConfigurationException("No value found for primitive integer property without default");
             }
             if (configNode.getClass().equals(String.class)) {
                 return (T) Integer.valueOf((String) configNode);
-            }
-            else if (configNode.getClass().equals(Integer.class)) {
+            } else if (configNode.getClass().equals(Integer.class)) {
                 return (T) configNode;
-            }
-            else {
+            } else {
                 throw new ClassCastException(format("Cannot convert config node type %s to primitive integer", configNode.getClass().getName()));
             }
         }
-        
+
         protected T normalizeBoolean(Object configNode, ConfigProperty property) throws ConfigurationException {
             if (configNode == null && property.getType().equals(boolean.class)) {
                 throw new ConfigurationException("No value found for primitive boolean property without default");
             }
-            
+
             // special handling for Boolean's null
             if (configNode == null || configNode.equals("null")) {
                 return null;
@@ -214,42 +214,38 @@ public class DefaultConfigTypeAdapters {
 
             if (configNode.getClass().equals(String.class)) {
                 return (T) Boolean.valueOf((String) configNode);
-            }
-            else if (configNode.getClass().equals(Boolean.class)) {
+            } else if (configNode.getClass().equals(Boolean.class)) {
                 return (T) configNode;
-            }
-            else {
+            } else {
                 throw new ClassCastException(format("Cannot convert config node type %s to primitive boolean", configNode.getClass().getName()));
             }
         }
-        
+
         protected T normalizeNumber(Object configNode, ConfigProperty property) throws ConfigurationException {
             if (configNode == null) {
                 throw new ConfigurationException("No value found for number property without default");
             }
-            
+
             if (configNode.getClass().equals(String.class)) {
                 return (T) Double.valueOf((String) configNode);
-            }
-            else if (configNode.getClass().equals(Double.class) ||
+            } else if (configNode.getClass().equals(Double.class) ||
                     configNode.getClass().equals(Float.class)) {
                 return (T) configNode;
-            }
-            else {
+            } else {
                 throw new ClassCastException(format("Cannot convert config node type %s to number", configNode.getClass().getName()));
             }
         }
-        
+
     }
-    
+
     /**
      * Extension of primitive type adapter that can handle missing config values for primitive types.
      * It replaces missing values with either:
      * <ol>
-     *   <li>Default values found in the annotation
-     *   <li>Java default value for primitive types
+     * <li>Default values found in the annotation
+     * <li>Java default value for primitive types
      * </ol>
-     * 
+     *
      * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
      */
     public static class NullablePrimitiveTypeAdapter<T> extends PrimitiveTypeAdapter<T> {
@@ -284,30 +280,69 @@ public class DefaultConfigTypeAdapters {
             Object checkedConfigNode = checkIfNoValueAndSetDefaultOrFallback(configNode, property, new Double(0.0));
             return super.normalizeNumber(checkedConfigNode, property);
         }
-        
+
         private Object checkIfNoValueAndSetDefaultOrFallback(Object configNode, ConfigProperty property, Object fallbackDefValue) {
-            if(configNode == null) {
+            if (configNode == null) {
                 String defaultValue = property.getDefaultValue();
                 if (!defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
                     return defaultValue;
                 } else {
-                   return fallbackDefValue; 
+                    return fallbackDefValue;
                 }
             }
-            
+
             return configNode;
         }
-        
+
+    }
+
+
+    /**
+     * Left for backwards-compatibility, DO NOT USE IT
+     */
+    @Deprecated
+    public abstract static class CommonAbstractTypeAdapter<T> implements ConfigTypeAdapter<T, String> {
+        protected Map<String, Object> metadata = new HashMap<String, Object>();
+
+        public CommonAbstractTypeAdapter(String type) {
+            metadata.put("type", type);
+        }
+
+
+        @Override
+        public Map<String, Object> getSchema(ConfigProperty property, ProcessingContext ctx) throws ConfigurationException {
+            return metadata;
+        }
+
+        @Override
+        public String normalize(Object configNode, ConfigProperty property, ProcessingContext ctx) throws ConfigurationException {
+            return (String) configNode;
+        }
+
+        @Override
+        public T fromConfigNode(String configNode, ConfigProperty property, LoadingContext ctx, Object parent) throws ConfigurationException {
+            return fromConfigNode(configNode, (AnnotatedConfigurableProperty) null, null, null);
+        }
+
+        @Override
+        public String toConfigNode(T object, ConfigProperty property, SavingContext ctx) throws ConfigurationException {
+            return toConfigNode(object, (AnnotatedConfigurableProperty) null, null);
+        }
+
+        abstract public T fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException;
+
+        abstract public String toConfigNode(T t, AnnotatedConfigurableProperty arg1, BeanVitalizer arg2) throws ConfigurationException;
+
     }
 
 
     /**
      * Common Read/Write methods for String representation
      */
-    public abstract static class CommonAbstractTypeAdapter<T> implements ConfigTypeAdapter<T, String> {
+    public abstract static class CommonAbstractStringTypeAdapter<T> implements ConfigTypeAdapter<T, String> {
         protected Map<String, Object> metadata = new HashMap<String, Object>();
 
-        public CommonAbstractTypeAdapter(String type) {
+        public CommonAbstractStringTypeAdapter(String type) {
             metadata.put("type", type);
         }
 
@@ -384,7 +419,6 @@ public class DefaultConfigTypeAdapters {
                     metadata.put("type", "enum");
 
 
-
                 metadata.put("class", property.getRawClass().getSimpleName());
 
                 ConfigurableProperty.EnumRepresentation howToRepresent = property.getEnumRepresentation();
@@ -398,7 +432,7 @@ public class DefaultConfigTypeAdapters {
                     // for ordinal representation - create array of ints with appropriate length, and add a clarifying array with names
                     List<Integer> vals = new ArrayList<Integer>();
 
-                    for (int i = 0; i< property.getEnumValues().length;i++) vals.add(i);
+                    for (int i = 0; i < property.getEnumValues().length; i++) vals.add(i);
                     metadata.put("enum", vals);
                     metadata.put("enumStrValues", enumStringValues);
                 }

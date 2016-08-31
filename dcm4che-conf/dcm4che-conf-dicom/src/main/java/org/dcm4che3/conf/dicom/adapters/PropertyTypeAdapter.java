@@ -46,7 +46,7 @@ import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.util.Property;
 
-public class PropertyTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<Property> {
+public class PropertyTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<Property> {
 
     public PropertyTypeAdapter() {
         super("string");

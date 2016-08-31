@@ -50,7 +50,7 @@ import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.data.Code;
 
 public class AuditSimpleTypeAdapters {
-    public static class EventTypeCodeAdapter<T> extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<EventTypeCode> {
+    public static class EventTypeCodeAdapter<T> extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<EventTypeCode> {
         public EventTypeCodeAdapter() {
             super("string");
             metadata.put("class", "EventTypeCode");
@@ -79,7 +79,7 @@ public class AuditSimpleTypeAdapters {
         }
     }
 
-    public static class EventIDTypeAdapter<T> extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<EventID> {
+    public static class EventIDTypeAdapter<T> extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<EventID> {
         public EventIDTypeAdapter() {
             super("string");
             metadata.put("class", "EventID");
@@ -108,7 +108,7 @@ public class AuditSimpleTypeAdapters {
         }
     }
 
-    public static class RoleIDCodeTypeAdapter<T> extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<RoleIDCode> {
+    public static class RoleIDCodeTypeAdapter<T> extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<RoleIDCode> {
         public RoleIDCodeTypeAdapter() {
             super("string");
             metadata.put("class", "RoleIDType");

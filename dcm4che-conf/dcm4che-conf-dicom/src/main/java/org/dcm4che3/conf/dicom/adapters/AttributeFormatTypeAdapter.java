@@ -50,7 +50,7 @@ import org.dcm4che3.util.AttributesFormat;
 /**
  * AttributesFormat
  */
-public class AttributeFormatTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<AttributesFormat> {
+public class AttributeFormatTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<AttributesFormat> {
 
     public AttributeFormatTypeAdapter() {
         super("string");

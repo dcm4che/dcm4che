@@ -47,7 +47,7 @@ import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.data.Code;
 
-public class CodeTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<Code> {
+public class CodeTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<Code> {
 
     public CodeTypeAdapter() {
         super("string");

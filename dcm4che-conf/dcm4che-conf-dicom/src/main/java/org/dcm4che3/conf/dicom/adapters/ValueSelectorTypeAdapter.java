@@ -46,7 +46,7 @@ import org.dcm4che3.conf.core.context.SavingContext;
 import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.data.ValueSelector;
 
-public class ValueSelectorTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<ValueSelector> {
+public class ValueSelectorTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<ValueSelector> {
 
     public ValueSelectorTypeAdapter() {
         super("string");

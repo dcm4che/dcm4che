@@ -47,7 +47,7 @@ import org.dcm4che3.conf.core.context.SavingContext;
 import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.data.Issuer;
 
-public class IssuerTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<Issuer> {
+public class IssuerTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<Issuer> {
 
     public IssuerTypeAdapter() {
         super("string");

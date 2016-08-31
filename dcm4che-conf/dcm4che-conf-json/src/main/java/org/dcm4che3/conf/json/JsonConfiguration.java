@@ -119,6 +119,14 @@ public class JsonConfiguration {
         gen.writeEnd();
     }
 
+    public void writeTo(String[] strings, JsonGenerator gen) {
+        JsonWriter writer = new JsonWriter(gen);
+        gen.writeStartArray();
+        for (String s : strings)
+            writer.write(s);
+        gen.writeEnd();
+    }
+
     public void writeTo(Device device, JsonGenerator gen) {
         JsonWriter writer = new JsonWriter(gen);
         writer.writeStartObject();

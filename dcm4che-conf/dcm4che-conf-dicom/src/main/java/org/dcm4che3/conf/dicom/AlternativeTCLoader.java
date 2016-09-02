@@ -85,7 +85,9 @@ public class AlternativeTCLoader {
             tcGroups = this.tcGroups;
         }
 
-        if (tcGroups != null) return tcGroups;
+        if (tcGroups != null && tcGroups.getTransferCapabilityGroups() != null && tcGroups.getTransferCapabilityGroups().size() > 0) {
+            return tcGroups;
+        }
         return this.tcGroups = config.getDicomConfigurationExtension(TransferCapabilityConfigExtension.class).getTransferCapabilityConfig();
     }
 

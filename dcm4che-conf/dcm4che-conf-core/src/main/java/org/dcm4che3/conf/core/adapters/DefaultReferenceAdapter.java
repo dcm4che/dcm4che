@@ -96,7 +96,7 @@ public class DefaultReferenceAdapter implements ConfigTypeAdapter {
     private Object resolveDeprecatedReference(String configNode, ConfigProperty property, LoadingContext ctx) {
         String refStr = configNode;
 
-        log.warn("Using deprecated reference format for configuration: " + refStr, new ConfigurationException());
+        log.warn("Using deprecated reference format for configuration: " + refStr);
 
         Configuration config = ctx.getTypeSafeConfiguration().getLowLevelAccess();
         Iterator search = config.search(refStr);
@@ -116,7 +116,8 @@ public class DefaultReferenceAdapter implements ConfigTypeAdapter {
         String uuid;
         try {
             uuid = (String) referencedNode.get(Configuration.UUID_KEY);
-        } catch (Exception e) {
+            if (uuid == null) throw new RuntimeException();
+        } catch (RuntimeException e) {
             throw new IllegalArgumentException("A referable node MUST have a UUID. A node referenced by " + refStr + " does not have UUID property.");
         }
 

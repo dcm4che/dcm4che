@@ -43,6 +43,7 @@ package org.dcm4che3.conf.core.storage;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.Nodes;
+import org.dcm4che3.conf.core.api.Path;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -64,27 +65,32 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
     }
 
     @Override
-    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        return Nodes.getNode(root, path);
+    public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
+        return Nodes.getNode(root, path.getPathItems());
     }
 
     @Override
-    public boolean nodeExists(String path) throws ConfigurationException {
-        return Nodes.nodeExists(root, path);
+    public boolean nodeExists(Path path) throws ConfigurationException {
+        return Nodes.nodeExists(root, path.getPathItems());
     }
 
     @Override
-    public void refreshNode(String path) throws ConfigurationException {
+    public void refreshNode(Path path) throws ConfigurationException {
     }
 
     @Override
-    public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
         throw new RuntimeException("Configuration is read-only");
     }
 
     @Override
-    public void removeNode(String path) throws ConfigurationException {
+    public void removeNode(Path path) throws ConfigurationException {
         throw new RuntimeException("Configuration is read-only");
+    }
+
+    @Override
+    public Path getPathByUUID(String uuid) {
+        throw new ConfigurationException("Unexpected error - uuid index is missing");
     }
 
     @Override

@@ -45,11 +45,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.dcm4che3.conf.core.DefaultBeanVitalizer;
-import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.DefaultTypeSafeConfiguration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
-import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,33 +60,20 @@ public class GenericExtensionsTest {
 
 
         final SingleJsonFileConfigurationStorage storage = new SingleJsonFileConfigurationStorage("target/config.json");
-        storage.persistNode("/", new HashMap<String, Object>(), null);
+        storage.persistNode(Path.ROOT, new HashMap<String, Object>(), null);
 
-        final BeanVitalizer vitalizer = new DefaultBeanVitalizer();
-        vitalizer.registerContext(ConfigurationManager.class, new ConfigurationManager() {
-            @Override
-            public BeanVitalizer getVitalizer() {
-                return vitalizer;
-            }
+        List myExtensions = new ArrayList();
+        myExtensions.add(MyClassFirstExtension.class);
+        myExtensions.add(MyClassSecondExtension.class);
 
-            @Override
-            public Configuration getConfigurationStorage() {
-                return storage;
-            }
 
-            @Override
-            public <T> List<Class<? extends T>> getExtensionClassesByBaseClass(Class<T> clazz) {
+        Map<Class, List<Class>> exts = new HashMap<Class, List<Class>>();
+        exts.put(MyClassExtension.class, myExtensions);
 
-                List myExtensions = new ArrayList();
 
-                myExtensions.add(MyClassFirstExtension.class);
-                myExtensions.add(MyClassSecondExtension.class);
+        DefaultTypeSafeConfiguration configuration = new DefaultTypeSafeConfiguration(storage, null, exts);
+        BeanVitalizer vitalizer = configuration.getVitalizer();
 
-                if (clazz.equals(MyClassExtension.class))
-                    return myExtensions;
-                else return null;
-            }
-        });
 
         ConfigClassWithExtensions myStuff = new ConfigClassWithExtensions();
         myStuff.setMyProp("aValue");
@@ -103,7 +89,7 @@ public class GenericExtensionsTest {
         myStuff.getExtensions().put(MyClassSecondExtension.class, secondExtension);
 
         Map<String, Object> node = vitalizer.createConfigNodeFromInstance(myStuff);
-        storage.persistNode("/", node, ConfigClassWithExtensions.class);
+        storage.persistNode(Path.ROOT, node, ConfigClassWithExtensions.class);
 
         ConfigClassWithExtensions loaded = vitalizer.newConfiguredInstance(node, ConfigClassWithExtensions.class);
         MyClassFirstExtension myClassFirstExtension = (MyClassFirstExtension) loaded.getExtensions().get(MyClassFirstExtension.class);

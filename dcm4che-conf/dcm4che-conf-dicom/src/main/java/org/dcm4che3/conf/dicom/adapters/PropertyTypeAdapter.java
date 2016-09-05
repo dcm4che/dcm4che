@@ -40,12 +40,13 @@
 package org.dcm4che3.conf.dicom.adapters;
 
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.context.LoadingContext;
+import org.dcm4che3.conf.core.context.SavingContext;
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.util.Property;
 
-public class PropertyTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<Property> {
+public class PropertyTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<Property> {
 
     public PropertyTypeAdapter() {
         super("string");
@@ -53,12 +54,12 @@ public class PropertyTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstrac
     }
 
     @Override
-    public Property fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public Property fromConfigNode(String configNode, ConfigProperty property, LoadingContext ctx, Object parent) throws ConfigurationException {
         return new Property(configNode);
     }
 
     @Override
-    public String toConfigNode(Property object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public String toConfigNode(Property object, ConfigProperty property, SavingContext ctx) throws ConfigurationException {
         return object.toString();
     }
 

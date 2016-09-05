@@ -43,6 +43,7 @@ package org.dcm4che3.conf.core.storage;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.Nodes;
+import org.dcm4che3.conf.core.api.Path;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -69,23 +70,23 @@ public class InMemoryConfiguration implements Configuration {
     }
 
     @Override
-    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        return Nodes.deepCloneNode(Nodes.getNode(root, path));
+    public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
+        return Nodes.deepCloneNode(Nodes.getNode(root, path.getPathItems()));
     }
 
     @Override
-    public boolean nodeExists(String path) throws ConfigurationException {
-        return Nodes.nodeExists(root, path);
+    public boolean nodeExists(Path path) throws ConfigurationException {
+        return Nodes.nodeExists(root, path.getPathItems());
     }
 
     @Override
-    public void refreshNode(String path) throws ConfigurationException {
+    public void refreshNode(Path path) throws ConfigurationException {
     }
 
     @Override
-    public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
-        if (!path.equals("/"))
-            Nodes.replaceNode(getConfigurationRoot(), path, Nodes.deepCloneNode(configNode));
+    public void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+        if (!Path.ROOT.equals(path))
+            Nodes.replaceNode(getConfigurationRoot(), (Map<String, Object>) Nodes.deepCloneNode(configNode), path.getPathItems());
         else {
             root.clear();
             root.putAll(configNode);
@@ -93,8 +94,13 @@ public class InMemoryConfiguration implements Configuration {
     }
 
     @Override
-    public void removeNode(String path) throws ConfigurationException {
-        Nodes.removeNodes(getConfigurationRoot(), path);
+    public void removeNode(Path path) throws ConfigurationException {
+        Nodes.removeNode(getConfigurationRoot(), path.getPathItems());
+    }
+
+    @Override
+    public Path getPathByUUID(String uuid) {
+        throw new ConfigurationException("Unexpected error - uuid index is missing");
     }
 
     @Override

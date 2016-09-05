@@ -35,7 +35,7 @@ public class XTest {
 
     private SplittedPath getSplittedPath(String path) {
 
-        List<String> pathItems = Nodes.simpleOrPersistablePathToPathItemsOrNull(path);
+        List<Object> pathItems = Nodes.simpleOrPersistablePathToPathItemsOrNull(path);
         if (pathItems == null) return null;
         return new SplittedPath(pathItems, 3);
     }

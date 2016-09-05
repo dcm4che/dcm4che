@@ -39,6 +39,7 @@
 package org.dcm4che3.net;
 
 import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
+import org.dcm4che3.conf.core.api.Parent;
 import org.dcm4che3.conf.core.api.SetParentIntoField;
 
 import java.io.Serializable;
@@ -47,11 +48,11 @@ import java.io.Serializable;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@SetParentIntoField("device")
 public class DeviceExtension extends ConfigurableClassExtension<DeviceExtension> implements Serializable {
 
     private static final long serialVersionUID = -548874586138178220L;
 
+    @Parent
     protected Device device;
 
     public final Device getDevice() {

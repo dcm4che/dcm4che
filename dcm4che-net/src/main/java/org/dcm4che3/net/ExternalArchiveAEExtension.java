@@ -44,6 +44,9 @@ import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.AEExtension;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  * 
@@ -61,10 +64,18 @@ public class ExternalArchiveAEExtension extends AEExtension {
     @ConfigurableProperty(name = "dcmAEPrefersForwarding", defaultValue="false")
     private boolean prefersForwarding = false;
 
+    @ConfigurableProperty(name = "dcmLinkedQueryAETs",
+            description = "List of AETs linked to this (tipically store) AET and to be used for query/retrieve",
+            collectionOfReferences = true)
+    private Collection<ApplicationEntity> linkedQueryAETs = new ArrayList<ApplicationEntity>();
+
+    @ConfigurableProperty(name = "dcmDefaultForStorage", defaultValue="false")
+    private boolean defaultForStorage = false;
+
     public int getAeFetchPriority() {
         return aeFetchPriority;
     }
-
+    
     public void setAeFetchPriority(int aeFetchPriority) {
         this.aeFetchPriority = aeFetchPriority;
     }
@@ -77,4 +88,27 @@ public class ExternalArchiveAEExtension extends AEExtension {
         this.prefersForwarding = prefersForwarding;
     }
 
+    public Collection<ApplicationEntity> getLinkedQueryAETs() {
+        return linkedQueryAETs;
+    }
+
+    public void setLinkedQueryAETs(Collection<ApplicationEntity> linkedQueryAETs) {
+        this.linkedQueryAETs = linkedQueryAETs;
+    }
+
+    public void addIgnoreSeriesStudyMissmatchErrorsAET(ApplicationEntity ae) {
+        this.linkedQueryAETs.add(ae);
+    }
+
+    public boolean removeIgnoreSeriesStudyMissmatchErrorsAET(ApplicationEntity ae) {
+        return this.linkedQueryAETs.remove(ae);
+    }
+
+    public boolean isDefaultForStorage() {
+        return defaultForStorage;
+    }
+
+    public void setDefaultForStorage(boolean defaultForStorage) {
+        this.defaultForStorage = defaultForStorage;
+    }
 }

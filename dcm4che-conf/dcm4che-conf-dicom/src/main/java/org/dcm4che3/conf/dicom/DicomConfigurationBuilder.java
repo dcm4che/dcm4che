@@ -39,10 +39,12 @@
 package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
+import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.ExtensionMergingConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Path;
+import org.dcm4che3.conf.core.index.ReferenceIndexingDecorator;
 import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
 import org.dcm4che3.conf.core.olock.HashBasedOptimisticLockingConfiguration;
 import org.dcm4che3.conf.core.storage.SimpleCachingConfigurationDecorator;
@@ -71,7 +73,7 @@ public class DicomConfigurationBuilder {
     private Configuration configurationStorage = null;
     private Map<Class, List<Class>> extensionClassesMap = new HashMap<Class, List<Class>>();
     private boolean doOptimisticLocking = false;
-    private boolean uuidIndexing = false;
+    private boolean uuidIndexing = true;
 
     private void setLdapProps(Hashtable<?, ?> ldapProps) {
         this.ldapProps = ldapProps;
@@ -141,6 +143,10 @@ public class DicomConfigurationBuilder {
         return this;
     }
 
+    public DicomConfigurationBuilder disableUuidIndexing() {
+        this.uuidIndexing = false;
+        return this;
+    }
 
     public CommonDicomConfigurationWithHL7 build() throws ConfigurationException {
 
@@ -198,14 +204,16 @@ public class DicomConfigurationBuilder {
             configurationStorage = new ExtensionMergingConfiguration(configurationStorage, allExtensions);
 
         if (uuidIndexing)
-            configurationStorage = new DicomReferenceIndexingDecorator(configurationStorage, new HashMap<String, Path>());
+            configurationStorage = new ReferenceIndexingDecorator(configurationStorage, new HashMap<String, Path>());
 
         if (doOptimisticLocking)
             configurationStorage = new HashBasedOptimisticLockingConfiguration(configurationStorage, allExtensions);
 
         configurationStorage = new DefaultsAndNullFilterDecorator(
                 configurationStorage,
-                allExtensions, CommonDicomConfiguration.createDefaultDicomVitalizer());
+                allExtensions,
+                CommonDicomConfiguration.createDefaultDicomVitalizer()
+        );
 
         return configurationStorage;
     }

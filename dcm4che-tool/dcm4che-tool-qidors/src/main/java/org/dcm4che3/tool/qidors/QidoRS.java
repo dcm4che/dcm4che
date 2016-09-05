@@ -468,7 +468,7 @@ public class QidoRS {
                 
                 String full="";
                 String str;
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
                 String boundary = reader.readLine();
                 while((str = reader.readLine())!=null) {
                     full+=str;
@@ -480,7 +480,7 @@ public class QidoRS {
                     if(qidors.isRunningModeTest()) {
                         if(qidors.getTimeFirst() == 0)
                             qidors.setTimeFirst(System.currentTimeMillis());
-                        qidors.responseAttrs.add(SAXReader.parse(new ByteArrayInputStream(removeHeader(parts[i]).getBytes())));
+                        qidors.responseAttrs.add(SAXReader.parse(new ByteArrayInputStream(removeHeader(parts[i]).getBytes("UTF-8"))));
                         qidors.numMatches++;
                     }
                     else {

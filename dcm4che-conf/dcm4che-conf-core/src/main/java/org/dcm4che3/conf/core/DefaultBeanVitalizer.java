@@ -44,56 +44,104 @@ package org.dcm4che3.conf.core;
  */
 
 import org.dcm4che3.conf.core.adapters.*;
-import org.dcm4che3.conf.core.api.*;
-import org.dcm4che3.conf.core.api.internal.*;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.api.internal.ConfigReflection;
+import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
+import org.dcm4che3.conf.core.context.ContextFactory;
+import org.dcm4che3.conf.core.context.LoadingContext;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
- * Main class that is used to initialize annotated Java objects with settings fetched from a configuration backend.
- * These are mostly low-level access methods that should be used to build the API for configuration functionality of an end product
+ * Handles the conversion between annotated Java objects and config nodes from a configuration backend.
  */
 public class DefaultBeanVitalizer implements BeanVitalizer {
 
-    private final Map<Class, Object> contextMap = new HashMap<Class, Object>();
     private final Map<Class, ConfigTypeAdapter> customConfigTypeAdapters = new HashMap<Class, ConfigTypeAdapter>();
-    private ConfigTypeAdapter referenceTypeAdapter;
+    private int loadingTimeoutSec = 5;
 
-    private final ArrayTypeAdapter arrayTypeAdapter = new ArrayTypeAdapter();
+    private final Map<Class, List<Class>> extensionsByClass;
 
+    private final ConfigTypeAdapter referenceTypeAdapter = DefaultConfigTypeAdapters.getReferenceAdapter();
+
+    private final ContextFactory contextFactory;
 
     /**
-     * Needed for avoiding infinite loops and 'optimistic' reference resolution (when we create the target instance before we actually find it during deserialization)
+     * "Standalone" vitalizer. This should only be used for e.g. tests.
+     * To be able to handle references, custom context factories, etc, vitalizer must be bound to typeSafeConfiguration
      */
-    private final ThreadLocal<Map<String, Object>> currentlyLoadedReferableLocal = new ThreadLocal<Map<String, Object>>();
-
-    public void setReferenceTypeAdapter(ConfigTypeAdapter referenceTypeAdapter) {
-        this.referenceTypeAdapter = referenceTypeAdapter;
+    public DefaultBeanVitalizer() {
+        contextFactory = new ContextFactory(this);
+        extensionsByClass = new HashMap<Class, List<Class>>();
     }
+
+    public DefaultBeanVitalizer(Map<Class, List<Class>> extensionsByClass, ContextFactory contextFactory) {
+        this.extensionsByClass = extensionsByClass;
+        this.contextFactory = contextFactory;
+    }
+
+    /**
+     * Sets the timeout for resolving futures (objs being loaded by other threads) while loading the config.
+     * <p/>
+     * This is rather a defence-against-ourselves measure, i.e. normally the config futures should always get resolved/fail with an exception at some point.
+     *
+     * @param loadingTimeoutSec timeout. If <b>0</b> is passed, timeout is disabled.
+     */
+    public void setLoadingTimeoutSec(int loadingTimeoutSec) {
+        this.loadingTimeoutSec = loadingTimeoutSec;
+    }
+
 
     @Override
     public ConfigTypeAdapter getReferenceTypeAdapter() {
         return referenceTypeAdapter;
     }
 
-    @Override
-    public <T> T newConfiguredInstance(Map<String, Object> configNode, Class<T> clazz) throws ConfigurationException {
-        boolean doCleanUpReferableLocal = false;
 
-        // init reference threadlocal for this run if it's the first call (subsequent recursive calls will re-use the threadLocal)
-        if (currentlyLoadedReferableLocal.get() == null) {
-            currentlyLoadedReferableLocal.set(new HashMap<String, Object>());
-            doCleanUpReferableLocal = true;
-        }
+    @Override
+    public Object resolveFutureOrFail(String uuid, Future<Object> f) {
         try {
 
-            return new ReflectiveAdapter<T>().fromConfigNode(configNode, new AnnotatedConfigurableProperty(clazz), this, null);
+            if (loadingTimeoutSec == 0) {
+                return f.get();
+            } else {
+                return f.get(loadingTimeoutSec, TimeUnit.SECONDS);
+            }
 
-        } finally {
-            if (doCleanUpReferableLocal)
-                currentlyLoadedReferableLocal.remove();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ConfigurationException("Loading of configuration unexpectedly interrupted", e);
+
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof ConfigurationException) {
+                throw (ConfigurationException) e.getCause();
+            } else {
+                throw new ConfigurationException("Error while loading configuration", e.getCause());
+            }
+
+        } catch (TimeoutException e) {
+            throw new ConfigurationException("Time-out while waiting for the object [uuid=" + uuid + "] to be loaded", e);
         }
+    }
+
+
+    @Override
+    public <T> T newConfiguredInstance(Map<String, Object> configNode, Class<T> clazz) throws ConfigurationException {
+        return newConfiguredInstance(configNode, clazz, contextFactory.newLoadingContext());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T newConfiguredInstance(Map<String, Object> configurationNode, Class<T> clazz, LoadingContext ctx) {
+        ConfigProperty propertyForClass = ConfigReflection.getDummyPropertyForClass(clazz);
+        return (T) lookupTypeAdapter(propertyForClass)
+                .fromConfigNode(configurationNode, propertyForClass, ctx, null);
     }
 
     /**
@@ -108,8 +156,7 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
     public <T> T newInstance(Class<T> clazz) throws ConfigurationException {
         try {
 
-            T object = clazz.newInstance();
-            return object;
+            return clazz.newInstance();
 
         } catch (InstantiationException e) {
             throw new ConfigurationException(e);
@@ -118,91 +165,51 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
         }
     }
 
-    /**
-     * Scans for annotations in <i>object</i> and initializes all its properties from the provided configuration node.
-     *
-     * @param <T>
-     * @param object
-     * @param configNode
-     * @return
-     */
-    private <T> void configureInstance(T object, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
-
-        boolean doCleanUpReferableLocal = false;
-
-        // init reference threadlocal for this run if it's the first call (subsequent recursive calls will re-use the threadLocal)
-        if (currentlyLoadedReferableLocal.get() == null) {
-            currentlyLoadedReferableLocal.set(new HashMap<String, Object>());
-            doCleanUpReferableLocal = true;
-        }
-        try {
-            new ReflectiveAdapter<T>(object).fromConfigNode(configNode, new AnnotatedConfigurableProperty(configurableClass), this, null);
-        } finally {
-            if (doCleanUpReferableLocal)
-                currentlyLoadedReferableLocal.remove();
-        }
-    }
 
     @Override
-    public <T> T getInstanceFromThreadLocalPoolByUUID(String uuid, Class<T> expectedClazz) {
-        if (currentlyLoadedReferableLocal.get() == null) return null;
-        try {
-            return (T) currentlyLoadedReferableLocal.get().get(uuid);
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Expected instance of class " + expectedClazz.getName()
-                    + " but the pool contained an instance of class " + currentlyLoadedReferableLocal.get().get(uuid).getClass().getName(), e);
-        }
-    }
-
-    @Override
-    public void registerInstanceInThreadLocalPool(String uuid, Object instance) {
-        if (currentlyLoadedReferableLocal.get() == null) return;
-        currentlyLoadedReferableLocal.get().put(uuid, instance);
-    }
-
-    /**
-     * Will not work (throws an exception) if <b>object</b> has setters that use configurable properties!
-     *
-     * @param object
-     * @param <T>
-     * @return
-     */
-    @Override
-    public <T> Map<String, Object> createConfigNodeFromInstance(T object) throws ConfigurationException {
+    public Map<String, Object> createConfigNodeFromInstance(Object object) throws ConfigurationException {
+        if (object == null) return null;
         return createConfigNodeFromInstance(object, object.getClass());
     }
 
-    /**
-     * Will not work (throws an exception) if <b>object</b> has setters that use configurable properties!
-     *
-     * @param <T>
-     * @param object
-     * @param configurableClass
-     * @return
-     */
+
+    @SuppressWarnings("unchecked")
     @Override
-    public <T> Map<String, Object> createConfigNodeFromInstance(T object, Class configurableClass) throws ConfigurationException {
-        return (Map<String, Object>) lookupDefaultTypeAdapter(configurableClass).toConfigNode(object, new AnnotatedConfigurableProperty(configurableClass), this);
+    public Map<String, Object> createConfigNodeFromInstance(Object object, Class clazz) throws ConfigurationException {
+        ConfigProperty propertyForClass = ConfigReflection.getDummyPropertyForClass(clazz);
+        return (Map<String, Object>) lookupTypeAdapter(propertyForClass)
+                .toConfigNode(object, propertyForClass, contextFactory.newSavingContext());
+    }
+
+    @Override
+    public List<Class> getExtensionClassesByBaseClass(Class extensionBaseClass) {
+
+        List<Class> classes = extensionsByClass.get(extensionBaseClass);
+
+        if (classes == null)
+            return Collections.emptyList();
+
+        return classes;
     }
 
 
     @Override
     @SuppressWarnings("unchecked")
-    public ConfigTypeAdapter lookupTypeAdapter(AnnotatedConfigurableProperty property) throws ConfigurationException {
+    public ConfigTypeAdapter lookupTypeAdapter(ConfigProperty property) throws ConfigurationException {
 
         Class clazz = property.getRawClass();
 
-        // first check for a custom adapter
+        // check if it is a reference
+        if (property.isReference())
+            return getReferenceTypeAdapter();
+
+        // check for a custom adapter
         ConfigTypeAdapter typeAdapter = customConfigTypeAdapters.get(clazz);
         if (typeAdapter != null) return typeAdapter;
 
-        // check if it is a reference
-        if (property.getAnnotation(ConfigurableProperty.class) != null && property.isReference())
-            return getReferenceTypeAdapter();
-
         // check if it is an extensions map
-        if (property.getAnnotation(ConfigurableProperty.class) != null && property.isExtensionsProperty())
-            return new NullToNullDecorator(new ExtensionTypeAdaptor());
+        if (property.isExtensionsProperty())
+            return DefaultConfigTypeAdapters.getExtensionTypeAdapter();
 
         // delegate to default otherwise
         return lookupDefaultTypeAdapter(clazz);
@@ -212,13 +219,13 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
     @SuppressWarnings("unchecked")
     public ConfigTypeAdapter lookupDefaultTypeAdapter(Class clazz) throws ConfigurationException {
 
-        ConfigTypeAdapter adapter = null;
+        ConfigTypeAdapter adapter;
 
         // if it is a config class, use reflective adapter
-        if (ConfigIterators.isConfigurableClass(clazz))
-            adapter = new ReflectiveAdapter();
+        if (ConfigReflection.isConfigurableClass(clazz))
+            adapter = DefaultConfigTypeAdapters.getReflectiveAdapter();
         else if (clazz.isArray())
-            adapter = arrayTypeAdapter;
+            adapter = DefaultConfigTypeAdapters.getArrayTypeAdapter();
         else if (clazz.isEnum())
             adapter = DefaultConfigTypeAdapters.get(Enum.class);
         else
@@ -231,21 +238,6 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
     }
 
     /**
-     * Register any context data needed by custom ConfigTypeAdapters
-     *
-     * @return
-     */
-    @Override
-    public void registerContext(Class clazz, Object context) {
-        this.contextMap.put(clazz, context);
-    }
-
-    @Override
-    public <T> T getContext(Class<T> clazz) {
-        return (T) contextMap.get(clazz);
-    }
-
-    /**
      * Registers a custom type adapter for configurable properties for the specified class
      *
      * @param clazz
@@ -254,5 +246,11 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
     @Override
     public void registerCustomConfigTypeAdapter(Class clazz, ConfigTypeAdapter typeAdapter) {
         customConfigTypeAdapters.put(clazz, typeAdapter);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> getSchemaForConfigurableClass(Class<?> clazz) {
+        return lookupDefaultTypeAdapter(clazz).getSchema(new ConfigProperty(clazz), contextFactory.newProcessingContext());
     }
 }

@@ -135,7 +135,7 @@ public class VitalizerTest {
         }
     }
 
-    enum MyEnum {
+    public enum MyEnum {
         OPTION1,OPTION2
     }
 

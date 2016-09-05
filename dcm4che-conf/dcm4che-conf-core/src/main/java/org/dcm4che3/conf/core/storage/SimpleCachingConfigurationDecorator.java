@@ -43,6 +43,7 @@ import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.Nodes;
+import org.dcm4che3.conf.core.api.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,8 +114,8 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
      * @throws ConfigurationException
      */
     @Override
-    public synchronized Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        Object node = Nodes.getNode(getConfigurationRoot(), path);
+    public synchronized Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
+        Object node = Nodes.getNode(getConfigurationRoot(), path.getPathItems());
 
         if (node == null) return null;
 
@@ -127,16 +128,16 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
     }
 
     @Override
-    public synchronized void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public synchronized void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
         if (!readOnly) delegate.persistNode(path, configNode, configurableClass);
-        if (!path.equals("/"))
-            Nodes.replaceNode(getConfigurationRoot(), path, configNode);
+        if (!Path.ROOT.equals(path))
+            Nodes.replaceNode(getConfigurationRoot(), configNode, path.getPathItems());
         else
             cachedConfigurationRoot = configNode;
     }
 
     @Override
-    public synchronized void refreshNode(String path) throws ConfigurationException {
+    public synchronized void refreshNode(Path path) throws ConfigurationException {
         if (!readOnly) {
             cachedConfigurationRoot = null;
             getConfigurationRoot();
@@ -144,14 +145,14 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
     }
 
     @Override
-    public synchronized boolean nodeExists(String path) throws ConfigurationException {
-        return Nodes.nodeExists(getConfigurationRoot(), path);
+    public synchronized boolean nodeExists(Path path) throws ConfigurationException {
+        return Nodes.nodeExists(getConfigurationRoot(), path.getPathItems());
     }
 
     @Override
-    public synchronized void removeNode(String path) throws ConfigurationException {
+    public synchronized void removeNode(Path path) throws ConfigurationException {
         if (!readOnly) delegate.removeNode(path);
-        Nodes.removeNodes(getConfigurationRoot(), path);
+        Nodes.removeNode(getConfigurationRoot(), path.getPathItems());
     }
 
     @Override

@@ -48,7 +48,8 @@ import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
 import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.Path;
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.olock.OLockCopyFilter;
 import org.dcm4che3.conf.core.olock.OLockHashCalcFilter;
@@ -79,13 +80,13 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
         @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
         String olock;
-        
+
         @ConfigurableProperty
         String name;
-        
+
         @ConfigurableProperty
-        int budget; 
-        
+        int budget;
+
         @ConfigurableProperty
         Map<String, Party> parties;
 
@@ -121,12 +122,12 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
             this.parties = parties;
         }
     }
-    
+
     @ConfigurableClass
     public static class Party {
         @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
         String oLock;
-        
+
         @ConfigurableProperty(name = "prop1")
         int guests;
 
@@ -168,8 +169,8 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
             this.occasion = occasion;
         }
     }
-    
-    
+
+
     @Test
     public void testPartyOlock() throws IOException {
         PartyPlan partyPlan = new PartyPlan();
@@ -189,7 +190,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         HashMap<String, Party> parties = new HashMap<String, Party>();
         parties.put("p1", party);
         parties.put("p2", party1);
-        
+
         partyPlan.setParties(parties);
 
 
@@ -197,7 +198,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         Map<String, Object> oldNode = beanVitalizer.createConfigNodeFromInstance(partyPlan);
 
 
-        ConfigNodeTraverser.traverseNodeTypesafe(oldNode, new AnnotatedConfigurableProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
+        ConfigNodeTraverser.traverseNodeTypesafe(oldNode, new ConfigProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
         ConfigNodeTraverser.traverseMapNode(oldNode, new OLockHashCalcFilter());
 
         // consistent?
@@ -209,7 +210,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
         Map<String, Object> newNode = beanVitalizer.createConfigNodeFromInstance(partyPlan);
 
-        ConfigNodeTraverser.traverseNodeTypesafe(newNode, new AnnotatedConfigurableProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
+        ConfigNodeTraverser.traverseNodeTypesafe(newNode, new ConfigProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
         ConfigNodeTraverser.traverseMapNode(newNode, new OLockHashCalcFilter());
 
         Assert.assertNotEquals("node changed",
@@ -219,7 +220,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         Assert.assertEquals("node not changed",
                 Nodes.getNode(oldNode, "/parties/p1/" + Configuration.OLOCK_HASH_KEY),
                 Nodes.getNode(newNode, "/parties/p1/" + Configuration.OLOCK_HASH_KEY));
-        
+
         Assert.assertEquals("parent should not change",
                 oldNode.get(Configuration.OLOCK_HASH_KEY),
                 newNode.get(Configuration.OLOCK_HASH_KEY));
@@ -230,7 +231,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
         Map<String, Object> nodeWithMapChanged = beanVitalizer.createConfigNodeFromInstance(partyPlan);
 
-        ConfigNodeTraverser.traverseNodeTypesafe(nodeWithMapChanged, new AnnotatedConfigurableProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
+        ConfigNodeTraverser.traverseNodeTypesafe(nodeWithMapChanged, new ConfigProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
         ConfigNodeTraverser.traverseMapNode(nodeWithMapChanged, new OLockHashCalcFilter());
 
         Assert.assertNotEquals("parent should change",
@@ -240,7 +241,6 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         Assert.assertEquals("map entry hash should not change",
                 Nodes.getNode(newNode, "/parties/p1/" + Configuration.OLOCK_HASH_KEY),
                 Nodes.getNode(nodeWithMapChanged, "/parties/aNewOldParty/" + Configuration.OLOCK_HASH_KEY));
-
 
 
         // try recalc
@@ -254,10 +254,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         Assert.assertEquals(originalHash, oldNode.get(Configuration.OLOCK_HASH_KEY));
 
 
-
     }
-    
-
 
 
 //    @Test
@@ -279,46 +276,44 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 //        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(System.out, configurationNode1);
 //
 //    }
-    
+
     @Test
     public void testDeco() throws IOException {
 
         Configuration mockDicomConfStorage = SimpleStorageTest.getMockDicomConfStorage();
 
 
-
         Configuration lockedConfig = new HashBasedOptimisticLockingConfiguration(mockDicomConfStorage, new ArrayList<Class>());
 
         // imitate 3 users simultaneously getting the same node
 
-        Map<String,Object> configurationNode1 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), Device.class);
-        Map<String,Object> configurationNode2 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), Device.class);
-        Map<String,Object> configurationNode3 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), Device.class);
+        Map<String, Object> configurationNode1 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.devicePath("dcmqrscp"), Device.class);
+        Map<String, Object> configurationNode2 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.devicePath("dcmqrscp"), Device.class);
+        Map<String, Object> configurationNode3 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.devicePath("dcmqrscp"), Device.class);
 
         // imitate simultaneous changes
 
-        Nodes.replaceNode(configurationNode1, "/dicomNetworkAE/DCMQRSCP/dicomAssociationAcceptor", false);
-        Nodes.replaceNode(configurationNode2, "/dicomNetworkAE/DCMQRSCP/dicomAssociationInitiator", false);
-        Nodes.replaceNode(configurationNode3, "/dcmKeyStorePin", "12345");
-        
+        Nodes.replacePrimitive(configurationNode1, false, new Path("dicomNetworkAE", "DCMQRSCP", "dicomAssociationAcceptor").getPathItems());
+        Nodes.replacePrimitive(configurationNode2, false, new Path("dicomNetworkAE", "DCMQRSCP", "dicomAssociationInitiator").getPathItems());
+        Nodes.replacePrimitive(configurationNode3, "12345", new Path("dcmKeyStorePin").getPathItems());
+
         // persist some changes from 1st user
-        lockedConfig.persistNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), configurationNode1, Device.class);
+        lockedConfig.persistNode(DicomPath.devicePath("dcmqrscp"), configurationNode1, Device.class);
 
         // persist some conflicting changes from 2nd user - should fail
         try {
-            lockedConfig.persistNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), configurationNode2, Device.class);
+            lockedConfig.persistNode(DicomPath.devicePath("dcmqrscp"), configurationNode2, Device.class);
             throw new AssertionFailedError("Should have failed!");
         } catch (Exception e) {
             // its ok
         }
 
         // persist some non-conflicting changes from 3rd user - should be fine
-        lockedConfig.persistNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), configurationNode3, Device.class);
+        lockedConfig.persistNode(DicomPath.devicePath("dcmqrscp"), configurationNode3, Device.class);
 
-        
-        
+
         // assert the changes that were supposed to be persisted
-        Map<String,Object> newNode = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), Device.class);
+        Map<String, Object> newNode = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.devicePath("dcmqrscp"), Device.class);
 
         Assert.assertEquals(
                 "12345",

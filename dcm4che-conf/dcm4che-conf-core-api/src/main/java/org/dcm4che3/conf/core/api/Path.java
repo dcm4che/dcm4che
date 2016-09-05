@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <b>CAUTION:</b>
@@ -55,22 +57,41 @@ import java.util.List;
 public class Path implements Serializable {
 
     private static final long serialVersionUID = 1069976968612802603L;
+    private static Pattern itemPattern = Pattern.compile("/(?<item>(\\\\/|[^/\\[\\]@\\*])*)");
+    private static Pattern simplePathPattern = Pattern.compile("(" + itemPattern + ")*");
 
     public static final Path ROOT = new Path();
 
-    final List<Object> pathItems;
+    private final List<Object> pathItems;
+
+
     private transient String simpleEscapedXPath;
+    private transient String simpleEscapedPath;
 
     public Path() {
         pathItems = Collections.unmodifiableList(new ArrayList<Object>());
     }
 
-    public Path(String... pathItems) {
+    public Path(Object... pathItems) {
 
         ArrayList<Object> strings = new ArrayList<Object>(pathItems.length);
         Collections.addAll(strings, pathItems);
         this.pathItems = Collections.unmodifiableList(strings);
 
+        validate();
+    }
+
+    public Path(List<?> pathItems) {
+        this.pathItems = Collections.unmodifiableList(new ArrayList<Object>(pathItems));
+        validate();
+    }
+
+
+    public Path(Iterator<Object> stringIterator) {
+        ArrayList<Object> strings = new ArrayList<Object>();
+        while (stringIterator.hasNext())
+            strings.add(stringIterator.next());
+        this.pathItems = Collections.unmodifiableList(strings);
         validate();
     }
 
@@ -81,17 +102,16 @@ public class Path implements Serializable {
         }
     }
 
-    public Path(List<?> pathItems) {
-        this.pathItems = Collections.unmodifiableList(new ArrayList<Object>(pathItems));
-        validate();
-    }
 
-    public Path(Iterator<Object> stringIterator) {
-        ArrayList<Object> strings = new ArrayList<Object>();
-        while (stringIterator.hasNext())
-            strings.add(stringIterator.next());
-        this.pathItems = Collections.unmodifiableList(strings);
-        validate();
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj == this)
+            return true;
+        if (!(obj instanceof Path))
+            return false;
+
+        return pathItems.equals(((Path) obj).pathItems);
     }
 
     public List<Object> getPathItems() {
@@ -110,6 +130,10 @@ public class Path implements Serializable {
         }
 
         return new Path(newItems);
+    }
+
+    public int size() {
+        return getPathItems().size();
     }
 
     public String toSimpleEscapedXPath() {
@@ -132,8 +156,65 @@ public class Path implements Serializable {
         return xpath;
     }
 
+    public String toSimpleEscapedPath() {
+
+        if (simpleEscapedPath != null)
+            return simpleEscapedPath;
+
+        String xpath = "";
+        for (Object item : pathItems) {
+            xpath += "/";
+
+            if (item instanceof Integer) {
+                xpath += "#";
+            }
+
+            xpath += item
+                    .toString()
+                    .replace("/", "\\/")
+                    .replace("#", "\\#");
+        }
+        simpleEscapedPath = xpath;
+
+        return xpath;
+    }
+
+
     @Override
     public String toString() {
         return toSimpleEscapedXPath();
+    }
+
+    public static Path fromSimpleEscapedPath(String pathStr) {
+        Path path = fromSimpleEscapedPathOrNull(pathStr);
+
+        if (path == null)
+            throw new IllegalArgumentException("Simple path " + pathStr + " is invalid");
+        return path;
+    }
+
+    public static Path fromSimpleEscapedPathOrNull(String path) {
+
+        if (!simplePathPattern.matcher(path).matches())
+            return null;
+
+        Matcher matcher = itemPattern.matcher(path);
+
+        List<Object> list = new ArrayList<Object>();
+        while (matcher.find()) {
+            String item = matcher.group("item");
+
+            if (item.startsWith("#")) {
+                list.add(Integer.parseInt(item.substring(1)));
+            } else {
+                list.add(item
+                        .replace("\\/", "/")
+                        .replace("\\#", "#")
+                );
+            }
+
+        }
+
+        return new Path(list);
     }
 }

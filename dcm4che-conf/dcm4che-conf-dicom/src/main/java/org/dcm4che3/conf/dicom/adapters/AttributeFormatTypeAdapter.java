@@ -41,15 +41,16 @@ package org.dcm4che3.conf.dicom.adapters;
 
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
+import org.dcm4che3.conf.core.context.LoadingContext;
+import org.dcm4che3.conf.core.context.SavingContext;
 import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.util.AttributesFormat;
 
 /**
  * AttributesFormat
  */
-public class AttributeFormatTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<AttributesFormat> {
+public class AttributeFormatTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<AttributesFormat> {
 
     public AttributeFormatTypeAdapter() {
         super("string");
@@ -57,12 +58,12 @@ public class AttributeFormatTypeAdapter extends DefaultConfigTypeAdapters.Common
     }
 
     @Override
-    public AttributesFormat fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public AttributesFormat fromConfigNode(String configNode, ConfigProperty property, LoadingContext ctx, Object parent) throws ConfigurationException {
         return AttributesFormat.valueOf(configNode);
     }
 
     @Override
-    public String toConfigNode(AttributesFormat object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
+    public String toConfigNode(AttributesFormat object, ConfigProperty property, SavingContext ctx) throws ConfigurationUnserializableException {
         return object.toString();
     }
 }

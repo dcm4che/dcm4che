@@ -70,6 +70,9 @@ public class AuditRecordRepository extends DeviceExtension {
 
     @ConfigurableProperty(name="dicomNetworkConnectionReference", collectionOfReferences = true)
     private final List<Connection> connections = new ArrayList<Connection>(1);
+    
+    @ConfigurableProperty(name="auditRecordCodeCachingEnabled", defaultValue = "false")
+    private boolean auditRecordCodeCachingEnabled;
 
     private transient AuditRecordHandler handler;
 
@@ -118,6 +121,14 @@ public class AuditRecordRepository extends DeviceExtension {
 
     public void setAuditRecordHandler(AuditRecordHandler handler) {
         this.handler = handler;
+    }
+    
+    public boolean isAuditRecordCodeCachingEnabled() {
+        return auditRecordCodeCachingEnabled;
+    }
+
+    public void setAuditRecordCodeCachingEnabled(boolean auditRecordCodeCachingEnabled) {
+        this.auditRecordCodeCachingEnabled = auditRecordCodeCachingEnabled;
     }
 
     @Override

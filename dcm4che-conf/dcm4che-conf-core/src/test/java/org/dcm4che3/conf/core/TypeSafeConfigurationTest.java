@@ -59,6 +59,22 @@ public class TypeSafeConfigurationTest {
                 "/dicomConfigurationRoot/dicomDevicesRoot/dcm4chee-arc"
         );
 
+        Assert.assertEquals(
+                new Path("dicomConfigurationRoot", "dicomDevicesRoot", "d#cm4chee-arc").toSimpleEscapedPath(),
+                "/dicomConfigurationRoot/dicomDevicesRoot/d\\#cm4chee-arc"
+        );
+
+        Assert.assertEquals(
+                new Path("dicomConfigurationRoot", "dicomDevicesRoot/", "dcm4chee-arc").toSimpleEscapedPath(),
+                "/dicomConfigurationRoot/dicomDevicesRoot\\//dcm4chee-arc"
+        );
+
+
+        Assert.assertEquals(
+                new Path("dicomConfigurationRoot", 1234, "dcm4chee-arc").toSimpleEscapedPath(),
+                "/dicomConfigurationRoot/#1234/dcm4chee-arc"
+        );
+
     }
 
 

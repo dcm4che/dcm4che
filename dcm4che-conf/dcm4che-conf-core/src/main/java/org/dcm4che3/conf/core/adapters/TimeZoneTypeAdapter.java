@@ -41,12 +41,13 @@ package org.dcm4che3.conf.core.adapters;
 
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
+import org.dcm4che3.conf.core.context.LoadingContext;
+import org.dcm4che3.conf.core.context.SavingContext;
 
 import java.util.TimeZone;
 
-public class TimeZoneTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<TimeZone> {
+public class TimeZoneTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractStringTypeAdapter<TimeZone> {
 
     public TimeZoneTypeAdapter() {
         super("string");
@@ -54,12 +55,12 @@ public class TimeZoneTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstrac
     }
 
     @Override
-    public TimeZone fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public TimeZone fromConfigNode(String configNode, ConfigProperty property, LoadingContext ctx, Object parent) throws ConfigurationException {
         return (configNode == null ? null : TimeZone.getTimeZone(configNode));
     }
 
     @Override
-    public String toConfigNode(TimeZone object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
+    public String toConfigNode(TimeZone object, ConfigProperty property, SavingContext ctx) throws ConfigurationUnserializableException {
         return (object == null ? null : object.getID());
     }
 

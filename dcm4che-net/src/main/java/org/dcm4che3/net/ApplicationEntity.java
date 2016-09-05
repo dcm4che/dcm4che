@@ -43,6 +43,7 @@ import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.conf.core.api.Parent;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.pdu.*;
 import org.dcm4che3.util.StringUtils;
@@ -67,7 +68,7 @@ import java.util.*;
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-@LDAP(objectClasses = {"dcmNetworkAE", "dicomNetworkAE" }, distinguishingField = "dicomAETitle")
+@LDAP(objectClasses = {"dcmNetworkAE", "dicomNetworkAE"}, distinguishingField = "dicomAETitle")
 @ConfigurableClass(referable = true)
 public class ApplicationEntity implements Serializable {
 
@@ -145,7 +146,9 @@ public class ApplicationEntity implements Serializable {
             label = "Aliases (alternative AE titles)")
     private List<String> AETitleAliases = new ArrayList<String>();
 
+    @Parent
     private Device device;
+
     private transient DimseRQHandler dimseRQHandler;
 
     public ApplicationEntity() {
@@ -208,7 +211,7 @@ public class ApplicationEntity implements Serializable {
      *
      * @return The owning <code>Device</code>.
      */
-    public final Device getDevice() {
+    public Device getDevice() {
         return device;
     }
 
@@ -217,11 +220,10 @@ public class ApplicationEntity implements Serializable {
      *
      * @param device The owning <code>Device</code>.
      */
-    void setDevice(Device device) {
+    public void setDevice(Device device) {
         if (device != null) {
-            if (this.device != null)
-                throw new IllegalStateException("already owned by " +
-                        this.device.getDeviceName());
+            if (this.device != null && this.device != device)
+                throw new IllegalStateException("already owned by " + this.device.getDeviceName());
             for (Connection conn : connections)
                 if (conn.getDevice() != device)
                     throw new IllegalStateException(conn + " not owned by " +
@@ -232,8 +234,8 @@ public class ApplicationEntity implements Serializable {
 
     /**
      * Get the AE title for this Network AE.
-     * 
-     * <p>
+     * <p/>
+     * <p/>
      * Please note that there could also be alias AE titles for the same AE. You
      * can get them via {@link #getAETitleAliases()}.
      *
@@ -252,7 +254,7 @@ public class ApplicationEntity implements Serializable {
         if (aet.isEmpty())
             throw new IllegalArgumentException("AE title cannot be empty");
         Device device = this.device;
-        if (device != null)
+        if (device != null && this.AETitle != null)
             device.removeApplicationEntity(this.AETitle);
         this.AETitle = aet;
         if (device != null)

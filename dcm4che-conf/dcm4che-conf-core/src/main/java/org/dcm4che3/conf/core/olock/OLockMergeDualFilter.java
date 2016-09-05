@@ -67,7 +67,7 @@ class OLockMergeDualFilter extends ADualNodeFilter {
 
     public static final String OLD_OLOCK_HASH_KEY = HashBasedOptimisticLockingConfiguration.OLD_OLOCK_HASH_KEY;
 
-    final Deque<String> path = new ArrayDeque<String>();
+    final Deque<Object> path = new ArrayDeque<Object>();
 
     /**
      * Is currently merging new (non-conflicting) stuff from backend into the new node (being persisted)

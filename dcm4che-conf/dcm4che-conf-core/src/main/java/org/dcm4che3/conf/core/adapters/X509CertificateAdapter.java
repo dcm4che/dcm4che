@@ -39,10 +39,12 @@
  */
 package org.dcm4che3.conf.core.adapters;
 
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
+import org.dcm4che3.conf.core.context.LoadingContext;
+import org.dcm4che3.conf.core.context.ProcessingContext;
+import org.dcm4che3.conf.core.context.SavingContext;
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.util.Base64;
 
 import java.io.ByteArrayInputStream;
@@ -61,7 +63,7 @@ public class X509CertificateAdapter implements ConfigTypeAdapter<X509Certificate
     private CertificateFactory certificateFactory;
 
     @Override
-    public X509Certificate fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public X509Certificate fromConfigNode(String configNode, ConfigProperty property, LoadingContext ctx, Object parent) throws ConfigurationException {
         try {
             final byte[] base64 = Base64.fromBase64(configNode);
             return (X509Certificate) getX509Factory().generateCertificate(new ByteArrayInputStream(base64));
@@ -78,7 +80,7 @@ public class X509CertificateAdapter implements ConfigTypeAdapter<X509Certificate
     }
 
     @Override
-    public String toConfigNode(X509Certificate object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public String toConfigNode(X509Certificate object, ConfigProperty property, SavingContext ctx) throws ConfigurationException {
         try {
             return Base64.toBase64(object.getEncoded());
         } catch (CertificateEncodingException e) {
@@ -87,7 +89,7 @@ public class X509CertificateAdapter implements ConfigTypeAdapter<X509Certificate
     }
 
     @Override
-    public Map<String, Object> getSchema(AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public Map<String, Object> getSchema(ConfigProperty property, ProcessingContext ctx) throws ConfigurationException {
         Map<String, Object> metadata = new HashMap<String, Object>();
         metadata.put("type", "string");
         metadata.put("class", "Base64,X509");
@@ -95,7 +97,7 @@ public class X509CertificateAdapter implements ConfigTypeAdapter<X509Certificate
     }
 
     @Override
-    public String normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public String normalize(Object configNode, ConfigProperty property, ProcessingContext ctx) throws ConfigurationException {
         return (String) configNode;
     }
 }

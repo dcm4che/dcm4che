@@ -41,6 +41,7 @@ package org.dcm4che3.conf.core;
 
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -65,28 +66,33 @@ public class DelegatingConfiguration implements Configuration {
     }
 
     @Override
-    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
+    public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
         return delegate.getConfigurationNode(path, configurableClass);
     }
 
     @Override
-    public boolean nodeExists(String path) throws ConfigurationException {
+    public boolean nodeExists(Path path) throws ConfigurationException {
         return delegate.nodeExists(path);
     }
 
     @Override
-    public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
         delegate.persistNode(path, configNode, configurableClass);
     }
 
     @Override
-    public void refreshNode(String path) throws ConfigurationException {
+    public void refreshNode(Path path) throws ConfigurationException {
         delegate.refreshNode(path);
     }
 
     @Override
-    public void removeNode(String path) throws ConfigurationException {
+    public void removeNode(Path path) throws ConfigurationException {
         delegate.removeNode(path);
+    }
+
+    @Override
+    public Path getPathByUUID(String uuid) {
+        return delegate.getPathByUUID(uuid);
     }
 
     @Override

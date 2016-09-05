@@ -39,14 +39,13 @@
  */
 package org.dcm4che3.conf.dicom;
 
+import org.dcm4che3.conf.api.TCGroupsProvider;
 import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.net.AEExtension;
+import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.hl7.HL7Application;
-import org.dcm4che3.net.hl7.HL7ApplicationExtension;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
 
 import java.util.*;
@@ -56,6 +55,9 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
 
     public CommonDicomConfigurationWithHL7(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass) {
         super(configurationStorage, extensionsByClass);
+    }
+    public CommonDicomConfigurationWithHL7(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass, boolean doCacheTCGroups) {
+        super(configurationStorage, extensionsByClass, doCacheTCGroups);
     }
 
 
@@ -73,7 +75,7 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
         String pathForDeviceName = DicomPath.DeviceNameByHL7AppName.set("hl7AppName", name).path();
 
         try {
-            Iterator search = config.search(pathForDeviceName);
+            Iterator search = lowLevelConfig.search(pathForDeviceName);
             String deviceName = (String) search.next();
 
             Device device = findDevice(deviceName);
@@ -91,7 +93,7 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
         String hl7NamesPath = DicomPath.AllHL7AppNames.path();
         List<String> list = new ArrayList<String>();
         try {
-            Iterator search = config.search(hl7NamesPath);
+            Iterator search = lowLevelConfig.search(hl7NamesPath);
             while (search.hasNext())
                 list.add((String) search.next());
         } catch (Exception e) {

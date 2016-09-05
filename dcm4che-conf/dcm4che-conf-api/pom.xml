@@ -28,14 +28,16 @@
 
         <dependency>
             <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-conf-core-api</artifactId>
+            <artifactId>dcm4che-conf-core</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
+            <groupId>org.dcm4che</groupId>
+            <artifactId>dcm4che-conf-core-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>

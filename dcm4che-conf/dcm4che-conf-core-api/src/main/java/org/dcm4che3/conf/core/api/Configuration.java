@@ -85,6 +85,7 @@ public interface Configuration extends BatchRunner {
     String WEAK_REFERENCE_KEY = "weakReference";
     String REFERENCE_BY_UUID_PATTERN = "//*[_.uuid='{uuid}']";
 
+
     enum ConfigStorageType {
         JSON_FILE,
         DB_BLOBS;
@@ -107,7 +108,7 @@ public interface Configuration extends BatchRunner {
      * @return configuration node or null, if not found
      * @throws ConfigurationException
      */
-    Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException;
+    Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException;
 
     /**
      * Tests if a node under the specified path exists.
@@ -116,18 +117,17 @@ public interface Configuration extends BatchRunner {
      * @return
      * @throws ConfigurationException
      */
-    boolean nodeExists(String path) throws ConfigurationException;
+    boolean nodeExists(Path path) throws ConfigurationException;
 
     /**
      * Persists the configuration node to the specified path.
      * The path must exist (or at least all nodes but the last one).
      * The property is created/fully overwritten, i.e. if there were any child nodes in the old root that are not present in the new node root, they will be deleted in the new tree.
-     *
-     * @param path              path to the node
+     *  @param path              path to the node
      * @param configNode        configuration node to persist
      * @param configurableClass class annotated with ConfigurableClass, ConfigurableProperty annotations that corresponds to this node.
      */
-    void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException;
+    void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException;
 
     /**
      * Invalidates any present cached state for the node
@@ -136,14 +136,18 @@ public interface Configuration extends BatchRunner {
      *
      * @param path
      */
-    void refreshNode(String path) throws ConfigurationException;
+    void refreshNode(Path path) throws ConfigurationException;
 
     /**
      * Removes a configuration node under the specified path with all its children permanently
      *
      * @param path
      */
-    void removeNode(String path) throws ConfigurationException;
+    void removeNode(Path path) throws ConfigurationException;
+
+
+    Path getPathByUUID(String uuid);
+
 
     /**
      * Performs a search on the configuration tree and returns an iterator to configuration nodes that satisfy the search criteria.

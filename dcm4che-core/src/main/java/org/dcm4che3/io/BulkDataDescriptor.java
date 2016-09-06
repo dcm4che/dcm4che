@@ -64,6 +64,8 @@ public abstract class BulkDataDescriptor {
             case Tag.SpectroscopyData:
             case Tag.OverlayData:
             case Tag.EncapsulatedDocument:
+            case Tag.FloatPixelData:
+            case Tag.DoubleFloatPixelData:
             case Tag.PixelData:
                 return itemPointer.length == 0;
             case Tag.WaveformData:

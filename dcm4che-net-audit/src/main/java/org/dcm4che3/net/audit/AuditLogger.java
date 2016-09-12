@@ -837,8 +837,6 @@ public class AuditLogger extends DeviceExtension {
 
     private SendStatus sendMessage(DatagramPacket msg) throws IncompatibleConnectionException,
             GeneralSecurityException, IOException {
-        if (auditRecordRepositoryDevices.isEmpty())
-            throw new IllegalStateException("No AuditRecordRepositoryDevice initalized");
         String deviceName;
         SendStatus status = SendStatus.SENT;
         for (Device arrDev : auditRecordRepositoryDevices) {

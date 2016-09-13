@@ -303,22 +303,61 @@ public class ConfigNodeTraverser {
             // map, where a value generics parameter is a configurable class
             if (property.isMapOfConfObjects()) {
 
-                try {
-                    Map<String, Object> collection1 = (Map<String, Object>) childNode1;
-                    Map<String, Object> collection2 = (Map<String, Object>) childNode2;
 
-                    for (String key : collection1.keySet()) {
-                        dualTraverseNodeTypesafe(
-                                collection1.get(key),
-                                collection2.get(key),
-                                property.getPseudoPropertyForConfigClassCollectionElement(),
-                                allExtensionClasses,
-                                filter
+                Map<String, Map<String, Object>> mapNode1 = (Map) childNode1;
+                Map<String, Map<String, Object>> mapNode2 = (Map) childNode2;
+
+                if (allEntriesAreNodesAndHaveUuids(mapNode1) &&
+                        allEntriesAreNodesAndHaveUuids(mapNode2)) {
+                    // conf objects with uuids
+
+                    // match on #uuid
+                    // extract Map uuid -> index
+                    Map<String, String> index1 = new HashMap<String, String>();
+                    for (Entry<String, Map<String, Object>> stringMapEntry : mapNode1.entrySet()) {
+                        index1.put(
+                                (String) stringMapEntry.getValue().get(Configuration.UUID_KEY),
+                                stringMapEntry.getKey()
                         );
                     }
 
-                } catch (ClassCastException e) {
-                    log.warn("Map is malformed", e);
+                    for (Entry<String, Map<String, Object>> stringMapEntry : mapNode2.entrySet()) {
+                        Object uuidInSecondMapValue = stringMapEntry.getValue().get(Configuration.UUID_KEY);
+                        String mapKeyInFirstMap = index1.get(uuidInSecondMapValue);
+
+                        if (mapKeyInFirstMap != null) {
+                            dualTraverseNodeTypesafe(
+                                    mapNode1.get(mapKeyInFirstMap),
+                                    stringMapEntry.getValue(),
+                                    property.getPseudoPropertyForConfigClassCollectionElement(),
+                                    allExtensionClasses,
+                                    filter);
+
+                        }
+
+                    }
+
+
+                } else {
+                    // conf objects without uuids
+
+                    try {
+                        Map<String, Object> collection1 = (Map<String, Object>) childNode1;
+                        Map<String, Object> collection2 = (Map<String, Object>) childNode2;
+
+                        for (String key : collection1.keySet()) {
+                            dualTraverseNodeTypesafe(
+                                    collection1.get(key),
+                                    collection2.get(key),
+                                    property.getPseudoPropertyForConfigClassCollectionElement(),
+                                    allExtensionClasses,
+                                    filter
+                            );
+                        }
+
+                    } catch (ClassCastException e) {
+                        log.warn("Map is malformed", e);
+                    }
                 }
 
                 continue;
@@ -417,18 +456,57 @@ public class ConfigNodeTraverser {
 
         filter.beforeNode(node1, node2);
 
-        if (node1 != null && node2 != null)
-            for (Map.Entry<String, Object> objectEntry : node1.entrySet())
-                if (node2.containsKey(objectEntry.getKey())) {
+        if (node1 != null && node2 != null) {
 
-                    filter.beforeNodeProperty(objectEntry.getKey());
 
-                    Object node1El = objectEntry.getValue();
-                    Object node2El = node2.get(objectEntry.getKey());
-                    dualTraverseProperty(node1El, node2El, filter);
 
-                    filter.afterNodeProperty(objectEntry.getKey());
+            if (allEntriesAreNodesAndHaveUuids(node1) &&
+                    allEntriesAreNodesAndHaveUuids(node2)) {
+                // conf objects with uuids
+
+                Map<String, Map<String, Object>> mapNode1 = (Map) node1;
+                Map<String, Map<String, Object>> mapNode2 = (Map) node2;
+
+                // match on #uuid
+                // extract Map uuid -> index
+                Map<String, String> index1 = new HashMap<String, String>();
+                for (Entry<String, Map<String, Object>> stringMapEntry : mapNode1.entrySet()) {
+                    index1.put(
+                            (String) stringMapEntry.getValue().get(Configuration.UUID_KEY),
+                            stringMapEntry.getKey()
+                    );
                 }
+
+                for (Entry<String, Map<String, Object>> stringMapEntry : mapNode2.entrySet()) {
+                    Object uuidInSecondMapValue = stringMapEntry.getValue().get(Configuration.UUID_KEY);
+                    String mapKeyInFirstMap = index1.get(uuidInSecondMapValue);
+
+                    if (mapKeyInFirstMap != null) {
+                        dualTraverseProperty(
+                                mapNode1.get(mapKeyInFirstMap),
+                                stringMapEntry.getValue(),
+                                filter);
+                    }
+
+                }
+
+
+            } else {
+                // conf objects without uuids
+
+                for (Entry<String, Object> objectEntry : node1.entrySet())
+                    if (node2.containsKey(objectEntry.getKey())) {
+
+                        filter.beforeNodeProperty(objectEntry.getKey());
+
+                        Object node1El = objectEntry.getValue();
+                        Object node2El = node2.get(objectEntry.getKey());
+                        dualTraverseProperty(node1El, node2El, filter);
+
+                        filter.afterNodeProperty(objectEntry.getKey());
+                    }
+            }
+        }
 
         filter.afterNode(node1, node2);
     }
@@ -499,6 +577,14 @@ public class ConfigNodeTraverser {
 
     private static boolean allElementsAreNodesAndHaveUuids(List list) {
         for (Object o : list) {
+            if (!(o instanceof Map)) return false;
+            if (!(((Map) o).get(Configuration.UUID_KEY) instanceof String)) return false;
+        }
+        return true;
+    }
+
+    private static boolean allEntriesAreNodesAndHaveUuids(Map map) {
+        for (Object o : map.values()) {
             if (!(o instanceof Map)) return false;
             if (!(((Map) o).get(Configuration.UUID_KEY) instanceof String)) return false;
         }

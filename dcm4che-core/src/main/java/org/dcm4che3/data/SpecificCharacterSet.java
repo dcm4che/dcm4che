@@ -93,8 +93,10 @@ import java.util.StringTokenizer;
  */
 public class SpecificCharacterSet {
     
-    public static SpecificCharacterSet DEFAULT =
-            new SpecificCharacterSet(new Codec[]{Codec.ISO_646}, "ISO_IR 100");
+    public static final SpecificCharacterSet DICOM_DEFAULT =
+            new SpecificCharacterSet(new Codec[]{Codec.ISO_646}, new String[] {null});
+    
+    public static SpecificCharacterSet DEFAULT = DICOM_DEFAULT;
 
     private static ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = 
             new ThreadLocal<SoftReference<Encoder>>();
@@ -479,12 +481,12 @@ public class SpecificCharacterSet {
     }
 
     public static final void setDefaultCharacterSet(String characterSet) {
-        DEFAULT = valueOf(characterSet);
+        DEFAULT = characterSet == null ? DICOM_DEFAULT : valueOf(characterSet);
     }
 
     public static SpecificCharacterSet valueOf(String... codes) {
         if (codes == null || codes.length == 0)
-            return DEFAULT;
+            return DICOM_DEFAULT;
 
         Codec[] infos = new Codec[codes.length];
         for (int i = 0; i < codes.length; i++)

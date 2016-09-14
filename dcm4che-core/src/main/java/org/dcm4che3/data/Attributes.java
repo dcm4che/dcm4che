@@ -471,7 +471,7 @@ public class Attributes implements Serializable {
     public SpecificCharacterSet getSpecificCharacterSet(VR vr) {
         return vr.useSpecificCharacterSet()
                 ? getSpecificCharacterSet()
-                : SpecificCharacterSet.DEFAULT;
+                : SpecificCharacterSet.DICOM_DEFAULT;
     }
 
     private double[] decodeDSValue(int index) {
@@ -485,7 +485,7 @@ public class Attributes implements Serializable {
         double[] ds;
         if (value instanceof byte[])
             value = vrs[index].toStrings((byte[]) value, bigEndian,
-                    SpecificCharacterSet.DEFAULT);
+                    SpecificCharacterSet.DICOM_DEFAULT);
         if (value instanceof String) {
             String s = (String) value;
             if (s.isEmpty()) {
@@ -518,7 +518,7 @@ public class Attributes implements Serializable {
         int[] is;
         if (value instanceof byte[])
             value = vrs[index].toStrings((byte[]) value, bigEndian,
-                    SpecificCharacterSet.DEFAULT);
+                    SpecificCharacterSet.DICOM_DEFAULT);
         if (value instanceof String) {
             String s = (String) value;
             if (s.isEmpty()) {
@@ -1459,8 +1459,9 @@ public class Attributes implements Serializable {
             return cs;
 
         if (containsSpecificCharacterSet)
-            cs = SpecificCharacterSet.valueOf(
-                    getStrings(null, Tag.SpecificCharacterSet, VR.CS));
+            cs = containsValue(Tag.SpecificCharacterSet) ? 
+            		SpecificCharacterSet.valueOf(getStrings(null, Tag.SpecificCharacterSet, VR.CS)) : 
+            		SpecificCharacterSet.DEFAULT;
         else if (parent != null)
             return parent.getSpecificCharacterSet();
         else

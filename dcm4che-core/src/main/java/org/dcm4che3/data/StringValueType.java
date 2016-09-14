@@ -285,7 +285,7 @@ enum StringValueType implements ValueType {
     }
 
     private SpecificCharacterSet cs(SpecificCharacterSet cs) {
-        return useSpecificCharacterSet ? cs : SpecificCharacterSet.DEFAULT;
+        return useSpecificCharacterSet ? cs : SpecificCharacterSet.DICOM_DEFAULT;
     }
 
     @Override

@@ -84,6 +84,7 @@
     <module>dcm4che-tool-jpg2dcm</module>
     <module>dcm4che-tool-dcm2json</module>
     <module>dcm4che-tool-stowrs</module>
+    <module>dcm4che-tool-json2rst</module>
   </modules>
   <build>
     <plugins>

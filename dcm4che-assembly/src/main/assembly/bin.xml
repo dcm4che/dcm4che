@@ -145,6 +145,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-ianscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-json2dcm</include>
+        <include>org.dcm4che.tool:dcm4che-tool-json2rst</include>
         <include>org.dcm4che.tool:dcm4che-tool-jpg2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-mkkos</include>
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>

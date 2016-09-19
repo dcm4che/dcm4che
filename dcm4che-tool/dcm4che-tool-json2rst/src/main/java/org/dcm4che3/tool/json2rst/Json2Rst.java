@@ -114,9 +114,9 @@ public class Json2Rst {
         out.println();
         out.print(".. tabularcolumns:: ");
         out.println(tabularColumns);
-        out.print(".. csv-table:: **");
+        out.print(".. csv-table:: ");
         out.print(title);
-        out.print(" Attributes** (LDAP Object: ");
+        out.print(" Attributes (LDAP Object: ");
         int endIndex = outFileName.length() - 4;
         if (outFileName.startsWith("hl7"))
             out.print(outFileName.substring(0, endIndex));

@@ -53,7 +53,6 @@ import javax.naming.ldap.ControlFactory;
  *
  * @param <R> Configuration root class
  */
-@ConfigurableClass()
 public interface TypeSafeConfiguration<R> {
 
     <T> T load(Path path, Class<T> clazz);
@@ -61,7 +60,18 @@ public interface TypeSafeConfiguration<R> {
 
     <T> void save(Path path, T object, Class<T> clazz);
 
+    /**
+     * @param uuid uuid of the configurable object
+     * @param clazz expected class of the configured object
+     * @return configured object or null if an object with this UUID not found
+     */
     <T> T findByUUID(String uuid, Class<T> clazz);
+
+    /**
+     * @param uuid uuid of the configurable object
+     * @param clazz expected class of the configured object
+     * @return configured object or null if an object with this UUID not found
+     */
     <T> T findByUUID(String uuid, Class<T> clazz, LoadingContext ctx);
 
     Configuration getLowLevelAccess();

@@ -47,6 +47,7 @@ import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.Nodes;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.TCGroupConfigAEExtension;
@@ -102,6 +103,9 @@ public class AlternativeTCLoader {
 
                 // override any entries that might have been added before
                 applicationEntity.setTransferCapabilities(new ArrayList<TransferCapability>());
+
+                // Always add CEcho SCP
+                applicationEntity.addTransferCapability(new TransferCapability("CEcho SCP", UID.VerificationSOPClass, TransferCapability.Role.SCP, UID.ImplicitVRLittleEndian));
 
                 // add processed TCs from pre-configured groups to this ae
                 for (Map.Entry<String, TCGroupConfigAEExtension.TCGroupDetails> tcGroupRefEntry : tcGroupConfigAEExtension.getScpTCs().entrySet())

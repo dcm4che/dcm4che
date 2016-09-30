@@ -2359,6 +2359,11 @@ public class Attributes implements Serializable {
             VR vr = srcVRs[i];
             Object value = srcValues[i];
             if (TagUtils.isPrivateCreator(tag)) {
+                if (vr != VR.LO) {
+                    LOG.info("Private Creator Element with wrong VR corrected! tag:{}, vr:{}, value:{}",
+                            TagUtils.toString(tag), vr, value);
+                    srcVRs[i] = VR.LO;
+                }
                 continue; // private creators will be automatically added with the private tags
             }
 

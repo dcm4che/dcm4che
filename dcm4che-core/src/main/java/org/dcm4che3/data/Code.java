@@ -151,7 +151,7 @@ public class Code implements Serializable {
         return codingSchemeVersion;
     }
 
-    public final String getCodeMeaning() {
+    public String getCodeMeaning() {
         return codeMeaning;
     }
 

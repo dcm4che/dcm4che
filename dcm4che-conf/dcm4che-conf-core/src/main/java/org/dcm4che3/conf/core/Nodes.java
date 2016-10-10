@@ -104,7 +104,7 @@ public class Nodes {
 
         if (node instanceof Map) {
             Map givenMapNode = (Map) node;
-            Map newMapNode = new TreeMap();
+            Map newMapNode = new HashMap(givenMapNode.size());
             for (Entry e : (Set<Entry>) givenMapNode.entrySet()) {
                 newMapNode.put(e.getKey(), deepCloneNode(e.getValue()));
             }

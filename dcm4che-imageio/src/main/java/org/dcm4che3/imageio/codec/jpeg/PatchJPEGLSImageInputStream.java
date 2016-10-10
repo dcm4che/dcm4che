@@ -84,7 +84,7 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
         int len = b.length;
         iis.mark();
         while (len > 0) {
-            int n = read(b, off, len);
+            int n = iis.read(b, off, len);
             if (n == -1) {
                 b = Arrays.copyOf(b, 256 - len);
                 break;

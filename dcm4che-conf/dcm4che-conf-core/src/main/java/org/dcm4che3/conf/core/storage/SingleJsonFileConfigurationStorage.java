@@ -39,19 +39,23 @@
  */
 package org.dcm4che3.conf.core.storage;
 
-import java.io.*;
-import java.nio.file.Paths;
-import java.util.*;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Roman K
@@ -68,7 +72,6 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     public static final String USE_GIT_SYSPROP = "org.dcm4che.conf.experimental.useGit";
 
     private String fileName;
-    private boolean makeGitCommitOnPersist = false;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -87,7 +90,6 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 
     public SingleJsonFileConfigurationStorage(String fileName) {
         this.fileName = fileName;
-        if (System.getProperties().containsKey(USE_GIT_SYSPROP)) makeGitCommitOnPersist = true;
 
     }
 
@@ -99,7 +101,8 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 
         this.fileName = StringUtils.replaceSystemProperties(fileName);
 
-        if (props.containsKey(USE_GIT_SYSPROP)) makeGitCommitOnPersist = true;
+        if (props.containsKey(USE_GIT_SYSPROP))
+            ;
 
     }
 
@@ -146,52 +149,8 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
         }
 
 
-        commitToGitIfConfigured(path.toSimpleEscapedXPath());
-
         log.info("Configuration updated at path " + path);
 
-    }
-
-    private void commitToGitIfConfigured(String path) {
-        if (makeGitCommitOnPersist) {
-
-            try {
-                ProcessBuilder processBuilder = new ProcessBuilder();
-
-                processBuilder
-                        .redirectErrorStream(true)
-                        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                        .directory(Paths.get(fileName).getParent().toFile());
-
-                processBuilder
-                        .command("git", "init")
-                        .start().waitFor();
-
-                processBuilder
-                        .command("git", "add", "-A")
-                        .start().waitFor();
-
-                // add stacktrace to commitMsg
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                PrintStream ps = new PrintStream(baos);
-                new RuntimeException().printStackTrace(ps);
-                String niceStackTrace = baos.toString();
-                niceStackTrace = niceStackTrace.replace("\"", "\\\"");
-                String[] lines = niceStackTrace.split("\n");
-                // remove the exception line itself
-                niceStackTrace = String.join("\n", Arrays.copyOfRange(lines, 1, lines.length));
-
-                String commitMsg = "\"Changed path " + path + "\n" + niceStackTrace + "\"";
-
-                processBuilder
-                        .command("git", "commit", "-m", commitMsg)
-                        .start().waitFor();
-
-
-            } catch (Exception e) {
-                throw new ConfigurationException("Cannot commit to git repo", e);
-            }
-        }
     }
 
     @Override

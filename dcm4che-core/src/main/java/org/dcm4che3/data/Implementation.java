@@ -48,7 +48,9 @@ public class Implementation {
     private static String versionName() {
 
         String configuredVersion = System.getProperty( "org.dcm4che.ImplementationVersionName" );
-        if ( configuredVersion != null ) return configuredVersion;
+        if ( configuredVersion != null ) {
+            return configuredVersion.substring( 0, Math.min( 16, configuredVersion.length() ) );
+        }
 
         StringBuilder sb = new StringBuilder( 16 );
         sb.append("dcm4che-");

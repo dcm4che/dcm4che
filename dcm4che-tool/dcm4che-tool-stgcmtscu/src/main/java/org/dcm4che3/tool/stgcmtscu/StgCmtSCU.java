@@ -129,10 +129,9 @@ public class StgCmtSCU {
                      Attributes rsp = Commands.mkNEventReportRSP(cmd, status);
                      Attributes rspAttrs = StgCmtSCU.this.eventRecord(as, cmd, data);
                      as.writeDimseRSP(pc, rsp, rspAttrs);
+                     removeOutstandingResult(tuid);
                  } catch (AssociationStateException e) {
                      LOG.warn("{} << N-EVENT-RECORD-RSP failed: {}", as, e.getMessage());
-                 } finally {
-                     removeOutstandingResult(tuid);
                  }
              }
     };

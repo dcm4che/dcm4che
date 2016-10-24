@@ -522,13 +522,13 @@ public class DcmQRSCP<T extends InstanceLocator> {
             configureStgCmt(main, cl);
             configureSendPending(main, cl);
             configureRemoteConnections(main, cl);
-            main.init();
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = Executors
                     .newSingleThreadScheduledExecutor();
             main.device.setScheduledExecutor(scheduledExecutorService);
             main.device.setExecutor(executorService);
             main.device.bindConnections();
+            main.init();
         } catch (ParseException e) {
             System.err.println("dcmqrscp: " + e.getMessage());
             System.err.println(rb.getString("try"));

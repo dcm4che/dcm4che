@@ -46,6 +46,7 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.SafeClose;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,15 +98,23 @@ public class SwapPxData {
     private char processFile(File file) {
         try {
             Attributes dataset;
-            try (DicomInputStream is = new DicomInputStream(file)) {
+            DicomInputStream is = null;
+            try {
+                is = new DicomInputStream(file);
                 is.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
                 dataset = is.readDataset(-1, -1);
+            } finally {
+                SafeClose.close(is);
             }
             VR.Holder vr = new VR.Holder();
             Object value = dataset.getValue(Tag.PixelData, vr);
             if ((value instanceof BulkData) && vr.vr == VR.OW) {
-                try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
+                RandomAccessFile raf = null;
+                try {
+                    raf = new RandomAccessFile(file, "rw");
                     toggleEndian(raf, (BulkData) value);
+                } finally {
+                    SafeClose.close(raf);
                 }
                 updated++;
                 return '.';

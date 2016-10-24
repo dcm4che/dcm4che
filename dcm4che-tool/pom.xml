@@ -77,6 +77,7 @@
     <module>dcm4che-tool-stgcmtscu</module>
     <module>dcm4che-tool-storescp</module>
     <module>dcm4che-tool-storescu</module>
+    <module>dcm4che-tool-swappxdata</module>
     <module>dcm4che-tool-xml2dcm</module>
     <module>dcm4che-tool-xml2hl7</module>
     <module>dcm4che-tool-xml2prefs</module>

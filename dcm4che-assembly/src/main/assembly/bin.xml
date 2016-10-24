@@ -158,6 +158,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-storescp</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-stgcmtscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-swappxdata</include>
         <include>org.dcm4che.tool:dcm4che-tool-syslog</include>
         <include>org.dcm4che.tool:dcm4che-tool-syslogd</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>

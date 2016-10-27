@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>dcm4chee-arc-light-5.7.0</version>
+    <version>dcm4chee-arc-light-5.7.1</version>
   </parent>
   <artifactId>dcm4che-emf</artifactId>
   <packaging>bundle</packaging>

@@ -386,7 +386,7 @@ public class StowRS {
         connection.setRequestMethod("POST");
 
         String metaDataType = mediaType == StowMetaDataType.XML ? "application/dicom+xml" : "application/json";
-        connection.setRequestProperty("Content-Type", "multipart/related; type=" + metaDataType + "; boundary=" + MULTIPART_BOUNDARY);
+        connection.setRequestProperty("Content-Type", "multipart/related; type=\"" + metaDataType + "\"; boundary=" + MULTIPART_BOUNDARY);
         String bulkDataTransferSyntax = "transfer-syntax=" + transferSyntax;
 
         MediaType pixelDataMediaType = getBulkDataMediaType(metadata);
@@ -513,7 +513,7 @@ public class StowRS {
         connection.setDoInput(true);
         connection.setInstanceFollowRedirects(false);
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "multipart/related; type=application/dicom; boundary=" + MULTIPART_BOUNDARY);
+        connection.setRequestProperty("Content-Type", "multipart/related; type=\"application/dicom\"; boundary=" + MULTIPART_BOUNDARY);
         connection.setRequestProperty("Accept", "application/dicom+xml");
         connection.setRequestProperty("charset", "utf-8");
         connection.setUseCaches(false);

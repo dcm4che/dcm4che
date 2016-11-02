@@ -79,7 +79,9 @@ public class DicomInputStream extends FilterInputStream
 
     public enum IncludeBulkData { NO, YES, URI }
 
-    private static final Logger LOG = 
+    public enum StopTagMatchingStrategy { ExactMatch, MatchOrExceed }
+
+    private static final Logger LOG =
         LoggerFactory.getLogger(DicomInputStream.class);
 
     private static final String UNEXPECTED_NON_ZERO_ITEM_LENGTH =
@@ -132,6 +134,7 @@ public class DicomInputStream extends FilterInputStream
     private String blkURI;
     private FileOutputStream blkOut;
     private long blkOutPos;
+    private StopTagMatchingStrategy stopStrategy = StopTagMatchingStrategy.ExactMatch;
 
     public DicomInputStream(InputStream in, String tsuid) throws IOException {
         super(in);
@@ -290,6 +293,14 @@ public class DicomInputStream extends FilterInputStream
         return fileMetaInformation;
     }
 
+    public void setStopTagMatchingStrategy(StopTagMatchingStrategy stopStrategy) {
+        this.stopStrategy = stopStrategy;
+    }
+
+    public StopTagMatchingStrategy getStopTagMatchingStrategy() {
+        return stopStrategy;
+    }
+
     public final int level() {
         return itemPointers.length;
     }
@@ -433,15 +444,25 @@ public class DicomInputStream extends FilterInputStream
      * @return file meta information and dataset
      */
     public DatasetWithFMI readDatasetWithFMI(int len, int stopTag) throws IOException {
-        Attributes dataset = readDataset(len, stopTag);
+        return readDatasetWithFMI(len, stopTag, stopStrategy);
+    }
+
+    public DatasetWithFMI readDatasetWithFMI(int len, int stopTag,
+            StopTagMatchingStrategy strategy) throws IOException {
+        Attributes dataset = readDataset(len, stopTag, strategy);
         return new DatasetWithFMI(getFileMetaInformation(), dataset);
     }
 
     public Attributes readDataset(int len, int stopTag) throws IOException {
+        return readDataset(len, stopTag, stopStrategy);
+    }
+
+    public Attributes readDataset(int len, int stopTag,
+            StopTagMatchingStrategy strategy) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian, 64);
-        readAttributes(attrs, len, stopTag);
+        readAttributes(attrs, len, stopTag, strategy);
         attrs.trimToSize();
         handler.endDataset(this);
         return attrs;
@@ -483,6 +504,12 @@ public class DicomInputStream extends FilterInputStream
 
     public void readAttributes(Attributes attrs, int len, int stopTag)
             throws IOException {
+        readAttributes(attrs, len, stopTag, stopStrategy);
+    }
+
+    public void readAttributes(Attributes attrs, int len, int stopTag,
+            StopTagMatchingStrategy strategy)
+            throws IOException {
         ItemPointer[] prevItemPointers = itemPointers;
         itemPointers = attrs.itemPointers();
         boolean undeflen = len == -1;
@@ -496,8 +523,15 @@ public class DicomInputStream extends FilterInputStream
                     break;
                 throw e;
             }
-            if (hasStopTag && tag == stopTag)
-                break;
+            if (hasStopTag) {
+                if (StopTagMatchingStrategy.MatchOrExceed.equals(strategy)) {
+                    if ((tag & 0xffffffffL) >= (stopTag & 0xfffffffffL))
+                        break;
+                } else {
+                    if (tag == stopTag)
+                        break;
+                }
+            }
             if (vr != null) {
                 boolean prevBigEndian = bigEndian;
                 boolean prevExplicitVR = explicitVR;

@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>dcm4chee-arc-light-5.7.1</version>
+    <version>dcm4chee-arc-light-5.7.2</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-tool-xml2hl7</artifactId>
@@ -52,7 +52,7 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-hl7</artifactId>
-      <version>dcm4chee-arc-light-5.7.1</version>
+      <version>dcm4chee-arc-light-5.7.2</version>
     </dependency>
   </dependencies>
 </project>

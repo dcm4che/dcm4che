@@ -79,8 +79,6 @@ public class DicomInputStream extends FilterInputStream
 
     public enum IncludeBulkData { NO, YES, URI }
 
-    public enum StopTagMatchingStrategy { ExactMatch, MatchOrExceed }
-
     private static final Logger LOG =
         LoggerFactory.getLogger(DicomInputStream.class);
 
@@ -134,7 +132,6 @@ public class DicomInputStream extends FilterInputStream
     private String blkURI;
     private FileOutputStream blkOut;
     private long blkOutPos;
-    private StopTagMatchingStrategy stopStrategy = StopTagMatchingStrategy.ExactMatch;
 
     public DicomInputStream(InputStream in, String tsuid) throws IOException {
         super(in);
@@ -293,14 +290,6 @@ public class DicomInputStream extends FilterInputStream
         return fileMetaInformation;
     }
 
-    public void setStopTagMatchingStrategy(StopTagMatchingStrategy stopStrategy) {
-        this.stopStrategy = stopStrategy;
-    }
-
-    public StopTagMatchingStrategy getStopTagMatchingStrategy() {
-        return stopStrategy;
-    }
-
     public final int level() {
         return itemPointers.length;
     }
@@ -444,25 +433,25 @@ public class DicomInputStream extends FilterInputStream
      * @return file meta information and dataset
      */
     public DatasetWithFMI readDatasetWithFMI(int len, int stopTag) throws IOException {
-        return readDatasetWithFMI(len, stopTag, stopStrategy);
+        return readDatasetWithFMI(len, stopTag, false);
     }
 
     public DatasetWithFMI readDatasetWithFMI(int len, int stopTag,
-            StopTagMatchingStrategy strategy) throws IOException {
-        Attributes dataset = readDataset(len, stopTag, strategy);
+            boolean includeStopTag) throws IOException {
+        Attributes dataset = readDataset(len, stopTag, includeStopTag);
         return new DatasetWithFMI(getFileMetaInformation(), dataset);
     }
 
     public Attributes readDataset(int len, int stopTag) throws IOException {
-        return readDataset(len, stopTag, stopStrategy);
+        return readDataset(len, stopTag, false);
     }
 
     public Attributes readDataset(int len, int stopTag,
-            StopTagMatchingStrategy strategy) throws IOException {
+            boolean includeStopTag) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian, 64);
-        readAttributes(attrs, len, stopTag, strategy);
+        readAttributes(attrs, len, stopTag, includeStopTag);
         attrs.trimToSize();
         handler.endDataset(this);
         return attrs;
@@ -504,16 +493,16 @@ public class DicomInputStream extends FilterInputStream
 
     public void readAttributes(Attributes attrs, int len, int stopTag)
             throws IOException {
-        readAttributes(attrs, len, stopTag, stopStrategy);
+        readAttributes(attrs, len, stopTag, false);
     }
 
     public void readAttributes(Attributes attrs, int len, int stopTag,
-            StopTagMatchingStrategy strategy)
-            throws IOException {
+            boolean includeStopTag) throws IOException {
         ItemPointer[] prevItemPointers = itemPointers;
         itemPointers = attrs.itemPointers();
         boolean undeflen = len == -1;
         boolean hasStopTag = stopTag != -1;
+        boolean stopAfterReadingStopTag = false;
         long endPos =  pos + (len & 0xffffffffL);
         while (undeflen || this.pos < endPos) {
             try {
@@ -523,13 +512,11 @@ public class DicomInputStream extends FilterInputStream
                     break;
                 throw e;
             }
-            if (hasStopTag) {
-                if (StopTagMatchingStrategy.MatchOrExceed.equals(strategy)) {
-                    if ((tag & 0xffffffffL) >= (stopTag & 0xfffffffffL))
-                        break;
+            if (hasStopTag && tag == stopTag) {
+                if (!includeStopTag) {
+                    break;
                 } else {
-                    if (tag == stopTag)
-                        break;
+                    stopAfterReadingStopTag = true;
                 }
             }
             if (vr != null) {
@@ -554,6 +541,17 @@ public class DicomInputStream extends FilterInputStream
                 }
             } else
                 skipAttribute(UNEXPECTED_ATTRIBUTE);
+
+            if (stopAfterReadingStopTag) {
+                try {
+                    readHeader();
+                    break;
+                } catch (EOFException e) {
+                    if (undeflen && pos == tagPos)
+                        break;
+                    throw e;
+                }
+            }
         }
         itemPointers = prevItemPointers;
     }

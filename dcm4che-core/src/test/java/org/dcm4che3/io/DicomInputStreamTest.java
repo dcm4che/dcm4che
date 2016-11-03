@@ -9,7 +9,6 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.io.DicomInputStream.StopTagMatchingStrategy;
 import org.junit.Test;
 
 /**
@@ -53,25 +52,23 @@ public class DicomInputStreamTest {
     }
 
     @Test
-    public void testStopStrategyExactMatch() throws Exception {
+    public void testReadDatasetExcludesStopTagByDefault() throws Exception {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         DicomInputStream in = new DicomInputStream(
                 new File(cl.getResource("OT-PAL-8-face").toURI()));
         try {
             in.setAddBulkDataReferences(true);
             in.setIncludeBulkData(IncludeBulkData.URI);
-            in.setStopTagMatchingStrategy(StopTagMatchingStrategy.ExactMatch);
-            // this stop tag doesn't exist, so the full object should be read
-            Attributes attrs = in.readDataset(-1, Tag.SeriesInstanceUID + 1);
-            assertTrue(attrs.contains(Tag.PixelData));
-            assertEquals(Tag.PixelData, in.tag());
+            Attributes attrs = in.readDataset(-1, Tag.BitsAllocated);
+            assertFalse(attrs.contains(Tag.BitsAllocated));
+            assertEquals(Tag.BitsAllocated, in.tag());
         } finally {
             in.close();
         }
     }
 
     @Test
-    public void testStopStrategyMatchOrExceedExclusive() throws Exception {
+    public void testReadDatasetIncludeStopTag() throws Exception {
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         DicomInputStream in = new DicomInputStream(
@@ -79,31 +76,9 @@ public class DicomInputStreamTest {
         try {
             in.setAddBulkDataReferences(true);
             in.setIncludeBulkData(IncludeBulkData.URI);
-            in.setStopTagMatchingStrategy(StopTagMatchingStrategy.MatchOrExceed);
-            // expect to stop reading dataset just before reading series iuid
-            Attributes attrs = in.readDataset(-1, Tag.SeriesInstanceUID);
-            assertTrue(!attrs.contains(Tag.SeriesInstanceUID));
-            assertEquals(Tag.SeriesInstanceUID, in.tag());
-        } finally {
-            in.close();
-        }
-    }
-
-    @Test
-    public void testStopStrategyMatchOrExceedInclusive() throws Exception {
-
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        DicomInputStream in = new DicomInputStream(
-                new File(cl.getResource("OT-PAL-8-face").toURI()));
-        try {
-            in.setAddBulkDataReferences(true);
-            in.setIncludeBulkData(IncludeBulkData.URI);
-            in.setStopTagMatchingStrategy(StopTagMatchingStrategy.MatchOrExceed);
-            // expect to stop reading dataset right after reading series iuid
-            Attributes attrs = in.readDataset(-1, Tag.SeriesInstanceUID + 1);
-            assertTrue(attrs.contains(Tag.SeriesInstanceUID));
-            // next tag after SeriesInstanceUID in this object
-            assertEquals(Tag.SeriesNumber, in.tag());
+            Attributes attrs = in.readDataset(-1, Tag.BitsAllocated, true);
+            assertTrue(attrs.contains(Tag.BitsAllocated));
+            assertEquals(Tag.BitsStored, in.tag());
         } finally {
             in.close();
         }

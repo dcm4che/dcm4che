@@ -49,7 +49,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
@@ -63,7 +62,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -80,7 +78,6 @@ import org.dcm4che3.json.JSONReader;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.stowrs.test.StowRSResponse;
-import org.dcm4che3.tool.stowrs.test.StowRSTool.StowMetaDataType;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.ws.rs.MediaTypes;
@@ -90,11 +87,15 @@ import org.xml.sax.SAXException;
 
 /**
  * STOW-RS client.
- * 
+ *
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
  */
 public class StowRS {
+
+    public enum MetaDataType {
+        JSON, XML, NO_METADATA_DICOM;
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(StowRS.class);
 
@@ -106,18 +107,18 @@ public class StowRS {
     private final List<StowRSResponse> responses = new ArrayList<StowRSResponse>();
     private static ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.stowrs.messages");
 
-    private StowMetaDataType mediaType;
+    private MetaDataType mediaType;
     private String transferSyntax;
     private List<File> files = new ArrayList<File>();
 
-    public StowRS() {
-        // empty
+    private StowRS() {
+        // Should only be used by main(), which fills in all the required fields.
     }
 
-    public StowRS(Attributes overrideAttrs, StowMetaDataType mediaType, List<File> files, String url, String ts) {
+    public StowRS(Attributes overrideAttrs, MetaDataType mediaType, List<File> files, String url, String transferSyntax) {
         this.URL = url;
         this.keys = overrideAttrs;
-        this.transferSyntax = ts;
+        this.transferSyntax = transferSyntax;
         this.mediaType = mediaType;
         this.files = files;
     }
@@ -126,66 +127,76 @@ public class StowRS {
     public static void main(String[] args) {
         CommandLine cl = null;
         try {
-
             cl = parseComandLine(args);
+        } catch (ParseException e) {
+            failWithError("Error parsing commandline: \n", e);
+        }
+
+        if (!cl.hasOption("u")) {
+            failWithError("Missing required option -u");
+        }
+
+        if (cl.hasOption("t") && !cl.hasOption("ts")) {
+            failWithError("Option ts is required when sending metadata.");
+        } else if (cl.hasOption("ts") && !cl.hasOption("t")) {
+            failWithError("Option ts is only valid when sending metadata.");
+        }
+
+        if (cl.getArgList().isEmpty()) {
+            failWithError("Error: missing files.");
+        }
+
+        try {
             StowRS instance = new StowRS();
-            if (cl.hasOption("m"))
+            if (cl.hasOption("m")) {
                 instance.keys = configureKeys(instance, cl);
-            if (!cl.hasOption("u")) {
-                throw new IllegalArgumentException("Missing url");
-            } else {
-                instance.URL = cl.getOptionValue("u");
             }
-            
+            instance.URL = cl.getOptionValue("u");
+
             if (cl.hasOption("t")) {
-                if (!cl.hasOption("ts")) {
-                    throw new MissingArgumentException("Missing option required option ts when sending metadata");
-                } else {
-                    instance.setTransferSyntax(cl.getOptionValue("ts"));
-                }
+                instance.transferSyntax = cl.getOptionValue("ts");
 
                 String mediaTypeString = cl.getOptionValue("t");
                 if ("JSON".equalsIgnoreCase(mediaTypeString)) {
-                    instance.mediaType = StowMetaDataType.JSON;
+                    instance.mediaType = MetaDataType.JSON;
                 } else if ("XML".equalsIgnoreCase(mediaTypeString)) {
-                    instance.mediaType = StowMetaDataType.XML;
+                    instance.mediaType = MetaDataType.XML;
                 } else {
-                    throw new IllegalArgumentException("Bad Type " + mediaTypeString + " specified for metadata, specify either XML or JSON");
+                    failWithError("Bad Type " + mediaTypeString + " specified for metadata; specify either XML or JSON");
                 }
-            }
-            else {
-                instance.mediaType = StowMetaDataType.NO_METADATA_DICOM;
-            }
-
-            for (Iterator<String> iter = cl.getArgList().iterator(); iter.hasNext();) {
-                instance.files.add(new File(iter.next()));
+            } else {
+                instance.mediaType = MetaDataType.NO_METADATA_DICOM;
             }
 
-            if (instance.files.isEmpty())
-                throw new IllegalArgumentException("Missing files");
-            
-            instance.stow();
+            instance.files.addAll(cl.getArgList());
 
         } catch (Exception e) {
-            if (!cl.hasOption("u")) {
-                LOG.error("stowrs: missing required option -u");
-                LOG.error("Try 'stowrs --help' for more information.");
-                System.exit(2);
-            } else {
-                LOG.error("Error: \n", e);
-                e.printStackTrace();
-            }
-
+            LOG.error("Error: \n", e);
+            e.printStackTrace();
+            System.exit(2);
         }
     }
 
-    public void stow() {
+    private static void failWithError(String message) {
+        failWithError(message, null);
+    }
 
+    private static void failWithError(String message, Exception e) {
+        if (e == null) {
+            LOG.error(message);
+        } else {
+            LOG.error(message, e);
+        }
+        LOG.error("Try 'stowrs --help' for more information.");
+
+        System.exit(2);
+    }
+
+    public void stow() {
         for (File file : files) {
-            
             LOG.info("Sending {}", file);
-            
-            if (mediaType == StowMetaDataType.NO_METADATA_DICOM) {
+
+            if (mediaType == MetaDataType.NO_METADATA_DICOM) {
                 stowDicomFile(file);
             } else {
                 stowMetaDataAndBulkData(file);
@@ -194,24 +205,23 @@ public class StowRS {
     }
 
     private void stowMetaDataAndBulkData(File file) {
-
         Attributes metadata;
-        if (mediaType == StowMetaDataType.JSON) {
+        if (mediaType == MetaDataType.JSON) {
             try {
                 metadata = parseJSON(file.getPath());
             } catch (Exception e) {
                 LOG.error("error parsing metadata JSON file {}", file, e);
                 return;
             }
-        } else if (mediaType == StowMetaDataType.XML) {
-
+        } else if (mediaType == MetaDataType.XML) {
             metadata = new Attributes();
             try {
                 ContentHandlerAdapter ch = new ContentHandlerAdapter(metadata);
                 SAXParserFactory.newInstance().newSAXParser().parse(file, ch);
                 Attributes fmi = ch.getFileMetaInformation();
-                if (fmi != null)
-                	metadata.addAll(fmi);
+                if (fmi != null) {
+                  metadata.addAll(fmi);
+                }
             } catch (Exception e) {
                 LOG.error("error parsing metadata XML file {}", file, e);
                 return;
@@ -223,20 +233,15 @@ public class StowRS {
         ExtractedBulkData extractedBulkData = extractBulkData(metadata);
 
         if (isMultiFrame(metadata)) {
-
             if (extractedBulkData.pixelDataBulkData.size() > 1) {
-
-                // multiple fragments - reject
+                // Multiple fragments - reject.
                 LOG.error("Compressed multiframe with multiple fragments in file {} is not supported by STOW-RS in the current DICOM standard (2015b)", file);
-
                 return;
             }
         }
 
         if (!extractedBulkData.pixelDataBulkData.isEmpty()) {
-
-            // replace the pixel data bulk data URI, because we might have to merge multiple fragments into one
-
+            // Replace the pixel data bulk data URI, because we might have to merge multiple fragments into one.
             metadata.setValue(Tag.PixelData, metadata.getVR(Tag.PixelData), new BulkData(null, extractedBulkData.pixelDataBulkDataURI, extractedBulkData.pixelDataBulkData.get(0).bigEndian));
         }
 
@@ -249,10 +254,8 @@ public class StowRS {
 
     private void stowDicomFile(File file) {
         try {
-
             addResponse(sendDicomFile(URL, file));
             LOG.info(file.getPath() + " with size : " + file.length());
-
         } catch (IOException e) {
             LOG.error("Error for file {}", file, e);
         }
@@ -270,7 +273,6 @@ public class StowRS {
     }
 
     private ExtractedBulkData extractBulkData(Attributes dataset) {
-
         final ExtractedBulkData extractedBulkData = new ExtractedBulkData();
 
         try {
@@ -278,7 +280,6 @@ public class StowRS {
 
                 @Override
                 public boolean visit(Attributes attrs, int tag, VR vr, Object value) {
-
                     if (attrs.isRoot() && tag == Tag.PixelData) {
                         if (value instanceof BulkData) {
                             extractedBulkData.pixelDataBulkData.add((BulkData) value);
@@ -302,7 +303,7 @@ public class StowRS {
                         }
 
                         // Note: at the moment we support fragments only for top-level PixelData.
-                        // Maybe we should also support it for others, seems to be at least allowed for PixelData inside sequences
+                        // Maybe we should also support it for others, seems to be at least allowed for PixelData inside sequences.
                         // (see DICOM PS3.5 2015b A.4 Transfer Syntaxes For Encapsulation of Encoded Pixel Data)
                     }
 
@@ -374,8 +375,8 @@ public class StowRS {
         URL newUrl;
         try {
             newUrl = new URL(URL);
-        } catch (MalformedURLException e2) {
-            throw new RuntimeException(e2);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
 
         HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
@@ -385,7 +386,7 @@ public class StowRS {
         connection.setInstanceFollowRedirects(false);
         connection.setRequestMethod("POST");
 
-        String metaDataType = mediaType == StowMetaDataType.XML ? "application/dicom+xml" : "application/json";
+        String metaDataType = mediaType == MetaDataType.XML ? "application/dicom+xml" : "application/json";
         connection.setRequestProperty("Content-Type", "multipart/related; type=\"" + metaDataType + "\"; boundary=" + MULTIPART_BOUNDARY);
         String bulkDataTransferSyntax = "transfer-syntax=" + transferSyntax;
 
@@ -396,19 +397,20 @@ public class StowRS {
 
         DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
 
-        // write metadata
+        // Write metadata.
         wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "\r\n");
 
-        if (mediaType == StowMetaDataType.XML)
+        if (mediaType == MetaDataType.XML) {
             wr.writeBytes("Content-Type: application/dicom+xml; " + bulkDataTransferSyntax + " \r\n");
-        else
+        } else {
             wr.writeBytes("Content-Type: application/json; " + bulkDataTransferSyntax + " \r\n");
+        }
         wr.writeBytes("\r\n");
 
         coerceAttributes(metadata, keys);
 
         try {
-            if (mediaType == StowMetaDataType.XML)
+            if (mediaType == MetaDataType.XML)
                 SAXTransformer.getSAXWriter(new StreamResult(wr)).write(metadata);
             else {
                 JsonGenerator gen = Json.createGenerator(wr);
@@ -422,15 +424,13 @@ public class StowRS {
             throw new IOException(e);
         }
 
-        // write bulkdata
-
+        // Write bulkdata.
         for (BulkData chunk : extractedBulkData.otherBulkDataChunks) {
             writeBulkDataPart(MediaType.APPLICATION_OCTET_STREAM_TYPE, wr, chunk.getURIOrUUID(), Collections.singletonList(chunk));
         }
 
-
         if (!extractedBulkData.pixelDataBulkData.isEmpty()) {
-            // pixeldata as a single bulk data part
+            // Write pixeldata as a single bulk data part.
 
             if (extractedBulkData.pixelDataBulkData.size() > 1) {
                 LOG.info("Combining bulk data of multiple pixel data fragments");
@@ -439,7 +439,7 @@ public class StowRS {
             writeBulkDataPart(pixelDataMediaType, wr, extractedBulkData.pixelDataBulkDataURI, extractedBulkData.pixelDataBulkData);
         }
 
-        // end of multipart message
+        // End of multipart message.
         wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "--\r\n");
         wr.close();
         String response = connection.getResponseMessage();
@@ -467,17 +467,17 @@ public class StowRS {
     }
 
     private static String toContentType(MediaType mediaType) {
-    	StringBuilder sb = new StringBuilder();
-    	sb.append(mediaType.getType()).append('/').append(mediaType.getSubtype());
-    	String tsuid = mediaType.getParameters().get("transfer-syntax");
-    	if (tsuid != null ) {
-    		sb.append("; transfer-syntax=").append(tsuid);
-    	}
-		return sb.toString();
-	}
+        StringBuilder sb = new StringBuilder();
+        sb.append(mediaType.getType()).append('/').append(mediaType.getSubtype());
+        String tsuid = mediaType.getParameters().get("transfer-syntax");
+        if (tsuid != null ) {
+            sb.append("; transfer-syntax=").append(tsuid);
+        }
+        return sb.toString();
+    }
 
-	private MediaType getBulkDataMediaType(Attributes metadata) {
-        return MediaTypes.forTransferSyntax(metadata.getString(Tag.TransferSyntaxUID, getTransferSyntax()));
+    private MediaType getBulkDataMediaType(Attributes metadata) {
+        return MediaTypes.forTransferSyntax(metadata.getString(Tag.TransferSyntaxUID, transferSyntax));
     }
 
     private static void writeBulkDataToStream(BulkData bulkData, DataOutputStream wr) throws IOException {
@@ -494,12 +494,13 @@ public class StowRS {
             }
 
         } finally {
-            if (in != null)
+            if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
                     LOG.error("Error closing stream", e);
                 }
+            }
         }
     }
 
@@ -522,7 +523,7 @@ public class StowRS {
         wr = new DataOutputStream(connection.getOutputStream());
         wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "\r\n");
         wr.writeBytes("Content-Disposition: inline; name=\"file[]\"; filename=\"" + f.getName() + "\"\r\n");
-        wr.writeBytes("Content-Type: application/dicom \r\n");
+        wr.writeBytes("Content-Type: application/dicom\r\n");
         wr.writeBytes("\r\n");
         FileInputStream fis = new FileInputStream(f);
         StreamUtils.copy(fis, wr);
@@ -543,15 +544,16 @@ public class StowRS {
             } else {
                 in = connection.getErrorStream();
             }
-            if (!isErrorCase || rspCode == HttpURLConnection.HTTP_CONFLICT)
+            if (!isErrorCase || rspCode == HttpURLConnection.HTTP_CONFLICT) {
                 responseAttrs = SAXReader.parse(in);
+            }
         } catch (SAXException e) {
             throw new IOException(e);
         } catch (ParserConfigurationException e) {
             throw new IOException(e);
         }
         connection.disconnect();
-        
+
         return new StowRSResponse(rspCode, rspMessage, responseAttrs);
     }
 
@@ -565,17 +567,9 @@ public class StowRS {
             Attributes fmi = reader.getFileMetaInformation();
             return fmi;
         } finally {
-            if (in != System.in)
+            if (in != System.in) {
                 SafeClose.close(in);
+            }
         }
     }
-
-    public String getTransferSyntax() {
-        return transferSyntax;
-    }
-
-    public void setTransferSyntax(String transferSyntax) {
-        this.transferSyntax = transferSyntax;
-    }
-
 }

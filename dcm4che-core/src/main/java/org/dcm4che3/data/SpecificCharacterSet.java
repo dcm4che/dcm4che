@@ -77,16 +77,9 @@
 package org.dcm4che3.data;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
-import java.util.StringTokenizer;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -94,443 +87,506 @@ import java.util.StringTokenizer;
 public class SpecificCharacterSet {
     
     public static final SpecificCharacterSet DICOM_DEFAULT =
-            new SpecificCharacterSet(new Codec[]{Codec.ISO_646}, new String[] {null});
+            new SpecificCharacterSet(new Codec[] {Codec.ISO_646}, new String[] {null});
     
     public static SpecificCharacterSet DEFAULT = DICOM_DEFAULT;
-
-    private static ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = 
-            new ThreadLocal<SoftReference<Encoder>>();
-
-    private static ThreadLocal<SoftReference<Encoder>> cachedEncoder2 = 
-            new ThreadLocal<SoftReference<Encoder>>();
-
+    
     protected final Codec[] codecs;
     protected final String[] dicomCodes;
 
     private enum Codec {
-        ISO_646("US-ASCII", 0x2842, 0),
-        ISO_8859_1("ISO-8859-1", 0x2842, 0x2d41),
-        ISO_8859_2("ISO-8859-2", 0x2842, 0x2d42),
-        ISO_8859_3("ISO-8859-3", 0x2842, 0x2d43),
-        ISO_8859_4("ISO-8859-4", 0x2842, 0x2d44),
-        ISO_8859_5("ISO-8859-5", 0x2842, 0x2d4c),
-        ISO_8859_6("ISO-8859-6", 0x2842, 0x2d47),
-        ISO_8859_7("ISO-8859-7", 0x2842, 0x2d46),
-        ISO_8859_8("ISO-8859-8", 0x2842, 0x2d48),
-        ISO_8859_9("ISO-8859-9", 0x2842, 0x2d4d),
-        JIS_X_201("JIS_X0201", 0x284a, 0x2949),
-        TIS_620("TIS-620", 0x2842, 0x2d54),
-        JIS_X_208("x-JIS0208", -1, 0x2442),
-        JIS_X_212("JIS_X0212-1990", -1, 0x242844),
-        KS_X_1001("EUC-KR", 0, 0x242943),
-        GB2312("GB2312", 0x2842, 0x242941),
-        UTF_8("UTF-8", 0, 0),
-        GB18030("GB18030", 0, 0);
+        ISO_646("US-ASCII", new byte[] {0x1b, 0x28, 0x42}, null, 1),
+        ISO_8859_1("ISO-8859-1", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x41}, 1),
+        ISO_8859_2("ISO-8859-2", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x42}, 1),
+        ISO_8859_3("ISO-8859-3", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x43}, 1),
+        ISO_8859_4("ISO-8859-4", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x44}, 1),
+        ISO_8859_5("ISO-8859-5", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x4c}, 1),
+        ISO_8859_6("ISO-8859-6", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x47}, 1),
+        ISO_8859_7("ISO-8859-7", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x46}, 1),
+        ISO_8859_8("ISO-8859-8", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x48}, 1),
+        ISO_8859_9("ISO-8859-9", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x4d}, 1),
+        JIS_X_201("JIS_X0201", new byte[] {0x1b, 0x28, 0x4a}, new byte[] {0x1b, 0x29, 0x49}, 1),
+        TIS_620("TIS-620", new byte[] {0x1b, 0x28, 0x42}, new byte[] {0x1b, 0x2d, 0x54}, 1),
+        JIS_X_208("x-JIS0208", new byte[] {0x1b, 0x24, 0x42}, null, 2),
+        JIS_X_212("JIS_X0212-1990", new byte[] {0x1b, 0x24, 0x28, 0x44}, null, 2),
+        KS_X_1001("EUC-KR", null, new byte[] {0x1b, 0x24, 0x29, 0x43}, 2),
+        GB2312("GB2312", null, new byte[] {0x1b, 0x24, 0x29, 0x41}, 2),
+        UTF_8("UTF-8", null, null, 0),
+        GB18030("GB18030", null, null, 0),
+        GBK("GBK", null, null, 0);
 
         private final String charsetName;
-        private final int escSeq0;
-        private final int escSeq1;
+        private final byte[] escSeq0;
+        private final byte[] escSeq1;
+        private final int bytesPerChar;
 
-        private Codec(String charsetName, int escSeq0, int escSeq1) {
+        private Codec(final String charsetName, final byte[] escSeq0, final byte[] escSeq1, final int bytesPerChar) {
             this.charsetName = charsetName;
             this.escSeq0 = escSeq0;
             this.escSeq1 = escSeq1;
+            this.bytesPerChar = bytesPerChar;
         }
 
-        public static Codec forCode(String code) {
-            if (code == null)
+        public static Codec forCode(final String code) {
+            if (code == null) {
                 return ISO_646;
+            }
 
-            switch(last2digits(code)) {
-            case 0:
-                if (code.equals("ISO_IR 100") || code.equals("ISO 2022 IR 100"))
-                    return Codec.ISO_8859_1;
-                break;
-            case 1:
-                if (code.equals("ISO_IR 101") || code.equals("ISO 2022 IR 101"))
-                    return Codec.ISO_8859_2;
-                break;
-            case 6:
-                if (code.equals("ISO 2022 IR 6"))
-                    return Codec.ISO_646;
-                break;
-            case 9:
-                if (code.equals("ISO_IR 109") || code.equals("ISO 2022 IR 109"))
-                    return Codec.ISO_8859_3;
-                break;
-            case 10:
-                if (code.equals("ISO_IR 110") || code.equals("ISO 2022 IR 110"))
-                    return Codec.ISO_8859_4;
-                break;
-            case 13:
-                if (code.equals("ISO_IR 13") || code.equals("ISO 2022 IR 13"))
-                    return Codec.JIS_X_201;
-                break;
-            case 26:
-                if (code.equals("ISO_IR 126") || code.equals("ISO 2022 IR 126"))
-                    return Codec.ISO_8859_7;
-                break;
-            case 27:
-                if (code.equals("ISO_IR 127") || code.equals("ISO 2022 IR 127"))
-                    return Codec.ISO_8859_6;
-                break;
-            case 30:
-                if (code.equals("GB18030"))
-                    return Codec.GB18030;
-                break;
-            case 31:
-                if (code.equals("GBK"))
-                    return Codec.GB18030;
-                break;
-            case 38:
-                if (code.equals("ISO_IR 138") || code.equals("ISO 2022 IR 138"))
-                    return Codec.ISO_8859_8;
-                break;
-            case 44:
-                if (code.equals("ISO_IR 144") || code.equals("ISO 2022 IR 144"))
-                    return Codec.ISO_8859_5;
-                break;
-            case 48:
-                if (code.equals("ISO_IR 148") || code.equals("ISO 2022 IR 148"))
-                    return Codec.ISO_8859_9;
-                break;
-            case 49:
-                if (code.equals("ISO 2022 IR 149"))
-                    return Codec.KS_X_1001;
-                break;
-            case 58:
-                if (code.equals("ISO 2022 IR 58"))
-                    return Codec.GB2312;
-                break;
-            case 59:
-                if (code.equals("ISO 2022 IR 159"))
-                    return Codec.JIS_X_212;
-                break;
-            case 66:
-                if (code.equals("ISO_IR 166") || code.equals("ISO 2022 IR 166"))
-                    return Codec.TIS_620;
-                break;
-            case 87:
-                if (code.equals("ISO 2022 IR 87"))
-                    return Codec.JIS_X_208;
-                break;
-            case 92:
-                if (code.equals("ISO_IR 192"))
-                    return Codec.UTF_8;
-                break;
+            switch (last2digits(code)) {
+                case 0:
+                    if (code.equals("ISO_IR 100") || code.equals("ISO 2022 IR 100")) {
+                        return Codec.ISO_8859_1;
+                    }
+                    break;
+                case 1:
+                    if (code.equals("ISO_IR 101") || code.equals("ISO 2022 IR 101")) {
+                        return Codec.ISO_8859_2;
+                    }
+                    break;
+                case 6:
+                    if (code.equals("ISO 2022 IR 6")) {
+                        return Codec.ISO_646;
+                    }
+                    break;
+                case 9:
+                    if (code.equals("ISO_IR 109") || code.equals("ISO 2022 IR 109")) {
+                        return Codec.ISO_8859_3;
+                    }
+                    break;
+                case 10:
+                    if (code.equals("ISO_IR 110") || code.equals("ISO 2022 IR 110")) {
+                        return Codec.ISO_8859_4;
+                    }
+                    break;
+                case 13:
+                    if (code.equals("ISO_IR 13") || code.equals("ISO 2022 IR 13")) {
+                        return Codec.JIS_X_201;
+                    }
+                    break;
+                case 26:
+                    if (code.equals("ISO_IR 126") || code.equals("ISO 2022 IR 126")) {
+                        return Codec.ISO_8859_7;
+                    }
+                    break;
+                case 27:
+                    if (code.equals("ISO_IR 127") || code.equals("ISO 2022 IR 127")) {
+                        return Codec.ISO_8859_6;
+                    }
+                    break;
+                case 30:
+                    if (code.equals("GB18030")) {
+                        return Codec.GB18030;
+                    }
+                    break;
+                case 31:
+                    if (code.equals("GBK")) {
+                        return Codec.GBK;
+                    }
+                    break;
+                case 38:
+                    if (code.equals("ISO_IR 138") || code.equals("ISO 2022 IR 138")) {
+                        return Codec.ISO_8859_8;
+                    }
+                    break;
+                case 44:
+                    if (code.equals("ISO_IR 144") || code.equals("ISO 2022 IR 144")) {
+                        return Codec.ISO_8859_5;
+                    }
+                    break;
+                case 48:
+                    if (code.equals("ISO_IR 148") || code.equals("ISO 2022 IR 148")) {
+                        return Codec.ISO_8859_9;
+                    }
+                    break;
+                case 49:
+                    if (code.equals("ISO 2022 IR 149")) {
+                        return Codec.KS_X_1001;
+                    }
+                    break;
+                case 58:
+                    if (code.equals("ISO 2022 IR 58")) {
+                        return Codec.GB2312;
+                    }
+                    break;
+                case 59:
+                    if (code.equals("ISO 2022 IR 159")) {
+                        return Codec.JIS_X_212;
+                    }
+                    break;
+                case 66:
+                    if (code.equals("ISO_IR 166") || code.equals("ISO 2022 IR 166")) {
+                        return Codec.TIS_620;
+                    }
+                    break;
+                case 87:
+                    if (code.equals("ISO 2022 IR 87")) {
+                        return Codec.JIS_X_208;
+                    }
+                    break;
+                case 92:
+                    if (code.equals("ISO_IR 192")) {
+                        return Codec.UTF_8;
+                    }
+                    break;
             }
             return ISO_646;
         }
 
-        private static int last2digits(String code) {
-            int len = code.length();
-            if (len < 2)
+        private static int last2digits(final String code) {
+            final int len = code.length();
+            if (len < 2) {
                 return -1;
-            char ch1 = code.charAt(len-1);
-            char ch2 = code.charAt(len-2);
+            }
+            final char ch1 = code.charAt(len - 1);
+            final char ch2 = code.charAt(len - 2);
             return (ch2 & 15) * 10 + (ch1 & 15);
         }
 
-        public byte[] encode(String val) {
+        public boolean canEncode(final String val) {
+            return Charset.forName(charsetName).newEncoder().canEncode(val);
+        }
+
+        public boolean canEncode(final char c) {
+            return canEncode(Character.toString(c));
+        }
+
+        public byte[] encode(final String val) {
             try {
                 return val.getBytes(charsetName);
-            } catch (UnsupportedEncodingException e) {
+            } catch (final UnsupportedEncodingException e) {
                 throw new AssertionError(e);
             }
         }
 
-        public String decode(byte[] b, int off, int len) {
+        public byte[] encode(final char c) {
+            return encode(Character.toString(c));
+        }
+
+        public String decode(final byte[] b) {
             try {
-                return new String(b, off, len, charsetName);
-            } catch (UnsupportedEncodingException e) {
+                return new String(b, charsetName);
+            } catch (final UnsupportedEncodingException e) {
                 throw new AssertionError(e);
             }
         }
 
         public boolean containsASCII() {
-            return escSeq0 >= 0;
+            return hasEscSeq0();
         }
 
-        public int getEscSeq0() {
+        public int getBytesPerChar() {
+            return bytesPerChar;
+        }
+
+        public byte[] getEscSeq0() {
             return escSeq0;
         }
 
-        public int getEscSeq1() {
+        public boolean hasEscSeq0() {
+            return escSeq0 != null;
+        }
+
+        public boolean containsEscSeq0(final ByteBuffer bb) {
+            return containsEscSeq(bb, escSeq0);
+        }
+
+        public byte[] getEscSeq1() {
             return escSeq1;
         }
-    }
 
-    private static final class Encoder {
-        final Codec codec;
-        final CharsetEncoder encoder;
- 
-        public Encoder(Codec codec) {
-            this.codec = codec;
-            this.encoder = Charset.forName(codec.charsetName).newEncoder();
+        public boolean hasEscSeq1() {
+            return escSeq1 != null;
         }
 
-        public boolean encode(CharBuffer cb, ByteBuffer bb, boolean escSeq,
-                CodingErrorAction errorAction) {
-            encoder.onMalformedInput(errorAction)
-                    .onUnmappableCharacter(errorAction)
-                    .reset();
-            int cbmark = cb.position();
-            int bbmark = bb.position();
-            try {
-                if (escSeq)
-                    escSeq(bb, codec.getEscSeq1());
-                CoderResult cr = encoder.encode(cb, bb, true);
-                if (!cr.isUnderflow())
-                    cr.throwException();
-                cr = encoder.flush(bb);
-                if (!cr.isUnderflow())
-                    cr.throwException();
-            } catch (CharacterCodingException x) {
-                cb.position(cbmark);
-                bb.position(bbmark);
-                return false;
+        public boolean containsEscSeq1(final ByteBuffer bb) {
+            return containsEscSeq(bb, escSeq1);
+        }
+
+        private boolean containsEscSeq(final ByteBuffer bb, final byte[] escSeqBytes) {
+            bb.mark();
+            for (final byte escSeqByte : escSeqBytes) {
+                if (bb.get() != escSeqByte) {
+                    bb.reset();
+                    return false;
+                }
             }
             return true;
-        }
-
-        private static void escSeq(ByteBuffer bb, int seq) {
-            bb.put((byte) 0x1b);
-            int b1 = seq >> 16;
-            if (b1 != 0)
-                bb.put((byte) b1);
-            bb.put((byte) (seq >> 8));
-            bb.put((byte) seq);
         }
     }
 
     private static final class ISO2022 extends SpecificCharacterSet {
 
-        private ISO2022(Codec[] charsetInfos, String... codes) {
+        private ISO2022(final Codec[] charsetInfos, final String... codes) {
             super(charsetInfos, codes);
         }
 
         @Override
-        public byte[] encode(String val, String delimiters) {
-            int strlen = val.length();
-            CharBuffer cb = CharBuffer.wrap(val.toCharArray());
-            Encoder enc1 = encoder(cachedEncoder1, codecs[0]);
-            byte[] buf = new byte[strlen];
-            ByteBuffer bb = ByteBuffer.wrap(buf);
-            // try to encode whole string value with character set specified
-            // by value1 of (0008,0005) Specific Character Set
-            if (!enc1.encode(cb, bb, false, CodingErrorAction.REPORT)) {
-                // split whole string value according VR specific delimiters
-                // and try to encode each component separately
-                Encoder[] encs = new Encoder[codecs.length];
-                encs[0] = enc1;
-                encs[1] = encoder(cachedEncoder2, codecs[1]);
-                StringTokenizer comps =
-                        new StringTokenizer(val, delimiters, true);
-                buf = new byte[2 * strlen + 4 * (comps.countTokens() + 1)];
-                bb = ByteBuffer.wrap(buf);
-                int cur = 0;
-                while (comps.hasMoreTokens()) {
-                    String comp = comps.nextToken();
-                    if (comp.length() == 1 // if delimiter
-                            && delimiters.indexOf(comp.charAt(0)) >= 0) {
-                        // switch to initial character set, if current active
-                        // character set does not contain ASCII
-                        if (!codecs[cur].containsASCII())
-                            Encoder.escSeq(bb, codecs[0].getEscSeq0());
-                        bb.put((byte) comp.charAt(0));
-                        cur = 0;
+        public byte[] encode(final String val, final StringValueType type) {
+            Codec codecG0 = getInitialCodecG0();
+            Codec codecG1 = getInitialCodecG1();
+
+            // in the simplest case, codec G0 can encode the whole string value
+            if (codecG0.canEncode(val)) {
+                return codecG0.encode(val);
+            }
+
+            /*
+             * Calculate maximum capacity of the ByteBuffer:
+             * In the worst case, each character has a preceding escape sequence of four bytes and the
+             * character itself takes up two bytes.
+             */
+            final int maxCapacity = 4 * (val.length() * 2);
+            final ByteBuffer bb = ByteBuffer.allocate(maxCapacity);
+
+            // try to encode each character of the string value consecutively
+            final char[] chars = val.toCharArray();
+            for (final char c : chars) {
+                /*
+                 * Before encoding the current character -> perform checks if the initial character set
+                 * shall be active (see DICOM PS3.5 2016c, 6.1.2.5.3 Requirements)
+                 */
+                final byte firstByte = getInitialCodecG0().encode(c)[0];
+                boolean delimiterPresent = false;
+
+                /*
+                 * Check 1: if first byte codes for a DICOM control character and therefore the initial
+                 * character set shall be active
+                 */
+                if (firstByte >= 0x09 && firstByte <= 0x0D) {
+                    delimiterPresent = true;
+                }
+
+                /*
+                 * Check 2: if VR is of type PN and therefore the initial character set shall be active
+                 * before "^" and "=" delimiters
+                 */
+                if (type == StringValueType.PN && (firstByte == 0x5E || firstByte == 0x3D)) {
+                    delimiterPresent = true;
+                }
+
+                /*
+                 * Check 3: if data element may have multiple values and therefore the initial character set
+                 * shall be active if the first byte codes for backslash character
+                 */
+                if (type.multipleValues && firstByte == 0x5C && (codecG0 != Codec.JIS_X_201 || codecG0 == getInitialCodecG0())) {
+                    delimiterPresent = true;
+                }
+
+                // always encode delimiters with the initial character set
+                if (delimiterPresent) {
+                    if (codecG0 != getInitialCodecG0()) {
+                        bb.put(getInitialCodecG0().getEscSeq0());
+                    }
+                    codecG0 = getInitialCodecG0();
+                    codecG1 = getInitialCodecG1();
+                    bb.put(codecG0.encode(c));
+                    continue;
+                }
+
+                if (codecG0.canEncode(c)) {
+                    final byte[] encodedChar = codecG0.encode(c);
+                    if (!(encodedChar[0] < 0)) {
+                        bb.put(encodedChar);
                         continue;
                     }
-                    cb = CharBuffer.wrap(comp.toCharArray());
-                    // try to encode component with current active character set
-                    if (encs[cur].encode(cb, bb, false,
-                            CodingErrorAction.REPORT))
+                }
+
+                if (codecG1 != null && codecG1.canEncode(c)) {
+                    final byte[] encodedChar = codecG1.encode(c);
+                    if (encodedChar[0] < 0) {
+                        bb.put(encodedChar);
                         continue;
-                    int next = cur;
-                    // try to encode component with other character sets
-                    // specified by values of (0008,0005) Specific Character Set
-                    do {
-                        next = (next + 1) % encs.length;
-                        if (next == cur) {
-                            // component could not be encoded with any of the
-                            // specified character sets, encode it with the
-                            // initial character set, using the default
-                            // replacement of the character set decoder
-                            // for characters which cannot be encoded
-                            if (!codecs[cur].containsASCII())
-                                Encoder.escSeq(bb, codecs[0].getEscSeq0());
-                            encs[0].encode(cb, bb, false,
-                                    CodingErrorAction.REPLACE);
-                            next = 0;
+                    }
+                }
+
+                boolean couldEncode = false;
+                for (final Codec cd : codecs) {
+                    if (cd.canEncode(c)) {
+                        final byte[] encodedChar = cd.encode(c);
+                        if (cd.hasEscSeq0() && !(encodedChar[0] < 0)) {
+                            codecG0 = cd;
+                            bb.put(codecG0.getEscSeq0());
+                            bb.put(encodedChar);
+                            couldEncode = true;
                             break;
                         }
-                        if (encs[next] == null)
-                            encs[next] = new Encoder(codecs[next]);
-                    } while (!encs[next].encode(cb, bb, true, 
-                            CodingErrorAction.REPORT));
-                    cur = next;
+                        if (cd.hasEscSeq1() && (encodedChar[0] < 0)) {
+                            codecG1 = cd;
+                            bb.put(codecG1.getEscSeq1());
+                            bb.put(encodedChar);
+                            couldEncode = true;
+                            break;
+                        }
+                    }
                 }
-                if (!codecs[cur].containsASCII())
-                    Encoder.escSeq(bb, codecs[0].getEscSeq0());
+
+                /*
+                 * Could not encode character with any of the Specific Character Sets.
+                 * Switch to the initial codec G0 and append the unknown character as four characters "\nnn",
+                 * where "nnn" is the three digit octal representation of the character (see DICOM PS3.5 2016c,
+                 * 6.1.2.3 Encoding of Character Repertoires).
+                 */
+                if (!couldEncode) {
+                    if (codecG0 != getInitialCodecG0()) {
+                        codecG0 = getInitialCodecG0();
+                        bb.put(codecG0.getEscSeq0());
+                    }
+                    bb.put(codecG0.encode('\\'));
+                    bb.put(codecG0.encode(Integer.toString(bb.get() & 0xFF, 8)));
+                }
             }
-            return Arrays.copyOf(buf, bb.position());
+
+            final byte[] encodedString = new byte[bb.position()];
+            bb.flip();
+            bb.get(encodedString);
+            return encodedString;
         }
 
         @Override
-        public String decode(byte[] b) {
-            Codec codec = codecs[0];
-            int off = 0;
-            int cur = 0;
-            int step = 1;
-            StringBuffer sb = new StringBuffer(b.length);
-            while (cur < b.length) {
-                if (b[cur] == 0x1b) { // ESC
-                    if (off < cur) {
-                        sb.append(codec.decode(b, off, cur - off));
-                    }
-                    cur += 3;
-                    switch (((b[cur - 2] & 255) << 8) + (b[cur - 1] & 255)) {
-                    case 0x2428:
-                        if (b[cur++] == 0x44) {
-                            codec = Codec.JIS_X_212;
-                            step = 2;
-                        } else { // decode invalid ESC sequence as chars
-                            sb.append(codec.decode(b, cur - 4, 4));
+        public String decode(final byte[] b, final StringValueType type) {
+            final ByteBuffer bb = ByteBuffer.wrap(b);
+            final StringBuilder sb = new StringBuilder(b.length);
+
+            Codec codecG0 = getInitialCodecG0();
+            Codec codecG1 = getInitialCodecG1();
+
+            while (bb.hasRemaining()) {
+                // check if current byte initiates an escape sequence
+                if (bb.get(bb.position()) == 0x1b) { // ESC
+                    boolean switched = false;
+                    for (final Codec c : codecs) {
+                        if (c.hasEscSeq0() && c.containsEscSeq0(bb)) {
+                            switched = true;
+                            codecG0 = c;
+                            break;
                         }
-                        break;
-                    case 0x2429:
-                        switch (b[cur++]) {
-                            case 0x41:
-                                codec = Codec.GB2312;
-                                step = -1;
-                                break;
-                            case 0x43:
-                                codec = Codec.KS_X_1001;
-                                step = -1;
-                                break;
-                            default: // decode invalid ESC sequence as chars
-                                sb.append(codec.decode(b, cur - 4, 4));
+                        if (c.hasEscSeq1() && c.containsEscSeq1(bb)) {
+                            switched = true;
+                            codecG1 = c;
+                            break;
                         }
-                        break;
-                    case 0x2442:
-                        codec = Codec.JIS_X_208;
-                        step = 2;
-                        break;
-                    case 0x2842:
-                        codec = Codec.ISO_646;
-                        step = 1;
-                        break;
-                    case 0x284a:
-                    case 0x2949:
-                        codec = Codec.JIS_X_201;
-                        step = 1;
-                        break;
-                    case 0x2d41:
-                        codec = Codec.ISO_8859_1;
-                        step = 1;
-                        break;
-                    case 0x2d42:
-                        codec = Codec.ISO_8859_2;
-                        step = 1;
-                        break;
-                    case 0x2d43:
-                        codec = Codec.ISO_8859_3;
-                        step = 1;
-                        break;
-                    case 0x2d44:
-                        codec = Codec.ISO_8859_4;
-                        step = 1;
-                        break;
-                    case 0x2d46:
-                        codec = Codec.ISO_8859_7;
-                        step = 1;
-                        break;
-                    case 0x2d47:
-                        codec = Codec.ISO_8859_6;
-                        step = 1;
-                        break;
-                    case 0x2d48:
-                        codec = Codec.ISO_8859_8;
-                        step = 1;
-                        break;
-                    case 0x2d4c:
-                        codec = Codec.ISO_8859_5;
-                        step = 1;
-                        break;
-                    case 0x2d4d:
-                        codec = Codec.ISO_8859_9;
-                        step = 1;
-                        break;
-                    case 0x2d54:
-                        codec = Codec.TIS_620;
-                        step = 1;
-                        break;
-                    default: // decode invalid ESC sequence as chars
-                        sb.append(codec.decode(b, cur - 3, 3));
                     }
-                    off = cur;
+                    if (!switched) {
+                        /*
+                         * Unknown/invalid escape sequence detected.
+                         * Append all remaining bytes with the four characters "\nnn", where "nnn" is the
+                         * three digit octal representation of each byte (see DICOM PS3.5 2016c, 6.1.2.3
+                         * Encoding of Character Repertoires).
+                         */
+                        while (bb.hasRemaining()) {
+                            sb.append("\\");
+                            sb.append(Integer.toString(bb.get() & 0xFF, 8));
+                        }
+                    }
                 } else {
-                    cur += step > 0 ? step : b[cur] < 0 ? 2 : 1;
+                    /*
+                     * Before decoding the current character -> perform checks if the initial character set
+                     * shall be active (see DICOM PS3.5 2016c, 6.1.2.5.3 Requirements). These checks are only
+                     * necessary if codec G0 is a single-byte character set.
+                     */
+                    if (codecG0.getBytesPerChar() == 1) {
+                        final byte firstByte = bb.get(bb.position());
+
+                        /*
+                         * Check 1: if first byte codes for a DICOM control character and therefore the initial
+                         * character set shall be active
+                         */
+                        if (firstByte >= 0x09 && firstByte <= 0x0D) {
+                            codecG0 = getInitialCodecG0();
+                            codecG1 = getInitialCodecG1();
+                        }
+
+                        /*
+                         * Check 2: if VR is of type PN and therefore the initial character set shall be active
+                         * before "^" and "=" delimiters
+                         */
+                        if (type == StringValueType.PN && (firstByte == 0x5E || firstByte == 0x3D)) {
+                            codecG0 = getInitialCodecG0();
+                            codecG1 = getInitialCodecG1();
+                        }
+
+                        /*
+                         * Check 3: if data element may have multiple values and therefore the initial character set
+                         * shall be active if the first byte codes for backslash character
+                         */
+                        if (type.multipleValues && firstByte == 0x5C &&
+                                (codecG0 != Codec.JIS_X_201 || codecG0 == getInitialCodecG0())) {
+                            codecG0 = getInitialCodecG0();
+                            codecG1 = getInitialCodecG1();
+                        }
+                    }
+
+                    // decode the current character
+                    final Codec applicableCodec = bb.get(bb.position()) < 0 ? codecG1 : codecG0;
+                    final byte[] currentChar = new byte[applicableCodec.getBytesPerChar()];
+                    bb.get(currentChar);
+                    String s = applicableCodec.decode(currentChar);
+
+                    if (applicableCodec == Codec.JIS_X_201 && applicableCodec != getInitialCodecG0()) {
+                        // replace backslash character with Yen symbol
+                        s = s.replace("\\", "\u00A5");
+                        // replace tilde character with over-line
+                        s = s.replace("~", "\u203E");
+                    }
+
+                    sb.append(s);
                 }
             }
-            if (off < cur) {
-                sb.append(codec.decode(b, off, cur - off));
-            }
+
             return sb.toString();
+        }
+
+        private Codec getInitialCodecG0() {
+            return codecs[0];
+        }
+
+        private Codec getInitialCodecG1() {
+            return codecs[0].hasEscSeq1() ? codecs[0] : null;
         }
     }
 
-    public static final void setDefaultCharacterSet(String characterSet) {
+    public static final void setDefaultCharacterSet(final String characterSet) {
         DEFAULT = characterSet == null ? DICOM_DEFAULT : valueOf(characterSet);
     }
 
-    public static SpecificCharacterSet valueOf(String... codes) {
-        if (codes == null || codes.length == 0)
+    public static SpecificCharacterSet valueOf(final String... codes) {
+        if (codes == null || codes.length == 0) {
             return DICOM_DEFAULT;
+        }
 
-        Codec[] infos = new Codec[codes.length];
-        for (int i = 0; i < codes.length; i++)
+        final Codec[] infos = new Codec[codes.length];
+        for (int i = 0; i < codes.length; i++) {
             infos[i] = Codec.forCode(codes[i]);
+        }
 
-        if (codes.length == 1 && infos[0] == Codec.ISO_646 && DEFAULT.containsASCII())
+        if (codes.length == 1 && infos[0] == Codec.ISO_646 && DEFAULT.containsASCII()) {
             return new SpecificCharacterSet(DEFAULT.codecs, codes);
+        }
 
-        return codes.length > 1 ? new ISO2022(infos,codes)
-                : new SpecificCharacterSet(infos, codes);
+        return codes.length > 1 ? new ISO2022(infos, codes) : new SpecificCharacterSet(infos, codes);
     }
-    
-    public String[] toCodes () {
-        
+
+    public String[] toCodes() {
         return dicomCodes;
     }
 
-    private static Encoder encoder(ThreadLocal<SoftReference<Encoder>> tl,
-            Codec codec) {
-        SoftReference<Encoder> sr;
-        Encoder enc;
-        if ((sr = tl.get()) == null || (enc = sr.get()) == null
-                || enc.codec != codec)
-            tl.set(new SoftReference<Encoder>(enc = new Encoder(codec)));
-        return enc;
-    }
-
-    protected SpecificCharacterSet(Codec[] codecs, String... codes) {
+    protected SpecificCharacterSet(final Codec[] codecs, final String... codes) {
         this.codecs = codecs;
         this.dicomCodes = codes;
     }
 
-    public byte[] encode(String val, String delimiters) {
+    public byte[] encode(final String val, final StringValueType type) {
         return codecs[0].encode(val);
     }
 
-    public String decode(byte[] val) {
-        return codecs[0].decode(val, 0, val.length);
+    public String decode(final byte[] val, final StringValueType type) {
+        return codecs[0].decode(val);
     }
 
     public boolean isUTF8() {
         return codecs[0].equals(Codec.UTF_8);
     }
-    
+
     public boolean isASCII() {
         return codecs[0].equals(Codec.ISO_646);
     }
@@ -538,9 +594,9 @@ public class SpecificCharacterSet {
     public boolean containsASCII() {
         return codecs[0].containsASCII();
     }
-    
-    @Override public boolean equals(Object other) {
-        
+
+    @Override
+    public boolean equals(final Object other) {
         if (other == null) {
             return false;
         }
@@ -548,9 +604,9 @@ public class SpecificCharacterSet {
             return false;
         }
         final SpecificCharacterSet othercs = (SpecificCharacterSet) other;
-        return Arrays.equals(this.codecs,othercs.codecs);
+        return Arrays.equals(this.codecs, othercs.codecs);
     }
-    
+
     @Override
     public int hashCode() {
         return Arrays.hashCode(this.codecs);

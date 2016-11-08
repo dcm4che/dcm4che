@@ -49,7 +49,7 @@ import org.dcm4che3.util.StringUtils;
 enum StringValueType implements ValueType {
     ASCII(false, true, null, null),
     STRING(true, true, "\\", null),
-    TEXT(true, false, "\n\f\r", null),
+    TEXT(true, false, "\t\n\f\r", null),
     UR(false, false, null, null),
     DA(false, true, null, TemporalType.DA),
     DT(false, true, null, TemporalType.DT),

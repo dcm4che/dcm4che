@@ -51,7 +51,7 @@ import java.nio.charset.Charset;
  */
 public class SpecificCharacterSetTest {
 
-    private static final String LT_DELIMS = "\n\f\r";
+    private static final String LT_DELIMS = "\t\n\f\r";
     private static final String PN_DELIMS = "^=\\";
     private static final String GERMAN_PERSON_NAME = "Äneas^Rüdiger";
     private static final String FRENCH_PERSON_NAME = "Buc^Jérôme";

@@ -60,7 +60,7 @@ enum StringValueType implements ValueType {
             return cs;
         }
     },
-    TEXT("\n\f\r", null) {
+    TEXT("\t\n\f\r", null) {
 
         @Override
         public boolean useSpecificCharacterSet() {

@@ -39,15 +39,11 @@
 package org.dcm4che3.data;
 
 
-import static org.junit.Assert.*;
-
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.SpecificCharacterSet;
-import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -55,7 +51,7 @@ import org.junit.Test;
 public class VRTest {
 
     private static final SpecificCharacterSet CS =
-            SpecificCharacterSet.DEFAULT;
+            SpecificCharacterSet.ASCII;
 
     private static final byte[] DCM4CHEE_AS_AE = 
             { 'D', 'C', 'M', '4', 'C', 'H', 'E', 'E' };

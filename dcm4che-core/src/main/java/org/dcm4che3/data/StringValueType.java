@@ -324,7 +324,7 @@ enum StringValueType implements ValueType {
     }
 
     protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-        return SpecificCharacterSet.DEFAULT;
+        return SpecificCharacterSet.ASCII;
     }
 
     @Override

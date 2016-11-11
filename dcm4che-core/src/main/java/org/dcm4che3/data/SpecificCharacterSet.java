@@ -109,12 +109,7 @@ public class SpecificCharacterSet {
         ISO_8859_7("ISO-8859-7", 0x2842, 0x2d46, 1),
         ISO_8859_8("ISO-8859-8", 0x2842, 0x2d48, 1),
         ISO_8859_9("ISO-8859-9", 0x2842, 0x2d4d, 1),
-        JIS_X_201("JIS_X0201", 0x284a, 0x2949, 1) {
-            @Override
-            public String decode(byte[] b, int off, int len) {
-                return super.decode(b, off, len).replace('\\', '¥');
-            }
-        },
+        JIS_X_201("JIS_X0201", 0x284a, 0x2949, 1),
         TIS_620("TIS-620", 0x2842, 0x2d54, 1),
         JIS_X_208("x-JIS0208", 0x2442, 0, 1),
         JIS_X_212("JIS_X0212-1990", 0x242844, 0, 2),
@@ -509,6 +504,10 @@ public class SpecificCharacterSet {
                 codecs[0] = codecs[1];
         }
 
+    }
+
+    public static SpecificCharacterSet getDefaultCharacterSet() {
+        return DEFAULT;
     }
 
     public static void setDefaultCharacterSet(String code) {

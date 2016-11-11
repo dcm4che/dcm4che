@@ -1404,7 +1404,7 @@ public class Attributes implements Serializable {
         else if (parent != null)
             return parent.getSpecificCharacterSet();
         else
-            cs = SpecificCharacterSet.ASCII;
+            cs = SpecificCharacterSet.getDefaultCharacterSet();
 
         return cs;
     }

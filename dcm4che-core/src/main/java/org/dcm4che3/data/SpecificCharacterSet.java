@@ -109,7 +109,12 @@ public class SpecificCharacterSet {
         ISO_8859_7("ISO-8859-7", 0x2842, 0x2d46, 1),
         ISO_8859_8("ISO-8859-8", 0x2842, 0x2d48, 1),
         ISO_8859_9("ISO-8859-9", 0x2842, 0x2d4d, 1),
-        JIS_X_201("JIS_X0201", 0x284a, 0x2949, 1),
+        JIS_X_201("JIS_X0201", 0x284a, 0x2949, 1) {
+            @Override
+            public String toText(String s) {
+                return s.replace('\\', '¥');
+            }
+        },
         TIS_620("TIS-620", 0x2842, 0x2d54, 1),
         JIS_X_208("x-JIS0208", 0x2442, 0, 1),
         JIS_X_212("JIS_X0212-1990", 0x242844, 0, 2),
@@ -254,6 +259,10 @@ public class SpecificCharacterSet {
 
         public int getBytesPerChar() {
             return bytesPerChar;
+        }
+
+        public String toText(String s) {
+            return s;
         }
     }
 
@@ -565,6 +574,10 @@ public class SpecificCharacterSet {
 
     public boolean containsASCII() {
         return codecs[0].containsASCII();
+    }
+
+    public String toText(String s) {
+        return codecs[0].toText(s);
     }
 
     @Override public boolean equals(Object other) {

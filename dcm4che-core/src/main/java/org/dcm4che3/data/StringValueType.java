@@ -73,14 +73,14 @@ enum StringValueType implements ValueType {
         }
 
         @Override
-        protected Object splitAndTrim(String s) {
-            return StringUtils.trimTrailing(s);
+        protected Object splitAndTrim(String s, SpecificCharacterSet cs) {
+            return cs.toText(StringUtils.trimTrailing(s));
         }
     },
     UR(null, null) {
 
         @Override
-        protected Object splitAndTrim(String s) {
+        protected Object splitAndTrim(String s, SpecificCharacterSet cs) {
             return StringUtils.trimTrailing(s);
         }
     },
@@ -365,7 +365,7 @@ enum StringValueType implements ValueType {
             SpecificCharacterSet cs) {
 
         if (val instanceof byte[]) {
-            return splitAndTrim(cs(cs).decode((byte[]) val));
+            return splitAndTrim(cs(cs).decode((byte[]) val), cs);
         }
 
         if (val instanceof String
@@ -375,7 +375,7 @@ enum StringValueType implements ValueType {
         throw new UnsupportedOperationException();
     } 
 
-    protected Object splitAndTrim(String s) {
+    protected Object splitAndTrim(String s, SpecificCharacterSet cs) {
         return StringUtils.splitAndTrim(s, '\\');
     }
 

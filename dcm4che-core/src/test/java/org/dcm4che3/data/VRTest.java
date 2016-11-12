@@ -50,7 +50,7 @@ import org.junit.Test;
 public class VRTest {
 
     private static final SpecificCharacterSet CS =
-            SpecificCharacterSet.DEFAULT;
+            SpecificCharacterSet.ASCII;
 
     private static final byte[] DCM4CHEE_AS_AE = 
             { 'D', 'C', 'M', '4', 'C', 'H', 'E', 'E' };

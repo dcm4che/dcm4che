@@ -89,11 +89,9 @@ import java.util.StringTokenizer;
  */
 public class SpecificCharacterSet {
     
-    public static final SpecificCharacterSet DICOM_DEFAULT =
-            new SpecificCharacterSet(new Codec[]{Codec.ISO_646}, new String[] {null});
-    
-    public static SpecificCharacterSet DEFAULT = DICOM_DEFAULT;
+    public static final SpecificCharacterSet ASCII = new SpecificCharacterSet(new Codec[]{Codec.ISO_646});
 
+    private static SpecificCharacterSet DEFAULT = ASCII;
     private static ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = new ThreadLocal<SoftReference<Encoder>>();
     private static ThreadLocal<SoftReference<Encoder>> cachedEncoder2 = new ThreadLocal<SoftReference<Encoder>>();
 
@@ -111,7 +109,12 @@ public class SpecificCharacterSet {
         ISO_8859_7("ISO-8859-7", 0x2842, 0x2d46, 1),
         ISO_8859_8("ISO-8859-8", 0x2842, 0x2d48, 1),
         ISO_8859_9("ISO-8859-9", 0x2842, 0x2d4d, 1),
-        JIS_X_201("JIS_X0201", 0x284a, 0x2949, 1),
+        JIS_X_201("JIS_X0201", 0x284a, 0x2949, 1) {
+            @Override
+            public String toText(String s) {
+                return s.replace('\\', '¥');
+            }
+        },
         TIS_620("TIS-620", 0x2842, 0x2d54, 1),
         JIS_X_208("x-JIS0208", 0x2442, 0, 1),
         JIS_X_212("JIS_X0212-1990", 0x242844, 0, 2),
@@ -257,6 +260,10 @@ public class SpecificCharacterSet {
         public int getBytesPerChar() {
             return bytesPerChar;
         }
+
+        public String toText(String s) {
+            return s;
+        }
     }
 
     private static final class Encoder {
@@ -332,7 +339,7 @@ public class SpecificCharacterSet {
                 StringTokenizer comps = new StringTokenizer(val, delimiters, true);
                 buf = new byte[2 * strlen + 4 * (comps.countTokens() + 1)];
                 bb = ByteBuffer.wrap(buf);
-                int[] cur = {0, 0};
+                int[] cur = { 0, 0 };
                 while (comps.hasMoreTokens()) {
                     String comp = comps.nextToken();
                     if (comp.length() == 1 && delimiters.indexOf(comp.charAt(0)) >= 0) { // if delimiter
@@ -403,7 +410,7 @@ public class SpecificCharacterSet {
 
         @Override
         public String decode(byte[] b) {
-            Codec[] codec = {codecs[0], codecs[0]};
+            Codec[] codec = { codecs[0], codecs[0] };
             int g = 0;
             int off = 0;
             int cur = 0;
@@ -508,21 +515,24 @@ public class SpecificCharacterSet {
 
     }
 
-    public static final void setDefaultCharacterSet(String characterSet) {
-        DEFAULT = characterSet == null ? DICOM_DEFAULT : valueOf(characterSet);
+    public static SpecificCharacterSet getDefaultCharacterSet() {
+        return DEFAULT;
+    }
+
+    public static void setDefaultCharacterSet(String code) {
+        SpecificCharacterSet cs = code != null ? valueOf(code) : ASCII;
+        if (!cs.containsASCII())
+            throw new IllegalArgumentException("Default Character Set must contain ASCII - " + code);
+        DEFAULT = cs;
     }
 
     public static SpecificCharacterSet valueOf(String... codes) {
         if (codes == null || codes.length == 0)
-            return DICOM_DEFAULT;
+            return DEFAULT;
 
         Codec[] infos = new Codec[codes.length];
         for (int i = 0; i < codes.length; i++)
             infos[i] = Codec.forCode(codes[i]);
-
-        if (codes.length == 1 && infos[0] == Codec.ISO_646 && DEFAULT.containsASCII())
-            return new SpecificCharacterSet(DEFAULT.codecs, codes);
-
         return codes.length > 1 ? new ISO2022(infos,codes)
                 : new SpecificCharacterSet(infos, codes);
     }
@@ -564,6 +574,10 @@ public class SpecificCharacterSet {
 
     public boolean containsASCII() {
         return codecs[0].containsASCII();
+    }
+
+    public String toText(String s) {
+        return codecs[0].toText(s);
     }
 
     @Override public boolean equals(Object other) {

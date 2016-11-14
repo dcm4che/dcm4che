@@ -129,7 +129,7 @@ public class Json2Rst {
             out.print(outFileName.substring(1, endIndex));
         }
         out.println(')');
-        out.println("    :header: Name ( :sup:`*` = required ), Type, Description, LDAP Attribute");
+        out.println("    :header: Name, Type, Description, LDAP Attribute");
         out.println("    :widths: 20, 7, 60, 13");
         out.println();
     }
@@ -173,20 +173,19 @@ public class Json2Rst {
             out.print(":doc:`");
             out.print(ref.substring(0, ref.length()-12));
             out.print("` ");
+            if (items != null) out.print("(s)");
             if (totRefs.add(ref)) {
                 refs.add(ref);
                 inFiles.add(new File(indir, ref));
             }
         } else {
             type = typeObj.getString("type");
+            if (required) out.print("**");
             out.print(property.getString("title"));
+            if (items != null) out.print("(s)");
+            if (required) out.print("**");
         }
-        if (items != null) {
-            out.print("(s)");
-        }
-        if (required) {
-            out.print("\\ :sup:`*` ");
-        }
+
         out.print("\",");
         out.print(type);
         out.print(",\"");

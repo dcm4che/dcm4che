@@ -88,7 +88,7 @@ public class MoveSCU {
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired, "STUDY"),
         CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveMOVE, "IMAGE"),
         HangingProtocol(UID.HangingProtocolInformationModelMOVE, null),
-        ColorPalette(UID.ColorPaletteInformationModelMOVE, null);
+        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelMOVE, null);
 
         final String cuid;
         final String level;

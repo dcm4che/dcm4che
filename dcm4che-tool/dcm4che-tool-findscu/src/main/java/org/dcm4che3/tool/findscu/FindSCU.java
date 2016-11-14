@@ -102,7 +102,7 @@ public class FindSCU {
         UPSPull(UID.UnifiedProcedureStepPullSOPClass, null),
         UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, null),
         HangingProtocol(UID.HangingProtocolInformationModelFIND, null),
-        ColorPalette(UID.ColorPaletteInformationModelFIND, null);
+        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelFIND, null);
 
         final String cuid;
         final String level;

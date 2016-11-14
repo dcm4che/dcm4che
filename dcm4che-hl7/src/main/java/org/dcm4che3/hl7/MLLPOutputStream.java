@@ -79,9 +79,11 @@ public class MLLPOutputStream extends FilterOutputStream {
         if (somWritten)
             throw new IllegalStateException();
 
-        out.write(SOM);
-        out.write(b, off, len);
-        out.write(EOM);
+        byte[] msg = new byte[len+3];
+        msg[0] = SOM;
+        System.arraycopy(b, off, msg, 1, len);
+        System.arraycopy(EOM, 0, msg, len + 1, 2);
+        out.write(msg);
         out.flush();
     }
 

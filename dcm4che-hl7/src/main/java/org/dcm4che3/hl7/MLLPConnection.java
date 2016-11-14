@@ -38,6 +38,8 @@
 
 package org.dcm4che3.hl7;
 
+import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -47,7 +49,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class MLLPConnection {
+public class MLLPConnection implements Closeable {
 
     private static Logger LOG = LoggerFactory.getLogger(MLLPConnection.class);
 
@@ -59,6 +61,12 @@ public class MLLPConnection {
         this.sock = sock;
         mllpIn = new MLLPInputStream(sock.getInputStream());
         mllpOut = new MLLPOutputStream(sock.getOutputStream());
+    }
+
+    public MLLPConnection(Socket sock, int bufferSize) throws IOException {
+        this.sock = sock;
+        mllpIn = new MLLPInputStream(sock.getInputStream());
+        mllpOut = new MLLPOutputStream(new BufferedOutputStream(sock.getOutputStream(), bufferSize));
     }
 
     public final Socket getSocket() {
@@ -90,5 +98,10 @@ public class MLLPConnection {
         LOG.info(format, sock, new String(b, off, mshlen));
         if (LOG.isDebugEnabled())
             LOG.debug(format, sock, new String(b, off, len).replace('\r', '\n'));
+    }
+
+    @Override
+    public void close() throws IOException {
+        sock.close();
     }
 }

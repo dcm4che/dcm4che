@@ -83,7 +83,7 @@ public class MoveSCU extends Device {
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired, "STUDY"),
         CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveMOVE, "IMAGE"),
         HangingProtocol(UID.HangingProtocolInformationModelMOVE, null),
-        ColorPalette(UID.ColorPaletteInformationModelMOVE, null);
+        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelMOVE, null);
 
         final String cuid;
         final String level;

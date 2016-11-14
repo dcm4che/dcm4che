@@ -98,7 +98,7 @@ public class GetSCU {
         CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveGET, "IMAGE"),
         WithoutBulkData(UID.CompositeInstanceRetrieveWithoutBulkDataGET, null),
         HangingProtocol(UID.HangingProtocolInformationModelGET, null),
-        ColorPalette(UID.ColorPaletteInformationModelGET, null);
+        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelGET, null);
 
         final String cuid;
         final String level;

@@ -38,6 +38,7 @@
 
 package org.dcm4che3.hl7;
 
+import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
@@ -60,6 +61,12 @@ public class MLLPConnection implements Closeable {
         this.sock = sock;
         mllpIn = new MLLPInputStream(sock.getInputStream());
         mllpOut = new MLLPOutputStream(sock.getOutputStream());
+    }
+
+    public MLLPConnection(Socket sock, int bufferSize) throws IOException {
+        this.sock = sock;
+        mllpIn = new MLLPInputStream(sock.getInputStream());
+        mllpOut = new MLLPOutputStream(new BufferedOutputStream(sock.getOutputStream(), bufferSize));
     }
 
     public final Socket getSocket() {

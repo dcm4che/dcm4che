@@ -64,7 +64,7 @@
   <el tag="7777xx43" keyword="InstanceExternalRetrieveAETitle" vr="AE" vm="1">Instance External Retrieve AE Title</el>
   <el tag="7777xx50" keyword="StorageID" vr="LO" vm="1">Storage ID</el>
   <el tag="7777xx51" keyword="StoragePath" vr="LO" vm="1-n">Storage Path</el>
-  <el tag="7777xx52" keyword="StorageTransferSyntax" vr="UI" vm="1">Storage Transfer Syntax</el>
+  <el tag="7777xx52" keyword="StorageTransferSyntaxUID" vr="UI" vm="1">Storage Transfer Syntax UID</el>
   <el tag="7777xx53" keyword="StorageObjectSize" vr="UL" vm="1">Storage Object Size</el>
-  <el tag="7777xx54" keyword="StorageObjectDigest" vr="OB" vm="1">Storage Object Digest</el>
+  <el tag="7777xx54" keyword="StorageObjectDigest" vr="LO" vm="1">Storage Object Digest</el>
 </elements>

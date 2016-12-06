@@ -56,6 +56,7 @@ import org.dcm4che3.data.PersonName.Group;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.util.Base64;
+import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.TagUtils;
 
 /**
@@ -71,6 +72,7 @@ public class JSONReader {
     }
 
     private final JsonParser parser;
+    private boolean skipBulkDataURI;
     private Attributes fmi;
     private JsonLocation location;
     private Event event;
@@ -82,6 +84,14 @@ public class JSONReader {
 
     public JSONReader(JsonParser parser) {
         this.parser = parser;
+    }
+
+    public boolean isSkipBulkDataURI() {
+        return skipBulkDataURI;
+    }
+
+    public void setSkipBulkDataURI(boolean skipBulkDataURI) {
+        this.skipBulkDataURI = skipBulkDataURI;
     }
 
     public Attributes getFileMetaInformation() {
@@ -230,7 +240,13 @@ public class JSONReader {
             } else if ("InlineBinary".equals(key)) {
                 attrs.setBytes(tag, vr, readInlineBinary());
             } else if ("BulkDataURI".equals(key)) {
-                attrs.setValue(tag, vr, readBulkData(attrs.bigEndian()));
+                if (next() != Event.VALUE_STRING) {
+                    throw new JsonParsingException("Unexpected " + event
+                            + ", expected bulk data URI", location);
+                }
+                if (!skipBulkDataURI) {
+                    attrs.setValue(tag, vr, new BulkData(null, parser.getString(), attrs.bigEndian()));
+                }
             } else if ("DataFragment".equals(key)) {
                 readDataFragment(attrs, tag, vr);
             } else {
@@ -432,15 +448,6 @@ public class JSONReader {
         return bout.toByteArray();
     }
 
-    private BulkData readBulkData(boolean bigEndian) {
-        if (next() != Event.VALUE_STRING) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected bulk data URI", location);
-        }
-        String uri = parser.getString();
-        return new BulkData(null, uri, bigEndian);
-    }
-
     private void readDataFragment(Attributes attrs, int tag, VR vr) {
         if (next() != Event.START_ARRAY) {
             throw new JsonParsingException("Unexpected " + event
@@ -474,7 +481,11 @@ public class JSONReader {
         String key = getString();
         Object value;
         if ("BulkDataURI".equals(key)) {
-            value = readBulkData(bigEndian);
+            if (next() != Event.VALUE_STRING) {
+                throw new JsonParsingException("Unexpected " + event
+                        + ", expected bulk data URI", location);
+            }
+            value = skipBulkDataURI ? ByteUtils.EMPTY_BYTES : new BulkData(null, parser.getString(), bigEndian);
         } else if ("InlineBinary".equals(key)) {
             value = readInlineBinary();
         } else {

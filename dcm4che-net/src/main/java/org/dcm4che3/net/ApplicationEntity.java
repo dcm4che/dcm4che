@@ -629,10 +629,29 @@ public class ApplicationEntity implements Serializable {
         rq.setMaxOpsInvoked(local.getMaxOpsInvoked());
         rq.setMaxOpsPerformed(local.getMaxOpsPerformed());
         rq.setMaxPDULength(local.getReceivePDULength());
-        Socket sock = local.connect(remote);
-        Association as = new Association(this, local, sock);
-        as.write(rq);
-        as.waitForLeaving(State.Sta5);
+
+        final Socket sock = local.connect(remote); // automatically closes the socket in case an exception is thrown
+
+        Association as;
+        try {
+            as = new Association(this, local, sock);
+        } catch (final IOException e) {
+            LOG.warn("Failed to open new association, will close underlying socket");
+            local.close(sock);
+            throw e;
+        }
+        try {
+            as.write(rq);
+            as.waitForLeaving(State.Sta5);
+        } catch (final IOException e) {
+            LOG.warn("{}: Failed to write A-ASSOCIATE-RQ, will abort association", as.toString());
+            as.abort();
+            throw e;
+        } catch (final InterruptedException e) {
+            LOG.warn("{}: Interrupted while waiting to leave state Sta 5, will abort association", as.toString());
+            as.abort();
+            throw e;
+        }
         return as;
     }
 

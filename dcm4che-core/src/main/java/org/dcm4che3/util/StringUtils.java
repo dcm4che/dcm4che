@@ -41,6 +41,7 @@ package org.dcm4che3.util;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -80,10 +81,38 @@ public class StringUtils {
                 len += s.length();
 
         char[] cs = new char[len];
-        for (int i = 0, off = 0; i < n; ++i) {
-            if (i != 0)
+        int off = 0;
+        for (String s : ss) {
+            if (off != 0)
                 cs[off++] = delim;
-            String s = ss[i];
+            if (s != null) {
+                int l = s.length();
+                s.getChars(0, l, cs, off);
+                off += l;
+            }
+        }
+        return new String(cs);
+    }
+
+    public static String concat(Collection<String> ss, char delim) {
+        int n = ss.size();
+        if (n == 0)
+            return "";
+
+        if (n == 1) {
+            String s = ss.iterator().next();
+            return s != null ? s : "";
+        }
+        int len = n - 1;
+        for (String s : ss)
+            if (s != null)
+                len += s.length();
+
+        char[] cs = new char[len];
+        int off = 0;
+        for (String s : ss) {
+            if (off != 0)
+                cs[off++] = delim;
             if (s != null) {
                 int l = s.length();
                 s.getChars(0, l, cs, off);

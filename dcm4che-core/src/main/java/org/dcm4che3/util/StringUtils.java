@@ -82,8 +82,9 @@ public class StringUtils {
 
         char[] cs = new char[len];
         int off = 0;
+        int i = 0;
         for (String s : ss) {
-            if (off != 0)
+            if (i++ != 0)
                 cs[off++] = delim;
             if (s != null) {
                 int l = s.length();
@@ -110,8 +111,9 @@ public class StringUtils {
 
         char[] cs = new char[len];
         int off = 0;
+        int i = 0;
         for (String s : ss) {
-            if (off != 0)
+            if (i++ != 0)
                 cs[off++] = delim;
             if (s != null) {
                 int l = s.length();

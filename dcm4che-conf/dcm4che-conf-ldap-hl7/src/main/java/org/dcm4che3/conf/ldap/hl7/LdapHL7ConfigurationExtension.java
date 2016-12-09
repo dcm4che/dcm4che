@@ -43,6 +43,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.ModificationItem;
 
+import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.net.hl7.HL7Application;
 
@@ -75,7 +76,7 @@ public class LdapHL7ConfigurationExtension {
 
     public void loadFrom(HL7Application hl7App, Attributes attrs) throws NamingException {}
 
-    public void loadChilds(HL7Application hl7App, String appDN) throws NamingException {}
+    public void loadChilds(HL7Application hl7App, String appDN) throws NamingException, ConfigurationException {}
 
     public void storeDiffs(HL7Application a, HL7Application b, List<ModificationItem> mods) {}
 

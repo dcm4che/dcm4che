@@ -234,7 +234,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
     }
 
     private HL7Application loadHL7Application(SearchResult sr, String deviceDN,
-            Device device) throws NamingException {
+            Device device) throws NamingException, ConfigurationException {
         Attributes attrs = sr.getAttributes();
         HL7Application hl7app = new HL7Application(LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
         loadFrom(hl7app, attrs);

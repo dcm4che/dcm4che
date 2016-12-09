@@ -93,7 +93,7 @@ public class JsonHL7Configuration extends JsonConfigurationExtension {
             return false;
 
         HL7DeviceExtension ext = new HL7DeviceExtension();
-        loadFrom(ext, reader, device);
+        loadFrom(ext, reader, device, config);
         device.addDeviceExtension(ext);
         return true;
     }
@@ -111,20 +111,22 @@ public class JsonHL7Configuration extends JsonConfigurationExtension {
         writer.writeEnd();
     }
 
-    private void loadFrom(HL7DeviceExtension ext, JsonReader reader, Device device) {
+    private void loadFrom(HL7DeviceExtension ext, JsonReader reader, Device device, ConfigurationDelegate config)
+            throws ConfigurationException {
         List<Connection> conns = device.listConnections();
         reader.next();
         reader.expect(JsonParser.Event.START_ARRAY);
         while (reader.next() == JsonParser.Event.START_OBJECT) {
             HL7Application hl7App = new HL7Application();
-            loadFrom(hl7App, reader, device, conns);
+            loadFrom(hl7App, reader, device, conns, config);
             reader.expect(JsonParser.Event.END_OBJECT);
             ext.addHL7Application(hl7App);
         }
         reader.expect(JsonParser.Event.END_ARRAY);
     }
 
-    private void loadFrom(HL7Application hl7App, JsonReader reader, Device device, List<Connection> conns) {
+    private void loadFrom(HL7Application hl7App, JsonReader reader, Device device, List<Connection> conns,
+                          ConfigurationDelegate config) throws ConfigurationException {
         while (reader.next() == JsonParser.Event.KEY_NAME) {
             switch (reader.getString()) {
                 case "hl7ApplicationName":
@@ -147,15 +149,16 @@ public class JsonHL7Configuration extends JsonConfigurationExtension {
                     hl7App.setHL7DefaultCharacterSet(reader.stringValue());
                     break;
                 default:
-                    if (!loadHL7ApplicationExtension(device, hl7App, reader))
+                    if (!loadHL7ApplicationExtension(device, hl7App, reader, config))
                         reader.skipUnknownProperty();
             }
         }
     }
 
-    private boolean loadHL7ApplicationExtension(Device device, HL7Application hl7App, JsonReader reader) {
+    private boolean loadHL7ApplicationExtension(Device device, HL7Application hl7App, JsonReader reader,
+                                                ConfigurationDelegate config) throws ConfigurationException {
         for (JsonHL7ConfigurationExtension ext : extensions)
-            if (ext.loadHL7ApplicationExtension(device, hl7App, reader))
+            if (ext.loadHL7ApplicationExtension(device, hl7App, reader, config))
                 return true;
         return false;
     }

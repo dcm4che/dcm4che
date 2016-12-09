@@ -52,6 +52,7 @@ import org.dcm4che3.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.pdu.RoleSelection;
+import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -587,10 +588,18 @@ public class ApplicationEntity implements Serializable {
         rq.setMaxOpsPerformed(local.getMaxOpsPerformed());
         rq.setMaxPDULength(local.getReceivePDULength());
         Socket sock = local.connect(remote);
-        Association as = new Association(this, local, sock);
-        as.write(rq);
-        as.waitForLeaving(State.Sta5);
-        return as;
+        try {
+            Association as = new Association(this, local, sock);
+            as.write(rq);
+            as.waitForLeaving(State.Sta5);
+            return as;
+        } catch (InterruptedException e) {
+            SafeClose.close(sock);
+            throw e;
+        } catch (IOException e) {
+            SafeClose.close(sock);
+            throw e;
+        }
     }
 
     public Association connect(Connection remote, AAssociateRQ rq)

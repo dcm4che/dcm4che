@@ -38,25 +38,19 @@
 
 package org.dcm4che3.json;
 
+import org.dcm4che3.data.*;
+import org.dcm4che3.data.PersonName.Group;
+import org.dcm4che3.util.Base64;
+import org.dcm4che3.util.TagUtils;
+
+import javax.json.stream.JsonParser;
+import javax.json.stream.JsonParser.Event;
+import javax.json.stream.JsonParsingException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
-
-import javax.json.stream.JsonLocation;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
-import javax.json.stream.JsonParsingException;
-
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.PersonName;
-import org.dcm4che3.data.PersonName.Group;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.util.Base64;
-import org.dcm4che3.util.TagUtils;
+import java.util.List;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -71,26 +65,14 @@ public class JSONReader {
     }
 
     private final JsonParser parser;
-    private boolean addBulkDataReferences;
     private Attributes fmi;
-    private JsonLocation location;
     private Event event;
+    private String s;
     private final ByteArrayOutputStream bout = new ByteArrayOutputStream(64);
-    private final ArrayList<String> stringValues = new ArrayList<String>();
-    private final ArrayList<Number> numberValues = new ArrayList<Number>();
-    private final EnumMap<Group, String> personNameGroups =
-            new EnumMap<PersonName.Group, String>(PersonName.Group.class);
+    private final EnumMap<Group, String> pnGroups = new EnumMap<Group, String>(PersonName.Group.class);
 
     public JSONReader(JsonParser parser) {
         this.parser = parser;
-    }
-
-    public boolean isAddBulkDataReferences() {
-        return addBulkDataReferences;
-    }
-
-    public void setAddBulkDataReferences(boolean addBulkDataReferences) {
-        this.addBulkDataReferences = addBulkDataReferences;
     }
 
     public Attributes getFileMetaInformation() {
@@ -98,310 +80,222 @@ public class JSONReader {
     }
 
     private Event next() {
-        location = parser.getLocation();
+        s = null;
         return event = parser.next();
     }
 
     private String getString() {
-        location = parser.getLocation();
-        return parser.getString();
+        if (s == null)
+            s = parser.getString();
+        return s;
+    }
+
+    private void expect(Event expected) {
+        if (this.event != expected)
+            throw new JsonParsingException("Unexpected " + event + ", expected " + expected, parser.getLocation());
+    }
+
+    private String valueString() {
+        next();
+        expect(JsonParser.Event.VALUE_STRING);
+        return getString();
     }
 
     public Attributes readDataset(Attributes attrs) {
-        if (next() != Event.START_OBJECT) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected Data Set object", location);
-        }
+        next();
+        expect(Event.START_OBJECT);
         if (attrs == null) {
             attrs = new Attributes();
         }
         fmi = null;
+        next();
         doReadDataset(attrs);
         return attrs;
     }
 
     public void readDatasets(Callback callback) {
-        if (next() != Event.START_ARRAY) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected array of Data Set objects", location);
-        }
+        next();
+        expect(Event.START_ARRAY);
         Attributes attrs;
-        for (;;) {
-            switch (next()) {
-            case END_ARRAY:
-                return;
-            case START_OBJECT:
-                fmi = null;
-                attrs = new Attributes();
-                doReadDataset(attrs);
-                callback.onDataset(fmi, attrs);
-                break;
-            default:
-                throw new JsonParsingException("Unexpected " + event 
-                        + ", expected Data Set object", location);
-            }
+        while (next() == JsonParser.Event.START_OBJECT) {
+            fmi = null;
+            attrs = new Attributes();
+            next();
+            doReadDataset(attrs);
+            callback.onDataset(fmi, attrs);
         }
+        expect(JsonParser.Event.END_ARRAY);
     }
 
-    private void doReadDataset(Attributes attrs) {
-        for (;;) {
-            switch (next()) {
-            case KEY_NAME:
-                readAttribute(attrs);
-                break;
-            case END_OBJECT:
-                attrs.trimToSize();
-                return;
-            default:
-                throw new JsonParsingException("Unexpected " + event 
-                        + ", expected Tag value", location);
-            }
+    private Attributes doReadDataset(Attributes attrs) {
+        while (event == JsonParser.Event.KEY_NAME) {
+            readAttribute(attrs);
+            next();
         }
+        expect(JsonParser.Event.END_OBJECT);
+        attrs.trimToSize();
+        return attrs;
     }
 
     private void readAttribute(Attributes attrs) {
-        String key = getString();
-        int tag = (int) Long.parseLong(key, 16);
+        int tag = (int) Long.parseLong(getString(), 16);
         if (TagUtils.isFileMetaInformation(tag)) {
             if (fmi == null)
                 fmi = new Attributes();
             attrs = fmi;
         }
-        if (next() != Event.START_OBJECT) {
-            throw new JsonParsingException("Unexpected " + event
-                    + " expected attribute object", location);
-        }
-        if (next() != Event.KEY_NAME) {
-            throw new JsonParsingException("Unexpected " + event
-                    + "\", expected \"vr\"", location);
-        }
-        key = getString();
-        if (!"vr".equals(key)) {
-            throw new JsonParsingException("Unexpected \"" + key
-                    + "\", expected: \"vr\"", location);
-        }
-        if (next() != Event.VALUE_STRING) {
-            throw new JsonParsingException("Unexpected " + event
-                    + " expected vr value", location);
-        }
-        VR vr = VR.valueOf(parser.getString());
-        switch (next()) {
-        case END_OBJECT:
-            attrs.setNull(tag, vr);
-            break;
-        case KEY_NAME:
-            key = getString();
-            if ("Value".equals(key)) {
-                switch (vr) {
-                case AE:
-                case AS:
-                case AT:
-                case CS:
-                case DA:
-                case DT:
-                case LO:
-                case LT:
-                case SH:
-                case ST:
-                case TM:
-                case UC:
-                case UI:
-                case UR:
-                case UT:
-                    readStringValues(attrs, tag, vr);
-                    break;
-                case DS:
-                case FL:
-                case FD:
-                case IS:
-                case SL:
-                case SS:
-                case UL:
-                case US:
-                    readNumberValues(attrs, tag, vr);
-                    break;
-                case PN:
-                    readPersonNames(attrs, tag);
-                    break;
-                case SQ:
-                    readSequence(attrs, tag);
-                    break;
-                case OB:
-                case OD:
-                case OF:
-                case OL:
-                case OW:
-                case UN:
-                    throw new JsonParsingException("Unexpected \"Value\""
-                            + "\", expected \"InlineBinary\""
-                            + " or \"BulkDataURI\" or  \"DataFragment\"", location);
+        next();
+        expect(Event.START_OBJECT);
+        Element el = new Element();
+        while (next() == JsonParser.Event.KEY_NAME) {
+            String key = getString();
+            if (key.equals("vr"))
+                try {
+                    el.vr = VR.valueOf(valueString());
+                } catch (IllegalArgumentException e) {
+                    throw new JsonParsingException("Invalid vr: " + key, parser.getLocation());
                 }
-            } else if ("InlineBinary".equals(key)) {
-                attrs.setBytes(tag, vr, readInlineBinary());
-            } else if ("BulkDataURI".equals(key)) {
-                BulkData bulkData = readBulkData(attrs.bigEndian());
-                attrs.setValue(tag, vr,
-                        bulkData.hasFragments()
-                                ? bulkData.toFragments(attrs.privateCreatorOf(tag), tag, vr)
-                                : bulkData);
-                if (addBulkDataReferences)
-                    attrs.getRoot().addBulkDataReference(
-                            attrs.privateCreatorOf(tag), tag, vr, bulkData, attrs.itemPointers());
-
-            } else if ("DataFragment".equals(key)) {
-                readDataFragment(attrs, tag, vr);
-            } else {
+            else if (key.equals("Value"))
+                el.values = readValues();
+            else if (key.equals("InlineBinary"))
+                el.bytes = readInlineBinary();
+            else if (key.equals("BulkDataURI"))
+                el.bulkDataURI = valueString();
+            else if (key.equals("DataFragment"))
+                el.values = readDataFragments();
+            else
                 throw new JsonParsingException("Unexpected \"" + key
                         + "\", expected \"Value\" or \"InlineBinary\""
-                        + " or \"BulkDataURI\" or  \"DataFragment\"", location);
-            }
-            if (next() != Event.END_OBJECT) {
-                throw new JsonParsingException("Unexpected " + event
-                        + " expected end of attribute object", location);
-            }
-            break;
-        default:
-            throw new JsonParsingException("Unexpected " + event
-                    + "\", expected \"Value\" or \"InlineBinary\""
-                    + " or \"BulkDataURI\"", location);
+                        + " or \"BulkDataURI\" or  \"DataFragment\"", parser.getLocation());
+        }
+        expect(JsonParser.Event.END_OBJECT);
+        if (el.vr == null)
+            throw new JsonParsingException("Missing property: vr", parser.getLocation());
+
+        if (el.isEmpty())
+            attrs.setNull(tag, el.vr);
+        else switch (el.vr) {
+            case AE:
+            case AS:
+            case AT:
+            case CS:
+            case DA:
+            case DT:
+            case LO:
+            case LT:
+            case PN:
+            case SH:
+            case ST:
+            case TM:
+            case UC:
+            case UI:
+            case UR:
+            case UT:
+                attrs.setString(tag, el.vr, el.toStrings());
+                break;
+            case DS:
+            case FL:
+            case FD:
+                attrs.setDouble(tag, el.vr, el.toDoubles());
+                break;
+            case IS:
+            case SL:
+            case SS:
+            case UL:
+            case US:
+                attrs.setInt(tag, el.vr, el.toInts());
+                break;
+            case SQ:
+                el.toItems(attrs.newSequence(tag, el.values.size()));
+                break;
+            case OB:
+            case OD:
+            case OF:
+            case OL:
+            case OW:
+            case UN:
+                if (el.bytes != null)
+                    attrs.setBytes(tag, el.vr, el.bytes);
+                else if (el.bulkDataURI != null) {
+                    BulkData bulkData = new BulkData(null, el.bulkDataURI, false);
+                        attrs.setValue(tag, el.vr, bulkData.hasFragments()
+                                ? bulkData.toFragments(null, tag, el.vr)
+                                : bulkData);
+                } else
+                    el.toFragments(attrs.newFragments(tag, el.vr, el.values.size()));
         }
     }
 
-    private void readStringValues(Attributes attrs, int tag, VR vr) {
-        if (next() != Event.START_ARRAY) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected array of values", location);
-        }
-        for (;;) {
-            switch (next()) {
-            case END_ARRAY:
-                attrs.setString(tag, vr,
-                        stringValues.toArray(new String[stringValues.size()]));
-                stringValues.clear();
-                return;
-            case VALUE_NULL:
-                stringValues.add(null);
-                break;
-            case VALUE_STRING:
-                stringValues.add(parser.getString());
-                break;
-            default:
-                throw new JsonParsingException("Unexpected " + event 
-                        + ", expected string value", location);
-            }
-        }
-    }
-
-    private void readNumberValues(Attributes attrs, int tag, VR vr) {
-        if (next() != Event.START_ARRAY) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected array of values", location);
-        }
-        for (;;) {
-            switch (next()) {
-            case END_ARRAY:
-                switch(vr) {
-                case DS:
-                case FL:
-                case FD:
-                    attrs.setDouble(tag, vr, toDoubles(numberValues));
+    private List<Object> readValues() {
+        ArrayList<Object> list = new ArrayList<Object>();
+        next();
+        expect(Event.START_ARRAY);
+        while (next() != Event.END_ARRAY) {
+            switch (event) {
+                case START_OBJECT:
+                    list.add(readItemOrPersonName());
                     break;
-                case IS:
-                case SL:
-                case SS:
-                case UL:
-                case US:
-                    attrs.setInt(tag, vr, toInts(numberValues));
+                case VALUE_STRING:
+                    list.add(parser.getString());
+                    break;
+                case VALUE_NUMBER:
+                    list.add(parser.getBigDecimal());
+                    break;
+                case VALUE_NULL:
+                    list.add(null);
                     break;
                 default:
-                    assert true;
-                }
-                numberValues.clear();
-                return;
-            case VALUE_NUMBER:
-                numberValues.add(parser.getBigDecimal());
-                break;
-            default:
-                throw new JsonParsingException("Unexpected " + event 
-                        + ", expected number value", location);
+                    throw new JsonParsingException("Unexpected " + event, parser.getLocation());
             }
         }
+        return list;
     }
 
-    private double[] toDoubles(ArrayList<Number> values) {
-        double[] ds = new double[values.size()];
-        for (int i = 0; i < ds.length; i++) {
-            ds[i] = values.get(i).doubleValue();
-        }
-        return ds;
-    }
-
-    private int[] toInts(ArrayList<Number> values) {
-        int[] is = new int[values.size()];
-        for (int i = 0; i < is.length; i++) {
-            is[i] = values.get(i).intValue();
-        }
-        return is;
-    }
-
-    private void readPersonNames(Attributes attrs, int tag) {
-        if (next() != Event.START_ARRAY) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected array of person name objects", location);
-        }
-        for (;;) {
-            switch (next()) {
-            case END_ARRAY:
-                attrs.setString(tag, VR.PN,
-                        stringValues.toArray(new String[stringValues.size()]));
-                stringValues.clear();
-                return;
-            case VALUE_NULL:
-                stringValues.add(null);
-                break;
-            case START_OBJECT:
-                stringValues.add(readPersonName());
-                break;
-            default:
-                throw new JsonParsingException("Unexpected " + event 
-                        + ", expected person name object", location);
+    private List<Object> readDataFragments() {
+        ArrayList<Object> list = new ArrayList<Object>();
+        next();
+        expect(Event.START_ARRAY);
+        while (next() != Event.END_ARRAY) {
+            switch (event) {
+                case START_OBJECT:
+                    list.add(readDataFragment());
+                    break;
+                case VALUE_NULL:
+                    list.add(null);
+                    break;
+                default:
+                    throw new JsonParsingException("Unexpected " + event, parser.getLocation());
             }
         }
+        return list;
+    }
+
+    private Object readItemOrPersonName() {
+        if (next() != JsonParser.Event.KEY_NAME)
+            return null;
+
+        return (getString().length() == 8)
+                ? doReadDataset(new Attributes())
+                : readPersonName();
     }
 
     private String readPersonName() {
-        PersonName.Group key;
-        for (;;) {
-            switch (next()) {
-            case END_OBJECT:
-                String retval = toString(personNameGroups);
-                personNameGroups.clear();
-                return retval;
-            case KEY_NAME:
-                try {
-                    key = PersonName.Group.valueOf(getString());
-                } catch (IllegalArgumentException e) {
-                    throw new JsonParsingException("Unexpected \"" + e.getMessage()
-                            + "\", expected \"Alphabetic\" or \"Ideographic\""
-                            + " or \"Phonetic\"", location);
-                }
-                if (next() != Event.VALUE_STRING) {
-                    throw new JsonParsingException("Unexpected " + event
-                            + "\", expected person name value", location);
-                }
-                personNameGroups.put(key, parser.getString());
-                break;
-            default:
-                 throw new JsonParsingException("Unexpected " + event
-                         + ", expected \"Alphabetic\" or \"Ideographic\""
-                         + " or \"Phonetic\"", location);
+        pnGroups.clear();
+        while (event == JsonParser.Event.KEY_NAME) {
+            Group key;
+            try {
+                key = PersonName.Group.valueOf(getString());
+            } catch (IllegalArgumentException e) {
+                throw new JsonParsingException("Unexpected \"" + getString()
+                        + "\", expected \"Alphabetic\" or \"Ideographic\""
+                        + " or \"Phonetic\"", parser.getLocation());
             }
+            pnGroups.put(key, valueString());
+            next();
         }
-    }
-
-    private String toString(EnumMap<Group, String> groups) {
-        String s = groups.get(PersonName.Group.Alphabetic);
-        if (s != null && groups.size() == 1)
+        expect(JsonParser.Event.END_OBJECT);
+        String s = pnGroups.get(PersonName.Group.Alphabetic);
+        if (s != null && pnGroups.size() == 1)
             return s;
         
         StringBuilder sb = new StringBuilder(64);
@@ -409,37 +303,19 @@ public class JSONReader {
             sb.append(s);
         
         sb.append('=');
-        s = groups.get(PersonName.Group.Ideographic);
+        s = pnGroups.get(PersonName.Group.Ideographic);
         if (s != null)
             sb.append(s);
 
-        s = groups.get(PersonName.Group.Phonetic);
+        s = pnGroups.get(PersonName.Group.Phonetic);
         if (s != null)
             sb.append('=').append(s);
         
         return sb.toString();
     }
 
-    private void readSequence(Attributes attrs, int tag) {
-        final Sequence seq = attrs.newSequence(tag, 10);
-        Attributes fmi0 = fmi;
-        readDatasets(new Callback(){
-
-            @Override
-            public void onDataset(Attributes fmi, Attributes item) {
-                seq.add(item);
-            }});
-
-        fmi = fmi0;
-        seq.trimToSize();
-    }
-
     private byte[] readInlineBinary() {
-        if (next() != Event.VALUE_STRING) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected bulk data URI", location);
-        }
-        char[] base64 = parser.getString().toCharArray();
+        char[] base64 = valueString().toCharArray();
         bout.reset();
         try {
             Base64.decode(base64, 0, base64.length, bout);
@@ -449,72 +325,73 @@ public class JSONReader {
         return bout.toByteArray();
     }
 
-    private BulkData readBulkData(boolean bigEndian) {
-        if (next() != Event.VALUE_STRING) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected bulk data URI", location);
+    private Object readDataFragment() {
+        next();
+        byte[] bytes = null;
+        String bulkDataURI = null;
+        while (next() != Event.KEY_NAME) {
+            String key = getString();
+            if (key.equals("BulkDataURI"))
+                bulkDataURI = valueString();
+            else if (key.equals("InlineBinary"))
+                bytes = readInlineBinary();
+            else
+                throw new JsonParsingException("Unexpected \"" + key
+                        + "\", expected \"InlineBinary\""
+                        + " or \"BulkDataURI\"", parser.getLocation());
         }
-        String uri = parser.getString();
-        return new BulkData(null, uri, bigEndian);
+        expect(Event.END_OBJECT);
+        return bulkDataURI != null
+                ? new BulkData(null, bulkDataURI, false)
+                : bytes;
     }
 
-    private void readDataFragment(Attributes attrs, int tag, VR vr) {
-        if (next() != Event.START_ARRAY) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected array of data fragment objects", location);
+    private static class Element {
+        VR vr;
+        List<Object> values;
+        byte[] bytes;
+        String bulkDataURI;
+
+        boolean isEmpty() {
+            return (values == null || values.isEmpty()) && (bytes == null || bytes.length == 0) && bulkDataURI == null;
         }
-        Fragments frags = attrs.newFragments(tag, vr, 10);
-        for (;;) {
-            switch (next()) {
-            case END_ARRAY:
-                frags.trimToSize();
-                return;
-            case VALUE_NULL:
-                frags.add(null);
-                break;
-            case START_OBJECT:
-                frags.add(readDataFragment(attrs.bigEndian()));
-                break;
-            default:
-                throw new JsonParsingException("Unexpected " + event 
-                        + ", expected data fragment object", location);
+
+        String[] toStrings() {
+            String[] ss = new String[values.size()];
+            for (int i = 0; i < ss.length; i++) {
+                Object value = values.get(i);
+                ss[i] = value != null ? value.toString() : null;
+            }
+            return ss;
+        }
+
+        double[] toDoubles() {
+            double[] ds = new double[values.size()];
+            for (int i = 0; i < ds.length; i++) {
+                ds[i] = ((Number) values.get(i)).doubleValue();
+            }
+            return ds;
+        }
+
+        int[] toInts() {
+            int[] is = new int[values.size()];
+            for (int i = 0; i < is.length; i++) {
+                is[i] = ((Number) values.get(i)).intValue();
+            }
+            return is;
+        }
+
+        void toItems(Sequence seq) {
+            for (Object value : values) {
+                seq.add(value != null ? (Attributes) value : new Attributes(0));
             }
         }
-    }
 
-    private Object readDataFragment(boolean bigEndian) {
-        Event event = next();
-        switch (event) {
-        case KEY_NAME:
-            break;
-        case END_OBJECT:
-            return null;
-            default: throw new JsonParsingException("Unexpected " + event
-                    + ", expected \"InlineBinary\""
-                    + " or \"BulkDataURI\"", location);
+        void toFragments(Fragments fragments) {
+            for (Object value : values) {
+                fragments.add(value);
+            }
         }
-        
-        if (event != Event.KEY_NAME) {
-            throw new JsonParsingException("Unexpected " + event
-                    + ", expected \"InlineBinary\""
-                    + " or \"BulkDataURI\"", location);
-        }
-        String key = getString();
-        Object value;
-        if ("BulkDataURI".equals(key)) {
-            value = readBulkData(bigEndian);
-        } else if ("InlineBinary".equals(key)) {
-            value = readInlineBinary();
-        } else {
-            throw new JsonParsingException("Unexpected \"" + key
-                    + "\", expected \"InlineBinary\""
-                    + " or \"BulkDataURI\"", location);
-        }
-        if (next() != Event.END_OBJECT) {
-            throw new JsonParsingException("Unexpected " + event
-                    + " expected end of data fragment object", location);
-        }
-        return value;
-    }
 
+    }
 }

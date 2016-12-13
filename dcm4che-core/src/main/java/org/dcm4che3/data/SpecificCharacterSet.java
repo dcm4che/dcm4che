@@ -91,7 +91,8 @@ public class SpecificCharacterSet {
     
     public static final SpecificCharacterSet ASCII = new SpecificCharacterSet(new Codec[]{Codec.ISO_646});
 
-    private static SpecificCharacterSet DEFAULT = ASCII;
+    public static SpecificCharacterSet DEFAULT = ASCII;
+
     private static ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = new ThreadLocal<SoftReference<Encoder>>();
     private static ThreadLocal<SoftReference<Encoder>> cachedEncoder2 = new ThreadLocal<SoftReference<Encoder>>();
 

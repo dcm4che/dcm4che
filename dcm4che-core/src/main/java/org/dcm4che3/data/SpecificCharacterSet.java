@@ -100,37 +100,39 @@ public class SpecificCharacterSet {
     protected final String[] dicomCodes;
 
     private enum Codec {
-        ISO_646("US-ASCII", 0x2842, 0, 1),
-        ISO_8859_1("ISO-8859-1", 0x2842, 0x2d41, 1),
-        ISO_8859_2("ISO-8859-2", 0x2842, 0x2d42, 1),
-        ISO_8859_3("ISO-8859-3", 0x2842, 0x2d43, 1),
-        ISO_8859_4("ISO-8859-4", 0x2842, 0x2d44, 1),
-        ISO_8859_5("ISO-8859-5", 0x2842, 0x2d4c, 1),
-        ISO_8859_6("ISO-8859-6", 0x2842, 0x2d47, 1),
-        ISO_8859_7("ISO-8859-7", 0x2842, 0x2d46, 1),
-        ISO_8859_8("ISO-8859-8", 0x2842, 0x2d48, 1),
-        ISO_8859_9("ISO-8859-9", 0x2842, 0x2d4d, 1),
-        JIS_X_201("JIS_X0201", 0x284a, 0x2949, 1) {
+        ISO_646("US-ASCII", true, 0x2842, 0, 1),
+        ISO_8859_1("ISO-8859-1", true, 0x2842, 0x2d41, 1),
+        ISO_8859_2("ISO-8859-2", true, 0x2842, 0x2d42, 1),
+        ISO_8859_3("ISO-8859-3", true, 0x2842, 0x2d43, 1),
+        ISO_8859_4("ISO-8859-4", true, 0x2842, 0x2d44, 1),
+        ISO_8859_5("ISO-8859-5", true, 0x2842, 0x2d4c, 1),
+        ISO_8859_6("ISO-8859-6", true, 0x2842, 0x2d47, 1),
+        ISO_8859_7("ISO-8859-7", true, 0x2842, 0x2d46, 1),
+        ISO_8859_8("ISO-8859-8", true, 0x2842, 0x2d48, 1),
+        ISO_8859_9("ISO-8859-9", true, 0x2842, 0x2d4d, 1),
+        JIS_X_201("JIS_X0201", true, 0x284a, 0x2949, 1) {
             @Override
             public String toText(String s) {
                 return s.replace('\\', '¥');
             }
         },
-        TIS_620("TIS-620", 0x2842, 0x2d54, 1),
-        JIS_X_208("x-JIS0208", 0x2442, 0, 1),
-        JIS_X_212("JIS_X0212-1990", 0x242844, 0, 2),
-        KS_X_1001("EUC-KR", 0x2842, 0x242943, -1),
-        GB2312("GB2312", 0x2842, 0x242941, -1),
-        UTF_8("UTF-8", 0, 0, -1),
-        GB18030("GB18030", 0, 0, -1);
+        TIS_620("TIS-620", true, 0x2842, 0x2d54, 1),
+        JIS_X_208("x-JIS0208", false, 0x2442, 0, 1),
+        JIS_X_212("JIS_X0212-1990", false, 0x242844, 0, 2),
+        KS_X_1001("EUC-KR", false, 0x2842, 0x242943, -1),
+        GB2312("GB2312", false, 0x2842, 0x242941, -1),
+        UTF_8("UTF-8", true, 0, 0, -1),
+        GB18030("GB18030", false, 0, 0, -1);
 
         private final String charsetName;
+        private final boolean containsASCII;
         private final int escSeq0;
         private final int escSeq1;
         private final int bytesPerChar;
 
-        private Codec(String charsetName, int escSeq0, int escSeq1, int bytesPerChar) {
+        Codec(String charsetName, boolean containsASCII, int escSeq0, int escSeq1, int bytesPerChar) {
             this.charsetName = charsetName;
+            this.containsASCII = containsASCII;
             this.escSeq0 = escSeq0;
             this.escSeq1 = escSeq1;
             this.bytesPerChar = bytesPerChar;
@@ -247,7 +249,7 @@ public class SpecificCharacterSet {
         }
 
         public boolean containsASCII() {
-            return escSeq0 == 0x2842;
+            return containsASCII;
         }
 
         public int getEscSeq0() {

@@ -58,6 +58,9 @@
   <el tag="7777xx35" keyword="MissingSOPInstanceUIDListOfSeries" vr="UI" vm="1-n">Missing SOP Instance UID List of Series</el>
   <el tag="7777xx36" keyword="FailedRetrievesOfSeries" vr="US" vm="1">Failed Retrieves of Series</el>
   <el tag="7777xx37" keyword="SendingApplicationEntityTitleOfSeries" vr="AE" vm="1">Sending Application Entity Title of Series</el>
+  <el tag="7777xx38" keyword="MetadataUpdateDateTimeOfSeries" vr="DT" vm="1">Metadata Update Date Time of Series</el>
+  <el tag="7777xx39" keyword="InstanceRecordsPurgeDateTimeOfSeries" vr="DT" vm="1">Instance Records Purge Date Time of Series</el>
+  <el tag="7777xx3A" keyword="InstanceRecordsPurgeStateOfSeries" vr="CS" vm="1">Instance Records Purge State of Series</el>
   <el tag="7777xx40" keyword="InstanceReceiveDateTime" vr="DT" vm="1">Instance Receive Date Time</el>
   <el tag="7777xx41" keyword="InstanceUpdateDateTime" vr="DT" vm="1">Instance Update Date Time</el>
   <el tag="7777xx42" keyword="RejectionCodeSequence" vr="SQ" vm="1">Rejection Code Sequence</el>

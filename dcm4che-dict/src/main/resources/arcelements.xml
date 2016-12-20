@@ -61,6 +61,10 @@
   <el tag="7777xx38" keyword="ScheduledMetadataUpdateDateTimeOfSeries" vr="DT" vm="1">Scheduled Metadata Update Date Time of Series</el>
   <el tag="7777xx39" keyword="ScheduledInstanceRecordPurgeDateTimeOfSeries" vr="DT" vm="1">Scheduled Instance Record Purge Date Time of Series</el>
   <el tag="7777xx3A" keyword="InstanceRecordPurgeStateOfSeries" vr="CS" vm="1">Instance Record Purge State of Series</el>
+  <el tag="7777xx3B" keyword="SeriesMetadataStorageID" vr="LO" vm="1">Series Metadata Storage ID</el>
+  <el tag="7777xx3C" keyword="SeriesMetadataStoragePath" vr="LO" vm="1-n">Series Metadata Storage Path</el>
+  <el tag="7777xx3D" keyword="SeriesMetadataStorageObjectSize" vr="UL" vm="1">Series Metadata Storage Object Size</el>
+  <el tag="7777xx3E" keyword="SeriesMetadataStorageObjectDigest" vr="LO" vm="1">Series Metadata Storage Object Digest</el>
   <el tag="7777xx40" keyword="InstanceReceiveDateTime" vr="DT" vm="1">Instance Receive Date Time</el>
   <el tag="7777xx41" keyword="InstanceUpdateDateTime" vr="DT" vm="1">Instance Update Date Time</el>
   <el tag="7777xx42" keyword="RejectionCodeSequence" vr="SQ" vm="1">Rejection Code Sequence</el>

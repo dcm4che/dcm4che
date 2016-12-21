@@ -49,6 +49,7 @@
         <module name="org.dcm4che.conf.ldap-audit" export="true"/>
         <module name="org.keycloak.keycloak-core" export="true"/>
         <module name="org.keycloak.keycloak-server-spi" export="true"/>
+        <module name="org.keycloak.keycloak-server-spi-private" export="true"/>
         <module name="javax.api"/>
         <module name="javax.servlet.api" export="true"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs" export="true"/>

@@ -55,11 +55,11 @@ public class AssociationHandler {
 
     private UserIdentityNegotiator userIdNegotiator;
 
-    public final UserIdentityNegotiator getUserIdNegotiator() {
+    public UserIdentityNegotiator getUserIdNegotiator() {
         return userIdNegotiator;
     }
 
-    public final void setUserIdNegotiator(UserIdentityNegotiator userIdNegotiator) {
+    public void setUserIdNegotiator(UserIdentityNegotiator userIdNegotiator) {
         this.userIdNegotiator = userIdNegotiator;
     }
 

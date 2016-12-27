@@ -190,17 +190,6 @@ public class Json2Rst {
         out.print(type);
         out.print(",\"");
         out.print(property.getString("description").replace("\"","\"\""));
-        JsonArray anEnum = property.getJsonArray("enum");
-        if (anEnum != null) {
-            out.print(" Enumerated values: ");
-            int count = 0;
-            for (JsonValue jsonValue : anEnum) {
-                if (count++ > 0)
-                    out.print(", ");
-                out.print(jsonValue instanceof JsonString ? ((JsonString)jsonValue).getString() : jsonValue.toString());
-            }
-            out.print('.');
-        }
         out.println("\",\"");
         out.print("    .. _");
         out.print(name);

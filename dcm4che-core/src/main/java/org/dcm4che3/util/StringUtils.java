@@ -317,7 +317,7 @@ public class StringUtils {
 
 
     /**
-     * @deprecated use {@link ResourceLocator.resourceURL(String)} instead. 
+     * @deprecated use {@link ResourceLocator#resourceURL(String)} instead.
      */
     @Deprecated
     public static String resourceURL(String name) {
@@ -334,5 +334,41 @@ public class StringUtils {
                 return false;
         }
         return len != 0;
+    }
+
+    public static boolean isIPAddr(String s) {
+        String[] ss = split(s, ':');
+        if (ss.length > 1)
+            return ss.length == 8;
+
+        ss = split(s, '.');
+        if (ss.length != 4)
+            return false;
+
+        for (String s1 : ss) {
+            if (s1.length() > 3)
+                return false;
+
+            int i = 0;
+            char ch;
+            switch (s1.length()) {
+                case 3:
+                    ch = s1.charAt(i++);
+                    if (ch != '1' && ch != '2')
+                        return false;
+                case 2:
+                    ch = s1.charAt(i++);
+                    if (ch < '0' || ch > '9')
+                        return false;
+                case 1:
+                    ch = s1.charAt(i++);
+                    if (ch < '0' || ch > '9')
+                        return false;
+                    break;
+                default:
+                    return false;
+            }
+        }
+        return true;
     }
 }

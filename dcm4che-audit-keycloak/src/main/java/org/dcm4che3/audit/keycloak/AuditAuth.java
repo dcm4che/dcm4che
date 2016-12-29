@@ -70,7 +70,7 @@ public class AuditAuth {
 
     static void spoolAuditMsg(Event event, AuditLogger log) {
         String dataDir = System.getProperty(JBOSS_SERVER_DATA_DIR);
-        Path dir = Paths.get(dataDir, "audit-auth-spool", log.getCommonName());
+        Path dir = Paths.get(dataDir, "audit-auth-spool", log.getCommonName().replaceAll(" ", "_"));
         Path file;
         try {
             if (!Files.exists(dir))

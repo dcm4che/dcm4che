@@ -93,10 +93,7 @@ public class AuditLoggerDeviceExtension extends DeviceExtension {
     }
 
     public AuditLogger getAuditLogger(String name) {
-        AuditLogger logger = loggers.get(name);
-        if (logger == null)
-            logger = loggers.get("*");
-        return logger;
+        return loggers.get(name);
     }
 
     public Collection<String> getAuditLoggerNames() {

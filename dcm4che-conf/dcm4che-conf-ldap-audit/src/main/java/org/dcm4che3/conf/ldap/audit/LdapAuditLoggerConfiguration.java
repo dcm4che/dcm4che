@@ -55,6 +55,7 @@ import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.dcm4che3.net.audit.AuditLoggerDeviceExtension;
 import org.dcm4che3.net.audit.AuditSuppressCriteria;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
@@ -73,25 +74,33 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
 
     @Override
     protected void storeChilds(String deviceDN, Device device) throws NamingException {
-        AuditLogger logger = device.getDeviceExtension(AuditLogger.class);
-        if (logger != null)
-            store(deviceDN, logger);
+        AuditLoggerDeviceExtension auditLoggerExt = device.getDeviceExtension(AuditLoggerDeviceExtension.class);
+        if (auditLoggerExt == null)
+            return;
+
+        for (AuditLogger auditLogger : auditLoggerExt.getAuditLoggers())
+            store(deviceDN, auditLogger);
     }
 
     private void store(String deviceDN, AuditLogger logger)
             throws NamingException {
-        String auditLoggerDN = CN_AUDIT_LOGGER + deviceDN;
-        config.createSubcontext(auditLoggerDN,
+        String appDN = auditLoggerDN(logger.getCommonName(), deviceDN);
+        config.createSubcontext(appDN,
                 storeTo(logger, deviceDN, new BasicAttributes(true)));
         for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
             config.createSubcontext(
-                    LdapUtils.dnOf("cn", criteria.getCommonName(), auditLoggerDN),
+                    LdapUtils.dnOf("cn", criteria.getCommonName(), appDN),
                     storeTo(criteria, new BasicAttributes(true)));
         }
     }
 
+    private String auditLoggerDN(String name, String deviceDN) {
+        return LdapUtils.dnOf("cn" , name, deviceDN);
+    }
+
     private Attributes storeTo(AuditLogger logger, String deviceDN, Attributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "dcmAuditLogger"));
+        LdapUtils.storeNotNull(attrs, "cn", logger.getCommonName());
         LdapUtils.storeNotDef(attrs, "dcmAuditFacility",
                 logger.getFacility().ordinal(), 10);
         LdapUtils.storeNotDef(attrs, "dcmAuditSuccessSeverity",
@@ -164,26 +173,36 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
     @Override
     protected void loadChilds(Device device, String deviceDN)
             throws NamingException, ConfigurationException {
-        String auditLoggerDN = CN_AUDIT_LOGGER + deviceDN;
-        Attributes attrs;
+        NamingEnumeration<SearchResult> ne =
+                config.search(deviceDN, "(objectclass=dcmAuditLogger)");
         try {
-            attrs = config.getAttributes(auditLoggerDN);
-        } catch (NameNotFoundException e) {
-            return;
+            if (!ne.hasMore())
+                return;
+
+            AuditLoggerDeviceExtension ext = new AuditLoggerDeviceExtension();
+            device.addDeviceExtension(ext);
+            do {
+                ext.addAuditLogger(
+                        loadAuditLogger(ne.next(), deviceDN, device));
+            } while (ne.hasMore());
+        } finally {
+            LdapUtils.safeClose(ne);
         }
-        AuditLogger logger = new AuditLogger();
-        loadFrom(logger, attrs);
-        for (String connDN : LdapUtils.stringArray(
-                attrs.get("dicomNetworkConnectionReference")))
-            logger.addConnection(
-                    LdapUtils.findConnection(connDN, deviceDN, device));
-        String arrDeviceDN = LdapUtils.stringValue(
-                attrs.get("dcmAuditRecordRepositoryDeviceReference"), null);
-        logger.setAuditRecordRepositoryDevice(deviceDN.equals(arrDeviceDN)
+    }
+
+    private AuditLogger loadAuditLogger(SearchResult sr, String deviceDN,
+                                        Device device) throws NamingException, ConfigurationException {
+        Attributes attrs = sr.getAttributes();
+        AuditLogger auditLogger = new AuditLogger(LdapUtils.stringValue(attrs.get("cn"), null));
+        loadFrom(auditLogger, attrs);
+        for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
+            auditLogger.addConnection(LdapUtils.findConnection(connDN, deviceDN, device));
+        String arrDeviceDN = LdapUtils.stringValue(attrs.get("dcmAuditRecordRepositoryDeviceReference"), null);
+        auditLogger.setAuditRecordRepositoryDevice(deviceDN.equals(arrDeviceDN)
                 ? device
                 : loadAuditRecordRepository(arrDeviceDN));
-        loadAuditSuppressCriteria(logger, auditLoggerDN);
-        device.addDeviceExtension(logger);
+        loadAuditSuppressCriteria(auditLogger, auditLoggerDN(auditLogger.getCommonName(), deviceDN));
+        return auditLogger;
     }
 
     private Device loadAuditRecordRepository(String arrDeviceRef) {
@@ -274,22 +293,32 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
     @Override
     protected void mergeChilds(Device prev, Device device, String deviceDN)
             throws NamingException {
-        AuditLogger prevLogger = prev.getDeviceExtension(AuditLogger.class);
-        AuditLogger logger = device.getDeviceExtension(AuditLogger.class);
-        String auditLoggerDN = CN_AUDIT_LOGGER + deviceDN;
-        if (logger == null) {
-            if (prevLogger != null)
-                config.destroySubcontextWithChilds(auditLoggerDN);
+        AuditLoggerDeviceExtension prevAuditLoggerExt = prev.getDeviceExtension(AuditLoggerDeviceExtension.class);
+        AuditLoggerDeviceExtension auditLoggerExt = device.getDeviceExtension(AuditLoggerDeviceExtension.class);
+
+        if (prevAuditLoggerExt != null)
+            for (String appName : prevAuditLoggerExt.getAuditLoggerNames()) {
+                if (auditLoggerExt == null || !auditLoggerExt.containsAuditLogger(appName))
+                    config.destroySubcontextWithChilds(auditLoggerDN(appName, deviceDN));
+            }
+
+        if (auditLoggerExt == null)
             return;
+
+        for (AuditLogger logger : auditLoggerExt.getAuditLoggers()) {
+            String appName = logger.getCommonName();
+            if (prevAuditLoggerExt == null || !prevAuditLoggerExt.containsAuditLogger(appName)) {
+                store(deviceDN, logger);
+            } else
+                merge(prevAuditLoggerExt.getAuditLogger(appName), logger, deviceDN);
         }
-        if (prevLogger == null) {
-            store(deviceDN, logger);
-            return;
-        }
-        config.modifyAttributes(auditLoggerDN,
-                storeDiffs(prevLogger, logger, deviceDN,
-                        new ArrayList<ModificationItem>()));
-        mergeAuditSuppressCriteria(prevLogger, logger, auditLoggerDN);
+    }
+
+    private void merge(AuditLogger prevLogger, AuditLogger logger, String deviceDN)
+            throws NamingException {
+        String appDN = auditLoggerDN(logger.getCommonName(), deviceDN);
+        config.modifyAttributes(appDN, storeDiffs(prevLogger, logger, deviceDN, new ArrayList<ModificationItem>()));
+        mergeAuditSuppressCriteria(prevLogger, logger, appDN);
     }
 
     private void mergeAuditSuppressCriteria(AuditLogger prevLogger,

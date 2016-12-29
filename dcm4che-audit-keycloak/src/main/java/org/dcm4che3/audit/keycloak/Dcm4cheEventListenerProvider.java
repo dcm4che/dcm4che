@@ -47,6 +47,7 @@ import org.keycloak.events.admin.AdminEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -66,9 +67,11 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
     public void onEvent(Event event) {
         if (includedEvents != null && includedEvents.contains(event.getType())) {
             try {
-                AuditLogger log = new AuditLoggerFactory().getAuditLogger();
-                if (log != null)
-                    AuditAuth.spoolAuditMsg(event, log);
+                Collection<AuditLogger> loggers = new AuditLoggerFactory().getAuditLoggers();
+                if (loggers != null)
+                    for (AuditLogger logger : loggers)
+                        if (logger.isInstalled())
+                            AuditAuth.spoolAuditMsg(event, logger);
             } catch (Exception e) {
                 LOG.warn("Failed to get audit logger", e);
             }

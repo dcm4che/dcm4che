@@ -57,6 +57,7 @@ import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageWriterFactory;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.dcm4che3.net.audit.AuditLoggerDeviceExtension;
 import org.dcm4che3.net.audit.AuditRecordRepository;
 import org.dcm4che3.net.audit.AuditSuppressCriteria;
 import org.dcm4che3.net.hl7.HL7Application;
@@ -258,12 +259,14 @@ public class JsonConfigurationTest {
         assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
         assertImageReaderExtension(device.getDeviceExtension(ImageReaderExtension.class));
         assertImageWriterExtension(device.getDeviceExtension(ImageWriterExtension.class));
-        assertAuditLogger(device.getDeviceExtension(AuditLogger.class));
+        assertAuditLoggerDeviceExtension(device.getDeviceExtension(AuditLoggerDeviceExtension.class));
         assertHL7DeviceExtension(device.getDeviceExtension(HL7DeviceExtension.class));
     }
 
-    private void assertAuditLogger(AuditLogger auditLogger) {
-        assertNotNull(auditLogger);
+    private void assertAuditLoggerDeviceExtension(AuditLoggerDeviceExtension auditLoggerExt) {
+        assertNotNull(auditLoggerExt);
+        Collection<AuditLogger> auditLoggers = auditLoggerExt.getAuditLoggers();
+        AuditLogger auditLogger = auditLoggers.iterator().next();
         assertNotNull(auditLogger.getAuditRecordRepositoryDevice());
         List<Connection> conns = auditLogger.getConnections();
         assertEquals(1, conns.size());
@@ -371,7 +374,7 @@ public class JsonConfigurationTest {
         device.addApplicationEntity(ae);
         device.addDeviceExtension(new ImageReaderExtension(ImageReaderFactory.getDefault()));
         device.addDeviceExtension(new ImageWriterExtension(ImageWriterFactory.getDefault()));
-        addAuditLogger(device, createARRDevice("TestAuditRecordRepository"));
+        addAuditLoggerDeviceExtension(device, createARRDevice("TestAuditRecordRepository"));
         addHL7DeviceExtension(device);
         return device ;
     }
@@ -438,12 +441,13 @@ public class JsonConfigurationTest {
         arr.addConnection(tls);
     }
 
-    private static void addAuditLogger(Device device, Device arrDevice) {
+    private static void addAuditLoggerDeviceExtension(Device device, Device arrDevice) {
         Connection auditUDP = new Connection("audit-udp", "localhost");
         auditUDP.setProtocol(Connection.Protocol.SYSLOG_UDP);
         device.addConnection(auditUDP);
-        AuditLogger auditLogger = new AuditLogger();
-        device.addDeviceExtension(auditLogger);
+        AuditLoggerDeviceExtension ext = new AuditLoggerDeviceExtension();
+        device.addDeviceExtension(ext);
+        AuditLogger auditLogger = new AuditLogger("Audit Logger");
         auditLogger.addConnection(auditUDP);
         auditLogger.setAuditSourceID("SourceID");
         auditLogger.setAuditEnterpriseSiteID("EnterpriseID");
@@ -451,6 +455,7 @@ public class JsonConfigurationTest {
         auditLogger.setApplicationName("applicationName");
         auditLogger.setAuditRecordRepositoryDevice(arrDevice);
         auditLogger.setAuditSuppressCriteriaList(createSuppressCriteriaList());
+        ext.addAuditLogger(auditLogger);
     }
 
     private static List<AuditSuppressCriteria> createSuppressCriteriaList() {

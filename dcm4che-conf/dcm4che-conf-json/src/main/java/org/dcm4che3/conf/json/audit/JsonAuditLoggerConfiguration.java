@@ -49,6 +49,7 @@ import org.dcm4che3.conf.json.JsonWriter;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.dcm4che3.net.audit.AuditLoggerDeviceExtension;
 import org.dcm4che3.net.audit.AuditSuppressCriteria;
 
 import javax.json.stream.JsonParser;
@@ -57,16 +58,24 @@ import java.util.List;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  * @since Jan 2016
  */
 public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
     @Override
     protected void storeTo(Device device, JsonWriter writer) {
-        AuditLogger auditLogger = device.getDeviceExtension(AuditLogger.class);
-        if (auditLogger == null)
+        AuditLoggerDeviceExtension ext = device.getDeviceExtension(AuditLoggerDeviceExtension.class);
+        if (ext == null)
             return;
+        writer.writeStartArray("dcmAuditLogger");
+        for (AuditLogger logger : ext.getAuditLoggers())
+            writeTo(device, logger, writer);
+        writer.writeEnd();
+    }
 
-        writer.writeStartObject("dcmAuditLogger");
+    private void writeTo(Device device, AuditLogger auditLogger, JsonWriter writer) {
+        writer.writeStartObject();
+        writer.writeNotNull("cn", auditLogger.getCommonName());
         writer.writeNotNull("dcmAuditRecordRepositoryDeviceName",
                 auditLogger.getAuditRecordRepositoryDevice().getDeviceName());
         writer.writeConnRefs(device.listConnections(), auditLogger.getConnections());
@@ -120,19 +129,32 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
         if (!reader.getString().equals("dcmAuditLogger"))
             return false;
 
-        reader.next();
-        reader.expect(JsonParser.Event.START_OBJECT);
-        AuditLogger logger = new AuditLogger();
-        loadFrom(logger, reader, device.listConnections(), config);
-        device.addDeviceExtension(logger);
-        reader.expect(JsonParser.Event.END_OBJECT);
+        AuditLoggerDeviceExtension ext = new AuditLoggerDeviceExtension();
+        loadFrom(ext, reader, device.listConnections(), config);
+        device.addDeviceExtension(ext);
         return true;
+    }
+
+    private void loadFrom(AuditLoggerDeviceExtension ext, JsonReader reader, List<Connection> conns,
+                          ConfigurationDelegate config) throws ConfigurationException {
+        reader.next();
+        reader.expect(JsonParser.Event.START_ARRAY);
+        while (reader.next() == JsonParser.Event.START_OBJECT) {
+            AuditLogger logger = new AuditLogger();
+            loadFrom(logger, reader, conns, config);
+            reader.expect(JsonParser.Event.END_OBJECT);
+            ext.addAuditLogger(logger);
+        }
+        reader.expect(JsonParser.Event.END_ARRAY);
     }
 
     private void loadFrom(AuditLogger logger, JsonReader reader, List<Connection> conns,
                           ConfigurationDelegate config) throws ConfigurationException {
         while (reader.next() == JsonParser.Event.KEY_NAME) {
             switch (reader.getString()) {
+                case "cn":
+                    logger.setCommonName(reader.stringValue());
+                    break;
                 case "dcmAuditRecordRepositoryDeviceName":
                     logger.setAuditRecordRepositoryDevice(config.findDevice(reader.stringValue()));
                     break;

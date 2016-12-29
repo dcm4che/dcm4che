@@ -57,6 +57,7 @@ import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.dcm4che3.net.audit.AuditLoggerDeviceExtension;
 import org.dcm4che3.net.audit.AuditRecordRepository;
 import org.dcm4che3.net.audit.AuditSuppressCriteria;
 import org.junit.After;
@@ -139,7 +140,10 @@ public class LdapAuditLoggerConfigurationTest {
             addAuditRecordRepository(device, udp, tls);
             arrDevice = device;
         }
-        addAuditLogger(device, udp, tls, arrDevice);
+        AuditLoggerDeviceExtension ext = new AuditLoggerDeviceExtension();
+        device.addDeviceExtension(ext);
+        AuditLogger logger = createAuditLogger(udp, tls, arrDevice);
+        ext.addAuditLogger(logger);
         return device ;
     }
 
@@ -151,10 +155,9 @@ public class LdapAuditLoggerConfigurationTest {
         arr.addConnection(tls);
     }
 
-    private void addAuditLogger(Device device, Connection udp, Connection tls,
+    private AuditLogger createAuditLogger(Connection udp, Connection tls,
             Device arrDevice) {
-        AuditLogger logger = new AuditLogger();
-        device.addDeviceExtension(logger);
+        AuditLogger logger = new AuditLogger("AuditLogger");
         logger.addConnection(udp);
         logger.addConnection(tls);
         logger.setAuditRecordRepositoryDevice(arrDevice);
@@ -176,6 +179,7 @@ public class LdapAuditLoggerConfigurationTest {
         logger.setSpoolDirectory(SPOOL_DIRECTORY);
         logger.setIncludeInstanceUID(true);
         logger.addAuditSuppressCriteria(createAuditSuppressCriteria());
+        return logger;
     }
 
     private AuditSuppressCriteria createAuditSuppressCriteria() {
@@ -194,7 +198,12 @@ public class LdapAuditLoggerConfigurationTest {
     }
 
     private void validate(Device device) {
-        AuditLogger logger = device.getDeviceExtension(AuditLogger.class);
+        AuditLoggerDeviceExtension ext = device.getDeviceExtension(AuditLoggerDeviceExtension.class);
+        for (AuditLogger logger : ext.getAuditLoggers())
+            validateLogger(logger);
+    }
+
+    private void validateLogger(AuditLogger logger) {
         assertNotNull(logger);
         assertEquals(2, logger.getConnections().size());
         assertEquals(AuditMessages.SCHEMA_URI, logger.getSchemaURI());

@@ -57,6 +57,7 @@ import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Connection.Protocol;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.dcm4che3.net.audit.AuditLoggerDeviceExtension;
 import org.dcm4che3.net.audit.AuditRecordRepository;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
@@ -74,6 +75,7 @@ public class Syslog {
 
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
+    private final AuditLoggerDeviceExtension auditLoggerExt = new AuditLoggerDeviceExtension();
     private final AuditLogger auditLogger = new AuditLogger();
     private final AuditRecordRepository arr = new AuditRecordRepository();
     private final Device logDevice = new Device("syslog");
@@ -82,11 +84,12 @@ public class Syslog {
 
 
     public Syslog() throws IOException {
-        logDevice.addDeviceExtension(auditLogger);
+        logDevice.addDeviceExtension(auditLoggerExt);
         logDevice.addConnection(conn);
         arrDevice.addDeviceExtension(arr);
         arrDevice.addConnection(remote);
         auditLogger.setAuditRecordRepositoryDevice(arrDevice);
+        auditLoggerExt.addAuditLogger(auditLogger);
     }
 
     private void setProtocol(Connection.Protocol protocol) {

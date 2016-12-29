@@ -47,6 +47,7 @@ import org.dcm4che3.conf.ldap.audit.LdapAuditLoggerConfiguration;
 import org.dcm4che3.conf.ldap.audit.LdapAuditRecordRepositoryConfiguration;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.dcm4che3.net.audit.AuditLoggerDeviceExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 
 /**
@@ -74,14 +78,14 @@ public class AuditLoggerFactory {
 
     private Device device;
 
-    public AuditLogger getAuditLogger() throws ConfigurationException {
+    public Collection<AuditLogger> getAuditLoggers() throws ConfigurationException {
         Device device = this.device;
         if (device == null) {
             device = findDevice();
             this.device = device;
         }
-        AuditLogger auditLogger = findDevice().getDeviceExtension(AuditLogger.class);
-        return auditLogger != null && auditLogger.isInstalled() ? auditLogger : null;
+        AuditLoggerDeviceExtension ext = findDevice().getDeviceExtension(AuditLoggerDeviceExtension.class);
+        return ext != null ? ext.getAuditLoggers() : null;
     }
 
     private Device findDevice() throws ConfigurationException {

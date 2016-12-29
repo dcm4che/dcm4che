@@ -244,6 +244,11 @@ public class AuditLogger {
             ext.addAuditLogger(this);
     }
 
+    @Override
+    public String toString() {
+        return "AuditLogger{" + commonName + '}';
+    }
+
     public final Device getAuditRecordRepositoryDevice() {
         return arrDevice;
     }

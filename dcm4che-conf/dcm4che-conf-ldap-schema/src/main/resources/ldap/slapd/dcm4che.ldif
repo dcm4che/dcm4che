@@ -411,13 +411,13 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.28 NAME 'dcmAuditUserIsRequestor'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.3.3.1 NAME 'hl7ApplicationName'
-  DESC 'HL7 Application and Facility name (Application^Facility)'
+  DESC 'HL7 Application and Facility name (Application|Facility)'
   EQUALITY caseExactMatch
   SUBSTR caseExactSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.3.3.2 NAME 'hl7AcceptedSendingApplication'
-  DESC 'Application^Facility name of accepted Sending Application(s); any if absent'
+  DESC 'Application|Facility name of accepted Sending Application(s); any if absent'
   EQUALITY caseExactMatch
   SUBSTR caseExactSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )

@@ -5,5 +5,14 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FixUpTo {
-    String value();
+
+    /**
+     * Use major-minor-patch instead!
+     */
+    @Deprecated
+    String value() default "";
+    int major() default -1;
+    int minor() default -1;
+    int patch() default -1;
+
 }

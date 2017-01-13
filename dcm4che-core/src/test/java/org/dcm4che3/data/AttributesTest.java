@@ -308,4 +308,15 @@ public class AttributesTest {
         rqAttrs.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID");
         return original;
     }
+
+    @Test
+    public void testRemovePrivateAttributes() {
+        Attributes original = createOriginal();
+        assertEquals(11, original.size());
+        assertEquals(1, original.removePrivateAttributes("PrivateCreatorA", 0x0099));
+        assertEquals(9, original.size());
+        assertEquals(2, original.removePrivateAttributes("PrivateCreatorB", 0x0099));
+        assertEquals(6, original.size());
+    }
+
 }

@@ -3364,4 +3364,65 @@ public class Attributes implements Serializable {
         }
         return modified;
     }
+
+    private int creatorIndexOf(String privateCreator, int groupNumber) {
+        if ((groupNumber & 1) == 0)
+            throw new IllegalArgumentException(
+                    "(" + TagUtils.shortToHexString(groupNumber) + ",xxxx) is not a private Group");
+
+        int group = groupNumber << 16;
+        int creatorTag = group | 0x10;
+        int index = indexOf(creatorTag);
+        if (index < 0)
+            index = -index-1;
+        while (index < size && (tags[index] & 0xffffff00) == group) {
+            if (vrs[index] == VR.LO) {
+                Object creatorID = decodeStringValue(index);
+                if (privateCreator.equals(creatorID))
+                    return index;
+            }
+            index++;
+            creatorTag++;
+        }
+        return -1;
+    }
+
+    public int removePrivateAttributes(String privateCreator, int groupNumber) {
+        int privateCreatorIndex = creatorIndexOf(privateCreator, groupNumber);
+        if (privateCreatorIndex < 0)
+            return 0;
+
+        int creatorTag = tags[privateCreatorIndex];
+        int privateTag = (creatorTag & 0xffff0000) | ((creatorTag & 0xff) << 8);
+        int srcPos = privateCreatorIndex + 1;
+        int start = srcPos;
+        while (start < size && tags[start] < privateTag)
+            start++;
+
+        int end = start;
+        while (end < size && (tags[end] & 0xffffff00) == privateTag)
+            end++;
+
+        int len1 = start - srcPos;
+        if (len1 > 0) {
+            System.arraycopy(tags, srcPos, tags, privateCreatorIndex, len1);
+            System.arraycopy(vrs, srcPos, vrs, privateCreatorIndex, len1);
+            System.arraycopy(values, srcPos, values, privateCreatorIndex, len1);
+        }
+
+        int len2 = size - end;
+        if (len2 > 0) {
+            int destPos = start - 1;
+            System.arraycopy(tags, end, tags, destPos, len2);
+            System.arraycopy(vrs, end, vrs, destPos, len2);
+            System.arraycopy(values, end, values, destPos, len2);
+        }
+        int removed = end - start;
+        int oldSize = size;
+        size -= removed + 1;
+        Arrays.fill(tags, size, oldSize, 0);
+        Arrays.fill(vrs, size, oldSize, null);
+        Arrays.fill(values, size, oldSize, null);
+        return removed;
+    }
 }

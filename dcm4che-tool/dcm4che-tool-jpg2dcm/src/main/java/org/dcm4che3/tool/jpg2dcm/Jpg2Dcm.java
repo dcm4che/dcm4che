@@ -164,6 +164,7 @@ public class Jpg2Dcm {
                 new FileInputStream(jpgFile)));
         try {
             Attributes attrs = new Attributes();
+            attrs.setString(Tag.SOPClassUID, VR.UI, UID.SecondaryCaptureImageStorage);
             try {
                 if (cl.hasOption("mpeg") && cl.hasOption("c"))
                     attrs = SAXReader.parse(cl.getOptionValue("c"));

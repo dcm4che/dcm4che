@@ -42,7 +42,7 @@ set JAVA=%JAVA_HOME%\bin\java
 
 :SKIP_SET_JAVA_HOME
 
-set CP=%DCM4CHE_HOME%\etc\
+set CP=%DCM4CHE_HOME%\etc\jpg2dcm
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-${project.version}.jar

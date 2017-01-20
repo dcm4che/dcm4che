@@ -164,6 +164,7 @@ public class Jpg2Dcm {
                 new FileInputStream(jpgFile)));
         try {
             Attributes attrs = new Attributes();
+            attrs.setString(Tag.SOPClassUID, VR.UI, UID.SecondaryCaptureImageStorage);
             try {
                 if (cl.hasOption("mpeg") && cl.hasOption("c"))
                     attrs = SAXReader.parse(cl.getOptionValue("c"));
@@ -194,9 +195,6 @@ public class Jpg2Dcm {
             Attributes fmi = attrs.createFileMetaInformation(transferSyntax);
             DicomOutputStream dos = new DicomOutputStream(dcmFile);
             try {
-                dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
-                dos.writeHeader(Tag.AcquisitionContextSequence, VR.SQ, -1);
-                dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
                 dos.writeDataset(fmi, attrs);
                 dos.writeHeader(Tag.PixelData, VR.OB, -1);
                 if (!cl.hasOption("mpeg")) {

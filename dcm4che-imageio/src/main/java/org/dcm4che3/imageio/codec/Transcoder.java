@@ -374,12 +374,18 @@ public class Transcoder implements Closeable {
     private void processPixelData() throws IOException {
         if (decompressor != null)
             initEncapsulatedPixelData();
-        if (compressor != null)
+        VR vr;
+        if (compressor != null) {
+            vr = VR.OB;
             compressPixelData();
-        else if (decompressor != null)
+        } else if (decompressor != null) {
+            vr = VR.OW;
             decompressPixelData();
-        else
+        } else {
+            vr = dis.vr();
             copyPixelData();
+        }
+        setPixelDataBulkData(vr);
     }
 
     private void initEncapsulatedPixelData() throws IOException {
@@ -391,7 +397,6 @@ public class Transcoder implements Closeable {
         int padding = length & 1;
         adjustDataset();
         writeDataset();
-        setPixelDataBulkData(VR.OW);
         dos.writeHeader(Tag.PixelData, VR.OW, length + padding);
         for (int i = 0; i < imageDescriptor.getFrames(); i++) {
             decompressFrame(i);
@@ -404,7 +409,6 @@ public class Transcoder implements Closeable {
     private void copyPixelData() throws IOException {
         int length = dis.length();
         writeDataset();
-        setPixelDataBulkData(dis.vr());
         dos.writeHeader(Tag.PixelData, dis.vr(), length);
         if (length == -1) {
             dis.readValue(dis, dataset);
@@ -428,7 +432,6 @@ public class Transcoder implements Closeable {
                 extractEmbeddedOverlays();
                 adjustDataset();
                 writeDataset();
-                setPixelDataBulkData(VR.OB);
                 dos.writeHeader(Tag.PixelData, VR.OB, -1);
                 dos.writeHeader(Tag.Item, null, 0);
             }

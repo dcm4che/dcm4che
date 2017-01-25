@@ -3418,11 +3418,37 @@ public class Attributes implements Serializable {
             System.arraycopy(values, end, values, destPos, len2);
         }
         int removed = end - start;
-        int oldSize = size;
-        size -= removed + 1;
-        Arrays.fill(tags, size, oldSize, 0);
-        Arrays.fill(vrs, size, oldSize, null);
-        Arrays.fill(values, size, oldSize, null);
+        int size1 = size - removed - 1;
+        Arrays.fill(tags, size1, size, 0);
+        Arrays.fill(vrs, size1, size, null);
+        Arrays.fill(values, size1, size, null);
+        size = size1;
+        return removed;
+    }
+
+    public int removePrivateAttributes() {
+        int size1 = size;
+        for (int i = 0; i < size1; i++) {
+            int j = i;
+            while (TagUtils.isPrivateGroup(tags[j]) && j < size1)
+                j++;
+            if (j > i) {
+                int len = size1 - j;
+                if (len > 0) {
+                    System.arraycopy(tags, j, tags, i, len);
+                    System.arraycopy(vrs, j, vrs, i, len);
+                    System.arraycopy(values, j, values, i, len);
+                }
+                size1 -= j - i;
+            }
+        }
+        int removed = size - size1;
+        if (removed > 0) {
+            Arrays.fill(tags, size1, size, 0);
+            Arrays.fill(vrs, size1, size, null);
+            Arrays.fill(values, size1, size, null);
+            size = size1;
+        }
         return removed;
     }
 }

@@ -663,4 +663,12 @@ public class AttributesTest {
         assertEquals(6, original.size());
     }
 
+    @Test
+    public void testRemovePrivateAttributes2() {
+        Attributes original = createOriginal();
+        assertEquals(11, original.size());
+        assertEquals(5, original.removePrivateAttributes());
+        assertEquals(6, original.size());
+    }
+
 }

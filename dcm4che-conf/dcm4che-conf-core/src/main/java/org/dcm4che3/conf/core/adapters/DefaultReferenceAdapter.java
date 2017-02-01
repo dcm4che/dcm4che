@@ -129,8 +129,16 @@ public class DefaultReferenceAdapter implements ConfigTypeAdapter {
     private Object getReferencedConfigurableObject(String uuid, LoadingContext ctx, ConfigProperty property) {
         Object byUUID = ctx.getTypeSafeConfiguration().findByUUID(uuid, property.getRawClass(), ctx);
 
-        if (byUUID == null)
-            throw new ConfigurationException("Referenced node with uuid '" + uuid + "' not found");
+        if (byUUID == null && !property.isWeakReference()) {
+
+            ConfigurationException e = new ConfigurationException("Referenced node with uuid '" + uuid + "' not found");
+
+            if (ctx.isIgnoreUnresolvedReferences()) {
+                log.error("Ignoring unresolved reference in configuration", e);
+            } else {
+                throw e;
+            }
+        }
 
         return byUUID;
     }

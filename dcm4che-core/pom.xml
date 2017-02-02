@@ -41,7 +41,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>dcm4chee-arc-light-5.9.0</version>
+    <version>dcm4chee-arc-light-5.9.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-core</artifactId>

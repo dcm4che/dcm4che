@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che.tool</groupId>
     <artifactId>dcm4che-tool</artifactId>
-    <version>dcm4chee-arc-light-5.9.2</version>
+    <version>dcm4chee-arc-light-5.9.3</version>
   </parent>
   <artifactId>dcm4che-tool-dcm2dcm</artifactId>
   <name>dcm4che-tool-dcm2dcm</name>

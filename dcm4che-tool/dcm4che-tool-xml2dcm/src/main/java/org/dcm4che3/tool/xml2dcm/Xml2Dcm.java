@@ -38,18 +38,6 @@
 
 package org.dcm4che3.tool.xml2dcm;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.ResourceBundle;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
@@ -65,6 +53,20 @@ import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.tool.common.CLIUtils;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * Tool to convert XML to DICOM.
@@ -357,6 +359,19 @@ public class Xml2Dcm {
             fmi = fmi2;
     }
 
+
+    public void mergeXML(InputStream inputStream) throws Exception {
+        if (dataset == null) {
+            dataset = new Attributes();
+        }
+        ContentHandlerAdapter ch = new ContentHandlerAdapter(dataset);
+        parseXML(inputStream, ch);
+        Attributes fmi2 = ch.getFileMetaInformation();
+        if (fmi2 != null) {
+            fmi = fmi2;
+        }
+    }
+
     public static Attributes parseXML(String fname) throws Exception {
         Attributes attrs = new Attributes();
         ContentHandlerAdapter ch = new ContentHandlerAdapter(attrs);
@@ -366,13 +381,18 @@ public class Xml2Dcm {
 
     private static void parseXML(String fname, ContentHandlerAdapter ch)
             throws Exception {
+        if (fname.equals("-")) {
+            parseXML(System.in, ch);
+        } else {
+            parseXML(new FileInputStream(fname), ch);
+        }
+    }
+
+    private static void parseXML(InputStream inputStream, ContentHandlerAdapter ch)
+            throws Exception {
         SAXParserFactory f = SAXParserFactory.newInstance();
         SAXParser p = f.newSAXParser();
-        if (fname.equals("-")) {
-            p.parse(System.in, ch);
-        } else {
-            p.parse(new File(fname), ch);
-        }
+        p.parse(inputStream, ch);
     }
 
 }

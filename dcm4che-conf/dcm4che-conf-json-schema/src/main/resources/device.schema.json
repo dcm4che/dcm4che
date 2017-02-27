@@ -43,6 +43,11 @@
       "description": "Unconstrained text description of the device",
       "type": "string"
     },
+    "dicomDeviceUID": {
+      "title": "Device UID",
+      "description": "Unique identifier of the device",
+      "type": "string"
+    },
     "dicomManufacturer": {
       "title": "Manufacturer",
       "description": "Should be the same as the value of Manufacturer (0008,0070) in SOP instances created by this device",

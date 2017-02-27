@@ -124,6 +124,7 @@ public class JsonConfiguration {
         writer.writeStartObject();
         writer.writeNotNull("dicomDeviceName", device.getDeviceName());
         writer.writeNotNull("dicomDescription", device.getDescription());
+        writer.writeNotNull("dicomDeviceUID", device.getDeviceUID());
         writer.writeNotNull("dicomManufacturer", device.getManufacturer());
         writer.writeNotNull("dicomManufacturerModelName", device.getManufacturerModelName());
         writer.writeNotEmpty("dicomSoftwareVersion", device.getSoftwareVersions());
@@ -183,6 +184,9 @@ public class JsonConfiguration {
                     break;
                 case "dicomDescription":
                     device.setDescription(reader.stringValue());
+                    break;
+                case "dicomDeviceUID":
+                    device.setDeviceUID(reader.stringValue());
                     break;
                 case "dicomManufacturer":
                     device.setManufacturer(reader.stringValue());

@@ -79,6 +79,7 @@ public class Device implements Serializable {
     private static final long serialVersionUID = -5816872456184522866L;
 
     private String deviceName;
+    private String deviceUID;
     private String description;
     private String manufacturer;
     private String manufacturerModelName;
@@ -184,6 +185,14 @@ public class Device implements Serializable {
      */
     public final void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getDeviceUID() {
+        return deviceUID;
+    }
+
+    public void setDeviceUID(String deviceUID) {
+        this.deviceUID = deviceUID;
     }
 
     /**
@@ -1085,6 +1094,7 @@ public class Device implements Serializable {
 
     protected void setDeviceAttributes(Device from) {
         setDescription(from.description);
+        setDeviceUID(from.deviceUID);
         setManufacturer(from.manufacturer);
         setManufacturerModelName(from.manufacturerModelName);
         setSoftwareVersions(from.softwareVersions);
@@ -1214,5 +1224,4 @@ public class Device implements Serializable {
                     + " configured for Device: " + deviceName);
         return devExt;
     }
-
 }

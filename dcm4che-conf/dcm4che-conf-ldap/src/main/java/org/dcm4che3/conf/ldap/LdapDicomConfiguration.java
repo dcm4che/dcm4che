@@ -676,6 +676,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         attrs.put(objectclass);
         LdapUtils.storeNotNull(attrs, "dicomDeviceName", device.getDeviceName());
         LdapUtils.storeNotNull(attrs, "dicomDescription", device.getDescription());
+        LdapUtils.storeNotNull(attrs, "dicomDeviceUID", device.getDeviceUID());
         LdapUtils.storeNotNull(attrs, "dicomManufacturer", device.getManufacturer());
         LdapUtils.storeNotNull(attrs, "dicomManufacturerModelName",
                 device.getManufacturerModelName());
@@ -1036,6 +1037,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private void loadFrom(Device device, Attributes attrs)
             throws NamingException, CertificateException {
         device.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        device.setDeviceUID(LdapUtils.stringValue(attrs.get("dicomDeviceUID"), null));
         device.setManufacturer(LdapUtils.stringValue(attrs.get("dicomManufacturer"), null));
         device.setManufacturerModelName(LdapUtils.stringValue(attrs.get("dicomManufacturerModelName"), null));
         device.setSoftwareVersions(LdapUtils.stringArray(attrs.get("dicomSoftwareVersion")));
@@ -1250,6 +1252,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
+        LdapUtils.storeDiff(mods, "dicomDeviceUID",
+                a.getDeviceUID(),
+                b.getDeviceUID());
         LdapUtils.storeDiff(mods, "dicomManufacturer",
                 a.getManufacturer(),
                 b.getManufacturer());

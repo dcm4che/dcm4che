@@ -790,6 +790,22 @@ attributetype ( 1.2.840.10008.15.0.3.39
    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
 
+# 3.40  dicomDeviceUID                          string      Single
+#
+#    This attribute stores the unique identifier of the device
+#
+#    It is a single-valued attribute.
+#    This attribute's syntax is 'OID'.
+#
+
+attributetype ( 1.2.840.10008.15.0.3.40
+   NAME 'dicomDeviceUID'
+   DESC 'Unique identifier of the device.'
+   EQUALITY  objectIdentifierMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )
+   SINGLE-VALUE )
+
+
 # 4 Object Class Definitions
 # 
 #    The following object classes are defined in this document.  All are
@@ -869,8 +885,9 @@ objectclass ( 1.2.840.10008.15.0.4.4
    MUST ( 
       dicomDeviceName $
       dicomInstalled ) 
-   MAY  ( 
+   MAY  (
       dicomDescription $
+      dicomDeviceUID $
       dicomManufacturer $
       dicomManufacturerModelName $
       dicomSoftwareVersion $

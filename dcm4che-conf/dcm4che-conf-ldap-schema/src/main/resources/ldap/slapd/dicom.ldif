@@ -244,7 +244,7 @@ olcAttributeTypes: ( 1.2.840.10008.15.0.3.40
    NAME 'dicomDeviceUID'
    DESC 'Unique identifier of the device.'
    EQUALITY  objectIdentifierMatch
-   SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.38
    SINGLE-VALUE )
 olcObjectClasses: ( 1.2.840.10008.15.0.4.1
    NAME 'dicomConfigurationRoot'

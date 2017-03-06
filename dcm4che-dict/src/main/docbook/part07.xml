@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2016e - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2017a - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2016</year>
+      <year>2017</year>
       <holder>NEMA</holder>
     </copyright>
   </info>
@@ -2078,7 +2078,7 @@
 <para xml:id="para_54b84554-c8b7-4c68-afd3-80dc23b79bed">Cancel - Indicates that processing of the C-GET has been terminated due to a C-GET Cancel indication primitive.</para>
 </listitem>
 <listitem>
-<para xml:id="para_d9670778-ee08-44c8-b8dd-5d285e6c271c">Failed- Indicates that the C‑GET operation failed at the performing DIMSE-service-user.</para>
+<para xml:id="para_d9670778-ee08-44c8-b8dd-5d285e6c271c">Failed- Indicates that the C-GET operation failed at the performing DIMSE-service-user.</para>
 </listitem>
 <listitem>
 <para xml:id="para_4309e45c-2baf-4fbf-baf0-7dd808f8194e">Refused:Duplicate Invocation- Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
@@ -2439,7 +2439,7 @@
 <para xml:id="para_5d3d21ab-5466-43dc-80de-9b888f928594">Cancel- Indicates that processing of the C-MOVE has been terminated due to a C-MOVE Cancel indication primitive.</para>
 </listitem>
 <listitem>
-<para xml:id="para_7737dbe2-f7a1-40e0-89a1-164c4a417f06">Failed - Indicates that the C‑MOVE operation failed at the performing DIMSE-service-user.</para>
+<para xml:id="para_7737dbe2-f7a1-40e0-89a1-164c4a417f06">Failed - Indicates that the C-MOVE operation failed at the performing DIMSE-service-user.</para>
 </listitem>
 <listitem>
 <para xml:id="para_147d02b7-b271-4783-89ae-a5349ee2b7ac">Refused:Duplicate Invocation- Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
@@ -2807,7 +2807,7 @@
         <para xml:id="para_dfb4bab1-fdbf-4c32-ba71-8de236e6d175">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_a210557c-5723-41de-a35e-51bd84f5ff2b">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 0001H for the C-STORE-RQ Message.</para>
+        <para xml:id="para_a210557c-5723-41de-a35e-51bd84f5ff2b">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 0001H for the C-STORE-RQ Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -3025,7 +3025,7 @@
         <para xml:id="para_f3451de3-e4ee-46b5-ae99-7b63b76377aa">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_e8a26897-448d-45a6-a0b3-0724524e2717">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 8001H for the C-STORE-RSP Message.</para>
+        <para xml:id="para_e8a26897-448d-45a6-a0b3-0724524e2717">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 8001H for the C-STORE-RSP Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -3217,7 +3217,7 @@
         <para xml:id="para_f089f1a7-2049-43b6-8364-697bfa75afaa">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_4237e878-88d9-4174-bce0-500e1c9ed7ae">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 0020H for the C-FIND-RQ Message.</para>
+        <para xml:id="para_4237e878-88d9-4174-bce0-500e1c9ed7ae">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 0020H for the C-FIND-RQ Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -3382,7 +3382,7 @@
         <para xml:id="para_8a1bd143-7b76-4e96-b475-a515f27ffc5b">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_870b94f4-74bb-4430-aacb-c547fa08bc09">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 8020H for the C-FIND-RSP Message.</para>
+        <para xml:id="para_870b94f4-74bb-4430-aacb-c547fa08bc09">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 8020H for the C-FIND-RSP Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -3524,7 +3524,7 @@
         <para xml:id="para_b7f978d5-386a-41f2-8ec9-48f5f8fc8b37">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_7e3a2be2-6a3c-4b10-b8a7-3e7a054c6ddd">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 0FFFH for the C-CANCEL-FIND-RQ Message.</para>
+        <para xml:id="para_7e3a2be2-6a3c-4b10-b8a7-3e7a054c6ddd">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 0FFFH for the C-CANCEL-FIND-RQ Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -3712,7 +3712,7 @@
         <para xml:id="para_2eefecb7-6856-464d-aff1-6942b4964c1c">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_a6a49397-f7b4-4842-b513-d7cde3b72ed0">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 0010H for the C-GET-RQ Message.</para>
+        <para xml:id="para_a6a49397-f7b4-4842-b513-d7cde3b72ed0">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 0010H for the C-GET-RQ Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -3877,7 +3877,7 @@
         <para xml:id="para_a0bf5ff6-61bf-4113-ac40-c2c1e22d07d4">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_5af61ef5-6d51-45cd-ba95-4da28f61d3ad">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 8010H for the C-GET-RSP Message.</para>
+        <para xml:id="para_5af61ef5-6d51-45cd-ba95-4da28f61d3ad">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 8010H for the C-GET-RSP Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4090,7 +4090,7 @@
         <para xml:id="para_b2cd731f-f434-4999-b8b2-a998012f5172">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_f012a793-ed4e-486b-b2dc-1e36893970f3">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 0FFFH for the C-CANCEL-GET-RQ Message.</para>
+        <para xml:id="para_f012a793-ed4e-486b-b2dc-1e36893970f3">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 0FFFH for the C-CANCEL-GET-RQ Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4281,7 +4281,7 @@
         <para xml:id="para_18987859-f6f4-4911-a5fb-575f1f44ad7d">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_e76aa8ce-f153-4989-91af-a4c00ba5e7ef">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 0021H for the C-MOVE-RQ Message.</para>
+        <para xml:id="para_e76aa8ce-f153-4989-91af-a4c00ba5e7ef">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 0021H for the C-MOVE-RQ Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4463,7 +4463,7 @@
         <para xml:id="para_f2c6eec0-7ff2-4ba8-926d-2158bc824a9b">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_7b31421c-106a-4af7-bb9f-1215652be57b">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 8021H for the C-MOVE-RSP Message.</para>
+        <para xml:id="para_7b31421c-106a-4af7-bb9f-1215652be57b">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 8021H for the C-MOVE-RSP Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4673,7 +4673,7 @@
         <para xml:id="para_539144ef-9e7c-423e-b0d5-fa900043f196">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_ef12958e-808c-489f-978f-aeb20053270a">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 0FFFH for the C-CANCEL-MOVE-RQ Message.</para>
+        <para xml:id="para_ef12958e-808c-489f-978f-aeb20053270a">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 0FFFH for the C-CANCEL-MOVE-RQ Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4864,7 +4864,7 @@
         <para xml:id="para_4cd11d1f-c6e3-44ce-93cd-47ea84e54265">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_90ae5f78-f702-49b3-bef1-c13141f55865">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 0030H for the C-ECHO-RQ Message.</para>
+        <para xml:id="para_90ae5f78-f702-49b3-bef1-c13141f55865">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 0030H for the C-ECHO-RQ Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4989,7 +4989,7 @@
         <para xml:id="para_63131c80-02da-48b4-b277-59ff302dd53e">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_10f2645b-57b2-42ff-8f82-678093b3cdae">This field distinguishes the DIMSE‑C operation conveyed by this Message. The value of this field shall be set to 8030H for the C-ECHO-RSP Message.</para>
+        <para xml:id="para_10f2645b-57b2-42ff-8f82-678093b3cdae">This field distinguishes the DIMSE-C operation conveyed by this Message. The value of this field shall be set to 8030H for the C-ECHO-RSP Message.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -14106,7 +14106,7 @@
 <chapter label="F" status="1" xml:id="chapter_F">
     <title>Usage of the P-DATA Service By the DICOM Application Entity (Normative)</title>
   
-  <para xml:id="para_0da63733-85d0-41e6-922f-b21d3652b36a">How DICOM messages are encapsulated into the P‑DATA Service by the DICOM Application Entity is specified in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>.</para>
+  <para xml:id="para_0da63733-85d0-41e6-922f-b21d3652b36a">How DICOM messages are encapsulated into the P-DATA Service by the DICOM Application Entity is specified in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>.</para>
   <note>
     <para xml:id="para_1a585e72-1b4d-469c-ac69-6a2af824fc71">Identical text to that in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/> was formerly duplicated here.</para>
   </note>

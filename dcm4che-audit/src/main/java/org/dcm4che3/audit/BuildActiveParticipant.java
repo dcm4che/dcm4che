@@ -68,7 +68,11 @@ public class BuildActiveParticipant {
         public Builder(String userID, String napID) {
             this.userID = userID;
             this.napID = napID;
-            this.napTypeCode = napID != null ? AuditMessages.NetworkAccessPointTypeCode.IPAddress : null;
+            this.napTypeCode = napID != null
+                                ? AuditMessages.isIP(napID)
+                                    ? AuditMessages.NetworkAccessPointTypeCode.IPAddress
+                                    : AuditMessages.NetworkAccessPointTypeCode.MachineName
+                                : null;
         }
 
         public Builder altUserID(String val) {

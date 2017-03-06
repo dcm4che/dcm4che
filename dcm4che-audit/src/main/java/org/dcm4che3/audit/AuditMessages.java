@@ -570,6 +570,9 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
         public static final ParticipantObjectIDTypeCode QIDO_QUERY =
                 new ParticipantObjectIDTypeCode("QIDO","99DCM4CHEE","QIDO_Query");
+        public static final ParticipantObjectIDTypeCode IHE_XDS_METADATA =
+                new ParticipantObjectIDTypeCode("urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd",
+                        "IHE XDS Metadata", "submission set classificationNode");
 
         public ParticipantObjectIDTypeCode(String code) {
             super.csdCode = code;

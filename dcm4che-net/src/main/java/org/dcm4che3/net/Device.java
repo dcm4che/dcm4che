@@ -1015,7 +1015,7 @@ public class Device implements Serializable {
         return pin;
     }
 
-    SSLContext sslContext() throws GeneralSecurityException, IOException {
+    public SSLContext sslContext() throws GeneralSecurityException, IOException {
         SSLContext ctx = sslContext;
         if (ctx != null)
             return ctx;

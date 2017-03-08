@@ -131,6 +131,7 @@
     <module>dcm4che-audit</module>
     <module>dcm4che-conf</module>
     <module>dcm4che-core</module>
+    <module>dcm4che-dcmr</module>
     <module>dcm4che-emf</module>
     <module>dcm4che-hl7</module>
     <module>dcm4che-filecache</module>

@@ -141,7 +141,7 @@ public class AcquisitionModality {
         return MODALITIES.put(code.getCodeValue(), code);
     }
 
-    public static Code removeCode(String bodyPartExamined) {
-        return MODALITIES.remove(bodyPartExamined);
+    public static Code removeCode(String modality) {
+        return MODALITIES.remove(modality);
     }
 }

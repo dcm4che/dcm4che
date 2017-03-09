@@ -749,7 +749,8 @@ public class Transcoder implements Closeable {
         if (verifier == null)
             return;
 
-        cache.mark();
+        long prevStreamPosition = cache.getStreamPosition();
+        int prevBitOffset = cache.getBitOffset();
         cache.seek(0);
         verifier.setInput(cache);
         verifyParam.setDestination(bi2);
@@ -762,7 +763,8 @@ public class Transcoder implements Closeable {
                     new Object[] { index + 1, end - start, maxDiff });
         if (maxDiff > maxPixelValueError)
             throw new CompressionVerificationException(maxDiff);
-        cache.reset();
+        cache.seek(prevStreamPosition);
+        cache.setBitOffset(prevBitOffset);
     }
 
     private int maxDiff(WritableRaster raster, WritableRaster raster2) {

@@ -1845,6 +1845,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 loadFrom(aetInfo, ne1.getAttributes(), getDeviceName(s1));
                 results.add(aetInfo);
             }
+        } catch (NameNotFoundException e) {
+            return new ApplicationEntityInfo[0];
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         } finally {

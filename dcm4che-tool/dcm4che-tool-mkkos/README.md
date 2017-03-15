@@ -25,11 +25,14 @@
                                    Length attributes are excluded
      -h,--help                     display this help and exit
         --inst-no <no>             Instance Number of created KOS (default: 1)
+        --location-uid <uid>       optional Retrieve Location UID
         --modifier <code>          optional Document Title Modifier of created
                                    KOS - must be one of the values specified
                                    by etc/mkkos/code.properties or
                                    --code-config
      -o <file>                     created DICOM file
+        --retrieve-aet <aet>       optional Retrieve AE Title
+        --retrieve-url <url>       optional Retrieve URL
      -s <[seq/]attr=value>         specify attributes to overwrite referenced
                                    object(s). attr can be specified by keyword
                                    or tag value (in hex), e.g. PatientName or

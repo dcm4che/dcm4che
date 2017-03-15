@@ -1020,16 +1020,20 @@ public class Device implements Serializable {
         if (ctx != null)
             return ctx;
 
-        sslContext = ctx = createSSLContext(km(), tm());
+        ctx = SSLContext.getInstance("TLS");
+        ctx.init(keyManagers(), trustManagers(), null);
+        sslContext = ctx;
         return ctx;
     }
 
-    private static SSLContext createSSLContext(KeyManager km, TrustManager tm)
-            throws GeneralSecurityException {
-        SSLContext ctx = SSLContext.getInstance("TLS");
-        ctx.init(km != null ? new KeyManager[]{ km } : null, 
-                tm != null ? new TrustManager[]{ tm } : null, null);
-        return ctx;
+    public KeyManager[] keyManagers() throws GeneralSecurityException, IOException {
+        KeyManager tmp = km();
+        return tmp != null ? new KeyManager[] { tmp } : null;
+    }
+
+    public TrustManager[] trustManagers() throws GeneralSecurityException, IOException {
+        TrustManager tmp = tm();
+        return tmp != null ? new TrustManager[] { tmp } : null;
     }
 
     public void execute(Runnable command) {

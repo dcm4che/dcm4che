@@ -99,6 +99,9 @@ public class MkKOS {
     private String seriesNumber;
     private String instanceNumber;
     private String keyObjectDescription;
+    private String retrieveAET;
+    private String retrieveURL;
+    private String locationUID;
     private Attributes documentTitle;
     private Attributes documentTitleModifier;
     private Properties codes;
@@ -141,6 +144,18 @@ public class MkKOS {
 
     public final void setKeyObjectDescription(String keyObjectDescription) {
         this.keyObjectDescription = keyObjectDescription;
+    }
+
+    public void setRetrieveAET(String retrieveAET) {
+        this.retrieveAET = retrieveAET;
+    }
+
+    public void setRetrieveURL(String retrieveURL) {
+        this.retrieveURL = retrieveURL;
+    }
+
+    public void setLocationUID(String locationUID) {
+        this.locationUID = locationUID;
     }
 
     public final void setCodes(Properties codes) {
@@ -220,6 +235,24 @@ public class MkKOS {
                 .create());
         opts.addOption(OptionBuilder
                 .hasArg()
+                .withArgName("aet")
+                .withDescription(rb.getString("retrieve-aet"))
+                .withLongOpt("retrieve-aet")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("url")
+                .withDescription(rb.getString("retrieve-url"))
+                .withLongOpt("retrieve-url")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("uid")
+                .withDescription(rb.getString("location-uid"))
+                .withLongOpt("location-uid")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
                 .withArgName("no")
                 .withDescription(rb.getString("series-no"))
                 .withLongOpt("series-no")
@@ -271,6 +304,9 @@ public class MkKOS {
             main.setDocumentTitleModifier(
                     main.toCodeItem(cl.getOptionValue("modifier")));
         main.setKeyObjectDescription(cl.getOptionValue("desc"));
+        main.setRetrieveAET(cl.getOptionValue("retrieve-aet", null));
+        main.setRetrieveURL(cl.getOptionValue("retrieve-url", null));
+        main.setLocationUID(cl.getOptionValue("location-uid", null));
         main.setSeriesNumber(cl.getOptionValue("series-no", "999"));
         main.setInstanceNumber(cl.getOptionValue("inst-no", "1"));
         main.setOutputFile(outputFileOf(cl));
@@ -324,7 +360,7 @@ public class MkKOS {
             return false;
         if (kos == null)
             kos = createKOS(inst);
-        refSOPSeq(studyIUID, seriesIUID).add(refSOP(cuid, iuid));
+        refSOPSeq(refSeriesSeq(studyIUID), seriesIUID).add(refSOP(cuid, iuid));
         contentSeq.add(contentItem(valueTypeOf(inst), refSOP(cuid, iuid)));
         return true;
     }
@@ -346,22 +382,34 @@ public class MkKOS {
         }
     }
 
-    private Sequence refSOPSeq(String studyIUID, String seriesIUID) {
-        Attributes refStudy = getOrAddItem(evidenceSeq, Tag.StudyInstanceUID, studyIUID);
-        Sequence refSeriesSeq = refStudy.ensureSequence(Tag.ReferencedSeriesSequence, 10);
-        Attributes refSeries = getOrAddItem(refSeriesSeq,Tag.SeriesInstanceUID, seriesIUID);
-        return refSeries.ensureSequence(Tag.ReferencedSOPSequence, 100);
+    private Sequence refSeriesSeq(String studyIUID) {
+        for (Attributes refStudy : evidenceSeq)
+            if (studyIUID.equals(refStudy.getString(Tag.StudyInstanceUID)))
+                return refStudy.getSequence(Tag.ReferencedSeriesSequence);
+
+        Attributes refStudy = new Attributes(2);
+        Sequence refSeriesSeq = refStudy.newSequence(Tag.ReferencedSeriesSequence, 10);
+        refStudy.setString(Tag.StudyInstanceUID, VR.UI, studyIUID);
+        evidenceSeq.add(refStudy);
+        return refSeriesSeq;
     }
 
-    private Attributes getOrAddItem(Sequence seq, int tag, String value) {
-        for (Attributes item : seq)
-            if (value.equals(item.getString(tag)))
-                return item;
-        
-        Attributes item = new Attributes(2);
-        item.setString(tag, VR.UI, value);
-        seq.add(item);
-        return item;
+    private Sequence refSOPSeq(Sequence refSeriesSeq , String seriesIUID) {
+        for (Attributes refSeries : refSeriesSeq)
+            if (seriesIUID.equals(refSeries.getString(Tag.SeriesInstanceUID)))
+                return refSeries.getSequence(Tag.ReferencedSOPSequence);
+
+        Attributes refSeries = new Attributes(5);
+        if (retrieveAET != null)
+            refSeries.setString(Tag.RetrieveAETitle, VR.AE, retrieveAET);
+        if (retrieveURL != null)
+            refSeries.setString(Tag.RetrieveURL, VR.UR, retrieveURL);
+        Sequence refSOPSeq = refSeries.newSequence(Tag.ReferencedSOPSequence, 100);
+        refSeries.setString(Tag.SeriesInstanceUID, VR.UI, seriesIUID);
+        if (locationUID != null)
+            refSeries.setString(Tag.RetrieveLocationUID, VR.UI, locationUID);
+        refSeriesSeq.add(refSeries);
+        return refSOPSeq;
     }
 
     private String valueTypeOf(Attributes inst) {

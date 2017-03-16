@@ -59,7 +59,7 @@ public class AttributesFormat extends Format {
     private static final long serialVersionUID = 1901510733531643054L;
 
     private final String pattern;
-    private final int[] tags;
+    private final int[][] tagPaths;
     private final int[] index;
     private final Type[] types;
     private final MessageFormat format;
@@ -68,7 +68,7 @@ public class AttributesFormat extends Format {
         ArrayList<String> tokens = tokenize(pattern);
         int n = tokens.size() / 2;
         this.pattern = pattern;
-        this.tags = new int[n];
+        this.tagPaths = new int[n][];
         this.index = new int[n];
         this.types = new Type[n];
         this.format = buildMessageFormat(tokens);
@@ -114,7 +114,7 @@ public class AttributesFormat extends Format {
     private MessageFormat buildMessageFormat(ArrayList<String> tokens) {
         StringBuilder formatBuilder = new StringBuilder(pattern.length());
         int j = 0;
-        for (int i = 0; i < tags.length; i++) {
+        for (int i = 0; i < tagPaths.length; i++) {
             formatBuilder.append(tokens.get(j++)).append('{').append(i);
             String tagStr = tokens.get(j++);
             int typeStart = tagStr.indexOf(',') + 1;
@@ -127,11 +127,10 @@ public class AttributesFormat extends Format {
                         ? tagStr.lastIndexOf('[', tagStrLen-3) + 1 
                         : 0;
                 try {
-                    tags[i] = Integer.parseInt(tagStr.substring(0,
-                            indexStart != 0 ? indexStart - 1 : tagStrLen), 16);
+                    tagPaths[i] = TagUtils.parseTagPath(tagStr.substring(0, indexStart != 0 ? indexStart - 1 : tagStrLen));
                     if (indexStart != 0)
                         index[i] = Integer.parseInt(tagStr.substring(indexStart, tagStrLen-1));
-                } catch (NumberFormatException e) {
+                } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException(pattern);
                 }
             }
@@ -170,10 +169,17 @@ public class AttributesFormat extends Format {
     }
 
     private Object[] toArgs(Attributes attrs) {
-        Object[] args = new Object[tags.length];
-        for (int i = 0; i < args.length; i++)
-            args[i] = types[i].toArg(attrs, tags[i], index[i]);
-        return args ;
+        Object[] args = new Object[tagPaths.length];
+        for (int i = 0; i < args.length; i++) {
+            int[] tagPath = tagPaths[i];
+            int last = tagPath.length-1;
+            Attributes item = attrs;
+            for (int j = 0; j < last && item != null; j++) {
+                item = item.getNestedDataset(tagPath[j]);
+            }
+            args[i] = item != null ? types[i].toArg(item, tagPath[last], index[i]) : null;
+        }
+        return args;
     }
 
     @Override

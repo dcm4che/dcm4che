@@ -216,7 +216,7 @@ public class Connection implements Serializable {
     private String httpProxyProviderVersion = ProxyService.DEFAULT_VERSION;
 
     @ConfigurableProperty(name = "dcmTLSProtocol")
-    private String[] tlsProtocols = {"TLSv1", "SSLv3"};
+    private String[] tlsProtocols = { "TLSv1.2", "TLSv1.1", "TLSv1", "SSLv3"};
 
     @ConfigurableProperty(name = "dcmBlacklistedHostname")
     private String[] blacklist = {};

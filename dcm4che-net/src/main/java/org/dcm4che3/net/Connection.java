@@ -132,7 +132,7 @@ public class Connection implements Serializable {
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
     private String[] tlsCipherSuites = {};
-    private String[] tlsProtocols =  { "TLSv1", "SSLv3" };
+    private String[] tlsProtocols =  { "TLSv1.2", "TLSv1.1", "TLSv1", "SSLv3" };
     private String[] blacklist = {};
     private Boolean installed;
     private Protocol protocol = Protocol.DICOM;

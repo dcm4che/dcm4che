@@ -276,6 +276,8 @@ public class CLIUtils {
                 .withLongOpt("tls-protocol")
                 .create(null));
         opts.addOption(null, "tls1", false, rb.getString("tls1"));
+        opts.addOption(null, "tls11", false, rb.getString("tls11"));
+        opts.addOption(null, "tls12", false, rb.getString("tls12"));
         opts.addOption(null, "ssl3", false, rb.getString("ssl3"));
         opts.addOption(null, "ssl2Hello", false, rb.getString("ssl2Hello"));
         opts.addOption(null, "tls-noauth", false, rb.getString("tls-noauth"));
@@ -495,12 +497,16 @@ public class CLIUtils {
         else
             return;
 
-        if (cl.hasOption("tls1"))
+        if (cl.hasOption("tls12"))
+            conn.setTlsProtocols("TLSv1.2");
+        else if (cl.hasOption("tls11"))
+            conn.setTlsProtocols("TLSv1.1");
+        else if (cl.hasOption("tls1"))
             conn.setTlsProtocols("TLSv1");
         else if (cl.hasOption("ssl3"))
             conn.setTlsProtocols("SSLv3");
         else if (cl.hasOption("ssl2Hello"))
-            conn.setTlsProtocols("SSLv2Hello", "SSLv3", "TLSv1");
+            conn.setTlsProtocols("SSLv2Hello", "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2");
         else if (cl.hasOption("tls-protocol"))
             conn.setTlsProtocols(cl.getOptionValues("tls-protocol"));
 

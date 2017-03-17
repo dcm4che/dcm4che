@@ -172,12 +172,16 @@ public class AttributesFormat extends Format {
         Object[] args = new Object[tagPaths.length];
         for (int i = 0; i < args.length; i++) {
             int[] tagPath = tagPaths[i];
-            int last = tagPath.length-1;
-            Attributes item = attrs;
-            for (int j = 0; j < last && item != null; j++) {
-                item = item.getNestedDataset(tagPath[j]);
+            if (tagPath == null) { // now
+                args[i] = types[i].toArg(attrs, 0, index[i]);
+            } else {
+                int last = tagPath.length - 1;
+                Attributes item = attrs;
+                for (int j = 0; j < last && item != null; j++) {
+                    item = item.getNestedDataset(tagPath[j]);
+                }
+                args[i] = item != null ? types[i].toArg(item, tagPath[last], index[i]) : null;
             }
-            args[i] = item != null ? types[i].toArg(item, tagPath[last], index[i]) : null;
         }
         return args;
     }

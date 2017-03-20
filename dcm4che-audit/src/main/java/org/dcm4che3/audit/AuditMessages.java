@@ -43,10 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
@@ -739,10 +736,14 @@ public class AuditMessages {
         return accession;
     }
 
-    public static StudyIDs createStudyIDs(String studyID) {
-        StudyIDs sID = new StudyIDs();
-        sID.setUID(studyID);
-        return sID;
+    public static StudyIDs[] createStudyIDs(String... studyUIDs) {
+        Set<StudyIDs> set = new HashSet<>();
+        for (String s : studyUIDs) {
+            StudyIDs sID = new StudyIDs();
+            sID.setUID(s);
+            set.add(sID);
+        }
+        return set.toArray(new StudyIDs[set.size()]);
     }
 
     public static String alternativeUserIDForAETitle(String... aets) {
@@ -878,8 +879,8 @@ public class AuditMessages {
         return msg;
     }
 
-    public static ParticipantObjectContainsStudy getPocs(String studyId) {
-        return AuditMessages.createParticipantObjectContainsStudy(AuditMessages.createStudyIDs(studyId));
+    public static ParticipantObjectContainsStudy getPocs(String... studyUIDs) {
+        return AuditMessages.createParticipantObjectContainsStudy(AuditMessages.createStudyIDs(studyUIDs));
     }
 
     public static ParticipantObjectDescription getPODesc(BuildParticipantObjectDescription desc) {

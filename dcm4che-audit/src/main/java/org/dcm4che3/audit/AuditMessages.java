@@ -556,7 +556,7 @@ public class AuditMessages {
         public static final ParticipantObjectIDTypeCode UserIdentifier =
                 new ParticipantObjectIDTypeCode("11");
         public static final ParticipantObjectIDTypeCode URI =
-                new ParticipantObjectIDTypeCode("12");
+                new ParticipantObjectIDTypeCode("12", "RFC-3881", "URI");
         public static final ParticipantObjectIDTypeCode StudyInstanceUID = 
                 new ParticipantObjectIDTypeCode("110180","DCM","Study Instance UID");
         public static final ParticipantObjectIDTypeCode SOPClassUID = 

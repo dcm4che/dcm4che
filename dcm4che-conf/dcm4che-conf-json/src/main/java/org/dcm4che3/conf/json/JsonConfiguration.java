@@ -112,8 +112,8 @@ public class JsonConfiguration {
         writer.writeNotNull("dicomAETitle", aetInfo.getAETitle());
         writer.writeNotEmpty("dcmOtherAETitle", aetInfo.getOtherAETitle());
         writer.writeNotNull("dicomDescription", aetInfo.getDescription());
-        gen.write("dicomAssociationInitiator", aetInfo.isAssociationInitiator());
-        gen.write("dicomAssociationAcceptor", aetInfo.isAssociationAcceptor());
+        gen.write("dicomAssociationInitiator", aetInfo.getAssociationInitiator());
+        gen.write("dicomAssociationAcceptor", aetInfo.getAssociationAcceptor());
         writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationCluster());
         writer.writeNotNull("dicomInstalled", aetInfo.getInstalled());
         gen.writeEnd();

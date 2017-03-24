@@ -1895,8 +1895,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         } else
             appendFilter("dicomAETitle", keys.getAETitle(), sb);
         appendFilter("dicomDescription", keys.getDescription(), sb);
-        appendFilter("dicomAssociationInitiator", keys.isAssociationInitiator(), sb);
-        appendFilter("dicomAssociationAcceptor", keys.isAssociationAcceptor(), sb);
+        appendFilter("dicomAssociationInitiator", keys.getAssociationInitiator(), sb);
+        appendFilter("dicomAssociationAcceptor", keys.getAssociationAcceptor(), sb);
         appendFilter("dicomApplicationCluster", keys.getApplicationCluster(), sb);
         sb.append(")");
         return sb.toString();

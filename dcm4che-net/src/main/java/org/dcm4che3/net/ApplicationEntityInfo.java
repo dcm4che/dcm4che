@@ -53,8 +53,8 @@ public class ApplicationEntityInfo implements Serializable {
     private String description;
     private String aet;
     private String[] applicationCluster = {};
-    private boolean initiator;
-    private boolean acceptor;
+    private Boolean associationInitiator ;
+    private Boolean associationAcceptor;
     private Boolean installed;
     private String[] otherAETitle;
     private final List<Connection> conns = new ArrayList<>(1);
@@ -107,20 +107,20 @@ public class ApplicationEntityInfo implements Serializable {
         this.applicationCluster = applicationCluster;
     }
 
-    public boolean isAssociationInitiator() {
-        return initiator;
+    public Boolean getAssociationInitiator() {
+        return associationInitiator;
     }
 
-    public void setAssociationInitiator(boolean associationInitiator) {
-        this.initiator = associationInitiator;
+    public void setAssociationInitiator(Boolean associationInitiator) {
+        this.associationInitiator = associationInitiator;
     }
 
-    public boolean isAssociationAcceptor() {
-        return acceptor;
+    public Boolean getAssociationAcceptor() {
+        return associationAcceptor;
     }
 
-    public void setAssociationAcceptor(boolean acceptor) {
-        this.acceptor = acceptor;
+    public void setAssociationAcceptor(Boolean associationAcceptor) {
+        this.associationAcceptor = associationAcceptor;
     }
 
     public List<Connection> getConnections() {

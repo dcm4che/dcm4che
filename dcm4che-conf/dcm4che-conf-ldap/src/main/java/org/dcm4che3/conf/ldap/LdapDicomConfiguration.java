@@ -406,7 +406,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs, String deviceName)
-            throws NamingException {
+            throws NamingException, ConfigurationException {
         aetInfo.setDeviceName(deviceName);
         aetInfo.setAETitle(
                 LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
@@ -422,6 +422,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
         aetInfo.setApplicationCluster(
                 LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
+        for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
+            aetInfo.getConnections().add(LdapUtils.findConnection(connDN, deviceRef(deviceName), findDevice(deviceName)));
     }
 
     @Override
@@ -1874,6 +1876,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         attrs.add("dicomAssociationAcceptor");
         attrs.add("dicomApplicationCluster");
         attrs.add("dicomInstalled");
+        attrs.add("dicomNetworkConnectionReference");
         String[] attrsArray = attrs.toArray(new String[attrs.size()]);
         SearchControls ctls = searchControlSubtreeScope(0, attrsArray, true);
         return keys.getDeviceName() != null

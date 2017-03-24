@@ -116,6 +116,15 @@ public class JsonConfiguration {
         gen.write("dicomAssociationAcceptor", aetInfo.getAssociationAcceptor());
         writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationCluster());
         writer.writeNotNull("dicomInstalled", aetInfo.getInstalled());
+        if (!aetInfo.getConnections().isEmpty()) {
+            writer.writeStartArray("dicomNetworkConnection");
+            for (Connection conn : aetInfo.getConnections()) {
+                writer.writeStartObject();
+                writeBasicConnInfo(conn, writer);
+                writer.writeEnd();
+            }
+            writer.writeEnd();
+        }
         gen.writeEnd();
     }
 
@@ -343,10 +352,7 @@ public class JsonConfiguration {
     private void writeTo(Connection conn, JsonWriter writer) {
         writer.writeStartObject();
         writer.writeNotNull("cn", conn.getCommonName());
-        writer.writeNotNull("dicomHostname", conn.getHostname());
-        writer.writeNotDef("dicomPort", conn.getPort(), Connection.NOT_LISTENING);
-        writer.writeNotEmpty("dicomTLSCipherSuite", conn.getTlsCipherSuites());
-        writer.writeNotNull("dicomInstalled", conn.getInstalled());
+        writeBasicConnInfo(conn, writer);
         if (extended) {
             writer.writeStartObject("dcmNetworkConnection");
             writer.writeNotNull("dcmProtocol",
@@ -392,6 +398,13 @@ public class JsonConfiguration {
             writer.writeEnd();
         }
         writer.writeEnd();
+    }
+
+    private void writeBasicConnInfo(Connection conn, JsonWriter writer) {
+        writer.writeNotNull("dicomHostname", conn.getHostname());
+        writer.writeNotDef("dicomPort", conn.getPort(), Connection.NOT_LISTENING);
+        writer.writeNotEmpty("dicomTLSCipherSuite", conn.getTlsCipherSuites());
+        writer.writeNotNull("dicomInstalled", conn.getInstalled());
     }
 
     private void loadConnections(Device device, JsonReader reader) {

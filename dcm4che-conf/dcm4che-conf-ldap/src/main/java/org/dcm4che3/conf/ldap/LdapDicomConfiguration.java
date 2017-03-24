@@ -408,7 +408,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs, String deviceName)
             throws NamingException {
         aetInfo.setDeviceName(deviceName);
-        aetInfo.setAeTitle(
+        aetInfo.setAETitle(
                 LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
         aetInfo.setOtherAETitle(
                 LdapUtils.stringArray(attrs.get("dcmOtherAETitle")));
@@ -1887,16 +1887,16 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
         StringBuilder sb = new StringBuilder();
         sb.append("(&(objectclass=dicomNetworkAE)");
-        if (keys.getAeTitle() != null) {
+        if (keys.getAETitle() != null) {
             sb.append("(|");
-            appendFilter("dicomAETitle", keys.getAeTitle(), sb);
-            appendFilter("dcmOtherAETitle", keys.getAeTitle(), sb);
+            appendFilter("dicomAETitle", keys.getAETitle(), sb);
+            appendFilter("dcmOtherAETitle", keys.getAETitle(), sb);
             sb.append(")");
         } else
-            appendFilter("dicomAETitle", keys.getAeTitle(), sb);
+            appendFilter("dicomAETitle", keys.getAETitle(), sb);
         appendFilter("dicomDescription", keys.getDescription(), sb);
-        appendFilter("dicomAssociationInitiator", keys.getAssociationInitiator(), sb);
-        appendFilter("dicomAssociationAcceptor", keys.getAssociationAcceptor(), sb);
+        appendFilter("dicomAssociationInitiator", keys.isAssociationInitiator(), sb);
+        appendFilter("dicomAssociationAcceptor", keys.isAssociationAcceptor(), sb);
         appendFilter("dicomApplicationCluster", keys.getApplicationCluster(), sb);
         sb.append(")");
         return sb.toString();

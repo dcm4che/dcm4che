@@ -109,11 +109,11 @@ public class JsonConfiguration {
         JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();
         writer.writeNotNull("dicomDeviceName", aetInfo.getDeviceName());
-        writer.writeNotNull("dicomAETitle", aetInfo.getAeTitle());
+        writer.writeNotNull("dicomAETitle", aetInfo.getAETitle());
         writer.writeNotEmpty("dcmOtherAETitle", aetInfo.getOtherAETitle());
         writer.writeNotNull("dicomDescription", aetInfo.getDescription());
-        gen.write("dicomAssociationInitiator", aetInfo.getAssociationInitiator());
-        gen.write("dicomAssociationAcceptor", aetInfo.getAssociationAcceptor());
+        gen.write("dicomAssociationInitiator", aetInfo.isAssociationInitiator());
+        gen.write("dicomAssociationAcceptor", aetInfo.isAssociationAcceptor());
         writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationCluster());
         writer.writeNotNull("dicomInstalled", aetInfo.getInstalled());
         gen.writeEnd();

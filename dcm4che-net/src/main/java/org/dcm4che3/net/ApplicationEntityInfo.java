@@ -39,21 +39,25 @@
 package org.dcm4che3.net;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Aug 2016
  */
 public class ApplicationEntityInfo implements Serializable {
 
     private String deviceName;
     private String description;
-    private String aeTitle;
+    private String aet;
     private String[] applicationCluster = {};
-    private Boolean associationInitiator;
-    private Boolean associationAcceptor;
+    private boolean initiator;
+    private boolean acceptor;
     private Boolean installed;
     private String[] otherAETitle;
+    private final List<Connection> conns = new ArrayList<>(1);
 
     public Boolean getInstalled() {
         return installed;
@@ -87,12 +91,12 @@ public class ApplicationEntityInfo implements Serializable {
         this.description = description;
     }
 
-    public String getAeTitle() {
-        return aeTitle;
+    public String getAETitle() {
+        return aet;
     }
 
-    public void setAeTitle(String aeTitle) {
-        this.aeTitle = aeTitle;
+    public void setAETitle(String aet) {
+        this.aet = aet;
     }
 
     public String[] getApplicationCluster() {
@@ -103,26 +107,29 @@ public class ApplicationEntityInfo implements Serializable {
         this.applicationCluster = applicationCluster;
     }
 
-    public Boolean getAssociationInitiator() {
-        return associationInitiator;
+    public boolean isAssociationInitiator() {
+        return initiator;
     }
 
-    public void setAssociationInitiator(Boolean associationInitiator) {
-        this.associationInitiator = associationInitiator;
+    public void setAssociationInitiator(boolean associationInitiator) {
+        this.initiator = associationInitiator;
     }
 
-    public Boolean getAssociationAcceptor() {
-        return associationAcceptor;
+    public boolean isAssociationAcceptor() {
+        return acceptor;
     }
 
-    public void setAssociationAcceptor(Boolean associationAcceptor) {
-        this.associationAcceptor = associationAcceptor;
+    public void setAssociationAcceptor(boolean acceptor) {
+        this.acceptor = acceptor;
     }
 
+    public List<Connection> getConnections() {
+        return conns;
+    }
 
     @Override
     public String toString() {
-        return "ApplicationEntityInfo[dicomAETitle=" + aeTitle
+        return "ApplicationEntityInfo[dicomAETitle=" + aet
                 + "]";
     }
 

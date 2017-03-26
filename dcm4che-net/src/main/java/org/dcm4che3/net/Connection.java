@@ -105,6 +105,7 @@ public class Connection implements Serializable {
     public static final String TLS_RSA_WITH_NULL_SHA = "SSL_RSA_WITH_NULL_SHA";
     public static final String TLS_RSA_WITH_3DES_EDE_CBC_SHA = "SSL_RSA_WITH_3DES_EDE_CBC_SHA";
     public static final String TLS_RSA_WITH_AES_128_CBC_SHA = "TLS_RSA_WITH_AES_128_CBC_SHA";
+    private static final String[] DEFAULT_TLS_PROTOCOLS =  { "TLSv1.2", "TLSv1.1", "TLSv1" };
 
     private Device device;
     private String commonName;
@@ -132,7 +133,7 @@ public class Connection implements Serializable {
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
     private String[] tlsCipherSuites = {};
-    private String[] tlsProtocols =  { "TLSv1.2", "TLSv1.1", "TLSv1", "SSLv3" };
+    private String[] tlsProtocols =  {};
     private String[] blacklist = {};
     private Boolean installed;
     private Protocol protocol = Protocol.DICOM;
@@ -543,6 +544,10 @@ public class Connection implements Serializable {
     }
 
     public final String[] getTlsProtocols() {
+        return tlsProtocols.length != 0 ? tlsProtocols : DEFAULT_TLS_PROTOCOLS;
+    }
+
+    public final String[] getTlsProtocols0() {
         return tlsProtocols;
     }
 

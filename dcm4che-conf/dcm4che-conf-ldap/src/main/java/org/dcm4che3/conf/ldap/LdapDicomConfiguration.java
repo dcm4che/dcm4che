@@ -792,10 +792,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotDef(attrs, "dcmMaxOpsInvoked",
                 conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE);
         LdapUtils.storeNotDef(attrs, "dcmPackPDV", conn.isPackPDV(), true);
-        if (conn.isTls()) {
-            LdapUtils.storeNotEmpty(attrs, "dcmTLSProtocol", conn.getTlsProtocols());
-            LdapUtils.storeNotDef(attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
-        }
+        LdapUtils.storeNotEmpty(attrs, "dcmTLSProtocol", conn.getTlsProtocols0());
+        LdapUtils.storeNotDef(attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
         return attrs;
     }
 
@@ -1452,11 +1450,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 a.getClientBindAddress(),
                 b.getClientBindAddress());
         LdapUtils.storeDiff(mods, "dcmTLSProtocol",
-                a.isTls() ? a.getTlsProtocols() : StringUtils.EMPTY_STRING,
-                b.isTls() ? b.getTlsProtocols() : StringUtils.EMPTY_STRING);
+                a.getTlsProtocols0(),
+                b.getTlsProtocols0());
         LdapUtils.storeDiff(mods, "dcmTLSNeedClientAuth",
-                !a.isTls() || a.isTlsNeedClientAuth(),
-                !a.isTls() || a.isTlsNeedClientAuth(),
+                a.isTlsNeedClientAuth(),
+                a.isTlsNeedClientAuth(),
                 true);
         LdapUtils.storeDiff(mods, "dcmSendPDULength",
                 a.getSendPDULength(),

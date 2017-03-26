@@ -156,7 +156,7 @@ public class QueryTool implements TestTool {
         main.getRemoteConnection().setPort(port);
         //ensure secure connection
         main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
-        main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
+        main.getRemoteConnection().setTlsProtocols(conn.tlsProtocols());
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         ScheduledExecutorService scheduledExecutorService = Executors
                 .newSingleThreadScheduledExecutor();

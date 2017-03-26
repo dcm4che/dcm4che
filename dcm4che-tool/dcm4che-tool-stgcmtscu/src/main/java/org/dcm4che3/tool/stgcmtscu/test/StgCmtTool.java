@@ -212,7 +212,7 @@ public class StgCmtTool implements TestTool {
         stgCmtSCU.getRemoteConnection().setPort(port);
         //ensure secure connection
         stgCmtSCU.getRemoteConnection().setTlsCipherSuites(bound.getTlsCipherSuites());
-        stgCmtSCU.getRemoteConnection().setTlsProtocols(bound.getTlsProtocols());
+        stgCmtSCU.getRemoteConnection().setTlsProtocols(bound.tlsProtocols());
         stgCmtSCU.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired});
         stgCmtSCU.setAttributes(new Attributes());
         stgCmtSCU.setStorageDirectory(storageDirectory);

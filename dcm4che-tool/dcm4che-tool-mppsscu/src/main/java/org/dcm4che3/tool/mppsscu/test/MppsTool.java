@@ -171,7 +171,7 @@ public class MppsTool implements TestTool{
         main.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired});
       //ensure secure connection
         main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
-        main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
+        main.getRemoteConnection().setTlsProtocols(conn.tlsProtocols());
         main.setAttributes(new Attributes());
 
         // scan

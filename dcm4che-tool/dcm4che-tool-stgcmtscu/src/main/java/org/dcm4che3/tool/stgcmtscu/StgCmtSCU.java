@@ -194,7 +194,7 @@ public class StgCmtSCU {
             CLIUtils.configureConnect(stgcmtscu.remote, stgcmtscu.rq, cl);
             CLIUtils.configureBind(conn, stgcmtscu.ae, cl);
             CLIUtils.configure(conn, cl);
-            stgcmtscu.remote.setTlsProtocols(conn.getTlsProtocols());
+            stgcmtscu.remote.setTlsProtocols(conn.tlsProtocols());
             stgcmtscu.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             stgcmtscu.setStatus(CLIUtils.getIntOption(cl, "status", 0));

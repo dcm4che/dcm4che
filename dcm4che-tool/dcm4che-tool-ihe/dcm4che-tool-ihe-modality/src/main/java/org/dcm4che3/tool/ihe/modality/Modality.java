@@ -199,7 +199,7 @@ public class Modality {
     }
 
     public static void setTlsParams(Connection remote, Connection conn) {
-        remote.setTlsProtocols(conn.getTlsProtocols());
+        remote.setTlsProtocols(conn.tlsProtocols());
         remote.setTlsCipherSuites(conn.getTlsCipherSuites());
     }
 

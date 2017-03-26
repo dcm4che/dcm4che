@@ -84,7 +84,7 @@ class TCPListener implements Listener {
         SSLContext sslContext = conn.getDevice().sslContext();
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
-        ss.setEnabledProtocols(conn.getTlsProtocols());
+        ss.setEnabledProtocols(conn.tlsProtocols());
         ss.setEnabledCipherSuites(conn.getTlsCipherSuites());
         ss.setNeedClientAuth(conn.isTlsNeedClientAuth());
         return ss;

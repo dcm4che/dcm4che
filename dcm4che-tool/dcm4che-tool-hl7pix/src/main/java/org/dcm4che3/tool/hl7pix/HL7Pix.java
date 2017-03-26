@@ -190,7 +190,7 @@ public class HL7Pix extends Device {
             configureBind(main, cl);
             CLIUtils.configure(main.conn, cl);
             main.setCharacterSet(cl.getOptionValue("charset"));
-            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
+            main.remote.setTlsProtocols(main.conn.tlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             List<String> argList = cl.getArgList();
             if (argList.isEmpty())

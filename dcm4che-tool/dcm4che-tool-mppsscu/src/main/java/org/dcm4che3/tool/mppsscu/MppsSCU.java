@@ -381,7 +381,7 @@ public class MppsSCU {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(conn, main.ae, cl);
             CLIUtils.configure(conn, cl);
-            main.remote.setTlsProtocols(conn.getTlsProtocols());
+            main.remote.setTlsProtocols(conn.tlsProtocols());
             main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             main.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             main.setAttributes(new Attributes());

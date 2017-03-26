@@ -152,7 +152,7 @@ public class RetrieveTool implements TestTool{
 
         //ensure secure connection
         retrievescu.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
-        retrievescu.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
+        retrievescu.getRemoteConnection().setTlsProtocols(conn.tlsProtocols());
 
         retrievescu.setStorageDirectory(retrieveDir);
 

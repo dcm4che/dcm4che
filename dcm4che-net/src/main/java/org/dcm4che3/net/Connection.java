@@ -121,6 +121,7 @@ public class Connection implements Serializable {
     public static final String TLS_RSA_WITH_NULL_SHA = "SSL_RSA_WITH_NULL_SHA";
     public static final String TLS_RSA_WITH_3DES_EDE_CBC_SHA = "SSL_RSA_WITH_3DES_EDE_CBC_SHA";
     public static final String TLS_RSA_WITH_AES_128_CBC_SHA = "TLS_RSA_WITH_AES_128_CBC_SHA";
+    private static final String[] DEFAULT_TLS_PROTOCOLS =  { "TLSv1.2", "TLSv1.1", "TLSv1" };
 
     private Device device;
 
@@ -216,7 +217,7 @@ public class Connection implements Serializable {
     private String httpProxyProviderVersion = ProxyService.DEFAULT_VERSION;
 
     @ConfigurableProperty(name = "dcmTLSProtocol")
-    private String[] tlsProtocols = { "TLSv1.2", "TLSv1.1", "TLSv1", "SSLv3"};
+    private String[] tlsProtocols = {};
 
     @ConfigurableProperty(name = "dcmBlacklistedHostname")
     private String[] blacklist = {};
@@ -714,6 +715,10 @@ public class Connection implements Serializable {
 
     public final boolean isTls() {
         return tlsCipherSuites.length > 0;
+    }
+
+    public final String[] tlsProtocols() {
+        return tlsProtocols.length != 0 ? tlsProtocols : DEFAULT_TLS_PROTOCOLS;
     }
 
     public final String[] getTlsProtocols() {

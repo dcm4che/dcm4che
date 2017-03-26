@@ -391,7 +391,7 @@ public class JsonConfiguration {
             writer.writeNotDef("dcmMaxOpsInvoked",
                     conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE);
             writer.writeNotDef("dcmPackPDV", conn.isPackPDV(), true);
-            writer.writeNotEmpty("dcmTLSProtocol", conn.getTlsProtocols0());
+            writer.writeNotEmpty("dcmTLSProtocol", conn.getTlsProtocols());
             writer.writeNotDef("dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
             writer.writeEnd();
         }

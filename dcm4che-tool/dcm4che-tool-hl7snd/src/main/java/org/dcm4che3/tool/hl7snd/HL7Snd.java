@@ -149,7 +149,7 @@ public class HL7Snd extends Device {
             configureConnect(main.remote, cl);
             configureBind(main.conn, cl);
             CLIUtils.configure(main.conn, cl);
-            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
+            main.remote.setTlsProtocols(main.conn.tlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             try {
                 main.open();

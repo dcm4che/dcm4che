@@ -222,7 +222,7 @@ public class MoveSCU extends Device {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
-            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
+            main.remote.setTlsProtocols(main.conn.tlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             configureServiceClass(main, cl);
             configureKeys(main, cl);

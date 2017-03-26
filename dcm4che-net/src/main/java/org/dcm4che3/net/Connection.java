@@ -543,11 +543,11 @@ public class Connection implements Serializable {
         return tlsCipherSuites.length > 0;
     }
 
-    public final String[] getTlsProtocols() {
+    public final String[] tlsProtocols() {
         return tlsProtocols.length != 0 ? tlsProtocols : DEFAULT_TLS_PROTOCOLS;
     }
 
-    public final String[] getTlsProtocols0() {
+    public final String[] getTlsProtocols() {
         return tlsProtocols;
     }
 

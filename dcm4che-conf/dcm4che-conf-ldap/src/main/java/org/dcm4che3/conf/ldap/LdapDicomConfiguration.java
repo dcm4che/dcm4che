@@ -285,14 +285,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return loadDevice(deviceDN);
     }
 
-    public Connection findConnection(String connDN) throws NamingException {
-        String[] attrs = {"dicomHostname", "dicomPort", "dicomTLSCipherSuite", "dicomInstalled"};
-        Attributes connAttrs = ctx.getAttributes(connDN, attrs);
+    private Connection findConnection(String connDN) throws NamingException {
+        String[] attrIds = { "dicomHostname", "dicomPort", "dicomTLSCipherSuite", "dicomInstalled" };
+        Attributes attrs = ctx.getAttributes(connDN, attrIds);
         Connection conn = new Connection();
-        conn.setHostname(LdapUtils.stringValue(connAttrs.get("dicomHostname"), null));
-        conn.setPort(LdapUtils.intValue(connAttrs.get("dicomPort"),Connection.NOT_LISTENING));
-        conn.setTlsCipherSuites(LdapUtils.stringArray(connAttrs.get("dicomTLSCipherSuite")));
-        conn.setInstalled(LdapUtils.booleanValue(connAttrs.get("dicomInstalled"), null));
+        loadFrom(conn, attrs, false);
         return conn;
     }
 
@@ -1114,7 +1111,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 SearchResult sr = ne.next();
                 Attributes attrs = sr.getAttributes();
                 Connection conn = new Connection();
-                loadFrom(conn, attrs);
+                loadFrom(conn, attrs, LdapUtils.hasObjectClass(attrs, "dcmNetworkConnection"));
                 device.addConnection(conn);
             }
         } finally {
@@ -1136,13 +1133,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return ctx.search(dn, filter, ctls);
     }
 
-    private void loadFrom(Connection conn, Attributes attrs) throws NamingException {
+    private void loadFrom(Connection conn, Attributes attrs, boolean extended)
+            throws NamingException {
         conn.setCommonName(LdapUtils.stringValue(attrs.get("cn"), null));
         conn.setHostname(LdapUtils.stringValue(attrs.get("dicomHostname"), null));
         conn.setPort(LdapUtils.intValue(attrs.get("dicomPort"), Connection.NOT_LISTENING));
         conn.setTlsCipherSuites(LdapUtils.stringArray(attrs.get("dicomTLSCipherSuite")));
         conn.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
-        if (!LdapUtils.hasObjectClass(attrs, "dcmNetworkConnection"))
+        if (!extended)
             return;
 
         conn.setProtocol(Protocol.valueOf(LdapUtils.stringValue(attrs.get("dcmProtocol"), "DICOM")));

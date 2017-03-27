@@ -285,6 +285,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return loadDevice(deviceDN);
     }
 
+    public Connection findConnection(String connDN) throws NamingException {
+        String[] attrs = {"dicomHostname", "dicomPort", "dicomTLSCipherSuite", "dicomInstalled"};
+        Attributes connAttrs = ctx.getAttributes(connDN, attrs);
+        Connection conn = new Connection();
+        conn.setHostname(LdapUtils.stringValue(connAttrs.get("dicomHostname"), null));
+        conn.setPort(LdapUtils.intValue(connAttrs.get("dicomPort"),Connection.NOT_LISTENING));
+        conn.setTlsCipherSuites(LdapUtils.stringArray(connAttrs.get("dicomTLSCipherSuite")));
+        conn.setInstalled(LdapUtils.booleanValue(connAttrs.get("dicomInstalled"), null));
+        return conn;
+    }
+
     private SearchControls searchControlSubtreeScope(int countLimit, String[] returningAttrs, boolean returningObjFlag) {
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -423,7 +434,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         aetInfo.setApplicationCluster(
                 LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
-            aetInfo.getConnections().add(LdapUtils.findConnection(connDN, deviceRef(deviceName), findDevice(deviceName)));
+            aetInfo.getConnections().add(findConnection(connDN));
     }
 
     @Override

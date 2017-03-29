@@ -47,7 +47,7 @@
   <el tag="7777xx22" keyword="StudyAccessDateTime" vr="DT" vm="1">Study Access Date Time</el>
   <el tag="7777xx23" keyword="StudyExpirationDate" vr="DA" vm="1">Study Expiration Date</el>
   <el tag="7777xx24" keyword="StudyRejectionState" vr="CS" vm="1">Study Rejection State</el>
-  <el tag="7777xx25" keyword="MissingSOPInstanceUIDListOfStudy" vr="UI" vm="1-n">Missing SOP Instance UID List of Study</el>
+  <el tag="7777xx25" keyword="StudyCompleteness" vr="CS" vm="1">Study Completeness</el>
   <el tag="7777xx26" keyword="FailedRetrievesOfStudy" vr="US" vm="1">Failed Retrieves of Study</el>
   <el tag="7777xx27" keyword="StudyAccessControlID" vr="LO" vm="1">Study Access Control ID</el>
   <el tag="7777xx28" keyword="StorageIDsOfStudy" vr="LO" vm="1-n">Storage IDs of Study</el>
@@ -55,7 +55,7 @@
   <el tag="7777xx31" keyword="SeriesUpdateDateTime" vr="DT" vm="1">Series Update Date Time</el>
   <el tag="7777xx33" keyword="SeriesExpirationDate" vr="DA" vm="1">Series Expiration Date</el>
   <el tag="7777xx34" keyword="SeriesRejectionState" vr="CS" vm="1">Series Rejection State</el>
-  <el tag="7777xx35" keyword="MissingSOPInstanceUIDListOfSeries" vr="UI" vm="1-n">Missing SOP Instance UID List of Series</el>
+  <el tag="7777xx35" keyword="SeriesCompleteness" vr="CS" vm="1">Series Completeness</el>
   <el tag="7777xx36" keyword="FailedRetrievesOfSeries" vr="US" vm="1">Failed Retrieves of Series</el>
   <el tag="7777xx37" keyword="SendingApplicationEntityTitleOfSeries" vr="AE" vm="1">Sending Application Entity Title of Series</el>
   <el tag="7777xx38" keyword="ScheduledMetadataUpdateDateTimeOfSeries" vr="DT" vm="1">Scheduled Metadata Update Date Time of Series</el>

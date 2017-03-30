@@ -154,7 +154,7 @@ public class JsonConfigurationTest {
             config.addJsonConfigurationExtension(new JsonImageReaderConfiguration());
             config.addJsonConfigurationExtension(new JsonImageWriterConfiguration());
             config.addJsonConfigurationExtension(new JsonHL7Configuration());
-            config.writeTo(createDevice("Test-Device-1", "TEST-AET1"), gen);
+            config.writeTo(createDevice("Test-Device-1", "TEST-AET1"), gen, true);
         }
         Path path = Paths.get("src/test/data/device.json");
 //        try (BufferedWriter w = Files.newBufferedWriter(path, Charset.forName("UTF-8"))) {
@@ -171,7 +171,7 @@ public class JsonConfigurationTest {
         try (JsonGenerator gen = Json.createGenerator(writer)) {
             JsonConfiguration config = new JsonConfiguration();
             config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
-            config.writeTo(createARRDevice("TestAuditRecordRepository"), gen);
+            config.writeTo(createARRDevice("TestAuditRecordRepository"), gen, true);
         }
         Path path = Paths.get("src/test/data/arrdevice.json");
         try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {

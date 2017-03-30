@@ -59,16 +59,7 @@ import java.util.List;
  */
 public class JsonConfiguration {
 
-    private boolean extended = true;
     private final List<JsonConfigurationExtension> extensions = new ArrayList<>();
-
-    public boolean isExtended() {
-        return extended;
-    }
-
-    public void setExtended(boolean extended) {
-        this.extended = extended;
-    }
 
     public void addJsonConfigurationExtension(JsonConfigurationExtension ext) {
         extensions.add(ext);
@@ -105,7 +96,7 @@ public class JsonConfiguration {
         gen.writeEnd();
     }
 
-    public void writeTo(ApplicationEntityInfo aetInfo, JsonGenerator gen) {
+    public void writeTo(ApplicationEntityInfo aetInfo, JsonGenerator gen, boolean extended) {
         JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();
         writer.writeNotNull("dicomDeviceName", aetInfo.getDeviceName());
@@ -119,13 +110,13 @@ public class JsonConfiguration {
         if (!aetInfo.getConnections().isEmpty()) {
             writer.writeStartArray("dicomNetworkConnection");
             for (Connection conn : aetInfo.getConnections())
-                writeTo(conn, writer);
+                writeTo(conn, writer, extended);
             writer.writeEnd();
         }
         gen.writeEnd();
     }
 
-    public void writeTo(Device device, JsonGenerator gen) {
+    public void writeTo(Device device, JsonGenerator gen, boolean extended) {
         JsonWriter writer = new JsonWriter(gen);
         writer.writeStartObject();
         writer.writeNotNull("dicomDeviceName", device.getDeviceName());
@@ -153,8 +144,8 @@ public class JsonConfiguration {
         writer.writeNotEmpty("dicomAuthorizedNodeCertificateReference", device.getAuthorizedNodeCertificateRefs());
         writer.writeNotEmpty("dicomThisNodeCertificateReference", device.getThisNodeCertificateRefs());
         writer.write("dicomInstalled", device.isInstalled());
-        writeConnectionsTo(device, writer);
-        writeApplicationAEsTo(device, writer);
+        writeConnectionsTo(device, writer, extended);
+        writeApplicationAEsTo(device, writer, extended);
 
         if (extended) {
             gen.writeStartObject("dcmDevice");
@@ -335,18 +326,18 @@ public class JsonConfiguration {
         return false;
     }
 
-    private void writeConnectionsTo(Device device, JsonWriter writer) {
+    private void writeConnectionsTo(Device device, JsonWriter writer, boolean extended) {
         List<Connection> conns = device.listConnections();
         if (conns.isEmpty())
             return;
 
         writer.writeStartArray("dicomNetworkConnection");
         for (Connection conn : conns)
-            writeTo(conn, writer);
+            writeTo(conn, writer, extended);
         writer.writeEnd();
     }
 
-    private void writeTo(Connection conn, JsonWriter writer) {
+    private void writeTo(Connection conn, JsonWriter writer, boolean extended) {
         writer.writeStartObject();
         writer.writeNotNull("cn", conn.getCommonName());
         writer.writeNotNull("dicomHostname", conn.getHostname());
@@ -517,7 +508,7 @@ public class JsonConfiguration {
         reader.expect(JsonParser.Event.END_OBJECT);
     }
 
-    private void writeApplicationAEsTo(Device device, JsonWriter writer) {
+    private void writeApplicationAEsTo(Device device, JsonWriter writer, boolean extended) {
         Collection<ApplicationEntity> aes = device.getApplicationEntities();
         if (aes.isEmpty())
             return;
@@ -525,11 +516,11 @@ public class JsonConfiguration {
         List<Connection> conns = device.listConnections();
         writer.writeStartArray("dicomNetworkAE");
         for (ApplicationEntity ae : aes)
-            writeTo(ae, conns, writer);
+            writeTo(ae, conns, writer, extended);
         writer.writeEnd();
     }
     
-    private void writeTo(ApplicationEntity ae, List<Connection> conns, JsonWriter writer) {
+    private void writeTo(ApplicationEntity ae, List<Connection> conns, JsonWriter writer, boolean extended) {
         writer.writeStartObject();
         writer.writeNotNull("dicomAETitle", ae.getAETitle());
         writer.writeNotNull("dicomDescription", ae.getDescription());
@@ -541,7 +532,7 @@ public class JsonConfiguration {
         writer.writeConnRefs(conns, ae.getConnections());
         writer.writeNotEmpty("dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
         writer.writeNotNull("dicomInstalled", ae.getInstalled());
-        writeTransferCapabilitiesTo(ae, writer);
+        writeTransferCapabilitiesTo(ae, writer, extended);
         if (extended) {
             writer.writeStartObject("dcmNetworkAE");
             writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
@@ -640,15 +631,15 @@ public class JsonConfiguration {
         return false;
     }
 
-    private void writeTransferCapabilitiesTo(ApplicationEntity ae, JsonWriter writer) {
+    private void writeTransferCapabilitiesTo(ApplicationEntity ae, JsonWriter writer, boolean extended) {
         writer.writeStartArray("dicomTransferCapability");
         for (TransferCapability tc : ae.getTransferCapabilities())
-            writeTo(tc, writer);
+            writeTo(tc, writer, extended);
         writer.writeEnd();
 
     }
     
-    private void writeTo(TransferCapability tc, JsonWriter writer) {
+    private void writeTo(TransferCapability tc, JsonWriter writer, boolean extended) {
         writer.writeStartObject();
         writer.writeNotNull("cn", tc.getCommonName());
         writer.writeNotNull("dicomSOPClass", tc.getSopClass());

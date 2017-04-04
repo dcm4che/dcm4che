@@ -38,11 +38,13 @@
 
 package org.dcm4che3.imageio.stream;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
@@ -89,8 +91,18 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
                 throw new UnsupportedOperationException(
                         "Number of Fragments [" + fragments.size()
                                 + "] != Number of Frames [" + frames + "] + 1");
-            BulkData bulkData = (BulkData) fragments.get(index+1);
-            return new SegmentedImageInputStream(iis, bulkData.offset(), bulkData.length(), false);
+            Object fragment = fragments.get(index+1);
+            if (fragment instanceof BulkData) {
+                BulkData bulkData = (BulkData) fragment;
+                return new SegmentedImageInputStream(iis, bulkData.offset(), bulkData.length(), false);
+            } else if (fragment instanceof byte[]) {
+                // If the fragments contain byte arrays, we can just make a new ImageInputStream
+                // with the fragment data, instead of trying to slice it out.
+                byte[] byteFragment = (byte[]) fragment;
+                return new SegmentedImageInputStream(
+                    new MemoryCacheImageInputStream(
+                        new ByteArrayInputStream(byteFragment)), 0, byteFragment.length, false);
+            }
         }
         int n = fragments.size() - 1;
         long[] offsets = new long[n];

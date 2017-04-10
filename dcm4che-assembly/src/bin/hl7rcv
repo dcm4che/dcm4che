@@ -38,6 +38,7 @@ fi
 
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/hl7rcv/"
+CP="$CP:$DCM4CHE_HOME/etc/certs/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-hl7-${project.version}.jar"

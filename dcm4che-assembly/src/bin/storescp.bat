@@ -41,6 +41,7 @@ set JAVA=%JAVA_HOME%\bin\java
 :SKIP_SET_JAVA_HOME
 
 set CP=%DCM4CHE_HOME%\etc\storescp\
+set CP=%CP%;%DCM4CHE_HOME%\etc\certs\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-${project.version}.jar

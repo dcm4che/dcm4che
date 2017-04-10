@@ -2509,8 +2509,12 @@ public class Attributes implements Serializable {
 
     public static Attributes createFileMetaInformation(String iuid,
             String cuid, String tsuid) {
-        if (iuid.isEmpty() || cuid.isEmpty() || tsuid.isEmpty())
-            throw new IllegalArgumentException();
+        if (iuid == null || iuid.isEmpty())
+            throw new IllegalArgumentException("Missing SOP Instance UID");
+        if (cuid == null || cuid.isEmpty())
+            throw new IllegalArgumentException("Missing SOP Class UID");
+        if (tsuid == null || tsuid.isEmpty())
+            throw new IllegalArgumentException("Missing Transfer Syntax UID");
 
         Attributes fmi = new Attributes(6);
         fmi.setBytes(Tag.FileMetaInformationVersion, VR.OB,

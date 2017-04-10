@@ -1060,7 +1060,7 @@ public class Connection implements Serializable {
         SSLSocket ssl = (SSLSocket) sf.createSocket(s,
                 remoteConn.getHostname(), remoteConn.getPort(), true);
         ssl.setEnabledProtocols(
-                intersect(remoteConn.tlsProtocols, tlsProtocols));
+                intersect(remoteConn.tlsProtocols(), tlsProtocols()));
         ssl.setEnabledCipherSuites(
                 intersect(remoteConn.tlsCipherSuites, tlsCipherSuites));
         ssl.startHandshake();
@@ -1082,7 +1082,7 @@ public class Connection implements Serializable {
         if (!isTls())
             return !remoteConn.isTls();
         
-        return hasCommon(remoteConn.tlsProtocols, tlsProtocols)
+        return hasCommon(remoteConn.tlsProtocols(), tlsProtocols())
             && hasCommon(remoteConn.tlsCipherSuites, tlsCipherSuites);
     }
 

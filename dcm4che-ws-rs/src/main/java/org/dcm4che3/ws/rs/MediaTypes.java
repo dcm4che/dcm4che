@@ -74,6 +74,17 @@ public class MediaTypes {
             new MediaType("application", "dicom+xml");
 
     /**
+     * "application/dicom+json"
+     */
+    public final static String APPLICATION_DICOM_JSON = "application/dicom+json";
+
+    /**
+     * "application/dicom+json"
+     */
+    public final static MediaType APPLICATION_DICOM_JSON_TYPE =
+            new MediaType("application", "dicom+json");
+
+    /**
      * "image/gif"
      */
     public final static String IMAGE_GIF = "image/gif";

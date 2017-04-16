@@ -278,7 +278,7 @@ public class JsonConfigurationTest {
         assertEquals(AuditLogger.Severity.warning.toString(), auditLogger.getMinorFailureSeverity().toString());
         assertEquals(AuditLogger.Severity.err.toString(), auditLogger.getSeriousFailureSeverity().toString());
         assertEquals(AuditLogger.Severity.crit.toString(), auditLogger.getMajorFailureSeverity().toString());
-        assertEquals("DICOM+RFC3881", auditLogger.getMessageID());
+        assertEquals("IHE+RFC3881", auditLogger.getMessageID());
         assertEquals("UTF-8", auditLogger.getEncoding());
         assertEquals(true, auditLogger.isIncludeBOM());
         assertEquals(false, auditLogger.isTimestampInUTC());

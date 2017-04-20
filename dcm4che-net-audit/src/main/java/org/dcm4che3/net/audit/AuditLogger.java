@@ -131,7 +131,7 @@ public class AuditLogger extends DeviceExtension {
         debug            // (7)  -- debug-level messages
     }
 
-    public static final String MESSAGE_ID = "IHE+RFC3881";
+    public static final String MESSAGE_ID = "IHE+RFC-3881";
 
     private static final int[] DIGITS_0X = {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',

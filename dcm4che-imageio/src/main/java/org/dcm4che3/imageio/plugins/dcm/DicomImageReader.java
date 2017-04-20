@@ -46,6 +46,7 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -61,6 +62,7 @@ import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -108,13 +110,15 @@ public class DicomImageReader extends ImageReader {
 
     private int height;
 
-    private BulkData pixeldata;
+    private BulkData pixelBulkData;
 
     private final VR.Holder pixeldataVR = new VR.Holder();
 
     private Fragments pixeldataFragments;
 
     private File pixeldataFile;
+
+    private byte[] pixeldataBytes;
 
     private ImageReader decompressor;
 
@@ -147,10 +151,16 @@ public class DicomImageReader extends ImageReader {
         resetInternalState();
         if (input instanceof DicomMetaData) {
             setMetadata((DicomMetaData) input);
-            if (pixeldata != null)
-                pixeldataFile = pixeldata.getFile();
-            else if (pixeldataFragments != null && pixeldataFragments.size() > 1)
-                pixeldataFile = ((BulkData) pixeldataFragments.get(1)).getFile();
+            if (pixelBulkData != null) {
+                pixeldataFile = pixelBulkData.getFile();
+            } else if (pixeldataFragments != null && pixeldataFragments.size() > 1) {
+                Object fragment = pixeldataFragments.get(1);
+                if (fragment instanceof BulkData) {
+                    pixeldataFile = ((BulkData) fragment).getFile();
+                } else if (!(fragment instanceof byte[])) {
+                    throw new IllegalArgumentException("Fragments is neither BulkData nor byte[]; instead it is " + fragment.getClass());
+                }
+            }
         } else {
             iis = (ImageInputStream) input;
         }
@@ -185,10 +195,10 @@ public class DicomImageReader extends ImageReader {
 
         if (decompressor == null)
             return createImageType(bitsStored, dataType, banded);
-        
+
         if (rle)
             return createImageType(bitsStored, dataType, true);
-        
+
         openiis();
         try {
             decompressor.setInput(iisOfFrame(0));
@@ -203,7 +213,7 @@ public class DicomImageReader extends ImageReader {
             throws IOException {
         readMetadata();
         checkIndex(frameIndex);
-        
+
         ImageTypeSpecifier imageType;
         if (pmi.isMonochrome())
             imageType = createImageType(8, DataBuffer.TYPE_BYTE, false);
@@ -225,8 +235,16 @@ public class DicomImageReader extends ImageReader {
     }
 
     private void openiis() throws FileNotFoundException, IOException {
-        if (pixeldataFile != null && iis == null)
-            iis = new FileImageInputStream(pixeldataFile);
+        if (iis == null) {
+            if (pixeldataFile != null) {
+                iis = new FileImageInputStream(pixeldataFile);
+            } else if (pixeldataBytes != null) {
+                iis = new MemoryCacheImageInputStream(new ByteArrayInputStream(pixeldataBytes));
+            } else if (pixeldataFragments != null) {
+                iis = new MemoryCacheImageInputStream(
+                     new ByteArrayInputStream((byte[]) pixeldataFragments.get(1)));
+            }
+        }
     }
 
     private void closeiis() throws IOException {
@@ -267,7 +285,7 @@ public class DicomImageReader extends ImageReader {
         try {
             if (decompressor != null) {
                 decompressor.setInput(iisOfFrame(frameIndex));
-    
+
                 if (LOG.isDebugEnabled())
                     LOG.debug("Start decompressing frame #" + (frameIndex + 1));
                 Raster wr = pmi.decompress() == pmi && decompressor.canReadRaster()
@@ -280,7 +298,14 @@ public class DicomImageReader extends ImageReader {
             iis.setByteOrder(ds.bigEndian()
                     ? ByteOrder.BIG_ENDIAN
                     : ByteOrder.LITTLE_ENDIAN);
-            iis.seek(pixeldata.offset() + frameIndex * frameLength);
+            if (pixelBulkData != null) {
+                iis.seek(pixelBulkData.offset() + frameIndex * frameLength);
+            } else if (pixeldataBytes != null) {
+                iis.seek(frameIndex * frameLength);
+            } else if (pixeldataFragments != null && pixeldataFile == null) {
+              throw new RuntimeException("fix this?");
+            }
+
             WritableRaster wr = Raster.createWritableRaster(
                     createSampleModel(dataType, banded), null);
             DataBuffer buf = wr.getDataBuffer();
@@ -288,7 +313,7 @@ public class DicomImageReader extends ImageReader {
                 byte[][] data = ((DataBufferByte) buf).getBankData();
                 for (byte[] bs : data)
                     iis.readFully(bs);
-                if (pixeldata.bigEndian && pixeldataVR.vr == VR.OW)
+                if (pixelBulkData.bigEndian && pixeldataVR.vr == VR.OW)
                     ByteUtils.swapShorts(data);
             } else {
                 short[] data = ((DataBufferUShort) buf).getData();
@@ -333,7 +358,7 @@ public class DicomImageReader extends ImageReader {
                     LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
                 if (samples > 1)
                     return bi;
-                
+
                 raster = bi.getRaster();
             } finally {
                 closeiis();
@@ -352,7 +377,7 @@ public class DicomImageReader extends ImageReader {
             SampleModel sm = createSampleModel(DataBuffer.TYPE_BYTE, false);
             raster = applyLUTs(raster, frameIndex, param, sm, 8);
             for (int i = 0; i < overlayGroupOffsets.length; i++) {
-                applyOverlay(overlayGroupOffsets[i], 
+                applyOverlay(overlayGroupOffsets[i],
                         raster, frameIndex, param, 8, overlayData[i]);
             }
         } else {
@@ -473,7 +498,7 @@ public class DicomImageReader extends ImageReader {
     }
 
     private Attributes selectFctGroup(Attributes imgAttrs,
-            Attributes sharedFctGroups, 
+            Attributes sharedFctGroups,
             Attributes frameFctGroups,
             int tag) {
         if (frameFctGroups == null) {
@@ -498,7 +523,7 @@ public class DicomImageReader extends ImageReader {
                         int[] refFrames = refImg.getInts(Tag.ReferencedFrameNumber);
                         if (refFrames == null)
                             return voiLUT;
-    
+
                         for (int refFrame : refFrames)
                             if (refFrame == frame)
                                 return voiLUT;
@@ -537,18 +562,21 @@ public class DicomImageReader extends ImageReader {
             banded = samples > 1 && ds.getInt(Tag.PlanarConfiguration, 0) != 0;
             bitsAllocated = ds.getInt(Tag.BitsAllocated, 8);
             bitsStored = ds.getInt(Tag.BitsStored, bitsAllocated);
-            dataType = bitsAllocated <= 8 ? DataBuffer.TYPE_BYTE 
+            dataType = bitsAllocated <= 8 ? DataBuffer.TYPE_BYTE
                                           : DataBuffer.TYPE_USHORT;
             pmi = PhotometricInterpretation.fromString(
                     ds.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
             if (pixeldata instanceof BulkData) {
                 this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
-                this.pixeldata = (BulkData) pixeldata;
+                this.pixelBulkData = (BulkData) pixeldata;
+            } else if (pixeldata instanceof byte[]) {
+                this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
+                this.pixeldataBytes = (byte[]) pixeldata;
             } else { // Fragments
                 Attributes fmi = metadata.getFileMetaInformation();
                 if (fmi == null)
                     throw new IllegalArgumentException("Missing File Meta Information for Data Set with compressed Pixel Data");
-                
+
                 String tsuid = fmi.getString(Tag.TransferSyntaxUID);
                 ImageReaderParam param =
                         ImageReaderFactory.getImageReaderParam(tsuid);
@@ -583,8 +611,10 @@ public class DicomImageReader extends ImageReader {
         frames = 0;
         width = 0;
         height = 0;
-        pixeldata = null;
+        pixelBulkData = null;
+        frameLength = 0;
         pixeldataFragments = null;
+        pixeldataBytes = null;
         if (decompressor != null) {
             decompressor.dispose();
             decompressor = null;
@@ -596,7 +626,7 @@ public class DicomImageReader extends ImageReader {
     private void checkIndex(int frameIndex) {
         if (frames == 0)
             throw new IllegalStateException("Missing Pixel Data");
-        
+
         if (frameIndex < 0 || frameIndex >= frames)
             throw new IndexOutOfBoundsException("imageIndex: " + frameIndex);
     }

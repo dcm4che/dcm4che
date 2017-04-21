@@ -86,6 +86,7 @@
     <module>dcm4che-tool-dcm2json</module>
     <module>dcm4che-tool-stowrs</module>
     <module>dcm4che-tool-json2rst</module>
+    <module>dcm4che-tool-json2index</module>
   </modules>
   <build>
     <plugins>

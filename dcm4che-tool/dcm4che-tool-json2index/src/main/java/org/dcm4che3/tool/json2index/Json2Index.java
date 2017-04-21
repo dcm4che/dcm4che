@@ -61,7 +61,7 @@ public class Json2Index {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
-            System.out.println("Usage: json2rst <schema-dir>");
+            System.out.println("Usage: json2index <schema-dir>");
             System.exit(-1);
         }
         Json2Index json2Rst = new Json2Index(new File(args[0]));

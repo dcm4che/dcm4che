@@ -41,6 +41,7 @@ package org.dcm4che3.tool.stowrs;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -57,6 +58,8 @@ import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.imageio.codec.jpeg.JPEG;
+import org.dcm4che3.imageio.codec.jpeg.JPEGHeader;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXTransformer;
 import org.dcm4che3.json.JSONReader;
@@ -72,19 +75,6 @@ import org.slf4j.LoggerFactory;
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  */
 public class StowRS {
-    private static int FF = 0xff;
-
-    private static int SOF = 0xc0;
-
-    private static int DHT = 0xc4;
-
-    private static int DAC = 0xcc;
-
-    private static int SOI = 0xd8;
-
-    private static int SOS = 0xda;
-
-    private static int jpgHeaderLen;
     private static byte[] buffer = new byte[8192];
     static final Logger LOG = LoggerFactory.getLogger(StowRS.class);
     private Attributes keys;
@@ -140,51 +130,59 @@ public class StowRS {
                 stow(instance.URL, null, files, ot);
                 return;
             }
-            String metadataType = cl.getOptionValue("t").toLowerCase();
-            if (!(metadataType.equals("json") || metadataType.equals("xml")))
-                throw new IllegalArgumentException("Bad Type specified for metadata, specify either XML or JSON");
-            Path filePath;
-            if (!cl.hasOption("f")) {
-                LOG.info("No metadata file specified, using default metadata from etc/stowrs/metadata.xml");
-                filePath = new File("../etc/stowrs/metadata.xml").getAbsoluteFile().toPath();
-                metadataType = "xml";
-                metadata = SAXReader.parse(filePath.toString());
-                metadata.setString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
-            } else {
-                filePath = Paths.get(cl.getOptionValue("f"));
-                JSONReader reader = new JSONReader(Json.createParser(new FileReader(filePath.toString())));
-                metadata = metadataType.equals("json")
-                        ? reader.readDataset(null)
-                        : SAXReader.parse(filePath.toString());
-            }
-            String contentType = "application/dicom+" + metadataType;
-            Path bulkdataFile = Paths.get(files.get(0)).getFileName();
-            BulkData defaultBulkdata = new BulkData(null, "bulk", false);
-            String bulkdataType;
-            String extension = bulkdataFile.toString().substring(bulkdataFile.toString().lastIndexOf(".")+1).toLowerCase();
-            if (!extension.equals("pdf")) {
-                if (extension.equals("jpeg") || extension.equals("jpg")) {
-                    bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline1;
-                    setImageAttributes(bulkdataFile, metadata);
-                } else if (extension.equals("mpeg") || extension.equals("mp4")) {
-                    bulkdataType = "video/" + extension;
-                    setVideoAttributes(metadata);
-                } else
-                    throw new IllegalArgumentException("unsupported extension for bulkdata");
-                if (metadata.getValue(Tag.PixelData) == null)
-                    metadata.setValue(Tag.PixelData, VR.OB, defaultBulkdata);
-            } else {
-                bulkdataType = "application/pdf";
-                setPDFAttributes(bulkdataFile, metadata);
-                if (metadata.getValue(Tag.EncapsulatedDocument) == null)
-                    metadata.setValue(Tag.EncapsulatedDocument, VR.OB, defaultBulkdata);
-            }
-            ObjectType ot = new ObjectType(metadataType, bulkdataType, contentType);
-            coerceattributes(metadata, instance);
-            stow(instance.URL, metadata, files, ot);
+            stowNonDicom(cl, instance, files);
         } catch (Exception e) {
             LOG.error("Error: \n", e);
         }
+    }
+
+    private static void stowNonDicom(CommandLine cl, StowRS instance, List<String> files) throws Exception {
+        Attributes metadata;
+        String metadataType = cl.getOptionValue("t").toLowerCase();
+        if (!(metadataType.equals("json") || metadataType.equals("xml")))
+            throw new IllegalArgumentException("Bad Type specified for metadata, specify either XML or JSON");
+        Path filePath;
+        if (!cl.hasOption("f")) {
+            LOG.info("No metadata file specified, using default metadata from etc/stowrs/metadata.xml");
+            //filePath = new File("../etc/stowrs/metadata.xml").getAbsoluteFile().toPath();
+            filePath = new File("\\metadata.xml").getAbsoluteFile().toPath();
+            metadataType = "xml";
+            metadata = SAXReader.parse(filePath.toString());
+            metadata.setString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
+        } else {
+            filePath = Paths.get(cl.getOptionValue("f"));
+            JSONReader reader = new JSONReader(Json.createParser(new FileReader(filePath.toString())));
+            metadata = metadataType.equals("json")
+                    ? reader.readDataset(null)
+                    : SAXReader.parse(filePath.toString());
+        }
+        String contentType = "application/dicom+" + metadataType;
+        Path bulkdataFile = Paths.get(files.get(0));
+        BulkData defaultBulkdata = new BulkData(null, "bulk", false);
+        String bulkdataType;
+        String extension = bulkdataFile.getFileName().toString().substring(bulkdataFile.getFileName().toString().lastIndexOf(".")+1).toLowerCase();
+        if (!extension.equals("pdf")) {
+            if (extension.equals("jpeg") || extension.equals("jpg")) {
+                BufferedInputStream bio = new BufferedInputStream(Files.newInputStream(bulkdataFile));
+                JPEGHeader header = new JPEGHeader(firstBytesOf(bio), JPEG.SOS);
+                bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline1;
+                header.toAttributes(metadata);
+            } else if (extension.equals("mpeg") || extension.equals("mp4")) {
+                bulkdataType = "video/" + extension;
+                setVideoAttributes(metadata);
+            } else
+                throw new IllegalArgumentException("unsupported extension for bulkdata");
+            if (metadata.getValue(Tag.PixelData) == null)
+                metadata.setValue(Tag.PixelData, VR.OB, defaultBulkdata);
+        } else {
+            bulkdataType = "application/pdf";
+            setPDFAttributes(bulkdataFile, metadata);
+            if (metadata.getValue(Tag.EncapsulatedDocument) == null)
+                metadata.setValue(Tag.EncapsulatedDocument, VR.OB, defaultBulkdata);
+        }
+        ObjectType ot = new ObjectType(metadataType, bulkdataType, contentType);
+        coerceattributes(metadata, instance);
+        stow(instance.URL, metadata, files, ot);
     }
 
     private static void stow(String url, Attributes metadata, List<String> files, ObjectType ot) throws Exception {
@@ -269,125 +267,21 @@ public class StowRS {
 
     }
 
-
     private static void setVideoAttributes(Attributes metadata) {
         metadata.setString(Tag.SOPClassUID, VR.UI, UID.VideoEndoscopicImageStorage);
         metadata.setInt(Tag.NumberOfFrames, VR.IS, 9999);
         metadata.setInt(Tag.FrameIncrementPointer, VR.AT, Tag.FrameTime);
     }
 
-    private static void setImageAttributes(Path bulkDataFile, Attributes metadata) {
-        metadata.setString(Tag.SOPClassUID, VR.UI, UID.SecondaryCaptureImageStorage);
-        metadata.setInt(Tag.NumberOfFrames, VR.IS, 1);
-        metadata.setInt(Tag.InstanceNumber, VR.IS, 1);
-        metadata.setNull(Tag.PurposeOfReferenceCodeSequence, VR.SQ);
-        jpgHeaderLen = 0;
-        DataInputStream jpgInput;
-        try {
-            jpgInput = new DataInputStream(new BufferedInputStream(
-                    new FileInputStream(bulkDataFile.toFile())));
-
-            readHeader(metadata, jpgInput);
-        } catch (FileNotFoundException e) {
-            LOG.error("File not found.");
-        } catch (IOException e) {
-            LOG.error("Error parsing jpeg header (malformed header) "
-                    + e.getMessage());
+    private static byte[] firstBytesOf(BufferedInputStream bis) throws IOException {
+        int n, off = 0, len = buffer.length;
+        bis.mark(8192);
+        while (len > 0 && (n = bis.read(buffer, off, len)) > 0) {
+            off += n;
+            len -= n;
         }
-        ensureUS(metadata, Tag.BitsAllocated, 8);
-        ensureUS(metadata, Tag.BitsStored, metadata.getInt(Tag.BitsAllocated,
-                (buffer[jpgHeaderLen] & 0xff) > 8 ? 16 : 8));
-        ensureUS(
-                metadata,
-                Tag.HighBit,
-                metadata.getInt(Tag.BitsStored, (buffer[jpgHeaderLen] & 0xff)) - 1);
-        ensureUS(metadata, Tag.PixelRepresentation, 0);
-        ensureUID(metadata, Tag.StudyInstanceUID);
-        ensureUID(metadata, Tag.SeriesInstanceUID);
-        ensureUID(metadata, Tag.SOPInstanceUID);
-        Date now = new Date();
-        metadata.setDate(Tag.InstanceCreationDate, VR.DA, now);
-        metadata.setDate(Tag.InstanceCreationTime, VR.TM, now);
-    }
-
-    private static void readHeader(Attributes attrs, DataInputStream jpgInput)
-            throws IOException {
-        if (jpgInput.read() != FF || jpgInput.read() != SOI
-                || jpgInput.read() != FF) {
-            throw new IOException("JPEG stream does not start with FF D8 FF");
-        }
-        int marker = jpgInput.read();
-        int segmLen;
-        boolean seenSOF = false;
-        buffer[0] = (byte) FF;
-        buffer[1] = (byte) SOI;
-        buffer[2] = (byte) FF;
-        buffer[3] = (byte) marker;
-        jpgHeaderLen = 4;
-        while (marker != SOS) {
-            segmLen = jpgInput.readUnsignedShort();
-            if (buffer.length < jpgHeaderLen + segmLen + 2) {
-                growBuffer(jpgHeaderLen + segmLen + 2);
-            }
-            buffer[jpgHeaderLen++] = (byte) (segmLen >>> 8);
-            buffer[jpgHeaderLen++] = (byte) segmLen;
-            jpgInput.readFully(buffer, jpgHeaderLen, segmLen - 2);
-            if ((marker & 0xf0) == SOF && marker != DHT && marker != DAC) {
-                seenSOF = true;
-                int p = buffer[jpgHeaderLen] & 0xff;
-                int y = ((buffer[jpgHeaderLen + 1] & 0xff) << 8)
-                        | (buffer[jpgHeaderLen + 2] & 0xff);
-                int x = ((buffer[jpgHeaderLen + 3] & 0xff) << 8)
-                        | (buffer[jpgHeaderLen + 4] & 0xff);
-                int nf = buffer[jpgHeaderLen + 5] & 0xff;
-                attrs.setInt(Tag.SamplesPerPixel, VR.US, nf);
-                if (nf == 3) {
-                    attrs.setString(Tag.PhotometricInterpretation, VR.CS,
-                            "YBR_FULL_422");
-                    attrs.setInt(Tag.PlanarConfiguration, VR.US, 0);
-                } else {
-                    attrs.setString(Tag.PhotometricInterpretation, VR.CS,
-                            "MONOCHROME2");
-                }
-                attrs.setInt(Tag.Rows, VR.US, y);
-                attrs.setInt(Tag.Columns, VR.US, x);
-                attrs.setInt(Tag.BitsAllocated, VR.US, p > 8 ? 16 : 8);
-                attrs.setInt(Tag.BitsStored, VR.US, p);
-                attrs.setInt(Tag.HighBit, VR.US, p - 1);
-                attrs.setInt(Tag.PixelRepresentation, VR.US, 0);
-            }
-            if (jpgInput.read() != 0xff) {
-                throw new IOException("Missing SOS segment in JPEG stream");
-            }
-            marker = jpgInput.read();
-            buffer[jpgHeaderLen++] = (byte) 0xff;
-            buffer[jpgHeaderLen++] = (byte) marker;
-        }
-        if (!seenSOF) {
-            throw new IOException("Missing SOF segment in JPEG stream");
-        }
-    }
-
-    private static void growBuffer(int minSize) {
-        int newSize = buffer.length << 1;
-        while (newSize < minSize) {
-            newSize <<= 1;
-        }
-        byte[] tmp = new byte[newSize];
-        System.arraycopy(buffer, 0, tmp, 0, jpgHeaderLen);
-        buffer = tmp;
-    }
-
-    private static void ensureUID(Attributes attrs, int tag) {
-        if (!attrs.containsValue(tag)) {
-            attrs.setString(tag, VR.UI, UIDUtils.createUID());
-        }
-    }
-
-    private static void ensureUS(Attributes attrs, int tag, int val) {
-        if (!attrs.containsValue(tag)) {
-            attrs.setInt(tag, VR.US, val);
-        }
+        bis.reset();
+        return len > 0 ? Arrays.copyOf(buffer, buffer.length - len) : buffer;
     }
 
     static class ObjectType {

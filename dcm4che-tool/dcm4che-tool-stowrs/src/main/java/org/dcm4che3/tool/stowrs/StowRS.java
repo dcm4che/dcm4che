@@ -39,20 +39,16 @@
 package org.dcm4che3.tool.stowrs;
 
 import java.io.*;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
-
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.cli.*;
@@ -67,15 +63,13 @@ import org.dcm4che3.json.JSONReader;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.DateUtils;
-import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
- * 
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  */
 public class StowRS {
     private static int FF = 0xff;
@@ -91,7 +85,6 @@ public class StowRS {
     private static int SOS = 0xda;
 
     private static int jpgHeaderLen;
-    private static boolean isPDF = false;
     private static byte[] buffer = new byte[8192];
     static final Logger LOG = LoggerFactory.getLogger(StowRS.class);
     private Attributes keys;

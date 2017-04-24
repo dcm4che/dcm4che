@@ -38,6 +38,10 @@
 
 package org.dcm4che3.imageio.codec.jpeg;
 
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 
 /**
@@ -82,13 +86,96 @@ public class JPEGHeader {
 
     public int offsetOf(int marker) {
         for (int i = 0; i < offsets.length; i++) {
-            if ((data[offsets[i]] & 255) == marker)
+            if (marker(i) == marker)
                 return offsets[i];
         }
         return -1;
     }
 
+    public int offsetSOF() {
+        for (int i = 0; i < offsets.length; i++) {
+            if (JPEG.isSOF(marker(i)))
+                return offsets[i];
+        }
+        return -1;
+    }
+
+    public int offsetAfterAPP() {
+        for (int i = 1; i < offsets.length; i++) {
+            if (!JPEG.isAPP(marker(i)))
+                return offsets[i];
+        }
+        return -1;
+    }
+
+    public int offset(int index) {
+        return offsets[index];
+    }
+
+    public int marker(int index) {
+        return data[offsets[index]] & 255;
+    }
+
     public int numberOfMarkers() {
         return offsets.length;
+    }
+
+    /**
+     * Return corresponding Image Pixel Description Macro Attributes
+     * @param attrs target {@code Attributes} or {@code null}
+     * @return Image Pixel Description Macro Attributes
+     */
+    public Attributes toAttributes(Attributes attrs) {
+        int offsetSOF = offsetSOF();
+        if (offsetSOF == -1)
+            return null;
+
+        if (attrs == null)
+            attrs = new Attributes(9);
+
+        int sof = data[offsetSOF] & 255;
+        int p = data[offsetSOF+3] & 0xff;
+        int y = ((data[offsetSOF+3 + 1] & 0xff) << 8)
+                | (data[offsetSOF+3 + 2] & 0xff);
+        int x = ((data[offsetSOF+3 + 3] & 0xff) << 8)
+                | (data[offsetSOF+3 + 4] & 0xff);
+        int nf = data[offsetSOF+3 + 5] & 0xff;
+        attrs.setInt(Tag.SamplesPerPixel, VR.US, nf);
+        if (nf == 3) {
+            attrs.setString(Tag.PhotometricInterpretation, VR.CS, sof == JPEG.SOF0 ? "YBR_FULL_422" : "RGB");
+            attrs.setInt(Tag.PlanarConfiguration, VR.US, 0);
+        } else {
+            attrs.setString(Tag.PhotometricInterpretation, VR.CS, "MONOCHROME2");
+        }
+        attrs.setInt(Tag.Rows, VR.US, y);
+        attrs.setInt(Tag.Columns, VR.US, x);
+        attrs.setInt(Tag.BitsAllocated, VR.US, p > 8 ? 16 : 8);
+        attrs.setInt(Tag.BitsStored, VR.US, p);
+        attrs.setInt(Tag.HighBit, VR.US, p - 1);
+        attrs.setInt(Tag.PixelRepresentation, VR.US, 0);
+        return attrs;
+    }
+
+    public String getTransferSyntaxUID() {
+        int sofOffset = offsetSOF();
+        if (sofOffset == -1)
+            return null;
+
+        switch(data[sofOffset] & 255) {
+            case JPEG.SOF0:
+                return UID.JPEGBaseline1;
+            case JPEG.SOF1:
+                return UID.JPEGExtended24;
+            case JPEG.SOF3:
+                return ss() == 1 ? UID.JPEGLossless : UID.JPEGLosslessNonHierarchical14;
+            case JPEG.SOF55:
+                return ss() == 0 ? UID.JPEGLSLossless : UID.JPEGLSLossyNearLossless;
+        }
+        return null;
+    }
+
+    private int ss() {
+        int offsetSOS = offsetOf(JPEG.SOS);
+        return offsetSOS != -1 ? data[offsetSOS+6] & 255 : -1;
     }
 }

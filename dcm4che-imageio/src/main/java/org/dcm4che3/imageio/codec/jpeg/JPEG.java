@@ -172,4 +172,29 @@ public class JPEG {
         }
         return false;
     }
+
+    public static boolean isSOF(int marker) {
+        switch(marker) {
+            case SOF0:
+            case SOF1:
+            case SOF2:
+            case SOF3:
+            case SOF5:
+            case SOF6:
+            case SOF7:
+            case SOF9:
+            case SOF10:
+            case SOF11:
+            case SOF13:
+            case SOF14:
+            case SOF15:
+            case SOF55:
+                return true;
+        }
+        return false;
+    }
+
+    public static boolean isAPP(int marker) {
+        return (marker & APP0) == APP0;
+    }
 }

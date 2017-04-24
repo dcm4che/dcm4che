@@ -38,16 +38,10 @@
 
 package org.dcm4che3.tool.stowrs;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -61,10 +55,7 @@ import javax.json.stream.JsonGenerator;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Tag;
@@ -109,6 +100,8 @@ public class StowRS {
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
 
+    private static final String boundary = "myboundary";
+
     public StowRS() {
     }
 
@@ -137,95 +130,126 @@ public class StowRS {
     public static void main(String[] args) {
         CommandLine cl = null;
         try {
-            Attributes metadata = new Attributes();
+            Attributes metadata;
             cl = parseComandLine(args);
             StowRS instance = new StowRS();
             instance.keys = configureKeys(instance, cl);
             LOG.info("added keys for coercion: \n" + instance.keys.toString());
             List<String> files = cl.getArgList();
             if (files == null)
-                throw new IllegalArgumentException(
-                        "No pixel data files or dicom files specified");
-            if (!cl.hasOption("u")) {
-                throw new IllegalArgumentException("Missing url");
-            } else {
+                throw new MissingArgumentException("No pixel data files or dicom files specified");
+            if (!cl.hasOption("u"))
+                throw new MissingOptionException("Missing url");
+            else
                 instance.URL = cl.getOptionValue("u");
-            }
-            File metadataFile = null;
-            if (cl.hasOption("t")) {
-                Attributes ds = null;
-                if (cl.hasOption("f"))
-                    metadataFile = new File(cl.getOptionValue("f"));
-                else
-                    metadataFile = generateMetaData(cl);
-                if (cl.getOptionValue("t").contains("JSON")) {
-                    try {
-                        ds = parseJSON(metadataFile.getPath());
-                    } catch (Exception e) {
-                        LOG.error("error parsing metadata file" + e);
-                        return;
-                    }
-
-                } else if (cl.getOptionValue("t").contains("XML")) {
-
-                    try {
-                        ds = SAXReader.parse(metadataFile.getPath());
-                    } catch (Exception e) {
-                        LOG.error("error parsing metadata file");
-                        return;
-                    }
-                }
-
-                else {
-                    throw new IllegalArgumentException(
-                            "Bad Type specified for metadata, specify either XML or JSON");
-                }
-                metadata = ds;
-                File bulkDataFile = new File(files.get(0));
-                     //do pdf check here
-                if (isExtension(bulkDataFile, "pdf")) {
-                    // set document metadata
-                    isPDF = true;
-                    metadata.setValue(Tag.EncapsulatedDocument, VR.OB,
-                            new BulkData(null, "bulk", false));
-                } else {
-                    isPDF = false;
-                    // images or video
-                    metadata.setValue(Tag.PixelData, VR.OB, new BulkData(null,
-                            "bulk", false));
-                }
-                // add URI here
-                if (files.size() > 1)
-                    throw new IllegalArgumentException(
-                            "Only one bulk data file is allowed with one metadata file");
-
-                if (cl.getOptionValue("t").contains("XML")) {
-
-                    sendMetaDataAndBulkDataXML(instance, metadata, bulkDataFile);
-                } else {
-                    sendMetaDataAndBulkDataJSON(instance, metadata,
-                            bulkDataFile);
-                }
-
-            }
             if (!cl.hasOption("t")) {
-                for (String path : files) {
-                    File toSend = new File(path);
-                    instance.sendDicomFile(instance, toSend);
-                    LOG.info(path + " with size : " + toSend.length());
-                }
+                ObjectType ot = new ObjectType(null, null, "application/dicom");
+                stow(instance.URL, null, files, ot);
+                return;
             }
-        } catch (Exception e) {
-            if (!cl.hasOption("u")) {
-                LOG.error("stowrs: missing required option -u");
-                LOG.error("Try 'stowrs --help' for more information.");
-                System.exit(2);
+            String metadataType = cl.getOptionValue("t").toLowerCase();
+            if (!(metadataType.equals("json") || metadataType.equals("xml")))
+                throw new IllegalArgumentException("Bad Type specified for metadata, specify either XML or JSON");
+            Path filePath;
+            if (!cl.hasOption("f")) {
+                LOG.info("No metadata file specified, using default metadata from etc/stowrs/metadata.xml");
+                filePath = new File("../etc/stowrs/metadata.xml").getAbsoluteFile().toPath();
+                metadataType = "xml";
+                metadata = SAXReader.parse(filePath.toString());
+                metadata.setString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
             } else {
-                LOG.error("Error: \n");
-                e.printStackTrace();
+                filePath = Paths.get(cl.getOptionValue("f"));
+                JSONReader reader = new JSONReader(Json.createParser(new FileReader(filePath.toString())));
+                metadata = metadataType.equals("json")
+                        ? reader.readDataset(null)
+                        : SAXReader.parse(filePath.toString());
             }
-
+            String contentType = "application/dicom+" + metadataType;
+            Path bulkdataFile = Paths.get(files.get(0)).getFileName();
+            BulkData defaultBulkdata = new BulkData(null, "bulk", false);
+            String bulkdataType;
+            String extension = bulkdataFile.toString().substring(bulkdataFile.toString().lastIndexOf(".")+1).toLowerCase();
+            if (!extension.equals("pdf")) {
+                if (extension.equals("jpeg") || extension.equals("jpg")) {
+                    bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline1;
+                    setImageAttributes(bulkdataFile, metadata);
+                } else if (extension.equals("mpeg") || extension.equals("mp4")) {
+                    bulkdataType = "video/" + extension;
+                    setVideoAttributes(metadata);
+                } else
+                    throw new IllegalArgumentException("unsupported extension for bulkdata");
+                if (metadata.getValue(Tag.PixelData) == null)
+                    metadata.setValue(Tag.PixelData, VR.OB, defaultBulkdata);
+            } else {
+                bulkdataType = "application/pdf";
+                setPDFAttributes(bulkdataFile, metadata);
+                if (metadata.getValue(Tag.EncapsulatedDocument) == null)
+                    metadata.setValue(Tag.EncapsulatedDocument, VR.OB, defaultBulkdata);
+            }
+            ObjectType ot = new ObjectType(metadataType, bulkdataType, contentType);
+            coerceattributes(metadata, instance);
+            stow(instance.URL, metadata, files, ot);
+        } catch (Exception e) {
+            LOG.error("Error: \n", e);
         }
+    }
+
+    private static void stow(String url, Attributes metadata, List<String> files, ObjectType ot) throws Exception {
+        try {
+            URL newUrl = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type",
+                    "multipart/related; type=" + ot.contentType + "; boundary=" + boundary);
+            OutputStream out = connection.getOutputStream();
+            out.write(("\r\n--" + boundary + "\r\n").getBytes());
+            out.write(("Content-Type: " + ot.contentType + "\r\n").getBytes());
+            out.write("\r\n".getBytes());
+            if (ot.contentType.equals("application/dicom"))
+                writeDicomFiles(files, ot, out);
+            else
+                writeMetdataAndBulkData(metadata, files, ot, out);
+            out.write(("\r\n--" + boundary + "--\r\n").getBytes());
+            String response = connection.getResponseMessage();
+            LOG.info("response: " + response);
+            connection.disconnect();
+            LOG.info("STOW successful!");
+        } catch (Exception e) {
+            LOG.error("Exception : " + e.getMessage());
+        }
+    }
+
+    private static void writeDicomFiles(List<String> files, ObjectType ot, OutputStream out) throws IOException {
+        String[] filesArray = files.toArray(new String[files.size()]);
+        Files.copy(Paths.get(filesArray[0]), out);
+        for (int i = 1; i < filesArray.length; i++) {
+            out.write(("\r\n--"+boundary+"\r\n").getBytes());
+            out.write(("Content-Type: " + ot.contentType + "\r\n").getBytes());
+            out.write("\r\n".getBytes());
+            Files.copy(Paths.get(filesArray[i]), out);
+        }
+    }
+
+    private static void writeMetdataAndBulkData(Attributes metadata, List<String> files, ObjectType ot, OutputStream out)
+            throws Exception {
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        if (ot.metadataType.equals("xml"))
+            SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
+        else
+            try (JsonGenerator gen = Json.createGenerator(bOut)) {
+                new JSONWriter(gen).write(metadata);
+            }
+        out.write(bOut.toByteArray());
+        out.write(("\r\n--"+boundary+"\r\n").getBytes());
+        out.write(("Content-Type: " + ot.bulkdataType + "\r\n").getBytes());
+        String contentLoc = ot.bulkdataType.equals("application/pdf")
+            ? ((BulkData) metadata.getValue(Tag.EncapsulatedDocument)).getURI()
+            : ((BulkData) metadata.getValue(Tag.PixelData)).getURI();
+        out.write(("Content-Location: " + contentLoc + "\r\n").getBytes());
+        out.write("\r\n".getBytes());
+        Files.copy(Paths.get(files.get(0)), out);
     }
 
     private static void coerceattributes(Attributes metadata, StowRS instance) {
@@ -235,112 +259,15 @@ public class StowRS {
         LOG.info(instance.keys.toString());
     }
 
-    private static void sendMetaDataAndBulkDataJSON(StowRS instance,
-            Attributes metadata, File bulkDataFile) throws IOException {
-
-        String contentTypeBulkData = null;
-        String bulkDataTransferSyntax = null;
-        URL newUrl = null;
-        try {
-            newUrl = new URL(instance.URL);
-        } catch (MalformedURLException e2) {
-            LOG.error("malformed url" + e2.getStackTrace().toString());
-        }
-        String boundary = "-------gc0p4Jq0M2Yt08jU534c0p";
-        HttpURLConnection connection = (HttpURLConnection) newUrl
-                .openConnection();
-        connection.setDoOutput(true);
-        connection.setDoInput(true);
-        connection.setInstanceFollowRedirects(false);
-        connection.setRequestMethod("POST");
-        if (isPDF) {
-            connection.setRequestProperty("Content-Type",
-                    "multipart/related; type=application/json; boundary="
-                            + boundary);
-            bulkDataTransferSyntax = "transfer-syntax=1.2.840.10008.1.2.1";
-            contentTypeBulkData = "application/pdf";
-        } else {
-            if (isExtension(bulkDataFile, "mpeg")) {
-                connection.setRequestProperty("Content-Type",
-                        "multipart/related; type=application/json; boundary="
-                                + boundary);
-                bulkDataTransferSyntax = "transfer-syntax=1.2.840.10008.1.2.4.100";
-                contentTypeBulkData = "video/mpeg";
-            } else if (isExtension(bulkDataFile, "jpeg")) {
-                connection.setRequestProperty("Content-Type",
-                        "multipart/related; type=application/json; boundary="
-                                + boundary);
-                bulkDataTransferSyntax = "transfer-syntax=1.2.840.10008.1.2.4.50";
-                contentTypeBulkData = "image/dicom+jpeg";
-            } else if (isExtension(bulkDataFile, "mp4")) {
-                connection.setRequestProperty("Content-Type",
-                        "multipart/related; type=application/json; boundary="
-                                + boundary);
-                bulkDataTransferSyntax = "transfer-syntax=1.2.840.10008.1.2.4.102";
-                contentTypeBulkData = "video/mp4";
-            } else {
-                throw new IllegalArgumentException(
-                        "Unsupported bulkdata (not MPEG2, MPEG4 or JPEG baseline)");
-            }
-        }
-
-        connection.setRequestProperty("Accept", "application/dicom+xml");
-        connection.setRequestProperty("charset", "utf-8");
-        connection.setUseCaches(false);
-
-        DataOutputStream wr;
-
-        wr = new DataOutputStream(connection.getOutputStream());
-        try {
-            wr.writeBytes("\r\n--" + boundary + "\r\n");
-            // write metadata
-            wr.writeBytes("Content-Type: application/json; transfer-syntax="
-                    + bulkDataTransferSyntax + " \r\n");
-
-            wr.writeBytes("\r\n");
-        } catch (IOException e1) {
-            LOG.error("Error writing metadata");
-        }
-        // here set pixel or document data attributes
-        if (!isPDF)
-            setPixelAttributes(bulkDataFile, metadata);
-        else
-            setPDFAttributes(bulkDataFile, metadata);
-        // coerce here before sending metadata
-        coerceattributes(metadata, instance);
-        JsonGenerator gen = Json.createGenerator(wr);
-        JSONWriter writer = new JSONWriter(gen);
-        writer.write(metadata);
-        gen.flush();
-        try {
-            wr.writeBytes("\r\n--" + boundary + "\r\n");
-            // write bulkdata
-            wr.writeBytes("Content-Type: " + contentTypeBulkData + " \r\n");
-            wr.writeBytes("Content-Location: " + "bulk" + " \r\n");
-            wr.writeBytes("\r\n");
-            byte[] bytes = getBytesFromFile(bulkDataFile);
-            wr.write(bytes);
-            wr.writeBytes("\r\n--" + boundary + "--\r\n");
-            wr.flush();
-            wr.close();
-            String response = connection.getResponseMessage();
-            LOG.info("response: " + response);
-            connection.disconnect();
-
-        } catch (IOException e) {
-            LOG.error("Error writing bulk data");
-        }
-    }
-
-    private static void setPDFAttributes(File bulkDataFile, Attributes metadata) {
+    private static void setPDFAttributes(Path bulkDataFile, Attributes metadata) {
         metadata.setString(Tag.SOPClassUID, VR.UI, UID.EncapsulatedPDFStorage);
         metadata.setInt(Tag.InstanceNumber, VR.IS, 1);
         metadata.setString(Tag.ContentDate, VR.DA,
-                DateUtils.formatDA(null, new Date(bulkDataFile.lastModified())));
+                DateUtils.formatDA(null, new Date(bulkDataFile.toFile().lastModified())));
         metadata.setString(Tag.ContentTime, VR.TM,
-                DateUtils.formatTM(null, new Date(bulkDataFile.lastModified())));
+                DateUtils.formatTM(null, new Date(bulkDataFile.toFile().lastModified())));
         metadata.setString(Tag.AcquisitionDateTime, VR.DT,
-                DateUtils.formatTM(null, new Date(bulkDataFile.lastModified())));
+                DateUtils.formatTM(null, new Date(bulkDataFile.toFile().lastModified())));
         metadata.setString(Tag.BurnedInAnnotation, VR.CS, "YES");
         metadata.setNull(Tag.DocumentTitle, VR.ST);
         metadata.setNull(Tag.ConceptNameCodeSequence, VR.SQ);
@@ -349,186 +276,14 @@ public class StowRS {
 
     }
 
-    private static boolean isExtension(File bulkDataFile, String string)
-            throws IOException {
-        if (string.compareToIgnoreCase("mpeg") == 0) {
-            if ((Files.probeContentType(bulkDataFile.toPath()) != null && ((Files
-                    .probeContentType(bulkDataFile.toPath())
-                    .compareToIgnoreCase("mpeg") == 0)
-                    || (Files.probeContentType(bulkDataFile.toPath())
-                            .compareToIgnoreCase("mpg") == 0)
-                    || (Files.probeContentType(bulkDataFile.toPath())
-                            .compareToIgnoreCase("m2v") == 0) || (Files
-                    .probeContentType(bulkDataFile.toPath())
-                    .compareToIgnoreCase("mpv") == 0)))
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("mpeg".toLowerCase())
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("mpg".toLowerCase())
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("mpv".toLowerCase())
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("m2v".toLowerCase())) {
-                return true;
-            }
-        }
 
-        else if (string.compareToIgnoreCase("jpeg") == 0) {
-            if ((Files.probeContentType(bulkDataFile.toPath()) != null && ((Files
-                    .probeContentType(bulkDataFile.toPath())
-                    .compareToIgnoreCase("jpeg") == 0)
-                    || (Files.probeContentType(bulkDataFile.toPath())
-                            .compareToIgnoreCase("jpg") == 0)
-                    || (Files.probeContentType(bulkDataFile.toPath())
-                            .compareToIgnoreCase("jfif") == 0) || (Files
-                    .probeContentType(bulkDataFile.toPath())
-                    .compareToIgnoreCase("jif") == 0)))
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("jpeg".toLowerCase())
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("jpg".toLowerCase())
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("jfif".toLowerCase())
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("jif".toLowerCase())) {
-                return true;
-            }
-        } else if (string.compareToIgnoreCase("mp4") == 0) {
-            if ((Files.probeContentType(bulkDataFile.toPath()) != null && ((Files
-                    .probeContentType(bulkDataFile.toPath())
-                    .compareToIgnoreCase("mp4") == 0)
-                    || (Files.probeContentType(bulkDataFile.toPath())
-                            .compareToIgnoreCase("m4a") == 0) || (Files
-                    .probeContentType(bulkDataFile.toPath())
-                    .compareToIgnoreCase("m4v") == 0)))
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("mp4".toLowerCase())
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("m4a".toLowerCase())
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("m4v".toLowerCase())) {
-                return true;
-            }
-
-        } else if (string.compareToIgnoreCase("pdf") == 0) {
-            if (Files.probeContentType(bulkDataFile.toPath()) != null
-                    && (Files.probeContentType(bulkDataFile.toPath())
-                            .compareToIgnoreCase("pdf") == 0)
-                    || bulkDataFile.getName().toLowerCase()
-                            .endsWith("pdf".toLowerCase())) {
-                return true;
-            }
-        } else
-            throw new IllegalArgumentException(
-                    "not a recognized bulk file type");
-
-        return false;
-
+    private static void setVideoAttributes(Attributes metadata) {
+        metadata.setString(Tag.SOPClassUID, VR.UI, UID.VideoEndoscopicImageStorage);
+        metadata.setInt(Tag.NumberOfFrames, VR.IS, 9999);
+        metadata.setInt(Tag.FrameIncrementPointer, VR.AT, Tag.FrameTime);
     }
 
-    private static void sendMetaDataAndBulkDataXML(StowRS instance,
-            Attributes metadata, File bulkDataFile) throws IOException {
-
-        String contentTypeBulkData;
-        String bulkDataTransferSyntax;
-        URL newUrl = null;
-        try {
-            newUrl = new URL(instance.URL);
-        } catch (MalformedURLException e2) {
-            LOG.error("malformed url" + e2.getStackTrace().toString());
-        }
-        String boundary = "-------gc0p4Jq0M2Yt08jU534c0p";
-        HttpURLConnection connection = (HttpURLConnection) newUrl
-                .openConnection();
-        connection.setDoOutput(true);
-        connection.setDoInput(true);
-        connection.setInstanceFollowRedirects(false);
-        connection.setRequestMethod("POST");
-        if (isPDF) {
-            connection.setRequestProperty("Content-Type",
-                    "multipart/related; type=application/dicom+xml; boundary="
-                            + boundary);
-            bulkDataTransferSyntax = "transfer-syntax=1.2.840.10008.1.2.1";
-            contentTypeBulkData = "application/pdf";
-        } else {
-            if (isExtension(bulkDataFile, "mpeg")) {
-                connection.setRequestProperty("Content-Type",
-                        "multipart/related; type=application/dicom+xml; boundary="
-                                + boundary);
-                bulkDataTransferSyntax = "transfer-syntax=1.2.840.10008.1.2.4.100";
-                contentTypeBulkData = "video/mpeg";
-            } else if (isExtension(bulkDataFile, "jpeg")) {
-                connection.setRequestProperty("Content-Type",
-                        "multipart/related; type=application/dicom+xml; boundary="
-                                + boundary);
-                bulkDataTransferSyntax = "transfer-syntax=1.2.840.10008.1.2.4.50";
-                contentTypeBulkData = "image/dicom+jpeg";
-            } else if (isExtension(bulkDataFile, "mp4")) {
-                connection.setRequestProperty("Content-Type",
-                        "multipart/related; type=application/dicom+xml; boundary="
-                                + boundary);
-                bulkDataTransferSyntax = "transfer-syntax=1.2.840.10008.1.2.4.102";
-                contentTypeBulkData = "video/mp4";
-            } else {
-                throw new IllegalArgumentException(
-                        "Unsupported bulkdata (not MPEG2, MPEG4 or JPEG baseline)");
-            }
-        }
-
-        connection.setRequestProperty("Accept", "application/dicom+xml");
-        connection.setRequestProperty("charset", "utf-8");
-        connection.setUseCaches(false);
-
-        DataOutputStream wr;
-
-        wr = new DataOutputStream(connection.getOutputStream());
-        try {
-            wr.writeBytes("\r\n--" + boundary + "\r\n");
-            // write metadata
-            wr.writeBytes("Content-Type: application/dicom+xml; transfer-syntax="
-                    + bulkDataTransferSyntax + " \r\n");
-
-            wr.writeBytes("\r\n");
-        } catch (IOException e1) {
-            LOG.error("Error writing metadata");
-        }
-        // here set pixel or document data attributes
-        if (!isPDF)
-            setPixelAttributes(bulkDataFile, metadata);
-        else
-            setPDFAttributes(bulkDataFile, metadata);
-        // coerce here before sending metadata
-        coerceattributes(metadata, instance);
-        try {
-            SAXTransformer.getSAXWriter(new StreamResult(wr)).write(metadata);
-        } catch (TransformerConfigurationException e) {
-            LOG.error("Error transforming xml" + e.getStackTrace().toString());
-        } catch (SAXException e) {
-            // exception wrapper
-        }
-        try {
-            wr.writeBytes("\r\n--" + boundary + "\r\n");
-            // write bulkdata
-            wr.writeBytes("Content-Type: " + contentTypeBulkData + " \r\n");
-            wr.writeBytes("Content-Location: " + "bulk" + " \r\n");
-            wr.writeBytes("\r\n");
-            byte[] bytes = getBytesFromFile(bulkDataFile);
-            wr.write(bytes);
-            wr.writeBytes("\r\n--" + boundary + "--\r\n");
-            wr.flush();
-            wr.close();
-            String response = connection.getResponseMessage();
-            LOG.info("response: " + response);
-            connection.disconnect();
-
-        } catch (IOException e) {
-            LOG.error("Error writing bulk data");
-        }
-
-    }
-
-    private static void setPixelAttributes(File bulkDataFile,
-            Attributes metadata) {
+    private static void setImageAttributes(Path bulkDataFile, Attributes metadata) {
         metadata.setString(Tag.SOPClassUID, VR.UI, UID.SecondaryCaptureImageStorage);
         metadata.setInt(Tag.NumberOfFrames, VR.IS, 1);
         metadata.setInt(Tag.InstanceNumber, VR.IS, 1);
@@ -537,15 +292,14 @@ public class StowRS {
         DataInputStream jpgInput;
         try {
             jpgInput = new DataInputStream(new BufferedInputStream(
-                    new FileInputStream(bulkDataFile)));
+                    new FileInputStream(bulkDataFile.toFile())));
 
             readHeader(metadata, jpgInput);
         } catch (FileNotFoundException e) {
-            LOG.error("Error reading the image file "
-                    + e.getStackTrace().toString());
+            LOG.error("File not found.");
         } catch (IOException e) {
             LOG.error("Error parsing jpeg header (malformed header) "
-                    + e.getStackTrace().toString());
+                    + e.getMessage());
         }
         ensureUS(metadata, Tag.BitsAllocated, 8);
         ensureUS(metadata, Tag.BitsStored, metadata.getInt(Tag.BitsAllocated,
@@ -631,100 +385,6 @@ public class StowRS {
         buffer = tmp;
     }
 
-    private static byte[] getBytesFromFile(File file) {
-        FileInputStream fis = null;
-        ByteArrayOutputStream bos = null;
-        try {
-            fis = new FileInputStream(file);
-            bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[1024];
-            try {
-                for (int readNum; (readNum = fis.read(buf)) != -1;) {
-                    bos.write(buf, 0, readNum);
-                }
-            } catch (IOException e) {
-                LOG.error(e.getStackTrace().toString());
-            }
-        } catch (FileNotFoundException e1) {
-            LOG.error("File not found" + e1.getStackTrace().toString());
-        } finally {
-            if (fis != null)
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    LOG.error("Error closing file {} , Exception: {}",
-                            file.getName(), e.getStackTrace().toString());
-                }
-        }
-
-        return bos.toByteArray();
-    }
-
-    private static File generateMetaData(CommandLine cl) {
-        
-        if (cl.getOptionValue("t").contains("JSON")){
-            LOG.info("No metadata file specified, using etc/stowrs/metadata.json");
-            return new File("../etc/stowrs/metadata.json");
-        }
-        else{
-            LOG.info("No metadata file specified, using etc/stowrs/metadata.xml");
-            return new File("../etc/stowrs/metadata.xml");
-        }
-    }
-
-    public void sendDicomFile(StowRS instance, File f) throws IOException,
-            InterruptedException {
-        doRequestDICOM(instance.URL, f);
-    }
-
-    private void doRequestDICOM(String url, File f) {
-        try {
-            URL newUrl = new URL(url);
-            String boundary = "-------gc0p4Jq0M2Yt08jU534c0p";
-            HttpURLConnection connection = (HttpURLConnection) newUrl
-                    .openConnection();
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-            connection.setInstanceFollowRedirects(false);
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type",
-                    "multipart/related; type=application/dicom; boundary="
-                            + boundary);
-            connection.setRequestProperty("Accept", "application/dicom+xml");
-            connection.setRequestProperty("charset", "utf-8");
-            connection.setUseCaches(false);
-
-            DataOutputStream wr;
-            wr = new DataOutputStream(connection.getOutputStream());
-            wr.writeBytes("\r\n--" + boundary + "\r\n");
-            wr.writeBytes("Content-Disposition: inline; name=\"file[]\"; filename=\""
-                    + f.getName() + "\"\r\n");
-            wr.writeBytes("Content-Type: application/dicom \r\n");
-            wr.writeBytes("\r\n");
-            FileInputStream fis = new FileInputStream(f);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[1024];
-            try {
-                for (int readNum; (readNum = fis.read(buf)) != -1;) {
-                    bos.write(buf, 0, readNum);
-                }
-            } catch (IOException e) {
-                LOG.error(e.getStackTrace().toString());
-            }
-            byte[] bytes = bos.toByteArray();
-            wr.write(bytes);
-            wr.writeBytes("\r\n--" + boundary + "--\r\n");
-            wr.flush();
-            wr.close();
-            String response = connection.getResponseMessage();
-            LOG.info("response: " + response);
-            connection.disconnect();
-        } catch (IOException e) {
-            LOG.error("error writing to http data output stream"
-                    + e.getStackTrace().toString());
-        }
-    }
-
     private static void ensureUID(Attributes attrs, int tag) {
         if (!attrs.containsValue(tag)) {
             attrs.setString(tag, VR.UI, UIDUtils.createUID());
@@ -737,25 +397,15 @@ public class StowRS {
         }
     }
 
-    public static Attributes parseJSON(String fname) throws Exception {
-        Attributes attrs = new Attributes();
-        parseJSON(fname, attrs);
-        return attrs;
-    }
+    static class ObjectType {
+        private String metadataType;
+        private String bulkdataType;
+        private String contentType;
 
-    private static JSONReader parseJSON(String fname, Attributes attrs)
-            throws IOException {
-        @SuppressWarnings("resource")
-        InputStream in = fname.equals("-") ? System.in : new FileInputStream(
-                fname);
-        try {
-            JSONReader reader = new JSONReader(
-                    Json.createParser(new InputStreamReader(in, "UTF-8")));
-            reader.readDataset(attrs);
-            return reader;
-        } finally {
-            if (in != System.in)
-                SafeClose.close(in);
+        ObjectType(String metadataType, String bulkdataType, String contentType) {
+            this.metadataType = metadataType;
+            this.bulkdataType = bulkdataType;
+            this.contentType = contentType;
         }
     }
 }

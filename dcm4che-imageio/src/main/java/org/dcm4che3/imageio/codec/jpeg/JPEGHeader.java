@@ -131,7 +131,7 @@ public class JPEGHeader {
             return null;
 
         if (attrs == null)
-            attrs = new Attributes(9);
+            attrs = new Attributes(10);
 
         int sof = data[offsetSOF] & 255;
         int p = data[offsetSOF+3] & 0xff;
@@ -153,6 +153,8 @@ public class JPEGHeader {
         attrs.setInt(Tag.BitsStored, VR.US, p);
         attrs.setInt(Tag.HighBit, VR.US, p - 1);
         attrs.setInt(Tag.PixelRepresentation, VR.US, 0);
+        if (!(sof == JPEG.SOF3 || (sof == JPEG.SOF55 && ss() == 0)))
+            attrs.setString(Tag.LossyImageCompression, VR.CS,  "01");
         return attrs;
     }
 

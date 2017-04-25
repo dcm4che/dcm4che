@@ -49,38 +49,26 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.stowrs.StowRS;
-import org.dcm4che3.tool.stowrs.StowRS.MetaDataType;
 
-/** @author Hesham Elbadawi <bsdreko@gmail.com> */
-public class StowRSTool implements TestTool {
+/**
+ * @author Hesham Elbadawi <bsdreko@gmail.com>
+ * 
+ */
+
+public class StowRSTool implements TestTool{
+
+    public enum StowMetaDataType {
+        JSON, XML, NO_METADATA_DICOM;
+    }
     private TestResult result;
     private final String url;
     private final Attributes keys = new Attributes();
-
-    /** New code should use {@link MetaDataType} instead. */
-    @Deprecated
-    public enum StowMetaDataType {
-        JSON, XML, NO_METADATA_DICOM;
-
-        public MetaDataType toNewEnum() {
-            switch(this) {
-            case JSON:
-                return MetaDataType.JSON;
-            case XML:
-                return MetaDataType.XML;
-            case NO_METADATA_DICOM:
-                return MetaDataType.NO_METADATA_DICOM;
-                default:
-                    throw new RuntimeException("Unknown enum value " + this);
-            }
-        }
-    }
 
     public StowRSTool(String url) {
         this.url = url;
     }
 
-    public void send(String testDescription, MetaDataType metadataType, List<File> files, String transferSyntax) throws IOException, InterruptedException {
+    public void send(String testDescription, StowMetaDataType metadataType, List<File> files, String transferSyntax) throws IOException, InterruptedException{
         long t1, t2;
         StowRS stowrs = new StowRS(keys, metadataType, files, url, transferSyntax);
         t1 = System.currentTimeMillis();
@@ -89,18 +77,8 @@ public class StowRSTool implements TestTool {
         init(new StowRSResult(testDescription, t2-t1, stowrs.getResponses()));
     }
 
-    public void send(String testDescription, MetaDataType metadataType, File file, String transferSyntax) throws IOException, InterruptedException {
-        send(testDescription, metadataType, Collections.singletonList(file), transferSyntax);
-    }
-
-    @Deprecated
-    public void send(String testDescription, StowMetaDataType metadataType, List<File> files, String transferSyntax) throws IOException, InterruptedException {
-        send(testDescription, metadataType.toNewEnum(), files, transferSyntax);
-    }
-
-    @Deprecated
     public void send(String testDescription, StowMetaDataType metadataType, File file, String transferSyntax) throws IOException, InterruptedException{
-        send(testDescription, metadataType.toNewEnum(), Collections.singletonList(file), transferSyntax);
+        send(testDescription, metadataType, Collections.singletonList(file), transferSyntax);
     }
 
     public void overrideTag(int tag, String value) throws Exception {
@@ -121,4 +99,5 @@ public class StowRSTool implements TestTool {
     public String getUrl() {
         return url;
     }
+    
 }

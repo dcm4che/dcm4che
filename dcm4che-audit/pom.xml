@@ -51,12 +51,11 @@
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
-      <version>2.1</version>
+      <version>2.2.12</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.2</version>
       <type>jar</type>
       <scope>test</scope>
     </dependency>
@@ -66,7 +65,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jaxb2-maven-plugin</artifactId>
-        <version>1.5</version>
+        <version>2.3.1</version>
         <executions>
           <execution>
             <id>xjc</id>
@@ -77,7 +76,6 @@
         </executions>
         <configuration>
           <packageName>org.dcm4che3.audit</packageName>
-          <bindingFiles>bindings.xml</bindingFiles>
         </configuration>
       </plugin>
       <plugin>

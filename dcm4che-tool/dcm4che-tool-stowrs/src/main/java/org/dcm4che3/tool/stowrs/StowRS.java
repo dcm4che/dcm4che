@@ -183,11 +183,15 @@ public class StowRS {
             case "mpeg":
                 bulkdataType = "video/mpeg";
                 readPixelHeader(instance, metadata, bulkdataFile, true);
+                if (metadata.getString(Tag.SOPClassUID) == null)
+                    metadata.setString(Tag.SOPClassUID, VR.UI, UID.VideoPhotographicImageStorage);
                 break;
             case "jpeg":
             case "jpg":
                 bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline1;
                 readPixelHeader(instance, metadata, bulkdataFile, false);
+                if (metadata.getString(Tag.SOPClassUID) == null)
+                    metadata.setString(Tag.SOPClassUID, VR.UI, UID.SecondaryCaptureImageStorage);
                 break;
             default:
                 throw new IllegalArgumentException("unsupported extension for bulkdata");
@@ -215,14 +219,10 @@ public class StowRS {
         byte[] b16384 = new byte[16384];
         StreamUtils.readAvailable(bis, b16384, 0, 16384);
         if (isMpeg) {
-            if (metadata.getString(Tag.SOPClassUID) == null)
-                metadata.setString(Tag.SOPClassUID, VR.UI, UID.VideoPhotographicImageStorage);
             MPEGHeader mpegHeader = new MPEGHeader(b16384);
             mpegHeader.toAttributes(metadata, Files.size(bulkdataFile));
             return;
         }
-        if (metadata.getString(Tag.SOPClassUID) == null)
-            metadata.setString(Tag.SOPClassUID, VR.UI, UID.SecondaryCaptureImageStorage);
         instance.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
         instance.jpegHeader.toAttributes(metadata);
     }

@@ -44,6 +44,7 @@ set CP=%DCM4CHE_HOME%\etc\stowrs\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-json-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.5.jar

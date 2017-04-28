@@ -250,24 +250,35 @@ public class StowRS {
 
     private static void readPixelHeader(StowRS instance, Attributes metadata, Path bulkdataFile, boolean isMpeg)
             throws IOException {
-        if (metadata.getValue(Tag.PixelData) == null)
-            metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
-        if (!instance.pixelHeader)
-            return;
-        BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(bulkdataFile));
-        byte[] b16384 = new byte[16384];
-        StreamUtils.readAvailable(bis, b16384, 0, 16384);
-        if (isMpeg) {
-            MPEGHeader mpegHeader = new MPEGHeader(b16384);
-            mpegHeader.toAttributes(metadata, Files.size(bulkdataFile));
-            return;
+        BufferedInputStream bis = null;
+        InputStream is = null;
+        try {
+            if (metadata.getValue(Tag.PixelData) == null)
+                metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
+            if (!instance.pixelHeader)
+                return;
+            is = Files.newInputStream(bulkdataFile);
+            bis = new BufferedInputStream(is);
+            byte[] b16384 = new byte[16384];
+            StreamUtils.readAvailable(bis, b16384, 0, 16384);
+            if (isMpeg) {
+                MPEGHeader mpegHeader = new MPEGHeader(b16384);
+                mpegHeader.toAttributes(metadata, Files.size(bulkdataFile));
+                return;
+            }
+            instance.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
+            instance.jpegHeader.toAttributes(metadata);
+        } finally {
+            if (bis != null)
+                bis.close();
+            if (is != null)
+                is.close();
         }
-        instance.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
-        instance.jpegHeader.toAttributes(metadata);
     }
 
     private static void stow(StowRS instance, Attributes metadata, List<String> files)
             throws Exception {
+        OutputStream out = null;
         try {
             URL newUrl = new URL(instance.URL);
             final HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
@@ -277,7 +288,7 @@ public class StowRS {
             connection.setRequestProperty("Content-Type",
                     "multipart/related; type=" + instance.contentType + "; boundary=" + boundary);
             connection.setRequestProperty("Accept", instance.accept);
-            OutputStream out = connection.getOutputStream();
+            out = connection.getOutputStream();
             out.write(("\r\n--" + boundary + "\r\n").getBytes());
             out.write(("Content-Type: " + instance.contentType + "\r\n").getBytes());
             out.write("\r\n".getBytes());
@@ -289,6 +300,9 @@ public class StowRS {
             LOG.info("STOW successful!");
         } catch (Exception e) {
             LOG.error("Exception : " + e.getMessage());
+        } finally {
+            if (out != null)
+                out.close();
         }
     }
 
@@ -305,22 +319,33 @@ public class StowRS {
         LOG.info("< Content-Type: " + connection.getContentType());
         LOG.info("< Date: " + connection.getLastModified());
         LOG.info("< Response Content: ");
-        LOG.debug(readFullyAsString(connection.getInputStream(), "UTF-8"));
+        InputStream is = null;
+        try {
+            is = connection.getInputStream();
+            LOG.debug(readFullyAsString(is));
+        } finally {
+            if (is != null)
+                is.close();
+        }
     }
 
-    private static String readFullyAsString(InputStream inputStream, String encoding)
+    private static String readFullyAsString(InputStream inputStream)
             throws IOException {
-        return readFully(inputStream).toString(encoding);
+        return readFully(inputStream).toString("UTF-8");
     }
 
     private static ByteArrayOutputStream readFully(InputStream inputStream) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[16384];
-        int length;
-        while ((length = inputStream.read(buffer)) != -1) {
-            baos.write(buffer, 0, length);
+        try {
+            byte[] buffer = new byte[16384];
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                baos.write(buffer, 0, length);
+            }
+            return baos;
+        } finally {
+            baos.close();
         }
-        return baos;
     }
 
     private static void writeData(StowRS instance, Attributes metadata, List<String> files,
@@ -342,31 +367,35 @@ public class StowRS {
                                                 Attributes metadata, List<String> files, OutputStream out)
             throws Exception {
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        if (instance.contentType.equals("application/dicom+xml"))
-            SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
-        else
-            try (JsonGenerator gen = Json.createGenerator(bOut)) {
-                new JSONWriter(gen).write(metadata);
-            }
-        LOG.debug("Metadata being sent is : " + bOut.toString());
-        out.write(bOut.toByteArray());
-        out.write(("\r\n--"+boundary+"\r\n").getBytes());
-        out.write(("Content-Type: " + instance.bulkdataType + "\r\n").getBytes());
-        String contentLoc = instance.bulkdataType.equals("application/pdf")
-                ? ((BulkData) metadata.getValue(Tag.EncapsulatedDocument)).getURI()
-                : ((BulkData) metadata.getValue(Tag.PixelData)).getURI();
-        out.write(("Content-Location: " + contentLoc + "\r\n").getBytes());
-        out.write("\r\n".getBytes());
-        Path file = Paths.get(files.get(0));
-        byte[] b = Files.readAllBytes(file);
-        if (instance.jpegHeader != null && instance.noAppn) {
-            int i = instance.jpegHeader.offsetAfterAPP();
-            out.write(-1);
-            out.write((byte)JPEG.SOI);
-            out.write(-1);
-            out.write(b, i, (int) Files.size(file) - i);
-        } else
-            out.write(b);
+        try {
+            if (instance.contentType.equals("application/dicom+xml"))
+                SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
+            else
+                try (JsonGenerator gen = Json.createGenerator(bOut)) {
+                    new JSONWriter(gen).write(metadata);
+                }
+            LOG.debug("Metadata being sent is : " + bOut.toString());
+            out.write(bOut.toByteArray());
+            out.write(("\r\n--" + boundary + "\r\n").getBytes());
+            out.write(("Content-Type: " + instance.bulkdataType + "\r\n").getBytes());
+            String contentLoc = instance.bulkdataType.equals("application/pdf")
+                    ? ((BulkData) metadata.getValue(Tag.EncapsulatedDocument)).getURI()
+                    : ((BulkData) metadata.getValue(Tag.PixelData)).getURI();
+            out.write(("Content-Location: " + contentLoc + "\r\n").getBytes());
+            out.write("\r\n".getBytes());
+            Path file = Paths.get(files.get(0));
+            byte[] b = Files.readAllBytes(file);
+            if (instance.jpegHeader != null && instance.noAppn) {
+                int i = instance.jpegHeader.offsetAfterAPP();
+                out.write(-1);
+                out.write((byte) JPEG.SOI);
+                out.write(-1);
+                out.write(b, i, (int) Files.size(file) - i);
+            } else
+                out.write(b);
+        } finally {
+            bOut.close();
+        }
     }
 
     private static void coerceAttributes(Attributes metadata, StowRS instance) {

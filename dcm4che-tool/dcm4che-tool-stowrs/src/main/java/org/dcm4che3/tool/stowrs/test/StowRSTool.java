@@ -70,11 +70,13 @@ public class StowRSTool implements TestTool{
 
     public void send(String testDescription, StowMetaDataType metadataType, List<File> files, String transferSyntax) throws IOException, InterruptedException{
         long t1, t2;
-        StowRS stowrs = new StowRS(keys, metadataType, files, url, transferSyntax);
         t1 = System.currentTimeMillis();
-        stowrs.stow();
         t2 = System.currentTimeMillis();
-        init(new StowRSResult(testDescription, t2-t1, stowrs.getResponses()));
+        //Merging the STOW-RS tool refactored code from dcm4chee-arc-light branch to master branch; refer comments by @hczedik in the same issue.
+        //Below code broken after the refactoring of STOW-RS tool dcm4che/dcm4chee-arc-light#651 : Refactor STOW-RS tool.
+        //StowRS stowrs = new StowRS(keys, metadataType, files, url, transferSyntax);
+        //stowrs.stow();
+        //init(new StowRSResult(testDescription, t2-t1, stowrs.getResponses()));
     }
 
     public void send(String testDescription, StowMetaDataType metadataType, File file, String transferSyntax) throws IOException, InterruptedException{

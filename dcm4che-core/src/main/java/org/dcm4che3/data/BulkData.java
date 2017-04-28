@@ -111,6 +111,10 @@ public class BulkData implements Value {
         this.bigEndian = bigEndian;
     }
 
+    public String getURI() {
+        return uri;
+    }
+
     /**
      * Returns a {@code BulkData} instance combining all {@code BulkData} instances in {@code bulkDataFragments}.
      *

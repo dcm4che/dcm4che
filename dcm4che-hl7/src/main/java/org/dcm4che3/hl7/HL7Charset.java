@@ -60,6 +60,8 @@ public abstract class HL7Charset {
             case '2':
                 if (code.equals("8859/2"))
                     return "ISO-8859-2";
+                if (code.equals("CNS 11643-1992"))
+                    return "TIS-620";
                 break;
             case '3':
                 if (code.equals("8859/3"))
@@ -116,11 +118,13 @@ public abstract class HL7Charset {
                 if (code.equals("8859/1"))
                     return "ISO_IR 100";
                 if (code.equals("KS X 1001"))
-                    return "EUC-KR";
+                    return "ISO 2022 IR 149";
                 break;
             case '2':
                 if (code.equals("8859/2"))
                     return "ISO_IR 101";
+                if (code.equals("CNS 11643-1992"))
+                    return "ISO_IR 166";
                 break;
             case '3':
                 if (code.equals("8859/3"))
@@ -130,7 +134,7 @@ public abstract class HL7Charset {
                 if (code.equals("8859/4"))
                     return "ISO_IR 110";
                 if (code.equals("ISO IR14"))
-                    return "JIS_X0201";
+                    return "ISO_IR 13";
                 break;
             case '5':
                 if (code.equals("8859/5"))

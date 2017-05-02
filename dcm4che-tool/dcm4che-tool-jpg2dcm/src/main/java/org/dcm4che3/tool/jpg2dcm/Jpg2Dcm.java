@@ -39,9 +39,6 @@
 package org.dcm4che3.tool.jpg2dcm;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
 import java.util.ResourceBundle;
 
@@ -90,14 +87,14 @@ public class Jpg2Dcm {
     private Attributes keys;
     private String metadataFile;
     private JPEGHeader jpegHeader;
-    private Path pixelDataFile;
+    private File pixelDataFile;
 
     public Jpg2Dcm() {
     }
 
     public void convert(Attributes metadata, Jpg2Dcm jpg2Dcm, File dcmFile)
             throws IOException {
-        File pixelDataFile = jpg2Dcm.pixelDataFile.toFile();
+        File pixelDataFile = jpg2Dcm.pixelDataFile;
         headerLen = 0;
         fileLen = (int) pixelDataFile.length();
         BufferedInputStream input = new BufferedInputStream(new FileInputStream(pixelDataFile));
@@ -148,8 +145,8 @@ public class Jpg2Dcm {
             jpg2Dcm.metadataFile = cl.getOptionValue("f");
             if (cl.getArgs().length < 2)
                 throw new MissingArgumentException("Either input pixel data file or output binary file is missing. See example in jpg2dcm help.");
-            jpg2Dcm.pixelDataFile = Paths.get(cl.getArgs()[0]);
-            Extension ext = getExt(jpg2Dcm.pixelDataFile.toFile().getName());
+            jpg2Dcm.pixelDataFile = new File(cl.getArgs()[0]);
+            Extension ext = getExt(jpg2Dcm.pixelDataFile.getName());
             Attributes metadata = getMetadata(jpg2Dcm, ext);
             jpg2Dcm.noAPPn = Boolean.valueOf(cl.getOptionValue("na"));
 
@@ -192,7 +189,7 @@ public class Jpg2Dcm {
             String metadataFileExt = metadataFile.substring(metadataFile.lastIndexOf(".")+1).toLowerCase();
             if (!metadataFileExt.equals("xml"))
                 throw new IllegalArgumentException("Metadata file extension not supported. Read -f option in jpg2dcm help");
-            Path filePath = Paths.get(metadataFile);
+            File filePath = new File(metadataFile);
             metadata = SAXReader.parse(filePath.toString());
         }
         coerceAttributes(metadata, jpg2Dcm);
@@ -227,7 +224,7 @@ public class Jpg2Dcm {
     private static void coerceAttributes(Attributes metadata, Jpg2Dcm jpg2Dcm) {
         if (jpg2Dcm.keys.tags().length > 0)
             LOG.info("Coercing the following keys from specified attributes to metadata:");
-        metadata.update(Attributes.UpdatePolicy.OVERWRITE, jpg2Dcm.keys, new Attributes());
+        metadata.addAll(jpg2Dcm.keys);
         metadata.setString(Tag.SpecificCharacterSet, VR.CS, metadata.getString(Tag.SpecificCharacterSet, jpg2Dcm.charset));
         LOG.info(jpg2Dcm.keys.toString());
     }
@@ -243,18 +240,18 @@ public class Jpg2Dcm {
         throw new IllegalArgumentException("Specified file for conversion is not Pixel Data Type. Read jpg2dcm help for supported extension types.");
     }
 
-    private static void readPixelHeader(Jpg2Dcm jpg2Dcm, Attributes metadata, Path pixelDataFile, boolean isMpeg)
+    private static void readPixelHeader(Jpg2Dcm jpg2Dcm, Attributes metadata, File pixelDataFile, boolean isMpeg)
             throws IOException {
         BufferedInputStream bis = null;
-        InputStream is = null;
+        FileInputStream is = null;
         try {
-            is = Files.newInputStream(pixelDataFile);
+            is = new FileInputStream(pixelDataFile);
             bis = new BufferedInputStream(is);
             byte[] b16384 = new byte[16384];
-            StreamUtils.readAvailable(bis, b16384, 0, 16384);
+            StreamUtils.readFully(bis, b16384, 0, 16384);
             if (isMpeg) {
                 MPEGHeader mpegHeader = new MPEGHeader(b16384);
-                mpegHeader.toAttributes(metadata, Files.size(pixelDataFile));
+                mpegHeader.toAttributes(metadata, pixelDataFile.length());
                 return;
             }
             jpg2Dcm.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);

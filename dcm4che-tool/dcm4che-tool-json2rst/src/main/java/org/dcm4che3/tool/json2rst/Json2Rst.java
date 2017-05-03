@@ -99,19 +99,41 @@ public class Json2Rst {
     }
 
     private void writeTo(JsonObject doc, PrintStream out, String outFileName) throws IOException {
-        writeHeader(doc, out, outFileName);
+        String title = doc.getString("title");
+        writeHeader(doc, out);
         ArrayList<String> refs = new ArrayList<>();
-        writePropertiesTo(doc, out, refs);
+        findRefs(doc, refs);
         if (!refs.isEmpty())
             writeTocTree(refs, out);
+        writeAttributesHeader(out, outFileName, title);
+        writePropertiesTo(doc, out);
     }
 
-    private void writeHeader(JsonObject doc, PrintStream out, String outFileName) {
+    private void writeHeader(JsonObject doc, PrintStream out) {
         String title = doc.getString("title");
         out.println(title);
         out.println(UNDERLINE.substring(0, title.length()));
         out.println(doc.getString("description"));
         out.println();
+    }
+
+    private void findRefs(JsonObject doc, ArrayList<String> refs) {
+        JsonObject properties = doc.getJsonObject("properties");
+        for (String name : properties.keySet()) {
+            JsonObject property = properties.getJsonObject(name);
+            JsonObject items = property.getJsonObject("items");
+            JsonObject typeObj = items == null ? property : items;
+            if (typeObj.containsKey("$ref")) {
+                String ref = typeObj.getString("$ref");
+                if (totRefs.add(ref)) {
+                    refs.add(ref);
+                    inFiles.add(new File(indir, ref));
+                }
+            }
+        }
+    }
+
+    private void writeAttributesHeader(PrintStream out, String outFileName, String title) {
         out.print(".. tabularcolumns:: ");
         out.println(tabularColumns);
         out.print(".. csv-table:: ");
@@ -144,7 +166,7 @@ public class Json2Rst {
         }
     }
 
-    private void writePropertiesTo(JsonObject doc, PrintStream out, ArrayList<String> refs) throws IOException {
+    private void writePropertiesTo(JsonObject doc, PrintStream out) throws IOException {
         JsonObject properties = doc.getJsonObject("properties");
         HashSet<String> required = new HashSet<>();
         JsonArray jsonArray = doc.getJsonArray("required");
@@ -154,15 +176,12 @@ public class Json2Rst {
             }
         for (String name : properties.keySet()) {
             JsonObject property = properties.getJsonObject(name);
-            if (property.containsKey("properties"))
-                writePropertiesTo(property, out, refs);
-            else
-                writePropertyTo(property, required.contains(name), name, out, refs);
+            writePropertyTo(property, required.contains(name), name, out);
         }
     }
 
-    private void writePropertyTo(JsonObject property, boolean required, String name, PrintStream out,
-                                 ArrayList<String> refs) throws IOException {
+    private void writePropertyTo(JsonObject property, boolean required, String name, PrintStream out)
+            throws IOException {
         JsonObject items = property.getJsonObject("items");
         JsonObject typeObj = items == null ? property : items;
         out.print("    \"");
@@ -174,10 +193,6 @@ public class Json2Rst {
             out.print(ref.substring(0, ref.length()-12));
             out.print("` ");
             if (items != null) out.print("(s)");
-            if (totRefs.add(ref)) {
-                refs.add(ref);
-                inFiles.add(new File(indir, ref));
-            }
         } else {
             type = typeObj.getString("type");
             if (required) out.print("**");

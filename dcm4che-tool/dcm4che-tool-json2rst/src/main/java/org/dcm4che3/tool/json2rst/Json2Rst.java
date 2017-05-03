@@ -114,7 +114,6 @@ public class Json2Rst {
         out.println(title);
         out.println(UNDERLINE.substring(0, title.length()));
         out.println(doc.getString("description"));
-        out.println();
     }
 
     private void findRefs(JsonObject doc, ArrayList<String> refs) {
@@ -134,6 +133,7 @@ public class Json2Rst {
     }
 
     private void writeAttributesHeader(PrintStream out, String outFileName, String title) {
+        out.println();
         out.print(".. tabularcolumns:: ");
         out.println(tabularColumns);
         out.print(".. csv-table:: ");

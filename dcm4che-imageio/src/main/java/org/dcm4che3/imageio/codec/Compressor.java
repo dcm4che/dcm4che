@@ -37,32 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.imageio.codec;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.data.Value;
-import org.dcm4che3.image.Overlays;
-import org.dcm4che3.image.PhotometricInterpretation;
-import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
-import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
-import org.dcm4che3.io.DicomEncodingOptions;
-import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.util.ByteUtils;
-import org.dcm4che3.util.Property;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.IIOImage;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
@@ -75,6 +49,35 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
+
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.Fragments;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
+import org.dcm4che3.data.Value;
+import org.dcm4che3.image.Overlays;
+import org.dcm4che3.image.PhotometricInterpretation;
+import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderItem;
+import org.dcm4che3.imageio.codec.ImageWriterFactory.ImageWriterItem;
+import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
+import org.dcm4che3.io.DicomEncodingOptions;
+import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.Property;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Compresses the pixel data of DICOM images to a lossless or lossy encapsulated transfer syntax format.
@@ -138,19 +141,18 @@ public class Compressor implements Closeable {
 
         embeddedOverlays = Overlays.getEmbeddedOverlayGroupOffsets(dataset);
 
-        ImageWriterFactory.ImageWriterParam param =
-                ImageWriterFactory.getImageWriterParam(compressTsuid);
-        if (param == null)
+        ImageWriterItem writer = ImageWriterFactory.getImageWriterParam(compressTsuid);
+        if (writer == null)
             throw new UnsupportedOperationException(
                     "Unsupported Transfer Syntax: " + compressTsuid);
 
-        this.compressor = ImageWriterFactory.getImageWriter(param);
+        this.compressor = writer.getImageWriter();
         LOG.debug("Compressor: {}", compressor.getClass().getName());
-        this.compressPatchJPEGLS = param.patchJPEGLS;
+        this.compressPatchJPEGLS = writer.getImageWriterParam().getPatchJPEGLS();
 
         this.compressParam = compressor.getDefaultWriteParam();
         int count = 0;
-        for (Property property : cat(param.getImageWriteParams(), compressParams)) {
+        for (Property property : cat(writer.getImageWriterParam().getImageWriteParams(), compressParams)) {
             String name = property.getName();
             if (name.equals("maxPixelValueError")) {
                 maxPixelValueError = ((Number) property.getValue()).intValue();
@@ -168,13 +170,12 @@ public class Compressor implements Closeable {
         }
 
         if (maxPixelValueError >= 0) {
-            ImageReaderFactory.ImageReaderParam readerParam =
-                    ImageReaderFactory.getImageReaderParam(compressTsuid);
-            if (readerParam == null)
+            ImageReaderItem readerItem = ImageReaderFactory.getImageReader(compressTsuid);
+            if (readerItem == null)
                 throw new UnsupportedOperationException(
-                        "Unsupported Transfer Syntax: " + compressTsuid);
-
-            this.verifier = ImageReaderFactory.getImageReader(readerParam);
+                    "Unsupported Transfer Syntax: " + compressTsuid);
+            
+            this.verifier = readerItem.getImageReader();
             this.verifyParam = verifier.getDefaultReadParam();
             LOG.debug("Verifier: {}", verifier.getClass().getName());
         }

@@ -40,6 +40,7 @@
 package org.dcm4che3.imageio.codec;
 
 import org.dcm4che3.data.*;
+import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderItem;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.stream.SegmentedImageInputStream;
@@ -87,12 +88,12 @@ public class StreamDecompressor implements CoerceAttributes {
         if (tsType == null)
             throw new IllegalArgumentException("Unknown Transfer Syntax: " + tsuid);
         if (tsType.isPixeldataEncapsulated()) {
-            ImageReaderFactory.ImageReaderParam param = ImageReaderFactory.getImageReaderParam(tsuid);
-            if (param == null)
+            ImageReaderItem readerItem = ImageReaderFactory.getImageReader(tsuid);
+            if (readerItem == null)
                 throw new IllegalArgumentException("Unsupported Transfer Syntax: " + tsuid);
-            this.decompressor = ImageReaderFactory.getImageReader(param);
+            this.decompressor = readerItem.getImageReader();
             LOG.debug("Decompressor: {}", decompressor.getClass().getName());
-            this.patchJPEGLS = param.getPatchJPEGLS();
+            this.patchJPEGLS = readerItem.getImageReaderParam().getPatchJPEGLS();
         }
         this.dataset = new Attributes(in.bigEndian(), 64);
     }

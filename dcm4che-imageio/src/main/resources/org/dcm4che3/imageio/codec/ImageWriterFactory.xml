@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ImageWriterFactory>
+	<element tsuid="1.2.840.10008.1.2.4.50">
+		<writer format="jpeg" name="Sun native jpeg encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" />
+		<writer format="jpeg" name="Default available jpeg encoder"
+			class="*" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.51">
+		<writer format="jpeg" name="Sun native jpeg encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.57">
+		<writer format="jpeg" name="Sun native jpeg encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter"
+			params="compressionType=JPEG-LOSSLESS" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.70">
+		<writer format="jpeg" name="Sun native jpeg encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter"
+			params="compressionType=JPEG-LOSSLESS" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.80">
+		<writer format="jpeg-ls" name="Native CharLS jpeg encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,windows-x86-64,macosx-x86-64"
+			class="org.weasis.jpeg.NativeJLSImageWriter" />
+		<writer format="jpeg" name="Sun native jpeg-ls encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter"
+			patchJPEGLS="JAI2ISO" params="compressionType=JPEG-LS" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.81">
+		<writer format="jpeg-ls" name="Native CharLS jpeg encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,windows-x86-64,macosx-x86-64"
+			class="org.weasis.jpeg.NativeJLSImageWriter" />
+		<writer format="jpeg" name="Sun native jpeg-ls encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter"
+			params="compressionType=JPEG-LS" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.90">
+		<writer format="jpeg2000" name="Sun native j2k encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageWriterCodecLib"
+			params="writeCodeStreamOnly=true" />
+		<writer format="jpeg2000" name="Sun pure Java j2k encoder"
+			class="com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageWriter"
+			params="writeCodeStreamOnly=true" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.91">
+		<writer format="jpeg2000" name="Sun native j2k encoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageWriterCodecLib"
+			params="writeCodeStreamOnly=true" />
+		<writer format="jpeg2000" name="Sun pure Java j2k encoder"
+			class="com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageWriter"
+			params="writeCodeStreamOnly=true" />
+	</element>
+</ImageWriterFactory>
+

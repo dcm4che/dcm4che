@@ -38,6 +38,28 @@
 
 package org.dcm4che3.imageio.codec;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
@@ -49,20 +71,6 @@ import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.TreeMap;
 
 /**
  * Provides Image Writers for different DICOM transfer syntaxes and MIME types.
@@ -98,34 +106,34 @@ public class ImageWriterFactory implements Serializable {
         @ConfigurableProperty(name = "dcmWriteIIOMetadata")
         public Property[] iioMetadata;
 
+        private String name;
+
         public ImageWriterParam() {
         }
 
-        public ImageWriterParam(String formatName, String className,
-                PatchJPEGLS patchJPEGLS, Property[] imageWriteParams, Property[] iioMetadata) {
+        public ImageWriterParam(String formatName, String className, PatchJPEGLS patchJPEGLS,
+            Property[] imageWriteParams, Property[] iioMetadata, String name) {
+            if (formatName == null || name == null)
+                throw new IllegalArgumentException();
             this.formatName = formatName;
             this.className = nullify(className);
             this.patchJPEGLS = patchJPEGLS;
             this.imageWriteParams = imageWriteParams;
             this.iioMetadata = iioMetadata;
+            this.name = name;
         }
 
-        public ImageWriterParam(String formatName, String className,
-                String patchJPEGLS, String[] imageWriteParams, String[] iioMetadata) {
-            this(formatName, className, patchJPEGLS != null
-                    && !patchJPEGLS.isEmpty() ? PatchJPEGLS
-                    .valueOf(patchJPEGLS) : null, Property
-                    .valueOf(imageWriteParams), Property.valueOf(iioMetadata));
+        public ImageWriterParam(String formatName, String className, String patchJPEGLS, String[] imageWriteParams,
+            String[] iioMetadata, String name) {
+            this(formatName, className, patchJPEGLS != null && !patchJPEGLS.isEmpty() ? PatchJPEGLS
+                .valueOf(patchJPEGLS) : null, Property.valueOf(imageWriteParams), Property.valueOf(iioMetadata), name);
         }
 
-        public ImageWriterParam(String formatName, String className,
-                String patchJPEGLS, String[] imageWriteParams) {
-            this(formatName, className, patchJPEGLS != null
-                    && !patchJPEGLS.isEmpty() ? PatchJPEGLS
-                    .valueOf(patchJPEGLS) : null, Property
-                    .valueOf(imageWriteParams), null);
+        public ImageWriterParam(String formatName, String className, String patchJPEGLS, String[] imageWriteParams,
+            String name) {
+            this(formatName, className, patchJPEGLS != null && !patchJPEGLS.isEmpty() ? PatchJPEGLS
+                .valueOf(patchJPEGLS) : null, Property.valueOf(imageWriteParams), null, name);
         }
-
 
         public Property[] getImageWriteParams() {
             return imageWriteParams;
@@ -170,9 +178,32 @@ public class ImageWriterFactory implements Serializable {
         public void setIioMetadata(Property[] iioMetadata) {
             this.iioMetadata = iioMetadata;
         }
+
+        public String tosString() {
+            return name;
+        }
     }
 
-    private static ImageWriterFactory defaultFactory;
+    public static class ImageWriterItem {
+
+        private final ImageWriter imageWriter;
+        private final ImageWriterParam imageWriterParam;
+
+        public ImageWriterItem(ImageWriter imageReader, ImageWriterParam imageReaderParam) {
+            this.imageWriter = imageReader;
+            this.imageWriterParam = imageReaderParam;
+        }
+
+        public ImageWriter getImageWriter() {
+            return imageWriter;
+        }
+
+        public ImageWriterParam getImageWriterParam() {
+            return imageWriterParam;
+        }
+    }
+
+    private static volatile ImageWriterFactory defaultFactory;
 
     @LDAP(distinguishingField = "dicomTransferSyntax", noContainerNode = true)
     @ConfigurableProperty(
@@ -180,28 +211,30 @@ public class ImageWriterFactory implements Serializable {
         label = "Image Writers by transfer syntax",
         description = "Image writers by transfer syntax"
     )
-    private Map<String, ImageWriterParam> mapTransferSyntaxUIDs = new TreeMap<String, ImageWriterParam>();
+
+    private Map<String, List<ImageWriterParam>> mapTransferSyntaxUIDs = new LinkedHashMap<String, List<ImageWriterParam>>();
+
     
     @ConfigurableProperty(
             name="dicomImageWriterMapMime",
             label = "Image Writers by MIME type",
             description = "Image writers by MIME type"
     )
-    private Map<String, ImageWriterParam> mapMimeTypes = new TreeMap<String, ImageWriterParam>();
+    private Map<String, List<ImageWriterParam>> mapMimeTypes = new TreeMap<String, List<ImageWriterParam>>();
 
-    public Map<String, ImageWriterParam> getMapTransferSyntaxUIDs() {
+    public Map<String, List<ImageWriterParam>> getMapTransferSyntaxUIDs() {
         return mapTransferSyntaxUIDs;
     }
 
-    public void setMapTransferSyntaxUIDs(Map<String, ImageWriterParam> mapTransferSyntaxUIDs) {
+    public void setMapTransferSyntaxUIDs(Map<String, List<ImageWriterParam>> mapTransferSyntaxUIDs) {
         this.mapTransferSyntaxUIDs = mapTransferSyntaxUIDs;
     }
 
-    public Map<String, ImageWriterParam> getMapMimeTypes() {
+    public Map<String, List<ImageWriterParam>> getMapMimeTypes() {
         return mapMimeTypes;
     }
 
-    public void setMapMimeTypes(Map<String, ImageWriterParam> mapMimeTypes) {
+    public void setMapMimeTypes(Map<String, List<ImageWriterParam>> mapMimeTypes) {
         this.mapMimeTypes = mapMimeTypes;
     }
 
@@ -229,8 +262,8 @@ public class ImageWriterFactory implements Serializable {
 
     private static ImageWriterFactory initDefault() {
         ImageWriterFactory factory = new ImageWriterFactory();
-        String name = System.getProperty(ImageWriterFactory.class.getName(),
-                "org/dcm4che3/imageio/codec/ImageWriterFactory.properties");
+        String name =
+            System.getProperty(ImageWriterFactory.class.getName(), "org/dcm4che3/imageio/codec/ImageWriterFactory.xml");
         try {
             factory.load(name);
         } catch (Exception e) {
@@ -248,28 +281,115 @@ public class ImageWriterFactory implements Serializable {
         if (LOG.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder();
             sb.append("Image Writers:\n");
-            for (Entry<String, ImageWriterParam> entry : mapTransferSyntaxUIDs.entrySet()) {
+            for (Entry<String, List<ImageWriterParam>> entry : mapTransferSyntaxUIDs.entrySet()) {
                 String tsUid = entry.getKey();
                 sb.append(' ').append(tsUid);
                 sb.append(" (").append(UID.nameOf(tsUid)).append("): ");
-                sb.append(getImageWriterName(entry.getValue())).append('\n');
+                for(ImageWriterParam reader : entry.getValue()){
+                    sb.append(reader.name);
+                    sb.append(' ');
+                }
+                sb.append('\n');
             }
-            for (Entry<String, ImageWriterParam> entry : mapMimeTypes.entrySet()) {
+            for (Entry<String, List<ImageWriterParam>> entry : mapMimeTypes.entrySet()) {
                 sb.append(' ').append(entry.getKey()).append(": ");
-                sb.append(getImageWriterName(entry.getValue())).append('\n');
+                for(ImageWriterParam reader : entry.getValue()){
+                    sb.append(reader.name);
+                    sb.append(' ');
+                }
+                sb.append('\n');
             }
             LOG.debug(sb.toString());
         }
     }
 
-    private String getImageWriterName(ImageWriterParam imageWriterParam) {
-        ImageWriter imageWriter = null;
+    public void load(InputStream stream) throws IOException {
+        XMLStreamReader xmler = null;
         try {
-            imageWriter = getImageWriter(imageWriterParam);
-        } catch (RuntimeException e) {
-            // none found
+            String sys = ImageReaderFactory.getNativeSystemSpecification();
+            
+            XMLInputFactory xmlif = XMLInputFactory.newInstance();
+            xmler = xmlif.createXMLStreamReader(stream);
+
+            int eventType;
+            while (xmler.hasNext()) {
+                eventType = xmler.next();
+                switch (eventType) {
+                    case XMLStreamConstants.START_ELEMENT:
+                        String key = xmler.getName().getLocalPart();
+                        if ("ImageWriterFactory".equals(key)) {
+                            while (xmler.hasNext()) {
+                                eventType = xmler.next();
+                                switch (eventType) {
+                                    case XMLStreamConstants.START_ELEMENT:
+                                        key = xmler.getName().getLocalPart();
+                                        if ("element".equals(key)) {
+                                            String tsuid = xmler.getAttributeValue(null, "tsuid");
+                                            String mime = xmler.getAttributeValue(null, "mime");
+
+                                            boolean state = true;
+                                            while (xmler.hasNext() && state) {
+                                                eventType = xmler.next();
+                                                switch (eventType) {
+                                                    case XMLStreamConstants.START_ELEMENT:
+                                                        key = xmler.getName().getLocalPart();
+                                                        if ("writer".equals(key)) {
+                                                            String s = xmler.getAttributeValue(null, "sys");
+                                                            String[] systems = s == null ? null : s.split(",");
+                                                            if (systems == null
+                                                                || (sys != null && Arrays.binarySearch(systems, sys) >= 0)) {
+                                                                // Only add readers that can run on the current system
+                                                                ImageWriterParam param =
+                                                                    new ImageWriterParam(xmler.getAttributeValue(null,
+                                                                        "format"), xmler.getAttributeValue(null,
+                                                                        "class"), xmler.getAttributeValue(null,
+                                                                        "patchJPEGLS"), StringUtils.split(
+                                                                        xmler.getAttributeValue(null, "params"), ';'),
+                                                                        xmler.getAttributeValue(null, "name"));
+                                                                if(tsuid != null){
+                                                                	putForTransferSyntaxUID(tsuid, param);
+                                                                }
+                                                                if(mime != null){
+                                                                	putForMimeType(mime, param);
+                                                                }
+                                                            }
+                                                        }
+                                                        break;
+                                                    case XMLStreamConstants.END_ELEMENT:
+                                                        if ("element".equals(xmler.getName().getLocalPart())) {
+                                                            state = false;
+                                                        }
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
-        return imageWriter != null ? imageWriter.getClass().getName() : "null";
+
+        catch (XMLStreamException e) {
+            LOG.error("Cannot read DICOM Writers! " + e.getMessage());
+        } finally {
+            if (xmler != null) {
+                try {
+                    xmler.close();
+                } catch (XMLStreamException e) {
+                    LOG.debug(e.getMessage());
+                }
+            }
+            SafeClose.close(stream);
+        }
     }
 
     public void load(String name) throws IOException {
@@ -295,37 +415,70 @@ public class ImageWriterFactory implements Serializable {
         }
     }
 
-    public void load(InputStream in) throws IOException {
-        Properties props = new Properties();
-        props.load(in);
-        for (Map.Entry<Object, Object> entry : props.entrySet()) {
-            String key = (String) entry.getKey();
-
-            String[] ss = StringUtils.split((String) entry.getValue(), ':');
-            String formatName = ss[0];
-            String className = ss[1];
-            String patchJPEGLS = ss[2];
-            String[] imageWriteParams = StringUtils.split(ss[3], ';');
-
-            if (key.contains("/")) { // mime type
-                mapMimeTypes.put(key, new ImageWriterParam(formatName, className, patchJPEGLS, imageWriteParams));
-            } else { // transfer syntax uid
-                mapTransferSyntaxUIDs.put(key, new ImageWriterParam(formatName, className, patchJPEGLS, imageWriteParams));
-            }
-
-        }
-    }
-
-    public ImageWriterParam getForTransferSyntaxUID(String tsuid) {
+    public List<ImageWriterParam> getForTransferSyntaxUID(String tsuid) {
         return mapTransferSyntaxUIDs.get(tsuid);
     }
 
-    public ImageWriterParam getForMimeType(String mimeType) {
+    public boolean putForTransferSyntaxUID(String tsuid, ImageWriterParam param) {
+        List<ImageWriterParam> writerSet = getForTransferSyntaxUID(tsuid);
+        if (writerSet == null) {
+            writerSet = new ArrayList<ImageWriterParam>();
+            mapTransferSyntaxUIDs.put(tsuid, writerSet);
+        }
+        return writerSet.add(param);
+    }
+    
+    public List<ImageWriterParam> getForMimeType(String mimeType) {
         return mapMimeTypes.get(mimeType);
     }
+    
+    public boolean putForMimeType(String mimeType, ImageWriterParam param) {
+        List<ImageWriterParam> writerSet = getForMimeType(mimeType);
+        if (writerSet == null) {
+            writerSet = new ArrayList<ImageWriterParam>();
+            mapMimeTypes.put(mimeType, writerSet);
+        }
+        return writerSet.add(param);
+    }
 
-    public static ImageWriterParam getImageWriterParam(String tsuid) {
-        return getDefault().getForTransferSyntaxUID(tsuid);
+    public static ImageWriterItem getImageWriterParam(String tsuid) {
+        List<ImageWriterParam> list = getDefault().getForTransferSyntaxUID(tsuid);
+        if (list != null) {
+            synchronized (list) {
+                for (Iterator<ImageWriterParam> it = list.iterator(); it.hasNext();) {
+                    ImageWriterParam imageParam = it.next();
+                    String cl = imageParam.getClassName();
+                    Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName(imageParam.getFormatName());
+                    while (iter.hasNext()) {
+                        ImageWriter writer = iter.next();
+                        if (cl == null || writer.getClass().getName().equals(cl)) {
+                            return new ImageWriterItem(writer, imageParam);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static ImageWriterItem getImageWriterParamByMimeType(String mimeType) {
+        List<ImageWriterParam> list = getDefault().getForMimeType(mimeType);
+        if (list != null) {
+            synchronized (list) {
+                for (Iterator<ImageWriterParam> it = list.iterator(); it.hasNext();) {
+                    ImageWriterParam imageParam = it.next();
+                    String cl = imageParam.getClassName();
+                    Iterator<ImageWriter> iter = ImageIO.getImageWritersByMIMEType(mimeType);
+                    while (iter.hasNext()) {
+                        ImageWriter writer = iter.next();
+                        if (cl == null || writer.getClass().getName().equals(cl)) {
+                            return new ImageWriterItem(writer, imageParam);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public static ImageWriter getImageWriter(ImageWriterParam param) {
@@ -345,11 +498,11 @@ public class ImageWriterFactory implements Serializable {
     }
 
     public static ImageWriter getImageWriterForMimeType(String mimeType) {
-        ImageWriterParam imageWriterParam = getDefault().getForMimeType(mimeType);
+        ImageWriterItem imageWriter = getImageWriterParamByMimeType(mimeType);
 
-        if (imageWriterParam != null) {
-            // configured mime type
-            return getImageWriter(imageWriterParam);
+        if (imageWriter != null) {
+        	// configured mime type
+            return imageWriter.getImageWriter();
         } else {
             // not configured mime type, fallback to first ImageIO writer for this mime type
             ImageWriter writer = ImageIO.getImageWritersByMIMEType(mimeType).next();
@@ -357,5 +510,4 @@ public class ImageWriterFactory implements Serializable {
             return writer;
         }
     }
-
 }

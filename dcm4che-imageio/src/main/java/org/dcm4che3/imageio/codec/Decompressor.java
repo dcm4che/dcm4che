@@ -37,7 +37,25 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.imageio.codec;
 
-import org.dcm4che3.data.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
+
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.Fragments;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
+import org.dcm4che3.data.Value;
+import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderItem;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.stream.SegmentedImageInputStream;
@@ -45,17 +63,6 @@ import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * Decompresses the pixel data of compressed DICOM images to the native (uncompressed) format.
@@ -106,16 +113,15 @@ public class Decompressor {
                         "Number of Pixel Data Fragments: "
                         + numFragments + " does not match " + frames);
 
-            ImageReaderFactory.ImageReaderParam param =
-                    ImageReaderFactory.getImageReaderParam(tsuid);
-            if (param == null)
+            ImageReaderItem readerItem = ImageReaderFactory.getImageReader(tsuid);
+            if (readerItem == null)
                 throw new UnsupportedOperationException(
-                        "Unsupported Transfer Syntax: " + tsuid);
-
-            this.imageReader = ImageReaderFactory.getImageReader(param);
+                    "Unsupported Transfer Syntax: " + tsuid);
+            
+            this.imageReader = readerItem.getImageReader();
             LOG.debug("Decompressor: {}", imageReader.getClass().getName());
             this.readParam = imageReader.getDefaultReadParam();
-            this.patchJPEGLS = param.patchJPEGLS;
+            this.patchJPEGLS = readerItem.getImageReaderParam().getPatchJPEGLS();
         }
     }
 

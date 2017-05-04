@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ImageReaderFactory>
+	<element tsuid="1.2.840.10008.1.2.4.50" mime="image/jpeg">
+		<reader format="jpeg" name="Sun native jpeg decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageReader" />
+		<reader format="jpeg" name="Default available jpeg decoder"
+			class="*" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.51">
+		<reader format="jpeg" name="Sun native jpeg decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageReader" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.57">
+		<reader format="jpeg" name="Sun native jpeg decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageReader" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.70">
+		<reader format="jpeg" name="Sun native jpeg decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageReader" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.80">
+		<reader format="jpeg-ls" name="Native CharLS jpeg decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,windows-x86-64,macosx-x86-64"
+			class="org.weasis.jpeg.NativeJLSImageReader" />
+		<reader format="jpeg" name="Sun native jpeg-ls decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageReader"
+			patchJPEGLS="ISO2JAI_IF_APP_OR_COM" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.81">
+		<reader format="jpeg-ls" name="Native CharLS jpeg decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,windows-x86-64,macosx-x86-64"
+			class="org.weasis.jpeg.NativeJLSImageReader" />
+		<reader format="jpeg" name="Sun native jpeg-ls decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageReader" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.90" mime="image/jp2">
+		<reader format="jpeg2000" name="Sun native j2k decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib" />
+		<reader format="jpeg2000" name="Sun pure Java j2k decoder"
+			class="com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.4.91">
+		<reader format="jpeg2000" name="Sun native j2k decoder"
+			sys="linux-x86,linux-x86-64,windows-x86,solaris-x86,solaris-x86-64,solaris-sparc,solaris-sparcv9"
+			class="com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib" />
+		<reader format="jpeg2000" name="Sun pure Java j2k decoder"
+			class="com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader" />
+	</element>
+	<element tsuid="1.2.840.10008.1.2.5">
+		<reader format="rle" name="dcm4che RLE decoder"
+			class="org.dcm4che3.imageio.plugins.rle.RLEImageReader" />
+	</element>
+</ImageReaderFactory>
+

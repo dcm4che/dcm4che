@@ -34,7 +34,7 @@
                         
                         temporary solution is export all package including internal package
                         -->
-                        <Export-Package>*</Export-Package>
+                        <Export-Package>org.dcm4che3.conf.*</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>

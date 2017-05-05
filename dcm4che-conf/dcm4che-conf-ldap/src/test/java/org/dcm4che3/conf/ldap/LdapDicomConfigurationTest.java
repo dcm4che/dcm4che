@@ -41,17 +41,11 @@ package org.dcm4che3.conf.ldap;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.EnumSet;
-import java.util.TimeZone;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
-import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
@@ -149,7 +143,7 @@ public class LdapDicomConfigurationTest {
         Device device = createDevice("Test-Device-1", "TEST-AET1");
         config.persist(device);
         modifyDevice(device);
-        config.merge(device);
+        config.merge(device, false);
         ApplicationEntity ae2 = config.findApplicationEntity("TEST-AET2");
         ApplicationEntity ae = ae2.getDevice().getApplicationEntity("TEST-AET1");
         assertTrue(ae.isAssociationInitiator());

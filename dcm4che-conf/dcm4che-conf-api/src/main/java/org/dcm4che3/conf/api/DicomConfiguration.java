@@ -95,7 +95,7 @@ public interface DicomConfiguration extends Closeable {
 
     void persist(Device device) throws ConfigurationException;
 
-    void merge(Device device) throws ConfigurationException;
+    void merge(Device device, boolean preserveVendorData) throws ConfigurationException;
 
     void removeDevice(String name) throws ConfigurationException;
 

@@ -540,15 +540,15 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized void merge(Device device) throws ConfigurationException {
+    public synchronized void merge(Device device, boolean preserveVendorData) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
         String deviceDN = deviceRef(device.getDeviceName());
         Device prev = loadDevice(deviceDN);
         try {
-            modifyAttributes(deviceDN, storeDiffs(prev, device, new ArrayList<ModificationItem>()));
-            mergeChilds(prev, device, deviceDN);
+            modifyAttributes(deviceDN, storeDiffs(prev, device, new ArrayList<ModificationItem>(), preserveVendorData));
+            mergeChilds(prev, device, deviceDN, preserveVendorData);
             updateCertificates(prev, device);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
@@ -575,10 +575,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    private void mergeChilds(Device prev, Device device, String deviceDN)
+    private void mergeChilds(Device prev, Device device, String deviceDN, boolean preserveVendorData)
             throws NamingException, ConfigurationException {
         mergeConnections(prev, device, deviceDN);
-        mergeAEs(prev, device, deviceDN);
+        mergeAEs(prev, device, deviceDN, preserveVendorData);
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.mergeChilds(prev, device, deviceDN);
     }
@@ -1257,7 +1257,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private List<ModificationItem> storeDiffs(Device a, Device b,
-            List<ModificationItem> mods) {
+                                              List<ModificationItem> mods, boolean preserveVendorData) {
         LdapUtils.storeDiff(mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
@@ -1327,9 +1327,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dicomThisNodeCertificateReference",
                 a.getThisNodeCertificateRefs(),
                 b.getThisNodeCertificateRefs());
-        storeDiff(mods, "dicomVendorData",
-                a.getVendorData(),
-                b.getVendorData());
+        if (!preserveVendorData)
+            storeDiff(mods, "dicomVendorData",
+                    a.getVendorData(),
+                    b.getVendorData());
         LdapUtils.storeDiff(mods, "dicomInstalled",
                 a.isInstalled(),
                 b.isInstalled());
@@ -1489,13 +1490,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private List<ModificationItem> storeDiffs(ApplicationEntity a,
-            ApplicationEntity b, String deviceDN, List<ModificationItem> mods) {
+            ApplicationEntity b, String deviceDN, List<ModificationItem> mods, boolean preserveVendorData) {
         LdapUtils.storeDiff(mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
-        storeDiff(mods, "dicomVendorData",
-                a.getVendorData(),
-                b.getVendorData());
+        if (!preserveVendorData)
+            storeDiff(mods, "dicomVendorData",
+                    a.getVendorData(),
+                    b.getVendorData());
         LdapUtils.storeDiff(mods, "dicomApplicationCluster",
                 a.getApplicationClusters(),
                 b.getApplicationClusters());
@@ -1614,7 +1616,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return attr != null ? new Issuer((String) attr.get()) : null;
     }
 
-    private void mergeAEs(Device prevDev, Device dev, String deviceDN)
+    private void mergeAEs(Device prevDev, Device dev, String deviceDN, boolean preserveVendorData)
             throws NamingException {
         Collection<String> aets = dev.getApplicationAETitles();
         for (String aet : prevDev.getApplicationAETitles()) {
@@ -1627,14 +1629,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (!prevAETs.contains(aet)) {
                 store(ae, deviceDN);
             } else
-                merge(prevDev.getApplicationEntity(aet), ae, deviceDN);
+                merge(prevDev.getApplicationEntity(aet), ae, deviceDN, preserveVendorData);
         }
     }
 
     private void merge(ApplicationEntity prev, ApplicationEntity ae,
-            String deviceDN) throws NamingException {
+                       String deviceDN, boolean preserveVendorData) throws NamingException {
         String aeDN = aetDN(ae.getAETitle(), deviceDN);
-        modifyAttributes(aeDN, storeDiffs(prev, ae, deviceDN, new ArrayList<ModificationItem>()));
+        modifyAttributes(aeDN, storeDiffs(prev, ae, deviceDN, new ArrayList<ModificationItem>(), preserveVendorData));
         mergeChilds(prev, ae, aeDN);
     }
 

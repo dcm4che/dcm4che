@@ -39,6 +39,7 @@
 package org.dcm4che3.tool.jpg2dcm;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.ResourceBundle;
 
@@ -73,10 +74,6 @@ public class Jpg2Dcm {
 
     private String charset = "ISO_IR 100";
 
-    private byte[] buffer = new byte[16384];
-
-    private int headerLen;
-
     private int fileLen;
 
     private boolean noAPPn;
@@ -88,51 +85,43 @@ public class Jpg2Dcm {
     private String metadataFile;
     private JPEGHeader jpegHeader;
     private File pixelDataFile;
+    private byte[] pixelData;
 
     public Jpg2Dcm() {
     }
 
     public void convert(Attributes metadata, Jpg2Dcm jpg2Dcm, File dcmFile)
-            throws IOException {
+            throws Exception {
         File pixelDataFile = jpg2Dcm.pixelDataFile;
-        headerLen = 0;
         fileLen = (int) pixelDataFile.length();
-        BufferedInputStream input = new BufferedInputStream(new FileInputStream(pixelDataFile));
+        DicomOutputStream dos = null;
         try {
+            dos = new DicomOutputStream(dcmFile);
             Date now = new Date();
             metadata.setDate(Tag.InstanceCreationDate, VR.DA, now);
             metadata.setDate(Tag.InstanceCreationTime, VR.TM, now);
             Attributes fmi = metadata.createFileMetaInformation(metadata.getString(Tag.TransferSyntaxUID));
-            DicomOutputStream dos = new DicomOutputStream(dcmFile);
-            try {
-                dos.writeDataset(fmi, metadata);
-                dos.writeHeader(Tag.PixelData, VR.OB, -1);
-                int off = 0;
-                dos.writeHeader(Tag.Item, null, 0);
+            dos.writeDataset(fmi, metadata);
+            dos.writeHeader(Tag.PixelData, VR.OB, -1);
+            dos.writeHeader(Tag.Item, null, 0);
+            if (noAPPn && jpg2Dcm.jpegHeader != null) {
+                int off = jpg2Dcm.jpegHeader.offsetAfterAPP();
+                dos.writeHeader(Tag.Item, null, fileLen - off + 3);
+                dos.write((byte) -1);
+                dos.write((byte) JPEG.SOI);
+                dos.write((byte) -1);
+                dos.write(jpg2Dcm.pixelData);
+            } else {
                 dos.writeHeader(Tag.Item, null, (fileLen + 1) & ~1);
-                dos.write(buffer, 0, headerLen);
-                if (noAPPn && jpg2Dcm.jpegHeader != null)
-                    off = jpg2Dcm.jpegHeader.offsetAfterAPP();
-                int r;
-                if (off > 0) {
-                    while ((r = input.read(buffer, off, buffer.length-off)) > 0) {
-                        dos.write(buffer, off, r);
-                    }
-                }
-                else {
-                    while ((r = input.read(buffer)) > 0) {
-                        dos.write(buffer, off, r);
-                    }
-                }
-                if ((fileLen & 1) != 0) {
-                    dos.write(0);
-                }
-                dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
-            } finally {
-                dos.close();
+                dos.write(jpg2Dcm.pixelData);
             }
+            if ((fileLen & 1) != 0) {
+                dos.write(0);
+            }
+            dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
         } finally {
-            input.close();
+            if (dos != null)
+                dos.close();
         }
     }
 
@@ -147,8 +136,8 @@ public class Jpg2Dcm {
                 throw new MissingArgumentException("Either input pixel data file or output binary file is missing. See example in jpg2dcm help.");
             jpg2Dcm.pixelDataFile = new File(cl.getArgs()[0]);
             Extension ext = getExt(jpg2Dcm.pixelDataFile.getName());
-            Attributes metadata = getMetadata(jpg2Dcm, ext);
             jpg2Dcm.noAPPn = Boolean.valueOf(cl.getOptionValue("na"));
+            Attributes metadata = getMetadata(jpg2Dcm, ext);
 
             @SuppressWarnings("rawtypes")
             File dcmFile = new File(cl.getArgs()[1]);
@@ -241,26 +230,39 @@ public class Jpg2Dcm {
     }
 
     private static void readPixelHeader(Jpg2Dcm jpg2Dcm, Attributes metadata, File pixelDataFile, boolean isMpeg)
-            throws IOException {
+            throws Exception {
+        int fileLen = (int) pixelDataFile.length();
+        FileInputStream fis = null;
         BufferedInputStream bis = null;
-        FileInputStream is = null;
         try {
-            is = new FileInputStream(pixelDataFile);
-            bis = new BufferedInputStream(is);
+            fis = new FileInputStream(pixelDataFile);
+            bis = new BufferedInputStream(fis);
             byte[] b16384 = new byte[16384];
             StreamUtils.readFully(bis, b16384, 0, 16384);
+            jpg2Dcm.pixelData = new byte[fileLen];
             if (isMpeg) {
                 MPEGHeader mpegHeader = new MPEGHeader(b16384);
                 mpegHeader.toAttributes(metadata, pixelDataFile.length());
-                return;
+                jpg2Dcm.pixelData = Arrays.copyOf(b16384, fileLen);
+                StreamUtils.readFully(bis, jpg2Dcm.pixelData, 16384, fileLen-16384);
+            } else {
+                jpg2Dcm.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
+                jpg2Dcm.jpegHeader.toAttributes(metadata);
+                if (jpg2Dcm.noAPPn) {
+                    int off = jpg2Dcm.jpegHeader.offsetAfterAPP();
+                    byte[] bTemp = Arrays.copyOf(b16384, fileLen);
+                    StreamUtils.readFully(bis, bTemp, 16384, fileLen - 16384);
+                    jpg2Dcm.pixelData = Arrays.copyOfRange(bTemp, off, fileLen);
+                } else {
+                    jpg2Dcm.pixelData = Arrays.copyOf(b16384, fileLen);
+                    StreamUtils.readFully(bis, jpg2Dcm.pixelData, 16384, fileLen - 16384);
+                }
             }
-            jpg2Dcm.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
-            jpg2Dcm.jpegHeader.toAttributes(metadata);
         } finally {
             if (bis != null)
                 bis.close();
-            if (is != null)
-                is.close();
+            if (fis != null)
+                fis.close();
         }
     }
 

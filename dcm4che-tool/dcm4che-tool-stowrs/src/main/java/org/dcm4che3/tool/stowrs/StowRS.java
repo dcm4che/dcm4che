@@ -41,6 +41,7 @@ package org.dcm4che3.tool.stowrs;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -92,8 +93,8 @@ public class StowRS {
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
     private BulkData defaultBulkdata = new BulkData(null, "bulk", false);
-
     private static final String boundary = "myboundary";
+    private byte[] pixelData;
 
     public StowRS() {
     }
@@ -115,7 +116,7 @@ public class StowRS {
         return CLIUtils.parseComandLine(args, opts, rb, StowRS.class);
     }
 
-    private static Attributes configureKeys(StowRS main, CommandLine cl) {
+    private static Attributes configureKeys(CommandLine cl) {
         Attributes temp = new Attributes();
         CLIUtils.addAttributes(temp, cl.getOptionValues("m"));
         return temp;
@@ -127,7 +128,7 @@ public class StowRS {
         try {
             cl = parseCommandLine(args);
             StowRS instance = new StowRS();
-            instance.keys = configureKeys(instance, cl);
+            instance.keys = configureKeys(cl);
             LOG.info("added keys for coercion: \n" + instance.keys.toString());
             List<String> files = cl.getArgList();
             doNecessaryChecks(cl, instance, files);
@@ -201,6 +202,7 @@ public class StowRS {
                 setPDFAttributes(bulkdataFile, metadata);
                 if (metadata.getValue(Tag.EncapsulatedDocument) == null)
                     metadata.setValue(Tag.EncapsulatedDocument, VR.OB, instance.defaultBulkdata);
+                instance.pixelData = Files.readAllBytes(bulkdataFile);
                 break;
             case mpg:
             case mpg2:
@@ -248,31 +250,35 @@ public class StowRS {
         return metadata;
     }
 
-    private static void readPixelHeader(StowRS instance, Attributes metadata, Path bulkdataFile, boolean isMpeg)
-            throws IOException {
-        BufferedInputStream bis = null;
-        InputStream is = null;
-        try {
-            if (metadata.getValue(Tag.PixelData) == null)
-                metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
-            if (!instance.pixelHeader)
-                return;
-            is = Files.newInputStream(bulkdataFile);
-            bis = new BufferedInputStream(is);
+    private static void readPixelHeader(StowRS instance, Attributes metadata, Path pixelDataFile, boolean isMpeg)
+            throws Exception {
+        if (metadata.getValue(Tag.PixelData) == null)
+            metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
+        if (!instance.pixelHeader)
+            return;
+        int fileLen = (int)Files.size(pixelDataFile);
+        try (BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(pixelDataFile))) {
             byte[] b16384 = new byte[16384];
             StreamUtils.readAvailable(bis, b16384, 0, 16384);
+            instance.pixelData = new byte[fileLen];
             if (isMpeg) {
                 MPEGHeader mpegHeader = new MPEGHeader(b16384);
-                mpegHeader.toAttributes(metadata, Files.size(bulkdataFile));
-                return;
+                mpegHeader.toAttributes(metadata, Files.size(pixelDataFile));
+                instance.pixelData = Arrays.copyOf(b16384, fileLen);
+                StreamUtils.readAvailable(bis, instance.pixelData, 16384, fileLen-16384);
+            } else {
+                instance.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
+                instance.jpegHeader.toAttributes(metadata);
+                if (instance.noAppn) {
+                    int off = instance.jpegHeader.offsetAfterAPP();
+                    byte[] bTemp = Arrays.copyOf(b16384, fileLen);
+                    StreamUtils.readAvailable(bis, bTemp, 16384, fileLen - 16384);
+                    instance.pixelData = Arrays.copyOfRange(bTemp, off, fileLen);
+                } else {
+                    instance.pixelData = Arrays.copyOf(b16384, fileLen);
+                    StreamUtils.readAvailable(bis, instance.pixelData, 16384, fileLen - 16384);
+                }
             }
-            instance.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
-            instance.jpegHeader.toAttributes(metadata);
-        } finally {
-            if (bis != null)
-                bis.close();
-            if (is != null)
-                is.close();
         }
     }
 
@@ -319,13 +325,8 @@ public class StowRS {
         LOG.info("< Content-Type: " + connection.getContentType());
         LOG.info("< Date: " + connection.getLastModified());
         LOG.info("< Response Content: ");
-        InputStream is = null;
-        try {
-            is = connection.getInputStream();
+        try (InputStream is = connection.getInputStream()) {
             LOG.debug(readFullyAsString(is));
-        } finally {
-            if (is != null)
-                is.close();
         }
     }
 
@@ -335,16 +336,13 @@ public class StowRS {
     }
 
     private static ByteArrayOutputStream readFully(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[16384];
             int length;
             while ((length = inputStream.read(buffer)) != -1) {
                 baos.write(buffer, 0, length);
             }
             return baos;
-        } finally {
-            baos.close();
         }
     }
 
@@ -366,8 +364,7 @@ public class StowRS {
     private static void writeMetdataAndBulkData(StowRS instance,
                                                 Attributes metadata, List<String> files, OutputStream out)
             throws Exception {
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        try {
+        try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
             if (instance.contentType.equals("application/dicom+xml"))
                 SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
             else
@@ -383,18 +380,13 @@ public class StowRS {
                     : ((BulkData) metadata.getValue(Tag.PixelData)).getURI();
             out.write(("Content-Location: " + contentLoc + "\r\n").getBytes());
             out.write("\r\n".getBytes());
-            Path file = Paths.get(files.get(0));
-            byte[] b = Files.readAllBytes(file);
             if (instance.jpegHeader != null && instance.noAppn) {
-                int i = instance.jpegHeader.offsetAfterAPP();
                 out.write(-1);
                 out.write((byte) JPEG.SOI);
                 out.write(-1);
-                out.write(b, i, (int) Files.size(file) - i);
+                out.write(instance.pixelData);
             } else
-                out.write(b);
-        } finally {
-            bOut.close();
+                out.write(instance.pixelData);
         }
     }
 

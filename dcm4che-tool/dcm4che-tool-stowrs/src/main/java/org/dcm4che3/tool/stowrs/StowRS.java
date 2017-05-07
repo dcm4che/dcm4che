@@ -39,6 +39,7 @@
 package org.dcm4che3.tool.stowrs;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -89,8 +90,8 @@ public class StowRS {
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
     private BulkData defaultBulkdata = new BulkData(null, "bulk", false);
-
     private static final String boundary = "myboundary";
+    private byte[] pixelData;
 
     public StowRS() {
     }
@@ -112,7 +113,7 @@ public class StowRS {
         return CLIUtils.parseComandLine(args, opts, rb, StowRS.class);
     }
 
-    private static Attributes configureKeys(StowRS main, CommandLine cl) {
+    private static Attributes configureKeys(CommandLine cl) {
         Attributes temp = new Attributes();
         CLIUtils.addAttributes(temp, cl.getOptionValues("m"));
         return temp;
@@ -124,7 +125,7 @@ public class StowRS {
         try {
             cl = parseCommandLine(args);
             StowRS instance = new StowRS();
-            instance.keys = configureKeys(instance, cl);
+            instance.keys = configureKeys(cl);
             LOG.info("added keys for coercion: \n" + instance.keys.toString());
             List<String> files = cl.getArgList();
             doNecessaryChecks(cl, instance, files);
@@ -198,6 +199,7 @@ public class StowRS {
                 setPDFAttributes(bulkdataFile, metadata);
                 if (metadata.getValue(Tag.EncapsulatedDocument) == null)
                     metadata.setValue(Tag.EncapsulatedDocument, VR.OB, instance.defaultBulkdata);
+                readAllDataFromFile(instance, bulkdataFile);
                 break;
             case mpg:
             case mpg2:
@@ -245,26 +247,58 @@ public class StowRS {
         return metadata;
     }
 
-    private static void readPixelHeader(StowRS instance, Attributes metadata, File bulkdataFile, boolean isMpeg)
-            throws IOException {
-        if (metadata.getValue(Tag.PixelData) == null)
-            metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
-        if (!instance.pixelHeader)
-            return;
+    private static void readAllDataFromFile(StowRS instance, File bulkdataFile) throws Exception {
+        int fileLen = (int) bulkdataFile.length();
         BufferedInputStream bis = null;
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(bulkdataFile);
             bis = new BufferedInputStream(fis);
+            instance.pixelData = new byte[fileLen];
+            StreamUtils.readFully(bis, instance.pixelData, 0, fileLen);
+        } finally {
+            if (bis != null)
+                bis.close();
+            if (fis != null)
+                fis.close();
+        }
+    }
+
+    private static void readPixelHeader(StowRS instance, Attributes metadata, File pixelDataFile, boolean isMpeg)
+            throws Exception {
+        if (metadata.getValue(Tag.PixelData) == null)
+            metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
+        if (!instance.pixelHeader) {
+            readAllDataFromFile(instance, pixelDataFile);
+            return;
+        }
+        BufferedInputStream bis = null;
+        FileInputStream fis = null;
+        int fileLen = (int) pixelDataFile.length();
+        try {
+            fis = new FileInputStream(pixelDataFile);
+            bis = new BufferedInputStream(fis);
             byte[] b16384 = new byte[16384];
             StreamUtils.readFully(bis, b16384, 0, 16384);
+            instance.pixelData = new byte[fileLen];
             if (isMpeg) {
                 MPEGHeader mpegHeader = new MPEGHeader(b16384);
-                mpegHeader.toAttributes(metadata, bulkdataFile.length());
-                return;
+                mpegHeader.toAttributes(metadata, pixelDataFile.length());
+                instance.pixelData = Arrays.copyOf(b16384, fileLen);
+                StreamUtils.readFully(bis, instance.pixelData, 16384, fileLen-16384);
+            } else {
+                instance.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
+                instance.jpegHeader.toAttributes(metadata);
+                if (instance.noAppn) {
+                    int off = instance.jpegHeader.offsetAfterAPP();
+                    byte[] bTemp = Arrays.copyOf(b16384, fileLen);
+                    StreamUtils.readFully(bis, bTemp, 16384, fileLen - 16384);
+                    instance.pixelData = Arrays.copyOfRange(bTemp, off, fileLen);
+                } else {
+                    instance.pixelData = Arrays.copyOf(b16384, fileLen);
+                    StreamUtils.readFully(bis, instance.pixelData, 16384, fileLen - 16384);
+                }
             }
-            instance.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
-            instance.jpegHeader.toAttributes(metadata);
         } finally {
             if (fis != null)
                 fis.close();
@@ -316,24 +350,19 @@ public class StowRS {
         LOG.info("< Content-Type: " + connection.getContentType());
         LOG.info("< Date: " + connection.getLastModified());
         LOG.info("< Response Content: ");
-        InputStream is = null;
-        try {
-            is = connection.getInputStream();
-            LOG.debug(readFullyAsString(is));
-        } finally {
-            if (is != null)
-                is.close();
-        }
+        LOG.debug(readFullyAsString(connection));
     }
 
-    private static String readFullyAsString(InputStream inputStream)
+    private static String readFullyAsString(HttpURLConnection connection)
             throws IOException {
-        return readFully(inputStream).toString("UTF-8");
+        return readFully(connection).toString("UTF-8");
     }
 
-    private static ByteArrayOutputStream readFully(InputStream inputStream) throws IOException {
+    private static ByteArrayOutputStream readFully(HttpURLConnection connection) throws IOException {
         ByteArrayOutputStream baos = null;
+        InputStream inputStream = null;
         try {
+            inputStream = connection.getInputStream();
             baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[16384];
             int length;
@@ -344,13 +373,15 @@ public class StowRS {
         } finally {
             if (baos != null)
                 baos.close();
+            if (inputStream != null)
+                inputStream.close();
         }
     }
 
     private static void writeData(StowRS instance, Attributes metadata, List<String> files,
                                   OutputStream out) throws Exception {
         if (!instance.contentType.equals("application/dicom")) {
-            writeMetdataAndBulkData(instance, metadata, files, out);
+            writeMetdataAndBulkData(instance, metadata, out);
             return;
         }
         FileInputStream fis = null;
@@ -372,10 +403,9 @@ public class StowRS {
     }
 
     private static void writeMetdataAndBulkData(StowRS instance,
-                                                Attributes metadata, List<String> files, OutputStream out)
+                                                Attributes metadata, OutputStream out)
             throws Exception {
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        FileInputStream fis = null;
         try {
             if (instance.contentType.equals("application/dicom+xml"))
                 SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
@@ -398,21 +428,15 @@ public class StowRS {
                     : ((BulkData) metadata.getValue(Tag.PixelData)).getURI();
             out.write(("Content-Location: " + contentLoc + "\r\n").getBytes());
             out.write("\r\n".getBytes());
-            File file = new File(files.get(0));
-            fis = new FileInputStream(file);
-            byte[] b = readFully(fis).toByteArray();
             if (instance.jpegHeader != null && instance.noAppn) {
-                int i = instance.jpegHeader.offsetAfterAPP();
                 out.write(-1);
                 out.write((byte) JPEG.SOI);
                 out.write(-1);
-                out.write(b, i, (int) file.length() - i);
+                out.write(instance.pixelData);
             } else
-                out.write(b);
+                out.write(instance.pixelData);
         } finally {
             bOut.close();
-            if (fis != null)
-                fis.close();
         }
     }
 

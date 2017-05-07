@@ -254,8 +254,10 @@ public class StowRS {
             throws Exception {
         if (metadata.getValue(Tag.PixelData) == null)
             metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
-        if (!instance.pixelHeader)
+        if (!instance.pixelHeader) {
+            instance.pixelData = Files.readAllBytes(pixelDataFile);
             return;
+        }
         int fileLen = (int)Files.size(pixelDataFile);
         try (BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(pixelDataFile))) {
             byte[] b16384 = new byte[16384];
@@ -349,7 +351,7 @@ public class StowRS {
     private static void writeData(StowRS instance, Attributes metadata, List<String> files,
                                   OutputStream out) throws Exception {
         if (!instance.contentType.equals("application/dicom")) {
-            writeMetdataAndBulkData(instance, metadata, files, out);
+            writeMetdataAndBulkData(instance, metadata, out);
             return;
         }
         Files.copy(Paths.get(files.get(0)), out);
@@ -362,7 +364,7 @@ public class StowRS {
     }
 
     private static void writeMetdataAndBulkData(StowRS instance,
-                                                Attributes metadata, List<String> files, OutputStream out)
+                                                Attributes metadata, OutputStream out)
             throws Exception {
         try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
             if (instance.contentType.equals("application/dicom+xml"))

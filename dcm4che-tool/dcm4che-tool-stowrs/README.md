@@ -47,5 +47,4 @@
     img.jpeg bulkData.
     Example: stowrs -u http://localhost/stow/studies[/{StudyInstanceUID}] 
     object1.dcm object2.dcm
-    => Send stow request to stowRS Receiver with the attribute given and
-    img.jpeg bulkData.
+    => Send stow request of two DICOM objects to stowRS Receiver.

@@ -143,6 +143,7 @@ public class JsonConfiguration {
         writer.writeNotEmpty("dicomRelatedDeviceReference", device.getRelatedDeviceRefs());
         writer.writeNotEmpty("dicomAuthorizedNodeCertificateReference", device.getAuthorizedNodeCertificateRefs());
         writer.writeNotEmpty("dicomThisNodeCertificateReference", device.getThisNodeCertificateRefs());
+        writer.write("dicomVendorData", device.getVendorData().length > 0);
         writer.write("dicomInstalled", device.isInstalled());
         writeConnectionsTo(device, writer, extended);
         writeApplicationAEsTo(device, writer, extended);
@@ -249,6 +250,9 @@ public class JsonConfiguration {
                 case "dicomThisNodeCertificateReference":
                     for (String ref : reader.stringArray())
                         device.setThisNodeCertificates(ref);
+                    break;
+                case "dicomVendorData":
+                    reader.booleanValue();
                     break;
                 case "dicomInstalled":
                     device.setInstalled(reader.booleanValue());

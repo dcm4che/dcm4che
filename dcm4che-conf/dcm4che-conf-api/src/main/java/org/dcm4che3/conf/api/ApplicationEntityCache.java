@@ -63,6 +63,9 @@ public class ApplicationEntityCache
         if (ae == null)
             throw new ConfigurationNotFoundException(
                     "Unknown AE: " + aet);
+        if (!ae.isInstalled())
+            throw new ConfigurationNotFoundException(
+                    "AE: " + aet + " not installed");
         return ae;
     }
 }

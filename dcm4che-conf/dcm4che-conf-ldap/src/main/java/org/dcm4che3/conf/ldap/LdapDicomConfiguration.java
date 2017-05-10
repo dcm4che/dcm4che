@@ -939,8 +939,45 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return certs;
     }
 
+    @Override
+    public byte[][] loadDeviceVendorData(String deviceName) throws ConfigurationException {
+        if (!configurationExists())
+            throw new ConfigurationNotFoundException();
+
+        try {
+            Attributes attrs = getAttributes(deviceRef(deviceName), new String[]{ "dicomVendorData" });
+            return byteArrays(attrs.get("dicomVendorData"));
+        } catch (NameNotFoundException e) {
+            throw new ConfigurationNotFoundException("Device with specified name not found", e);
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
+    public boolean updateDeviceVendorData(String deviceName, byte[]... vendorData) throws ConfigurationException {
+        String deviceRef = deviceRef(deviceName);
+        if (!configurationExists())
+            throw new ConfigurationNotFoundException();
+
+        try {
+            Attributes attrs = getAttributes(deviceRef, new String[]{"dicomVendorData"});
+            byte[][] prev = byteArrays(attrs.get("dicomVendorData"));
+            if (equals(prev, vendorData))
+                return false;
+
+            ctx.modifyAttributes(deviceRef, vendorData.length == 0
+                    ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("dicomVendorData"))
+                    : new ModificationItem(DirContext.REPLACE_ATTRIBUTE, attr("dicomVendorData", vendorData)));
+            return true;
+        } catch (NameNotFoundException e) {
+            throw new ConfigurationNotFoundException("Device with specified name not found", e);
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
     public Device loadDevice(String deviceDN) throws ConfigurationException {
-        
         // get the device cache for this loading phase
         Map<String, Device> deviceCache = currentlyLoadedDevicesLocal.get();
 
@@ -983,6 +1020,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     public Attributes getAttributes(String name) throws NamingException {
         return ctx.getAttributes(name);
+    }
+
+    public Attributes getAttributes(String name, String[] attrIDs) throws NamingException {
+        return ctx.getAttributes(name, attrIDs);
     }
 
     private void loadChilds(Device device, String deviceDN)

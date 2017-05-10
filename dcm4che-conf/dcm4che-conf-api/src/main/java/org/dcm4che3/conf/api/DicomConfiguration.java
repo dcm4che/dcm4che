@@ -99,6 +99,10 @@ public interface DicomConfiguration extends Closeable {
 
     void removeDevice(String name) throws ConfigurationException;
 
+    byte[][] loadDeviceVendorData(String deviceName) throws ConfigurationException;
+
+    boolean updateDeviceVendorData(String deviceName, byte[]... vendorData) throws ConfigurationException;
+
     String deviceRef(String name);
 
     void persistCertificates(String ref, X509Certificate... certs) throws ConfigurationException;

@@ -101,7 +101,7 @@ class ReconnectDirContext implements Closeable {
         }
     }
 
-    public void modifyAttributes(String name, ModificationItem[] mods) throws NamingException {
+    public void modifyAttributes(String name, ModificationItem... mods) throws NamingException {
         try {
             ctx.modifyAttributes(name, mods);
         } catch (CommunicationException e) {

@@ -38,7 +38,12 @@
 
 package org.dcm4che3.tool.stowrs;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -53,7 +58,12 @@ import javax.json.stream.JsonGenerator;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.MissingArgumentException;
+import org.apache.commons.cli.MissingOptionException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Tag;
@@ -138,6 +148,10 @@ public class StowRS {
                 return;
             }
             stowMetadataAndBulkdata(instance, files);
+        } catch (ParseException e) {
+            System.err.println("stowrs: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
         } catch (Exception e) {
             LOG.error("Error: \n", e);
             e.printStackTrace();

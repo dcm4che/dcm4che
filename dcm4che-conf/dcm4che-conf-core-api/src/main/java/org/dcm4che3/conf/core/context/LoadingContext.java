@@ -14,6 +14,12 @@ public class LoadingContext extends ProcessingContext {
 
 
     /**
+     * If set to true, will not throw exceptions when a reference to a configuration object cannot be resolved.
+     * Instead, property will be left null
+     */
+    boolean ignoreUnresolvedReferences = false;
+
+    /**
      * A map of UUID to a loaded (being loaded) object.
      * Used to close circular reference loops, and for "optimistic" reference resolution.
      *
@@ -49,4 +55,11 @@ public class LoadingContext extends ProcessingContext {
         return referable == null ? null : referable.getConfObjectFuture();
     }
 
+    public boolean isIgnoreUnresolvedReferences() {
+        return ignoreUnresolvedReferences;
+    }
+
+    public void setIgnoreUnresolvedReferences(boolean ignoreUnresolvedReferences) {
+        this.ignoreUnresolvedReferences = ignoreUnresolvedReferences;
+    }
 }

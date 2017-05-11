@@ -38,10 +38,12 @@
 
 package org.dcm4che3.conf.api.internal;
 
+import org.dcm4che3.conf.api.DicomConfigOptions;
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.TypeSafeConfiguration;
 import org.dcm4che3.conf.dicom.DicomConfigurationRoot;
+import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceInfo;
 
 import java.io.Closeable;
@@ -55,6 +57,11 @@ import java.io.Closeable;
 public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeable {
 
     TypeSafeConfiguration<DicomConfigurationRoot> getTypeSafeConfiguration();
+
+    /**
+     * Allows to use extended options
+     */
+    Device findDevice(String name, DicomConfigOptions options) throws ConfigurationException;
 
     /**
      * Indicates whether the configuration backend is initialized

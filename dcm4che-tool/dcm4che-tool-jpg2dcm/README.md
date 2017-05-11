@@ -1,9 +1,9 @@
     usage: jpg2dcm [Options] <jpgfile> <dcmfile>
 
     Supports conversion of pixel data (with extensions jpg, jpeg, mpg, mpeg, mpg2) to DICOM. 
-    User may choose to specify metadata via command line (using -m option) or 
-    a file (using -f option). User may also specify the charset via command line 
-    or in the metadata specific file. If absent ISO_IR 100 will be used as default charset. 
+    Metadata can be specified via command line (using -m option) or a file (using -f option).
+    Character set ISO_IR 100 will be used as default charset, if not specified in metadata.
+    File names should not contain spaces.
     -
     Options:
     -f,--file <file>                Specify the file (in XML format) containing the metadata 

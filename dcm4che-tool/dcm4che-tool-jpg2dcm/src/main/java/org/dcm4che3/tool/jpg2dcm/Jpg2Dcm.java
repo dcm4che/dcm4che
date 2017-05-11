@@ -38,7 +38,10 @@
 
 package org.dcm4che3.tool.jpg2dcm;
 
-import java.io.*;
+import java.io.File;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,7 +50,12 @@ import java.util.Date;
 import java.util.ResourceBundle;
 
 import com.sun.imageio.plugins.jpeg.JPEG;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.MissingArgumentException;
+import org.apache.commons.cli.ParseException;
+
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -144,6 +152,10 @@ public class Jpg2Dcm {
             long fin = System.currentTimeMillis();
             LOG.info("Encapsulated " + jpg2Dcm.pixelDataFile + " to " + dcmFile.getPath() + " in "
                     + (fin - start) + "ms.");
+        } catch (ParseException e) {
+            System.err.println("jpg2dcm: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
         } catch (Exception e) {
             LOG.error("Error: \n", e);
             e.printStackTrace();

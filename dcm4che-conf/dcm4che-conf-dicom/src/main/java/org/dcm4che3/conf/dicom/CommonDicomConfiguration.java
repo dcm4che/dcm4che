@@ -43,10 +43,7 @@ import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.ObjectFactory;
 import org.dcm4che3.audit.RoleIDCode;
-import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
-import org.dcm4che3.conf.api.ConfigurationNotFoundException;
-import org.dcm4che3.conf.api.TCConfiguration;
-import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
+import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.DefaultTypeSafeConfiguration;
@@ -57,6 +54,7 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.TypeSafeConfiguration;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.context.LoadingContext;
 import org.dcm4che3.conf.dicom.adapters.*;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
@@ -202,10 +200,10 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         return true;
     }
 
-
     @Override
     public void unregisterAETitle(String aet) throws ConfigurationException {
     }
+
 
     @Override
     public ApplicationEntity findApplicationEntity(String aet) throws ConfigurationException {
@@ -272,7 +270,10 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     }
 
     @Override
-    public Device findDevice(String name) throws ConfigurationException {
+    public Device findDevice(String name, DicomConfigOptions options) throws ConfigurationException {
+
+        options = options == null ? new DicomConfigOptions() : options;
+
         if (name == null) throw new IllegalArgumentException("Requested device name cannot be null");
 
         try {
@@ -280,7 +281,12 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             if (deviceConfigurationNode == null)
                 throw new ConfigurationNotFoundException("Device " + name + " not found");
 
-            Device device = vitalizer.newConfiguredInstance((Map<String, Object>) deviceConfigurationNode, Device.class);
+            LoadingContext ctx = config.getContextFactory().newLoadingContext();
+            if (options.getIgnoreUnresolvedReferences() == Boolean.TRUE) {
+                ctx.setIgnoreUnresolvedReferences(true);
+            }
+
+            Device device = vitalizer.newConfiguredInstance((Map<String, Object>) deviceConfigurationNode, Device.class, ctx);
 
             // perform alternative TC init in case an extension is present
             alternativeTCLoader.initGroupBasedTCs(device);
@@ -291,6 +297,12 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         } catch (RuntimeException e) {
             throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
         }
+
+    }
+
+    @Override
+    public Device findDevice(String name) throws ConfigurationException {
+        return findDevice(name, null);
     }
 
     @Override

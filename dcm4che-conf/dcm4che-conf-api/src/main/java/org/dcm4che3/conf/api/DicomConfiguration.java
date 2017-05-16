@@ -93,11 +93,11 @@ public interface DicomConfiguration extends Closeable {
 
     String[] listRegisteredAETitles() throws ConfigurationException;
 
-    void persist(Device device) throws ConfigurationException;
+    void persist(Device device, boolean register) throws ConfigurationException;
 
-    void merge(Device device, boolean preserveVendorData) throws ConfigurationException;
+    void merge(Device device, boolean preserveVendorData, boolean register) throws ConfigurationException;
 
-    void removeDevice(String name) throws ConfigurationException;
+    void removeDevice(String name, boolean unregister) throws ConfigurationException;
 
     byte[][] loadDeviceVendorData(String deviceName) throws ConfigurationException;
 

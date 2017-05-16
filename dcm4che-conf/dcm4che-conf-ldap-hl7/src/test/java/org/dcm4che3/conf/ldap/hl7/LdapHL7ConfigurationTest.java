@@ -94,15 +94,15 @@ public class LdapHL7ConfigurationTest {
     @Test
     public void testPersist() throws Exception {
         try {
-            config.removeDevice("Test-Device-1");
+            config.removeDevice("Test-Device-1", false);
         }  catch (ConfigurationNotFoundException e) {}
         Device device = createDevice("Test-Device-1", "TEST1^DCM4CHE");
-        config.persist(device);
+        config.persist(device, false);
         HL7Application app = hl7Ext.findHL7Application("TEST1^DCM4CHE");
         assertEquals(2575, app.getConnections().get(0).getPort());
         assertEquals("TEST2^DCM4CHE", app.getAcceptedSendingApplications()[0]);
         assertEquals(7, app.getAcceptedMessageTypes().length);
-        config.removeDevice("Test-Device-1");
+        config.removeDevice("Test-Device-1", false);
     }
 
     private static Device createDevice(String name, String appName) throws Exception {

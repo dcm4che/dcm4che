@@ -104,4 +104,12 @@ public class LdapDicomConfigurationExtension {
             String aeDN) throws NamingException {
     }
 
+    protected void register(Device device, List<String> dns) throws ConfigurationException {
+    }
+
+    protected void registerDiff(Device prev, Device device, List<String> dns) throws ConfigurationException {
+    }
+
+    protected void markForUnregister(Device prev, Device device, List<String> dns) {
+    }
 }

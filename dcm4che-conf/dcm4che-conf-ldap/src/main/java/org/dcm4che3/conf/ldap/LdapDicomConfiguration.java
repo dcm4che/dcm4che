@@ -55,12 +55,8 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.dcm4che3.conf.api.AttributeCoercion;
-import org.dcm4che3.conf.api.AttributeCoercions;
-import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
+import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.api.ConfigurationNotFoundException;
-import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.Connection.Protocol;
@@ -233,11 +229,20 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     public synchronized boolean registerAETitle(String aet) throws ConfigurationException {
         ensureConfigurationExists();
         try {
-            createSubcontext(aetDN(aet, aetsRegistryDN),
-                    LdapUtils.attrs("dicomUniqueAETitle", "dicomAETitle", aet));
+            registerAET(aet);
             return true;
-        } catch (NameAlreadyBoundException e) {
+        } catch (AETitleAlreadyExistsException e) {
             return false;
+        }
+    }
+
+    private String registerAET(String aet) throws ConfigurationException {
+        try {
+            String dn = aetDN(aet, aetsRegistryDN);
+            createSubcontext(dn, LdapUtils.attrs("dicomUniqueAETitle", "dicomAETitle", aet));
+            return dn;
+        } catch (NameAlreadyBoundException e) {
+            throw new AETitleAlreadyExistsException("AE Title '" + aet + "' already exists");
         } catch (NamingException e) {
             throw new ConfigurationException(e);
        }
@@ -470,17 +475,21 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized void persist(Device device) throws ConfigurationException {
+    public synchronized void persist(Device device, boolean register) throws ConfigurationException {
         ensureConfigurationExists();
         String deviceName = device.getDeviceName();
         String deviceDN = deviceRef(deviceName);
         boolean rollback = false;
+        ArrayList<String> destroyDNs = new ArrayList<>();
         try {
+            if (register)
+                register(device, destroyDNs);
             createSubcontext(deviceDN, storeTo(device, new BasicAttributes(true)));
             rollback = true;
             storeChilds(deviceDN, device);
             updateCertificates(device);
             rollback = false;
+            destroyDNs.clear();
         } catch (NameAlreadyBoundException e) {
             throw new ConfigurationAlreadyExistsException(deviceName);
         } catch (NamingException e) {
@@ -488,13 +497,34 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         } catch (CertificateException e) {
             throw new ConfigurationException(e);
         } finally {
-            if (rollback)
+            if (rollback) {
                 try {
                     destroySubcontextWithChilds(deviceDN);
                 } catch (NamingException e) {
                     LOG.warn("Rollback failed:", e);
                 }
+            }
+            unregister(destroyDNs);
         }
+    }
+
+    private void unregister(ArrayList<String> destroyDNs) {
+        for (String dn : destroyDNs) {
+            try {
+                destroySubcontext(dn);
+            } catch (NamingException e) {
+                LOG.warn("Unregister {} failed:", dn, e);
+            }
+        }
+    }
+
+    private void register(Device device, List<String> dns) throws ConfigurationException {
+        for (String aet : device.getApplicationAETitles()) {
+            if (!aet.equals("*"))
+                dns.add(registerAET(aet));
+        }
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.register(device, dns);
     }
 
     private void updateCertificates(Device device)
@@ -540,15 +570,24 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized void merge(Device device, boolean preserveVendorData) throws ConfigurationException {
+    public synchronized void merge(Device device, boolean preserveVendorData, boolean register)
+            throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
         String deviceDN = deviceRef(device.getDeviceName());
         Device prev = loadDevice(deviceDN);
+        ArrayList<String> destroyDNs = new ArrayList<>();
         try {
+            if (register) {
+                registerDiff(prev, device, destroyDNs);
+            }
             modifyAttributes(deviceDN, storeDiffs(prev, device, new ArrayList<ModificationItem>(), preserveVendorData));
             mergeChilds(prev, device, deviceDN, preserveVendorData);
+            destroyDNs.clear();
+            if (register) {
+                markForUnregister(prev, device, destroyDNs);
+            }
             updateCertificates(prev, device);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
@@ -556,7 +595,27 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             throw new ConfigurationException(e);
         } catch (CertificateException e) {
             throw new ConfigurationException(e);
+        } finally {
+            unregister(destroyDNs);
         }
+    }
+
+    private void registerDiff(Device prev, Device device, List<String> dns) throws ConfigurationException {
+        for (String aet : device.getApplicationAETitles()) {
+            if (!aet.equals("*") && prev.getApplicationEntity(aet) == null)
+                dns.add(registerAET(aet));
+        }
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.registerDiff(prev, device, dns);
+    }
+
+    private void markForUnregister(Device prev, Device device, List<String> dns) {
+        for (String aet : prev.getApplicationAETitles()) {
+            if (!aet.equals("*") && device.getApplicationEntity(aet) == null)
+                dns.add(aetDN(aet, aetsRegistryDN));
+        }
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.markForUnregister(prev, device, dns);
     }
 
     private void updateCertificates(Device prev, Device device)
@@ -584,16 +643,34 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized void removeDevice(String name) throws ConfigurationException {
+    public synchronized void removeDevice(String name, boolean unregister) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
-        removeDeviceWithDN(deviceRef(name));
+        removeDeviceWithDN(deviceRef(name), unregister);
     }
 
-    private void removeDeviceWithDN(String deviceDN) throws ConfigurationException {
+    private void unregister(String deviceDN) throws NamingException {
+        NamingEnumeration<SearchResult> ne =
+                search(deviceDN, "(objectclass=dicomNetworkAE)", StringUtils.EMPTY_STRING);
+        try {
+            while (ne.hasMore()) {
+                String aet = ne.next().getName();
+                if (!aet.equals("*"))
+                    try {
+                       ctx.destroySubcontext(aetDN(aet, aetsRegistryDN));
+                    } catch (NameNotFoundException ignore) {}
+            }
+        } finally {
+            LdapUtils.safeClose(ne);
+        }
+    }
+
+    private void removeDeviceWithDN(String deviceDN, boolean unregister) throws ConfigurationException {
         try {
             destroySubcontextWithChilds(deviceDN);
+            if (unregister)
+                unregister(deviceDN);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {

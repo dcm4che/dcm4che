@@ -38,20 +38,8 @@
 
 package org.dcm4che3.conf.ldap.hl7;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchResult;
-
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.api.hl7.HL7ApplicationAlreadyExistsException;
 import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che3.conf.ldap.LdapUtils;
@@ -59,6 +47,14 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.hl7.HL7Application;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.dcm4che3.util.StringUtils;
+
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -92,16 +88,26 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
     @Override
     public boolean registerHL7Application(String name)
             throws ConfigurationException {
+        try {
+            registerHL7App(name);
+            return true;
+        } catch (HL7ApplicationAlreadyExistsException e) {
+            return false;
+        }
+    }
+
+    private String registerHL7App(String name) throws ConfigurationException {
         ensureAppNamesRegistryExists();
         try {
-            config.createSubcontext(hl7appDN(name, appNamesRegistryDN),
+            String dn = hl7appDN(name, appNamesRegistryDN);
+            config.createSubcontext(dn,
                     LdapUtils.attrs("hl7UniqueApplicationName", "hl7ApplicationName", name));
-            return true;
+            return dn;
         } catch (NameAlreadyBoundException e) {
-            return false;
+            throw new HL7ApplicationAlreadyExistsException("HL7 Application '" + name + "' already exists");
         } catch (NamingException e) {
             throw new ConfigurationException(e);
-       }
+        }
     }
 
     @Override
@@ -310,5 +316,48 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.storeDiffs(a, b, mods);
         return mods;
+    }
+
+    @Override
+    protected void register(Device device, List<String> dns) throws ConfigurationException {
+        HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
+        if (hl7Ext == null)
+            return;
+
+        for (String name : hl7Ext.getHL7ApplicationNames()) {
+            if (!name.equals("*"))
+                dns.add(registerHL7App(name));
+        }
+    }
+
+    @Override
+    protected void registerDiff(Device prev, Device device, List<String> dns) throws ConfigurationException {
+        HL7DeviceExtension prevHL7Ext = prev.getDeviceExtension(HL7DeviceExtension.class);
+        if (prevHL7Ext == null) {
+            register(device, dns);
+            return;
+        }
+
+        HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
+        if (hl7Ext == null)
+            return;
+
+        for (String name : hl7Ext.getHL7ApplicationNames()) {
+            if (!name.equals("*") && prevHL7Ext.getHL7Application(name) == null)
+                dns.add(registerHL7App(name));
+        }
+    }
+
+    @Override
+    protected void markForUnregister(Device prev, Device device, List<String> dns) {
+        HL7DeviceExtension prevHL7Ext = prev.getDeviceExtension(HL7DeviceExtension.class);
+        if (prevHL7Ext == null)
+            return;
+
+        HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
+        for (String name : prevHL7Ext.getHL7ApplicationNames()) {
+            if (!name.equals("*") && (hl7Ext == null || hl7Ext.getHL7Application(name) == null))
+                dns.add(hl7appDN(name, appNamesRegistryDN));
+        }
     }
 }

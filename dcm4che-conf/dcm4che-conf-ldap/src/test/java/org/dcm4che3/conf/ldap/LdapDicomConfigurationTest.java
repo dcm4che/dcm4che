@@ -93,10 +93,10 @@ public class LdapDicomConfigurationTest {
     @Test
     public void testPersist() throws Exception {
         try {
-            config.removeDevice("Test-Device-1");
+            config.removeDevice("Test-Device-1", false);
         }  catch (ConfigurationNotFoundException e) {}
         Device device = createDevice("Test-Device-1", "TEST-AET1");
-        config.persist(device);
+        config.persist(device, false);
         ApplicationEntity ae = config.findApplicationEntity("TEST-AET1");
         assertFalse(ae.isAssociationInitiator());
         assertTrue(ae.isAssociationAcceptor());
@@ -118,10 +118,10 @@ public class LdapDicomConfigurationTest {
         assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
         assertEquals(1, config.listDeviceInfos(deviceInfo("Test-Device-1")).length);
         try {
-            config.persist(createDevice("Test-Device-1", "TEST-AET1"));
+            config.persist(createDevice("Test-Device-1", "TEST-AET1"), false);
             fail("ConfigurationAlreadyExistsException expected");
         } catch (ConfigurationAlreadyExistsException e) {}
-        config.removeDevice("Test-Device-1");
+        config.removeDevice("Test-Device-1", false);
     }
 
     private DeviceInfo deviceInfo(String deviceName) {
@@ -138,12 +138,12 @@ public class LdapDicomConfigurationTest {
     @Test
     public void testMerge() throws Exception {
         try {
-            config.removeDevice("Test-Device-1");
+            config.removeDevice("Test-Device-1", false);
         }  catch (ConfigurationNotFoundException e) {}
         Device device = createDevice("Test-Device-1", "TEST-AET1");
-        config.persist(device);
+        config.persist(device, false);
         modifyDevice(device);
-        config.merge(device, false);
+        config.merge(device, false, false);
         ApplicationEntity ae2 = config.findApplicationEntity("TEST-AET2");
         ApplicationEntity ae = ae2.getDevice().getApplicationEntity("TEST-AET1");
         assertTrue(ae.isAssociationInitiator());
@@ -162,7 +162,7 @@ public class LdapDicomConfigurationTest {
                 UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP);
         assertEquals(EnumSet.of(QueryOption.RELATIONAL, QueryOption.DATETIME),
                 findSCP.getQueryOptions());
-        config.removeDevice("Test-Device-1");
+        config.removeDevice("Test-Device-1", false);
     }
 
     private static Device createDevice(String name, String aet) throws Exception {

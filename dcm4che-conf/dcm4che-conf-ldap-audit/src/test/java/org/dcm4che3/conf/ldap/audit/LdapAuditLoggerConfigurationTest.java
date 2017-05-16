@@ -89,27 +89,27 @@ public class LdapAuditLoggerConfigurationTest {
     @Test
     public void testPersistIntegrated() throws Exception {
         try {
-            config.removeDevice("TestAuditLoggerAndAuditRecordRepository");
+            config.removeDevice("TestAuditLoggerAndAuditRecordRepository", false);
         }  catch (ConfigurationNotFoundException e) {}
-        config.persist(createLoggerDevice("TestAuditLoggerAndAuditRecordRepository", null));
+        config.persist(createLoggerDevice("TestAuditLoggerAndAuditRecordRepository", null), false);
         validate(config.findDevice("TestAuditLoggerAndAuditRecordRepository"));
-        config.removeDevice("TestAuditLoggerAndAuditRecordRepository");
+        config.removeDevice("TestAuditLoggerAndAuditRecordRepository", false);
     }
 
     @Test
     public void testPersistSeparated() throws Exception {
         try {
-            config.removeDevice("TestAuditRecordRepository");
+            config.removeDevice("TestAuditRecordRepository", false);
         }  catch (ConfigurationNotFoundException e) {}
         try {
-            config.removeDevice("TestAuditLogger");
+            config.removeDevice("TestAuditLogger", false);
         }  catch (ConfigurationNotFoundException e) {}
         Device arrDevice = createARRDevice("TestAuditRecordRepository");
-        config.persist(arrDevice);
-        config.persist(createLoggerDevice("TestAuditLogger", arrDevice));
+        config.persist(arrDevice, false);
+        config.persist(createLoggerDevice("TestAuditLogger", arrDevice), false);
         validate(config.findDevice("TestAuditLogger"));
-        config.removeDevice("TestAuditRecordRepository");
-        config.removeDevice("TestAuditLogger");
+        config.removeDevice("TestAuditRecordRepository", false);
+        config.removeDevice("TestAuditLogger", false);
     }
 
     private Device createARRDevice(String name) {

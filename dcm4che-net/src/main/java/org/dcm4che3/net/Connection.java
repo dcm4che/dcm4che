@@ -176,6 +176,9 @@ public class Connection implements Serializable {
     @ConfigurableProperty(name = "dcmIdleTimeout", defaultValue = NO_TIMEOUT_STR)
     private int idleTimeout;
 
+    @ConfigurableProperty(name = "dcmSocketTimeout", defaultValue = NO_TIMEOUT_STR)
+    private int socketTimeout;
+
     @ConfigurableProperty(name = "dcmTCPCloseDelay", defaultValue = "50")
     private int socketCloseDelay = DEF_SOCKETDELAY;
 
@@ -282,6 +285,7 @@ public class Connection implements Serializable {
         setResponseTimeout(timeout);
         setRetrieveTimeout(timeout);
         setIdleTimeout(timeout);
+        setSocketTimeout(timeout);
     }
 
 
@@ -686,6 +690,16 @@ public class Connection implements Serializable {
         this.idleTimeout = idleTimeout;
     }
 
+    public final int getSocketTimeout() {
+        return socketTimeout;
+    }
+
+    public final void setSocketTimeout(int socketTimeout) {
+        if (socketTimeout < 0)
+            throw new IllegalArgumentException("timeout: " + socketTimeout);
+        this.socketTimeout = socketTimeout;
+    }
+
     /**
      * The TLS CipherSuites that are supported on this particular connection.
      * TLS CipherSuites shall be described using an RFC-2246 string
@@ -931,6 +945,9 @@ public class Connection implements Serializable {
         }
         if (s.getTcpNoDelay() != tcpNoDelay) {
             s.setTcpNoDelay(tcpNoDelay);
+        }
+        if (s.getSoTimeout() != socketTimeout) {
+            s.setSoTimeout(socketTimeout);
         }
     }
 
@@ -1182,7 +1199,7 @@ public class Connection implements Serializable {
 //        s.setSoTimeout(connectTimeout);
 //        @SuppressWarnings("resource")
 //        String response = new HTTPResponse(s).toString();
-//        s.setSoTimeout(0);
+//        s.setSoTimeout(socketTimeout);
 //        if (!response.startsWith("HTTP/1.1 2"))
 //            throw new IOException("Unable to tunnel through " + s
 //                    + ". Proxy returns \"" + response + '\"');
@@ -1312,6 +1329,7 @@ public class Connection implements Serializable {
         setResponseTimeout(from.responseTimeout);
         setRetrieveTimeout(from.retrieveTimeout);
         setIdleTimeout(from.idleTimeout);
+        setSocketTimeout(from.socketTimeout);
         setSocketCloseDelay(from.socketCloseDelay);
         setSendBufferSize(from.sendBufferSize);
         setReceiveBufferSize(from.receiveBufferSize);

@@ -154,6 +154,7 @@ public class StowRS {
         } catch (Exception e) {
             LOG.error("Error: \n", e);
             e.printStackTrace();
+            System.exit(2);
         }
     }
 

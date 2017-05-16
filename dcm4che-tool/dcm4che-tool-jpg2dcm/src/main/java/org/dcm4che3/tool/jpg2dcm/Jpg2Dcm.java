@@ -159,6 +159,7 @@ public class Jpg2Dcm {
         } catch (Exception e) {
             LOG.error("Error: \n", e);
             e.printStackTrace();
+            System.exit(2);
         }
     }
 

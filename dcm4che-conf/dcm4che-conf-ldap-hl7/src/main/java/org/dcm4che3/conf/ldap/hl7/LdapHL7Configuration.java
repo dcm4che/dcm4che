@@ -360,4 +360,19 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 dns.add(hl7appDN(name, appNamesRegistryDN));
         }
     }
+
+    @Override
+    protected void markForUnregister(String deviceDN, List<String> dns) throws NamingException {
+        NamingEnumeration<SearchResult> ne =
+                config.search(deviceDN, "(objectclass=hl7Application)", StringUtils.EMPTY_STRING);
+        try {
+            while (ne.hasMore()) {
+                String rdn = ne.next().getName();
+                if (!rdn.equals("hl7ApplicationName=*"))
+                    dns.add(rdn + ',' + appNamesRegistryDN);
+            }
+        } finally {
+            LdapUtils.safeClose(ne);
+        }
+    }
 }

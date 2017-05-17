@@ -112,4 +112,7 @@ public class LdapDicomConfigurationExtension {
 
     protected void markForUnregister(Device prev, Device device, List<String> dns) {
     }
+
+    protected void markForUnregister(String deviceDN, List<String> dns) throws NamingException {
+    }
 }

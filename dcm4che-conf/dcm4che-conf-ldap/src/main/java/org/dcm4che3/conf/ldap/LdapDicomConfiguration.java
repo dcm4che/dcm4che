@@ -650,25 +650,29 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         removeDeviceWithDN(deviceRef(name), unregister);
     }
 
-    private void unregister(String deviceDN) throws NamingException, ConfigurationException {
+    private void markForUnregister(String deviceDN, List<String> dns) throws NamingException {
         NamingEnumeration<SearchResult> ne =
                 search(deviceDN, "(objectclass=dicomNetworkAE)", StringUtils.EMPTY_STRING);
         try {
             while (ne.hasMore()) {
-                String aet = ne.next().getName();
-                if (!aet.equals("*"))
-                   unregisterAETitle(aet);
+                String rdn = ne.next().getName();
+                if (!rdn.equals("dicomAETitle=*"))
+                    dns.add(rdn + ',' + aetsRegistryDN);
             }
         } finally {
             LdapUtils.safeClose(ne);
         }
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.markForUnregister(deviceDN, dns);
     }
 
     private void removeDeviceWithDN(String deviceDN, boolean unregister) throws ConfigurationException {
         try {
+            ArrayList<String> destroyDNs = new ArrayList<>();
             if (unregister)
-                unregister(deviceDN);
+                markForUnregister(deviceDN, destroyDNs);
             destroySubcontextWithChilds(deviceDN);
+            unregister(destroyDNs);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
@@ -1240,7 +1244,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return  search(dn, filter, (String[]) null);
     }
 
-    private NamingEnumeration<SearchResult> search(String dn, String filter,
+    public NamingEnumeration<SearchResult> search(String dn, String filter,
             String... attrs) throws NamingException {
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);

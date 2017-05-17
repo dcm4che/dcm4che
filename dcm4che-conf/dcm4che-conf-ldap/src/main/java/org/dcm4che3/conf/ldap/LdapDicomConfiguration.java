@@ -650,16 +650,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         removeDeviceWithDN(deviceRef(name), unregister);
     }
 
-    private void unregister(String deviceDN) throws NamingException {
+    private void unregister(String deviceDN) throws NamingException, ConfigurationException {
         NamingEnumeration<SearchResult> ne =
                 search(deviceDN, "(objectclass=dicomNetworkAE)", StringUtils.EMPTY_STRING);
         try {
             while (ne.hasMore()) {
                 String aet = ne.next().getName();
                 if (!aet.equals("*"))
-                    try {
-                       ctx.destroySubcontext(aetDN(aet, aetsRegistryDN));
-                    } catch (NameNotFoundException ignore) {}
+                   unregisterAETitle(aet);
             }
         } finally {
             LdapUtils.safeClose(ne);
@@ -668,9 +666,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private void removeDeviceWithDN(String deviceDN, boolean unregister) throws ConfigurationException {
         try {
-            destroySubcontextWithChilds(deviceDN);
             if (unregister)
                 unregister(deviceDN);
+            destroySubcontextWithChilds(deviceDN);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {

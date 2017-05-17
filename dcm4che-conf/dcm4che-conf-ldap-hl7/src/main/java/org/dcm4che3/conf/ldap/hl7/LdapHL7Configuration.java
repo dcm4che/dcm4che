@@ -362,7 +362,11 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
     }
 
     @Override
-    protected void markForUnregister(String deviceDN, List<String> dns) throws NamingException {
+    protected void markForUnregister(String deviceDN, List<String> dns)
+            throws NamingException, ConfigurationException {
+        if (!appNamesRegistryExists())
+            return;
+
         NamingEnumeration<SearchResult> ne =
                 config.search(deviceDN, "(objectclass=hl7Application)", StringUtils.EMPTY_STRING);
         try {

@@ -650,7 +650,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         removeDeviceWithDN(deviceRef(name), unregister);
     }
 
-    private void markForUnregister(String deviceDN, List<String> dns) throws NamingException {
+    private void markForUnregister(String deviceDN, List<String> dns)
+            throws NamingException, ConfigurationException {
         NamingEnumeration<SearchResult> ne =
                 search(deviceDN, "(objectclass=dicomNetworkAE)", StringUtils.EMPTY_STRING);
         try {

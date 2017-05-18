@@ -40,6 +40,7 @@ package org.dcm4che3.conf.api;
 
 import java.io.Closeable;
 import java.security.cert.X509Certificate;
+import java.util.EnumSet;
 
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.ApplicationEntityInfo;
@@ -52,6 +53,10 @@ import org.dcm4che3.net.DeviceInfo;
  *
  */
 public interface DicomConfiguration extends Closeable {
+
+    enum Option {
+        REGISTER, PRESERVE_VENDOR_DATA, PRESERVE_CERTIFICATE
+    }
 
     boolean configurationExists() throws ConfigurationException;
 
@@ -93,11 +98,11 @@ public interface DicomConfiguration extends Closeable {
 
     String[] listRegisteredAETitles() throws ConfigurationException;
 
-    void persist(Device device, boolean register) throws ConfigurationException;
+    void persist(Device device, EnumSet<Option> options) throws ConfigurationException;
 
-    void merge(Device device, boolean preserveVendorData, boolean register) throws ConfigurationException;
+    void merge(Device device, EnumSet<Option> options) throws ConfigurationException;
 
-    void removeDevice(String name, boolean unregister) throws ConfigurationException;
+    void removeDevice(String name, EnumSet<Option> options) throws ConfigurationException;
 
     byte[][] loadDeviceVendorData(String deviceName) throws ConfigurationException;
 

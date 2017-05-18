@@ -46,6 +46,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.dcm4che3.audit.AuditMessages;
@@ -53,6 +54,7 @@ import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
+import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
@@ -89,27 +91,28 @@ public class LdapAuditLoggerConfigurationTest {
     @Test
     public void testPersistIntegrated() throws Exception {
         try {
-            config.removeDevice("TestAuditLoggerAndAuditRecordRepository", false);
+            config.removeDevice("TestAuditLoggerAndAuditRecordRepository", null);
         }  catch (ConfigurationNotFoundException e) {}
-        config.persist(createLoggerDevice("TestAuditLoggerAndAuditRecordRepository", null), false);
+        config.persist(createLoggerDevice("TestAuditLoggerAndAuditRecordRepository", null),
+                EnumSet.noneOf(DicomConfiguration.Option.class));
         validate(config.findDevice("TestAuditLoggerAndAuditRecordRepository"));
-        config.removeDevice("TestAuditLoggerAndAuditRecordRepository", false);
+        config.removeDevice("TestAuditLoggerAndAuditRecordRepository", null);
     }
 
     @Test
     public void testPersistSeparated() throws Exception {
         try {
-            config.removeDevice("TestAuditRecordRepository", false);
+            config.removeDevice("TestAuditRecordRepository", null);
         }  catch (ConfigurationNotFoundException e) {}
         try {
-            config.removeDevice("TestAuditLogger", false);
+            config.removeDevice("TestAuditLogger", null);
         }  catch (ConfigurationNotFoundException e) {}
         Device arrDevice = createARRDevice("TestAuditRecordRepository");
-        config.persist(arrDevice, false);
-        config.persist(createLoggerDevice("TestAuditLogger", arrDevice), false);
+        config.persist(arrDevice, null);
+        config.persist(createLoggerDevice("TestAuditLogger", arrDevice), null);
         validate(config.findDevice("TestAuditLogger"));
-        config.removeDevice("TestAuditRecordRepository", false);
-        config.removeDevice("TestAuditLogger", false);
+        config.removeDevice("TestAuditRecordRepository", null);
+        config.removeDevice("TestAuditLogger", null);
     }
 
     private Device createARRDevice(String name) {

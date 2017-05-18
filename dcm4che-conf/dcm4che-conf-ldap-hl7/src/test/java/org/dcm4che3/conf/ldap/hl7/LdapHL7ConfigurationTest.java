@@ -38,23 +38,20 @@
 
 package org.dcm4che3.conf.ldap.hl7;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
-import org.dcm4che3.conf.ldap.hl7.LdapHL7Configuration;
 import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
 import org.dcm4che3.net.Connection.Protocol;
+import org.dcm4che3.net.Device;
 import org.dcm4che3.net.hl7.HL7Application;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Arrays;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -94,15 +91,15 @@ public class LdapHL7ConfigurationTest {
     @Test
     public void testPersist() throws Exception {
         try {
-            config.removeDevice("Test-Device-1", false);
+            config.removeDevice("Test-Device-1", null);
         }  catch (ConfigurationNotFoundException e) {}
         Device device = createDevice("Test-Device-1", "TEST1^DCM4CHE");
-        config.persist(device, false);
+        config.persist(device, null);
         HL7Application app = hl7Ext.findHL7Application("TEST1^DCM4CHE");
         assertEquals(2575, app.getConnections().get(0).getPort());
         assertEquals("TEST2^DCM4CHE", app.getAcceptedSendingApplications()[0]);
         assertEquals(7, app.getAcceptedMessageTypes().length);
-        config.removeDevice("Test-Device-1", false);
+        config.removeDevice("Test-Device-1", null);
     }
 
     private static Device createDevice(String name, String appName) throws Exception {

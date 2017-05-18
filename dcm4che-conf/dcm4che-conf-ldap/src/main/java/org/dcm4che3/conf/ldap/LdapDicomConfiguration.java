@@ -475,19 +475,20 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized void persist(Device device, boolean register) throws ConfigurationException {
+    public synchronized void persist(Device device, EnumSet<Option> options) throws ConfigurationException {
         ensureConfigurationExists();
         String deviceName = device.getDeviceName();
         String deviceDN = deviceRef(deviceName);
         boolean rollback = false;
         ArrayList<String> destroyDNs = new ArrayList<>();
         try {
-            if (register)
+            if (options != null && options.contains(Option.REGISTER))
                 register(device, destroyDNs);
             createSubcontext(deviceDN, storeTo(device, new BasicAttributes(true)));
             rollback = true;
             storeChilds(deviceDN, device);
-            updateCertificates(device);
+            if (options == null || !options.contains(Option.PRESERVE_CERTIFICATE))
+                updateCertificates(device);
             rollback = false;
             destroyDNs.clear();
         } catch (NameAlreadyBoundException e) {
@@ -570,8 +571,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized void merge(Device device, boolean preserveVendorData, boolean register)
-            throws ConfigurationException {
+    public synchronized void merge(Device device, EnumSet<Option> options) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
@@ -579,6 +579,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         Device prev = loadDevice(deviceDN);
         ArrayList<String> destroyDNs = new ArrayList<>();
         try {
+            boolean register = options != null && options.contains(Option.REGISTER);
+            boolean preserveVendorData = options != null && options.contains(Option.PRESERVE_VENDOR_DATA);
             if (register) {
                 registerDiff(prev, device, destroyDNs);
             }
@@ -588,7 +590,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (register) {
                 markForUnregister(prev, device, destroyDNs);
             }
-            updateCertificates(prev, device);
+            if (options == null || !options.contains(Option.PRESERVE_CERTIFICATE))
+                updateCertificates(prev, device);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
@@ -643,11 +646,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized void removeDevice(String name, boolean unregister) throws ConfigurationException {
+    public synchronized void removeDevice(String name, EnumSet<Option> options) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
-        removeDeviceWithDN(deviceRef(name), unregister);
+        removeDeviceWithDN(deviceRef(name), options != null && options.contains(Option.REGISTER));
     }
 
     private void markForUnregister(String deviceDN, List<String> dns)

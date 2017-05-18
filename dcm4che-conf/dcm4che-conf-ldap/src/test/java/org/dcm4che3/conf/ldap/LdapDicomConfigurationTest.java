@@ -38,25 +38,19 @@
 
 package org.dcm4che3.conf.ldap;
 
-import static org.junit.Assert.*;
-
-import java.util.Arrays;
-import java.util.EnumSet;
-
-import org.dcm4che3.data.UID;
 import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DeviceInfo;
-import org.dcm4che3.net.QueryOption;
-import org.dcm4che3.net.StorageOptions;
-import org.dcm4che3.net.TransferCapability;
+import org.dcm4che3.data.UID;
+import org.dcm4che3.net.*;
 import org.dcm4che3.net.TransferCapability.Role;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.EnumSet;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -93,10 +87,10 @@ public class LdapDicomConfigurationTest {
     @Test
     public void testPersist() throws Exception {
         try {
-            config.removeDevice("Test-Device-1", false);
+            config.removeDevice("Test-Device-1", null);
         }  catch (ConfigurationNotFoundException e) {}
         Device device = createDevice("Test-Device-1", "TEST-AET1");
-        config.persist(device, false);
+        config.persist(device, null);
         ApplicationEntity ae = config.findApplicationEntity("TEST-AET1");
         assertFalse(ae.isAssociationInitiator());
         assertTrue(ae.isAssociationAcceptor());
@@ -118,10 +112,10 @@ public class LdapDicomConfigurationTest {
         assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
         assertEquals(1, config.listDeviceInfos(deviceInfo("Test-Device-1")).length);
         try {
-            config.persist(createDevice("Test-Device-1", "TEST-AET1"), false);
+            config.persist(createDevice("Test-Device-1", "TEST-AET1"), null);
             fail("ConfigurationAlreadyExistsException expected");
         } catch (ConfigurationAlreadyExistsException e) {}
-        config.removeDevice("Test-Device-1", false);
+        config.removeDevice("Test-Device-1", null);
     }
 
     private DeviceInfo deviceInfo(String deviceName) {
@@ -138,12 +132,12 @@ public class LdapDicomConfigurationTest {
     @Test
     public void testMerge() throws Exception {
         try {
-            config.removeDevice("Test-Device-1", false);
+            config.removeDevice("Test-Device-1", null);
         }  catch (ConfigurationNotFoundException e) {}
         Device device = createDevice("Test-Device-1", "TEST-AET1");
-        config.persist(device, false);
+        config.persist(device, null);
         modifyDevice(device);
-        config.merge(device, false, false);
+        config.merge(device, null);
         ApplicationEntity ae2 = config.findApplicationEntity("TEST-AET2");
         ApplicationEntity ae = ae2.getDevice().getApplicationEntity("TEST-AET1");
         assertTrue(ae.isAssociationInitiator());
@@ -162,7 +156,7 @@ public class LdapDicomConfigurationTest {
                 UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP);
         assertEquals(EnumSet.of(QueryOption.RELATIONAL, QueryOption.DATETIME),
                 findSCP.getQueryOptions());
-        config.removeDevice("Test-Device-1", false);
+        config.removeDevice("Test-Device-1", null);
     }
 
     private static Device createDevice(String name, String aet) throws Exception {

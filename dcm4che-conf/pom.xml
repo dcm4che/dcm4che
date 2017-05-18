@@ -3,7 +3,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>dcm4chee-arc-light-5.10.2</version>
+    <version>dcm4chee-arc-light-5.10.3</version>
   </parent>
   <artifactId>dcm4che-conf</artifactId>
   <packaging>pom</packaging>

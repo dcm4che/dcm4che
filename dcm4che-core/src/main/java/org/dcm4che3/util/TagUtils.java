@@ -82,6 +82,15 @@ public class TagUtils {
         return new String(s);
     }
 
+    public static String[] toHexStrings(int[] vals) {
+        int n = vals.length;
+        String[] ss = new String[n];
+        for (int i = 0; i < n; i++)
+            ss[i] = toHexString(vals[i]);
+
+        return ss;
+    }
+
     public static String toHexString(byte[] b) {
         char[] s = new char[b.length << 1];
         for (int i = 0, j = 0; i < b.length; i++) {
@@ -101,6 +110,24 @@ public class TagUtils {
             throw new IllegalArgumentException(s);
         }
         return b;
+    }
+
+    public static int intFromHexString(String s) {
+        char[] chars = s.toCharArray();
+        int val = 0;
+        for (int i = 0; i < chars.length; i++)
+            val = (val << 4) | INV_HEX_DIGITS[chars[i]];
+
+        return val;
+    }
+
+    public static int[] fromHexStrings(String[] ss) {
+        int n = ss.length;
+        int[] vals = new int[n];
+        for (int i = 0; i < n; i++)
+            vals[i] = intFromHexString(ss[i]);
+
+        return vals;
     }
 
     public static String toString(int tag) {

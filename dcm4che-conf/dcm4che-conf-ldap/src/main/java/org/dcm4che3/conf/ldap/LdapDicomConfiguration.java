@@ -584,8 +584,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (register) {
                 registerDiff(prev, device, destroyDNs);
             }
-            Attributes attrs = ctx.getAttributes(deviceDN, new String[] { "objectClass" });
-            modifyAttributes(deviceDN, storeDiffs(attrs, prev, device, new ArrayList<ModificationItem>(), preserveVendorData));
+            modifyAttributes(deviceDN, storeDiffs(prev, device, new ArrayList<ModificationItem>(), preserveVendorData));
             mergeChilds(prev, device, deviceDN, preserveVendorData);
             destroyDNs.clear();
             if (register) {
@@ -1381,9 +1380,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return tc;
     }
 
-    private List<ModificationItem> storeDiffs(Attributes attrs, Device a, Device b,
-                                              List<ModificationItem> mods, boolean preserveVendorData)
-        throws NamingException {
+    private List<ModificationItem> storeDiffs(Device a, Device b,
+                                              List<ModificationItem> mods, boolean preserveVendorData) {
         LdapUtils.storeDiff(mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
@@ -1500,7 +1498,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         	a.getTimeZoneOfDevice(),
         	b.getTimeZoneOfDevice());
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeDiffs(a, b, mods, attrs);
+            ext.storeDiffs(a, b, mods);
         return mods;
     }
 

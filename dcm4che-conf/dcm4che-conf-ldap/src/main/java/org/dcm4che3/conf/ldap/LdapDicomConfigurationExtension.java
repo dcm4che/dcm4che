@@ -78,8 +78,7 @@ public class LdapDicomConfigurationExtension {
     protected void loadChilds(Device device, String deviceDN)
             throws NamingException, ConfigurationException { }
 
-    protected void storeDiffs(Device prev, Device device, List<ModificationItem> mods, Attributes attrs)
-            throws NamingException {}
+    protected void storeDiffs(Device prev, Device device, List<ModificationItem> mods) {}
 
     protected void mergeChilds(Device prev, Device device, String deviceDN)
             throws NamingException, ConfigurationException { }

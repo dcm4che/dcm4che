@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -93,6 +93,7 @@ public class JsonConfiguration {
         writer.writeNotEmpty("dicomInstitutionDepartmentName", deviceInfo.getInstitutionalDepartmentNames());
         writer.writeNotEmpty("dicomPrimaryDeviceType", deviceInfo.getPrimaryDeviceTypes());
         gen.write("dicomInstalled", deviceInfo.getInstalled());
+        gen.write("hasArcDevExt", deviceInfo.getArcDevExt());
         gen.writeEnd();
     }
 

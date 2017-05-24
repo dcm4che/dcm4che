@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -42,7 +42,8 @@ import java.io.Serializable;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * 
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ *
  */
 public class DeviceInfo implements Serializable {
 
@@ -58,6 +59,7 @@ public class DeviceInfo implements Serializable {
     private String[] institutionNames = {};
     private String[] institutionalDepartmentNames = {};
     private Boolean installed;
+    private Boolean arcDevExt;
 
     public final String getDeviceName() {
         return deviceName;
@@ -138,6 +140,14 @@ public class DeviceInfo implements Serializable {
 
     public final void setInstalled(Boolean installed) {
         this.installed = installed;
+    }
+
+    public Boolean getArcDevExt() {
+        return arcDevExt;
+    }
+
+    public void setArcDevExt(Boolean arcDevExt) {
+        this.arcDevExt = arcDevExt;
     }
 
     @Override

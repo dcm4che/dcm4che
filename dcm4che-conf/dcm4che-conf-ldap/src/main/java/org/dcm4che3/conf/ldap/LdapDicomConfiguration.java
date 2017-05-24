@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -333,7 +333,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 "dicomInstitutionName",
                 "dicomInstitutionDepartmentName",
                 "dicomPrimaryDeviceType",
-                "dicomInstalled");
+                "dicomInstalled",
+                "objectClass");
             while (ne.hasMore()) {
                 DeviceInfo deviceInfo = new DeviceInfo();
                 loadFrom(deviceInfo, ne.next().getAttributes());
@@ -416,6 +417,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 LdapUtils.stringArray(attrs.get("dicomPrimaryDeviceType")));
         deviceInfo.setInstalled(
                 LdapUtils.booleanValue(attrs.get("dicomInstalled"), true));
+        deviceInfo.setArcDevExt(LdapUtils.hasObjectClass(attrs, "dcmArchiveDevice"));
     }
 
     private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs, String deviceName)

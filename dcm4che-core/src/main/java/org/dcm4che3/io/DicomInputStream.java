@@ -768,15 +768,13 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private void guessTransferSyntax() throws IOException {
-        byte[] b128 = new byte[128];
-        byte[] buf = buffer;
+        byte[] b132 = new byte[132];
         mark(132);
-        int rlen = read(b128);
-        if (rlen == 128) {
-            read(buf, 0, 4);
-            if (buf[0] == 'D' && buf[1] == 'I'
-                    && buf[2] == 'C' && buf[3] == 'M') {
-                preamble = b128.clone();
+        int rlen = StreamUtils.readAvailable(this, b132, 0, 132);
+        if (rlen == 132) {
+            if (b132[128] == 'D' && b132[129] == 'I' && b132[130] == 'C' && b132[131] == 'M') {
+                preamble = new byte[128];
+                System.arraycopy(b132, 0, preamble, 0, 128);
                 if (!markSupported()) {
                     hasfmi = true;
                     tsuid = UID.ExplicitVRLittleEndian;
@@ -784,17 +782,17 @@ public class DicomInputStream extends FilterInputStream
                     explicitVR = true;
                     return;
                 }
-                mark(128);
-                read(b128);
+                mark(132);
+                rlen = StreamUtils.readAvailable(this, b132, 0, 132);
             }
         }
         if (rlen < 8
-                || !guessTransferSyntax(b128, rlen, false)
-                && !guessTransferSyntax(b128, rlen, true))
+                || !guessTransferSyntax(b132, rlen, false)
+                && !guessTransferSyntax(b132, rlen, true))
             throw new DicomStreamException(NOT_A_DICOM_STREAM);
         reset();
         hasfmi = TagUtils.isFileMetaInformation(
-                ByteUtils.bytesToTag(b128, 0, bigEndian));
+                ByteUtils.bytesToTag(b132, 0, bigEndian));
     }
 
     private boolean guessTransferSyntax(byte[] b128, int rlen, boolean bigEndian)

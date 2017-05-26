@@ -52,18 +52,26 @@ import java.net.URL;
 public class StreamUtils {
     
     private static final int COPY_BUFFER_SIZE = 2048;
-    
-    public static void readFully(InputStream in, byte b[], int off, int len)
+
+    public static int readAvailable(InputStream in, byte b[], int off, int len)
             throws IOException {
         if (off < 0 || len < 0 || off + len > b.length)
             throw new IndexOutOfBoundsException();
+        int wpos = off;
         while (len > 0) {
-            int count = in.read(b, off, len);
+            int count = in.read(b, wpos, len);
             if (count < 0)
-                throw new EOFException();
-            off += count;
+                break;
+            wpos += count;
             len -= count;
         }
+        return wpos - off;
+    }
+
+    public static void readFully(InputStream in, byte b[], int off, int len)
+            throws IOException {
+        if (readAvailable(in, b, off, len) < len)
+            throw new EOFException();
     }
     
     public static  void skipFully(InputStream in, long n) throws IOException {

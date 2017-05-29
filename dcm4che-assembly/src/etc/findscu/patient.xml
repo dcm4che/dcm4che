@@ -9,8 +9,8 @@
     <DicomAttribute keyword="PatientName" tag="00100010" vr="PN">
         <PersonName number="1">
             <Alphabetic>
-                <FamilyName>Ariel</FamilyName>
-                <GivenName>Sharon</GivenName>
+                <FamilyName>PatientSurname</FamilyName>
+                <GivenName>PatientName</GivenName>
             </Alphabetic>
         </PersonName>
     </DicomAttribute>

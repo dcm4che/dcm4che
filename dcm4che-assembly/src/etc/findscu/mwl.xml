@@ -9,8 +9,8 @@
     <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN">
         <PersonName number="1">
             <Alphabetic>
-                <FamilyName>NELL</FamilyName>
-                <GivenName>FREDERICK</GivenName>
+                <FamilyName>ReferringPhysicianSurname</FamilyName>
+                <GivenName>ReferringPhysicianName</GivenName>
                 <MiddleName>P</MiddleName>
                 <NamePrefix>DR</NamePrefix>
             </Alphabetic>
@@ -19,8 +19,8 @@
     <DicomAttribute keyword="PatientName" tag="00100010" vr="PN">
         <PersonName number="1">
             <Alphabetic>
-                <FamilyName>KING</FamilyName>
-                <GivenName>MARTIN</GivenName>
+                <FamilyName>PatientSurname</FamilyName>
+                <GivenName>PatientName</GivenName>
             </Alphabetic>
         </PersonName>
     </DicomAttribute>
@@ -49,8 +49,8 @@
     <DicomAttribute keyword="RequestingPhysician" tag="00321032" vr="PN">
         <PersonName number="1">
             <Alphabetic>
-                <FamilyName>ESTRADA</FamilyName>
-                <GivenName>JAIME</GivenName>
+                <FamilyName>RequestingPhysicianSurname</FamilyName>
+                <GivenName>RequestingPhysicianName</GivenName>
                 <MiddleName>P</MiddleName>
                 <NamePrefix>DR</NamePrefix>
             </Alphabetic>

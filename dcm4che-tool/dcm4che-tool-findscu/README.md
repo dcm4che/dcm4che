@@ -5,8 +5,10 @@
     Procedure Step, the Hanging Protocol Query/Retrieve and the Color Palette
     Query/Retrieve Service Class. findscu only supports query functionality
     using the C-FIND message. It sends query keys to an Service Class Provider
-    (SCP) and waits for responses. Query keys can be specified in DICOM query
-    file(s) dcmfile_in or by options -m and -r.
+    (SCP) and waits for responses. Query keys can be specified in DICOM binary
+    file(s) dcmfile_in or xml file(s) dcmfile_in.xml or by options -m and -r.
+    For reference, tool provides sample files with query keys on PATIENT, STUDy, 
+    SERIES, IMAGE and MWL levels.
     -
     Options:
         --accept-timeout <ms>                 timeout in ms for receiving

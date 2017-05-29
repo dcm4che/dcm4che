@@ -15,8 +15,8 @@
  * Java(TM), hosted at https://github.com/gunterze/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -73,6 +73,7 @@ import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXWriter;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.AAssociateRQ;
@@ -91,6 +92,8 @@ import org.dcm4che3.util.StringUtils;
  * and waits for responses.
  * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ *
  */
 public class FindSCU {
 
@@ -484,12 +487,15 @@ public class FindSCU {
         out = null;
     }
 
-    public void query(File f) throws IOException, InterruptedException {
+    public void query(File f) throws Exception {
         Attributes attrs;
+        String filePath = f.getPath();
+        String fileExt = filePath.substring(filePath.lastIndexOf(".")+1).toLowerCase();
         DicomInputStream dis = null;
         try {
-            dis = new DicomInputStream(f);
-            attrs = dis.readDataset(-1, -1);
+            attrs = fileExt.equals("xml")
+                    ? SAXReader.parse(filePath)
+                    : new DicomInputStream(f).readDataset(-1, -1);
             if (inFilter != null) {
                 attrs = new Attributes(inFilter.length + 1);
                 attrs.addSelected(attrs, inFilter);
@@ -500,7 +506,6 @@ public class FindSCU {
         attrs.addAll(keys);
         query(attrs);
     }
-
     
    public void query() throws IOException, InterruptedException {
         query(keys);

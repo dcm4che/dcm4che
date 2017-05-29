@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NativeDicomModel xml:space="preserve">
+    <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS">
+        <Value number="1">ISO_IR 100</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="SOPClassUID" tag="00080016" vr="UI">
+        <Value number="1">1.2.840.10008.5.1.4.1.1.77.1.4.1</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="SOPInstanceUID" tag="00080018" vr="UI">
+        <Value number="1">2.25.106721503559573646259164186659116325126</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="QueryRetrieveLevel" tag="00080052" vr="CS">
+        <Value number="1">IMAGE</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="RetrieveAETitle" tag="00080054" vr="AE">
+        <Value number="1">DCM4CHEE</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="InstanceAvailability" tag="00080056" vr="CS">
+        <Value number="1">ONLINE</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI">
+        <Value number="1">2.25.212881979922684227788175379860170241869</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="SeriesInstanceUID" tag="0020000E" vr="UI">
+        <Value number="1">2.25.160113608229543500371717028072698963974</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="InstanceNumber" tag="00200013" vr="IS">
+        <Value number="1">2</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="NumberOfFrames" tag="00280008" vr="IS">
+        <Value number="1">421</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="Rows" tag="00280010" vr="US">
+        <Value number="1">240</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="Columns" tag="00280011" vr="US">
+        <Value number="1">320</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="BitsAllocated" tag="00280100" vr="US">
+        <Value number="1">8</Value>
+    </DicomAttribute>
+</NativeDicomModel>

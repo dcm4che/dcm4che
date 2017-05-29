@@ -7,8 +7,8 @@
     using the C-FIND message. It sends query keys to an Service Class Provider
     (SCP) and waits for responses. Query keys can be specified in DICOM binary
     file(s) dcmfile_in or xml file(s) dcmfile_in.xml or by options -m and -r.
-    For reference, tool provides sample files with query keys on PATIENT, STUDy, 
-    SERIES, IMAGE and MWL levels.
+    For reference, sample files (patient.xml, study.xml, series.xml, instance.xml, mwl.xml)
+    with query keys on PATIENT, STUDY, SERIES, IMAGE and MWL levels are provided in etc/findscu folder.
     -
     Options:
         --accept-timeout <ms>                 timeout in ms for receiving
@@ -262,8 +262,13 @@
                                               .19/models/NativeDICOM'
                                               attribute in root element
     -
-    Examples:
+    Example 1:
     $ findscu -c DCMQRSCP@localhost:11112 -m PatientName=Doe^John -m
     StudyDate=20110510- -m ModalitiesInStudy=CT
     Query Query/Retrieve Service Class Provider DCMQRSCP listening on local
     port 11112 for CT Studies for Patient John Doe since 2011-05-10
+    -
+    Example 2:
+    $ findscu -c DCMQRSCP@localhost:11112 /etc/findscu/study.xml
+    Query Query/Retrieve Service Class Provider DCMQRSCP listening on local
+    port 11112 with query keys provided in /etc/findscu/study.xml file

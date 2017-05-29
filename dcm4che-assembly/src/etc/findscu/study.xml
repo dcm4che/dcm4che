@@ -68,8 +68,8 @@
     <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN">
         <PersonName number="1">
             <Alphabetic>
-                <FamilyName>Goodman</FamilyName>
-                <GivenName>John</GivenName>
+                <FamilyName>ReferringPhysicianSurname</FamilyName>
+                <GivenName>ReferringPhysicianName</GivenName>
                 <NamePrefix>MD.</NamePrefix>
             </Alphabetic>
         </PersonName>
@@ -77,8 +77,8 @@
     <DicomAttribute keyword="PatientName" tag="00100010" vr="PN">
         <PersonName number="1">
             <Alphabetic>
-                <FamilyName>Ariel</FamilyName>
-                <GivenName>Sharon</GivenName>
+                <FamilyName>PatientSurname</FamilyName>
+                <GivenName>PatientName</GivenName>
             </Alphabetic>
         </PersonName>
     </DicomAttribute>

@@ -30,17 +30,17 @@ public class VersionDrivenUpgradeScript implements UpgradeScript {
             invokeMethod(firstRunMethod);
 
         } else
-            runFixUps(MMPVersion.fromStringVersion(getUpgradeContext().getUpgradeScriptMetadata().getLastVersionExecuted()));
+            runFixUps( NumericVersion.fromStringVersion(getUpgradeContext().getUpgradeScriptMetadata().getLastVersionExecuted()));
     }
 
     public void init(UpgradeContext upgradeContext) {
         this.upgradeContext = upgradeContext;
     }
 
-    private void runFixUps(MMPVersion lastExVer) {
-        TreeMap<MMPVersion, Method> methods = getFixUpMethods(lastExVer);
+    private void runFixUps(NumericVersion lastExVer) {
+        TreeMap<NumericVersion, Method> methods = getFixUpMethods(lastExVer);
 
-        for (Map.Entry<MMPVersion, Method> methodEntry : methods.entrySet()) {
+        for (Map.Entry<NumericVersion, Method> methodEntry : methods.entrySet()) {
             log.info("[" + this.getClass().getName() + "] Invoking fix-up method " + methodEntry.getValue().getName() + " (fixUpTo " + methodEntry.getKey() + ")");
             invokeMethod(methodEntry.getValue());
         }
@@ -56,19 +56,19 @@ public class VersionDrivenUpgradeScript implements UpgradeScript {
         throw new RuntimeException("Method annotated with 'UpgradeGoalFromScratch' not found in " + this.getClass().getName());
     }
 
-    public TreeMap<MMPVersion, Method> getFixUpMethods(MMPVersion lastExVer) {
+    public TreeMap<NumericVersion, Method> getFixUpMethods(NumericVersion lastExVer) {
         // Fix-ups are ran ordered according to @FixUpTo's values thus TreeMap
-        TreeMap<MMPVersion, Method> methods = new TreeMap<MMPVersion, Method>();
+        TreeMap<NumericVersion, Method> methods = new TreeMap<NumericVersion, Method>();
 
         for (Method method : this.getClass().getDeclaredMethods()) {
             FixUpTo annotation = method.getAnnotation(FixUpTo.class);
 
             if (annotation != null) {
 
-                MMPVersion mmpVersion = MMPVersion.fromFixUpToAnno(annotation);
+                NumericVersion numericVersion = NumericVersion.fromFixUpToAnno(annotation);
 
-                if (mmpVersion.compareTo(lastExVer) <= 0)
-                    methods.put(mmpVersion, method);
+                if ( numericVersion.compareTo(lastExVer) <= 0)
+                    methods.put( numericVersion, method);
             }
         }
         return methods;

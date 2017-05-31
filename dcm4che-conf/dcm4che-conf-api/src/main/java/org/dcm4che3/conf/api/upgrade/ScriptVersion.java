@@ -53,13 +53,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ScriptVersion {
 
-    /**
-     * Use major-minor-patch instead!
-     */
-    @Deprecated
     String value() default "";
 
-    int major() default -1;
-    int minor() default -1;
-    int patch() default -1;
 }

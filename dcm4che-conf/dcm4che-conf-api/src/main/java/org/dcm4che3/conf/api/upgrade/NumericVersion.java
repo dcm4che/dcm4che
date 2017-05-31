@@ -4,13 +4,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Major-minor-patch version
+ * Major-minor-revision-patch version
  */
 public class NumericVersion implements Comparable<NumericVersion> {
 
     /**
-     * Matches both 8.2.1-02 and 8.1-33
-     * ignores the .1 in  8.2.1-02
+     * All components must be provided
+     * 8.1-33 no match since revision is missing
+     * 8.1.1 no match since patch is missing
+     * 8.1.1-0 match
      */
     private static Pattern stringVersionFormat = Pattern.compile("([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)");
     //  "(?<major>[0-9]+)\\.(?<minor>[0-9]+)(\\.([0-9]+))?-(?<patch>[0-9]+)");

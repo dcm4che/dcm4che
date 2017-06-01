@@ -2044,7 +2044,7 @@ public class Attributes implements Serializable {
                     Object origValue = vrs[j].isStringType() ? decodeStringValue(j) : values[j];
                     if (updatePolicy == UpdatePolicy.SUPPLEMENT && !isEmpty(origValue))
                         continue;
-                    if (modified != null && !modified.contains(privateCreator, tag)) {
+                    if (modified != null && !isEmpty(origValue) && !modified.contains(privateCreator, tag)) {
                         if (origValue instanceof Sequence) {
                             modified.set(privateCreator, tag, (Sequence) origValue, null);
                         } else if (origValue instanceof Fragments) {

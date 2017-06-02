@@ -52,6 +52,7 @@ import java.io.IOException;
 public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInputStream {
 
     private final DicomInputStream dis;
+    private final int frames;
     private final byte[] basicOffsetTable;
     private final int frameStartWord;
     private int fragmStartWord;
@@ -60,9 +61,10 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
     private long frameEndPos = -1L;
     private boolean endOfStream;
 
-    public EncapsulatedPixelDataImageInputStream(DicomInputStream dis) throws IOException {
+    public EncapsulatedPixelDataImageInputStream(DicomInputStream dis, int frames) throws IOException {
         super(dis);
         this.dis = dis;
+        this.frames = frames;
         dis.readItemHeader();
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
@@ -130,7 +132,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         if (streamPos < fragmEndPos)
             return false;
 
-        if (readItemHeader() && fragmStartWord != frameStartWord)
+        if (readItemHeader() && !(frames > 1 && fragmStartWord == frameStartWord))
             return false;
 
         frameEndPos = streamPos;

@@ -389,7 +389,7 @@ public class Transcoder implements Closeable {
     }
 
     private void initEncapsulatedPixelData() throws IOException {
-        encapsulatedPixelData = new EncapsulatedPixelDataImageInputStream(dis);
+        encapsulatedPixelData = new EncapsulatedPixelDataImageInputStream(dis, imageDescriptor.getFrames());
     }
 
     private void decompressPixelData() throws IOException {

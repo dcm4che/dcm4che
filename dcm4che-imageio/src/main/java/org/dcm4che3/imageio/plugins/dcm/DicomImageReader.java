@@ -582,7 +582,7 @@ public class DicomImageReader extends ImageReader {
                 pixelDataVR = dis.vr();
                 pixelDataLength = dis.length();
                 if (pixelDataLength == -1)
-                    epdiis = new EncapsulatedPixelDataImageInputStream(dis);
+                    epdiis = new EncapsulatedPixelDataImageInputStream(dis, ds.getInt(Tag.NumberOfFrames, 1));
             }
             setMetadata(new DicomMetaData(fmi, ds));
             return;

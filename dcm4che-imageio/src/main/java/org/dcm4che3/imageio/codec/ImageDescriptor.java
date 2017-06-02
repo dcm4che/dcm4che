@@ -64,7 +64,7 @@ public final class ImageDescriptor {
     private final String bodyPartExamined;
     private final int frames;
     private final int[] embeddedOverlays;
-    private final boolean banded;
+    private final int planarConfiguration;
 
     public ImageDescriptor(Attributes attrs) {
         this.rows = attrs.getInt(Tag.Rows, 0);
@@ -75,7 +75,7 @@ public final class ImageDescriptor {
         this.bitsAllocated = attrs.getInt(Tag.BitsAllocated, 8);
         this.bitsStored = attrs.getInt(Tag.BitsStored, bitsAllocated);
         this.pixelRepresentation = attrs.getInt(Tag.PixelRepresentation, 0);
-        this.banded = attrs.getInt(Tag.PlanarConfiguration, 0) != 0;
+        this.planarConfiguration = attrs.getInt(Tag.PlanarConfiguration, 0);
         this.sopClassUID = attrs.getString(Tag.SOPClassUID);
         this.bodyPartExamined = attrs.getString(Tag.BodyPartExamined);
         this.frames = attrs.getInt(Tag.NumberOfFrames, 1);
@@ -110,6 +110,10 @@ public final class ImageDescriptor {
         return pixelRepresentation;
     }
 
+    public int getPlanarConfiguration() {
+        return planarConfiguration;
+    }
+
     public String getSopClassUID() {
         return sopClassUID;
     }
@@ -135,7 +139,7 @@ public final class ImageDescriptor {
     }
 
     public boolean isBanded() {
-        return banded;
+        return planarConfiguration != 0;
     }
 
     public int[] getEmbeddedOverlays() {

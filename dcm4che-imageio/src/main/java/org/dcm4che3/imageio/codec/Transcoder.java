@@ -450,12 +450,17 @@ public class Transcoder implements Closeable {
     private void adjustDataset() {
         if (imageDescriptor.getSamples() == 3) {
             PhotometricInterpretation pmi = imageDescriptor.getPhotometricInterpretation();
-            if (decompressor != null)
+            int planarConfiguration = imageDescriptor.getPlanarConfiguration();
+            if (decompressor != null) {
                 pmi = pmi.decompress();
-            if (compressor != null)
+                planarConfiguration = srcTransferSyntaxType.getPlanarConfiguration();
+            }
+            if (compressor != null) {
                 pmi = pmi.compress(destTransferSyntax);
+                planarConfiguration = destTransferSyntaxType.getPlanarConfiguration();
+            }
             dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmi.toString());
-            dataset.setInt(Tag.PlanarConfiguration, VR.US, destTransferSyntaxType.getPlanarConfiguration());
+            dataset.setInt(Tag.PlanarConfiguration, VR.US, planarConfiguration);
         }
     }
 

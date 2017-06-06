@@ -74,7 +74,7 @@ public class MPEGHeader {
     private final byte[] data;
     private final int seqHeaderOffset;
 
-    public MPEGHeader(byte[] data) throws IOException {
+    public MPEGHeader(byte[] data) {
         this.data = data;
         int remaining = data.length;
         int i = 0;

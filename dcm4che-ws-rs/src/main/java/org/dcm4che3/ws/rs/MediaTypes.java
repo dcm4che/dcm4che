@@ -299,6 +299,14 @@ public class MediaTypes {
         return UID.ExplicitVRLittleEndian;
     }
 
+    public static String sopClassOf(MediaType bulkdataMediaType) {
+        String type = bulkdataMediaType.getType().toLowerCase();
+        return type.equals("image") ? UID.SecondaryCaptureImageStorage
+                : type.equals("video") ? UID.VideoPhotographicImageStorage
+                : equalsIgnoreParameters(bulkdataMediaType, APPLICATION_PDF_TYPE) ? UID.EncapsulatedPDFStorage
+                : null;
+    }
+
     public static boolean equalsIgnoreParameters(MediaType type1, MediaType type2) {
         return type1.getType().equalsIgnoreCase(type2.getType())
                 &&  type1.getSubtype().equalsIgnoreCase(type2.getSubtype());

@@ -60,17 +60,22 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.data.ElementDictionary;
+
 import org.dcm4che3.imageio.codec.jpeg.JPEGHeader;
 import org.dcm4che3.imageio.codec.mpeg.MPEGHeader;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
+import org.dcm4che3.net.Status;
+import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StreamUtils;
+import org.dcm4che3.util.TagUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
-
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
@@ -97,6 +102,32 @@ public class Jpg2Dcm {
     private JPEGHeader jpegHeader;
     private Path pixelDataFile;
     private byte[] pixelData;
+    private String sopCUID;
+    private String tsUID;
+
+
+    private static final int INIT_BUFFER_SIZE = 8192;
+    private static final int MAX_BUFFER_SIZE = 10485768;
+    private static final String patName = "JPG2DCM-PatientName";
+
+    private static final int[] IUIDS_TAGS = {
+            Tag.StudyInstanceUID,
+            Tag.SeriesInstanceUID,
+            Tag.SOPInstanceUID
+    };
+
+    private static final int[] IMAGE_PIXEL_TAGS = {
+            Tag.SamplesPerPixel,
+            Tag.PhotometricInterpretation,
+            Tag.Rows,
+            Tag.Columns,
+            Tag.BitsAllocated,
+            Tag.BitsStored,
+            Tag.HighBit,
+            Tag.PixelRepresentation
+    };
+    private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
+
 
     public Jpg2Dcm() {
     }
@@ -142,8 +173,7 @@ public class Jpg2Dcm {
                 throw new MissingArgumentException("Either input pixel data file or output binary file is missing. See example in jpg2dcm help.");
             jpg2Dcm.pixelDataFile = Paths.get(cl.getArgs()[0]);
             jpg2Dcm.noAPPn = Boolean.valueOf(cl.getOptionValue("na"));
-            Extension ext = getExt(jpg2Dcm.pixelDataFile.toFile().getName());
-            Attributes metadata = getMetadata(jpg2Dcm, ext);
+            Attributes metadata = getMetadata(jpg2Dcm);
 
             @SuppressWarnings("rawtypes")
             File dcmFile = new File(cl.getArgs()[1]);
@@ -181,9 +211,8 @@ public class Jpg2Dcm {
         return temp;
     }
 
-    private static Attributes getMetadata(Jpg2Dcm jpg2Dcm, Extension ext)
-            throws Exception {
-        Attributes metadata = defaultMetadata();
+    private static Attributes getMetadata(Jpg2Dcm jpg2Dcm) throws Exception {
+        Attributes metadata = new Attributes();
         String metadataFile = jpg2Dcm.metadataFile;
         if (metadataFile != null) {
             String metadataFileExt = metadataFile.substring(metadataFile.lastIndexOf(".")+1).toLowerCase();
@@ -193,32 +222,36 @@ public class Jpg2Dcm {
             metadata = SAXReader.parse(filePath.toString());
         }
         coerceAttributes(metadata, jpg2Dcm);
-        switch (ext) {
-            case jpg:
-            case jpeg:
-                metadata.setString(Tag.SOPClassUID, VR.UI, metadata.getString(Tag.SOPClassUID, UID.SecondaryCaptureImageStorage));
-                metadata.setString(Tag.TransferSyntaxUID, VR.UI, metadata.getString(Tag.TransferSyntaxUID, UID.JPEGBaseline1));
-                readPixelHeader(jpg2Dcm, metadata, jpg2Dcm.pixelDataFile, false);
-                break;
-            case mpg:
-            case mpeg:
-            case mpg2:
-                metadata.setString(Tag.SOPClassUID, VR.UI, metadata.getString(Tag.SOPClassUID, UID.VideoPhotographicImageStorage));
-                metadata.setString(Tag.TransferSyntaxUID, VR.UI, metadata.getString(Tag.TransferSyntaxUID, UID.MPEG2));
-                readPixelHeader(jpg2Dcm, metadata, jpg2Dcm.pixelDataFile, true);
-                break;
-        }
+        readHeader(jpg2Dcm, metadata);
+        verifyImagePixelModule(metadata);
+        supplementUIDs(metadata, jpg2Dcm);
         return metadata;
     }
 
-    private static Attributes defaultMetadata() throws ParserConfigurationException, SAXException, IOException {
-        LOG.info("Always first set default metadata in the event of required attributes not set/sent by user.");
-        Attributes metadata = new Attributes();
-        metadata.setString(Tag.PatientName, VR.PN, "JPG2DCM-PatientName");
-        metadata.setString(Tag.StudyInstanceUID, VR.UI, UIDUtils.createUID());
-        metadata.setString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
-        metadata.setString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
-        return metadata;
+    private static void readHeader(Jpg2Dcm jpg2Dcm, Attributes metadata) throws Exception {
+        CompressedPixelData compressedPixelData = CompressedPixelData.valueOf(jpg2Dcm);
+        if (compressedPixelData == null)
+            throw new IllegalArgumentException(
+                    "Specified file for conversion is not Pixel Data Type. Read jpg2dcm help for supported extension types.");
+        int fileLen = (int)Files.size(jpg2Dcm.pixelDataFile);
+        try(BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(jpg2Dcm.pixelDataFile))) {
+            byte[] header = ByteUtils.EMPTY_BYTES;
+            int rl = 0;
+            int grow = INIT_BUFFER_SIZE;
+            while (rl == header.length && rl < MAX_BUFFER_SIZE) {
+                header = Arrays.copyOf(header, grow += rl);
+                rl += StreamUtils.readAvailable(bis, header, rl, header.length - rl);
+                if (compressedPixelData.parseHeader(jpg2Dcm, header, metadata)) {
+                    byte[] bTemp = Arrays.copyOf(header, fileLen);
+                    StreamUtils.readAvailable(bis, bTemp, header.length, fileLen - header.length);
+                    int off = 0;
+                    if (jpg2Dcm.noAPPn)
+                        off = jpg2Dcm.jpegHeader.offsetAfterAPP();
+                    jpg2Dcm.pixelData = Arrays.copyOfRange(bTemp, off, fileLen);
+                    return;
+                }
+            }
+        }
     }
 
     private static void coerceAttributes(Attributes metadata, Jpg2Dcm jpg2Dcm) {
@@ -229,43 +262,65 @@ public class Jpg2Dcm {
         LOG.info(jpg2Dcm.keys.toString());
     }
 
-    enum Extension {
-        mpg, mpg2, mpeg, jpeg, jpg
-    }
-    private static Extension getExt(String file) {
-        String fileExt = file.substring(file.lastIndexOf(".")+1).toLowerCase();
-        for (Extension ext : Extension.values())
-            if (ext.name().equals(fileExt))
-                return ext;
-        throw new IllegalArgumentException("Specified file for conversion is not Pixel Data Type. Read jpg2dcm help for supported extension types.");
+    private enum CompressedPixelData {
+        JPEG {
+            @Override
+            boolean parseHeader(Jpg2Dcm jpg2Dcm, byte[] header, Attributes metadata) {
+                jpg2Dcm.jpegHeader = new JPEGHeader(header, org.dcm4che3.imageio.codec.jpeg.JPEG.SOS);
+                return jpg2Dcm.jpegHeader.toAttributes(metadata) != null;
+            }
+        },
+        MPEG {
+            @Override
+            boolean parseHeader(Jpg2Dcm jpg2Dcm, byte[] header, Attributes metadata) {
+                return new MPEGHeader(header).toAttributes(metadata, jpg2Dcm.pixelDataFile.toFile().length()) != null;
+            }
+        };
+
+        abstract boolean parseHeader(Jpg2Dcm jpg2Dcm, byte[] header, Attributes metadata);
+
+        static CompressedPixelData valueOf(Jpg2Dcm jpg2Dcm) {
+            String fileName = jpg2Dcm.pixelDataFile.toFile().getName();
+            String fileExt = fileName.substring(fileName.lastIndexOf(".")+1).toLowerCase();
+            if (fileExt.equals("jpg") || fileExt.equals("jpeg")) {
+                jpg2Dcm.sopCUID = UID.SecondaryCaptureImageStorage;
+                jpg2Dcm.tsUID = UID.JPEGBaseline1;
+                return JPEG;
+            }
+            if (fileExt.equals("mpg") || fileExt.equals("mpeg") || fileExt.equals("mpg2")) {
+                jpg2Dcm.sopCUID = UID.VideoPhotographicImageStorage;
+                jpg2Dcm.tsUID = UID.MPEG2;
+                return MPEG;
+            }
+            return null;
+        }
+
     }
 
-    private static void readPixelHeader(Jpg2Dcm jpg2Dcm, Attributes metadata, Path pixelDataFile, boolean isMpeg)
-            throws Exception {
-        int fileLen = (int)Files.size(pixelDataFile);
-        try(BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(pixelDataFile))) {
-            byte[] b16384 = new byte[16384];
-            StreamUtils.readAvailable(bis, b16384, 0, 16384);
-            jpg2Dcm.pixelData = new byte[fileLen];
-            if (isMpeg) {
-                MPEGHeader mpegHeader = new MPEGHeader(b16384);
-                mpegHeader.toAttributes(metadata, Files.size(pixelDataFile));
-                jpg2Dcm.pixelData = Arrays.copyOf(b16384, fileLen);
-                StreamUtils.readAvailable(bis, jpg2Dcm.pixelData, 16384, fileLen-16384);
-            } else {
-                jpg2Dcm.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
-                jpg2Dcm.jpegHeader.toAttributes(metadata);
-                if (jpg2Dcm.noAPPn) {
-                    int off = jpg2Dcm.jpegHeader.offsetAfterAPP();
-                    byte[] bTemp = Arrays.copyOf(b16384, fileLen);
-                    StreamUtils.readAvailable(bis, bTemp, 16384, fileLen - 16384);
-                    jpg2Dcm.pixelData = Arrays.copyOfRange(bTemp, off, fileLen);
-                } else {
-                    jpg2Dcm.pixelData = Arrays.copyOf(b16384, fileLen);
-                    StreamUtils.readAvailable(bis, jpg2Dcm.pixelData, 16384, fileLen - 16384);
-                }
-            }
-        }
+    private static void verifyImagePixelModule(Attributes metadata) throws DicomServiceException {
+        for (int tag : IMAGE_PIXEL_TAGS)
+            if (!metadata.containsValue(tag))
+                throw missingAttribute(tag);
+        if (metadata.getInt(Tag.SamplesPerPixel, 1) > 1 && !metadata.containsValue(Tag.PlanarConfiguration))
+            throw missingAttribute(Tag.PlanarConfiguration);
+    }
+
+    private static DicomServiceException missingAttribute(int tag) {
+        return new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass,
+                "Missing " + DICT.keywordOf(tag) + " " + TagUtils.toString(tag));
+    }
+
+    private static void supplementUIDs(Attributes metadata, Jpg2Dcm jpg2Dcm) {
+        LOG.info("Set defaults, if required attributes are not present.");
+        if (!metadata.containsValue(Tag.SOPClassUID))
+            metadata.setString(Tag.SOPClassUID, VR.UI, jpg2Dcm.sopCUID);
+        if (!metadata.containsValue(Tag.TransferSyntaxUID))
+            metadata.setString(Tag.TransferSyntaxUID, VR.UI, jpg2Dcm.tsUID);
+        if (!metadata.containsValue(Tag.PatientName))
+            metadata.setString(Tag.PatientName, VR.PN, patName);
+        for (int tag : IUIDS_TAGS)
+            if (!metadata.containsValue(tag))
+                metadata.setString(tag, VR.UI, UIDUtils.createUID());
     }
 
 }

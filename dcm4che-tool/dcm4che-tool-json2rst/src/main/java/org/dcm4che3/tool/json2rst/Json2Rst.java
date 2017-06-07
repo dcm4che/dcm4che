@@ -146,23 +146,17 @@ public class Json2Rst {
 
     private void writePropertiesTo(JsonObject doc, PrintStream out, ArrayList<String> refs) throws IOException {
         JsonObject properties = doc.getJsonObject("properties");
-        HashSet<String> required = new HashSet<>();
-        JsonArray jsonArray = doc.getJsonArray("required");
-        if (jsonArray != null)
-            for (JsonValue jsonValue : jsonArray) {
-                required.add(((JsonString) jsonValue).getString());
-            }
         for (String name : properties.keySet()) {
             JsonObject property = properties.getJsonObject(name);
             if (property.containsKey("properties"))
                 writePropertiesTo(property, out, refs);
             else
-                writePropertyTo(property, required.contains(name), name, out, refs);
+                writePropertyTo(property, name, out, refs);
         }
     }
 
-    private void writePropertyTo(JsonObject property, boolean required, String name, PrintStream out,
-                                 ArrayList<String> refs) throws IOException {
+    private void writePropertyTo(JsonObject property, String name, PrintStream out, ArrayList<String> refs)
+            throws IOException {
         JsonObject items = property.getJsonObject("items");
         JsonObject typeObj = items == null ? property : items;
         out.print("    \"");
@@ -180,16 +174,24 @@ public class Json2Rst {
             }
         } else {
             type = typeObj.getString("type");
-            if (required) out.print("**");
             out.print(property.getString("title"));
             if (items != null) out.print("(s)");
-            if (required) out.print("**");
         }
 
         out.print("\",");
         out.print(type);
         out.print(",\"");
         out.print(property.getString("description").replace("\"","\"\""));
+        JsonArray anEnum = property.getJsonArray("enum");
+        if (anEnum != null) {
+            out.print(" Enumerated values: ");
+            int last = anEnum.size()-1;
+            for (int i = 0; i <= last; i++) {
+                if (i > 0)
+                    out.print(i < last ? ", " : " or ");
+                out.print(anEnum.get(i).toString().replace("\"",""));
+            }
+        }
         out.println("\",\"");
         out.print("    .. _");
         out.print(name);

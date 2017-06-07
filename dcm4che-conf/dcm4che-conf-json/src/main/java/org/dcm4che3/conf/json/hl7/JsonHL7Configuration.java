@@ -100,12 +100,12 @@ public class JsonHL7Configuration extends JsonConfigurationExtension {
 
     private void writeTo(Device device, HL7Application hl7App, JsonWriter writer) {
         writer.writeStartObject();
-        writer.writeNotNull("hl7ApplicationName", hl7App.getApplicationName());
+        writer.writeNotNullOrDef("hl7ApplicationName", hl7App.getApplicationName(), null);
         writer.writeNotNull("dicomInstalled", hl7App.getInstalled());
         writer.writeConnRefs(device.listConnections(), hl7App.getConnections());
         writer.writeNotEmpty("hl7AcceptedSendingApplication", hl7App.getAcceptedSendingApplications());
         writer.writeNotEmpty("hl7AcceptedMessageType", hl7App.getAcceptedMessageTypes());
-        writer.writeNotNull("hl7DefaultCharacterSet", hl7App.getHL7DefaultCharacterSet());
+        writer.writeNotNullOrDef("hl7DefaultCharacterSet", hl7App.getHL7DefaultCharacterSet(), "ASCII");
         for (JsonHL7ConfigurationExtension ext : extensions)
             ext.storeTo(hl7App, device, writer);
         writer.writeEnd();

@@ -41,7 +41,6 @@
 package org.dcm4che3.conf.json;
 
 import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
 
 import javax.json.stream.JsonGenerator;
 import java.util.List;
@@ -90,8 +89,8 @@ public class JsonWriter {
         return gen.write(value);
     }
 
-    public void writeNotNull(String name, Object value) {
-        if (value != null)
+    public <T> void writeNotNullOrDef(String name, T value, T defVal) {
+        if (value != null && !value.equals(defVal))
             gen.write(name, value.toString());
     }
 
@@ -100,18 +99,33 @@ public class JsonWriter {
             gen.write(name, value.booleanValue());
     }
 
-    public void writeNotNull(String name, TimeZone value) {
-        if (value != null)
+    public void writeNotNullOrDef(String name, TimeZone value, TimeZone defVal) {
+        if (value != null && !value.equals(defVal))
             gen.write(name, value.getID());
     }
 
-    public void writeNotEmpty(String name, Object[] values) {
-        if (values.length != 0) {
+    public <T> void writeNotEmpty(String name, T[] values, T... defVals) {
+        if (values.length != 0 && !equals(values, defVals)) {
             gen.writeStartArray(name);
             for (Object value : values)
                 gen.write(value.toString());
             gen.writeEnd();
         }
+    }
+
+    public static <T> boolean equals(T[] a, T[] a2) {
+        int length = a.length;
+        if (a2.length != length)
+            return false;
+
+        outer:
+        for (Object o1 : a) {
+            for (Object o2 : a2)
+                if (o1.equals(o2))
+                    continue outer;
+            return false;
+        }
+        return true;
     }
 
     public void writeNotEmpty(String name, int[] values) {

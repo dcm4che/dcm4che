@@ -42,7 +42,6 @@ package org.dcm4che3.conf.json;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.net.*;
-import org.dcm4che3.util.StringUtils;
 
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;
@@ -84,11 +83,11 @@ public class JsonConfiguration {
         JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();
         gen.write("dicomDeviceName", deviceInfo.getDeviceName());
-        writer.writeNotNull("dicomDescription", deviceInfo.getDescription());
-        writer.writeNotNull("dicomManufacturer", deviceInfo.getManufacturer());
-        writer.writeNotNull("dicomManufacturerModelName", deviceInfo.getManufacturerModelName());
+        writer.writeNotNullOrDef("dicomDescription", deviceInfo.getDescription(), null);
+        writer.writeNotNullOrDef("dicomManufacturer", deviceInfo.getManufacturer(), null);
+        writer.writeNotNullOrDef("dicomManufacturerModelName", deviceInfo.getManufacturerModelName(), null);
         writer.writeNotEmpty("dicomSoftwareVersion", deviceInfo.getSoftwareVersions());
-        writer.writeNotNull("dicomStationName", deviceInfo.getStationName());
+        writer.writeNotNullOrDef("dicomStationName", deviceInfo.getStationName(), null);
         writer.writeNotEmpty("dicomInstitutionName", deviceInfo.getInstitutionNames());
         writer.writeNotEmpty("dicomInstitutionDepartmentName", deviceInfo.getInstitutionalDepartmentNames());
         writer.writeNotEmpty("dicomPrimaryDeviceType", deviceInfo.getPrimaryDeviceTypes());
@@ -100,10 +99,10 @@ public class JsonConfiguration {
     public void writeTo(ApplicationEntityInfo aetInfo, JsonGenerator gen, boolean extended) {
         JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();
-        writer.writeNotNull("dicomDeviceName", aetInfo.getDeviceName());
-        writer.writeNotNull("dicomAETitle", aetInfo.getAETitle());
+        writer.writeNotNullOrDef("dicomDeviceName", aetInfo.getDeviceName(), null);
+        writer.writeNotNullOrDef("dicomAETitle", aetInfo.getAETitle(), null);
         writer.writeNotEmpty("dcmOtherAETitle", aetInfo.getOtherAETitle());
-        writer.writeNotNull("dicomDescription", aetInfo.getDescription());
+        writer.writeNotNullOrDef("dicomDescription", aetInfo.getDescription(), null);
         gen.write("dicomAssociationInitiator", aetInfo.getAssociationInitiator());
         gen.write("dicomAssociationAcceptor", aetInfo.getAssociationAcceptor());
         writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationCluster());
@@ -120,22 +119,22 @@ public class JsonConfiguration {
     public void writeTo(Device device, JsonGenerator gen, boolean extended) {
         JsonWriter writer = new JsonWriter(gen);
         writer.writeStartObject();
-        writer.writeNotNull("dicomDeviceName", device.getDeviceName());
-        writer.writeNotNull("dicomDescription", device.getDescription());
-        writer.writeNotNull("dicomDeviceUID", device.getDeviceUID());
-        writer.writeNotNull("dicomManufacturer", device.getManufacturer());
-        writer.writeNotNull("dicomManufacturerModelName", device.getManufacturerModelName());
+        writer.writeNotNullOrDef("dicomDeviceName", device.getDeviceName(), null);
+        writer.writeNotNullOrDef("dicomDescription", device.getDescription(), null);
+        writer.writeNotNullOrDef("dicomDeviceUID", device.getDeviceUID(), null);
+        writer.writeNotNullOrDef("dicomManufacturer", device.getManufacturer(), null);
+        writer.writeNotNullOrDef("dicomManufacturerModelName", device.getManufacturerModelName(), null);
         writer.writeNotEmpty("dicomSoftwareVersion", device.getSoftwareVersions());
-        writer.writeNotNull("dicomStationName", device.getStationName());
-        writer.writeNotNull("dicomDeviceSerialNumber", device.getDeviceSerialNumber());
-        writer.writeNotNull("dicomIssuerOfPatientID", device.getIssuerOfPatientID());
-        writer.writeNotNull("dicomIssuerOfAccessionNumber", device.getIssuerOfAccessionNumber());
-        writer.writeNotNull("dicomOrderPlacerIdentifier", device.getOrderPlacerIdentifier());
-        writer.writeNotNull("dicomOrderFillerIdentifier", device.getOrderFillerIdentifier());
-        writer.writeNotNull("dicomIssuerOfAdmissionID", device.getIssuerOfAdmissionID());
-        writer.writeNotNull("dicomIssuerOfServiceEpisodeID", device.getIssuerOfServiceEpisodeID());
-        writer.writeNotNull("dicomIssuerOfContainerIdentifier", device.getIssuerOfContainerIdentifier());
-        writer.writeNotNull("dicomIssuerOfSpecimenIdentifier", device.getIssuerOfSpecimenIdentifier());
+        writer.writeNotNullOrDef("dicomStationName", device.getStationName(), null);
+        writer.writeNotNullOrDef("dicomDeviceSerialNumber", device.getDeviceSerialNumber(), null);
+        writer.writeNotNullOrDef("dicomIssuerOfPatientID", device.getIssuerOfPatientID(), null);
+        writer.writeNotNullOrDef("dicomIssuerOfAccessionNumber", device.getIssuerOfAccessionNumber(), null);
+        writer.writeNotNullOrDef("dicomOrderPlacerIdentifier", device.getOrderPlacerIdentifier(), null);
+        writer.writeNotNullOrDef("dicomOrderFillerIdentifier", device.getOrderFillerIdentifier(), null);
+        writer.writeNotNullOrDef("dicomIssuerOfAdmissionID", device.getIssuerOfAdmissionID(), null);
+        writer.writeNotNullOrDef("dicomIssuerOfServiceEpisodeID", device.getIssuerOfServiceEpisodeID(), null);
+        writer.writeNotNullOrDef("dicomIssuerOfContainerIdentifier", device.getIssuerOfContainerIdentifier(), null);
+        writer.writeNotNullOrDef("dicomIssuerOfSpecimenIdentifier", device.getIssuerOfSpecimenIdentifier(), null);
         writer.writeNotEmpty("dicomInstitutionName", device.getInstitutionNames());
         writer.writeNotEmpty("dicomInstitutionCode", device.getInstitutionCodes());
         writer.writeNotEmpty("dicomInstitutionAddress", device.getInstitutionAddresses());
@@ -152,17 +151,17 @@ public class JsonConfiguration {
         if (extended) {
             gen.writeStartObject("dcmDevice");
             writer.writeNotDef("dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
-            writer.writeNotNull("dcmTrustStoreURL", device.getTrustStoreURL());
-            writer.writeNotNull("dcmTrustStoreType", device.getTrustStoreType());
-            writer.writeNotNull("dcmTrustStorePin", device.getTrustStorePin());
-            writer.writeNotNull("dcmTrustStorePinProperty", device.getTrustStorePinProperty());
-            writer.writeNotNull("dcmKeyStoreURL", device.getKeyStoreURL());
-            writer.writeNotNull("dcmKeyStoreType", device.getKeyStoreType());
-            writer.writeNotNull("dcmKeyStorePin", device.getKeyStorePin());
-            writer.writeNotNull("dcmKeyStorePinProperty", device.getKeyStorePinProperty());
-            writer.writeNotNull("dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
-            writer.writeNotNull("dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
-            writer.writeNotNull("dcmTimeZoneOfDevice", device.getTimeZoneOfDevice());
+            writer.writeNotNullOrDef("dcmTrustStoreURL", device.getTrustStoreURL(), null);
+            writer.writeNotNullOrDef("dcmTrustStoreType", device.getTrustStoreType(), null);
+            writer.writeNotNullOrDef("dcmTrustStorePin", device.getTrustStorePin(), null);
+            writer.writeNotNullOrDef("dcmTrustStorePinProperty", device.getTrustStorePinProperty(), null);
+            writer.writeNotNullOrDef("dcmKeyStoreURL", device.getKeyStoreURL(), null);
+            writer.writeNotNullOrDef("dcmKeyStoreType", device.getKeyStoreType(), null);
+            writer.writeNotNullOrDef("dcmKeyStorePin", device.getKeyStorePin(), null);
+            writer.writeNotNullOrDef("dcmKeyStorePinProperty", device.getKeyStorePinProperty(), null);
+            writer.writeNotNullOrDef("dcmKeyStoreKeyPin", device.getKeyStoreKeyPin(), null);
+            writer.writeNotNullOrDef("dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty(), null);
+            writer.writeNotNullOrDef("dcmTimeZoneOfDevice", device.getTimeZoneOfDevice(), null);
             gen.writeEnd();
             for (JsonConfigurationExtension ext : extensions)
                 ext.storeTo(device, writer);
@@ -344,16 +343,15 @@ public class JsonConfiguration {
 
     private void writeTo(Connection conn, JsonWriter writer, boolean extended) {
         writer.writeStartObject();
-        writer.writeNotNull("cn", conn.getCommonName());
-        writer.writeNotNull("dicomHostname", conn.getHostname());
+        writer.writeNotNullOrDef("cn", conn.getCommonName(), null);
+        writer.writeNotNullOrDef("dicomHostname", conn.getHostname(), null);
         writer.writeNotDef("dicomPort", conn.getPort(), Connection.NOT_LISTENING);
         writer.writeNotEmpty("dicomTLSCipherSuite", conn.getTlsCipherSuites());
         writer.writeNotNull("dicomInstalled", conn.getInstalled());
         if (extended) {
             writer.writeStartObject("dcmNetworkConnection");
-            writer.writeNotNull("dcmProtocol",
-                    StringUtils.nullify(conn.getProtocol(), Connection.Protocol.DICOM));
-            writer.writeNotNull("dcmHTTPProxy", conn.getHttpProxy());
+            writer.writeNotNullOrDef("dcmProtocol", conn.getProtocol(), Connection.Protocol.DICOM);
+            writer.writeNotNullOrDef("dcmHTTPProxy", conn.getHttpProxy(), null);
             writer.writeNotEmpty("dcmBlacklistedHostname", conn.getBlacklist());
             writer.writeNotDef("dcmTCPBacklog", conn.getBacklog(), Connection.DEF_BACKLOG);
             writer.writeNotDef("dcmTCPConnectTimeout",
@@ -376,8 +374,8 @@ public class JsonConfiguration {
             writer.writeNotDef("dcmTCPReceiveBufferSize",
                     conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
             writer.writeNotDef("dcmTCPNoDelay", conn.isTcpNoDelay(), true);
-            writer.writeNotNull("dcmBindAddress", conn.getBindAddress());
-            writer.writeNotNull("dcmClientBindAddress", conn.getClientBindAddress());
+            writer.writeNotNullOrDef("dcmBindAddress", conn.getBindAddress(), null);
+            writer.writeNotNullOrDef("dcmClientBindAddress", conn.getClientBindAddress(), null);
             writer.writeNotDef("dcmSendPDULength",
                     conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
             writer.writeNotDef("dcmReceivePDULength",
@@ -387,7 +385,7 @@ public class JsonConfiguration {
             writer.writeNotDef("dcmMaxOpsInvoked",
                     conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE);
             writer.writeNotDef("dcmPackPDV", conn.isPackPDV(), true);
-            writer.writeNotEmpty("dcmTLSProtocol", conn.getTlsProtocols());
+            writer.writeNotEmpty("dcmTLSProtocol", conn.getTlsProtocols(), Connection.DEFAULT_TLS_PROTOCOLS);
             writer.writeNotDef("dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
             writer.writeEnd();
         }
@@ -527,8 +525,8 @@ public class JsonConfiguration {
     
     private void writeTo(ApplicationEntity ae, List<Connection> conns, JsonWriter writer, boolean extended) {
         writer.writeStartObject();
-        writer.writeNotNull("dicomAETitle", ae.getAETitle());
-        writer.writeNotNull("dicomDescription", ae.getDescription());
+        writer.writeNotNullOrDef("dicomAETitle", ae.getAETitle(), null);
+        writer.writeNotNullOrDef("dicomDescription", ae.getDescription(), null);
         writer.writeNotEmpty("dicomApplicationCluster", ae.getApplicationClusters());
         writer.writeNotEmpty("dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
         writer.writeNotEmpty("dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
@@ -646,9 +644,9 @@ public class JsonConfiguration {
     
     private void writeTo(TransferCapability tc, JsonWriter writer, boolean extended) {
         writer.writeStartObject();
-        writer.writeNotNull("cn", tc.getCommonName());
-        writer.writeNotNull("dicomSOPClass", tc.getSopClass());
-        writer.writeNotNull("dicomTransferRole", tc.getRole().toString());
+        writer.writeNotNullOrDef("cn", tc.getCommonName(), null);
+        writer.writeNotNullOrDef("dicomSOPClass", tc.getSopClass(), null);
+        writer.writeNotNullOrDef("dicomTransferRole", tc.getRole().toString(), null);
         writer.writeNotEmpty("dicomTransferSyntax", tc.getTransferSyntaxes());
         if (extended) {
             EnumSet<QueryOption> queryOpts = tc.getQueryOptions();

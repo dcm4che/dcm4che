@@ -56,7 +56,6 @@ import org.dcm4che3.data.Code;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.util.ByteUtils;
-import org.dcm4che3.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -103,8 +102,8 @@ public class LdapUtils {
         return attr;
     }
 
-    public static <T> void storeNotEmpty(Attributes attrs, String attrID, T... vals) {
-        if (vals != null && vals.length > 0)
+    public static <T> void storeNotEmpty(Attributes attrs, String attrID, T[] vals, T... defVals) {
+        if (vals.length > 0 && !LdapUtils.equals(vals, defVals))
             attrs.put(LdapUtils.attr(attrID, vals));
     }
 
@@ -123,17 +122,17 @@ public class LdapUtils {
     public static Attribute attr(String attrID, int... vals) {
         Attribute attr = new BasicAttribute(attrID);
         for (int val : vals)
-            attr.add("" + val);
+            attr.add(Integer.toString(val));
         return attr;
     }
 
-    public static void storeNotNull(Attributes attrs, String attrID, Object val) {
-        if (val != null)
+    public static <T> void storeNotNullOrDef(Attributes attrs, String attrID, T val, T defVal) {
+        if (val != null && !val.equals(defVal))
             attrs.put(attrID, LdapUtils.toString(val));
     }
 
-    public static void storeNotNull(Attributes attrs, String attrID, TimeZone val) {
-        if (val != null)
+    public static void storeNotNullOrDef(Attributes attrs, String attrID, TimeZone val, TimeZone defVal) {
+        if (val != null && !val.equals(defVal))
             attrs.put(attrID, val.getID());
     }
 
@@ -152,7 +151,7 @@ public class LdapUtils {
     }
 
     public static Attribute storeInt(Attributes attrs, String attrID, int val) {
-        return attrs.put(attrID, "" + val);
+        return attrs.put(attrID, Integer.toString(val));
     }
 
     public static String dnOf(Connection conn, String deviceDN) {
@@ -194,13 +193,13 @@ public class LdapUtils {
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                             new BasicAttribute(attrId))
                     : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                            new BasicAttribute(attrId, "" + val)));
+                            new BasicAttribute(attrId, Integer.toString(val))));
     }
 
-    public static <T> void storeDiff(List<ModificationItem> mods, String attrId,
-            T prev, T val) {
-        if (val == null) {
-            if (prev != null)
+    public static <T> void storeDiffObject(List<ModificationItem> mods, String attrId,
+                                           T prev, T val, T defVal) {
+        if (val == null || val.equals(defVal)) {
+            if (prev != null && !prev.equals(defVal))
                 mods.add(new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                         new BasicAttribute(attrId)));
         } else if (!val.equals(prev))
@@ -209,9 +208,9 @@ public class LdapUtils {
     }
 
     public static <T> void storeDiff(List<ModificationItem> mods, String attrId,
-            T[] prevs, T[] vals) {
+                                     T[] prevs, T[] vals, T... defVals) {
         if (!LdapUtils.equals(prevs, vals))
-            mods.add((vals != null && vals.length == 0)
+            mods.add((vals.length == 0 || LdapUtils.equals(defVals, vals))
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                             new BasicAttribute(attrId))
                     : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
@@ -288,9 +287,9 @@ public class LdapUtils {
         return a;
     }
 
-    public static String[] stringArray(Attribute attr) throws NamingException {
+    public static String[] stringArray(Attribute attr, String... defVals) throws NamingException {
         if (attr == null)
-            return StringUtils.EMPTY_STRING;
+            return defVals;
     
         String[] ss = new String[attr.size()];
         for (int i = 0; i < ss.length; i++)
@@ -352,7 +351,7 @@ public class LdapUtils {
     public static Attributes attrs(String objectclass, String attrID, String attrVal) {
         Attributes attrs = new BasicAttributes(true); // case-ignore
         attrs.put("objectclass", objectclass);
-        storeNotNull(attrs, attrID, attrVal);
+        storeNotNullOrDef(attrs, attrID, attrVal, null);
         return attrs;
     }
 }

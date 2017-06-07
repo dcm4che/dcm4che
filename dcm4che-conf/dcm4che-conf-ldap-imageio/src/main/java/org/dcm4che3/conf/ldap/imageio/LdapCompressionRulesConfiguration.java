@@ -144,9 +144,9 @@ public class LdapCompressionRulesConfiguration {
         LdapUtils.storeDiff(mods, "dcmPhotometricInterpretation",
                 prev.getPhotometricInterpretations(),
                 rule.getPhotometricInterpretations());
-        LdapUtils.storeDiff(mods, "dcmBitsStored",
+        LdapUtils.storeDiffObject(mods, "dcmBitsStored",
                 prev.getBitsStored(),
-                rule.getBitsStored());
+                rule.getBitsStored(), null);
         LdapUtils.storeDiff(mods, "dcmPixelRepresentation",
                 prev.getPixelRepresentation(),
                 rule.getPixelRepresentation(), -1);
@@ -159,9 +159,9 @@ public class LdapCompressionRulesConfiguration {
         LdapUtils.storeDiff(mods, "dcmBodyPartExamined",
                 prev.getBodyPartExamined(),
                 rule.getBodyPartExamined());
-        LdapUtils.storeDiff(mods, "dicomTransferSyntax",
+        LdapUtils.storeDiffObject(mods, "dicomTransferSyntax",
                 prev.getTransferSyntax(),
-                rule.getTransferSyntax());
+                rule.getTransferSyntax(), null);
         LdapUtils.storeDiff(mods, "dcmImageWriteParam",
                 prev.getImageWriteParams(),
                 rule.getImageWriteParams());

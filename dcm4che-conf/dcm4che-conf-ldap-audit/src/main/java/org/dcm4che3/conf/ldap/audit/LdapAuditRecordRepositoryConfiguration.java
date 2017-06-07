@@ -82,8 +82,8 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
         attrs.put(new BasicAttribute("objectclass", "dcmAuditRecordRepository"));
         LdapUtils.storeConnRefs(attrs, arr.getConnections(),
                 deviceDN);
-        LdapUtils.storeNotNull(attrs, "dicomInstalled",
-                arr.getInstalled());
+        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled",
+                arr.getInstalled(), null);
         return attrs;
     }
 
@@ -135,9 +135,9 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
-        LdapUtils.storeDiff(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(mods, "dicomInstalled",
                 a.getInstalled(),
-                b.getInstalled());
+                b.getInstalled(), null);
         return mods;
     }
 

@@ -41,7 +41,6 @@ package org.dcm4che3.conf.ldap.audit;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
@@ -50,6 +49,7 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchResult;
 
+import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che3.conf.ldap.LdapUtils;
@@ -57,7 +57,6 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.dcm4che3.net.audit.AuditLoggerDeviceExtension;
 import org.dcm4che3.net.audit.AuditSuppressCriteria;
-import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +99,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
 
     private Attributes storeTo(AuditLogger logger, String deviceDN, Attributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "dcmAuditLogger"));
-        LdapUtils.storeNotNull(attrs, "cn", logger.getCommonName());
+        LdapUtils.storeNotNullOrDef(attrs, "cn", logger.getCommonName(), null);
         LdapUtils.storeNotDef(attrs, "dcmAuditFacility",
                 logger.getFacility().ordinal(), 10);
         LdapUtils.storeNotDef(attrs, "dcmAuditSuccessSeverity",
@@ -111,20 +110,20 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 logger.getSeriousFailureSeverity().ordinal(), 3);
         LdapUtils.storeNotDef(attrs, "dcmAuditMajorFailureSeverity",
                 logger.getMajorFailureSeverity().ordinal(), 2);
-        LdapUtils.storeNotNull(attrs, "dcmAuditSourceID",
-                logger.getAuditSourceID());
-        LdapUtils.storeNotNull(attrs, "dcmAuditEnterpriseSiteID",
-                logger.getAuditEnterpriseSiteID());
+        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditSourceID",
+                logger.getAuditSourceID(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditEnterpriseSiteID",
+                logger.getAuditEnterpriseSiteID(), null);
         LdapUtils.storeNotEmpty(attrs, "dcmAuditSourceTypeCode",
                 logger.getAuditSourceTypeCodes());
-        LdapUtils.storeNotNull(attrs, "dcmAuditApplicationName",
-                logger.getApplicationName());
-        LdapUtils.storeNotNull(attrs, "dcmAuditMessageID",
-                StringUtils.nullify(logger.getMessageID(), AuditLogger.MESSAGE_ID));
-        LdapUtils.storeNotNull(attrs, "dcmAuditMessageEncoding",
-                StringUtils.nullify(logger.getEncoding(), "UTF-8"));
-        LdapUtils.storeNotNull(attrs, "dcmAuditMessageSchemaURI",
-                logger.getSchemaURI());
+        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditApplicationName",
+                logger.getApplicationName(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditMessageID",
+                logger.getMessageID(), AuditLogger.MESSAGE_ID);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditMessageEncoding",
+                logger.getEncoding(), "UTF-8");
+        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditMessageSchemaURI",
+                logger.getSchemaURI(), AuditMessages.SCHEMA_URI);
         LdapUtils.storeNotDef(attrs, "dcmAuditMessageBOM",
                 logger.isIncludeBOM(), true);
         LdapUtils.storeNotDef(attrs, "dcmAuditMessageFormatXML",
@@ -132,16 +131,16 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         LdapUtils.storeNotDef(attrs, "dcmAuditTimestampInUTC",
                 logger.isTimestampInUTC(), false);
         LdapUtils.storeConnRefs(attrs, logger.getConnections(), deviceDN);
-        LdapUtils.storeNotNull(attrs, "dcmAuditRecordRepositoryDeviceReference",
-                config.deviceRef(logger.getAuditRecordRepositoryDeviceName()));
+        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditRecordRepositoryDeviceReference",
+                config.deviceRef(logger.getAuditRecordRepositoryDeviceName()), null);
         LdapUtils.storeNotDef(attrs, "dcmAuditIncludeInstanceUID", 
                 logger.isIncludeInstanceUID(), false);
-        LdapUtils.storeNotNull(attrs, "dcmAuditLoggerSpoolDirectoryURI",
-                logger.getSpoolDirectoryURI());
+        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditLoggerSpoolDirectoryURI",
+                logger.getSpoolDirectoryURI(), null);
         LdapUtils.storeNotDef(attrs, "dcmAuditLoggerRetryInterval",
                 logger.getRetryInterval(), 0);
-        LdapUtils.storeNotNull(attrs, "dicomInstalled",
-                logger.getInstalled());
+        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled",
+                logger.getInstalled(), null);
         return attrs;
     }
 
@@ -164,8 +163,8 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 criteria.getUserRoleIDCodesAsStringArray());
         LdapUtils.storeNotEmpty(attrs, "dcmAuditNetworkAccessPointID",
                 criteria.getNetworkAccessPointIDs());
-        LdapUtils.storeNotNull(attrs, "dcmAuditUserIsRequestor",
-                criteria.getUserIsRequestor());
+        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditUserIsRequestor",
+                criteria.getUserIsRequestor(), null);
         return attrs;
     }
 
@@ -273,7 +272,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         logger.setEncoding(
                 LdapUtils.stringValue(attrs.get("dcmAuditMessageEncoding"), "UTF-8"));
         logger.setSchemaURI(
-                LdapUtils.stringValue(attrs.get("dcmAuditMessageSchemaURI"), null));
+                LdapUtils.stringValue(attrs.get("dcmAuditMessageSchemaURI"), AuditMessages.SCHEMA_URI));
         logger.setIncludeBOM(
                 LdapUtils.booleanValue(attrs.get("dcmAuditMessageBOM"), true));
         logger.setFormatXML(
@@ -364,27 +363,30 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 a.getMajorFailureSeverity().ordinal(),
                 b.getMajorFailureSeverity().ordinal(),
                 2);
-        LdapUtils.storeDiff(mods, "dcmAuditSourceID",
+        LdapUtils.storeDiffObject(mods, "dcmAuditSourceID",
                 a.getAuditSourceID(),
-                b.getAuditSourceID());
-        LdapUtils.storeDiff(mods, "dcmAuditEnterpriseSiteID",
+                b.getAuditSourceID(), null);
+        LdapUtils.storeDiffObject(mods, "dcmAuditEnterpriseSiteID",
                 a.getAuditEnterpriseSiteID(),
-                b.getAuditEnterpriseSiteID());
+                b.getAuditEnterpriseSiteID(), null);
         LdapUtils.storeDiff(mods, "dcmAuditSourceTypeCode",
                 a.getAuditSourceTypeCodes(),
                 b.getAuditSourceTypeCodes());
-        LdapUtils.storeDiff(mods, "dcmAuditApplicationName",
+        LdapUtils.storeDiffObject(mods, "dcmAuditApplicationName",
                 a.getApplicationName(),
-                b.getApplicationName());
-        LdapUtils.storeDiff(mods, "dcmAuditMessageID",
+                b.getApplicationName(), null);
+        LdapUtils.storeDiffObject(mods, "dcmAuditMessageID",
                 a.getMessageID(),
-                b.getMessageID());
-        LdapUtils.storeDiff(mods, "dcmAuditMessageEncoding",
-                StringUtils.nullify(a.getEncoding(), "UTF-8"),
-                StringUtils.nullify(b.getEncoding(), "UTF-8"));
-        LdapUtils.storeDiff(mods, "dcmAuditMessageSchemaURI",
+                b.getMessageID(),
+                AuditLogger.MESSAGE_ID);
+        LdapUtils.storeDiffObject(mods, "dcmAuditMessageEncoding",
+                a.getEncoding(),
+                b.getEncoding(),
+                "UTF-8");
+        LdapUtils.storeDiffObject(mods, "dcmAuditMessageSchemaURI",
                 a.getSchemaURI(),
-                b.getSchemaURI());
+                b.getSchemaURI(),
+                AuditMessages.SCHEMA_URI);
         LdapUtils.storeDiff(mods, "dcmAuditMessageBOM",
                 a.isIncludeBOM(),
                 b.isIncludeBOM(),
@@ -401,23 +403,23 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
-        LdapUtils.storeDiff(mods, "dcmAuditRecordRepositoryDeviceReference",
+        LdapUtils.storeDiffObject(mods, "dcmAuditRecordRepositoryDeviceReference",
                 arrDeviceRef(a),
-                arrDeviceRef(b));
+                arrDeviceRef(b), null);
         LdapUtils.storeDiff(mods, "dcmAuditIncludeInstanceUID", 
                 a.isIncludeInstanceUID(), 
                 b.isIncludeInstanceUID(), 
                 false);
-        LdapUtils.storeDiff(mods, "dcmAuditLoggerSpoolDirectoryURI",
+        LdapUtils.storeDiffObject(mods, "dcmAuditLoggerSpoolDirectoryURI",
                 a.getSpoolDirectoryURI(),
-                b.getSpoolDirectoryURI());
+                b.getSpoolDirectoryURI(), null);
         LdapUtils.storeDiff(mods, "dcmAuditLoggerRetryInterval", 
                 a.getRetryInterval(), 
                 b.getRetryInterval(), 
                 0);
-        LdapUtils.storeDiff(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(mods, "dicomInstalled",
                 a.getInstalled(),
-                b.getInstalled());
+                b.getInstalled(), null);
         return mods;
     }
 
@@ -447,9 +449,9 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         LdapUtils.storeDiff(mods, "dcmAuditNetworkAccessPointID",
                 a.getNetworkAccessPointIDs(),
                 b.getNetworkAccessPointIDs());
-        LdapUtils.storeDiff(mods, "dcmAuditUserIsRequestor",
+        LdapUtils.storeDiffObject(mods, "dcmAuditUserIsRequestor",
                 a.getUserIsRequestor(),
-                b.getUserIsRequestor());
+                b.getUserIsRequestor(), null);
         return mods;
     }
 

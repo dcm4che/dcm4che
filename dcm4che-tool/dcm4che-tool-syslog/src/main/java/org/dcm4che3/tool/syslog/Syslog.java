@@ -286,7 +286,7 @@ public class Syslog {
     }
 
     public void init() {
-        remote.setTlsProtocols(conn.tlsProtocols());
+        remote.setTlsProtocols(conn.getTlsProtocols());
         remote.setTlsCipherSuites(conn.getTlsCipherSuites());
         logDevice.setScheduledExecutor(Executors.newSingleThreadScheduledExecutor());
         auditLogger.sendQueuedMessages();

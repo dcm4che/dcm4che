@@ -769,33 +769,33 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private Attributes storeTo(Device device, Attributes attrs) {
         BasicAttribute objectclass = new BasicAttribute("objectclass", "dicomDevice");
         attrs.put(objectclass);
-        LdapUtils.storeNotNull(attrs, "dicomDeviceName", device.getDeviceName());
-        LdapUtils.storeNotNull(attrs, "dicomDescription", device.getDescription());
-        LdapUtils.storeNotNull(attrs, "dicomDeviceUID", device.getDeviceUID());
-        LdapUtils.storeNotNull(attrs, "dicomManufacturer", device.getManufacturer());
-        LdapUtils.storeNotNull(attrs, "dicomManufacturerModelName",
-                device.getManufacturerModelName());
+        LdapUtils.storeNotNullOrDef(attrs, "dicomDeviceName", device.getDeviceName(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomDescription", device.getDescription(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomDeviceUID", device.getDeviceUID(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomManufacturer", device.getManufacturer(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomManufacturerModelName",
+                device.getManufacturerModelName(), null);
         LdapUtils.storeNotEmpty(attrs, "dicomSoftwareVersion",
                 device.getSoftwareVersions());
-        LdapUtils.storeNotNull(attrs, "dicomStationName", device.getStationName());
-        LdapUtils.storeNotNull(attrs, "dicomDeviceSerialNumber",
-                device.getDeviceSerialNumber());
-        LdapUtils.storeNotNull(attrs, "dicomIssuerOfPatientID",
-                device.getIssuerOfPatientID());
-        LdapUtils.storeNotNull(attrs, "dicomIssuerOfAccessionNumber",
-                device.getIssuerOfAccessionNumber());
-        LdapUtils.storeNotNull(attrs, "dicomOrderPlacerIdentifier",
-                device.getOrderPlacerIdentifier());
-        LdapUtils.storeNotNull(attrs, "dicomOrderFillerIdentifier",
-                device.getOrderFillerIdentifier());
-        LdapUtils.storeNotNull(attrs, "dicomIssuerOfAdmissionID",
-                device.getIssuerOfAdmissionID());
-        LdapUtils.storeNotNull(attrs, "dicomIssuerOfServiceEpisodeID",
-                device.getIssuerOfServiceEpisodeID());
-        LdapUtils.storeNotNull(attrs, "dicomIssuerOfContainerIdentifier",
-                device.getIssuerOfContainerIdentifier());
-        LdapUtils.storeNotNull(attrs, "dicomIssuerOfSpecimenIdentifier",
-                device.getIssuerOfSpecimenIdentifier());
+        LdapUtils.storeNotNullOrDef(attrs, "dicomStationName", device.getStationName(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomDeviceSerialNumber",
+                device.getDeviceSerialNumber(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfPatientID",
+                device.getIssuerOfPatientID(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfAccessionNumber",
+                device.getIssuerOfAccessionNumber(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomOrderPlacerIdentifier",
+                device.getOrderPlacerIdentifier(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomOrderFillerIdentifier",
+                device.getOrderFillerIdentifier(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfAdmissionID",
+                device.getIssuerOfAdmissionID(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfServiceEpisodeID",
+                device.getIssuerOfServiceEpisodeID(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfContainerIdentifier",
+                device.getIssuerOfContainerIdentifier(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfSpecimenIdentifier",
+                device.getIssuerOfSpecimenIdentifier(), null);
         LdapUtils.storeNotEmpty(attrs, "dicomInstitutionName",
                 device.getInstitutionNames());
         LdapUtils.storeNotEmpty(attrs, "dicomInstitutionCode",
@@ -819,17 +819,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
         objectclass.add("dcmDevice");
         LdapUtils.storeNotDef(attrs, "dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
-        LdapUtils.storeNotNull(attrs, "dcmTrustStoreURL", device.getTrustStoreURL());
-        LdapUtils.storeNotNull(attrs, "dcmTrustStoreType", device.getTrustStoreType());
-        LdapUtils.storeNotNull(attrs, "dcmTrustStorePin", device.getTrustStorePin());
-        LdapUtils.storeNotNull(attrs, "dcmTrustStorePinProperty", device.getTrustStorePinProperty());
-        LdapUtils.storeNotNull(attrs, "dcmKeyStoreURL", device.getKeyStoreURL());
-        LdapUtils.storeNotNull(attrs, "dcmKeyStoreType", device.getKeyStoreType());
-        LdapUtils.storeNotNull(attrs, "dcmKeyStorePin", device.getKeyStorePin());
-        LdapUtils.storeNotNull(attrs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty());
-        LdapUtils.storeNotNull(attrs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
-        LdapUtils.storeNotNull(attrs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
-        LdapUtils.storeNotNull(attrs, "dcmTimeZoneOfDevice", device.getTimeZoneOfDevice());
+        LdapUtils.storeNotNullOrDef(attrs, "dcmTrustStoreURL", device.getTrustStoreURL(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmTrustStoreType", device.getTrustStoreType(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmTrustStorePin", device.getTrustStorePin(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmTrustStorePinProperty", device.getTrustStorePinProperty(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStoreURL", device.getKeyStoreURL(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStoreType", device.getKeyStoreType(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStorePin", device.getKeyStorePin(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmTimeZoneOfDevice", device.getTimeZoneOfDevice(), null);
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeTo(device, attrs);
         return attrs;
@@ -838,18 +838,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private Attributes storeTo(Connection conn, Attributes attrs) {
         BasicAttribute objectclass = new BasicAttribute("objectclass", "dicomNetworkConnection");
         attrs.put(objectclass);
-        LdapUtils.storeNotNull(attrs, "cn", conn.getCommonName());
-        LdapUtils.storeNotNull(attrs, "dicomHostname", conn.getHostname());
+        LdapUtils.storeNotNullOrDef(attrs, "cn", conn.getCommonName(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomHostname", conn.getHostname(), null);
         LdapUtils.storeNotDef(attrs, "dicomPort", conn.getPort(), Connection.NOT_LISTENING);
         LdapUtils.storeNotEmpty(attrs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
-        LdapUtils.storeNotNull(attrs, "dicomInstalled", conn.getInstalled());
+        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled", conn.getInstalled(), null);
         if (!extended)
             return attrs;
 
         objectclass.add("dcmNetworkConnection");
-        LdapUtils.storeNotNull(attrs, "dcmProtocol", 
-                StringUtils.nullify(conn.getProtocol(), Protocol.DICOM));
-        LdapUtils.storeNotNull(attrs, "dcmHTTPProxy", conn.getHttpProxy());
+        LdapUtils.storeNotNullOrDef(attrs, "dcmProtocol", conn.getProtocol(), Protocol.DICOM);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmHTTPProxy", conn.getHttpProxy(), null);
         LdapUtils.storeNotEmpty(attrs, "dcmBlacklistedHostname", conn.getBlacklist());
         LdapUtils.storeNotDef(attrs, "dcmTCPBacklog",
                 conn.getBacklog(), Connection.DEF_BACKLOG);
@@ -874,8 +873,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotDef(attrs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
         LdapUtils.storeNotDef(attrs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
-        LdapUtils.storeNotNull(attrs, "dcmBindAddress", conn.getBindAddress());
-        LdapUtils.storeNotNull(attrs, "dcmClientBindAddress", conn.getClientBindAddress());
+        LdapUtils.storeNotNullOrDef(attrs, "dcmBindAddress", conn.getBindAddress(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dcmClientBindAddress", conn.getClientBindAddress(), null);
         LdapUtils.storeNotDef(attrs, "dcmSendPDULength",
                 conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
         LdapUtils.storeNotDef(attrs, "dcmReceivePDULength",
@@ -893,8 +892,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private Attributes storeTo(ApplicationEntity ae, String deviceDN, Attributes attrs) {
         BasicAttribute objectclass = new BasicAttribute("objectclass", "dicomNetworkAE");
         attrs.put(objectclass);
-        LdapUtils.storeNotNull(attrs, "dicomAETitle", ae.getAETitle());
-        LdapUtils.storeNotNull(attrs, "dicomDescription", ae.getDescription());
+        LdapUtils.storeNotNullOrDef(attrs, "dicomAETitle", ae.getAETitle(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomDescription", ae.getDescription(), null);
         storeNotEmpty(attrs, "dicomVendorData", ae.getVendorData());
         LdapUtils.storeNotEmpty(attrs, "dicomApplicationCluster", ae.getApplicationClusters());
         LdapUtils.storeNotEmpty(attrs, "dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
@@ -903,7 +902,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeBoolean(attrs, "dicomAssociationAcceptor",  ae.isAssociationAcceptor());
         LdapUtils.storeConnRefs(attrs, ae.getConnections(), deviceDN);
         LdapUtils.storeNotEmpty(attrs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
-        LdapUtils.storeNotNull(attrs, "dicomInstalled", ae.getInstalled());
+        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled", ae.getInstalled(), null);
         if (!extended)
             return attrs;
 
@@ -919,9 +918,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private Attributes storeTo(TransferCapability tc, Attributes attrs) {
         BasicAttribute objectclass = new BasicAttribute("objectclass", "dicomTransferCapability");
         attrs.put(objectclass);
-        LdapUtils.storeNotNull(attrs, "cn", tc.getCommonName());
-        LdapUtils.storeNotNull(attrs, "dicomSOPClass", tc.getSopClass());
-        LdapUtils.storeNotNull(attrs, "dicomTransferRole", tc.getRole());
+        LdapUtils.storeNotNullOrDef(attrs, "cn", tc.getCommonName(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomSOPClass", tc.getSopClass(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomTransferRole", tc.getRole(), null);
         LdapUtils.storeNotEmpty(attrs, "dicomTransferSyntax", tc.getTransferSyntaxes());
         if (!extended)
             return attrs;
@@ -1269,7 +1268,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!extended)
             return;
 
-        conn.setProtocol(Protocol.valueOf(LdapUtils.stringValue(attrs.get("dcmProtocol"), "DICOM")));
+        conn.setProtocol(LdapUtils.enumValue(Protocol.class, attrs.get("dcmProtocol"), Protocol.DICOM));
         conn.setHttpProxy(LdapUtils.stringValue(attrs.get("dcmHTTPProxy"), null));
         conn.setBlacklist(LdapUtils.stringArray(attrs.get("dcmBlacklistedHostname")));
         conn.setBacklog(LdapUtils.intValue(attrs.get("dcmTCPBacklog"), Connection.DEF_BACKLOG));
@@ -1297,9 +1296,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         conn.setBindAddress(LdapUtils.stringValue(attrs.get("dcmBindAddress"), null));
         conn.setClientBindAddress(LdapUtils.stringValue(attrs.get("dcmClientBindAddress"), null));
         conn.setTlsNeedClientAuth(LdapUtils.booleanValue(attrs.get("dcmTLSNeedClientAuth"), true));
-        String[] tlsProtocols = LdapUtils.stringArray(attrs.get("dcmTLSProtocol"));
-        if (tlsProtocols.length > 0)
-            conn.setTlsProtocols(tlsProtocols);
+        conn.setTlsProtocols(LdapUtils.stringArray(attrs.get("dcmTLSProtocol"), Connection.DEFAULT_TLS_PROTOCOLS));
         conn.setSendPDULength(LdapUtils.intValue(attrs.get("dcmSendPDULength"),
                 Connection.DEF_MAX_PDU_LENGTH));
         conn.setReceivePDULength(LdapUtils.intValue(attrs.get("dcmReceivePDULength"),
@@ -1384,51 +1381,51 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private List<ModificationItem> storeDiffs(Device a, Device b,
                                               List<ModificationItem> mods, boolean preserveVendorData) {
-        LdapUtils.storeDiff(mods, "dicomDescription",
+        LdapUtils.storeDiffObject(mods, "dicomDescription",
                 a.getDescription(),
-                b.getDescription());
-        LdapUtils.storeDiff(mods, "dicomDeviceUID",
+                b.getDescription(), null);
+        LdapUtils.storeDiffObject(mods, "dicomDeviceUID",
                 a.getDeviceUID(),
-                b.getDeviceUID());
-        LdapUtils.storeDiff(mods, "dicomManufacturer",
+                b.getDeviceUID(), null);
+        LdapUtils.storeDiffObject(mods, "dicomManufacturer",
                 a.getManufacturer(),
-                b.getManufacturer());
-        LdapUtils.storeDiff(mods, "dicomManufacturerModelName",
+                b.getManufacturer(), null);
+        LdapUtils.storeDiffObject(mods, "dicomManufacturerModelName",
                 a.getManufacturerModelName(),
-                b.getManufacturerModelName());
+                b.getManufacturerModelName(), null);
         LdapUtils.storeDiff(mods, "dicomSoftwareVersion",
                 a.getSoftwareVersions(),
                 b.getSoftwareVersions());
-        LdapUtils.storeDiff(mods, "dicomStationName",
+        LdapUtils.storeDiffObject(mods, "dicomStationName",
                 a.getStationName(),
-                b.getStationName());
-        LdapUtils.storeDiff(mods, "dicomDeviceSerialNumber",
+                b.getStationName(), null);
+        LdapUtils.storeDiffObject(mods, "dicomDeviceSerialNumber",
                 a.getDeviceSerialNumber(),
-                b.getDeviceSerialNumber());
-        LdapUtils.storeDiff(mods, "dicomIssuerOfPatientID",
+                b.getDeviceSerialNumber(), null);
+        LdapUtils.storeDiffObject(mods, "dicomIssuerOfPatientID",
                 a.getIssuerOfPatientID(),
-                b.getIssuerOfPatientID());
-        LdapUtils.storeDiff(mods, "dicomIssuerOfAccessionNumber",
+                b.getIssuerOfPatientID(), null);
+        LdapUtils.storeDiffObject(mods, "dicomIssuerOfAccessionNumber",
                 a.getIssuerOfAccessionNumber(),
-                b.getIssuerOfAccessionNumber());
-        LdapUtils.storeDiff(mods, "dicomOrderPlacerIdentifier",
+                b.getIssuerOfAccessionNumber(), null);
+        LdapUtils.storeDiffObject(mods, "dicomOrderPlacerIdentifier",
                 a.getOrderPlacerIdentifier(),
-                b.getOrderPlacerIdentifier());
-        LdapUtils.storeDiff(mods, "dicomOrderFillerIdentifier",
+                b.getOrderPlacerIdentifier(), null);
+        LdapUtils.storeDiffObject(mods, "dicomOrderFillerIdentifier",
                 a.getOrderFillerIdentifier(),
-                b.getOrderFillerIdentifier());
-        LdapUtils.storeDiff(mods, "dicomIssuerOfAdmissionID",
+                b.getOrderFillerIdentifier(), null);
+        LdapUtils.storeDiffObject(mods, "dicomIssuerOfAdmissionID",
                 a.getIssuerOfAdmissionID(),
-                b.getIssuerOfAdmissionID());
-        LdapUtils.storeDiff(mods, "dicomIssuerOfServiceEpisodeID",
+                b.getIssuerOfAdmissionID(), null);
+        LdapUtils.storeDiffObject(mods, "dicomIssuerOfServiceEpisodeID",
                 a.getIssuerOfServiceEpisodeID(),
-                b.getIssuerOfServiceEpisodeID());
-        LdapUtils.storeDiff(mods, "dicomIssuerOfContainerIdentifier",
+                b.getIssuerOfServiceEpisodeID(), null);
+        LdapUtils.storeDiffObject(mods, "dicomIssuerOfContainerIdentifier",
                 a.getIssuerOfContainerIdentifier(),
-                b.getIssuerOfContainerIdentifier());
-        LdapUtils.storeDiff(mods, "dicomIssuerOfSpecimenIdentifier",
+                b.getIssuerOfContainerIdentifier(), null);
+        LdapUtils.storeDiffObject(mods, "dicomIssuerOfSpecimenIdentifier",
                 a.getIssuerOfSpecimenIdentifier(),
-                b.getIssuerOfSpecimenIdentifier());
+                b.getIssuerOfSpecimenIdentifier(), null);
         LdapUtils.storeDiff(mods, "dicomInstitutionName",
                 a.getInstitutionNames(),
                 b.getInstitutionNames());
@@ -1457,48 +1454,48 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             storeDiff(mods, "dicomVendorData",
                     a.getVendorData(),
                     b.getVendorData());
-        LdapUtils.storeDiff(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(mods, "dicomInstalled",
                 a.isInstalled(),
-                b.isInstalled());
+                b.isInstalled(), null);
         if (!extended)
             return mods;
 
-        LdapUtils.storeDiff(mods, "dcmLimitOpenAssociations",
+        LdapUtils.storeDiffObject(mods, "dcmLimitOpenAssociations",
                 a.getLimitOpenAssociations(),
-                b.getLimitOpenAssociations());
-        LdapUtils.storeDiff(mods, "dcmTrustStoreURL",
+                b.getLimitOpenAssociations(), null);
+        LdapUtils.storeDiffObject(mods, "dcmTrustStoreURL",
                 a.getTrustStoreURL(),
-                b.getTrustStoreURL());
-        LdapUtils.storeDiff(mods, "dcmTrustStoreType",
+                b.getTrustStoreURL(), null);
+        LdapUtils.storeDiffObject(mods, "dcmTrustStoreType",
                 a.getTrustStoreType(),
-                b.getTrustStoreType());
-        LdapUtils.storeDiff(mods, "dcmTrustStorePin",
+                b.getTrustStoreType(), null);
+        LdapUtils.storeDiffObject(mods, "dcmTrustStorePin",
                 a.getTrustStorePin(),
-                b.getTrustStorePin());
-        LdapUtils.storeDiff(mods, "dcmTrustStorePinProperty",
+                b.getTrustStorePin(), null);
+        LdapUtils.storeDiffObject(mods, "dcmTrustStorePinProperty",
                 a.getTrustStorePinProperty(),
-                b.getTrustStorePinProperty());
-        LdapUtils.storeDiff(mods, "dcmKeyStoreURL",
+                b.getTrustStorePinProperty(), null);
+        LdapUtils.storeDiffObject(mods, "dcmKeyStoreURL",
                 a.getKeyStoreURL(),
-                b.getKeyStoreURL());
-        LdapUtils.storeDiff(mods, "dcmKeyStoreType",
+                b.getKeyStoreURL(), null);
+        LdapUtils.storeDiffObject(mods, "dcmKeyStoreType",
                 a.getKeyStoreType(),
-                b.getKeyStoreType());
-        LdapUtils.storeDiff(mods, "dcmKeyStorePin",
+                b.getKeyStoreType(), null);
+        LdapUtils.storeDiffObject(mods, "dcmKeyStorePin",
                 a.getKeyStorePin(),
-                b.getKeyStorePin());
-        LdapUtils.storeDiff(mods, "dcmKeyStorePinProperty",
+                b.getKeyStorePin(), null);
+        LdapUtils.storeDiffObject(mods, "dcmKeyStorePinProperty",
                 a.getKeyStorePinProperty(),
-                b.getKeyStorePinProperty());
-        LdapUtils.storeDiff(mods, "dcmKeyStoreKeyPin",
+                b.getKeyStorePinProperty(), null);
+        LdapUtils.storeDiffObject(mods, "dcmKeyStoreKeyPin",
                 a.getKeyStoreKeyPin(),
-                b.getKeyStoreKeyPin());
-        LdapUtils.storeDiff(mods, "dcmKeyStoreKeyPinProperty",
+                b.getKeyStoreKeyPin(), null);
+        LdapUtils.storeDiffObject(mods, "dcmKeyStoreKeyPinProperty",
                 a.getKeyStoreKeyPinProperty(),
-                b.getKeyStoreKeyPinProperty());
-        LdapUtils.storeDiff(mods, "dcmTimeZoneOfDevice",
+                b.getKeyStoreKeyPinProperty(), null);
+        LdapUtils.storeDiffObject(mods, "dcmTimeZoneOfDevice",
         	a.getTimeZoneOfDevice(),
-        	b.getTimeZoneOfDevice());
+        	b.getTimeZoneOfDevice(), null);
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeDiffs(a, b, mods);
         return mods;
@@ -1506,9 +1503,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private List<ModificationItem> storeDiffs(Connection a, Connection b,
             List<ModificationItem> mods) {
-        LdapUtils.storeDiff(mods, "dicomHostname",
+        LdapUtils.storeDiffObject(mods, "dicomHostname",
                 a.getHostname(),
-                b.getHostname());
+                b.getHostname(), null);
         LdapUtils.storeDiff(mods, "dicomPort",
                 a.getPort(),
                 b.getPort(),
@@ -1516,18 +1513,16 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dicomTLSCipherSuite",
                 a.getTlsCipherSuites(),
                 b.getTlsCipherSuites());
-        LdapUtils.storeDiff(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(mods, "dicomInstalled",
                 a.getInstalled(),
-                b.getInstalled());
+                b.getInstalled(), null);
         if (!extended)
             return mods;
 
-        LdapUtils.storeDiff(mods, "dcmProtocol",
-                StringUtils.nullify(a.getProtocol(), Protocol.DICOM),
-                StringUtils.nullify(b.getProtocol(), Protocol.DICOM));
-        LdapUtils.storeDiff(mods, "dcmHTTPProxy",
+        LdapUtils.storeDiffObject(mods, "dcmProtocol", a.getProtocol(), b.getProtocol(), Protocol.DICOM);
+        LdapUtils.storeDiffObject(mods, "dcmHTTPProxy",
                 a.getHttpProxy(),
-                b.getHttpProxy());
+                b.getHttpProxy(), null);
         LdapUtils.storeDiff(mods, "dcmBlacklistedHostname",
                 a.getBlacklist(),
                 b.getBlacklist());
@@ -1579,15 +1574,16 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 a.isTcpNoDelay(),
                 b.isTcpNoDelay(),
                 true);
-        LdapUtils.storeDiff(mods, "dcmBindAddress",
+        LdapUtils.storeDiffObject(mods, "dcmBindAddress",
                 a.getBindAddress(),
-                b.getBindAddress());
-        LdapUtils.storeDiff(mods, "dcmClientBindAddress",
+                b.getBindAddress(), null);
+        LdapUtils.storeDiffObject(mods, "dcmClientBindAddress",
                 a.getClientBindAddress(),
-                b.getClientBindAddress());
+                b.getClientBindAddress(), null);
         LdapUtils.storeDiff(mods, "dcmTLSProtocol",
                 a.getTlsProtocols(),
-                b.getTlsProtocols());
+                b.getTlsProtocols(),
+                Connection.DEFAULT_TLS_PROTOCOLS);
         LdapUtils.storeDiff(mods, "dcmTLSNeedClientAuth",
                 a.isTlsNeedClientAuth(),
                 a.isTlsNeedClientAuth(),
@@ -1617,9 +1613,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private List<ModificationItem> storeDiffs(ApplicationEntity a,
             ApplicationEntity b, String deviceDN, List<ModificationItem> mods, boolean preserveVendorData) {
-        LdapUtils.storeDiff(mods, "dicomDescription",
+        LdapUtils.storeDiffObject(mods, "dicomDescription",
                 a.getDescription(),
-                b.getDescription());
+                b.getDescription(), null);
         if (!preserveVendorData)
             storeDiff(mods, "dicomVendorData",
                     a.getVendorData(),
@@ -1633,12 +1629,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dicomPreferredCalledAETitle",
                 a.getPreferredCalledAETitles(),
                 b.getPreferredCalledAETitles());
-        LdapUtils.storeDiff(mods, "dicomAssociationInitiator",
+        LdapUtils.storeDiffObject(mods, "dicomAssociationInitiator",
                 a.isAssociationInitiator(),
-                b.isAssociationInitiator());
-        LdapUtils.storeDiff(mods, "dicomAssociationAcceptor",
+                b.isAssociationInitiator(), null);
+        LdapUtils.storeDiffObject(mods, "dicomAssociationAcceptor",
                 a.isAssociationAcceptor(),
-                b.isAssociationAcceptor());
+                b.isAssociationAcceptor(), null);
         LdapUtils.storeDiff(mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),
@@ -1646,9 +1642,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dicomSupportedCharacterSet",
                 a.getSupportedCharacterSets(),
                 b.getSupportedCharacterSets());
-        LdapUtils.storeDiff(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(mods, "dicomInstalled",
                 a.getInstalled(),
-                b.getInstalled());
+                b.getInstalled(), null);
         if (!extended)
             return mods;
 
@@ -1668,12 +1664,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private List<ModificationItem> storeDiffs(TransferCapability a,
             TransferCapability b, List<ModificationItem> mods) {
-        LdapUtils.storeDiff(mods, "dicomSOPClass",
+        LdapUtils.storeDiffObject(mods, "dicomSOPClass",
                 a.getSopClass(),
-                b.getSopClass());
-        LdapUtils.storeDiff(mods, "dicomTransferRole",
+                b.getSopClass(), null);
+        LdapUtils.storeDiffObject(mods, "dicomTransferRole",
                 a.getRole(),
-                b.getRole());
+                b.getRole(), null);
         LdapUtils.storeDiff(mods, "dicomTransferSyntax",
                 a.getTransferSyntaxes(),
                 b.getTransferSyntaxes());
@@ -1894,11 +1890,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private static Attributes storeTo(AttributeCoercion ac, BasicAttributes attrs) {
         attrs.put("objectclass", "dcmAttributeCoercion");
         attrs.put("cn", ac.getCommonName());
-        LdapUtils.storeNotNull(attrs, "dcmDIMSE", ac.getDIMSE());
-        LdapUtils.storeNotNull(attrs, "dicomTransferRole", ac.getRole());
+        LdapUtils.storeNotNullOrDef(attrs, "dcmDIMSE", ac.getDIMSE(), null);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomTransferRole", ac.getRole(), null);
         LdapUtils.storeNotEmpty(attrs, "dcmAETitle", ac.getAETitles());
         LdapUtils.storeNotEmpty(attrs, "dcmSOPClass", ac.getSOPClasses());
-        LdapUtils.storeNotNull(attrs, "dcmURI", ac.getURI());
+        LdapUtils.storeNotNullOrDef(attrs, "dcmURI", ac.getURI(), null);
         return attrs;
     }
 
@@ -1944,17 +1940,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private List<ModificationItem> storeDiffs(AttributeCoercion prev,
             AttributeCoercion ac, ArrayList<ModificationItem> mods) {
-        LdapUtils.storeDiff(mods, "dcmDIMSE", prev.getDIMSE(), ac.getDIMSE());
-        LdapUtils.storeDiff(mods, "dicomTransferRole", 
+        LdapUtils.storeDiffObject(mods, "dcmDIMSE", prev.getDIMSE(), ac.getDIMSE(), null);
+        LdapUtils.storeDiffObject(mods, "dicomTransferRole",
                 prev.getRole(),
-                ac.getRole());
+                ac.getRole(), null);
         LdapUtils.storeDiff(mods, "dcmAETitle", 
                 prev.getAETitles(),
                 ac.getAETitles());
         LdapUtils.storeDiff(mods, "dcmSOPClass",
                 prev.getSOPClasses(),
                 ac.getSOPClasses());
-        LdapUtils.storeDiff(mods, "dcmURI", prev.getURI(), ac.getURI());
+        LdapUtils.storeDiffObject(mods, "dcmURI", prev.getURI(), ac.getURI(), null);
         return mods;
     }
 

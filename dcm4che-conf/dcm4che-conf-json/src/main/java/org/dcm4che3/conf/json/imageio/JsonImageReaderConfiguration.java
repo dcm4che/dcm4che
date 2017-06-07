@@ -67,10 +67,10 @@ public class JsonImageReaderConfiguration extends JsonConfigurationExtension {
             writer.writeStartObject();
             String tsuid = entry.getKey();
             ImageReaderFactory.ImageReaderParam param = entry.getValue();
-            writer.writeNotNull("dicomTransferSyntax", tsuid);
-            writer.writeNotNull("dcmIIOFormatName", param.formatName);
-            writer.writeNotNull("dcmJavaClassName", param.className);
-            writer.writeNotNull("dcmPatchJPEGLS", param.patchJPEGLS);
+            writer.writeNotNullOrDef("dicomTransferSyntax", tsuid, null);
+            writer.writeNotNullOrDef("dcmIIOFormatName", param.formatName, null);
+            writer.writeNotNullOrDef("dcmJavaClassName", param.className, null);
+            writer.writeNotNullOrDef("dcmPatchJPEGLS", param.patchJPEGLS, null);
             writer.writeEnd();
         }
 

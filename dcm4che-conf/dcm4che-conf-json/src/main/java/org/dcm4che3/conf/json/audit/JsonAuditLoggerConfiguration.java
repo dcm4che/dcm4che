@@ -41,6 +41,7 @@
 package org.dcm4che3.conf.json.audit;
 
 
+import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.json.ConfigurationDelegate;
 import org.dcm4che3.conf.json.JsonConfigurationExtension;
@@ -75,29 +76,33 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
 
     private void writeTo(Device device, AuditLogger auditLogger, JsonWriter writer) {
         writer.writeStartObject();
-        writer.writeNotNull("cn", auditLogger.getCommonName());
-        writer.writeNotNull("dcmAuditRecordRepositoryDeviceName",
-                auditLogger.getAuditRecordRepositoryDevice().getDeviceName());
+        writer.writeNotNullOrDef("cn", auditLogger.getCommonName(), null);
+        writer.writeNotNullOrDef("dcmAuditRecordRepositoryDeviceName",
+                auditLogger.getAuditRecordRepositoryDevice().getDeviceName(), null);
         writer.writeConnRefs(device.listConnections(), auditLogger.getConnections());
         writer.writeNotNull("dicomInstalled", auditLogger.getInstalled());
-        writer.writeNotNull("dcmAuditSourceID", auditLogger.getAuditSourceID());
-        writer.writeNotNull("dcmAuditEnterpriseSiteID", auditLogger.getAuditEnterpriseSiteID());
+        writer.writeNotNullOrDef("dcmAuditSourceID", auditLogger.getAuditSourceID(), null);
+        writer.writeNotNullOrDef("dcmAuditEnterpriseSiteID", auditLogger.getAuditEnterpriseSiteID(), null);
         writer.writeNotEmpty("dcmAuditSourceTypeCode", auditLogger.getAuditSourceTypeCodes());
-        writer.writeNotNull("dcmAuditFacility", auditLogger.getFacility());
-        writer.writeNotNull("dcmAuditSuccessSeverity", auditLogger.getSuccessSeverity());
-        writer.writeNotNull("dcmAuditMinorFailureSeverity", auditLogger.getMinorFailureSeverity());
-        writer.writeNotNull("dcmAuditSeriousFailureSeverity", auditLogger.getSeriousFailureSeverity());
-        writer.writeNotNull("dcmAuditMajorFailureSeverity", auditLogger.getMajorFailureSeverity());
-        writer.writeNotNull("dcmAuditApplicationName", auditLogger.getApplicationName());
-        writer.writeNotNull("dcmAuditMessageID", auditLogger.getMessageID());
-        writer.writeNotNull("dcmAuditMessageEncoding", auditLogger.getEncoding());
+        writer.writeNotNullOrDef("dcmAuditFacility", auditLogger.getFacility(), AuditLogger.Facility.authpriv);
+        writer.writeNotNullOrDef("dcmAuditSuccessSeverity",
+                auditLogger.getSuccessSeverity(), AuditLogger.Severity.notice);
+        writer.writeNotNullOrDef("dcmAuditMinorFailureSeverity",
+                auditLogger.getMinorFailureSeverity(), AuditLogger.Severity.warning);
+        writer.writeNotNullOrDef("dcmAuditSeriousFailureSeverity",
+                auditLogger.getSeriousFailureSeverity(), AuditLogger.Severity.err);
+        writer.writeNotNullOrDef("dcmAuditMajorFailureSeverity",
+                auditLogger.getMajorFailureSeverity(), AuditLogger.Severity.crit);
+        writer.writeNotNullOrDef("dcmAuditApplicationName", auditLogger.getApplicationName(), null);
+        writer.writeNotNullOrDef("dcmAuditMessageID", auditLogger.getMessageID(), AuditLogger.MESSAGE_ID);
+        writer.writeNotNullOrDef("dcmAuditMessageEncoding", auditLogger.getEncoding(), "UTF-8");
         writer.writeNotDef("dcmAuditMessageBOM", auditLogger.isIncludeBOM(), true);
         writer.writeNotDef("dcmAuditTimestampInUTC", auditLogger.isTimestampInUTC(), false);
         writer.writeNotDef("dcmAuditMessageFormatXML", auditLogger.isFormatXML(), false);
-        writer.writeNotNull("dcmAuditMessageSchemaURI", auditLogger.getSchemaURI());
+        writer.writeNotNullOrDef("dcmAuditMessageSchemaURI", auditLogger.getSchemaURI(), AuditMessages.SCHEMA_URI);
         writer.writeNotDef("dcmAuditIncludeInstanceUID", auditLogger.isIncludeInstanceUID(), false);
-        writer.writeNotNull("dcmAuditLoggerSpoolDirectoryURI", auditLogger.getSpoolDirectoryURI());
-        writer.writeNotNull("dcmAuditLoggerRetryInterval", auditLogger.getRetryInterval());
+        writer.writeNotNullOrDef("dcmAuditLoggerSpoolDirectoryURI", auditLogger.getSpoolDirectoryURI(), null);
+        writer.writeNotDef("dcmAuditLoggerRetryInterval", auditLogger.getRetryInterval(), 0);
         writeAuditSuppressCriteriaList(writer, auditLogger.getAuditSuppressCriteriaList());
         writer.writeEnd();
     }
@@ -108,7 +113,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
         writer.writeStartArray("dcmAuditSuppressCriteria");
         for (AuditSuppressCriteria suppressCriteria : list) {
             writer.writeStartObject();
-            writer.writeNotNull("cn", suppressCriteria.getCommonName());
+            writer.writeNotNullOrDef("cn", suppressCriteria.getCommonName(), null);
             writer.writeNotEmpty("dcmAuditEventID", suppressCriteria.getEventIDsAsStringArray());
             writer.writeNotEmpty("dcmAuditEventTypeCode", suppressCriteria.getEventTypeCodesAsStringArray());
             writer.writeNotEmpty("dcmAuditEventActionCode", suppressCriteria.getEventActionCodes());
@@ -217,7 +222,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                     logger.setSpoolDirectoryURI(reader.stringValue());
                     break;
                 case "dcmAuditLoggerRetryInterval":
-                    logger.setRetryInterval(Integer.parseInt(reader.stringValue()));
+                    logger.setRetryInterval(reader.intValue());
                     break;
                 case "dcmAuditSuppressCriteria":
                     loadAuditSuppressCriteriaListFrom(logger, reader);

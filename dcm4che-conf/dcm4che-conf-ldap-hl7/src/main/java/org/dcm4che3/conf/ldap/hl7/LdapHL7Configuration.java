@@ -204,16 +204,16 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
     private Attributes storeTo(HL7Application hl7App, String deviceDN, Attributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "hl7Application"));
-        LdapUtils.storeNotNull(attrs, "hl7ApplicationName",
-                hl7App.getApplicationName());
+        LdapUtils.storeNotNullOrDef(attrs, "hl7ApplicationName",
+                hl7App.getApplicationName(), null);
         LdapUtils.storeNotEmpty(attrs, "hl7AcceptedSendingApplication",
                 hl7App.getAcceptedSendingApplications());
         LdapUtils.storeNotEmpty(attrs, "hl7AcceptedMessageType",
                 hl7App.getAcceptedMessageTypes());
-        LdapUtils.storeNotNull(attrs, "hl7DefaultCharacterSet",
-                hl7App.getHL7DefaultCharacterSet());
+        LdapUtils.storeNotNullOrDef(attrs, "hl7DefaultCharacterSet",
+                hl7App.getHL7DefaultCharacterSet(), "ASCII");
         LdapUtils.storeConnRefs(attrs, hl7App.getConnections(), deviceDN);
-        LdapUtils.storeNotNull(attrs, "dicomInstalled", hl7App.getInstalled());
+        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled", hl7App.getInstalled(), null);
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.storeTo(hl7App, deviceDN, attrs);
         return attrs;
@@ -254,7 +254,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
     protected void loadFrom(HL7Application hl7app, Attributes attrs) throws NamingException {
         hl7app.setAcceptedSendingApplications(LdapUtils.stringArray(attrs.get("hl7AcceptedSendingApplication")));
         hl7app.setAcceptedMessageTypes(LdapUtils.stringArray(attrs.get("hl7AcceptedMessageType")));
-        hl7app.setHL7DefaultCharacterSet(LdapUtils.stringValue(attrs.get("hl7DefaultCharacterSet"), null));
+        hl7app.setHL7DefaultCharacterSet(LdapUtils.stringValue(attrs.get("hl7DefaultCharacterSet"), "ASCII"));
         hl7app.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.loadFrom(hl7app, attrs);
@@ -303,16 +303,16 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         LdapUtils.storeDiff(mods, "hl7AcceptedMessageType",
                 a.getAcceptedMessageTypes(),
                 b.getAcceptedMessageTypes());
-        LdapUtils.storeDiff(mods, "hl7DefaultCharacterSet",
+        LdapUtils.storeDiffObject(mods, "hl7DefaultCharacterSet",
                 a.getHL7DefaultCharacterSet(),
-                b.getHL7DefaultCharacterSet());
+                b.getHL7DefaultCharacterSet(), "ASCII");
         LdapUtils.storeDiff(mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
-        LdapUtils.storeDiff(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(mods, "dicomInstalled",
                 a.getInstalled(),
-                b.getInstalled());
+                b.getInstalled(), null);
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.storeDiffs(a, b, mods);
         return mods;

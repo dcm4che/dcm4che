@@ -68,7 +68,7 @@ public class HL7Application implements Serializable {
 
     private Device device;
     private String name;
-    private String hl7DefaultCharacterSet;
+    private String hl7DefaultCharacterSet = "ASCII";
     private Boolean installed;
 
     private final LinkedHashSet<String> acceptedSendingApplications =

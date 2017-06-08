@@ -74,6 +74,7 @@
       <directory>./src</directory>
       <includes>
         <include>etc/*/*.jks</include>
+        <include>etc/*/*.jpg</include>
         <include>etc/*/*.mpeg</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -87,6 +88,7 @@
       </includes>
       <excludes>
         <exclude>etc/*/*.jks</exclude>
+        <exclude>etc/*/*.jpg</exclude>
         <exclude>etc/*/*.mpeg</exclude>
       </excludes>
       <outputDirectory>.</outputDirectory>

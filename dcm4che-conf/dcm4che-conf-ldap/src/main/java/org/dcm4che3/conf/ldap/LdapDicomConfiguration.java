@@ -884,7 +884,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotDef(attrs, "dcmMaxOpsInvoked",
                 conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE);
         LdapUtils.storeNotDef(attrs, "dcmPackPDV", conn.isPackPDV(), true);
-        LdapUtils.storeNotEmpty(attrs, "dcmTLSProtocol", conn.getTlsProtocols());
+        LdapUtils.storeNotEmpty(attrs, "dcmTLSProtocol", conn.getTlsProtocols(), Connection.DEFAULT_TLS_PROTOCOLS);
         LdapUtils.storeNotDef(attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
         return attrs;
     }

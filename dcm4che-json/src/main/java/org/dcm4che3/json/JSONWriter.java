@@ -109,7 +109,7 @@ public class JSONWriter implements DicomInputHandler {
     }
 
     /**
-     * Writes the given attributes as a full JSON object. Subsequent calls will generate new a JSON
+     * Writes the given attributes as a full JSON object. Subsequent calls will generate a new JSON
      * object.
      */
     public void write(Attributes attrs) {
@@ -119,7 +119,7 @@ public class JSONWriter implements DicomInputHandler {
     }
 
     /**
-     * Writes the given attributes to JSON. Can be used to ouput multiple attributes (e.g. metadata,
+     * Writes the given attributes to JSON. Can be used to output multiple attributes (e.g. metadata,
      * attributes) to the same JSON object.
      */
     public void writeAttributes(Attributes attrs) {

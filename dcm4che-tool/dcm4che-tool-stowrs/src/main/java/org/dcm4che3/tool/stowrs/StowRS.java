@@ -38,14 +38,14 @@
 
 package org.dcm4che3.tool.stowrs;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -55,7 +55,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.cli.CommandLine;
@@ -64,24 +63,28 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.MissingOptionException;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.UID;
+import org.dcm4che3.data.ElementDictionary;
+import org.dcm4che3.data.BulkData;
 import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGHeader;
 import org.dcm4che3.imageio.codec.mpeg.MPEGHeader;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXTransformer;
 import org.dcm4che3.json.JSONWriter;
+import org.dcm4che3.net.Status;
+import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.TagUtils;
+import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
@@ -100,11 +103,35 @@ public class StowRS {
     private String contentType;
     private String metadataFile;
     private String bulkdataType;
+    private String sopCUID;
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
     private BulkData defaultBulkdata = new BulkData(null, "bulk", false);
     private static final String boundary = "myboundary";
     private byte[] pixelData;
+
+    private static final int INIT_BUFFER_SIZE = 8192;
+    private static final int MAX_BUFFER_SIZE = 10485768;
+    private static final String patName = "STOW-RS-PatientName";
+
+    private static final int[] IUIDS_TAGS = {
+            Tag.StudyInstanceUID,
+            Tag.SeriesInstanceUID,
+            Tag.SOPInstanceUID
+    };
+
+    private static final int[] IMAGE_PIXEL_TAGS = {
+            Tag.SamplesPerPixel,
+            Tag.PhotometricInterpretation,
+            Tag.Rows,
+            Tag.Columns,
+            Tag.BitsAllocated,
+            Tag.BitsStored,
+            Tag.HighBit,
+            Tag.PixelRepresentation
+    };
+    private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
+
 
     public StowRS() {
     }
@@ -213,26 +240,14 @@ public class StowRS {
         Extension ext = getExt(files.get(0));
         switch (ext) {
             case pdf:
-                instance.bulkdataType = "application/pdf";
-                setPDFAttributes(bulkdataFile, metadata);
-                if (metadata.getValue(Tag.EncapsulatedDocument) == null)
-                    metadata.setValue(Tag.EncapsulatedDocument, VR.OB, instance.defaultBulkdata);
-                instance.pixelData = Files.readAllBytes(bulkdataFile);
+                readPDF(instance, metadata, bulkdataFile);
                 break;
             case mpg:
             case mpg2:
             case mpeg:
-                instance.bulkdataType = "video/mpeg";
-                readPixelHeader(instance, metadata, bulkdataFile, true);
-                if (metadata.getString(Tag.SOPClassUID) == null)
-                    metadata.setString(Tag.SOPClassUID, VR.UI, UID.VideoPhotographicImageStorage);
-                break;
             case jpeg:
             case jpg:
-                instance.bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline1;
-                readPixelHeader(instance, metadata, bulkdataFile, false);
-                if (metadata.getString(Tag.SOPClassUID) == null)
-                    metadata.setString(Tag.SOPClassUID, VR.UI, UID.SecondaryCaptureImageStorage);
+                readPixelHeader(instance, metadata, bulkdataFile, ext);
                 break;
             case notBulkdata:
                 throw new IllegalArgumentException("Unsupported bulkdata type. Read stowrs help.");
@@ -240,9 +255,19 @@ public class StowRS {
         stow(instance, metadata, files);
     }
 
+    private static void readPDF(StowRS instance, Attributes metadata, Path bulkdataFile) throws IOException {
+        instance.bulkdataType = "application/pdf";
+        instance.sopCUID = UID.EncapsulatedPDFStorage;
+        setPDFAttributes(bulkdataFile, metadata);
+        if (metadata.getValue(Tag.EncapsulatedDocument) == null)
+            metadata.setValue(Tag.EncapsulatedDocument, VR.OB, instance.defaultBulkdata);
+        supplementUIDs(metadata, instance);
+        instance.pixelData = Files.readAllBytes(bulkdataFile);
+    }
+
     private static Attributes getMetadata(StowRS instance)
             throws Exception {
-        Attributes metadata = defaultMetadata();
+        Attributes metadata = new Attributes();
         String metadataFile = instance.metadataFile;
         if (metadataFile != null) {
             String metadataFileExt = metadataFile.substring(metadataFile.lastIndexOf(".")+1).toLowerCase();
@@ -251,52 +276,99 @@ public class StowRS {
             Path filePath = Paths.get(metadataFile);
             metadata = SAXReader.parse(filePath.toString());
         }
-        coerceAttributes(metadata, instance);
+        metadata.update(Attributes.UpdatePolicy.OVERWRITE, instance.keys, new Attributes());
         return metadata;
     }
 
-    private static Attributes defaultMetadata() throws ParserConfigurationException, SAXException, IOException {
-        LOG.info("Always first set default metadata in the event of required attributes not set/sent by user.");
-        Attributes metadata = new Attributes();
-        metadata.setString(Tag.PatientName, VR.PN, "STOW-RS-PatientName");
-        metadata.setString(Tag.StudyInstanceUID, VR.UI, UIDUtils.createUID());
-        metadata.setString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
-        metadata.setString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
-        return metadata;
+    private static void supplementUIDs(Attributes metadata, StowRS instance) {
+        LOG.info("Set defaults, if required attributes are not present.");
+        supplementDefaultValue(metadata, Tag.PatientName, VR.PN, patName);
+        supplementDefaultValue(metadata, Tag.SOPClassUID, VR.UI, instance.sopCUID);
+        for (int tag : IUIDS_TAGS)
+            if (!metadata.containsValue(tag))
+                metadata.setString(tag, VR.UI, UIDUtils.createUID());
     }
 
-    private static void readPixelHeader(StowRS instance, Attributes metadata, Path pixelDataFile, boolean isMpeg)
+    private static void supplementDefaultValue(Attributes metadata, int tag, VR vr, String value) {
+        if (!metadata.containsValue(tag))
+            metadata.setString(tag, vr, value);
+    }
+
+    private static void readPixelHeader(StowRS instance, Attributes metadata, Path pixelDataFile, Extension ext)
             throws Exception {
+        CompressedPixelData compressedPixelData = CompressedPixelData.valueOf(instance, ext);
+        supplementUIDs(metadata, instance);
         if (metadata.getValue(Tag.PixelData) == null)
             metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
         if (!instance.pixelHeader) {
             instance.pixelData = Files.readAllBytes(pixelDataFile);
             return;
         }
+
         int fileLen = (int)Files.size(pixelDataFile);
-        try (BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(pixelDataFile))) {
-            byte[] b16384 = new byte[16384];
-            StreamUtils.readAvailable(bis, b16384, 0, 16384);
-            instance.pixelData = new byte[fileLen];
-            if (isMpeg) {
-                MPEGHeader mpegHeader = new MPEGHeader(b16384);
-                mpegHeader.toAttributes(metadata, Files.size(pixelDataFile));
-                instance.pixelData = Arrays.copyOf(b16384, fileLen);
-                StreamUtils.readAvailable(bis, instance.pixelData, 16384, fileLen-16384);
-            } else {
-                instance.jpegHeader = new JPEGHeader(b16384, JPEG.SOS);
-                instance.jpegHeader.toAttributes(metadata);
-                if (instance.noAppn) {
-                    int off = instance.jpegHeader.offsetAfterAPP();
-                    byte[] bTemp = Arrays.copyOf(b16384, fileLen);
-                    StreamUtils.readAvailable(bis, bTemp, 16384, fileLen - 16384);
+        try(BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(pixelDataFile))) {
+            byte[] header = ByteUtils.EMPTY_BYTES;
+            int rl = 0;
+            int grow = INIT_BUFFER_SIZE;
+            while (rl == header.length && rl < MAX_BUFFER_SIZE) {
+                header = Arrays.copyOf(header, grow += rl);
+                rl += StreamUtils.readAvailable(bis, header, rl, header.length - rl);
+                if (compressedPixelData.parseHeader(instance, header, metadata, pixelDataFile.toFile())) {
+                    byte[] bTemp = Arrays.copyOf(header, fileLen);
+                    StreamUtils.readAvailable(bis, bTemp, header.length, fileLen - header.length);
+                    int off = 0;
+                    if (instance.noAppn)
+                        off = instance.jpegHeader.offsetAfterAPP();
                     instance.pixelData = Arrays.copyOfRange(bTemp, off, fileLen);
-                } else {
-                    instance.pixelData = Arrays.copyOf(b16384, fileLen);
-                    StreamUtils.readAvailable(bis, instance.pixelData, 16384, fileLen - 16384);
+                    return;
                 }
             }
         }
+        verifyImagePixelModule(metadata);
+    }
+
+    private enum CompressedPixelData {
+        JPEG {
+            @Override
+            boolean parseHeader(StowRS instance, byte[] header, Attributes metadata, File file) {
+                instance.jpegHeader = new JPEGHeader(header, org.dcm4che3.imageio.codec.jpeg.JPEG.SOS);
+                return instance.jpegHeader.toAttributes(metadata) != null;
+            }
+        },
+        MPEG {
+            @Override
+            boolean parseHeader(StowRS instance, byte[] header, Attributes metadata, File file) {
+                return new MPEGHeader(header).toAttributes(metadata, file.length()) != null;
+            }
+        };
+
+        abstract boolean parseHeader(StowRS instance, byte[] header, Attributes metadata, File file);
+
+        static CompressedPixelData valueOf(StowRS instance, Extension ext) {
+            if (ext == Extension.jpeg || ext == Extension.jpg) {
+                instance.bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline1;
+                instance.sopCUID = UID.SecondaryCaptureImageStorage;
+                return JPEG;
+            }
+            else {
+                instance.bulkdataType = "video/mpeg";
+                instance.sopCUID = UID.VideoPhotographicImageStorage;
+                return MPEG;
+            }
+        }
+    }
+
+    private static void verifyImagePixelModule(Attributes metadata) throws DicomServiceException {
+        for (int tag : IMAGE_PIXEL_TAGS)
+            if (!metadata.containsValue(tag))
+                throw missingAttribute(tag);
+        if (metadata.getInt(Tag.SamplesPerPixel, 1) > 1 && !metadata.containsValue(Tag.PlanarConfiguration))
+            throw missingAttribute(Tag.PlanarConfiguration);
+    }
+
+    private static DicomServiceException missingAttribute(int tag) {
+        return new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass,
+                "Missing " + DICT.keywordOf(tag) + " " + TagUtils.toString(tag));
     }
 
     private static void stow(StowRS instance, Attributes metadata, List<String> files)
@@ -407,15 +479,7 @@ public class StowRS {
         }
     }
 
-    private static void coerceAttributes(Attributes metadata, StowRS instance) {
-        if (instance.keys.tags().length > 0)
-            LOG.info("Coercing the following keys from specified attributes to metadata:");
-        metadata.update(Attributes.UpdatePolicy.OVERWRITE, instance.keys, new Attributes());
-        LOG.info(instance.keys.toString());
-    }
-
     private static void setPDFAttributes(Path bulkDataFile, Attributes metadata) {
-        metadata.setString(Tag.SOPClassUID, VR.UI, UID.EncapsulatedPDFStorage);
         metadata.setInt(Tag.InstanceNumber, VR.IS, 1);
         metadata.setString(Tag.ContentDate, VR.DA,
                 DateUtils.formatDA(null, new Date(bulkDataFile.toFile().lastModified())));

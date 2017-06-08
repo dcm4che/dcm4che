@@ -40,7 +40,6 @@ package org.dcm4che3.tool.jpg2dcm;
 
 import java.io.File;
 import java.io.BufferedInputStream;
-import java.io.IOException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,8 +74,6 @@ import org.dcm4che3.util.TagUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author gunter zeilinger<gunterze@gmail.com>
@@ -166,7 +163,7 @@ public class Jpg2Dcm {
         try {
             CommandLine cl = parseCommandLine(args);
             Jpg2Dcm jpg2Dcm = new Jpg2Dcm();
-            jpg2Dcm.keys = configureKeys(jpg2Dcm, cl);
+            jpg2Dcm.keys = configureKeys(cl);
             LOG.info("added keys for coercion: \n" + jpg2Dcm.keys.toString());
             jpg2Dcm.metadataFile = cl.getOptionValue("f");
             if (cl.getArgs().length < 2)
@@ -205,7 +202,7 @@ public class Jpg2Dcm {
         return CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
     }
 
-    private static Attributes configureKeys(Jpg2Dcm main, CommandLine cl) {
+    private static Attributes configureKeys(CommandLine cl) {
         Attributes temp = new Attributes();
         CLIUtils.addAttributes(temp, cl.getOptionValues("m"));
         return temp;
@@ -255,11 +252,8 @@ public class Jpg2Dcm {
     }
 
     private static void coerceAttributes(Attributes metadata, Jpg2Dcm jpg2Dcm) {
-        if (jpg2Dcm.keys.tags().length > 0)
-            LOG.info("Coercing the following keys from specified attributes to metadata:");
         metadata.update(Attributes.UpdatePolicy.OVERWRITE, jpg2Dcm.keys, new Attributes());
         metadata.setString(Tag.SpecificCharacterSet, VR.CS, metadata.getString(Tag.SpecificCharacterSet, jpg2Dcm.charset));
-        LOG.info(jpg2Dcm.keys.toString());
     }
 
     private enum CompressedPixelData {

@@ -99,6 +99,11 @@ public class JsonWriter {
             gen.write(name, value.booleanValue());
     }
 
+    public void writeNotNull(String name, Integer value) {
+        if (value != null)
+            gen.write(name, value.intValue());
+    }
+
     public void writeNotNullOrDef(String name, TimeZone value, TimeZone defVal) {
         if (value != null && !value.equals(defVal))
             gen.write(name, value.getID());

@@ -136,6 +136,11 @@ public class LdapUtils {
             attrs.put(attrID, val.getID());
     }
 
+    public static void storeNotNull(Attributes attrs, String attrID, Integer val) {
+        if (val != null)
+            LdapUtils.storeInt(attrs, attrID, val);
+    }
+
     public static void storeNotDef(Attributes attrs, String attrID, int val, int defVal) {
         if (val != defVal)
             LdapUtils.storeInt(attrs, attrID, val);
@@ -300,6 +305,10 @@ public class LdapUtils {
 
     public static int intValue(Attribute attr, int defVal) throws NamingException {
         return attr != null ? Integer.parseInt((String) attr.get()) : defVal;
+    }
+
+    public static Integer intValue(Attribute attr, Integer defVal) throws NamingException {
+        return attr != null ? Integer.valueOf((String) attr.get()) : defVal;
     }
 
     public static Code codeValue(Attribute attr) throws NamingException {

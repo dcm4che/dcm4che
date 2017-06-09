@@ -257,7 +257,7 @@ public class StowRS {
         if (metadata.getValue(Tag.EncapsulatedDocument) == null)
             metadata.setValue(Tag.EncapsulatedDocument, VR.OB, instance.defaultBulkdata);
         supplementUIDs(metadata, instance);
-        readFile(instance, bulkdataFile.toFile());
+        readFile(instance, null, null, bulkdataFile.toFile());
     }
 
     private static Attributes getMetadata(StowRS instance)
@@ -292,47 +292,35 @@ public class StowRS {
     private static void readPixelHeader(StowRS instance, Attributes metadata, Path pixelDataFile, Extension ext)
             throws Exception {
         CompressedPixelData compressedPixelData = CompressedPixelData.valueOf(instance, ext);
+        File file = pixelDataFile.toFile();
         supplementUIDs(metadata, instance);
         if (metadata.getValue(Tag.PixelData) == null)
             metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
-        if (!instance.pixelHeader) {
-            readFile(instance, pixelDataFile.toFile());
-            return;
-        }
-
-        int fileLen = (int)Files.size(pixelDataFile);
-        try(BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(pixelDataFile))) {
-            byte[] header = ByteUtils.EMPTY_BYTES;
-            int rl = 0;
-            int grow = INIT_BUFFER_SIZE;
-            while (rl == header.length && rl < MAX_BUFFER_SIZE) {
-                header = Arrays.copyOf(header, grow += rl);
-                rl += StreamUtils.readAvailable(bis, header, rl, header.length - rl);
-                if (compressedPixelData.parseHeader(instance, header, metadata, pixelDataFile.toFile())) {
-                    byte[] bTemp = Arrays.copyOf(header, fileLen);
-                    StreamUtils.readAvailable(bis, bTemp, header.length, fileLen - header.length);
-                    int off = 0;
-                    if (instance.noAppn)
-                        off = instance.jpegHeader.offsetAfterAPP();
-                    instance.pixelData = Arrays.copyOfRange(bTemp, off, fileLen);
-                    return;
-                }
-            }
-        }
-        verifyImagePixelModule(metadata);
+        readFile(instance, metadata, compressedPixelData, file);
     }
 
-    private static void readFile(StowRS instance, File file) throws Exception {
+    private static void readFile(StowRS instance, Attributes metadata, CompressedPixelData compressedPixelData, File file) throws IOException {
+        boolean result = false;
         try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
             instance.pixelData = ByteUtils.EMPTY_BYTES;
             int rl = 0;
             int grow = INIT_BUFFER_SIZE;
             int fileLen = (int) file.length();
             while (rl == instance.pixelData.length && rl < fileLen) {
-                instance.pixelData = Arrays.copyOf(instance.pixelData, grow += rl);
+                int newLen = grow += rl;
+                instance.pixelData = Arrays.copyOf(instance.pixelData, newLen);
                 rl += StreamUtils.readAvailable(bis, instance.pixelData, rl, instance.pixelData.length - rl);
+
+                if (!result && compressedPixelData != null && instance.pixelHeader) {
+                    byte[] header = Arrays.copyOf(instance.pixelData, newLen);
+                    if (compressedPixelData.parseHeader(instance, header, metadata, file)) {
+                        result = true;
+                    }
+                }
             }
         }
+        if (result)
+            verifyImagePixelModule(metadata);
     }
 
     private enum CompressedPixelData {
@@ -483,11 +471,9 @@ public class StowRS {
                 out.write((byte) JPEG.SOI);
                 out.write(-1);
             }
-            LOG.info("data length before : " + Integer.toString(instance.pixelData.length));
             for (byte b : instance.pixelData)
                 out.write(b);
             instance.pixelData = new byte[0];
-            LOG.info("data length after : " + Integer.toString(instance.pixelData.length));
         }
     }
 

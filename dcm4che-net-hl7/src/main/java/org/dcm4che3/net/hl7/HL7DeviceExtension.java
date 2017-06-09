@@ -91,10 +91,18 @@ public class HL7DeviceExtension extends DeviceExtension {
     }
 
     public HL7Application getHL7Application(String name) {
-        HL7Application hl7App = hl7apps.get(name);
-        if (hl7App == null)
-            hl7App = hl7apps.get("*");
-        return hl7App;
+        return hl7apps.get(name);
+    }
+
+    public HL7Application getHL7Application(String name, boolean matchOtherAppNames) {
+        HL7Application app = hl7apps.get(name);
+        if (app == null)
+            app = hl7apps.get("*");
+        if (app == null && matchOtherAppNames)
+            for (HL7Application app1 : getHL7Applications())
+                if (app1.isOtherApplicationName(name))
+                    return app1;
+        return app;
     }
 
     public boolean containsHL7Application(String name) {
@@ -118,7 +126,7 @@ public class HL7DeviceExtension extends DeviceExtension {
     }
 
     byte[] onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
-        HL7Application hl7App = getHL7Application(msg.msh().getReceivingApplicationWithFacility());
+        HL7Application hl7App = getHL7Application(msg.msh().getReceivingApplicationWithFacility(), true);
         if (hl7App == null)
             throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
         return hl7App.onMessage(conn, s, msg);

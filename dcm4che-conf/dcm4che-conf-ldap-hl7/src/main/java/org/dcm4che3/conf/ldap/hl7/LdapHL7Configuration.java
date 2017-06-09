@@ -208,6 +208,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 hl7App.getApplicationName(), null);
         LdapUtils.storeNotEmpty(attrs, "hl7AcceptedSendingApplication",
                 hl7App.getAcceptedSendingApplications());
+        LdapUtils.storeNotEmpty(attrs, "dcmOtherApplicationNames", hl7App.getOtherApplicationNames());
         LdapUtils.storeNotEmpty(attrs, "hl7AcceptedMessageType",
                 hl7App.getAcceptedMessageTypes());
         LdapUtils.storeNotNullOrDef(attrs, "hl7DefaultCharacterSet",
@@ -253,6 +254,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
     protected void loadFrom(HL7Application hl7app, Attributes attrs) throws NamingException {
         hl7app.setAcceptedSendingApplications(LdapUtils.stringArray(attrs.get("hl7AcceptedSendingApplication")));
+        hl7app.setOtherApplicationNames(LdapUtils.stringArray(attrs.get("hl7OtherApplicationName")));
         hl7app.setAcceptedMessageTypes(LdapUtils.stringArray(attrs.get("hl7AcceptedMessageType")));
         hl7app.setHL7DefaultCharacterSet(LdapUtils.stringValue(attrs.get("hl7DefaultCharacterSet"), "ASCII"));
         hl7app.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
@@ -300,6 +302,9 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         LdapUtils.storeDiff(mods, "hl7AcceptedSendingApplication",
                 a.getAcceptedSendingApplications(),
                 b.getAcceptedSendingApplications());
+        LdapUtils.storeDiff(mods, "hl7OtherApplicationName",
+                a.getOtherApplicationNames(),
+                b.getOtherApplicationNames());
         LdapUtils.storeDiff(mods, "hl7AcceptedMessageType",
                 a.getAcceptedMessageTypes(),
                 b.getAcceptedMessageTypes());

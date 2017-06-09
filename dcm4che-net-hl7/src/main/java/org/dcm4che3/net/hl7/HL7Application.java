@@ -73,6 +73,7 @@ public class HL7Application implements Serializable {
 
     private final LinkedHashSet<String> acceptedSendingApplications =
             new LinkedHashSet<String>();
+    private final LinkedHashSet<String> otherApplicationNames = new LinkedHashSet<>();
     private final LinkedHashSet<String> acceptedMessageTypes =
             new LinkedHashSet<String>();
     private final List<Connection> conns = new ArrayList<Connection>(1);
@@ -138,6 +139,20 @@ public class HL7Application implements Serializable {
         acceptedSendingApplications.clear();
         for (String name : names)
             acceptedSendingApplications.add(name);
+    }
+
+    public String[] getOtherApplicationNames() {
+        return otherApplicationNames.toArray(new String[otherApplicationNames.size()]);
+    }
+
+    public void setOtherApplicationNames(String... names) {
+        otherApplicationNames.clear();
+        for (String name : names)
+            otherApplicationNames.add(name);
+    }
+
+    public boolean isOtherApplicationName(String name) {
+        return otherApplicationNames.contains(name);
     }
 
     public String[] getAcceptedMessageTypes() {
@@ -297,6 +312,7 @@ public class HL7Application implements Serializable {
     protected void setHL7ApplicationAttributes(HL7Application src) {
         setHL7DefaultCharacterSet(src.hl7DefaultCharacterSet);
         setAcceptedSendingApplications(src.getAcceptedSendingApplications());
+        setOtherApplicationNames(src.getOtherApplicationNames());
         setAcceptedMessageTypes(src.getAcceptedMessageTypes());
         setInstalled(src.installed);
     }

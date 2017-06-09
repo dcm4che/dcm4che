@@ -153,7 +153,7 @@ class PDUDecoder extends PDVInputStream {
         return getBytes(getUnsignedShort());
     }
 
-    public void nextPDU() throws IOException {
+    public void nextPDU(Integer expectedPDUType) throws IOException {
         checkThread();
         Association.LOG.trace("{}: waiting for PDU", as);
         readFully(0, 10);
@@ -163,6 +163,11 @@ class PDUDecoder extends PDVInputStream {
         pdulen = getInt();
         Association.LOG.trace("{} >> PDU[type={}, len={}]",
                 new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
+        
+        if(expectedPDUType != null && expectedPDUType != pdutype) {
+            return;
+        }
+        
         switch (pdutype) {
         case PDUType.A_ASSOCIATE_RQ:
             readPDU();
@@ -507,7 +512,7 @@ class PDUDecoder extends PDVInputStream {
     private void nextPDV(int expectedPDVType, int expectedPCID)
             throws IOException {
         if (!hasRemaining()) {
-            nextPDU();
+            nextPDU( PDUType.P_DATA_TF );
             if (pdutype != PDUType.P_DATA_TF) {
                 Association.LOG.info(
                         "{}: Expected P-DATA-TF PDU but received PDU[type={}]",

@@ -38,14 +38,9 @@
 
 package org.dcm4che3.tool.stowrs;
 
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -255,14 +250,14 @@ public class StowRS {
         stow(instance, metadata, files);
     }
 
-    private static void readPDF(StowRS instance, Attributes metadata, Path bulkdataFile) throws IOException {
+    private static void readPDF(StowRS instance, Attributes metadata, Path bulkdataFile) throws Exception {
         instance.bulkdataType = "application/pdf";
         instance.sopCUID = UID.EncapsulatedPDFStorage;
         setPDFAttributes(bulkdataFile, metadata);
         if (metadata.getValue(Tag.EncapsulatedDocument) == null)
             metadata.setValue(Tag.EncapsulatedDocument, VR.OB, instance.defaultBulkdata);
         supplementUIDs(metadata, instance);
-        instance.pixelData = Files.readAllBytes(bulkdataFile);
+        readFile(instance, bulkdataFile.toFile());
     }
 
     private static Attributes getMetadata(StowRS instance)
@@ -301,7 +296,7 @@ public class StowRS {
         if (metadata.getValue(Tag.PixelData) == null)
             metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
         if (!instance.pixelHeader) {
-            instance.pixelData = Files.readAllBytes(pixelDataFile);
+            readFile(instance, pixelDataFile.toFile());
             return;
         }
 
@@ -325,6 +320,19 @@ public class StowRS {
             }
         }
         verifyImagePixelModule(metadata);
+    }
+
+    private static void readFile(StowRS instance, File file) throws Exception {
+        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
+            instance.pixelData = ByteUtils.EMPTY_BYTES;
+            int rl = 0;
+            int grow = INIT_BUFFER_SIZE;
+            int fileLen = (int) file.length();
+            while (rl == instance.pixelData.length && rl < fileLen) {
+                instance.pixelData = Arrays.copyOf(instance.pixelData, grow += rl);
+                rl += StreamUtils.readAvailable(bis, instance.pixelData, rl, instance.pixelData.length - rl);
+            }
+        }
     }
 
     private enum CompressedPixelData {
@@ -390,6 +398,7 @@ public class StowRS {
             logOutgoing(connection);
             writeData(instance, metadata, files, out);
             out.write(("\r\n--" + boundary + "--\r\n").getBytes());
+            out.flush();
             logIncoming(connection);
             connection.disconnect();
             LOG.info("STOW successful!");
@@ -473,9 +482,12 @@ public class StowRS {
                 out.write(-1);
                 out.write((byte) JPEG.SOI);
                 out.write(-1);
-                out.write(instance.pixelData);
-            } else
-                out.write(instance.pixelData);
+            }
+            LOG.info("data length before : " + Integer.toString(instance.pixelData.length));
+            for (byte b : instance.pixelData)
+                out.write(b);
+            instance.pixelData = new byte[0];
+            LOG.info("data length after : " + Integer.toString(instance.pixelData.length));
         }
     }
 

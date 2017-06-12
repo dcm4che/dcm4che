@@ -475,7 +475,7 @@ public class Association {
                 try {
                     try {
                         while (!(state == State.Sta1 || state == State.Sta13))
-                            decoder.nextPDU();
+                            decoder.nextPDU( null );
                     } catch (AAbort aa) {
                         abort(aa);
                     } catch (IOException e) {

@@ -48,6 +48,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.imageio.ImageReadParam;
@@ -242,6 +243,7 @@ public class RLEImageReader extends ImageReader {
 
     private void read(short[] data) throws IOException {
         readRLEHeader(2);
+        Arrays.fill(data, (short) 0);
         unrle(1, data);
         unrle(2, data);
     }

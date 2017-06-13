@@ -77,7 +77,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
     private void writeTo(Device device, AuditLogger auditLogger, JsonWriter writer) {
         writer.writeStartObject();
         writer.writeNotNullOrDef("cn", auditLogger.getCommonName(), null);
-        writer.writeNotNullOrDef("dcmAuditRecordRepositoryDeviceName",
+        writer.writeNotNullOrDef("dcmAuditRecordRepositoryDeviceReference",
                 auditLogger.getAuditRecordRepositoryDevice().getDeviceName(), null);
         writer.writeConnRefs(device.listConnections(), auditLogger.getConnections());
         writer.writeNotNull("dicomInstalled", auditLogger.getInstalled());
@@ -160,7 +160,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                 case "cn":
                     logger.setCommonName(reader.stringValue());
                     break;
-                case "dcmAuditRecordRepositoryDeviceName":
+                case "dcmAuditRecordRepositoryDeviceReference":
                     logger.setAuditRecordRepositoryDevice(config.findDevice(reader.stringValue()));
                     break;
                 case "dicomNetworkConnectionReference":

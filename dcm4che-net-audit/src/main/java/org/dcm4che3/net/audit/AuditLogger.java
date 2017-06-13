@@ -80,6 +80,7 @@ import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
+import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -525,7 +526,7 @@ public class AuditLogger {
     }
 
     public void setSpoolDirectoryURI(String uri) {
-        this.spoolDirectory = uri != null ? new File(URI.create(uri)) : null;
+        this.spoolDirectory = uri != null ? new File(URI.create(StringUtils.replaceSystemProperties(uri))) : null;
     }
 
     public String getSpoolNameFilePrefix() {

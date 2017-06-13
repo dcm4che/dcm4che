@@ -61,12 +61,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Objects;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.Comparator;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -76,7 +77,6 @@ import org.dcm4che3.audit.*;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
@@ -207,6 +207,7 @@ public class AuditLogger {
     private Boolean installed;
     private Boolean includeInstanceUID = false;
     private File spoolDirectory;
+    private String spoolDirectoryURI;
     private String spoolFileNamePrefix = "audit";
     private String spoolFileNameSuffix= ".log";
     private int retryInterval;
@@ -522,11 +523,12 @@ public class AuditLogger {
     }
 
     public String getSpoolDirectoryURI() {
-        return spoolDirectory != null ? spoolDirectory.toURI().toString() : null;
+        return spoolDirectoryURI;
     }
 
     public void setSpoolDirectoryURI(String uri) {
         this.spoolDirectory = uri != null ? new File(URI.create(StringUtils.replaceSystemProperties(uri))) : null;
+        this.spoolDirectoryURI = Objects.requireNonNull(uri, "SpoolDirectory");
     }
 
     public String getSpoolNameFilePrefix() {

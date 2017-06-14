@@ -528,7 +528,7 @@ public class AuditLogger {
 
     public void setSpoolDirectoryURI(String uri) {
         this.spoolDirectory = uri != null ? new File(URI.create(StringUtils.replaceSystemProperties(uri))) : null;
-        this.spoolDirectoryURI = Objects.requireNonNull(uri, "SpoolDirectory");
+        this.spoolDirectoryURI = uri;
     }
 
     public String getSpoolNameFilePrefix() {
@@ -652,7 +652,7 @@ public class AuditLogger {
         setTimestampInUTC(from.timestampInUTC);
         setIncludeBOM(from.includeBOM);
         setFormatXML(from.formatXML);
-        setSpoolDirectory(from.spoolDirectory);
+        setSpoolDirectoryURI(from.spoolDirectoryURI);
         setSpoolFileNamePrefix(from.spoolFileNamePrefix);
         setSpoolFileNameSuffix(from.spoolFileNameSuffix);
         setRetryInterval(from.retryInterval);

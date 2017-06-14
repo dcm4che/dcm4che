@@ -110,6 +110,8 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
 
     protected void writeAuditSuppressCriteriaList (
             JsonWriter writer, List<AuditSuppressCriteria> list) {
+        if (list.isEmpty())
+            return;
         writer.writeStartArray("dcmAuditSuppressCriteria");
         for (AuditSuppressCriteria suppressCriteria : list) {
             writer.writeStartObject();

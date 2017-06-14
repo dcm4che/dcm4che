@@ -257,7 +257,7 @@ public class AuditLogger {
 
     public String getAuditRecordRepositoryDeviceName() {
         if (arrDevice == null)
-            throw new IllegalStateException("AuditRecordRepositoryDevice not initalized");
+            throw new IllegalStateException("AuditRecordRepositoryDevice not initialized");
         return arrDevice.getDeviceName();
     }
 

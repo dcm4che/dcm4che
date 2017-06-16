@@ -7,6 +7,15 @@
      -c <dicomdir>            create new directory file <dicomdir> with
                               references to DICOM files specified by file.. or
                               directory.. arguments
+        --csv <csv-file>      import records from CSV file with hex encoded tag values 
+                              or keywords of the DICOM Attributes as headers.
+                              The CSV may also contain the additional Query/Retrieve Attributes : 
+                              Number of Patient Related Studies | (0020,1200) 
+                              Number of Patient Related | (0020,1202) 
+                              Number of Patient Related Instances | (0020,1204) 
+                              Number of Study Related Series | (0020,1206) 
+                              Number of Study Related Instances | (0020,1208) 
+                              Number of Series Related Instances | (0020,1209) 
      -d <dicomdir>            delete records referring DICOM files specified
                               by file.. or directory.. arguments from
                               existing directory file <dicomdir> by setting
@@ -64,24 +73,28 @@
     'x' - delete record referring one file
     -
     Examples:
-    $ dicomdir -l /media/cdrom/DICOMDIR
+    $ dcmdir -l /media/cdrom/DICOMDIR
     list content of DICOMDIR to stdout
     -
-    $ dicomdir -c disk99/DICOMDIR -I DISK99 -D disk99/README disk99/DICOM
+    $ dcmdir -c disk99/DICOMDIR -I DISK99 -D disk99/README disk99/DICOM
     create a new directory file with specified File-set ID and Descriptor
     File, referencing all DICOM Files in directory disk99/DICOM
     -
-    $ dicomdir -u disk99/DICOMDIR disk99/DICOM/CT1
+    $ dcmdir -u disk99/DICOMDIR disk99/DICOM/CT1
     add directory records referencing all DICOM files in directory
     disk99/DICOM/CT1 to existing directory file
     -
-    $ dicomdir -d disk99/DICOMDIR disk99/DICOM/CT2
+    $ dcmdir -d disk99/DICOMDIR disk99/DICOM/CT2
     delete/deactivate directory records referencing DICOM files in directory
     disk99/DICOM/CT2
     -
-    $ dicomdir -p disk99/DICOMDIR
+    $ dcmdir -p disk99/DICOMDIR
     delete/deactivate directory records without child records referencing any
     DICOM file
     -
-    $ dicomdir -z disk99/DICOMDIR
+    $ dcmdir -z disk99/DICOMDIR
     compact DICOMDIR by removing inactive records
+    -
+    $ dcmdir -c disk99/DICOMDIR --csv /path-to-csv-file.csv disk99/DICOM
+    create a new directory file referencing all DICOM Files in directory disk99/DICOM 
+    and also referencing all records present in csv file

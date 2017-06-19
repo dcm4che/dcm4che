@@ -42,16 +42,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.UID;
@@ -119,6 +116,7 @@ public class DcmDir {
         opts.addOption(null, "csv", true, rb.getString("csv"));
         opts.addOption(null, "csv-delim", true, rb.getString("csv-delim"));
         opts.addOption(null, "csv-quote", true, rb.getString("csv-quote"));
+        opts.addOption(null, "record-config", true, rb.getString("record-config"));
         opts.addOption(null, "orig-seq-len", false,
                 rb.getString("orig-seq-len"));
         CLIUtils.addEncodingOptions(opts);
@@ -248,10 +246,12 @@ public class DcmDir {
     }
 
     private int readCSVFile(CommandLine cl, DcmDir main, int num) throws Exception {
+        if (!cl.hasOption("record-config"))
+            throw new MissingOptionException("Missing record-config option.");
         String delim = cl.hasOption("csv-delim") ? cl.getOptionValue("csv-delim") : ",";
         String quote = cl.hasOption("csv-quote") ? cl.getOptionValue("csv-quote") : "\"";
         try(BufferedReader br = new BufferedReader(new FileReader(cl.getOptionValue("csv")))) {
-            loadDefaultConfiguration();
+            loadDefaultConfiguration(cl.getOptionValue("record-config"));
             String[] headers = br.readLine().split(delim);
             List<Integer> tags = new ArrayList<>();
             List<VR> vrs = new ArrayList<>();
@@ -656,10 +656,9 @@ public class DcmDir {
             throw new IllegalStateException(rb.getString("no-record-factory"));
     }
 
-    private void loadDefaultConfiguration() {
+    private void loadDefaultConfiguration(String recordConfig) {
         try {
-            recFact.loadConfiguration(ResourceLocator.getResource(
-                    "org/dcm4che3/tool/dcmdir/RecordFactory.xml", this.getClass()));
+            recFact.loadConfiguration(Paths.get(recordConfig).toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -46,6 +46,8 @@
      -p <dicomdir>                  purge records without file references from
                                     directory file <dicomdir> by setting its Record
                                     In-use Flag = 0
+        --record-config <file>      file path or URL to configuration of directory record attributes.
+                                    At default only mandatory directory record attributes are included.
      -u <dicomdir>                  update existing directory file <dicomdir> "with
                                     references to DICOM files specified by file.. or
                                     directory.. arguments
@@ -97,7 +99,8 @@
     $ dcmdir -z disk99/DICOMDIR
     compact DICOMDIR by removing inactive records
     -
-    $ dcmdir -c disk99/DICOMDIR --csv /path-to-csv-file.csv disk99/DICOM
+    $ dcmdir -c disk99/DICOMDIR --csv /path-to-csv-file.csv 
+    --record-config /dcm4che-assembly/src/etc/dcmdir/RecordFactory.xml disk99/DICOM
     create a new directory file referencing all DICOM Files in directory disk99/DICOM 
-    and also referencing all records present in csv file
+    and also referencing all records present in csv file.
     -

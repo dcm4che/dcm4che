@@ -10,12 +10,12 @@
         --csv <csv-file>      import records from CSV file with hex encoded tag values 
                               or keywords of the DICOM Attributes as headers.
                               The CSV may also contain the additional Query/Retrieve Attributes : 
-                              Number of Patient Related Studies | (0020,1200) 
-                              Number of Patient Related | (0020,1202) 
-                              Number of Patient Related Instances | (0020,1204) 
-                              Number of Study Related Series | (0020,1206) 
-                              Number of Study Related Instances | (0020,1208) 
-                              Number of Series Related Instances | (0020,1209) 
+                              Number of Patient Related Studies (0020,1200),
+                              Number of Patient Related (0020,1202),
+                              Number of Patient Related Instances (0020,1204),
+                              Number of Study Related Series (0020,1206),
+                              Number of Study Related Instances (0020,1208), 
+                              Number of Series Related Instances (0020,1209) 
      -d <dicomdir>            delete records referring DICOM files specified
                               by file.. or directory.. arguments from
                               existing directory file <dicomdir> by setting
@@ -98,3 +98,4 @@
     $ dcmdir -c disk99/DICOMDIR --csv /path-to-csv-file.csv disk99/DICOM
     create a new directory file referencing all DICOM Files in directory disk99/DICOM 
     and also referencing all records present in csv file
+    -

@@ -48,7 +48,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.MissingOptionException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.UID;
@@ -63,7 +68,6 @@ import org.dcm4che3.media.RecordFactory;
 import org.dcm4che3.media.RecordType;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.common.FilesetInfo;
-import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
@@ -252,10 +256,11 @@ public class DcmDir {
         String quote = cl.hasOption("csv-quote") ? cl.getOptionValue("csv-quote") : "\"";
         try(BufferedReader br = new BufferedReader(new FileReader(cl.getOptionValue("csv")))) {
             loadDefaultConfiguration(cl.getOptionValue("record-config"));
-            String[] headers = br.readLine().split(delim);
+            String headerline = br.readLine();
+            String[] headers = headerline.split(delim);
             List<Integer> tags = new ArrayList<>();
             List<VR> vrs = new ArrayList<>();
-            for (int i=0; i<headers.length; i++) {
+            for (int i = 0; i < headers.length; i++) {
                 String header = headers[i].replaceAll(quote, "");
                 int tag = DICT.tagForKeyword(header);
                 tags.add(tag);
@@ -264,7 +269,9 @@ public class DcmDir {
 
             String nextLine;
             while((nextLine = br.readLine()) != null) {
-                String[] values = nextLine.split(delim);
+                String escq = new StringBuilder().append("\\").append(quote).toString();
+                String regex = delim + "(?=(?:[^" + escq + "]*" + escq + "[^" + escq + "]*" + escq + ")*[^" + escq + "]*$)";
+                String[] values = nextLine.split(regex, -1);
                 if (values.length > headers.length) {
                     LOG.warn("Number of values in line " + nextLine + " does not match number of headers");
                     return num;
@@ -433,8 +440,7 @@ public class DcmDir {
         checkOut();
         checkRecordFactory();
         Attributes dataset = new Attributes();
-
-        for (int i=0; i<values.length; i++) {
+        for (int i = 0; i < values.length; i++) {
             String value = values[i].replaceAll(quote, "");
             dataset.setString(tags[i], vrs[i], value);
         }

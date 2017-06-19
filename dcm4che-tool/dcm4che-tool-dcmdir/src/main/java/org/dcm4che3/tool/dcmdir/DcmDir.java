@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -68,12 +69,16 @@ import org.dcm4che3.tool.common.FilesetInfo;
 import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.UIDUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  */
 public class DcmDir {
+
+    static final Logger LOG = LoggerFactory.getLogger(DcmDir.class);
 
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che3.tool.dcmdir.messages");
@@ -112,6 +117,8 @@ public class DcmDir {
                 .create("w"));
         opts.addOption(null, "in-use", false, rb.getString("in-use"));
         opts.addOption(null, "csv", true, rb.getString("csv"));
+        opts.addOption(null, "csv-delim", true, rb.getString("csv-delim"));
+        opts.addOption(null, "csv-quote", true, rb.getString("csv-quote"));
         opts.addOption(null, "orig-seq-len", false,
                 rb.getString("orig-seq-len"));
         CLIUtils.addEncodingOptions(opts);
@@ -241,12 +248,29 @@ public class DcmDir {
     }
 
     private int readCSVFile(CommandLine cl, DcmDir main, int num) throws Exception {
+        String delim = cl.hasOption("csv-delim") ? cl.getOptionValue("csv-delim") : ",";
+        String quote = cl.hasOption("csv-quote") ? cl.getOptionValue("csv-quote") : "\"";
         try(BufferedReader br = new BufferedReader(new FileReader(cl.getOptionValue("csv")))) {
             loadDefaultConfiguration();
-            String[] header = br.readLine().split(",");
+            String[] headers = br.readLine().split(delim);
+            List<Integer> tags = new ArrayList<>();
+            List<VR> vrs = new ArrayList<>();
+            for (int i=0; i<headers.length; i++) {
+                String header = headers[i].replaceAll(quote, "");
+                int tag = DICT.tagForKeyword(header);
+                tags.add(tag);
+                vrs.add(DICT.vrOf(tag));
+            }
+
             String nextLine;
             while((nextLine = br.readLine()) != null) {
-                num = main.addReferenceToNextLine(header, nextLine, num);
+                String[] values = nextLine.split(delim);
+                if (values.length > headers.length) {
+                    LOG.warn("Number of values in line " + nextLine + " does not match number of headers");
+                    return num;
+                }
+                num = main.addReferenceToNextLine(
+                        tags.toArray(new Integer[tags.size()]), vrs.toArray(new VR[vrs.size()]), values, num, quote);
             }
         }
         return num;
@@ -405,14 +429,14 @@ public class DcmDir {
         }
     }
 
-    private int addReferenceToNextLine(String[] header, String line, int num) throws Exception {
+    private int addReferenceToNextLine(Integer[] tags, VR[] vrs, String[] values, int num, String quote) throws Exception {
         checkOut();
         checkRecordFactory();
         Attributes dataset = new Attributes();
-        String[] values = line.split(",");
+
         for (int i=0; i<values.length; i++) {
-            int tag = DICT.tagForKeyword(header[i]);
-            dataset.setString(tag, DICT.vrOf(tag), values[i]);
+            String value = values[i].replaceAll(quote, "");
+            dataset.setString(tags[i], vrs[i], value);
         }
         String iuid = dataset.getString(Tag.SOPInstanceUID);
         char prompt = '.';

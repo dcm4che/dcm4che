@@ -41,55 +41,16 @@
   -->
 
 <NativeDicomModel xml:space="preserve">
-    <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS">
-        <Value number="1">ISO_IR 100</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="QueryRetrieveLevel" tag="00080052" vr="CS">
-        <Value number="1">SERIES</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="RetrieveAETitle" tag="00080054" vr="AE">
-        <Value number="1">DCM4CHEE</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="InstanceAvailability" tag="00080056" vr="CS">
-        <Value number="1">ONLINE</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="Modality" tag="00080060" vr="CS">
-        <Value number="1">MR</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI">
-        <Value number="1">1.113654.5.13.1041</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="SeriesInstanceUID" tag="0020000E" vr="UI">
-        <Value number="1">1.113654.5.14.1140</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="SeriesNumber" tag="00200011" vr="IS">
-        <Value number="1">107</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="NumberOfSeriesRelatedInstances" tag="00201209" vr="IS">
-        <Value number="1">2</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PerformedProcedureStepStartDate" tag="00400244" vr="DA">
-        <Value number="1">20170119</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PerformedProcedureStepStartTime" tag="00400245" vr="TM">
-        <Value number="1">085223</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="RequestAttributesSequence" tag="00400275" vr="SQ">
-        <Item number="1">
-            <DicomAttribute keyword="ScheduledProcedureStepID" tag="00400009" vr="SH">
-                <Value number="1">SPS2114</Value>
-            </DicomAttribute>
-            <DicomAttribute keyword="RequestedProcedureID" tag="00401001" vr="SH">
-                <Value number="1">RP1111</Value>
-            </DicomAttribute>
-        </Item>
-        <Item number="2">
-            <DicomAttribute keyword="ScheduledProcedureStepID" tag="00400009" vr="SH">
-                <Value number="1">SPS2113</Value>
-            </DicomAttribute>
-            <DicomAttribute keyword="RequestedProcedureID" tag="00401001" vr="SH">
-                <Value number="1">RP1110</Value>
-            </DicomAttribute>
-        </Item>
-    </DicomAttribute>
+    <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
+    <DicomAttribute keyword="QueryRetrieveLevel" tag="00080052" vr="CS"/>
+    <DicomAttribute keyword="RetrieveAETitle" tag="00080054" vr="AE"/>
+    <DicomAttribute keyword="InstanceAvailability" tag="00080056" vr="CS"/>
+    <DicomAttribute keyword="Modality" tag="00080060" vr="CS"/>
+    <DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI"/>
+    <DicomAttribute keyword="SeriesInstanceUID" tag="0020000E" vr="UI"/>
+    <DicomAttribute keyword="SeriesNumber" tag="00200011" vr="IS"/>
+    <DicomAttribute keyword="NumberOfSeriesRelatedInstances" tag="00201209" vr="IS"/>
+    <DicomAttribute keyword="PerformedProcedureStepStartDate" tag="00400244" vr="DA"/>
+    <DicomAttribute keyword="PerformedProcedureStepStartTime" tag="00400245" vr="TM"/>
+    <DicomAttribute keyword="RequestAttributesSequence" tag="00400275" vr="SQ"/>
 </NativeDicomModel>

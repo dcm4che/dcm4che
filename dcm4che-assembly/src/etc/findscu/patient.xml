@@ -1,26 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <NativeDicomModel xml:space="preserve">
-    <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS">
-        <Value number="1">ISO_IR 100</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="QueryRetrieveLevel" tag="00080052" vr="CS">
-        <Value number="1">PATIENT</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientName" tag="00100010" vr="PN">
-        <PersonName number="1">
-            <Alphabetic>
-                <FamilyName>PatientSurname</FamilyName>
-                <GivenName>PatientName</GivenName>
-            </Alphabetic>
-        </PersonName>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientID" tag="00100020" vr="LO">
-        <Value number="1">P1</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA">
-        <Value number="1">19411216</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS">
-        <Value number="1">M</Value>
-    </DicomAttribute>
+    <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
+    <DicomAttribute keyword="QueryRetrieveLevel" tag="00080052" vr="CS"/>
+    <DicomAttribute keyword="PatientName" tag="00100010" vr="PN"/>
+    <DicomAttribute keyword="PatientID" tag="00100020" vr="LO"/>
+    <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA"/>
+    <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS"/>
 </NativeDicomModel>

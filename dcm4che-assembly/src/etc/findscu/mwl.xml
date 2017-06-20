@@ -1,136 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <NativeDicomModel xml:space="preserve">
-    <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS">
-        <Value number="1">ISO_IR 100</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="AccessionNumber" tag="00080050" vr="SH">
-        <Value number="1">$ACCESSION_NUMBER$</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN">
-        <PersonName number="1">
-            <Alphabetic>
-                <FamilyName>ReferringPhysicianSurname</FamilyName>
-                <GivenName>ReferringPhysicianName</GivenName>
-                <MiddleName>P</MiddleName>
-                <NamePrefix>DR</NamePrefix>
-            </Alphabetic>
-        </PersonName>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientName" tag="00100010" vr="PN">
-        <PersonName number="1">
-            <Alphabetic>
-                <FamilyName>PatientSurname</FamilyName>
-                <GivenName>PatientName</GivenName>
-            </Alphabetic>
-        </PersonName>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientID" tag="00100020" vr="LO">
-        <Value number="1">M4001</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="IssuerOfPatientID" tag="00100021" vr="LO">
-        <Value number="1">ADT1</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA">
-        <Value number="1">19450804</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS">
-        <Value number="1">M</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="MedicalAlerts" tag="00102000" vr="LO">
-        <Value number="1">xxx</Value>
-    </DicomAttribute>
+    <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
+    <DicomAttribute keyword="AccessionNumber" tag="00080050" vr="SH"/>
+    <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN"/>
+    <DicomAttribute keyword="PatientName" tag="00100010" vr="PN"/>
+    <DicomAttribute keyword="PatientID" tag="00100020" vr="LO"/>
+    <DicomAttribute keyword="IssuerOfPatientID" tag="00100021" vr="LO"/>
+    <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA"/>
+    <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS"/>
+    <DicomAttribute keyword="MedicalAlerts" tag="00102000" vr="LO"/>
     <DicomAttribute keyword="PregnancyStatus" tag="001021C0" vr="US"/>
-    <DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI">
-        <Value number="1">1.2.4.0.13.1.432252867.1552647.1</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="NumberOfPatientRelatedStudies" tag="00201200" vr="IS">
-        <Value number="1">0</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="RequestingPhysician" tag="00321032" vr="PN">
-        <PersonName number="1">
-            <Alphabetic>
-                <FamilyName>RequestingPhysicianSurname</FamilyName>
-                <GivenName>RequestingPhysicianName</GivenName>
-                <MiddleName>P</MiddleName>
-                <NamePrefix>DR</NamePrefix>
-            </Alphabetic>
-        </PersonName>
-    </DicomAttribute>
-    <DicomAttribute keyword="RequestedProcedureDescription" tag="00321060" vr="LO">
-        <Value number="1">$PROCEDURE_CODE$</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="AdmissionID" tag="00380010" vr="LO">
-        <Value number="1">V100</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="IssuerOfAdmissionIDSequence" tag="00380014" vr="SQ">
-        <Item number="1">
-            <DicomAttribute keyword="LocalNamespaceEntityID" tag="00400031" vr="UT">
-                <Value number="1">ADT1</Value>
-            </DicomAttribute>
-        </Item>
-    </DicomAttribute>
-    <DicomAttribute keyword="OrderPlacerIdentifierSequence" tag="00400026" vr="SQ">
-        <Item number="1">
-            <DicomAttribute keyword="LocalNamespaceEntityID" tag="00400031" vr="UT">
-                <Value number="1">MESA_ORDPLC</Value>
-            </DicomAttribute>
-        </Item>
-    </DicomAttribute>
-    <DicomAttribute keyword="OrderFillerIdentifierSequence" tag="00400027" vr="SQ">
-        <Item number="1">
-            <DicomAttribute keyword="LocalNamespaceEntityID" tag="00400031" vr="UT">
-                <Value number="1">MESA_ORDFIL</Value>
-            </DicomAttribute>
-        </Item>
-    </DicomAttribute>
-    <DicomAttribute keyword="ScheduledProcedureStepSequence" tag="00400100" vr="SQ">
-        <Item number="1">
-            <DicomAttribute keyword="Modality" tag="00080060" vr="CS">
-                <Value number="1">MR</Value>
-            </DicomAttribute>
-            <DicomAttribute keyword="ScheduledStationAETitle" tag="00400001" vr="AE">
-                <Value number="1">UNKNOWN</Value>
-            </DicomAttribute>
-            <DicomAttribute keyword="ScheduledProcedureStepDescription" tag="00400007" vr="LO">
-                <Value number="1">SP Action Item X1_A1</Value>
-            </DicomAttribute>
-            <DicomAttribute keyword="ScheduledProtocolCodeSequence" tag="00400008" vr="SQ">
-                <Item number="1">
-                    <DicomAttribute keyword="CodeValue" tag="00080100" vr="SH">
-                        <Value number="1">X1_A1</Value>
-                    </DicomAttribute>
-                    <DicomAttribute keyword="CodingSchemeDesignator" tag="00080102" vr="SH">
-                        <Value number="1">DSS_MESA</Value>
-                    </DicomAttribute>
-                    <DicomAttribute keyword="CodeMeaning" tag="00080104" vr="LO">
-                        <Value number="1">SP Action Item X1_A1</Value>
-                    </DicomAttribute>
-                </Item>
-            </DicomAttribute>
-            <DicomAttribute keyword="ScheduledProcedureStepID" tag="00400009" vr="SH">
-                <Value number="1">$SCHEDULED_PROCEDURE_STEP_ID$</Value>
-            </DicomAttribute>
-            <DicomAttribute keyword="ScheduledStationName" tag="00400010" vr="SH">
-                <Value number="1">unknown</Value>
-            </DicomAttribute>
-            <DicomAttribute keyword="ScheduledProcedureStepStatus" tag="00400020" vr="CS">
-                <Value number="1">SCHEDULED</Value>
-            </DicomAttribute>
-        </Item>
-    </DicomAttribute>
-    <DicomAttribute keyword="RequestedProcedureID" tag="00401001" vr="SH">
-        <Value number="1">$REQUESTED_PROCEDURE_ID$</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="RequestedProcedurePriority" tag="00401003" vr="SH">
-        <Value number="1">STAT</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientTransportArrangements" tag="00401004" vr="LO">
-        <Value number="1">WALK</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PlacerOrderNumberImagingServiceRequest" tag="00402016" vr="LO">
-        <Value number="1">A100Z</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="FillerOrderNumberImagingServiceRequest" tag="00402017" vr="LO">
-        <Value number="1">B100Z</Value>
-    </DicomAttribute>
+    <DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI"/>
+    <DicomAttribute keyword="NumberOfPatientRelatedStudies" tag="00201200" vr="IS"/>
+    <DicomAttribute keyword="RequestingPhysician" tag="00321032" vr="PN"/>
+    <DicomAttribute keyword="RequestedProcedureDescription" tag="00321060" vr="LO"/>
+    <DicomAttribute keyword="AdmissionID" tag="00380010" vr="LO"/>
+    <DicomAttribute keyword="IssuerOfAdmissionIDSequence" tag="00380014" vr="SQ"/>
+    <DicomAttribute keyword="OrderPlacerIdentifierSequence" tag="00400026" vr="SQ"/>
+    <DicomAttribute keyword="OrderFillerIdentifierSequence" tag="00400027" vr="SQ"/>
+    <DicomAttribute keyword="ScheduledProcedureStepSequence" tag="00400100" vr="SQ"/>
+    <DicomAttribute keyword="RequestedProcedureID" tag="00401001" vr="SH"/>
+    <DicomAttribute keyword="RequestedProcedurePriority" tag="00401003" vr="SH"/>
+    <DicomAttribute keyword="PatientTransportArrangements" tag="00401004" vr="LO"/>
+    <DicomAttribute keyword="PlacerOrderNumberImagingServiceRequest" tag="00402016" vr="LO"/>
+    <DicomAttribute keyword="FillerOrderNumberImagingServiceRequest" tag="00402017" vr="LO"/>
 </NativeDicomModel>

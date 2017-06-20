@@ -41,66 +41,21 @@
   -->
 
 <NativeDicomModel xml:space="preserve">
-    <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS">
-        <Value number="1">ISO_IR 100</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="StudyDate" tag="00080020" vr="DA">
-        <Value number="1">20080716</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="StudyTime" tag="00080030" vr="TM">
-        <Value number="1">135534.000000</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="AccessionNumber" tag="00080050" vr="SH">
-        <Value number="1">334864</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="QueryRetrieveLevel" tag="00080052" vr="CS">
-        <Value number="1">STUDY</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="RetrieveAETitle" tag="00080054" vr="AE">
-        <Value number="1">DCM4CHEE</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="InstanceAvailability" tag="00080056" vr="CS">
-        <Value number="1">ONLINE</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="ModalitiesInStudy" tag="00080061" vr="CS">
-        <Value number="1">CR</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN">
-        <PersonName number="1">
-            <Alphabetic>
-                <FamilyName>ReferringPhysicianSurname</FamilyName>
-                <GivenName>ReferringPhysicianName</GivenName>
-                <NamePrefix>MD.</NamePrefix>
-            </Alphabetic>
-        </PersonName>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientName" tag="00100010" vr="PN">
-        <PersonName number="1">
-            <Alphabetic>
-                <FamilyName>PatientSurname</FamilyName>
-                <GivenName>PatientName</GivenName>
-            </Alphabetic>
-        </PersonName>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientID" tag="00100020" vr="LO">
-        <Value number="1">P1</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA">
-        <Value number="1">19411216</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS">
-        <Value number="1">M</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI">
-        <Value number="1">1.2.124.113532.10.65.128.125.20050317.135817.478336</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="StudyID" tag="00200010" vr="SH">
-        <Value number="1">334864</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="NumberOfStudyRelatedSeries" tag="00201206" vr="IS">
-        <Value number="1">2</Value>
-    </DicomAttribute>
-    <DicomAttribute keyword="NumberOfStudyRelatedInstances" tag="00201208" vr="IS">
-        <Value number="1">4</Value>
-    </DicomAttribute>
+    <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
+    <DicomAttribute keyword="StudyDate" tag="00080020" vr="DA"/>
+    <DicomAttribute keyword="StudyTime" tag="00080030" vr="TM"/>
+    <DicomAttribute keyword="AccessionNumber" tag="00080050" vr="SH"/>
+    <DicomAttribute keyword="QueryRetrieveLevel" tag="00080052" vr="CS"/>
+    <DicomAttribute keyword="RetrieveAETitle" tag="00080054" vr="AE"/>
+    <DicomAttribute keyword="InstanceAvailability" tag="00080056" vr="CS"/>
+    <DicomAttribute keyword="ModalitiesInStudy" tag="00080061" vr="CS"/>
+    <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN"/>
+    <DicomAttribute keyword="PatientName" tag="00100010" vr="PN"/>
+    <DicomAttribute keyword="PatientID" tag="00100020" vr="LO"/>
+    <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA"/>
+    <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS"/>
+    <DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI"/>
+    <DicomAttribute keyword="StudyID" tag="00200010" vr="SH"/>
+    <DicomAttribute keyword="NumberOfStudyRelatedSeries" tag="00201206" vr="IS"/>
+    <DicomAttribute keyword="NumberOfStudyRelatedInstances" tag="00201208" vr="IS"/>
 </NativeDicomModel>

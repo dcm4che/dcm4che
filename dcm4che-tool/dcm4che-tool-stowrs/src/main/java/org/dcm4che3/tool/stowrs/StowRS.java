@@ -38,7 +38,13 @@
 
 package org.dcm4che3.tool.stowrs;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -104,6 +110,7 @@ public class StowRS {
     private BulkData defaultBulkdata = new BulkData(null, "bulk", false);
     private static final String boundary = "myboundary";
     private byte[] pixelData;
+    private File pixelDataFile;
 
     private static final int INIT_BUFFER_SIZE = 8192;
     private static final int MAX_BUFFER_SIZE = 10485768;
@@ -302,25 +309,31 @@ public class StowRS {
     private static void readFile(StowRS instance, Attributes metadata, CompressedPixelData compressedPixelData, File file) throws IOException {
         boolean result = false;
         try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
-            instance.pixelData = ByteUtils.EMPTY_BYTES;
+            instance.pixelDataFile = file;
+            byte[] btemp = ByteUtils.EMPTY_BYTES;
             int rl = 0;
             int grow = INIT_BUFFER_SIZE;
             int fileLen = (int) file.length();
-            while (rl == instance.pixelData.length && rl < fileLen) {
+            while (rl == btemp.length && rl < fileLen) {
                 int newLen = grow += rl;
-                instance.pixelData = Arrays.copyOf(instance.pixelData, newLen);
-                rl += StreamUtils.readAvailable(bis, instance.pixelData, rl, instance.pixelData.length - rl);
+                btemp = Arrays.copyOf(btemp, newLen);
+                rl += StreamUtils.readAvailable(bis, btemp, rl, btemp.length - rl);
 
                 if (!result && compressedPixelData != null && instance.pixelHeader) {
-                    byte[] header = Arrays.copyOf(instance.pixelData, newLen);
+                    byte[] header = Arrays.copyOf(btemp, newLen);
                     if (compressedPixelData.parseHeader(instance, header, metadata, file)) {
                         result = true;
+                        verifyImagePixelModule(metadata);
+                        if (instance.pixelDataFile.length() > MAX_BUFFER_SIZE)
+                            return;
                     }
                 }
             }
+            int off = 0;
+            if (instance.noAppn)
+                off = instance.jpegHeader.offsetAfterAPP();
+            instance.pixelData = Arrays.copyOfRange(btemp, off, fileLen);
         }
-        if (result)
-            verifyImagePixelModule(metadata);
     }
 
     private enum CompressedPixelData {
@@ -435,7 +448,7 @@ public class StowRS {
     private static void writeData(StowRS instance, Attributes metadata, List<String> files,
                                   OutputStream out) throws Exception {
         if (!instance.contentType.equals("application/dicom")) {
-            writeMetdataAndBulkData(instance, metadata, out);
+            writeMetadataAndBulkData(instance, metadata, out);
             return;
         }
         Files.copy(Paths.get(files.get(0)), out);
@@ -447,7 +460,7 @@ public class StowRS {
         }
     }
 
-    private static void writeMetdataAndBulkData(StowRS instance,
+    private static void writeMetadataAndBulkData(StowRS instance,
                                                 Attributes metadata, OutputStream out)
             throws Exception {
         try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
@@ -471,9 +484,29 @@ public class StowRS {
                 out.write((byte) JPEG.SOI);
                 out.write(-1);
             }
+            if (instance.pixelDataFile.length() > MAX_BUFFER_SIZE) {
+                writeLargeFile(instance, out);
+                return;
+            }
             for (byte b : instance.pixelData)
                 out.write(b);
             instance.pixelData = new byte[0];
+        }
+    }
+
+    private static void writeLargeFile(StowRS instance, OutputStream out) throws Exception {
+        InputStream is = null;
+        try {
+            byte[] buf = new byte[8192];
+            is = new FileInputStream(instance.pixelDataFile);
+            int c;
+            while ((c = is.read(buf, 0, buf.length)) > 0) {
+                out.write(buf, 0, c);
+                out.flush();
+            }
+        } finally {
+            if (is != null)
+                is.close();
         }
     }
 

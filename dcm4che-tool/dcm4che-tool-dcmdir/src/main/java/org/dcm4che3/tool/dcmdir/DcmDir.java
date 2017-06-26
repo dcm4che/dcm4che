@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionGroup;
@@ -291,10 +292,12 @@ public class DcmDir {
             }
 
             String nextLine;
+            String esc = "\\";
+            String escq = esc.concat(quote);
+            String regex = delim + "(?=(?:[^" + escq + "]*" + escq + "[^" + escq + "]*" + escq + ")*[^" + escq + "]*$)";
+            Pattern p = Pattern.compile(regex);
             while((nextLine = br.readLine()) != null) {
-                String escq = new StringBuilder().append("\\").append(quote).toString();
-                String regex = delim + "(?=(?:[^" + escq + "]*" + escq + "[^" + escq + "]*" + escq + ")*[^" + escq + "]*$)";
-                String[] values = nextLine.split(regex, -1);
+                String[] values = p.split(nextLine, -1);
                 if (values.length > headers.length) {
                     LOG.warn("Number of values in line " + nextLine + " does not match number of headers");
                     return num;

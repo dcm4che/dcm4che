@@ -45,13 +45,11 @@
     <DicomAttribute keyword="StudyDate" tag="00080020" vr="DA"/>
     <DicomAttribute keyword="StudyTime" tag="00080030" vr="TM"/>
     <DicomAttribute keyword="AccessionNumber" tag="00080050" vr="SH"/>
-    <DicomAttribute keyword="QueryRetrieveLevel" tag="00080052" vr="CS"/>
-    <DicomAttribute keyword="RetrieveAETitle" tag="00080054" vr="AE"/>
-    <DicomAttribute keyword="InstanceAvailability" tag="00080056" vr="CS"/>
     <DicomAttribute keyword="ModalitiesInStudy" tag="00080061" vr="CS"/>
     <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN"/>
     <DicomAttribute keyword="PatientName" tag="00100010" vr="PN"/>
     <DicomAttribute keyword="PatientID" tag="00100020" vr="LO"/>
+    <DicomAttribute keyword="IssuerOfPatientID" tag="00100021" vr="LO"/>
     <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA"/>
     <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS"/>
     <DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI"/>

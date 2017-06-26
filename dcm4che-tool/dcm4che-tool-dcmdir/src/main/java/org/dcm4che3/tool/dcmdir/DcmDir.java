@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,21 +38,27 @@
 
 package org.dcm4che3.tool.dcmdir;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.MissingOptionException;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.VR;
+import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
@@ -64,14 +70,21 @@ import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.common.FilesetInfo;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.UIDUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  */
 public class DcmDir {
 
+    static final Logger LOG = LoggerFactory.getLogger(DcmDir.class);
+
     private static ResourceBundle rb =
-        ResourceBundle.getBundle("org.dcm4che3.tool.dcmdir.messages");
+            ResourceBundle.getBundle("org.dcm4che3.tool.dcmdir.messages");
+
+    private static ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
 
     /** default number of characters per line */
     private static final int DEFAULT_WIDTH = 78;
@@ -104,6 +117,30 @@ public class DcmDir {
                 .withDescription(rb.getString("width"))
                 .create("w"));
         opts.addOption(null, "in-use", false, rb.getString("in-use"));
+        opts.addOption(OptionBuilder
+                .withLongOpt("csv")
+                .hasArg()
+                .withArgName("csv-file")
+                .withDescription(rb.getString("csv"))
+                .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("csv-delim")
+                .hasArg()
+                .withArgName("csv-delim")
+                .withDescription(rb.getString("csv-delim"))
+                .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("csv-quote")
+                .hasArg()
+                .withArgName("csv-quote")
+                .withDescription(rb.getString("csv-quote"))
+                .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("record-config")
+                .hasArg()
+                .withArgName("record-config-file")
+                .withDescription(rb.getString("record-config"))
+                .create());
         opts.addOption(null, "orig-seq-len", false,
                 rb.getString("orig-seq-len"));
         CLIUtils.addEncodingOptions(opts);
@@ -148,7 +185,7 @@ public class DcmDir {
     }
 
     @SuppressWarnings("unchecked")
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         try {
             CommandLine cl = parseComandLine(args);
             DcmDir main = new DcmDir();
@@ -209,6 +246,8 @@ public class DcmDir {
                     int num = 0;
                     for (String arg : argList)
                         num += main.addReferenceTo(new File(arg));
+                    if (cl.hasOption("csv"))
+                        num = main.readCSVFile(cl, main, num);
                     main.close();
                     long end = System.currentTimeMillis();
                     System.out.println();
@@ -230,7 +269,48 @@ public class DcmDir {
         }
     }
 
-    public void compact(File f, File bak) throws IOException {
+    private int readCSVFile(CommandLine cl, DcmDir main, int num) throws Exception {
+        if (!cl.hasOption("record-config"))
+            throw new MissingOptionException("Missing record-config option.");
+        String delim = cl.hasOption("csv-delim") ? cl.getOptionValue("csv-delim") : ",";
+        String quote = cl.hasOption("csv-quote") && !cl.getOptionValue("csv-quote").equals("")
+                        ? cl.getOptionValue("csv-quote") : "\"";
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(cl.getOptionValue("csv")));
+            loadDefaultConfiguration(cl.getOptionValue("record-config"));
+            String headerline = br.readLine();
+            String[] headers = headerline.split(delim);
+            List<Integer> tags = new ArrayList<Integer>();
+            List<VR> vrs = new ArrayList<VR>();
+            for (int i = 0; i < headers.length; i++) {
+                String header = headers[i].replaceAll(quote, "");
+                int tag = DICT.tagForKeyword(header);
+                tags.add(tag);
+                vrs.add(DICT.vrOf(tag));
+            }
+
+            String nextLine;
+            while((nextLine = br.readLine()) != null) {
+                String escq = new StringBuilder().append("\\").append(quote).toString();
+                String regex = delim + "(?=(?:[^" + escq + "]*" + escq + "[^" + escq + "]*" + escq + ")*[^" + escq + "]*$)";
+                String[] values = nextLine.split(regex, -1);
+                if (values.length > headers.length) {
+                    LOG.warn("Number of values in line " + nextLine + " does not match number of headers");
+                    return num;
+                }
+                num = main.addReferenceToNextLine(
+                        tags.toArray(new Integer[tags.size()]), vrs.toArray(new VR[vrs.size()]), values, num, quote);
+            }
+        } finally {
+            if (br != null)
+                br.close();
+        }
+        return num;
+    }
+
+
+    private void compact(File f, File bak) throws IOException {
         File tmp = File.createTempFile("DICOMDIR", null, f.getParentFile());
         DicomDirReader r = new DicomDirReader(f);
         try {
@@ -258,7 +338,7 @@ public class DcmDir {
                             from, to));
     }
 
-    public void copyFrom(DicomDirReader r) throws IOException {
+    private void copyFrom(DicomDirReader r) throws IOException {
         Attributes rec = r.findFirstRootDirectoryRecordInUse(false);
         while (rec != null) {
             copyChildsFrom(r, rec,
@@ -268,7 +348,7 @@ public class DcmDir {
     }
 
     private void copyChildsFrom(DicomDirReader r, Attributes src,
-            Attributes dst) throws IOException {
+                                Attributes dst) throws IOException {
         Attributes rec = r.findLowerDirectoryRecordInUse(src, false);
         while (rec != null) {
             copyChildsFrom(r, rec,
@@ -277,60 +357,60 @@ public class DcmDir {
         }
     }
 
-    public final File getFile() {
+    private File getFile() {
         return file;
     }
 
-    public final void setInUse(boolean inUse) {
+    private void setInUse(boolean inUse) {
         this.inUse = inUse;
     }
 
-    public final void setOriginalSequenceLength(boolean origSeqLength) {
+    private void setOriginalSequenceLength(boolean origSeqLength) {
         this.origSeqLength = origSeqLength;
     }
 
-    public final void setEncodingOptions(DicomEncodingOptions encOpts) {
+    private void setEncodingOptions(DicomEncodingOptions encOpts) {
         this.encOpts = encOpts;
     }
 
-    public final void setWidth(int width) {
+    private void setWidth(int width) {
         if (width < 40)
             throw new IllegalArgumentException();
         this.width = width;
     }
 
-    public final void setCheckDuplicate(boolean checkDuplicate) {
+    private void setCheckDuplicate(boolean checkDuplicate) {
         this.checkDuplicate = checkDuplicate;
     }
 
-    public final void setRecordFactory(RecordFactory recFact) {
+    private void setRecordFactory(RecordFactory recFact) {
         this.recFact = recFact;
     }
 
-    public void close() {
+    private void close() {
         SafeClose.close(in);
         in = null;
         out = null;
     }
 
-    public void openForReadOnly(File file) throws IOException {
+    private void openForReadOnly(File file) throws IOException {
         this.file = file;
         in = new DicomDirReader(file);
     }
 
-    public void create(File file) throws IOException {
+    private void create(File file) throws IOException {
         this.file = file;
         DicomDirWriter.createEmptyDirectory(file,
                 UIDUtils.createUIDIfNull(fsInfo.getFilesetUID()),
                 fsInfo.getFilesetID(),
-                fsInfo.getDescriptorFile(), 
+                fsInfo.getDescriptorFile(),
                 fsInfo.getDescriptorFileCharset());
         in = out = DicomDirWriter.open(file);
         out.setEncodingOptions(encOpts);
         setCheckDuplicate(false);
     }
 
-    public void open(File file) throws IOException {
+    private void open(File file) throws IOException {
         this.file = file;
         in = out = DicomDirWriter.open(file);
         if (!origSeqLength)
@@ -338,14 +418,14 @@ public class DcmDir {
         setCheckDuplicate(true);
     }
 
-    public void list() throws IOException {
+    private void list() throws IOException {
         checkIn();
         list("File Meta Information:", in.getFileMetaInformation());
         list("File-set Information:", in.getFileSetInformation());
         list(inUse
-                ? in.findFirstRootDirectoryRecordInUse(false)
-                : in.readFirstRootDirectoryRecord(),
-             new StringBuilder());
+                        ? in.findFirstRootDirectoryRecordInUse(false)
+                        : in.readFirstRootDirectoryRecord(),
+                new StringBuilder());
     }
 
     private void list(final String header, final Attributes attrs) {
@@ -361,8 +441,8 @@ public class DcmDir {
             index.append(i++).append('.');
             list(heading(rec, index), rec);
             list(inUse
-                    ? in.findLowerDirectoryRecordInUse(rec, false)
-                    : in.readLowerDirectoryRecord(rec),
+                            ? in.findLowerDirectoryRecordInUse(rec, false)
+                            : in.readLowerDirectoryRecord(rec),
                     index);
             rec = inUse
                     ? in.findNextDirectoryRecordInUse(rec, false)
@@ -375,14 +455,33 @@ public class DcmDir {
         int prefixLen = index.length();
         try {
             return index.append(' ')
-                .append(rec.getString(Tag.DirectoryRecordType, ""))
-                .append(':').toString();
+                    .append(rec.getString(Tag.DirectoryRecordType, ""))
+                    .append(':').toString();
         } finally {
             index.setLength(prefixLen);
         }
     }
 
-    public int addReferenceTo(File f) throws IOException {
+    private int addReferenceToNextLine(Integer[] tags, VR[] vrs, String[] values, int num, String quote) throws Exception {
+        checkOut();
+        checkRecordFactory();
+        Attributes dataset = new Attributes();
+        for (int i = 0; i < values.length; i++) {
+            String value = values[i].replaceAll(quote, "");
+            dataset.setString(tags[i], vrs[i], value);
+        }
+        String iuid = dataset.getString(Tag.SOPInstanceUID);
+        char prompt = '.';
+        Attributes fmi = null;
+        if (iuid != null) {
+            fmi = dataset.createFileMetaInformation(UID.ImplicitVRLittleEndian);
+            prompt = 'F';
+        }
+
+        return addRecords(dataset, num, values, prompt, iuid, fmi);
+    }
+
+    private int addReferenceTo(File f) throws IOException {
         checkOut();
         checkRecordFactory();
         int n = 0;
@@ -425,10 +524,17 @@ public class DcmDir {
                     rb.getString("skip-file"), f));
             return 0;
         }
+
+        return addRecords(dataset, n, out.toFileIDs(f), prompt, iuid, fmi);
+    }
+
+    private int addRecords(Attributes dataset, int num, String[] strings, char prompt, String iuid, Attributes fmi)
+            throws IOException {
         String pid = dataset.getString(Tag.PatientID, null);
         String styuid = dataset.getString(Tag.StudyInstanceUID, null);
         String seruid = dataset.getString(Tag.SeriesInstanceUID, null);
-        if (styuid != null && seruid != null) {
+
+        if (styuid != null) {
             if (pid == null) {
                 dataset.setString(Tag.PatientID, VR.LO, pid = styuid);
                 prompt = prompt == 'F' ? 'P' : 'p';
@@ -438,49 +544,58 @@ public class DcmDir {
                 patRec = recFact.createRecord(RecordType.PATIENT, null,
                         dataset, null, null);
                 out.addRootDirectoryRecord(patRec);
-                n++;
+                num++;
             }
             Attributes studyRec = in.findStudyRecord(patRec, styuid);
             if (studyRec == null) {
                 studyRec = recFact.createRecord(RecordType.STUDY, null,
                         dataset, null, null);
                 out.addLowerDirectoryRecord(patRec, studyRec);
-                n++;
+                num++;
             }
-            Attributes seriesRec = in.findSeriesRecord(studyRec, seruid);
-            if (seriesRec == null) {
-                seriesRec = recFact.createRecord(RecordType.SERIES, null,
-                        dataset, null, null);
-                out.addLowerDirectoryRecord(studyRec, seriesRec);
-                n++;
-            }
-            Attributes instRec;
-            if (checkDuplicate) {
-                instRec = in.findLowerInstanceRecord(seriesRec, false, iuid);
-                if (instRec != null) {
-                    System.out.print('-');
-                    return 0;
+
+            if (seruid != null) {
+                Attributes seriesRec = in.findSeriesRecord(studyRec, seruid);
+                if (seriesRec == null) {
+                    seriesRec = recFact.createRecord(RecordType.SERIES, null,
+                            dataset, null, null);
+                    out.addLowerDirectoryRecord(studyRec, seriesRec);
+                    num++;
+                }
+
+                if (iuid != null) {
+                    Attributes instRec;
+                    if (checkDuplicate) {
+                        instRec = in.findLowerInstanceRecord(seriesRec, false, iuid);
+                        if (instRec != null) {
+                            System.out.print('-');
+                            return 0;
+                        }
+                    }
+                    instRec = recFact.createRecord(dataset, fmi, strings);
+                    out.addLowerDirectoryRecord(seriesRec, instRec);
+                    num++;
                 }
             }
-            instRec = recFact.createRecord(dataset, fmi, out.toFileIDs(f));
-            out.addLowerDirectoryRecord(seriesRec, instRec);
         } else {
-            if (checkDuplicate) {
-                if (in.findRootInstanceRecord(false, iuid) != null) {
-                    System.out.print('-');
-                    return 0;
+            if (iuid != null) {
+                if (checkDuplicate) {
+                    if (in.findRootInstanceRecord(false, iuid) != null) {
+                        System.out.print('-');
+                        return 0;
+                    }
                 }
+                Attributes instRec = recFact.createRecord(dataset, fmi, strings);
+                out.addRootDirectoryRecord(instRec);
+                prompt = prompt == 'F' ? 'R' : 'r';
+                num++;
             }
-            Attributes instRec = recFact.createRecord(dataset, fmi, 
-                    out.toFileIDs(f));
-            out.addRootDirectoryRecord(instRec);
-            prompt = prompt == 'F' ? 'R' : 'r';
         }
         System.out.print(prompt);
-        return n + 1;
+        return num;
     }
 
-    public int removeReferenceTo(File f) throws IOException {
+    private int removeReferenceTo(File f) throws IOException {
         checkOut();
         int n = 0;
         if (f.isDirectory()) {
@@ -499,8 +614,8 @@ public class DcmDir {
             Attributes fmi = din.readFileMetaInformation();
             Attributes dataset = din.readDataset(-1, Tag.StudyID);
             iuid = (fmi != null)
-                ? fmi.getString(Tag.MediaStorageSOPInstanceUID, null)
-                : dataset.getString(Tag.SOPInstanceUID, null);
+                    ? fmi.getString(Tag.MediaStorageSOPInstanceUID, null)
+                    : dataset.getString(Tag.SOPInstanceUID, null);
             if (iuid == null) {
                 System.out.println();
                 System.out.println(MessageFormat.format(
@@ -523,7 +638,7 @@ public class DcmDir {
         Attributes instRec;
         if (styuid != null && seruid != null) {
             Attributes patRec =
-                in.findPatientRecord(pid == null ? styuid : pid);
+                    in.findPatientRecord(pid == null ? styuid : pid);
             if (patRec == null) {
                 return 0;
             }
@@ -552,7 +667,7 @@ public class DcmDir {
         out.commit();
     }
 
-    public int purge() throws IOException {
+    private int purge() throws IOException {
         checkOut();
         return out.purge();
     }
@@ -571,6 +686,14 @@ public class DcmDir {
     private void checkRecordFactory() {
         if (recFact == null)
             throw new IllegalStateException(rb.getString("no-record-factory"));
+    }
+
+    private void loadDefaultConfiguration(String recordConfig) {
+        try {
+            recFact.loadConfiguration(Paths.get(recordConfig).toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

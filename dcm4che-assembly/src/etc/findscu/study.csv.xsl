@@ -61,6 +61,8 @@
     <xsl:text>","</xsl:text>
     <xsl:apply-templates select="DicomAttribute[@tag='00100020']"/>
     <xsl:text>","</xsl:text>
+    <xsl:apply-templates select="DicomAttribute[@tag='00100021']"/>
+    <xsl:text>","</xsl:text>
     <xsl:apply-templates select="DicomAttribute[@tag='00100030']"/>
     <xsl:text>","</xsl:text>
     <xsl:apply-templates select="DicomAttribute[@tag='00100040']"/>

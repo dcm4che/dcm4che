@@ -477,8 +477,7 @@ public class CLIUtils {
         configureTLS(conn, cl);
     }
 
-    private static void configureTLS(Connection conn, CommandLine cl)
-            throws ParseException, IOException {
+    public static boolean configureTLSCiphers(Connection conn, CommandLine cl) throws ParseException {
         if (cl.hasOption("tls"))
             conn.setTlsCipherSuites(
                     "SSL_RSA_WITH_NULL_SHA",
@@ -494,7 +493,13 @@ public class CLIUtils {
                     "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
         else if (cl.hasOption("tls-cipher"))
             conn.setTlsCipherSuites(cl.getOptionValues("tls-cipher"));
-        else
+
+        return conn.isTls();
+    }
+
+    private static void configureTLS(Connection conn, CommandLine cl)
+            throws ParseException, IOException {
+        if (!configureTLSCiphers(conn, cl))
             return;
 
         if (cl.hasOption("tls12"))

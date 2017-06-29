@@ -237,17 +237,7 @@ public class DcmLdap implements Closeable {
                 .withArgName("cn")
                 .withDescription(rb.getString("conn-cn"))
                 .create(null));
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("cipher")
-                .withDescription(rb.getString("tls-cipher"))
-                .withLongOpt("tls-cipher")
-                .create(null));
-        opts.addOption(null, "tls", false, rb.getString("tls"));
-        opts.addOption(null, "tls-null", false, rb.getString("tls-null"));
-        opts.addOption(null, "tls-3des", false, rb.getString("tls-3des"));
-        opts.addOption(null, "tls-aes", false, rb.getString("tls-aes"));
-        opts.addOption(null, "tls", false, rb.getString("tls"));
+        CLIUtils.addTLSCipherOptions(opts);
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, DcmLdap.class);
         String selected = cmdGroup.getSelected();
         if (selected == null)
@@ -298,7 +288,7 @@ public class DcmLdap implements Closeable {
             } catch (NumberFormatException e) {
                 throw invalidConn();
             }
-            CLIUtils.configureTLSCiphers(conn, cl);
+            CLIUtils.configureTLSCipher(conn, cl);
             if (conn.getCommonName() == null)
                 conn.setCommonName(conn.isTls() ? "dicom-tls" : "dicom");
 

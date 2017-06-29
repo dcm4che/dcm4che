@@ -259,16 +259,7 @@ public class CLIUtils {
 
     @SuppressWarnings("static-access")
     public static void addTLSOptions(Options opts) {
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("cipher")
-                .withDescription(rb.getString("tls-cipher"))
-                .withLongOpt("tls-cipher")
-                .create(null));
-        opts.addOption(null, "tls", false, rb.getString("tls"));
-        opts.addOption(null, "tls-null", false, rb.getString("tls-null"));
-        opts.addOption(null, "tls-3des", false, rb.getString("tls-3des"));
-        opts.addOption(null, "tls-aes", false, rb.getString("tls-aes"));
+        addTLSCipherOptions(opts);
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("protocol")
@@ -323,6 +314,19 @@ public class CLIUtils {
                 .withDescription(rb.getString("trust-store-pass"))
                 .withLongOpt("trust-store-pass")
                 .create(null));
+    }
+
+    public static void addTLSCipherOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("cipher")
+                .withDescription(rb.getString("tls-cipher"))
+                .withLongOpt("tls-cipher")
+                .create(null));
+        opts.addOption(null, "tls", false, rb.getString("tls"));
+        opts.addOption(null, "tls-null", false, rb.getString("tls-null"));
+        opts.addOption(null, "tls-3des", false, rb.getString("tls-3des"));
+        opts.addOption(null, "tls-aes", false, rb.getString("tls-aes"));
     }
 
     @SuppressWarnings("static-access")
@@ -477,7 +481,7 @@ public class CLIUtils {
         configureTLS(conn, cl);
     }
 
-    public static boolean configureTLSCiphers(Connection conn, CommandLine cl) throws ParseException {
+    public static boolean configureTLSCipher(Connection conn, CommandLine cl) throws ParseException {
         if (cl.hasOption("tls"))
             conn.setTlsCipherSuites(
                     "SSL_RSA_WITH_NULL_SHA",
@@ -499,7 +503,7 @@ public class CLIUtils {
 
     private static void configureTLS(Connection conn, CommandLine cl)
             throws ParseException, IOException {
-        if (!configureTLSCiphers(conn, cl))
+        if (!configureTLSCipher(conn, cl))
             return;
 
         if (cl.hasOption("tls12"))

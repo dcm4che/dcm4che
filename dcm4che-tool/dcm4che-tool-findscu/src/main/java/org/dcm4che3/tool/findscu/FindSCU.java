@@ -46,7 +46,6 @@ import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -148,11 +147,6 @@ public class FindSCU {
     private File xsltFile;
     private Templates xsltTpls;
     private OutputStream out;
-
-    private List<String> argList = new ArrayList<>();
-    private List<String> returnKeys = new ArrayList<>();
-    private List<String> matchingKeys = new ArrayList<>();
-    private List<String> iKeys = new ArrayList<>();
 
     private Association as;
     private AtomicInteger totNumMatches = new AtomicInteger();
@@ -370,7 +364,7 @@ public class FindSCU {
             main.device.setScheduledExecutor(scheduledExecutorService);
             try {
                 main.open();
-                List<String> argList = !main.argList.isEmpty() ? main.argList : cl.getArgList();
+                List<String> argList = cl.getArgList();
                 if (argList.isEmpty())
                     main.query();
                 else
@@ -426,30 +420,12 @@ public class FindSCU {
     }
 
     private static void configureKeys(FindSCU main, CommandLine cl) {
-        addFilesAsArgs(main, cl);
-        CLIUtils.addEmptyAttributes(main.keys, main.returnKeys.toArray(new String[main.returnKeys.size()]));
-        CLIUtils.addAttributes(main.keys, main.matchingKeys.toArray(new String[main.matchingKeys.size()]));
+        CLIUtils.addEmptyAttributes(main.keys, cl.getOptionValues("r"));
+        CLIUtils.addAttributes(main.keys, cl.getOptionValues("m"));
         if (cl.hasOption("L"))
             main.addLevel(cl.getOptionValue("L"));
         if (cl.hasOption("i"))
-            main.setInputFilter(CLIUtils.toTags(main.iKeys.toArray(new String[main.iKeys.size()])));
-    }
-
-    private static void addFilesAsArgs(FindSCU main, CommandLine cl) {
-        addFilesAsArgs(main.argList, cl.getOptionValues("r"), main.returnKeys);
-        addFilesAsArgs(main.argList, cl.getOptionValues("m"), main.matchingKeys);
-        addFilesAsArgs(main.argList, cl.getOptionValues("i"), main.iKeys);
-    }
-
-    private static void addFilesAsArgs(List<String> argList, String[] optVals, List<String> keys) {
-        if (optVals != null)
-            for (String key : optVals) {
-                File f = new File(key);
-                if (f.exists())
-                    argList.add(key);
-                else
-                    keys.add(key);
-            }
+            main.setInputFilter(CLIUtils.toTags(cl.getOptionValues("i")));
     }
 
     private static void configureServiceClass(FindSCU main, CommandLine cl) throws ParseException {

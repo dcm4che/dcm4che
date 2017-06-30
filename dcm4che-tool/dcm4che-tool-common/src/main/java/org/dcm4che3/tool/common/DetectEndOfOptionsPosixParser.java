@@ -53,7 +53,7 @@ public class DetectEndOfOptionsPosixParser extends PosixParser {
     public CommandLine parse(Options opts, String[] args, Properties props, boolean stopAtNonOption)
             throws ParseException {
         int i = args.length;
-        while (--i > 0 && !"--".equals(args[i]))
+        while (--i >= 0 && !"--".equals(args[i]))
             ;
         CommandLine cl = super.parse(opts, i < 0 ? args : Arrays.copyOf(args, i), props, stopAtNonOption);
         if (i >= 0)

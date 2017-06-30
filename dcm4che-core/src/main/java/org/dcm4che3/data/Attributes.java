@@ -2944,8 +2944,6 @@ public class Attributes implements Serializable {
         boolean ignoreCase = ignorePNCase && vr == VR.PN;
         for (String keyVal : keyVals) {
             DateRange dateRange = null;
-            if (vr == VR.PN)
-                keyVal = new PersonName(keyVals[0]).toString();
             switch (vr) {
                 case PN:
                     keyVal = new PersonName(keyVals[0]).toString();
@@ -2954,6 +2952,7 @@ public class Attributes implements Serializable {
                 case DT:
                 case TM:
                     dateRange = toDateRange(keyVal, vr);
+                    break;
             }
 
             if (StringUtils.containsWildCard(keyVal)) {

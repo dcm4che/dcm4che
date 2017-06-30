@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.ResourceBundle;
 

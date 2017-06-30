@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -345,7 +346,7 @@ public class CLIUtils {
 
     public static CommandLine parseComandLine(String[] args, Options opts, 
             ResourceBundle rb2, Class<?> clazz) throws ParseException {
-        CommandLineParser parser = new PosixParser();
+        CommandLineParser parser = new DetectEndOfOptionsPosixParser();
         CommandLine cl = parser.parse(opts, args);
         if (cl.hasOption("h")) {
             HelpFormatter formatter = new HelpFormatter();

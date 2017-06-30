@@ -174,6 +174,11 @@ public class RecordFactory {
         recordKeys.put(type, keys);
     }
 
+    public int[] getRecordKeys(RecordType type) {
+        lazyLoadDefaultConfiguration();
+        return recordKeys.get(type);
+    }
+
     public String getPrivateRecordUID(String cuid) {
         if (cuid == null)
             throw new NullPointerException();

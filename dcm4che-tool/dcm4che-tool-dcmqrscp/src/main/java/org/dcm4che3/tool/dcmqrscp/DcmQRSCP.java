@@ -106,6 +106,9 @@ import org.dcm4che3.util.TagUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -136,6 +139,8 @@ public class DcmQRSCP {
     private boolean stgCmtOnSameAssoc;
     private boolean sendPendingCGet;
     private int sendPendingCMoveInterval;
+    private boolean ignoreCaseOfPN;
+    private boolean matchNoValue;
     private final FilesetInfo fsInfo = new FilesetInfo();
     private DicomDirReader ddReader;
     private DicomDirWriter ddWriter;
@@ -230,17 +235,15 @@ public class DcmQRSCP {
             QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(keys, qrLevels);
             level.validateQueryKeys(keys, rootLevel,
                     rootLevel == QueryRetrieveLevel.IMAGE || relational(as, rq));
-            DicomDirReader ddr = getDicomDirReader();
-            String availability =  getInstanceAvailability();
             switch(level) {
             case PATIENT:
-                return new PatientQueryTask(as, pc, rq, keys, ddr, availability);
+                return new PatientQueryTask(as, pc, rq, keys, DcmQRSCP.this);
             case STUDY:
-                return new StudyQueryTask(as, pc, rq, keys, ddr, availability);
+                return new StudyQueryTask(as, pc, rq, keys, DcmQRSCP.this);
             case SERIES:
-                return new SeriesQueryTask(as, pc, rq, keys, ddr, availability);
+                return new SeriesQueryTask(as, pc, rq, keys, DcmQRSCP.this);
             case IMAGE:
-                return new InstanceQueryTask(as, pc, rq, keys, ddr, availability);
+                return new InstanceQueryTask(as, pc, rq, keys, DcmQRSCP.this);
             default:
                 assert true;
             }
@@ -502,6 +505,22 @@ public class DcmQRSCP {
         return availability;
     }
 
+    public boolean isIgnoreCaseOfPN() {
+        return ignoreCaseOfPN;
+    }
+
+    public void setIgnoreCaseOfPN(boolean ignoreCaseOfPN) {
+        this.ignoreCaseOfPN = ignoreCaseOfPN;
+    }
+
+    public boolean isMatchNoValue() {
+        return matchNoValue;
+    }
+
+    public void setMatchNoValue(boolean matchNoValue) {
+        this.matchNoValue = matchNoValue;
+    }
+
     public boolean isStgCmtOnSameAssoc() {
         return stgCmtOnSameAssoc;
     }
@@ -547,6 +566,7 @@ public class DcmQRSCP {
         addDicomDirOption(opts);
         addTransferCapabilityOptions(opts);
         addInstanceAvailabilityOption(opts);
+        addMatchingOptions(opts);
         addStgCmtOptions(opts);
         addSendingPendingOptions(opts);
         addRemoteConnectionsOption(opts);
@@ -561,6 +581,11 @@ public class DcmQRSCP {
                 .withDescription(rb.getString("availability"))
                 .withLongOpt("availability")
                 .create());
+    }
+
+    private static void addMatchingOptions(Options opts) {
+        opts.addOption(null, "match-pn-icase", false, rb.getString("match-pn-icase"));
+        opts.addOption(null, "match-no-value", false, rb.getString("match-no-value"));
     }
 
     private static void addStgCmtOptions(Options opts) {
@@ -592,6 +617,12 @@ public class DcmQRSCP {
                 .withDescription(rb.getString("filepath"))
                 .withLongOpt("filepath")
                 .create(null));
+        opts.addOption(OptionBuilder
+                .withLongOpt("record-config")
+                .hasArg()
+                .withArgName("file|url")
+                .withDescription(rb.getString("record-config"))
+                .create());
     }
 
     @SuppressWarnings("static-access")
@@ -641,6 +672,7 @@ public class DcmQRSCP {
             configureDicomFileSet(main, cl);
             configureTransferCapability(main, cl);
             configureInstanceAvailability(main, cl);
+            configureMatching(main, cl);
             configureStgCmt(main, cl);
             configureSendPending(main, cl);
             configureRemoteConnections(main, cl);
@@ -661,18 +693,25 @@ public class DcmQRSCP {
         }
     }
 
-    private static void configureDicomFileSet(DcmQRSCP main, CommandLine cl)
-            throws ParseException {
+    private static void configureDicomFileSet(DcmQRSCP main, CommandLine cl) throws Exception {
         if (!cl.hasOption("dicomdir"))
             throw new MissingOptionException(rb.getString("missing-dicomdir"));
         main.setDicomDirectory(new File(cl.getOptionValue("dicomdir")));
         main.setFilePathFormat(cl.getOptionValue("filepath", 
                         "DICOM/{0020000D,hash}/{0020000E,hash}/{00080018,hash}"));
-        main.setRecordFactory(new RecordFactory());
+        RecordFactory recFact = new RecordFactory();
+        if (cl.hasOption("record-config"))
+            recFact.loadConfiguration(cl.getOptionValue("record-config"));
+        main.setRecordFactory(recFact);
     }
 
     private static void configureInstanceAvailability(DcmQRSCP main, CommandLine cl) {
         main.setInstanceAvailability(cl.getOptionValue("availability"));
+    }
+
+    private static void configureMatching(DcmQRSCP main, CommandLine cl) {
+        main.setIgnoreCaseOfPN(cl.hasOption("match-pn-icase"));
+        main.setMatchNoValue(cl.hasOption("match-no-value"));
     }
 
     private static void configureStgCmt(DcmQRSCP main, CommandLine cl) {

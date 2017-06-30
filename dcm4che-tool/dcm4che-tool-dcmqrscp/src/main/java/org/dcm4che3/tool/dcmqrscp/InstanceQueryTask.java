@@ -38,25 +38,24 @@
 
 package org.dcm4che3.tool.dcmqrscp;
 
-import java.io.IOException;
-
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.media.DicomDirReader;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.util.StringUtils;
 
+import java.io.IOException;
+
 class InstanceQueryTask extends SeriesQueryTask {
 
     protected final String[] sopIUIDs;
     protected Attributes instRec;
 
-    public InstanceQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys,
-            DicomDirReader ddr, String availability) throws DicomServiceException {
-        super(as, pc, rq, keys, ddr, availability);
+    public InstanceQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys, DcmQRSCP qrscp)
+            throws DicomServiceException {
+        super(as, pc, rq, keys, qrscp);
         sopIUIDs = StringUtils.maskNull(keys.getStrings(Tag.SOPInstanceUID));
         wrappedFindNextInstance();
     }
@@ -93,14 +92,14 @@ class InstanceQueryTask extends SeriesQueryTask {
             return false;
 
         if (instRec == null)
-            instRec = ddr.findLowerInstanceRecord(seriesRec, true, sopIUIDs);
-        else if (sopIUIDs != null && sopIUIDs.length == 1)
+            instRec = ddr.findLowerInstanceRecord(seriesRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
+        else if (sopIUIDs.length == 1)
             instRec = null;
         else
-            instRec = ddr.findNextInstanceRecord(instRec, true, sopIUIDs);
+            instRec = ddr.findNextInstanceRecord(instRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
 
         while (instRec == null && super.findNextSeries())
-            instRec = ddr.findLowerInstanceRecord(seriesRec, true, sopIUIDs);
+            instRec = ddr.findLowerInstanceRecord(seriesRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
 
         return instRec != null;
     }

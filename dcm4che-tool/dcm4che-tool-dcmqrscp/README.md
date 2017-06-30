@@ -65,6 +65,13 @@
                                             default
         --key-store-type <storetype>        type of key store containing the
                                             private key, JKS by default
+        --match-no-value                    if a matching key is not in the
+                                            directory record object, consider
+                                            the record to be a match anyway.
+        --match-pn-icase                    match PN attributes case
+                                            insensitive; by default matching
+                                            of any attribute value is case
+                                            sensitive.
         --max-ops-invoked <no>              maximum number of operations this
                                             AE may invoke asynchronously,
                                             unlimited by default
@@ -115,6 +122,10 @@
                                             accepted Query SOP Classes,
                                             resource:query-sop-classes.propert
                                             ies by default
+        --record-config <file|url>          file path or URL to configuration
+                                            of directory record attributes.
+                                            resource:org/dcm4che3/media/Record
+                                            Factory.xml by default
         --relational                        support relational queries and
                                             retrievals
         --release-timeout <ms>              timeout in ms for receiving
@@ -190,10 +201,10 @@
                                             TLS/SSL protocols may be enabled
                                             by multiple --tls-protocol
                                             options. Supported values by
-                                            SunJSSE 1.8: TLSv1.2, TLSv1.1,
-                                            TLSv1, SSLv3, SSLv2Hello. By
-                                            default, TLSv1.2, TLSv1.1, TLSv1
-                                            and SSLv3 are enabled.
+                                            SunJSSE 1.8: TLSv1, TLSv1.1,
+                                            TLSv1.2, SSLv3, SSLv2Hello. By
+                                            default, TLSv1, TLSv1.1 and
+                                            TLSv1.2 are enabled.
         --tls1                              enable only TLS/SSL protocol
                                             TLSv1; equivalent to
                                             --tls-protocol TLSv1
@@ -214,6 +225,6 @@
      -V,--version                           output version information and
                                             exit
     -
-    Example: dcmqrscp -b DCMQRSCP:11113 --dicomdir /media/cdrom/DICOMDIR
-    => Starts server listening on port 11113, accepting association requests
+    Example: dcmqrscp -b DCMQRSCP:11112 --dicomdir /media/cdrom/DICOMDIR
+    => Starts server listening on port 11112, accepting association requests
     with DCMQRSCP as called AE title.

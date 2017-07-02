@@ -1,320 +1,286 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ *  The contents of this file are subject to the Mozilla Public License Version
+ *  1.1 (the "License"); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
+ *  Software distributed under the License is distributed on an "AS IS" basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
  *
- * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ *  The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+ *  Java(TM), hosted at https://github.com/gunterze/dcm4che.
  *
- * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2017
- * the Initial Developer. All Rights Reserved.
+ *  The Initial Developer of the Original Code is
+ *  J4Care.
+ *  Portions created by the Initial Developer are Copyright (C) 2015-2017
+ *  the Initial Developer. All Rights Reserved.
  *
- * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ *  Contributor(s):
+ *  See @authors listed below
  *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
+ *  Alternatively, the contents of this file may be used under the terms of
+ *  either the GNU General Public License Version 2 or later (the "GPL"), or
+ *  the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ *  in which case the provisions of the GPL or the LGPL are applicable instead
+ *  of those above. If you wish to allow use of your version of this file only
+ *  under the terms of either the GPL or the LGPL, and not to allow others to
+ *  use your version of this file under the terms of the MPL, indicate your
+ *  decision by deleting the provisions above and replace them with the notice
+ *  and other provisions required by the GPL or the LGPL. If you do not delete
+ *  the provisions above, a recipient may use your version of this file under
+ *  the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ */
 
 package org.dcm4che3.tool.jpg2dcm;
 
-import java.io.File;
-import java.io.BufferedInputStream;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.ResourceBundle;
-
-import com.sun.imageio.plugins.jpeg.JPEG;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.MissingArgumentException;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.data.ElementDictionary;
-
+import org.dcm4che3.data.*;
+import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGHeader;
 import org.dcm4che3.imageio.codec.mpeg.MPEGHeader;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
-import org.dcm4che3.net.Status;
-import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StreamUtils;
-import org.dcm4che3.util.TagUtils;
 import org.dcm4che3.util.UIDUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import javax.activation.FileTypeMap;
+import java.io.*;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
- * @author gunter zeilinger<gunterze@gmail.com>
- * @author Hesham Elbadawi <bsdreko@gmail.com>
- * @author Vrinda Nayak <vrinda.nayak@j4care.com>
- * @since May 2017
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @since Jul 2017
  */
 public class Jpg2Dcm {
 
-    static final Logger LOG = LoggerFactory.getLogger(Jpg2Dcm.class);
-
-    private String charset = "ISO_IR 100";
-
-    private int fileLen;
-
-    private boolean noAPPn;
-
-    private static Options opts;
-    private static ResourceBundle rb = ResourceBundle
-            .getBundle("org.dcm4che3.tool.jpg2dcm.messages");
-    private Attributes keys;
-    private String metadataFile;
-    private JPEGHeader jpegHeader;
-    private Path pixelDataFile;
-    private byte[] pixelData;
-    private String sopCUID;
-    private String tsUID;
-
-
+    private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
+    private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.jpg2dcm.messages");
     private static final int INIT_BUFFER_SIZE = 8192;
-    private static final int MAX_BUFFER_SIZE = 10485768;
-    private static final String patName = "JPG2DCM-PatientName";
+    private static final int MAX_BUFFER_SIZE = 10485768; // 10MiB
+    private static final long MAX_FILE_SIZE = 0x7FFFFFFE;
 
-    private static final int[] IUIDS_TAGS = {
+    private static final int[] IUID_TAGS = {
             Tag.StudyInstanceUID,
             Tag.SeriesInstanceUID,
             Tag.SOPInstanceUID
     };
 
-    private static final int[] IMAGE_PIXEL_TAGS = {
-            Tag.SamplesPerPixel,
-            Tag.PhotometricInterpretation,
-            Tag.Rows,
-            Tag.Columns,
-            Tag.BitsAllocated,
-            Tag.BitsStored,
-            Tag.HighBit,
-            Tag.PixelRepresentation
+    private static final long[] DA_TM_TAGS = {
+            Tag.ContentDateAndTime,
+            Tag.InstanceCreationDateAndTime
     };
-    private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
 
+    private static final int[] TYPE2_TAGS = {
+            Tag.StudyID,
+            Tag.StudyDate,
+            Tag.StudyTime,
+            Tag.AccessionNumber,
+            Tag.Manufacturer,
+            Tag.ReferringPhysicianName,
+            Tag.PatientID,
+            Tag.PatientName,
+            Tag.PatientBirthDate,
+            Tag.PatientSex,
+    };
 
-    public Jpg2Dcm() {
+    private Attributes metadata;
+    private boolean noAPPn;
+    private JPEGHeader jpegHeader;
+    private byte[] buffer = {};
+    private int headerLength;
+    private long fileLength;
+
+    public void setMetadata(Attributes metadata) {
+        this.metadata = metadata;
     }
 
-    public void convert(Attributes metadata, Jpg2Dcm jpg2Dcm, File dcmFile)
-            throws Exception {
-        File pixelDataFile = jpg2Dcm.pixelDataFile.toFile();
-        fileLen = (int) pixelDataFile.length();
-        try (DicomOutputStream dos = new DicomOutputStream(dcmFile)) {
-            Date now = new Date();
-            metadata.setDate(Tag.InstanceCreationDate, VR.DA, now);
-            metadata.setDate(Tag.InstanceCreationTime, VR.TM, now);
-            Attributes fmi = metadata.createFileMetaInformation(metadata.getString(Tag.TransferSyntaxUID));
-            dos.writeDataset(fmi, metadata);
-            dos.writeHeader(Tag.PixelData, VR.OB, -1);
-            dos.writeHeader(Tag.Item, null, 0);
-            if (noAPPn && jpg2Dcm.jpegHeader != null) {
-                int off = jpg2Dcm.jpegHeader.offsetAfterAPP();
-                dos.writeHeader(Tag.Item, null, fileLen - off + 3);
-                dos.write((byte) -1);
-                dos.write((byte) JPEG.SOI);
-                dos.write((byte) -1);
-                dos.write(jpg2Dcm.pixelData);
-            } else {
-                dos.writeHeader(Tag.Item, null, (fileLen + 1) & ~1);
-                dos.write(jpg2Dcm.pixelData);
-            }
-            if ((fileLen & 1) != 0) {
-                dos.write(0);
-            }
-            dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
-        }
+    public void setNoAPPn(boolean noAPPn) {
+        this.noAPPn = noAPPn;
     }
 
     public static void main(String[] args) {
         try {
-            CommandLine cl = parseCommandLine(args);
-            Jpg2Dcm jpg2Dcm = new Jpg2Dcm();
-            jpg2Dcm.keys = configureKeys(cl);
-            LOG.info("added keys for coercion: \n" + jpg2Dcm.keys.toString());
-            jpg2Dcm.metadataFile = cl.getOptionValue("f");
-            if (cl.getArgs().length < 2)
-                throw new MissingArgumentException("Either input pixel data file or output binary file is missing. See example in jpg2dcm help.");
-            jpg2Dcm.pixelDataFile = Paths.get(cl.getArgs()[0]);
-            jpg2Dcm.noAPPn = Boolean.valueOf(cl.getOptionValue("na"));
-            Attributes metadata = getMetadata(jpg2Dcm);
-
-            @SuppressWarnings("rawtypes")
-            File dcmFile = new File(cl.getArgs()[1]);
-            long start = System.currentTimeMillis();
-            jpg2Dcm.convert(metadata, jpg2Dcm, dcmFile);
-            long fin = System.currentTimeMillis();
-            LOG.info("Encapsulated " + jpg2Dcm.pixelDataFile + " to " + dcmFile.getPath() + " in "
-                    + (fin - start) + "ms.");
+            CommandLine cl = parseComandLine(args);
+            Jpg2Dcm main = new Jpg2Dcm();
+            main.setNoAPPn(cl.hasOption("no-app"));
+            main.setMetadata(createMetadata(cl));
+            @SuppressWarnings("unchecked") final List<String> argList = cl.getArgList();
+            main.convert(new File(argList.get(0)), new File(argList.get(1)));
         } catch (ParseException e) {
             System.err.println("jpg2dcm: " + e.getMessage());
             System.err.println(rb.getString("try"));
             System.exit(2);
         } catch (Exception e) {
-            LOG.error("Error: \n", e);
+            System.err.println("jpg2dcm: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
         }
     }
 
-    private static CommandLine parseCommandLine(String[] args)
-            throws ParseException {
-        opts = new Options();
-        opts.addOption(OptionBuilder.hasArgs(2).withArgName("[seq/]attr=value")
-                .withValueSeparator().withDescription(rb.getString("metadata"))
-                .create("m"));
-        opts.addOption("f", "file", true, rb.getString("file"));
-        opts.addOption("na","no-appn", true, rb.getString("no-appn"));
+    private static CommandLine parseComandLine(String[] args) throws ParseException {
+        Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        return CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("[seq/]attr=value")
+                .withValueSeparator()
+                .withDescription(rb.getString("attr"))
+                .create("a"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("xml-file")
+                .withDescription(rb.getString("file"))
+                .create("f"));
+        opts.addOption(null, "no-app", false, rb.getString("no-app"));
+        CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
+        int numArgs = cl.getArgList().size();
+        if (numArgs == 0)
+            throw new ParseException(rb.getString("missing"));
+        if (numArgs > 2)
+            throw new ParseException(rb.getString("too-many"));
+        return cl;
     }
 
-    private static Attributes configureKeys(CommandLine cl) {
-        Attributes temp = new Attributes();
-        CLIUtils.addAttributes(temp, cl.getOptionValues("m"));
-        return temp;
-    }
-
-    private static Attributes getMetadata(Jpg2Dcm jpg2Dcm) throws Exception {
-        Attributes metadata = new Attributes();
-        String metadataFile = jpg2Dcm.metadataFile;
-        if (metadataFile != null) {
-            String metadataFileExt = metadataFile.substring(metadataFile.lastIndexOf(".")+1).toLowerCase();
-            if (!metadataFileExt.equals("xml"))
-                throw new IllegalArgumentException("Metadata file extension not supported. Read -f option in jpg2dcm help");
-            Path filePath = Paths.get(metadataFile);
-            metadata = SAXReader.parse(filePath.toString());
-        }
-        coerceAttributes(metadata, jpg2Dcm);
-        readHeader(jpg2Dcm, metadata);
-        verifyImagePixelModule(metadata);
-        supplementUIDs(metadata, jpg2Dcm);
+    private static Attributes createMetadata(CommandLine cl) throws Exception {
+        String f = cl.getOptionValue("f");
+        Attributes metadata = f != null ? SAXReader.parse(f) : new Attributes();
+        CLIUtils.addAttributes(metadata, cl.getOptionValues("m"));
+        supplementMissingUIDs(metadata);
+        supplementMissingValue(metadata, Tag.Modality, "XC");
+        supplementMissingValue(metadata, Tag.SeriesNumber, "999");
+        supplementMissingValue(metadata, Tag.InstanceNumber, "1");
+        supplementMissingDateTime(metadata);
+        supplementMissingType2(metadata);
         return metadata;
     }
 
-    private static void readHeader(Jpg2Dcm jpg2Dcm, Attributes metadata) throws Exception {
-        CompressedPixelData compressedPixelData = CompressedPixelData.valueOf(jpg2Dcm);
-        if (compressedPixelData == null)
-            throw new IllegalArgumentException(
-                    "Specified file for conversion is not Pixel Data Type. Read jpg2dcm help for supported extension types.");
-        int fileLen = (int)Files.size(jpg2Dcm.pixelDataFile);
-        try(BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(jpg2Dcm.pixelDataFile))) {
-            byte[] header = ByteUtils.EMPTY_BYTES;
-            int rl = 0;
-            int grow = INIT_BUFFER_SIZE;
-            while (rl == header.length && rl < MAX_BUFFER_SIZE) {
-                header = Arrays.copyOf(header, grow += rl);
-                rl += StreamUtils.readAvailable(bis, header, rl, header.length - rl);
-                if (compressedPixelData.parseHeader(jpg2Dcm, header, metadata)) {
-                    byte[] bTemp = Arrays.copyOf(header, fileLen);
-                    StreamUtils.readAvailable(bis, bTemp, header.length, fileLen - header.length);
-                    int off = 0;
-                    if (jpg2Dcm.noAPPn)
-                        off = jpg2Dcm.jpegHeader.offsetAfterAPP();
-                    jpg2Dcm.pixelData = Arrays.copyOfRange(bTemp, off, fileLen);
-                    return;
+    public void convert(File infile, File outfile) throws IOException {
+        FileType fileType = null;
+        try {
+            fileType = FileType.valueOf(infile);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(MessageFormat.format(rb.getString("invalid-file-ext"), infile));
+        }
+
+        fileLength = infile.length();
+        if (fileLength > MAX_FILE_SIZE)
+            throw new IllegalArgumentException(MessageFormat.format(rb.getString("file-too-large"), infile));
+
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(infile))) {
+            if (!parseHeader(fileType, bis))
+                throw new IOException(MessageFormat.format(rb.getString("failed-to-parse"), fileType, infile));
+
+            int itemLen = (int) fileLength;
+            try (DicomOutputStream dos = new DicomOutputStream(outfile)) {
+                dos.writeDataset(metadata.createFileMetaInformation(fileType.getTransferSyntaxUID()), metadata);
+                dos.writeHeader(Tag.PixelData, VR.OB, -1);
+                dos.writeHeader(Tag.Item, null, 0);
+                if (jpegHeader != null && noAPPn) {
+                    int offset = jpegHeader.offsetAfterAPP();
+                    itemLen -= offset - 3;
+                    dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
+                    dos.write((byte) -1);
+                    dos.write((byte) JPEG.SOI);
+                    dos.write((byte) -1);
+                    dos.write(buffer, offset, headerLength - offset);
+                } else {
+                    dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
+                    dos.write(buffer, 0, headerLength);
                 }
+                StreamUtils.copy(bis, dos, buffer);
+                if ((itemLen & 1) != 0)
+                    dos.write(0);
+                dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
             }
         }
+        System.out.println(MessageFormat.format(rb.getString("converted"), infile, outfile));
     }
 
-    private static void coerceAttributes(Attributes metadata, Jpg2Dcm jpg2Dcm) {
-        metadata.update(Attributes.UpdatePolicy.OVERWRITE, jpg2Dcm.keys, new Attributes());
-        metadata.setString(Tag.SpecificCharacterSet, VR.CS, metadata.getString(Tag.SpecificCharacterSet, jpg2Dcm.charset));
-    }
-
-    private enum CompressedPixelData {
-        JPEG {
-            @Override
-            boolean parseHeader(Jpg2Dcm jpg2Dcm, byte[] header, Attributes metadata) {
-                jpg2Dcm.jpegHeader = new JPEGHeader(header, org.dcm4che3.imageio.codec.jpeg.JPEG.SOS);
-                return jpg2Dcm.jpegHeader.toAttributes(metadata) != null;
-            }
-        },
-        MPEG {
-            @Override
-            boolean parseHeader(Jpg2Dcm jpg2Dcm, byte[] header, Attributes metadata) {
-                return new MPEGHeader(header).toAttributes(metadata, jpg2Dcm.pixelDataFile.toFile().length()) != null;
-            }
-        };
-
-        abstract boolean parseHeader(Jpg2Dcm jpg2Dcm, byte[] header, Attributes metadata);
-
-        static CompressedPixelData valueOf(Jpg2Dcm jpg2Dcm) {
-            String fileName = jpg2Dcm.pixelDataFile.toFile().getName();
-            String fileExt = fileName.substring(fileName.lastIndexOf(".")+1).toLowerCase();
-            if (fileExt.equals("jpg") || fileExt.equals("jpeg")) {
-                jpg2Dcm.sopCUID = UID.SecondaryCaptureImageStorage;
-                jpg2Dcm.tsUID = UID.JPEGBaseline1;
-                return JPEG;
-            }
-            if (fileExt.equals("mpg") || fileExt.equals("mpeg") || fileExt.equals("mpg2")) {
-                jpg2Dcm.sopCUID = UID.VideoPhotographicImageStorage;
-                jpg2Dcm.tsUID = UID.MPEG2;
-                return MPEG;
-            }
-            return null;
-        }
-
-    }
-
-    private static void verifyImagePixelModule(Attributes metadata) throws DicomServiceException {
-        for (int tag : IMAGE_PIXEL_TAGS)
-            if (!metadata.containsValue(tag))
-                throw missingAttribute(tag);
-        if (metadata.getInt(Tag.SamplesPerPixel, 1) > 1 && !metadata.containsValue(Tag.PlanarConfiguration))
-            throw missingAttribute(Tag.PlanarConfiguration);
-    }
-
-    private static DicomServiceException missingAttribute(int tag) {
-        return new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass,
-                "Missing " + DICT.keywordOf(tag) + " " + TagUtils.toString(tag));
-    }
-
-    private static void supplementUIDs(Attributes metadata, Jpg2Dcm jpg2Dcm) {
-        LOG.info("Set defaults, if required attributes are not present.");
-        if (!metadata.containsValue(Tag.SOPClassUID))
-            metadata.setString(Tag.SOPClassUID, VR.UI, jpg2Dcm.sopCUID);
-        if (!metadata.containsValue(Tag.TransferSyntaxUID))
-            metadata.setString(Tag.TransferSyntaxUID, VR.UI, jpg2Dcm.tsUID);
-        if (!metadata.containsValue(Tag.PatientName))
-            metadata.setString(Tag.PatientName, VR.PN, patName);
-        for (int tag : IUIDS_TAGS)
+    private static void supplementMissingUIDs(Attributes metadata) {
+        for (int tag : IUID_TAGS)
             if (!metadata.containsValue(tag))
                 metadata.setString(tag, VR.UI, UIDUtils.createUID());
     }
 
+    private static void supplementMissingValue(Attributes metadata, int tag, String value) {
+        if (!metadata.containsValue(tag))
+            metadata.setString(tag, DICT.vrOf(tag), value);
+    }
+
+    private static void supplementMissingDateTime(Attributes metadata) {
+        Date now = new Date();
+        for (long tag : DA_TM_TAGS)
+            if (!metadata.containsValue((int) (tag >>> 32)))
+                metadata.setDate(tag, now);
+    }
+
+    private static void supplementMissingType2(Attributes metadata) {
+        for (int tag : TYPE2_TAGS)
+            if (!metadata.contains(tag))
+                metadata.setNull(tag, DICT.vrOf(tag));
+    }
+
+    private boolean parseHeader(FileType fileType, InputStream in) throws IOException {
+        int grow = INIT_BUFFER_SIZE;
+        while (headerLength == buffer.length && headerLength < MAX_BUFFER_SIZE) {
+            buffer = Arrays.copyOf(buffer, grow += headerLength);
+            headerLength += StreamUtils.readAvailable(in, buffer, headerLength, buffer.length - headerLength);
+            if (fileType.parseHeader(this)) {
+                supplementMissingValue(metadata, Tag.SOPClassUID, fileType.getSOPClassUID());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private enum FileType {
+        jpeg(UID.SecondaryCaptureImageStorage, UID.JPEGBaseline1) {
+            @Override
+            boolean parseHeader(Jpg2Dcm main) {
+                return (main.jpegHeader = new JPEGHeader(main.buffer, JPEG.SOS)).toAttributes(main.metadata) != null;
+            }
+        },
+        mpeg(UID.VideoPhotographicImageStorage, UID.MPEG2) {
+            @Override
+            boolean parseHeader(Jpg2Dcm main) {
+                return new MPEGHeader(main.buffer).toAttributes(main.metadata, main.fileLength) != null;
+            }
+        };
+
+        private final String cuid;
+        private final String tsuid;
+
+        FileType(String cuid, String tsuid) {
+            this.cuid = cuid;
+            this.tsuid = tsuid;
+        }
+
+        public String getSOPClassUID() {
+            return cuid;
+        }
+
+        public String getTransferSyntaxUID() {
+            return tsuid;
+        }
+
+        abstract boolean parseHeader(Jpg2Dcm main);
+
+        static FileType valueOf(File file) {
+            String contentType = FileTypeMap.getDefaultFileTypeMap().getContentType(file);
+            return valueOf(contentType.substring(contentType.lastIndexOf("/")+1));
+        }
+    }
 }

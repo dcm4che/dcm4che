@@ -43,6 +43,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -294,9 +295,13 @@ public class WadoRS {
                 try {
                     File spool = new File(main.outDir, "Spool");
                     Files.copy(in, spool.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    String boundary;
+                    String boundary = "";
                     BufferedReader rdr = new BufferedReader(new InputStreamReader(new FileInputStream(spool)));
-                    boundary = (rdr.readLine());
+                    // Skip initial CRLF lines, if any.
+                    while (boundary.isEmpty()) {
+                      boundary = (rdr.readLine());
+                    }
+
                     boundary = boundary.substring(2, boundary.length());
                     rdr.close();
                     FileInputStream fin = new FileInputStream(spool);
@@ -304,7 +309,6 @@ public class WadoRS {
 
                         @Override
                         public void bodyPart(int partNumber, MultipartInputStream partIn) throws IOException {
-
                             Map<String, List<String>> headerParams = partIn.readHeaderParams();
                             String mediaType;
                             String contentType = headerParams.get("content-type").get(0);
@@ -357,6 +361,7 @@ public class WadoRS {
                     spool.delete();
                 } catch (Exception e) {
                     System.out.println("Error parsing Server response - " + e);
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -478,9 +483,19 @@ public class WadoRS {
             @Override
             boolean readBody(WadoRS wadors, InputStream in, Map<String, List<String>> headerParams)
                     throws IOException {
+                InputStream nonCloseableInputStream =
+                    new FilterInputStream(in) {
+                      @Override
+                      public void close() {
+                        // DicomInputStream automatically closes the OutputStream when it is
+                        // closed, which we don't want since we need to keep reading the rest
+                        // of the DICOM objects from the InputStream.
+                      }
+                };
+
                 Attributes fmi;
                 Attributes attrs;
-                DicomInputStream dis = new DicomInputStream(in);
+                DicomInputStream dis = new DicomInputStream(nonCloseableInputStream);
                 try {
                     fmi = dis.readFileMetaInformation();
                     attrs = dis.readDataset(-1, -1);

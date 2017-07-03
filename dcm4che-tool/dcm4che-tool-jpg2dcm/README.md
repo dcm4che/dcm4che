@@ -1,34 +1,34 @@
-    usage: jpg2dcm [Options] <jpgfile> <dcmfile>
-
-    Supports conversion of pixel data (with extensions jpg, jpeg, mpg, mpeg, mpg2) to DICOM. 
-    Metadata can be specified via command line (using -m option) or a file (using -f option).
-    Character set ISO_IR 100 will be used as default charset, if not specified in metadata.
-    File names should not contain spaces.
+    usage: jpg2dcm [options] <jpeg-file>|<mpeg2-file> <dicom-file>
+    
+    Encapsulate JPEG image or MPEG2 video (with file extensions jpeg, jpg,
+    jpe; mpeg, mpg, mpe) into DICOM files. DICOM attributes can be specified
+    via command line (using -a option) or a XML file (using -f option).
     -
     Options:
-    -f,--file <file>                Specify the file (in XML format) containing the metadata 
-                                    or DICOM attributes.
-    -h,--help                       Print this message
-    -m,--metadata                   Specify metadata attributes. Attribute can be specified 
-                                    by keyword or tag value (in hex), 
-                                    e.g. PatientName or 00100010. Attributes in nested 
-                                    Datasets can be specified by including the keyword/tag 
-                                    value of the sequence attribute, 
-                                    e.g. 00400275/00400009 for 
-                                    Scheduled Procedure Step ID in the Request.
-    -na,--no-appn                   Exclude application segments APPn from JPEG
-                                    stream; encapsulate JPEG stream verbatim by
-                                    default.
-    -V,--version                    Print the version information and exit
-    --
-    Example 1: Encapulate JPEG Image verbatim with DICOM attributes or metadata 
-    specified in the xml file into DICOM Image Object:
-    $ jpg2dcm -f jpg2dcm.xml image.jpg image.dcm
-    --
-    Example 2: Encapulate JPEG Image without application segments and with system generated 
-    DICOM attributes into DICOM Image Object:
-    $ jpg2dcm -na true homer.jpg image.dcm
-    --
-    Example 3: Encapulate MPEG2 Video with specified DICOM attributes into
-    DICOM Video Object:
-    $ jpg2dcm -f mpg2dcm.xml video.mpg video.dcm
+     -a <[seq/]attr=value>   specify included DICOM Attribute. attr can be
+                             specified by keyword or tag value (in hex), e.g.
+                             PatientName or00100010. Attributes in nested
+                             Datasets can be specified by including the
+                             keyword/tag value of the sequence attribute,e.g.
+                             00400275/00400009 for Scheduled Procedure Step ID
+                             in the Request Attributes Sequence. Overrides
+                             DICOM attributesspecified by -f <xml-file>
+     -f <xml-file>           specify included DICOM attributes by XML
+                             presentation in <xml-file>
+     -h,--help               display this help and exit
+        --no-app             remove application segments APPn from
+                             encapsulated JPEG stream; encapsulate JPEG stream
+                             verbatim by default.
+     -V,--version            output version information and exit
+    -
+    Example 1: jpg2dcm -f metadata.xml image.jpg image.dcm
+    => Encapulate JPEG Image verbatim with DICOM attributes specified in
+    metadata.xml into DICOM Image Object.
+    -
+    Example 2: jpg2dcm --no-app -a PatientName=Simson^Homer -a PatientSex=M
+    homer.jpg image.dcm
+    => Encapulate JPEG Image without application segments with specified DICOM
+    attributes into DICOM Image Object.
+    -
+    Example 3: jpg2dcm video.mpg video.dcm
+    => Encapulate MPEG2 Video into DICOM Video Object.

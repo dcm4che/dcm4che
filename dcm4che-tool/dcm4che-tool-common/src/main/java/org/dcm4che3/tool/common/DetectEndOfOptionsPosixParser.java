@@ -1,6 +1,5 @@
 /*
- * **** BEGIN LICENSE BLOCK *****
- *  Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  *  The contents of this file are subject to the Mozilla Public License Version
  *  1.1 (the "License"); you may not use this file except in compliance with
@@ -16,8 +15,8 @@
  *  Java(TM), hosted at https://github.com/dcm4che.
  *
  *  The Initial Developer of the Original Code is
- *  Agfa Healthcare.
- *  Portions created by the Initial Developer are Copyright (C) 2015
+ *  J4Care.
+ *  Portions created by the Initial Developer are Copyright (C) 2015-2017
  *  the Initial Developer. All Rights Reserved.
  *
  *  Contributor(s):
@@ -35,25 +34,31 @@
  *  the provisions above, a recipient may use your version of this file under
  *  the terms of any one of the MPL, the GPL or the LGPL.
  *
- *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core.api.internal;
 
-import org.dcm4che3.conf.core.api.Configuration;
+package org.dcm4che3.tool.common;
 
-import java.util.List;
-import java.util.Map;
+import org.apache.commons.cli.*;
+
+import java.util.Arrays;
+import java.util.Properties;
 
 /**
- * This API shall NOT be considered stable, it will be refactored without notice.
- * @author Roman K
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @since Jun 2017
  */
-public interface ConfigurationManager {
+public class DetectEndOfOptionsPosixParser extends PosixParser {
 
-    BeanVitalizer getVitalizer();
-
-    Configuration getConfigurationStorage();
-
-    <T> List<Class<? extends T>> getExtensionClassesByBaseClass(Class<T> clazz);
-
+    @Override
+    public CommandLine parse(Options opts, String[] args, Properties props, boolean stopAtNonOption)
+            throws ParseException {
+        int i = args.length;
+        while (--i >= 0 && !"--".equals(args[i]))
+            ;
+        CommandLine cl = super.parse(opts, i < 0 ? args : Arrays.copyOf(args, i), props, stopAtNonOption);
+        if (i >= 0)
+            while (++i < args.length)
+                cl.getArgList().add(args[i]);
+        return cl;
+    }
 }

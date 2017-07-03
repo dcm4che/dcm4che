@@ -49,6 +49,7 @@ import org.dcm4che3.imageio.codec.mpeg.MPEGHeader;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.UIDUtils;
 
@@ -179,12 +180,14 @@ public class Jpg2Dcm {
         if (fileLength > MAX_FILE_SIZE)
             throw new IllegalArgumentException(MessageFormat.format(rb.getString("file-too-large"), infile));
 
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(infile))) {
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(infile));
+        try {
             if (!parseHeader(fileType, bis))
                 throw new IOException(MessageFormat.format(rb.getString("failed-to-parse"), fileType, infile));
 
             int itemLen = (int) fileLength;
-            try (DicomOutputStream dos = new DicomOutputStream(outfile)) {
+            DicomOutputStream dos = new DicomOutputStream(outfile);
+            try {
                 dos.writeDataset(metadata.createFileMetaInformation(fileType.getTransferSyntaxUID()), metadata);
                 dos.writeHeader(Tag.PixelData, VR.OB, -1);
                 dos.writeHeader(Tag.Item, null, 0);
@@ -204,7 +207,11 @@ public class Jpg2Dcm {
                 if ((itemLen & 1) != 0)
                     dos.write(0);
                 dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
+            } finally {
+                SafeClose.close(dos);
             }
+        } finally {
+            SafeClose.close(bis);
         }
         System.out.println(MessageFormat.format(rb.getString("converted"), infile, outfile));
     }

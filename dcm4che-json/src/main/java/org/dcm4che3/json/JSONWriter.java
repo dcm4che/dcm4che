@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -64,6 +64,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Allows conversion of DICOM files into JSON format. See <a href="
+ * http://dicom.nema.org/dicom/2013/output/chtml/part18/sect_F.2.html">DICOM JSON Model</a>.
+ *
+ * <p> Implements {@link org.dcm4che3.io.DicomInputHandler} so it can be attached to a
+ * {@link org.dcm4che3.io.DicomInputStream} to produce the JSON while being read. See sample usage below.
+ *
+ * <p> Usage:
+ *
+ * <pre>
+ * <code>
+ * JsonGenerator gen = ...
+ * JSONWriter jsonWriter = new JSONWriter(gen);
+ *
+ * // If you've already read the DICOM file and have Attributes:
+ * jsonWriter.write(attrs);
+ *
+ * // To include the meta information:
+ * gen.writeStartObject();
+ * jsonWriter.writeAttributes(metadata);
+ * jsonWriter.writeAttributes(attributes);
+ * gen.writeEnd();
+ *
+ * // If you have a DicomInputStream:
+ * DicomInputStream ds = ....
+ * dis.setDicomInputHandler(jsonWriter);
+ * dis.readDataset(-1, -1);
+ * gen.flush();
+ * </code>
+ * </pre>
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
@@ -78,12 +108,20 @@ public class JSONWriter implements DicomInputHandler {
         this.gen = gen;
     }
 
+    /**
+     * Writes the given attributes as a full JSON object. Subsequent calls will generate a new JSON
+     * object.
+     */
     public void write(Attributes attrs) {
         gen.writeStartObject();
         writeAttributes(attrs);
         gen.writeEnd();
     }
 
+    /**
+     * Writes the given attributes to JSON. Can be used to output multiple attributes (e.g. metadata,
+     * attributes) to the same JSON object.
+     */
     public void writeAttributes(Attributes attrs) {
         final SpecificCharacterSet cs = attrs.getSpecificCharacterSet();
         try {

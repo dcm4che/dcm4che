@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -43,6 +43,7 @@ import java.io.IOException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.media.DicomDirReader;
+import org.dcm4che3.media.RecordFactory;
 import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.PresentationContext;
@@ -54,9 +55,9 @@ class SeriesQueryTask extends StudyQueryTask {
     protected final String[] seriesIUIDs;
     protected Attributes seriesRec;
 
-    public SeriesQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys,
-            DicomDirReader ddr, String availability) throws DicomServiceException {
-        super(as, pc, rq, keys, ddr, availability);
+    public SeriesQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys, DcmQRSCP qrscp)
+            throws DicomServiceException {
+        super(as, pc, rq, keys, qrscp);
         seriesIUIDs = StringUtils.maskNull(
                 keys.getStrings(Tag.SeriesInstanceUID));
         wrappedFindNextSeries();
@@ -92,14 +93,14 @@ class SeriesQueryTask extends StudyQueryTask {
             return false;
 
         if (seriesRec == null)
-            seriesRec = ddr.findSeriesRecord(studyRec, seriesIUIDs);
-        else if (seriesIUIDs != null && seriesIUIDs.length == 1)
+            seriesRec = ddr.findSeriesRecord(studyRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
+        else if (seriesIUIDs.length == 1)
             seriesRec = null;
         else
-            seriesRec = ddr.findNextSeriesRecord(seriesRec, seriesIUIDs);
+            seriesRec = ddr.findNextSeriesRecord(seriesRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
 
         while (seriesRec == null && super.findNextStudy())
-            seriesRec = ddr.findSeriesRecord(studyRec, seriesIUIDs);
+            seriesRec = ddr.findSeriesRecord(studyRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
 
         return seriesRec != null;
     }

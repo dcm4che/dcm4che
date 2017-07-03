@@ -12,7 +12,7 @@
  *  License.
  *
  *  The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- *  Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ *  Java(TM), hosted at https://github.com/dcm4che.
  *
  *  The Initial Developer of the Original Code is
  *  J4Care.
@@ -74,7 +74,7 @@ public class MPEGHeader {
     private final byte[] data;
     private final int seqHeaderOffset;
 
-    public MPEGHeader(byte[] data) throws IOException {
+    public MPEGHeader(byte[] data) {
         this.data = data;
         int remaining = data.length;
         int i = 0;

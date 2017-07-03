@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -54,7 +54,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
@@ -341,7 +340,7 @@ public class CLIUtils {
 
     public static CommandLine parseComandLine(String[] args, Options opts, 
             ResourceBundle rb2, Class<?> clazz) throws ParseException {
-        CommandLineParser parser = new PosixParser();
+        CommandLineParser parser = new DetectEndOfOptionsPosixParser();
         CommandLine cl = parser.parse(opts, args);
         if (cl.hasOption("h")) {
             HelpFormatter formatter = new HelpFormatter();

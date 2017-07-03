@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -790,7 +790,7 @@ public class Attributes implements Serializable {
 
     private static String[] toStrings(Object val) {
         return (val instanceof String) 
-                ? new String[] { (String) val } 
+                ? new String[] { (String) val }
                 : (String[]) val;
     }
 
@@ -2943,9 +2943,18 @@ public class Attributes implements Serializable {
 
         boolean ignoreCase = ignorePNCase && vr == VR.PN;
         for (String keyVal : keyVals) {
-            if (vr == VR.PN)
-                keyVal = new PersonName(keyVals[0]).toString();
-    
+            DateRange dateRange = null;
+            switch (vr) {
+                case PN:
+                    keyVal = new PersonName(keyVals[0]).toString();
+                    break;
+                case DA:
+                case DT:
+                case TM:
+                    dateRange = toDateRange(keyVal, vr);
+                    break;
+            }
+
             if (StringUtils.containsWildCard(keyVal)) {
                 Pattern pattern = StringUtils.compilePattern(keyVal, ignoreCase);
                 for (String val : vals) {
@@ -2963,6 +2972,12 @@ public class Attributes implements Serializable {
                 for (String val : vals) {
                     if (val == null)
                         if (matchNoValue)
+                            return true;
+                        else
+                            continue;
+                    if (dateRange != null)
+                        if (dateRange.contains(
+                                vr.toDate(val, getTimeZone(), 0, false, null, new DatePrecision())))
                             return true;
                         else
                             continue;

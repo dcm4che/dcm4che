@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -43,6 +43,7 @@ import java.io.IOException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.media.DicomDirReader;
+import org.dcm4che3.media.RecordFactory;
 import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.PresentationContext;
@@ -54,9 +55,9 @@ class StudyQueryTask extends PatientQueryTask {
     protected final String[] studyIUIDs;
     protected Attributes studyRec;
 
-    public StudyQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys,
-            DicomDirReader ddr, String availability) throws DicomServiceException {
-        super(as, pc, rq, keys, ddr, availability);
+    public StudyQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys, DcmQRSCP qrscp)
+            throws DicomServiceException {
+        super(as, pc, rq, keys, qrscp);
         studyIUIDs = StringUtils.maskNull(keys.getStrings(Tag.StudyInstanceUID));
         wrappedFindNextStudy();
     }
@@ -88,14 +89,14 @@ class StudyQueryTask extends PatientQueryTask {
             return false;
 
         if (studyRec == null)
-            studyRec = ddr.findStudyRecord(patRec, studyIUIDs);
-        else if (studyIUIDs != null && studyIUIDs.length == 1)
+            studyRec = ddr.findStudyRecord(patRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
+        else if (studyIUIDs.length == 1)
             studyRec = null;
         else
-            studyRec = ddr.findNextStudyRecord(studyRec, studyIUIDs);
+            studyRec = ddr.findNextStudyRecord(studyRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
 
         while (studyRec == null && super.findNextPatient())
-            studyRec = ddr.findStudyRecord(patRec, studyIUIDs);
+            studyRec = ddr.findStudyRecord(patRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
 
         return studyRec != null;
     }

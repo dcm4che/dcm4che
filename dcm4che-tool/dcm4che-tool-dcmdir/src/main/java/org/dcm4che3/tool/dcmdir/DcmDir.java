@@ -256,7 +256,7 @@ public class DcmDir {
                         main.delim = cl.hasOption("csv-delim") ? cl.getOptionValue("csv-delim").charAt(0) : ',';
                         main.quote = cl.hasOption("csv-quote") && !cl.getOptionValue("csv-quote").equals("")
                                 ? cl.getOptionValue("csv-quote").charAt(0) : '\"';
-                        num = main.readCSVFile(main, num);
+                        num = main.readCSVFile(num);
                     }
                     main.close();
                     long end = System.currentTimeMillis();
@@ -279,36 +279,27 @@ public class DcmDir {
         }
     }
 
-    private int readCSVFile(DcmDir main, int num) throws Exception {
+    private int readCSVFile(int num) throws Exception {
         if (recordConfig != null)
             loadCustomConfiguration();
+        CSVParser parser = new CSVParser(delim, quote);
         try(BufferedReader br = new BufferedReader(new FileReader(csv))) {
-            String headerline = br.readLine();
-            CSVParser parser = new CSVParser(main, headerline);
+            parser.readHeader(br.readLine(), quote);
             String nextLine;
-
             while((nextLine = br.readLine()) != null) {
-                String[] values = parser.pattern.split(nextLine, -1);
-                if (values.length > parser.headers.length) {
-                    LOG.warn("Number of values in line " + nextLine + " does not match number of headers. Hence line is ignored.");
-                    break;
-                }
                 checkOut();
                 checkRecordFactory();
-                Attributes dataset = new Attributes();
-                for (int i = 0; i < values.length; i++) {
-                    String value = parser.removeBeginEndQuotes(values[i], main);
-                    dataset.setString(parser.tags[i], parser.vrs[i], value);
+                Attributes dataset = parser.getDataset(nextLine, quote);
+                if (dataset != null) {
+                    String iuid = dataset.getString(Tag.SOPInstanceUID);
+                    char prompt = '.';
+                    Attributes fmi = null;
+                    if (iuid != null) {
+                        fmi = dataset.createFileMetaInformation(UID.ImplicitVRLittleEndian);
+                        prompt = 'F';
+                    }
+                    num = addRecords(dataset, num, null, prompt, iuid, fmi);
                 }
-                String iuid = dataset.getString(Tag.SOPInstanceUID);
-                char prompt = '.';
-                Attributes fmi = null;
-                if (iuid != null) {
-                    fmi = dataset.createFileMetaInformation(UID.ImplicitVRLittleEndian);
-                    prompt = 'F';
-                }
-
-                num = addRecords(dataset, num, values, prompt, iuid, fmi);
             }
         }
         return num;
@@ -513,7 +504,7 @@ public class DcmDir {
         return addRecords(dataset, n, out.toFileIDs(f), prompt, iuid, fmi);
     }
 
-    private int addRecords(Attributes dataset, int num, String[] strings, char prompt, String iuid, Attributes fmi)
+    private int addRecords(Attributes dataset, int num, String[] fileIDs, char prompt, String iuid, Attributes fmi)
             throws IOException {
         String pid = dataset.getString(Tag.PatientID, null);
         String styuid = dataset.getString(Tag.StudyInstanceUID, null);
@@ -557,7 +548,7 @@ public class DcmDir {
                             return 0;
                         }
                     }
-                    instRec = recFact.createRecord(dataset, fmi, strings);
+                    instRec = recFact.createRecord(dataset, fmi, fileIDs);
                     out.addLowerDirectoryRecord(seriesRec, instRec);
                     num++;
                 }
@@ -570,7 +561,7 @@ public class DcmDir {
                         return 0;
                     }
                 }
-                Attributes instRec = recFact.createRecord(dataset, fmi, strings);
+                Attributes instRec = recFact.createRecord(dataset, fmi, fileIDs);
                 out.addRootDirectoryRecord(instRec);
                 prompt = prompt == 'F' ? 'R' : 'r';
                 num++;
@@ -682,27 +673,44 @@ public class DcmDir {
     }
 
     private static class CSVParser {
-        Pattern pattern;
-        int[] tags;
-        VR[] vrs;
-        String[] headers;
+        private Pattern pattern;
+        private int[] tags;
+        private VR[] vrs;
+        private String[] headers;
 
-        CSVParser(DcmDir main, String headerline) {
-            String regex = main.delim + "(?=(?:[^\\" + main.quote + "]*\\" + main.quote + "[^\\" + main.quote + "]*\\" + main.quote + ")*[^\\" + main.quote + "]*$)";
+        CSVParser(char delim, char quote) {
+            String regex = delim + "(?=(?:[^\\" + quote + "]*\\" + quote + "[^\\" + quote + "]*\\" + quote + ")*[^\\" + quote + "]*$)";
             pattern = Pattern.compile(regex);
-            headers = pattern.split(headerline, -1);
+        }
+
+        private Attributes getDataset(String line, char quote) {
+            Attributes dataset = new Attributes();
+            String[] values = getValues(line, quote);
+            if (values.length > headers.length) {
+                LOG.warn("Number of values in line " + line + " does not match number of headers. Hence line is ignored.");
+                return null;
+            }
+            for (int i = 0; i < values.length; i++)
+                dataset.setString(tags[i], vrs[i], values[i]);
+            return dataset;
+        }
+
+        private void readHeader(String line, char quote) {
+            headers = getValues(line, quote);
             tags = new int[headers.length];
             vrs = new VR[headers.length];
             for (int i = 0; i < headers.length; i++) {
-                String header = removeBeginEndQuotes(headers[i], main);
-                tags[i] = DICT.tagForKeyword(header);
+                tags[i] = DICT.tagForKeyword(headers[i]);
                 vrs[i] = DICT.vrOf(tags[i]);
             }
         }
 
-        String removeBeginEndQuotes(String value, DcmDir main) {
-            return value.charAt(0) == main.quote && value.charAt(value.length() - 1) == main.quote
-                    ? value.substring(1, value.length() - 1) : value;
+        private String[] getValues(String line, char quote) {
+            String[] values = pattern.split(line, -1);
+            for (int i = 0; i < values.length; i++)
+                if (values[i].charAt(0) == quote && values[i].charAt(values[i].length() - 1) == quote)
+                    values[i] = values[i].substring(1, values[i].length() - 1);
+            return values;
         }
     }
 

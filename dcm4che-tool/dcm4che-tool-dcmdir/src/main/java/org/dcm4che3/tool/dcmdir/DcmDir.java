@@ -288,7 +288,7 @@ public class DcmDir {
             while((nextLine = br.readLine()) != null) {
                 checkOut();
                 checkRecordFactory();
-                Attributes dataset = parser.getDataset(nextLine, quote);
+                Attributes dataset = parser.toDataset(nextLine);
                 if (dataset != null) {
                     String iuid = dataset.getString(Tag.SOPInstanceUID);
                     char prompt = '.';
@@ -675,11 +675,13 @@ public class DcmDir {
         private final Pattern pattern;
         private final int[] tags;
         private final VR[] vrs;
+        private final char quot;
 
         CSVParser(char delim, char quote, String header) {
-            String regex = delim + "(?=(?:[^\\" + quote + "]*\\" + quote + "[^\\" + quote + "]*\\" + quote + ")*[^\\" + quote + "]*$)";
+            quot = quote;
+            String regex = delim + "(?=(?:[^\\" + quot + "]*\\" + quot + "[^\\" + quot + "]*\\" + quot + ")*[^\\" + quot + "]*$)";
             pattern = Pattern.compile(regex);
-            String[] headers = getValues(header, quote);
+            String[] headers = parseFields(header, quot);
             tags = new int[headers.length];
             vrs = new VR[headers.length];
             for (int i = 0; i < headers.length; i++) {
@@ -688,24 +690,24 @@ public class DcmDir {
             }
         }
 
-        private Attributes getDataset(String line, char quote) {
+        private Attributes toDataset(String line) {
             Attributes dataset = new Attributes();
-            String[] values = getValues(line, quote);
-            if (values.length > tags.length) {
+            String[] fields = parseFields(line, quot);
+            if (fields.length > tags.length) {
                 LOG.warn("Number of values in line " + line + " does not match number of headers. Hence line is ignored.");
                 return null;
             }
-            for (int i = 0; i < values.length; i++)
-                dataset.setString(tags[i], vrs[i], values[i]);
+            for (int i = 0; i < fields.length; i++)
+                dataset.setString(tags[i], vrs[i], fields[i]);
             return dataset;
         }
 
-        private String[] getValues(String line, char quote) {
-            String[] values = pattern.split(line, -1);
-            for (int i = 0; i < values.length; i++)
-                if (values[i].charAt(0) == quote && values[i].charAt(values[i].length() - 1) == quote)
-                    values[i] = values[i].substring(1, values[i].length() - 1);
-            return values;
+        private String[] parseFields(String line, char quote) {
+            String[] fields = pattern.split(line, -1);
+            for (int i = 0; i < fields.length; i++)
+                if (fields[i].charAt(0) == quote && fields[i].charAt(fields[i].length() - 1) == quote)
+                    fields[i] = fields[i].substring(1, fields[i].length() - 1);
+            return fields;
         }
     }
 

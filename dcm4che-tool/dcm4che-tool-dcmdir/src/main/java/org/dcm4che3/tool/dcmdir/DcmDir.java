@@ -681,7 +681,7 @@ public class DcmDir {
             quot = quote;
             String regex = delim + "(?=(?:[^\\" + quot + "]*\\" + quot + "[^\\" + quot + "]*\\" + quot + ")*[^\\" + quot + "]*$)";
             pattern = Pattern.compile(regex);
-            String[] headers = parseFields(header, quot);
+            String[] headers = parseFields(header);
             tags = new int[headers.length];
             vrs = new VR[headers.length];
             for (int i = 0; i < headers.length; i++) {
@@ -692,21 +692,23 @@ public class DcmDir {
 
         Attributes toDataset(String line) {
             Attributes dataset = new Attributes();
-            String[] fields = parseFields(line, quot);
+            String[] fields = parseFields(line);
             if (fields.length > tags.length) {
                 LOG.warn("Number of values in line " + line + " does not match number of headers. Hence line is ignored.");
                 return null;
             }
             for (int i = 0; i < fields.length; i++)
-                dataset.setString(tags[i], vrs[i], fields[i]);
+                dataset.setString(tags[i], vrs[i], fields[i].split("\\\\"));
             return dataset;
         }
 
-        private String[] parseFields(String line, char quote) {
+        private String[] parseFields(String line) {
+            char[] target = new char[]{quot, quot};
             String[] fields = pattern.split(line, -1);
             for (int i = 0; i < fields.length; i++)
-                if (fields[i].charAt(0) == quote && fields[i].charAt(fields[i].length() - 1) == quote)
-                    fields[i] = fields[i].substring(1, fields[i].length() - 1);
+                if (fields[i].charAt(0) == quot && fields[i].charAt(fields[i].length() - 1) == quot)
+                    fields[i] = fields[i].substring(1, fields[i].length() - 1)
+                                    .replace(String.valueOf(target), String.valueOf(quot));
             return fields;
         }
     }

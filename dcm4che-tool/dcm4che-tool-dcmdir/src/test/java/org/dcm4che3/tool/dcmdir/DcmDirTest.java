@@ -51,18 +51,18 @@ import static org.junit.Assert.*;
  */
 public class DcmDirTest {
     
-    private static String CSV_HEADER =  "StudyDate,AccessionNumber,ModalitiesInStudy,StudyDescription";
-    private static String CSV_DATA =  "20170301,\"5491\"\",\"\"5037\",CT\\MR\\KO,\"\"\"Study\"\", Description\"";
+    private static String CSV_HEADER =  "\"StudyDate\",\"AccessionNumber\",\"ModalitiesInStudy\",\"StudyDescription\"";
+    private static String CSV_DATA =  "\"20170301\",\"5491\"\",\"\"5037\",\"CT\\MR\\KO\",\"\"\"Study\"\", Description\"";
     private static String[] MODALITIES = { "CT", "MR", "KO" };
 
     @Test
-    public void cvsParser() throws Exception {
+    public void csvParser() throws Exception {
         DcmDir.CSVParser csvParser = new DcmDir.CSVParser(',', '"', CSV_HEADER);
         Attributes attrs = csvParser.toDataset(CSV_DATA);
         Assert.assertEquals("20170301",attrs.getString(Tag.StudyDate));
         Assert.assertEquals("5491\",\"5037",attrs.getString(Tag.AccessionNumber));
         Assert.assertArrayEquals(MODALITIES, attrs.getStrings(Tag.ModalitiesInStudy));
-        Assert.assertEquals("\"Study\", Description", attrs.getStrings(Tag.StudyDescription));
+        Assert.assertEquals("\"Study\", Description", attrs.getString(Tag.StudyDescription));
     }
 
 }

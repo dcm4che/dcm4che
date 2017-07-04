@@ -103,7 +103,6 @@ public class DcmDir {
     private String recordConfig;
     private char delim;
     private char quote;
-    private char[] replacement;
 
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
@@ -257,7 +256,6 @@ public class DcmDir {
                         main.delim = cl.hasOption("csv-delim") ? cl.getOptionValue("csv-delim").charAt(0) : ',';
                         main.quote = cl.hasOption("csv-quote") && !cl.getOptionValue("csv-quote").equals("")
                                 ? cl.getOptionValue("csv-quote").charAt(0) : '\"';
-                        main.replacement = new char[]{main.quote, main.quote};
                         num = main.readCSVFile(main, num);
                     }
                     main.close();
@@ -299,7 +297,7 @@ public class DcmDir {
                 checkRecordFactory();
                 Attributes dataset = new Attributes();
                 for (int i = 0; i < values.length; i++) {
-                    String value = values[i].replace(String.valueOf(quote), String.valueOf(replacement));
+                    String value = parser.removeBeginEndQuotes(values[i], main);
                     dataset.setString(parser.tags[i], parser.vrs[i], value);
                 }
                 String iuid = dataset.getString(Tag.SOPInstanceUID);
@@ -696,9 +694,15 @@ public class DcmDir {
             tags = new int[headers.length];
             vrs = new VR[headers.length];
             for (int i = 0; i < headers.length; i++) {
-                tags[i] = DICT.tagForKeyword(headers[i].replace(String.valueOf(main.quote), ""));
+                String header = removeBeginEndQuotes(headers[i], main);
+                tags[i] = DICT.tagForKeyword(header);
                 vrs[i] = DICT.vrOf(tags[i]);
             }
+        }
+
+        String removeBeginEndQuotes(String value, DcmDir main) {
+            return value.charAt(0) == main.quote && value.charAt(value.length() - 1) == main.quote
+                    ? value.substring(1, value.length() - 1) : value;
         }
     }
 

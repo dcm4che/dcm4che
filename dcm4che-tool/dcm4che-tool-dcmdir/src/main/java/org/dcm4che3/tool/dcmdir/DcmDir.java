@@ -671,7 +671,7 @@ public class DcmDir {
         }
     }
 
-    private static class CSVParser {
+    static class CSVParser {
         private final Pattern pattern;
         private final int[] tags;
         private final VR[] vrs;
@@ -690,7 +690,7 @@ public class DcmDir {
             }
         }
 
-        private Attributes toDataset(String line) {
+        Attributes toDataset(String line) {
             Attributes dataset = new Attributes();
             String[] fields = parseFields(line, quot);
             if (fields.length > tags.length) {

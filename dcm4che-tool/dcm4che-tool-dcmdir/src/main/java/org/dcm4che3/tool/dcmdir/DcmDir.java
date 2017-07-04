@@ -282,9 +282,8 @@ public class DcmDir {
     private int readCSVFile(int num) throws Exception {
         if (recordConfig != null)
             loadCustomConfiguration();
-        CSVParser parser = new CSVParser(delim, quote);
         try(BufferedReader br = new BufferedReader(new FileReader(csv))) {
-            parser.readHeader(br.readLine(), quote);
+            CSVParser parser = new CSVParser(delim, quote, br.readLine());
             String nextLine;
             while((nextLine = br.readLine()) != null) {
                 checkOut();
@@ -673,36 +672,32 @@ public class DcmDir {
     }
 
     private static class CSVParser {
-        private Pattern pattern;
-        private int[] tags;
-        private VR[] vrs;
-        private String[] headers;
+        private final Pattern pattern;
+        private final int[] tags;
+        private final VR[] vrs;
 
-        CSVParser(char delim, char quote) {
+        CSVParser(char delim, char quote, String header) {
             String regex = delim + "(?=(?:[^\\" + quote + "]*\\" + quote + "[^\\" + quote + "]*\\" + quote + ")*[^\\" + quote + "]*$)";
             pattern = Pattern.compile(regex);
-        }
-
-        private Attributes getDataset(String line, char quote) {
-            Attributes dataset = new Attributes();
-            String[] values = getValues(line, quote);
-            if (values.length > headers.length) {
-                LOG.warn("Number of values in line " + line + " does not match number of headers. Hence line is ignored.");
-                return null;
-            }
-            for (int i = 0; i < values.length; i++)
-                dataset.setString(tags[i], vrs[i], values[i]);
-            return dataset;
-        }
-
-        private void readHeader(String line, char quote) {
-            headers = getValues(line, quote);
+            String[] headers = getValues(header, quote);
             tags = new int[headers.length];
             vrs = new VR[headers.length];
             for (int i = 0; i < headers.length; i++) {
                 tags[i] = DICT.tagForKeyword(headers[i]);
                 vrs[i] = DICT.vrOf(tags[i]);
             }
+        }
+
+        private Attributes getDataset(String line, char quote) {
+            Attributes dataset = new Attributes();
+            String[] values = getValues(line, quote);
+            if (values.length > tags.length) {
+                LOG.warn("Number of values in line " + line + " does not match number of headers. Hence line is ignored.");
+                return null;
+            }
+            for (int i = 0; i < values.length; i++)
+                dataset.setString(tags[i], vrs[i], values[i]);
+            return dataset;
         }
 
         private String[] getValues(String line, char quote) {

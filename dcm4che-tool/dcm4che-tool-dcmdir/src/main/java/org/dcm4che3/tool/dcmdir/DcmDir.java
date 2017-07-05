@@ -706,13 +706,21 @@ public class DcmDir {
             char[] doubleQuote = new char[]{quot, quot};
             String[] fields = pattern.split(line, -1);
             for (int i = 0; i < fields.length; i++)
-                fields[i] = unquote(fields[i]).replace(String.valueOf(doubleQuote), String.valueOf(quot));
+                fields[i] = unquote(fields[i])
+                                .replace(String.valueOf(doubleQuote), String.valueOf(quot));
             return fields;
         }
 
         private String unquote(String field) {
-            return field.charAt(0) == quot && field.charAt(field.length() - 1) == quot
-                    ? field.substring(1, field.length() -1) : field;
+            int quoteOccurrencesStart = 0;
+            for (char c : field.toCharArray()) {
+                if (c == quot)
+                    quoteOccurrencesStart++;
+                else
+                    break;
+            }
+            return quoteOccurrencesStart % 2 != 0 && field.charAt(field.length() - 1) == quot
+                        ? field.substring(1, field.length() -1) : field;
         }
     }
 

@@ -1225,7 +1225,7 @@ public class Association {
         String versionName = getRemoteImplVersionName();
         if (versionName != null)
             fmi.setString(Tag.ImplementationVersionName, VR.SH, versionName);
-        fmi.setString(Tag.SourceApplicationEntityTitle, VR.SH,
+        fmi.setString(Tag.SourceApplicationEntityTitle, VR.AE,
                 getRemoteAET());
         return fmi;
     }

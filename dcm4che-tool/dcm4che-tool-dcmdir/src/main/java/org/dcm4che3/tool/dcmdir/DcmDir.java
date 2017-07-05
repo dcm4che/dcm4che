@@ -703,24 +703,17 @@ public class DcmDir {
         }
 
         private String[] parseFields(String line) {
-            char[] doubleQuote = new char[]{quot, quot};
             String[] fields = pattern.split(line, -1);
             for (int i = 0; i < fields.length; i++)
-                fields[i] = unquote(fields[i])
-                                .replace(String.valueOf(doubleQuote), String.valueOf(quot));
+                fields[i] = decode(fields[i]);
             return fields;
         }
 
-        private String unquote(String field) {
-            int quoteOccurrencesStart = 0;
-            for (char c : field.toCharArray()) {
-                if (c == quot)
-                    quoteOccurrencesStart++;
-                else
-                    break;
-            }
-            return quoteOccurrencesStart % 2 != 0 && field.charAt(field.length() - 1) == quot
-                        ? field.substring(1, field.length() -1) : field;
+        private String decode(String field) {
+            char[] doubleQuote = new char[]{quot, quot};
+            return field.charAt(0) == quot && field.charAt(field.length() - 1) == quot
+                    ? field.substring(1, field.length() - 1).replace(String.valueOf(doubleQuote), String.valueOf(quot))
+                    : field;
         }
     }
 

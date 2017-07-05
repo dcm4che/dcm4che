@@ -54,7 +54,6 @@ public class DcmDirTest {
     private static String CSV_HEADER =  "" +
             "StudyDate," +
             "AccessionNumber," +
-            "StudyID," +
             "ModalitiesInStudy," +
             "StudyDescription," +
             "PatientID";
@@ -62,7 +61,6 @@ public class DcmDirTest {
             "20170301," +
             "\"Accession\"\"," +
             "\"\"Number\"," +
-            "Study \"\"ID\"\"," +
             "CT\\MR\\KO," +
             "\"\"\"Study\"\", Description\"," +
             "\"\"";
@@ -74,7 +72,6 @@ public class DcmDirTest {
         Attributes attrs = csvParser.toDataset(CSV_DATA);
         Assert.assertEquals("20170301",attrs.getString(Tag.StudyDate));
         Assert.assertEquals("Accession\",\"Number",attrs.getString(Tag.AccessionNumber));
-        Assert.assertEquals("Study \"ID\"",attrs.getString(Tag.StudyID));
         Assert.assertArrayEquals(MODALITIES, attrs.getStrings(Tag.ModalitiesInStudy));
         Assert.assertEquals("\"Study\", Description", attrs.getString(Tag.StudyDescription));
         Assert.assertNull(attrs.getString(Tag.PatientID));

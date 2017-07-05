@@ -44,7 +44,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
@@ -54,7 +53,6 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.MissingOptionException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.UID;
@@ -76,7 +74,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  */
 public class DcmDir {
 
@@ -101,6 +98,11 @@ public class DcmDir {
     private DicomDirReader in;
     private DicomDirWriter out;
     private RecordFactory recFact;
+
+    private String csv;
+    private String recordConfig;
+    private char delim;
+    private char quote;
 
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
@@ -247,8 +249,15 @@ public class DcmDir {
                     int num = 0;
                     for (String arg : argList)
                         num += main.addReferenceTo(new File(arg));
-                    if (cl.hasOption("csv"))
-                        num = main.readCSVFile(cl, main, num);
+                    if (cl.hasOption("csv")) {
+                        main.csv = cl.getOptionValue("csv");
+                        if (cl.hasOption("record-config"))
+                            main.recordConfig = cl.getOptionValue("record-config");
+                        main.delim = cl.hasOption("csv-delim") ? cl.getOptionValue("csv-delim").charAt(0) : ',';
+                        main.quote = cl.hasOption("csv-quote") && !cl.getOptionValue("csv-quote").equals("")
+                                ? cl.getOptionValue("csv-quote").charAt(0) : '\"';
+                        num = main.readCSVFile(num);
+                    }
                     main.close();
                     long end = System.currentTimeMillis();
                     System.out.println();
@@ -270,48 +279,33 @@ public class DcmDir {
         }
     }
 
-    private int readCSVFile(CommandLine cl, DcmDir main, int num) throws Exception {
-        if (!cl.hasOption("record-config"))
-            throw new MissingOptionException("Missing record-config option.");
-        String delim = cl.hasOption("csv-delim") ? cl.getOptionValue("csv-delim") : ",";
-        String quote = cl.hasOption("csv-quote") && !cl.getOptionValue("csv-quote").equals("")
-                        ? cl.getOptionValue("csv-quote") : "\"";
-        BufferedReader br = null;
+    private int readCSVFile(int num) throws Exception {
+        if (recordConfig != null)
+            loadCustomConfiguration();
+        BufferedReader br = new BufferedReader(new FileReader(csv));
         try {
-            br = new BufferedReader(new FileReader(cl.getOptionValue("csv")));
-            loadDefaultConfiguration(cl.getOptionValue("record-config"));
-            String headerline = br.readLine();
-            String[] headers = headerline.split(delim);
-            List<Integer> tags = new ArrayList<Integer>();
-            List<VR> vrs = new ArrayList<VR>();
-            for (int i = 0; i < headers.length; i++) {
-                String header = headers[i].replaceAll(quote, "");
-                int tag = DICT.tagForKeyword(header);
-                tags.add(tag);
-                vrs.add(DICT.vrOf(tag));
-            }
-
+            CSVParser parser = new CSVParser(delim, quote, br.readLine());
             String nextLine;
-            String esc = "\\";
-            String escq = esc.concat(quote);
-            String regex = delim + "(?=(?:[^" + escq + "]*" + escq + "[^" + escq + "]*" + escq + ")*[^" + escq + "]*$)";
-            Pattern p = Pattern.compile(regex);
             while((nextLine = br.readLine()) != null) {
-                String[] values = p.split(nextLine, -1);
-                if (values.length > headers.length) {
-                    LOG.warn("Number of values in line " + nextLine + " does not match number of headers");
-                    return num;
+                checkOut();
+                checkRecordFactory();
+                Attributes dataset = parser.toDataset(nextLine);
+                if (dataset != null) {
+                    String iuid = dataset.getString(Tag.SOPInstanceUID);
+                    char prompt = '.';
+                    Attributes fmi = null;
+                    if (iuid != null) {
+                        fmi = dataset.createFileMetaInformation(UID.ImplicitVRLittleEndian);
+                        prompt = 'F';
+                    }
+                    num = addRecords(dataset, num, null, prompt, iuid, fmi);
                 }
-                num = main.addReferenceToNextLine(
-                        tags.toArray(new Integer[tags.size()]), vrs.toArray(new VR[vrs.size()]), values, num, quote);
             }
         } finally {
-            if (br != null)
-                br.close();
+            SafeClose.close(br);
         }
         return num;
     }
-
 
     private void compact(File f, File bak) throws IOException {
         File tmp = File.createTempFile("DICOMDIR", null, f.getParentFile());
@@ -465,25 +459,6 @@ public class DcmDir {
         }
     }
 
-    private int addReferenceToNextLine(Integer[] tags, VR[] vrs, String[] values, int num, String quote) throws Exception {
-        checkOut();
-        checkRecordFactory();
-        Attributes dataset = new Attributes();
-        for (int i = 0; i < values.length; i++) {
-            String value = values[i].replaceAll(quote, "");
-            dataset.setString(tags[i], vrs[i], value);
-        }
-        String iuid = dataset.getString(Tag.SOPInstanceUID);
-        char prompt = '.';
-        Attributes fmi = null;
-        if (iuid != null) {
-            fmi = dataset.createFileMetaInformation(UID.ImplicitVRLittleEndian);
-            prompt = 'F';
-        }
-
-        return addRecords(dataset, num, values, prompt, iuid, fmi);
-    }
-
     private int addReferenceTo(File f) throws IOException {
         checkOut();
         checkRecordFactory();
@@ -531,7 +506,7 @@ public class DcmDir {
         return addRecords(dataset, n, out.toFileIDs(f), prompt, iuid, fmi);
     }
 
-    private int addRecords(Attributes dataset, int num, String[] strings, char prompt, String iuid, Attributes fmi)
+    private int addRecords(Attributes dataset, int num, String[] fileIDs, char prompt, String iuid, Attributes fmi)
             throws IOException {
         String pid = dataset.getString(Tag.PatientID, null);
         String styuid = dataset.getString(Tag.StudyInstanceUID, null);
@@ -575,7 +550,7 @@ public class DcmDir {
                             return 0;
                         }
                     }
-                    instRec = recFact.createRecord(dataset, fmi, strings);
+                    instRec = recFact.createRecord(dataset, fmi, fileIDs);
                     out.addLowerDirectoryRecord(seriesRec, instRec);
                     num++;
                 }
@@ -588,7 +563,7 @@ public class DcmDir {
                         return 0;
                     }
                 }
-                Attributes instRec = recFact.createRecord(dataset, fmi, strings);
+                Attributes instRec = recFact.createRecord(dataset, fmi, fileIDs);
                 out.addRootDirectoryRecord(instRec);
                 prompt = prompt == 'F' ? 'R' : 'r';
                 num++;
@@ -691,11 +666,58 @@ public class DcmDir {
             throw new IllegalStateException(rb.getString("no-record-factory"));
     }
 
-    private void loadDefaultConfiguration(String recordConfig) {
+    private void loadCustomConfiguration() {
         try {
             recFact.loadConfiguration(Paths.get(recordConfig).toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    static class CSVParser {
+        private final Pattern pattern;
+        private final int[] tags;
+        private final VR[] vrs;
+        private final char quot;
+
+        CSVParser(char delim, char quote, String header) {
+            quot = quote;
+            String regex = delim + "(?=(?:[^\\" + quot + "]*\\" + quot + "[^\\" + quot + "]*\\" + quot + ")*[^\\" + quot + "]*$)";
+            pattern = Pattern.compile(regex);
+            String[] headers = parseFields(header);
+            tags = new int[headers.length];
+            vrs = new VR[headers.length];
+            for (int i = 0; i < headers.length; i++) {
+                tags[i] = DICT.tagForKeyword(headers[i]);
+                vrs[i] = DICT.vrOf(tags[i]);
+            }
+        }
+
+        Attributes toDataset(String line) {
+            Attributes dataset = new Attributes();
+            String[] fields = parseFields(line);
+            if (fields.length > tags.length) {
+                LOG.warn("Number of values in line " + line + " does not match number of headers. Hence line is ignored.");
+                return null;
+            }
+            for (int i = 0; i < fields.length; i++)
+                dataset.setString(tags[i], vrs[i], fields[i]);
+            return dataset;
+        }
+
+        private String[] parseFields(String line) {
+            String[] fields = pattern.split(line, -1);
+            for (int i = 0; i < fields.length; i++)
+                fields[i] = decode(fields[i]);
+            return fields;
+        }
+
+        private String decode(String field) {
+            char[] doubleQuote = new char[]{quot, quot};
+            return !field.isEmpty() && field.charAt(0) == quot && field.charAt(field.length() - 1) == quot
+                    ? field.substring(1, field.length() - 1)
+                        .replace(String.valueOf(doubleQuote), String.valueOf(quot))
+                    : field;
         }
     }
 

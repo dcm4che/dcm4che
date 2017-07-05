@@ -715,7 +715,7 @@ public class DcmDir {
                     ? field.substring(1, field.length() - 1)
                         .replace(String.valueOf(doubleQuote), String.valueOf(quot))
                     : field;
-}
+        }
     }
 
 }

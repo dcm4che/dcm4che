@@ -50,6 +50,7 @@ import java.util.Date;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
+import org.dcm4che3.util.StringUtils;
 import org.junit.Test;
 
 /**
@@ -671,4 +672,12 @@ public class AttributesTest {
         assertEquals(6, original.size());
     }
 
+    @Test
+    public void testSetString() {
+        String[] MODALITIES_IN_STUDY = { "CT", "MR", "PR" };
+        Attributes a = new Attributes();
+        a.setString(Tag.ModalitiesInStudy, VR.CS, StringUtils.concat(MODALITIES_IN_STUDY, '\\'));
+        assertArrayEquals(MODALITIES_IN_STUDY, a.getStrings(Tag.ModalitiesInStudy));
+        assertEquals(MODALITIES_IN_STUDY[0], a.getString(Tag.ModalitiesInStudy));
+    }
 }

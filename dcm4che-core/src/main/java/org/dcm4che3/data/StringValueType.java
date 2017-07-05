@@ -76,12 +76,22 @@ enum StringValueType implements ValueType {
         protected Object splitAndTrim(String s, SpecificCharacterSet cs) {
             return cs.toText(StringUtils.trimTrailing(s));
         }
+
+        @Override
+        protected Object toMultiValue(String s) {
+            return s;
+        }
     },
     UR(null, null) {
 
         @Override
         protected Object splitAndTrim(String s, SpecificCharacterSet cs) {
             return StringUtils.trimTrailing(s);
+        }
+
+        @Override
+        protected Object toMultiValue(String s) {
+            return s;
         }
     },
     DA("\\", TemporalType.DA),
@@ -469,8 +479,12 @@ enum StringValueType implements ValueType {
         if (s == null || s.isEmpty())
             return Value.NULL;
 
-        return s;
-    } 
+        return toMultiValue(s);
+    }
+
+    protected Object toMultiValue(String s) {
+        return StringUtils.splitAndTrim(s, '\\');
+    }
 
     @Override
     public Object toValue(String[] ss, boolean bigEndian) {

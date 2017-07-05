@@ -50,9 +50,22 @@ import static org.junit.Assert.*;
  * @since Jul 2017
  */
 public class DcmDirTest {
-    
-    private static String CSV_HEADER =  "StudyDate,AccessionNumber,StudyID,ModalitiesInStudy,StudyDescription,PatientID";
-    private static String CSV_DATA =  "20170301,\"Accession\"\",\"\"Number\",Study \"\"ID\"\",CT\\MR\\KO,\"\"\"Study\"\", Description\"";
+
+    private static String CSV_HEADER =  "" +
+            "StudyDate," +
+            "AccessionNumber," +
+            "StudyID," +
+            "ModalitiesInStudy," +
+            "StudyDescription," +
+            "PatientID";
+    private static String CSV_DATA =  "" +
+            "20170301," +
+            "\"Accession\"\"," +
+            "\"\"Number\"," +
+            "Study \"\"ID\"\"," +
+            "CT\\MR\\KO," +
+            "\"\"\"Study\"\", Description\"," +
+            "\"\"";
     private static String[] MODALITIES = { "CT", "MR", "KO" };
 
     @Test
@@ -64,6 +77,7 @@ public class DcmDirTest {
         Assert.assertEquals("Study \"ID\"",attrs.getString(Tag.StudyID));
         Assert.assertArrayEquals(MODALITIES, attrs.getStrings(Tag.ModalitiesInStudy));
         Assert.assertEquals("\"Study\", Description", attrs.getString(Tag.StudyDescription));
+        Assert.assertNull(attrs.getString(Tag.PatientID));
     }
 
 }

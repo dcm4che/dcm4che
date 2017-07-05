@@ -43,27 +43,27 @@ import org.dcm4che3.data.Tag;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jul 2017
  */
 public class DcmDirTest {
 
-    private static String CSV_HEADER =  "" +
+    private static String CSV_HEADER =
             "StudyDate," +
             "AccessionNumber," +
             "ModalitiesInStudy," +
             "StudyDescription," +
-            "PatientID";
+            "PatientID," +
+            "StudyID";
     private static String CSV_DATA =  "" +
             "20170301," +
             "\"Accession\"\"," +
             "\"\"Number\"," +
             "CT\\MR\\KO," +
             "\"\"\"Study\"\", Description\"," +
-            "\"\"";
+            "\"\"," +
+            "";
     private static String[] MODALITIES = { "CT", "MR", "KO" };
 
     @Test
@@ -75,6 +75,7 @@ public class DcmDirTest {
         Assert.assertArrayEquals(MODALITIES, attrs.getStrings(Tag.ModalitiesInStudy));
         Assert.assertEquals("\"Study\", Description", attrs.getString(Tag.StudyDescription));
         Assert.assertNull(attrs.getString(Tag.PatientID));
+        Assert.assertNull(attrs.getString(Tag.StudyID));
     }
 
 }

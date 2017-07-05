@@ -711,12 +711,11 @@ public class DcmDir {
 
         private String decode(String field) {
             char[] doubleQuote = new char[]{quot, quot};
-            return !field.equals("")
-                        ? field.charAt(0) == quot && field.charAt(field.length() - 1) == quot
-                            ? field.substring(1, field.length() - 1).replace(String.valueOf(doubleQuote), String.valueOf(quot))
-                            : field
-                        : field;
-        }
+            return !field.isEmpty() && field.charAt(0) == quot && field.charAt(field.length() - 1) == quot
+                    ? field.substring(1, field.length() - 1)
+                        .replace(String.valueOf(doubleQuote), String.valueOf(quot))
+                    : field;
+}
     }
 
 }

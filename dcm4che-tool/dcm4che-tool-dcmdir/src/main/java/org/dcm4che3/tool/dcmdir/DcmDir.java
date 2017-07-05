@@ -698,18 +698,21 @@ public class DcmDir {
                 return null;
             }
             for (int i = 0; i < fields.length; i++)
-                dataset.setString(tags[i], vrs[i], fields[i].split("\\\\"));
+                dataset.setString(tags[i], vrs[i], fields[i]);
             return dataset;
         }
 
         private String[] parseFields(String line) {
-            char[] target = new char[]{quot, quot};
+            char[] doubleQuote = new char[]{quot, quot};
             String[] fields = pattern.split(line, -1);
             for (int i = 0; i < fields.length; i++)
-                if (fields[i].charAt(0) == quot && fields[i].charAt(fields[i].length() - 1) == quot)
-                    fields[i] = fields[i].substring(1, fields[i].length() - 1)
-                                    .replace(String.valueOf(target), String.valueOf(quot));
+                fields[i] = unquote(fields[i]).replace(String.valueOf(doubleQuote), String.valueOf(quot));
             return fields;
+        }
+
+        private String unquote(String field) {
+            return field.charAt(0) == quot && field.charAt(field.length() - 1) == quot
+                    ? field.substring(1, field.length() -1) : field;
         }
     }
 

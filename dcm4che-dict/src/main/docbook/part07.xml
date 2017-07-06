@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2017b - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2017c - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -118,11 +118,11 @@
       <author>
         <orgname>ISO/IEC</orgname>
       </author>
-      <date>2011/04</date>
-      <edition>6.0</edition>
+      <date>2016/05</date>
+      <edition>7.0</edition>
       <title>Rules for the structure and drafting of International Standards</title>
       <bibliosource>
-        <link xl:href="http://www.iec.ch/members_experts/refdocs/iec/isoiec-dir2%7Bed6.0%7Den.pdf"/>
+        <link xl:href="http://www.iec.ch/members_experts/refdocs/iec/isoiecdir-2%7Bed7.0%7Den.pdf"/>
       </bibliosource>
     </biblioentry>
   </bibliography>

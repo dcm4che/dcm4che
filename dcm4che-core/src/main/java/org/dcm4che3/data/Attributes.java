@@ -3022,6 +3022,27 @@ public class Attributes implements Serializable {
         return modified;
     }
 
+    public int diff(Attributes other, int[] selection, Attributes diff) {
+        int count = 0;
+        for (int tag : selection) {
+            int index = indexOf(tag);
+            Object value = index < 0 ? Value.NULL : values[index];
+            int otherIndex = other.indexOf(tag);
+            Object otherValue = otherIndex < 0 ? Value.NULL : other.values[otherIndex];
+            if (value == Value.NULL ? otherValue != Value.NULL
+                    : otherValue == Value.NULL || !equalValues(other, index, otherIndex)) {
+                if (diff != null)
+                    if (value instanceof Sequence) {
+                        diff.set(null, tag, (Sequence) value, null);
+                    } else {
+                        diff.set(tag, index < 0 ? other.vrs[otherIndex] : vrs[index], value);
+                    }
+                count++;
+            }
+        }
+        return count;
+    }
+
     public static void unifyCharacterSets(Attributes... attrsList) {
         if (attrsList.length == 0)
             return;

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che.tool</groupId>
     <artifactId>dcm4che-tool</artifactId>
-    <version>dcm4chee-arc-light-5.10.4</version>
+    <version>dcm4chee-arc-light-5.10.5</version>
   </parent>
   <artifactId>dcm4che-tool-syslogd</artifactId>
   <dependencies>

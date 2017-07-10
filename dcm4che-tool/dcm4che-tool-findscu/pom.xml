@@ -29,7 +29,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>dcm4chee-arc-light-5.10.4</version>
+    <version>dcm4chee-arc-light-5.10.5</version>
   </parent>
   <artifactId>dcm4che-tool-findscu</artifactId>
   <name>dcm4che-tool-findscu</name>

@@ -290,7 +290,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return loadDevice(deviceDN);
     }
 
-    private Connection findConnection(String connDN) throws NamingException {
+    public Connection findConnection(String connDN) throws NamingException {
         String[] attrIds = { "dicomHostname", "dicomPort", "dicomTLSCipherSuite", "dicomInstalled" };
         Attributes attrs = ctx.getAttributes(connDN, attrIds);
         Connection conn = new Connection();
@@ -1972,9 +1972,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             while (ne.hasMore()) {
                 ApplicationEntityInfo aetInfo = new ApplicationEntityInfo();
                 SearchResult ne1 = ne.next();
-                NameParser parser = ctx.getDirCtx().getNameParser(ne1.getNameInNamespace());
-                Name n = parser.parse(ne1.getNameInNamespace());
-                Enumeration<String> s1 = n.getAll();
+                Enumeration<String> s1 = getStringEnumeration(ne1);
                 loadFrom(aetInfo, ne1.getAttributes(), getDeviceName(s1));
                 results.add(aetInfo);
             }
@@ -1988,7 +1986,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return results.toArray(new ApplicationEntityInfo[results.size()]);
     }
 
-    private String getDeviceName(Enumeration<String> s1) {
+    public Enumeration<String> getStringEnumeration(SearchResult ne1) throws NamingException {
+        NameParser parser = ctx.getDirCtx().getNameParser(ne1.getNameInNamespace());
+        Name n = parser.parse(ne1.getNameInNamespace());
+        return n.getAll();
+    }
+
+    public String getDeviceName(Enumeration<String> s1) {
         while (s1.hasMoreElements()) {
             String s2 = s1.nextElement();
             if (s2.startsWith("dicomDeviceName"))
@@ -2009,10 +2013,15 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         attrs.add("dicomInstalled");
         attrs.add("dicomNetworkConnectionReference");
         String[] attrsArray = attrs.toArray(new String[attrs.size()]);
+        return toSearchResultNE(keys.getDeviceName(), toFilter(keys), attrsArray);
+    }
+
+    public NamingEnumeration<SearchResult> toSearchResultNE(String deviceName, String filter, String[] attrsArray)
+            throws NamingException {
         SearchControls ctls = searchControlSubtreeScope(0, attrsArray, true);
-        return keys.getDeviceName() != null
-                ? search(deviceRef(keys.getDeviceName()), toFilter(keys), attrsArray)
-                : ctx.search(devicesDN, toFilter(keys), ctls);
+        return deviceName != null
+                ? search(deviceRef(deviceName), filter, attrsArray)
+                : ctx.search(devicesDN, filter, ctls);
     }
 
     private String toFilter(ApplicationEntityInfo keys) {

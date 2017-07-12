@@ -44,16 +44,15 @@ import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.net.Device;
+import org.dcm4che3.net.HL7ApplicationInfo;
 import org.dcm4che3.net.hl7.HL7Application;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.dcm4che3.util.StringUtils;
 
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
+import javax.naming.*;
 import javax.naming.directory.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -178,6 +177,84 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             name);
         HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
         return hl7Ext.getHL7Application(name);
+    }
+
+    @Override
+    public synchronized HL7ApplicationInfo[] listHL7AppInfos(HL7ApplicationInfo keys) throws ConfigurationException {
+        if (!config.configurationExists())
+            return new HL7ApplicationInfo[0];
+
+        ArrayList<HL7ApplicationInfo> results = new ArrayList<HL7ApplicationInfo>();
+        NamingEnumeration<SearchResult> ne = null;
+        try {
+            ne = searchHL7(keys);
+            while (ne.hasMore()) {
+                HL7ApplicationInfo hl7AppInfo = new HL7ApplicationInfo();
+                SearchResult ne1 = ne.next();
+                Enumeration<String> s1 = config.getStringEnumeration(ne1);
+                loadFrom(hl7AppInfo, ne1.getAttributes(), config.getDeviceName(s1));
+                results.add(hl7AppInfo);
+            }
+        } catch (NameNotFoundException e) {
+            return new HL7ApplicationInfo[0];
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } finally {
+            LdapUtils.safeClose(ne);
+        }
+        return results.toArray(new HL7ApplicationInfo[results.size()]);
+    }
+
+    private void loadFrom(HL7ApplicationInfo hl7AppInfo, Attributes attrs, String deviceName)
+        throws NamingException, ConfigurationException {
+        hl7AppInfo.setDeviceName(deviceName);
+        hl7AppInfo.setHl7ApplicationName(
+                LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
+        hl7AppInfo.setHl7OtherApplicationName(
+                LdapUtils.stringArray(attrs.get("hl7OtherApplicationName")));
+        hl7AppInfo.setDescription(
+                LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        hl7AppInfo.setInstalled(
+                LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
+        for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
+            hl7AppInfo.getConnections().add(config.findConnection(connDN));
+    }
+
+    private NamingEnumeration<SearchResult> searchHL7(HL7ApplicationInfo keys) throws NamingException {
+        List<String> attrs = new ArrayList<>();
+        attrs.add("dicomDeviceName");
+        attrs.add("hl7ApplicationName");
+        attrs.add("hl7OtherApplicationName");
+        attrs.add("dicomDescription");
+        attrs.add("dicomInstalled");
+        attrs.add("dicomNetworkConnectionReference");
+        String[] attrsArray = attrs.toArray(new String[attrs.size()]);
+        return config.toSearchResultNE(keys.getDeviceName(), toFilter(keys), attrsArray);
+    }
+
+    private String toFilter(HL7ApplicationInfo keys) {
+        if (keys == null)
+            return "(objectclass=hl7Application)";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("(&(objectclass=hl7Application)");
+        if (keys.getHl7ApplicationName() != null) {
+            sb.append("(|");
+            appendFilter("hl7ApplicationName", keys.getHl7ApplicationName(), sb);
+            appendFilter("hl7OtherApplicationName", keys.getHl7ApplicationName(), sb);
+            sb.append(")");
+        } else
+            appendFilter("hl7ApplicationName", keys.getHl7ApplicationName(), sb);
+        appendFilter("dicomDescription", keys.getDescription(), sb);
+        sb.append(")");
+        return sb.toString();
+    }
+
+    private void appendFilter(String attrid, String value, StringBuilder sb) {
+        if (value == null)
+            return;
+
+        sb.append('(').append(attrid).append('=').append(value).append(')');
     }
 
     @Override

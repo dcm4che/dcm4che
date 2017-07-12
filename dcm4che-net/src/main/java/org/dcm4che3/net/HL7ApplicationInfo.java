@@ -15,8 +15,8 @@
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * J4Care GmbH.
+ * Portions created by the Initial Developer are Copyright (C) 2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,37 +36,72 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.conf.api.hl7;
+package org.dcm4che3.net;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.net.ApplicationEntityInfo;
-import org.dcm4che3.net.HL7ApplicationInfo;
-import org.dcm4che3.net.hl7.HL7Application;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @since July 2017
  */
-public interface HL7Configuration {
+public class HL7ApplicationInfo implements Serializable {
 
-    boolean registerHL7Application(String name) throws ConfigurationException;
+    private String deviceName;
+    private String hl7ApplicationName;
+    private String[] hl7OtherApplicationName;
+    private String description;
+    private Boolean installed;
+    private final List<Connection> conns = new ArrayList<>(1);
 
-    void unregisterHL7Application(String name) throws ConfigurationException;
+    public Boolean getInstalled() {
+        return installed;
+    }
 
-    HL7Application findHL7Application(String name) throws ConfigurationException;
+    public void setInstalled(Boolean installed) {
+        this.installed = installed;
+    }
 
-    String[] listRegisteredHL7ApplicationNames() throws ConfigurationException;
+    public String getDeviceName() {
+        return deviceName;
+    }
 
-    /**
-     * Query for HL7 Applications with specified attributes.
-     *
-     * @param keys
-     *            HL7 Application attributes which shall match or <code>null</code> to
-     *            get information for all configured HL7 Applications
-     * @return array of <code>HL7ApplicationInfo</code> objects for configured HL7 Application
-     *         with matching attributes
-     * @throws ConfigurationException
-     */
-    HL7ApplicationInfo[] listHL7AppInfos(HL7ApplicationInfo keys) throws ConfigurationException;
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getHl7ApplicationName() {
+        return hl7ApplicationName;
+    }
+
+    public void setHl7ApplicationName(String hl7ApplicationName) {
+        this.hl7ApplicationName = hl7ApplicationName;
+    }
+
+    public String[] getHl7OtherApplicationName() {
+        return hl7OtherApplicationName;
+    }
+
+    public void setHl7OtherApplicationName(String[] hl7OtherApplicationName) {
+        this.hl7OtherApplicationName = hl7OtherApplicationName;
+    }
+
+    public List<Connection> getConnections() {
+        return conns;
+    }
+
+    @Override
+    public String toString() {
+        return "HL7ApplicationInfo[hl7ApplicationName=" + hl7ApplicationName
+                + "]";
+    }
 
 }

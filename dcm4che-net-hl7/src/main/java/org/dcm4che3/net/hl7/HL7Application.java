@@ -70,6 +70,7 @@ public class HL7Application implements Serializable {
     private String name;
     private String hl7DefaultCharacterSet = "ASCII";
     private Boolean installed;
+    private String description;
 
     private final LinkedHashSet<String> acceptedSendingApplications =
             new LinkedHashSet<String>();
@@ -164,6 +165,14 @@ public class HL7Application implements Serializable {
         acceptedMessageTypes.clear();
         for (String name : types)
             acceptedMessageTypes.add(name);
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public boolean isInstalled() {

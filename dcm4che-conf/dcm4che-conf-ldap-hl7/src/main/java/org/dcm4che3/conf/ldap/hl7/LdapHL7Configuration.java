@@ -238,23 +238,18 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
         StringBuilder sb = new StringBuilder();
         sb.append("(&(objectclass=hl7Application)");
-        if (keys.getHl7ApplicationName() != null) {
-            sb.append("(|");
-            appendFilter("hl7ApplicationName", keys.getHl7ApplicationName(), sb);
-            appendFilter("hl7OtherApplicationName", keys.getHl7ApplicationName(), sb);
-            sb.append(")");
-        } else
-            appendFilter("hl7ApplicationName", keys.getHl7ApplicationName(), sb);
-        appendFilter("dicomDescription", keys.getDescription(), sb);
+        appendFilter(keys.getHl7ApplicationName(), sb);
         sb.append(")");
         return sb.toString();
     }
 
-    private void appendFilter(String attrid, String value, StringBuilder sb) {
+    private void appendFilter(String value, StringBuilder sb) {
         if (value == null)
             return;
-
-        sb.append('(').append(attrid).append('=').append(value).append(')');
+        sb.append("(|");
+        sb.append('(').append("hl7ApplicationName").append('=').append(value).append(')');
+        sb.append('(').append("hl7OtherApplicationName").append('=').append(value).append(')');
+        sb.append(")");
     }
 
     @Override

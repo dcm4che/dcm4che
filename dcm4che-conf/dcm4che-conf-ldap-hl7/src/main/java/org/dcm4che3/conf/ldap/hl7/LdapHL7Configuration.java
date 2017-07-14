@@ -287,6 +287,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 hl7App.getHL7DefaultCharacterSet(), "ASCII");
         LdapUtils.storeConnRefs(attrs, hl7App.getConnections(), deviceDN);
         LdapUtils.storeNotNullOrDef(attrs, "dicomDescription", hl7App.getDescription(), null);
+        LdapUtils.storeNotEmpty(attrs, "dicomApplicationCluster", hl7App.getApplicationClusters());
         LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled", hl7App.getInstalled(), null);
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.storeTo(hl7App, deviceDN, attrs);
@@ -331,6 +332,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         hl7app.setAcceptedMessageTypes(LdapUtils.stringArray(attrs.get("hl7AcceptedMessageType")));
         hl7app.setHL7DefaultCharacterSet(LdapUtils.stringValue(attrs.get("hl7DefaultCharacterSet"), "ASCII"));
         hl7app.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        hl7app.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         hl7app.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.loadFrom(hl7app, attrs);
@@ -392,6 +394,9 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         LdapUtils.storeDiffObject(mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription(), null);
+        LdapUtils.storeDiff(mods, "dicomApplicationCluster",
+                a.getApplicationClusters(),
+                b.getApplicationClusters());
         LdapUtils.storeDiffObject(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled(), null);

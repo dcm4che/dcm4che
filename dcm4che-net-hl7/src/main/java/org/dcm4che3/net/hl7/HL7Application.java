@@ -71,6 +71,7 @@ public class HL7Application implements Serializable {
     private String hl7DefaultCharacterSet = "ASCII";
     private Boolean installed;
     private String description;
+    private String[] applicationClusters = {};
 
     private final LinkedHashSet<String> acceptedSendingApplications =
             new LinkedHashSet<String>();
@@ -173,6 +174,14 @@ public class HL7Application implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String[] getApplicationClusters() {
+        return applicationClusters;
+    }
+
+    public void setApplicationClusters(String[] applicationClusters) {
+        this.applicationClusters = applicationClusters;
     }
 
     public boolean isInstalled() {

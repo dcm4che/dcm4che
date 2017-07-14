@@ -127,6 +127,7 @@ public class JsonConfiguration {
         writer.writeNotNullOrDef("hl7ApplicationName", hl7AppInfo.getHl7ApplicationName(), null);
         writer.writeNotEmpty("hl7OtherApplicationName", hl7AppInfo.getHl7OtherApplicationName());
         writer.writeNotNullOrDef("dicomDescription", hl7AppInfo.getDescription(), null);
+        writer.writeNotEmpty("dicomApplicationCluster", hl7AppInfo.getApplicationClusters());
         writer.writeNotNull("dicomInstalled", hl7AppInfo.getInstalled());
         writeNotExtendedConns(hl7AppInfo.getConnections(), writer);
         gen.writeEnd();

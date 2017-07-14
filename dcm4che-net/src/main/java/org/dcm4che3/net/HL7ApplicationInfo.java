@@ -51,6 +51,7 @@ public class HL7ApplicationInfo implements Serializable {
     private String hl7ApplicationName;
     private String[] hl7OtherApplicationName;
     private String description;
+    private String[] applicationClusters = {};
     private Boolean installed;
     private final List<Connection> conns = new ArrayList<>(1);
 
@@ -92,6 +93,14 @@ public class HL7ApplicationInfo implements Serializable {
 
     public void setHl7OtherApplicationName(String[] hl7OtherApplicationName) {
         this.hl7OtherApplicationName = hl7OtherApplicationName;
+    }
+
+    public String[] getApplicationClusters() {
+        return applicationClusters;
+    }
+
+    public void setApplicationClusters(String[] applicationClusters) {
+        this.applicationClusters = applicationClusters;
     }
 
     public List<Connection> getConnections() {

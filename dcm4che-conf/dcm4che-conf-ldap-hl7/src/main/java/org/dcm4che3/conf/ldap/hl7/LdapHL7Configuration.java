@@ -70,6 +70,16 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
     private final List<LdapHL7ConfigurationExtension> extensions =
             new ArrayList<LdapHL7ConfigurationExtension>();
 
+    static final String[] HL7_ATTRS = {
+            "dicomDeviceName",
+            "hl7ApplicationName",
+            "hl7OtherApplicationName",
+            "dicomDescription",
+            "dicomApplicationCluster",
+            "dicomInstalled",
+            "dicomNetworkConnectionReference"
+    };
+
     public void addHL7ConfigurationExtension(LdapHL7ConfigurationExtension ext) {
         ext.setHL7Configuration(this);
         extensions.add(ext);
@@ -187,7 +197,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         ArrayList<HL7ApplicationInfo> results = new ArrayList<HL7ApplicationInfo>();
         NamingEnumeration<SearchResult> ne = null;
         try {
-            ne = searchHL7(keys);
+            ne = config.search(keys.getDeviceName(), HL7_ATTRS, toFilter(keys));
             while (ne.hasMore()) {
                 HL7ApplicationInfo hl7AppInfo = new HL7ApplicationInfo();
                 SearchResult ne1 = ne.next();
@@ -214,23 +224,13 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 LdapUtils.stringArray(attrs.get("hl7OtherApplicationName")));
         hl7AppInfo.setDescription(
                 LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        hl7AppInfo.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         hl7AppInfo.setInstalled(
                 LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
             hl7AppInfo.getConnections().add(config.findConnection(connDN));
     }
 
-    private NamingEnumeration<SearchResult> searchHL7(HL7ApplicationInfo keys) throws NamingException {
-        List<String> attrs = new ArrayList<>();
-        attrs.add("dicomDeviceName");
-        attrs.add("hl7ApplicationName");
-        attrs.add("hl7OtherApplicationName");
-        attrs.add("dicomDescription");
-        attrs.add("dicomInstalled");
-        attrs.add("dicomNetworkConnectionReference");
-        String[] attrsArray = attrs.toArray(new String[attrs.size()]);
-        return config.toSearchResultNE(keys.getDeviceName(), toFilter(keys), attrsArray);
-    }
 
     private String toFilter(HL7ApplicationInfo keys) {
         if (keys == null)
@@ -238,17 +238,32 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
         StringBuilder sb = new StringBuilder();
         sb.append("(&(objectclass=hl7Application)");
-        appendFilter(keys.getHl7ApplicationName(), sb);
+        appendFilter("hl7ApplicationName", keys.getHl7ApplicationName(), sb);
+        appendFilter("hl7OtherApplicationName", keys.getHl7ApplicationName(), sb);
+        appendFilter("dicomApplicationCluster", keys.getApplicationClusters(), sb);
         sb.append(")");
         return sb.toString();
     }
 
-    private void appendFilter(String value, StringBuilder sb) {
+    private void appendFilter(String attrid, String value, StringBuilder sb) {
         if (value == null)
             return;
+
+        sb.append('(').append(attrid).append('=').append(value).append(')');
+    }
+
+    private void appendFilter(String attrid, String[] values, StringBuilder sb) {
+        if (values.length == 0)
+            return;
+
+        if (values.length == 1) {
+            appendFilter(attrid, values[0], sb);
+            return;
+        }
+
         sb.append("(|");
-        sb.append('(').append("hl7ApplicationName").append('=').append(value).append(')');
-        sb.append('(').append("hl7OtherApplicationName").append('=').append(value).append(')');
+        for (String value : values)
+            appendFilter(attrid, value, sb);
         sb.append(")");
     }
 
@@ -326,7 +341,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         return hl7app;
     }
 
-    protected void loadFrom(HL7Application hl7app, Attributes attrs) throws NamingException {
+    private void loadFrom(HL7Application hl7app, Attributes attrs) throws NamingException {
         hl7app.setAcceptedSendingApplications(LdapUtils.stringArray(attrs.get("hl7AcceptedSendingApplication")));
         hl7app.setOtherApplicationNames(LdapUtils.stringArray(attrs.get("hl7OtherApplicationName")));
         hl7app.setAcceptedMessageTypes(LdapUtils.stringArray(attrs.get("hl7AcceptedMessageType")));

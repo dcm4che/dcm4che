@@ -73,6 +73,8 @@
     <fileSet>
       <directory>./src</directory>
       <includes>
+        <include>etc/*/*.dcm</include>
+        <include>etc/*/*.hl7</include>
         <include>etc/*/*.jks</include>
         <include>etc/*/*.jpg</include>
         <include>etc/*/*.mpeg</include>
@@ -87,6 +89,8 @@
         <include>etc/*/*</include>
       </includes>
       <excludes>
+        <exclude>etc/*/*.dcm</exclude>
+        <exclude>etc/*/*.hl7</exclude>
         <exclude>etc/*/*.jks</exclude>
         <exclude>etc/*/*.jpg</exclude>
         <exclude>etc/*/*.mpeg</exclude>

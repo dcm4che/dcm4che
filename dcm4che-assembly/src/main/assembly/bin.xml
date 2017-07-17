@@ -75,6 +75,7 @@
         <include>etc/*/*.jks</include>
         <include>etc/*/*.jpg</include>
         <include>etc/*/*.mpeg</include>
+        <include>etc/testdata/**</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>keep</lineEnding>
@@ -89,6 +90,7 @@
         <exclude>etc/*/*.jks</exclude>
         <exclude>etc/*/*.jpg</exclude>
         <exclude>etc/*/*.mpeg</exclude>
+        <exclude>etc/testdata/**</exclude>
       </excludes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>

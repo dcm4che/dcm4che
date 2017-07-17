@@ -96,7 +96,7 @@ public class JsonConfiguration {
         gen.writeEnd();
     }
 
-    public void writeTo(ApplicationEntityInfo aetInfo, JsonGenerator gen, boolean extended) {
+    public void writeTo(ApplicationEntityInfo aetInfo, JsonGenerator gen) {
         JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();
         writer.writeNotNullOrDef("dicomDeviceName", aetInfo.getDeviceName(), null);
@@ -107,12 +107,29 @@ public class JsonConfiguration {
         gen.write("dicomAssociationAcceptor", aetInfo.getAssociationAcceptor());
         writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationCluster());
         writer.writeNotNull("dicomInstalled", aetInfo.getInstalled());
-        if (!aetInfo.getConnections().isEmpty()) {
+        writeNotExtendedConns(aetInfo.getConnections(), writer);
+        gen.writeEnd();
+    }
+
+    private void writeNotExtendedConns(List<Connection> connections, JsonWriter writer) {
+        if (!connections.isEmpty()) {
             writer.writeStartArray("dicomNetworkConnection");
-            for (Connection conn : aetInfo.getConnections())
-                writeTo(conn, writer, extended);
+            for (Connection conn : connections)
+                writeTo(conn, writer, false);
             writer.writeEnd();
         }
+    }
+
+    public void writeTo(HL7ApplicationInfo hl7AppInfo, JsonGenerator gen) {
+        JsonWriter writer = new JsonWriter(gen);
+        gen.writeStartObject();
+        writer.writeNotNullOrDef("dicomDeviceName", hl7AppInfo.getDeviceName(), null);
+        writer.writeNotNullOrDef("hl7ApplicationName", hl7AppInfo.getHl7ApplicationName(), null);
+        writer.writeNotEmpty("hl7OtherApplicationName", hl7AppInfo.getHl7OtherApplicationName());
+        writer.writeNotNullOrDef("dicomDescription", hl7AppInfo.getDescription(), null);
+        writer.writeNotEmpty("dicomApplicationCluster", hl7AppInfo.getApplicationClusters());
+        writer.writeNotNull("dicomInstalled", hl7AppInfo.getInstalled());
+        writeNotExtendedConns(hl7AppInfo.getConnections(), writer);
         gen.writeEnd();
     }
 

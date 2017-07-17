@@ -39,6 +39,8 @@
 package org.dcm4che3.conf.api.hl7;
 
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.net.ApplicationEntityInfo;
+import org.dcm4che3.net.HL7ApplicationInfo;
 import org.dcm4che3.net.hl7.HL7Application;
 
 /**
@@ -54,4 +56,17 @@ public interface HL7Configuration {
     HL7Application findHL7Application(String name) throws ConfigurationException;
 
     String[] listRegisteredHL7ApplicationNames() throws ConfigurationException;
+
+    /**
+     * Query for HL7 Applications with specified attributes.
+     *
+     * @param keys
+     *            HL7 Application attributes which shall match or <code>null</code> to
+     *            get information for all configured HL7 Applications
+     * @return array of <code>HL7ApplicationInfo</code> objects for configured HL7 Application
+     *         with matching attributes
+     * @throws ConfigurationException
+     */
+    HL7ApplicationInfo[] listHL7AppInfos(HL7ApplicationInfo keys) throws ConfigurationException;
+
 }

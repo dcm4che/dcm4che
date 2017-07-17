@@ -66,7 +66,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  *
  */
 public final class LdapDicomConfiguration implements DicomConfiguration {
@@ -100,7 +99,18 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
      * Devices that have been created but not fully loaded are added to this threadlocal. See loadDevice.
      */
     private ThreadLocal<Map<String,Device>> currentlyLoadedDevicesLocal = new ThreadLocal<>();
-    
+
+    static final String[] AE_ATTRS = {
+            "dicomDeviceName",
+            "dicomAETitle",
+            "dcmOtherAETitle",
+            "dicomDescription",
+            "dicomAssociationInitiator",
+            "dicomAssociationAcceptor",
+            "dicomApplicationCluster",
+            "dicomInstalled",
+            "dicomNetworkConnectionReference"
+    };
 
     public LdapDicomConfiguration() throws ConfigurationException {
         this(ResourceManager.getInitialEnvironment());
@@ -290,7 +300,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return loadDevice(deviceDN);
     }
 
-    private Connection findConnection(String connDN) throws NamingException {
+    public Connection findConnection(String connDN) throws NamingException {
         String[] attrIds = { "dicomHostname", "dicomPort", "dicomTLSCipherSuite", "dicomInstalled" };
         Attributes attrs = ctx.getAttributes(connDN, attrIds);
         Connection conn = new Connection();
@@ -1968,13 +1978,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ArrayList<ApplicationEntityInfo> results = new ArrayList<ApplicationEntityInfo>();
         NamingEnumeration<SearchResult> ne = null;
         try {
-            ne = searchAE(keys);
+            ne = search(keys.getDeviceName(), AE_ATTRS, toFilter(keys));
             while (ne.hasMore()) {
                 ApplicationEntityInfo aetInfo = new ApplicationEntityInfo();
                 SearchResult ne1 = ne.next();
-                NameParser parser = ctx.getDirCtx().getNameParser(ne1.getNameInNamespace());
-                Name n = parser.parse(ne1.getNameInNamespace());
-                Enumeration<String> s1 = n.getAll();
+                Enumeration<String> s1 = getStringEnumeration(ne1);
                 loadFrom(aetInfo, ne1.getAttributes(), getDeviceName(s1));
                 results.add(aetInfo);
             }
@@ -1988,7 +1996,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return results.toArray(new ApplicationEntityInfo[results.size()]);
     }
 
-    private String getDeviceName(Enumeration<String> s1) {
+    public Enumeration<String> getStringEnumeration(SearchResult ne1) throws NamingException {
+        NameParser parser = ctx.getDirCtx().getNameParser(ne1.getNameInNamespace());
+        Name n = parser.parse(ne1.getNameInNamespace());
+        return n.getAll();
+    }
+
+    public String getDeviceName(Enumeration<String> s1) {
         while (s1.hasMoreElements()) {
             String s2 = s1.nextElement();
             if (s2.startsWith("dicomDeviceName"))
@@ -1997,22 +2011,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return null;
     }
 
-    private NamingEnumeration<SearchResult> searchAE(ApplicationEntityInfo keys) throws NamingException {
-        List<String> attrs = new ArrayList<>();
-        attrs.add("dicomDeviceName");
-        attrs.add("dicomAETitle");
-        attrs.add("dcmOtherAETitle");
-        attrs.add("dicomDescription");
-        attrs.add("dicomAssociationInitiator");
-        attrs.add("dicomAssociationAcceptor");
-        attrs.add("dicomApplicationCluster");
-        attrs.add("dicomInstalled");
-        attrs.add("dicomNetworkConnectionReference");
-        String[] attrsArray = attrs.toArray(new String[attrs.size()]);
-        SearchControls ctls = searchControlSubtreeScope(0, attrsArray, true);
-        return keys.getDeviceName() != null
-                ? search(deviceRef(keys.getDeviceName()), toFilter(keys), attrsArray)
-                : ctx.search(devicesDN, toFilter(keys), ctls);
+    public NamingEnumeration<SearchResult> search(String deviceName, String[] attrsArray, String filter)
+            throws NamingException {
+        return deviceName != null
+                ? search(deviceRef(deviceName), filter, attrsArray)
+                : ctx.search(devicesDN, filter, searchControlSubtreeScope(0, attrsArray, true));
     }
 
     private String toFilter(ApplicationEntityInfo keys) {
@@ -2026,8 +2029,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             appendFilter("dicomAETitle", keys.getAETitle(), sb);
             appendFilter("dcmOtherAETitle", keys.getAETitle(), sb);
             sb.append(")");
-        } else
-            appendFilter("dicomAETitle", keys.getAETitle(), sb);
+        }
         appendFilter("dicomDescription", keys.getDescription(), sb);
         appendFilter("dicomAssociationInitiator", keys.getAssociationInitiator(), sb);
         appendFilter("dicomAssociationAcceptor", keys.getAssociationAcceptor(), sb);

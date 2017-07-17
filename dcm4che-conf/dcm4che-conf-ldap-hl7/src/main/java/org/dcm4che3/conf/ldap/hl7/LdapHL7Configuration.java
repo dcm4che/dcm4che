@@ -44,16 +44,15 @@ import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.net.Device;
+import org.dcm4che3.net.HL7ApplicationInfo;
 import org.dcm4che3.net.hl7.HL7Application;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.dcm4che3.util.StringUtils;
 
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
+import javax.naming.*;
 import javax.naming.directory.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -70,6 +69,16 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
     private final List<LdapHL7ConfigurationExtension> extensions =
             new ArrayList<LdapHL7ConfigurationExtension>();
+
+    static final String[] HL7_ATTRS = {
+            "dicomDeviceName",
+            "hl7ApplicationName",
+            "hl7OtherApplicationName",
+            "dicomDescription",
+            "dicomApplicationCluster",
+            "dicomInstalled",
+            "dicomNetworkConnectionReference"
+    };
 
     public void addHL7ConfigurationExtension(LdapHL7ConfigurationExtension ext) {
         ext.setHL7Configuration(this);
@@ -181,6 +190,84 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
     }
 
     @Override
+    public synchronized HL7ApplicationInfo[] listHL7AppInfos(HL7ApplicationInfo keys) throws ConfigurationException {
+        if (!config.configurationExists())
+            return new HL7ApplicationInfo[0];
+
+        ArrayList<HL7ApplicationInfo> results = new ArrayList<HL7ApplicationInfo>();
+        NamingEnumeration<SearchResult> ne = null;
+        try {
+            ne = config.search(keys.getDeviceName(), HL7_ATTRS, toFilter(keys));
+            while (ne.hasMore()) {
+                HL7ApplicationInfo hl7AppInfo = new HL7ApplicationInfo();
+                SearchResult ne1 = ne.next();
+                Enumeration<String> s1 = config.getStringEnumeration(ne1);
+                loadFrom(hl7AppInfo, ne1.getAttributes(), config.getDeviceName(s1));
+                results.add(hl7AppInfo);
+            }
+        } catch (NameNotFoundException e) {
+            return new HL7ApplicationInfo[0];
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } finally {
+            LdapUtils.safeClose(ne);
+        }
+        return results.toArray(new HL7ApplicationInfo[results.size()]);
+    }
+
+    private void loadFrom(HL7ApplicationInfo hl7AppInfo, Attributes attrs, String deviceName)
+        throws NamingException, ConfigurationException {
+        hl7AppInfo.setDeviceName(deviceName);
+        hl7AppInfo.setHl7ApplicationName(
+                LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
+        hl7AppInfo.setHl7OtherApplicationName(
+                LdapUtils.stringArray(attrs.get("hl7OtherApplicationName")));
+        hl7AppInfo.setDescription(
+                LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        hl7AppInfo.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
+        hl7AppInfo.setInstalled(
+                LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
+        for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
+            hl7AppInfo.getConnections().add(config.findConnection(connDN));
+    }
+
+
+    private String toFilter(HL7ApplicationInfo keys) {
+        if (keys == null)
+            return "(objectclass=hl7Application)";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("(&(objectclass=hl7Application)");
+        appendFilter("hl7ApplicationName", keys.getHl7ApplicationName(), sb);
+        appendFilter("hl7OtherApplicationName", keys.getHl7ApplicationName(), sb);
+        appendFilter("dicomApplicationCluster", keys.getApplicationClusters(), sb);
+        sb.append(")");
+        return sb.toString();
+    }
+
+    private void appendFilter(String attrid, String value, StringBuilder sb) {
+        if (value == null)
+            return;
+
+        sb.append('(').append(attrid).append('=').append(value).append(')');
+    }
+
+    private void appendFilter(String attrid, String[] values, StringBuilder sb) {
+        if (values.length == 0)
+            return;
+
+        if (values.length == 1) {
+            appendFilter(attrid, values[0], sb);
+            return;
+        }
+
+        sb.append("(|");
+        for (String value : values)
+            appendFilter(attrid, value, sb);
+        sb.append(")");
+    }
+
+    @Override
     protected void storeChilds(String deviceDN, Device device) throws NamingException {
         HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
         if (hl7Ext == null)
@@ -214,6 +301,8 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         LdapUtils.storeNotNullOrDef(attrs, "hl7DefaultCharacterSet",
                 hl7App.getHL7DefaultCharacterSet(), "ASCII");
         LdapUtils.storeConnRefs(attrs, hl7App.getConnections(), deviceDN);
+        LdapUtils.storeNotNullOrDef(attrs, "dicomDescription", hl7App.getDescription(), null);
+        LdapUtils.storeNotEmpty(attrs, "dicomApplicationCluster", hl7App.getApplicationClusters());
         LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled", hl7App.getInstalled(), null);
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.storeTo(hl7App, deviceDN, attrs);
@@ -252,11 +341,13 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         return hl7app;
     }
 
-    protected void loadFrom(HL7Application hl7app, Attributes attrs) throws NamingException {
+    private void loadFrom(HL7Application hl7app, Attributes attrs) throws NamingException {
         hl7app.setAcceptedSendingApplications(LdapUtils.stringArray(attrs.get("hl7AcceptedSendingApplication")));
         hl7app.setOtherApplicationNames(LdapUtils.stringArray(attrs.get("hl7OtherApplicationName")));
         hl7app.setAcceptedMessageTypes(LdapUtils.stringArray(attrs.get("hl7AcceptedMessageType")));
         hl7app.setHL7DefaultCharacterSet(LdapUtils.stringValue(attrs.get("hl7DefaultCharacterSet"), "ASCII"));
+        hl7app.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        hl7app.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         hl7app.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.loadFrom(hl7app, attrs);
@@ -315,6 +406,12 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
+        LdapUtils.storeDiffObject(mods, "dicomDescription",
+                a.getDescription(),
+                b.getDescription(), null);
+        LdapUtils.storeDiff(mods, "dicomApplicationCluster",
+                a.getApplicationClusters(),
+                b.getApplicationClusters());
         LdapUtils.storeDiffObject(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled(), null);

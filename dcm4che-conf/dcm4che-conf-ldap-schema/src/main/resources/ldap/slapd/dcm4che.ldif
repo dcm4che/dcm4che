@@ -594,6 +594,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.3.4.5 NAME 'hl7Application'
     hl7OtherApplicationName $
     hl7AcceptedMessageType $
     hl7DefaultCharacterSet $
+    dicomDescription $
+    dicomApplicationCluster $
     dicomInstalled ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.3.4.7 NAME 'hl7UniqueApplicationName'
   DESC 'A Unique HL7 Application Entity title'

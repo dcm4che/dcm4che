@@ -64,6 +64,9 @@
       <DicomAttribute keyword="StudyDate" tag="00080020" vr="DA"/>
       <DicomAttribute keyword="StudyTime" tag="00080030" vr="TM"/>
       <DicomAttribute keyword="AccessionNumber" tag="00080050" vr="SH"/>
+      <DicomAttribute keyword="RetrieveAETitle" tag="00080054" vr="AE"/>
+      <DicomAttribute keyword="ModalitiesInStudy" tag="00080061" vr="CS"/>
+      <DicomAttribute keyword="InstanceAvailability" tag="00080056" vr="CS"/>
       <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN"/>
       <DicomAttribute keyword="StudyDescription" tag="00081030" vr="LO"/>
       <DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI"/>

@@ -126,6 +126,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
     private boolean stgCmtOnSameAssoc;
     private boolean sendPendingCGet;
     private int sendPendingCMoveInterval;
+    private int delayCFind;
     private boolean ignoreCaseOfPN;
     private boolean matchNoValue;
     private final FilesetInfo fsInfo = new FilesetInfo();
@@ -444,6 +445,14 @@ public class DcmQRSCP<T extends InstanceLocator> {
         return sendPendingCMoveInterval;
     }
 
+    public int getDelayCFind() {
+        return delayCFind;
+    }
+
+    public void setDelayCFind(int delayCFind) {
+        this.delayCFind = delayCFind;
+    }
+
     public final void setRecordFactory(RecordFactory recFact) {
         this.recFact = recFact;
     }
@@ -468,6 +477,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
         addMatchingOptions(opts);
         addStgCmtOptions(opts);
         addSendingPendingOptions(opts);
+        addDelayCFindOptions(opts);
         addRemoteConnectionsOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmQRSCP.class);
     }
@@ -495,7 +505,18 @@ public class DcmQRSCP<T extends InstanceLocator> {
                 rb.getString("pending-cget"));
         opts.addOption(OptionBuilder.hasArg().withArgName("s")
                 .withDescription(rb.getString("pending-cmove"))
-                .withLongOpt("pending-cmove").create());
+                .withLongOpt("pending-cmove")
+                .create());
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addDelayCFindOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("ms")
+                .withDescription(rb.getString("delay-cfind"))
+                .withLongOpt("delay-cfind")
+                .create());
     }
 
     @SuppressWarnings("static-access")
@@ -553,6 +574,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
             configureMatching(main, cl);
             configureStgCmt(main, cl);
             configureSendPending(main, cl);
+            configureDelayCFind(main, cl);
             configureRemoteConnections(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = Executors
@@ -605,8 +627,13 @@ public class DcmQRSCP<T extends InstanceLocator> {
                     .getOptionValue("pending-cmove")));
     }
 
-    private static void configureTransferCapability(DcmQRSCP<InstanceLocator> main,
-            CommandLine cl) throws IOException {
+    private static void configureDelayCFind(DcmQRSCP<InstanceLocator> main, CommandLine cl) {
+        if (cl.hasOption("delay-cfind"))
+                main.setDelayCFind(Integer.parseInt(cl.getOptionValue("delay-cfind")));
+    }
+
+    private static void configureTransferCapability(DcmQRSCP<InstanceLocator> main, CommandLine cl)
+            throws IOException {
         ApplicationEntity ae = main.ae;
         EnumSet<QueryOption> queryOptions = cl.hasOption("relational") ? EnumSet
                 .of(QueryOption.RELATIONAL) : EnumSet.noneOf(QueryOption.class);

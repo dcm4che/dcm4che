@@ -336,4 +336,21 @@ public class AttributesTest {
         assertArrayEquals(MODALITIES_IN_STUDY, a.getStrings(Tag.ModalitiesInStudy));
         assertEquals(MODALITIES_IN_STUDY[0], a.getString(Tag.ModalitiesInStudy));
     }
+
+    @Test
+    public void testDiffPN() {
+        Attributes a = new Attributes(2);
+        a.setString(Tag.PatientName, VR.PN, "Simson^Homer");
+        a.setNull(Tag.ReferringPhysicianName, VR.PN);
+        Attributes b = new Attributes(3);
+        b.setString(Tag.PatientName, VR.PN, "Simson^Homer^^^");
+        b.setString(Tag.ReferringPhysicianName, VR.PN, "^^^^");
+        b.setString(Tag.RequestingPhysician, VR.PN, "^^^^");
+        int[] selection = {
+                Tag.ReferringPhysicianName,
+                Tag.PatientName,
+                Tag.RequestingPhysician};
+        assertEquals(0, a.diff(b, selection, null));
+        assertEquals(0, b.diff(a, selection, null));
+    }
 }

@@ -33,6 +33,8 @@
                                             be accepted.
         --connect-timeout <ms>              timeout in ms for TCP connect, no
                                             timeout by default
+        --delay-cfind <ms>                  delay in ms returning pending
+                                            C-FIND RSPs, no delay by default
         --dicomdir <file>                   specify path to a DICOMDIR file of
                                             a DICOM File-set into which
                                             received objects are stored and

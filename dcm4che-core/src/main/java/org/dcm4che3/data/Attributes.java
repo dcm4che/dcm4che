@@ -416,7 +416,7 @@ public class Attributes implements Serializable {
     }
 
     private double[] decodeDSValue(int index) {
-        Object value = values[index];
+        Object value = index < 0 ? Value.NULL : values[index];
         if (value == Value.NULL)
             return ByteUtils.EMPTY_DOUBLES;
 
@@ -449,7 +449,7 @@ public class Attributes implements Serializable {
     }
 
     private int[] decodeISValue(int index) {
-        Object value = values[index];
+        Object value = index < 0 ? Value.NULL : values[index];
         if (value == Value.NULL)
             return ByteUtils.EMPTY_INTS;
 
@@ -2161,18 +2161,25 @@ public class Attributes implements Serializable {
    }
 
     private boolean equalValues(Attributes other, int index, int otherIndex) {
-        VR vr = vrs[index];
-        if (vr != other.vrs[otherIndex])
+        if (index < 0 && otherIndex < 0)
+            return true;
+
+        VR vr = index < 0 ? other.vrs[otherIndex] : vrs[index];
+        if (otherIndex >= 0 && vr != other.vrs[otherIndex])
             return false;
+
         if (vr.isStringType())
             if (vr == VR.IS)
                 return equalISValues(other, index, otherIndex);
             else if (vr == VR.DS)
                 return equalDSValues(other, index, otherIndex);
+            else if (vr == VR.PN)
+                return equalPNValues(other, index, otherIndex);
             else
                 return equalStringValues(other, index, otherIndex);
-        Object v1 = values[index];
-        Object v2 = other.values[otherIndex];
+
+        Object v1 = index < 0 ? Value.NULL : values[index];
+        Object v2 = otherIndex < 0 ? Value.NULL : other.values[otherIndex];
         if (v1 instanceof byte[]) {
             if (v2 instanceof byte[] && ((byte[]) v1).length == ((byte[]) v2).length) {
                 if (bigEndian != other.bigEndian)
@@ -2200,9 +2207,59 @@ public class Attributes implements Serializable {
         }
     }
 
+    private boolean equalPNValues(Attributes other, int index, int otherIndex) {
+        Object v1 = index < 0 ? Value.NULL : decodeStringValue(index);
+        Object v2 = otherIndex < 0 ? Value.NULL : other.decodeStringValue(otherIndex);
+        if (v1 instanceof String[]) {
+            if (v2 instanceof String[])
+                return equalPNValues((String[]) v1, (String[]) v2);
+        } else
+            return equalPNValues(v1, v2);
+        return false;
+    }
+
+    private boolean equalPNValues(Object v1, Object v2) {
+        return v1 == Value.NULL ? !containsPNValue(v2)
+                : v2 == Value.NULL ? !containsPNValue(v1)
+                : equalPNValues((String) v1, (String) v2);
+    }
+
+    private static boolean containsPNValue(Object v) {
+        return v != Value.NULL && !containsOnly((String) v, 0, '^');
+    }
+
+    private static boolean containsOnly(String s, int index, char ch) {
+        for (int i = index; i < s.length(); i++)
+            if (s.charAt(i) != ch)
+                return false;
+
+        return true;
+    }
+
+    private static boolean equalPNValues(String[] v1, String[] v2) {
+        if (v1.length != v2.length)
+            return false;
+
+        for (int i = 0; i < v1.length; i++)
+            if (!equalPNValues(v1[i], v2[i]))
+                return false;
+
+        return true;
+    }
+
+    private static boolean equalPNValues(String v1, String v2) {
+        return v1.length() < v2.length()
+            ? equalPNValuesOrdered(v1, v2)
+            : equalPNValuesOrdered(v2, v1);
+    }
+
+    private static boolean equalPNValuesOrdered(String v1, String v2) {
+        return v2.startsWith(v1) && containsOnly(v2, v1.length(), '^');
+    }
+
     private boolean equalStringValues(Attributes other, int index, int otherIndex) {
-        Object v1 = decodeStringValue(index);
-        Object v2 = other.decodeStringValue(otherIndex);
+        Object v1 = index < 0 ? Value.NULL : values[index];
+        Object v2 = otherIndex < 0 ? Value.NULL : other.values[otherIndex];
         if (v1 instanceof String[]) {
             if (v2 instanceof String[])
                 return Arrays.equals((String[]) v1, (String[]) v2);
@@ -3026,17 +3083,16 @@ public class Attributes implements Serializable {
         int count = 0;
         for (int tag : selection) {
             int index = indexOf(tag);
-            Object value = index < 0 ? Value.NULL : values[index];
             int otherIndex = other.indexOf(tag);
-            Object otherValue = otherIndex < 0 ? Value.NULL : other.values[otherIndex];
-            if (value == Value.NULL ? otherValue != Value.NULL
-                    : otherValue == Value.NULL || !equalValues(other, index, otherIndex)) {
-                if (diff != null)
+            if (!equalValues(other, index, otherIndex)) {
+                if (diff != null) {
+                    Object value = index < 0 ? Value.NULL : values[index];
                     if (value instanceof Sequence) {
                         diff.set(null, tag, (Sequence) value, null);
                     } else {
                         diff.set(tag, index < 0 ? other.vrs[otherIndex] : vrs[index], value);
                     }
+                }
                 count++;
             }
         }

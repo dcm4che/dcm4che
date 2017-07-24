@@ -87,12 +87,12 @@
   </xsl:template>
 
   <xsl:template match="Value">
-    <xsl:if test="position()>1">\</xsl:if>
+    <xsl:if test="@number != 1">\</xsl:if>
     <xsl:value-of select="text()"/>
   </xsl:template>
 
   <xsl:template match="PersonName">
-    <xsl:if test="position()>1">\</xsl:if>
+    <xsl:if test="@number != 1">\</xsl:if>
     <xsl:apply-templates select="Alphabetic"/>
     <xsl:if test="Ideographic or Phonetic">
       <xsl:text>=</xsl:text>

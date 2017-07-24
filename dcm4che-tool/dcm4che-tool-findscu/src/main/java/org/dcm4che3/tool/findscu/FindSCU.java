@@ -473,41 +473,40 @@ public class FindSCU {
         } finally {
             SafeClose.close(dis);
         }
-        addMatchingInNestedDataset(attrs);
-        attrs.addAll(keys);
+        mergeKeys(attrs, keys);
         query(attrs);
     }
 
-    private void addMatchingInNestedDataset(Attributes attrs) throws Exception {
-        Visitor visitor = new Visitor(keys);
-        try {
-            attrs.accept(visitor, false);
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
-    private static class Visitor implements Attributes.Visitor {
+    private static class MergeNested implements Attributes.Visitor {
         private final Attributes keys;
 
-        Visitor(Attributes keys) {
+        MergeNested(Attributes keys) {
             this.keys = keys;
         }
 
         @Override
         public boolean visit(Attributes attrs, int tag, VR vr, Object val) {
-            if (vr != VR.SQ || val == Value.NULL)
-                return true;
-
-            if (!((Sequence) val).isEmpty() && keys.containsValue(tag)) {
-                attrs.getNestedDataset(tag).addAll(keys.getNestedDataset(tag));
-                keys.remove(tag);
+            if (isNotEmptySequence(val)) {
+                Object o = keys.remove(tag);
+                if (isNotEmptySequence(o))
+                    ((Sequence) val).get(0).addAll(((Sequence) o).get(0));
             }
-
             return true;
+        }
+
+        private static boolean isNotEmptySequence(Object val) {
+            return val instanceof Sequence && !((Sequence) val).isEmpty();
         }
     }
 
+    static void mergeKeys(Attributes attrs, Attributes keys) {
+        try {
+            attrs.accept(new MergeNested(keys), false);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        attrs.addAll(keys);
+    }
 
     public void query() throws IOException, InterruptedException {
         query(keys);

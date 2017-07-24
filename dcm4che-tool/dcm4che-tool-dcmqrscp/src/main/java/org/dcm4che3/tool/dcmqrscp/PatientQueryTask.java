@@ -60,6 +60,7 @@ class PatientQueryTask extends BasicQueryTask {
     protected final String availability;
     protected final boolean ignoreCaseOfPN;
     protected final boolean matchNoValue;
+    protected final int delayCFind;
     protected Attributes patRec;
 
     public PatientQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys, DcmQRSCP qrscp)
@@ -71,6 +72,7 @@ class PatientQueryTask extends BasicQueryTask {
         this.availability = qrscp.getInstanceAvailability();
         this.ignoreCaseOfPN = qrscp.isIgnoreCaseOfPN();
         this.matchNoValue = qrscp.isMatchNoValue();
+        this.delayCFind = qrscp.getDelayCFind();
         wrappedFindNextPatient();
     }
 
@@ -107,7 +109,10 @@ class PatientQueryTask extends BasicQueryTask {
                 match.getString(Tag.ReferencedSOPClassUIDInFile));
         match.setString(Tag.SOPInstanceUID, VR.UI,
                 match.getString(Tag.ReferencedSOPInstanceUIDInFile));
-
+        if (delayCFind > 0)
+            try {
+                Thread.sleep(delayCFind);
+            } catch (InterruptedException ignore) {}
         return adjust;
     }
 

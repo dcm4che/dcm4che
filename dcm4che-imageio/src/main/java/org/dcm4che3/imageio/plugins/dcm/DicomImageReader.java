@@ -421,7 +421,11 @@ public class DicomImageReader extends ImageReader {
         int length = ovlyRows * ovlyColumns;
 
         byte[] ovlyData = new byte[(((length+7)>>>3)+1)&(~1)] ;
-        Overlays.extractFromPixeldata(raster, mask, ovlyData, 0, length);
+        if (bitPosition < bitsStored)
+            LOG.info("Ignore embedded overlay #{} from bit #{} < bits stored: {}",
+                    (gg0000 >>> 17) + 1, bitPosition, bitsStored);
+        else
+            Overlays.extractFromPixeldata(raster, mask, ovlyData, 0, length);
         return ovlyData;
     }
 

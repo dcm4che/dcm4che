@@ -51,12 +51,16 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class Overlays {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Overlays.class);
 
     public static int[] getActiveOverlayGroupOffsets(Attributes psattrs) {
         return getOverlayGroupOffsets(psattrs, Tag.OverlayActivationLayer, -1);
@@ -83,10 +87,18 @@ public class Overlays {
     public static int[] getEmbeddedOverlayGroupOffsets(Attributes attrs) {
         int len = 0;
         int[] result = new int[16];
+        int bitsAllocated = attrs.getInt(Tag.BitsAllocated , 8);
+        int bitsStored = attrs.getInt(Tag.BitsStored , bitsAllocated);
         for (int i = 0; i < result.length; i++) {
             int gg0000 = i << 17;
-            if (attrs.getInt(Tag.OverlayBitsAllocated | gg0000, 1) != 1)
-                result[len++] = gg0000;
+            if (attrs.getInt(Tag.OverlayBitsAllocated | gg0000, 1) != 1) {
+                int ovlyBitPosition = attrs.getInt(Tag.OverlayBitPosition | gg0000, 0);
+                if (ovlyBitPosition < bitsStored)
+                    LOG.info("Ignore embedded overlay #{} from bit #{} < bits stored: {}",
+                            (gg0000 >>> 17) + 1, ovlyBitPosition, bitsStored);
+                else
+                    result[len++] = gg0000;
+            }
         }
         return Arrays.copyOf(result, len);
     }

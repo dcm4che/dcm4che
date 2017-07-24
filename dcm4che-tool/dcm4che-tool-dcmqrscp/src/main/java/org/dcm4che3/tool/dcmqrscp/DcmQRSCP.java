@@ -139,6 +139,7 @@ public class DcmQRSCP {
     private boolean stgCmtOnSameAssoc;
     private boolean sendPendingCGet;
     private int sendPendingCMoveInterval;
+    private int delayCFind;
     private boolean ignoreCaseOfPN;
     private boolean matchNoValue;
     private final FilesetInfo fsInfo = new FilesetInfo();
@@ -545,6 +546,14 @@ public class DcmQRSCP {
         return sendPendingCMoveInterval;
     }
 
+    public int getDelayCFind() {
+        return delayCFind;
+    }
+
+    public void setDelayCFind(int delayCFind) {
+        this.delayCFind = delayCFind;
+    }
+
     public final void setRecordFactory(RecordFactory recFact) {
         this.recFact = recFact;
     }
@@ -569,6 +578,7 @@ public class DcmQRSCP {
         addMatchingOptions(opts);
         addStgCmtOptions(opts);
         addSendingPendingOptions(opts);
+        addDelayCFindOptions(opts);
         addRemoteConnectionsOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmQRSCP.class);
     }
@@ -601,7 +611,17 @@ public class DcmQRSCP {
                 .withDescription(rb.getString("pending-cmove"))
                 .withLongOpt("pending-cmove")
                 .create());
-   }
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addDelayCFindOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("ms")
+                .withDescription(rb.getString("delay-cfind"))
+                .withLongOpt("delay-cfind")
+                .create());
+    }
 
     @SuppressWarnings("static-access")
     private static void addDicomDirOption(Options opts) {
@@ -675,6 +695,7 @@ public class DcmQRSCP {
             configureMatching(main, cl);
             configureStgCmt(main, cl);
             configureSendPending(main, cl);
+            configureDelayCFind(main, cl);
             configureRemoteConnections(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
@@ -723,6 +744,11 @@ public class DcmQRSCP {
         if (cl.hasOption("pending-cmove"))
                 main.setSendPendingCMoveInterval(
                         Integer.parseInt(cl.getOptionValue("pending-cmove")));
+    }
+
+    private static void configureDelayCFind(DcmQRSCP main, CommandLine cl) {
+        if (cl.hasOption("delay-cfind"))
+                main.setDelayCFind(Integer.parseInt(cl.getOptionValue("delay-cfind")));
     }
 
     private static void configureTransferCapability(DcmQRSCP main, CommandLine cl)

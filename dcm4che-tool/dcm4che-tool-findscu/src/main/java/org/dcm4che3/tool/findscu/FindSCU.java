@@ -476,11 +476,15 @@ public class FindSCU {
         } finally {
             SafeClose.close(dis);
         }
-        attrs.addAll(keys);
+        mergeKeys(attrs, keys);
         query(attrs);
     }
-    
-   public void query() throws IOException, InterruptedException {
+
+    static void mergeKeys(Attributes attrs, Attributes keys) {
+        attrs.addAll(keys);
+    }
+
+    public void query() throws IOException, InterruptedException {
         query(keys);
     }
    

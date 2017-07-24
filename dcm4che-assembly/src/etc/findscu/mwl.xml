@@ -26,7 +26,20 @@
     <DicomAttribute keyword="IssuerOfAdmissionIDSequence" tag="00380014" vr="SQ"/>
     <DicomAttribute keyword="OrderPlacerIdentifierSequence" tag="00400026" vr="SQ"/>
     <DicomAttribute keyword="OrderFillerIdentifierSequence" tag="00400027" vr="SQ"/>
-    <DicomAttribute keyword="ScheduledProcedureStepSequence" tag="00400100" vr="SQ"/>
+    <DicomAttribute keyword="ScheduledProcedureStepSequence" tag="00400100" vr="SQ">
+        <Item number="1">
+            <DicomAttribute keyword="Modality" tag="00080060" vr="CS"/>
+            <DicomAttribute keyword="ScheduledStationAETitle" tag="00400001" vr="AE"/>
+            <DicomAttribute keyword="ScheduledProcedureStepStartDate" tag="00400002" vr="DA"/>
+            <DicomAttribute keyword="ScheduledProcedureStepStartTime" tag="00400003" vr="TM"/>
+            <DicomAttribute keyword="ScheduledProcedureStepDescription" tag="00400007" vr="LO"/>
+            <DicomAttribute keyword="ScheduledProcedureStepID" tag="00400009" vr="SH"/>
+            <DicomAttribute keyword="ScheduledStationName" tag="00400010" vr="SH"/>
+            <DicomAttribute keyword="ScheduledProcedureStepStatus" tag="00400020" vr="CS"/>
+            <DicomAttribute keyword="ScheduledProtocolCodeSequence" tag="00400008" vr="SQ"/>
+            <DicomAttribute keyword="ScheduledProcedureStepLocation" tag="00400011" vr="SH"/>
+        </Item>
+    </DicomAttribute>
     <DicomAttribute keyword="RequestedProcedureID" tag="00401001" vr="SH"/>
     <DicomAttribute keyword="Reason​For​The​Requested​Procedure" tag="00401002" vr="LO"/>
     <DicomAttribute keyword="RequestedProcedurePriority" tag="00401003" vr="SH"/>

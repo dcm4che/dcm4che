@@ -66,10 +66,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.VR;
+import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
@@ -476,11 +473,40 @@ public class FindSCU {
         } finally {
             SafeClose.close(dis);
         }
-        attrs.addAll(keys);
+        addMatchingInNestedDataset(attrs);
         query(attrs);
     }
-    
-   public void query() throws IOException, InterruptedException {
+
+    private void addMatchingInNestedDataset(Attributes attrs) throws Exception {
+        Visitor visitor = new Visitor(keys);
+        try {
+            attrs.accept(visitor, false);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    private static class Visitor implements Attributes.Visitor {
+        private final Attributes keys;
+
+        Visitor(Attributes keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public boolean visit(Attributes attrs, int tag, VR vr, Object val) {
+            if (vr != VR.SQ || val == Value.NULL)
+                return true;
+
+            if (!((Sequence) val).isEmpty() && keys.containsValue(tag))
+                attrs.getNestedDataset(tag).addAll(keys.getNestedDataset(tag));
+
+            return true;
+        }
+    }
+
+
+    public void query() throws IOException, InterruptedException {
         query(keys);
     }
    

@@ -474,6 +474,7 @@ public class FindSCU {
             SafeClose.close(dis);
         }
         addMatchingInNestedDataset(attrs);
+        attrs.addAll(keys);
         query(attrs);
     }
 
@@ -498,8 +499,10 @@ public class FindSCU {
             if (vr != VR.SQ || val == Value.NULL)
                 return true;
 
-            if (!((Sequence) val).isEmpty() && keys.containsValue(tag))
+            if (!((Sequence) val).isEmpty() && keys.containsValue(tag)) {
                 attrs.getNestedDataset(tag).addAll(keys.getNestedDataset(tag));
+                keys.remove(tag);
+            }
 
             return true;
         }

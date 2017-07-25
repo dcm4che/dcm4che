@@ -67,10 +67,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.VR;
+import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
@@ -503,8 +500,39 @@ public class FindSCU {
         } finally {
             SafeClose.close(dis);
         }
-        attrs.addAll(keys);
+        mergeKeys(attrs, keys);
         query(attrs);
+    }
+
+    private static class MergeNested implements Attributes.Visitor {
+        private final Attributes keys;
+
+        MergeNested(Attributes keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public boolean visit(Attributes attrs, int tag, VR vr, Object val) {
+            if (isNotEmptySequence(val)) {
+                Object o = keys.remove(tag);
+                if (isNotEmptySequence(o))
+                    ((Sequence) val).get(0).addAll(((Sequence) o).get(0));
+            }
+            return true;
+        }
+
+        private static boolean isNotEmptySequence(Object val) {
+            return val instanceof Sequence && !((Sequence) val).isEmpty();
+        }
+    }
+
+    static void mergeKeys(Attributes attrs, Attributes keys) {
+        try {
+            attrs.accept(new MergeNested(keys), false);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        attrs.addAll(keys);
     }
     
    public void query() throws IOException, InterruptedException {

@@ -46,6 +46,7 @@ import org.dcm4che3.net.*;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParsingException;
+import javax.security.auth.login.Configuration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -325,7 +326,7 @@ public class JsonConfiguration {
                     loadConnections(device, reader);
                     break;
                 case "dicomNetworkAE":
-                    loadApplicationEntities(device, reader);
+                    loadApplicationEntities(device, reader, config);
                     break;
                 default:
                     if (!loadDeviceExtension(device, reader, config))
@@ -565,18 +566,20 @@ public class JsonConfiguration {
         writer.writeEnd();
     }
 
-    private void loadApplicationEntities(Device device, JsonReader reader) {
+    private void loadApplicationEntities(Device device, JsonReader reader, ConfigurationDelegate config)
+            throws ConfigurationException {
         reader.next();
         reader.expect(JsonParser.Event.START_ARRAY);
         while (reader.next() == JsonParser.Event.START_OBJECT) {
             ApplicationEntity ae = new ApplicationEntity();
-            loadFrom(ae, reader, device);
+            loadFrom(ae, reader, device, config);
             device.addApplicationEntity(ae);
         }
         reader.expect(JsonParser.Event.END_ARRAY);
     }
 
-    private void loadFrom(ApplicationEntity ae, JsonReader reader, Device device) {
+    private void loadFrom(ApplicationEntity ae, JsonReader reader, Device device, ConfigurationDelegate config)
+            throws ConfigurationException {
         List<Connection> conns = device.listConnections();
         while (reader.next() == JsonParser.Event.KEY_NAME) {
             switch (reader.getString()) {
@@ -635,7 +638,7 @@ public class JsonConfiguration {
                     loadTransferCapabilities(ae, reader);
                     break;
                 default:
-                    if (!loadApplicationEntityExtension(device, ae, reader))
+                    if (!loadApplicationEntityExtension(device, ae, reader, config))
                         reader.skipUnknownProperty();
             }
         }
@@ -644,9 +647,10 @@ public class JsonConfiguration {
             throw new JsonParsingException("Missing property: dicomAETitle", reader.getLocation());
     }
 
-    private boolean loadApplicationEntityExtension(Device device, ApplicationEntity ae, JsonReader reader) {
+    private boolean loadApplicationEntityExtension(Device device, ApplicationEntity ae, JsonReader reader,
+                                                   ConfigurationDelegate config) throws ConfigurationException {
         for (JsonConfigurationExtension ext : extensions)
-            if (ext.loadApplicationEntityExtension(device, ae, reader))
+            if (ext.loadApplicationEntityExtension(device, ae, reader, config))
                 return true;
         return false;
     }

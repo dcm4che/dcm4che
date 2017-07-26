@@ -1319,7 +1319,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private void loadApplicationEntities(Device device, String deviceDN)
-            throws NamingException {
+            throws NamingException, ConfigurationException {
         NamingEnumeration<SearchResult> ne =
                 search(deviceDN, "(objectclass=dicomNetworkAE)");
         try {
@@ -1333,7 +1333,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private ApplicationEntity loadApplicationEntity(SearchResult sr,
-            String deviceDN, Device device) throws NamingException {
+            String deviceDN, Device device) throws NamingException, ConfigurationException {
         Attributes attrs = sr.getAttributes();
         ApplicationEntity ae = new ApplicationEntity(LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
         loadFrom(ae, attrs);
@@ -1363,7 +1363,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             ext.loadFrom(ae, attrs);
     }
 
-    private void loadChilds(ApplicationEntity ae, String aeDN) throws NamingException {
+    private void loadChilds(ApplicationEntity ae, String aeDN) throws NamingException, ConfigurationException {
         loadTransferCapabilities(ae, aeDN);
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.loadChilds(ae, aeDN);

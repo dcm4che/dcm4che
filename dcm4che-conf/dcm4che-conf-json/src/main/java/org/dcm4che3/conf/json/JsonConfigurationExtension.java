@@ -57,8 +57,7 @@ public class JsonConfigurationExtension {
         return false;
     }
 
-    public boolean loadApplicationEntityExtension(Device device, ApplicationEntity ae, JsonReader reader,
-                                                  ConfigurationDelegate config) throws ConfigurationException {
+    public boolean loadApplicationEntityExtension(Device device, ApplicationEntity ae, JsonReader reader) {
         return false;
     }
 }

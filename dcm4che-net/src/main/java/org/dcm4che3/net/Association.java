@@ -608,6 +608,11 @@ public class Association {
     }
 
     void handleAReleaseRQ() throws IOException {
+        if (decoder.isPendingPDV()) {
+            LOG.info("{}: unexpected A-RELEASE-RQ after P-DATA-TF with pending PDV", this);
+            abort();
+            return;
+        }
         enterState(State.Sta8);
         waitForPerformingOps();
         LOG.info("{} << A-RELEASE-RP", name);

@@ -380,7 +380,7 @@ public class AuditSuppressCriteria {
     }
 
     private boolean match(List<ActiveParticipant> aps) {
-        if (!containsActiveParticipantCriteria())
+        if (matchAnyActiveParticipant())
             return true;
 
         for (ActiveParticipant ap : aps) {
@@ -424,7 +424,7 @@ public class AuditSuppressCriteria {
         return false;
     }
 
-    public boolean containsActiveParticipantCriteria() {
+    private boolean matchAnyActiveParticipant() {
         return userIDs.length == 0
                 && alternativeUserIDs.length == 0
                 && roleIDCodes.length == 0

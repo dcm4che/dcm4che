@@ -92,7 +92,7 @@ public class LdapDicomConfigurationExtension {
             throws NamingException {
     }
 
-    protected void loadChilds(ApplicationEntity ae, String aeDN)
+    protected void loadChilds(ApplicationEntity ae, String aeDN, Device device)
             throws NamingException, ConfigurationException {
     }
 

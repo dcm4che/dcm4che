@@ -1339,7 +1339,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         loadFrom(ae, attrs);
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
             ae.addConnection(LdapUtils.findConnection(connDN, deviceDN, device));
-        loadChilds(ae, sr.getNameInNamespace(), device);
+        loadChilds(ae, sr.getNameInNamespace());
         return ae ;
     }
 
@@ -1363,10 +1363,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             ext.loadFrom(ae, attrs);
     }
 
-    private void loadChilds(ApplicationEntity ae, String aeDN, Device device) throws NamingException, ConfigurationException {
+    private void loadChilds(ApplicationEntity ae, String aeDN) throws NamingException, ConfigurationException {
         loadTransferCapabilities(ae, aeDN);
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.loadChilds(ae, aeDN, device);
+            ext.loadChilds(ae, aeDN);
     }
 
     private void loadTransferCapabilities(ApplicationEntity ae, String aeDN)

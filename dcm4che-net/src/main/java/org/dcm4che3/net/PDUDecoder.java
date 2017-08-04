@@ -540,6 +540,10 @@ class PDUDecoder extends PDVInputStream {
         return false;
     }
 
+    boolean isPendingPDV() {
+        return pcid != -1 && (pdvmch & PDVType.LAST) == 0;
+    }
+
     @Override
     public int read() throws IOException {
         if (th != Thread.currentThread())

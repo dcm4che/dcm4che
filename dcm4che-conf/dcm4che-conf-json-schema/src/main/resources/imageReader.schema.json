@@ -1,0 +1,38 @@
+{
+  "title": "Image Reader",
+  "description": "Specifies Java Image IO Image Readers used for decompressing compressed DICOM images",
+  "type": "object",
+  "required": [
+    "dicomTransferSyntax",
+    "dcmIIOFormatName"
+  ],
+  "properties": {
+    "dicomTransferSyntax": {
+      "title": "Transfer Syntax",
+      "description": "Transfer Syntax of compressed DICOM image",
+      "type": "string",
+      "pattern": "^[0-2]((\\.0)|(\\.[1-9][0-9]*))*$",
+      "format": "dcmTransferSyntax"
+    },
+    "dcmIIOFormatName": {
+      "title": "Image IO Reader Format Name",
+      "description": "Image IO Reader Format Name",
+      "type": "string"
+    },
+    "dcmJavaClassName": {
+      "title": "Java Class Name",
+      "description": "Fully qualified Java class of Image IO Reader. If absent, use any Image Reader found for specified Format Name",
+      "type": "string"
+    },
+    "dcmPatchJPEGLS": {
+      "title": "Patch JPEG-LS",
+      "description": "Patch JPEG-LS before decompressing",
+      "type": "string",
+      "enum": [
+          "JAI2ISO",
+          "ISO2JAI",
+          "ISO2JAI_IF_APP_OR_COM"
+      ]
+    }
+  }
+}

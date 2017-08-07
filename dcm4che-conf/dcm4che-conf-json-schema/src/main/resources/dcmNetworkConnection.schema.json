@@ -1,0 +1,184 @@
+{
+  "title": "dcm4che Network Connection Attributes",
+  "description": "dcm4che proprietary Network Connection Attributes",
+  "type": "object",
+  "required": [
+    "dcmProtocol",
+    "dcmTLSNeedClientAuth",
+    "dcmTLSProtocol",
+    "dcmTCPBacklog",
+    "dcmTCPCloseDelay",
+    "dcmTCPNoDelay",
+    "dcmSendPDULength",
+    "dcmReceivePDULength",
+    "dcmMaxOpsPerformed",
+    "dcmMaxOpsInvoked",
+    "dcmPackPDV"
+  ],
+  "properties": {
+    "dcmProtocol": {
+      "title": "Protocol",
+      "description": "Protocol of Network Connection.",
+      "type": "string",
+      "default": "DICOM",
+      "enum": [
+          "DICOM",
+          "HL7",
+          "SYSLOG_TLS",
+          "SYSLOG_UDP"
+      ]
+    },
+    "dcmHTTPProxy": {
+      "title": "HTTP Proxy",
+      "description": "HTTP Proxy: [user:password@]host:port",
+      "type": "string"
+    },
+    "dcmTLSNeedClientAuth": {
+      "title": "TLS Need Client Auth",
+      "description": "Indicates if TLS client authentication is required.",
+      "type": "boolean",
+      "default": true
+    },
+    "dcmTLSProtocol": {
+      "title": "TLS Protocol",
+      "description": "The Supported TLS Protocols.",
+      "default": ["TLSv1.2", "TLSv1.1", "TLSv1"],
+      "type": "array",
+      "items" : {
+        "type": "string",
+        "enum": [
+          "TLSv1.2",
+          "TLSv1.1",
+          "TLSv1",
+          "SSLv3"
+        ]
+      }
+    },
+    "dcmTCPBacklog": {
+      "title": "TCP Backlog",
+      "description": "Maximum queue length for incoming TCP connections. 0 = unlimited",
+      "type": "integer",
+      "default": 50,
+      "minimum": 0
+    },
+    "dcmTCPConnectTimeout": {
+      "title": "TCP Connect Timeout",
+      "description": "TCP connect timeout in ms; no timeout if absent",
+      "type": "integer",
+      "minimum": 100
+    },
+    "dcmTCPCloseDelay": {
+      "title": "TCP Close Delay",
+      "description": "TCP socket close delay in ms after send of A-ASSOCIATE-RJ, A-RELEASE-RP or A-ABORT PDU.",
+      "type": "integer",
+      "default": 50,
+      "minimum": 0
+    },
+    "dcmTCPSendBufferSize": {
+      "title": "TCP Send Buffer Size",
+      "description": "TCP send buffer size; use system defaults if absent",
+      "type": "integer",
+      "minimum": 1024
+    },
+    "dcmTCPReceiveBufferSize": {
+      "title": "TCP Receive Buffer Size",
+      "description": "TCP receive buffer size; use system defaults if absent",
+      "type": "integer",
+      "minimum": 1024
+    },
+    "dcmTCPNoDelay": {
+      "title": "TCP No Delay",
+      "description": "Enable/disable TCP_NODELAY (disable/enable Nagle algorithm).",
+      "type": "boolean",
+      "default": true
+    },
+    "dcmBindAddress": {
+      "title": "Bind Address",
+      "description": "Bind address of listening socket; use hostname of the connection if absent",
+      "type": "string"
+    },
+    "dcmClientBindAddress": {
+      "title": "Client Bind Address",
+      "description": "Bind address of outgoing connections; use hostname of the connection if absent",
+      "type": "string"
+    },
+    "dcmBlacklistedHostname": {
+      "title": "Blacklisted Hostname",
+      "description": "blacklisted DNS hostnames",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dcmSendPDULength": {
+      "title": "Send PDU Length",
+      "description": "Maximal length of emitted PDUs.",
+      "type": "integer",
+      "default": 16378,
+      "minimum": 1024
+    },
+    "dcmReceivePDULength": {
+      "title": "Receive PDU Length",
+      "description": "Maximal length of received PDUs.",
+      "type": "integer",
+      "default": 16378,
+      "minimum": 1024
+    },
+    "dcmMaxOpsPerformed": {
+      "title": "Max Ops Performed",
+      "description": "Maximal number of operations to perform asynchronously; 0 = infinite.",
+      "type": "integer",
+      "default": 1,
+      "minimum": 0
+    },
+    "dcmMaxOpsInvoked": {
+      "title": "Max Ops Invoked",
+      "description": "Maximal number of operations to invoke asynchronously; 0 = infinite.",
+      "type": "integer",
+      "default": 1,
+      "minimum": 0
+    },
+    "dcmPackPDV": {
+      "title": "Pack PDV",
+      "description": "Enable/disable packing of command and data PDVs into one P-DATA-TF PDU.",
+      "type": "boolean",
+      "default": true
+    },
+    "dcmAARQTimeout": {
+      "title": "AA-RQ Timeout",
+      "description": "Timeout in ms for receive of A-ASSOCIATE-RQ PDU after TCP connect; no timeout if absent",
+      "type": "integer",
+      "minimum": 100
+    },
+    "dcmAAACTimeout": {
+      "title": "AA-AC Timeout",
+      "description": "Timeout in ms for receive of A-ASSOCIATE-AC PDU after send of A-ASSOCIATE-RQ PDU; no timeout if absent",
+      "type": "integer",
+      "minimum": 100
+    },
+    "dcmARRPTimeout": {
+      "title": "AR-RP Timeout",
+      "description": "Timeout in ms for receive of A-RELEASE-RP PDU after send of A-RELEASE-RQ PDU; no timeout if absent",
+      "type": "integer",
+      "minimum": 100
+    },
+    "dcmResponseTimeout": {
+      "title": "Response Timeout",
+      "description": "Timeout in ms for receive of response message; no timeout if absent",
+      "type": "integer",
+      "minimum": 100
+    },
+    "dcmRetrieveTimeout": {
+      "title": "Retrieve Timeout",
+      "description": "Timeout in ms for receive of C-GET-RSP or C-MOVE-RSP; no timeout if absent",
+      "type": "integer",
+      "minimum": 100
+    },
+    "dcmIdleTimeout": {
+      "title": "Idle Timeout",
+      "description": "Indicates aborting of idle Associations after specified timeout in ms; no timeout if absent",
+      "type": "integer",
+      "minimum": 100
+    }
+  }
+}

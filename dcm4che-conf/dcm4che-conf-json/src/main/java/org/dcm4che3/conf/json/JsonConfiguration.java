@@ -179,9 +179,9 @@ public class JsonConfiguration {
             writer.writeNotNullOrDef("dcmKeyStoreKeyPin", device.getKeyStoreKeyPin(), null);
             writer.writeNotNullOrDef("dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty(), null);
             writer.writeNotNullOrDef("dcmTimeZoneOfDevice", device.getTimeZoneOfDevice(), null);
-            gen.writeEnd();
             for (JsonConfigurationExtension ext : extensions)
                 ext.storeTo(device, writer);
+            gen.writeEnd();
         }
         gen.writeEnd();
     }
@@ -316,7 +316,8 @@ public class JsonConfiguration {
                                 device.setTimeZoneOfDevice(reader.timeZoneValue());
                                 break;
                             default:
-                                reader.skipUnknownProperty();
+                                if (!loadDeviceExtension(device, reader, config))
+                                    reader.skipUnknownProperty();
                         }
                     }
                     reader.expect(JsonParser.Event.END_OBJECT);
@@ -328,8 +329,7 @@ public class JsonConfiguration {
                     loadApplicationEntities(device, reader, config);
                     break;
                 default:
-                    if (!loadDeviceExtension(device, reader, config))
-                        reader.skipUnknownProperty();
+                    reader.skipUnknownProperty();
             }
         }
         reader.expect(JsonParser.Event.END_OBJECT);
@@ -558,9 +558,9 @@ public class JsonConfiguration {
             writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
             writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
             writer.writeNotEmpty("dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
-            writer.writeEnd();
             for (JsonConfigurationExtension ext : extensions)
                 ext.storeTo(ae, writer);
+            writer.writeEnd();
         }
         writer.writeEnd();
     }
@@ -628,7 +628,8 @@ public class JsonConfiguration {
                                 ae.setMasqueradeCallingAETitles(reader.stringArray());
                                 break;
                             default:
-                                reader.skipUnknownProperty();
+                                if (!loadApplicationEntityExtension(device, ae, reader, config))
+                                    reader.skipUnknownProperty();
                         }
                     }
                     reader.expect(JsonParser.Event.END_OBJECT);
@@ -637,8 +638,7 @@ public class JsonConfiguration {
                     loadTransferCapabilities(ae, reader);
                     break;
                 default:
-                    if (!loadApplicationEntityExtension(device, ae, reader, config))
-                        reader.skipUnknownProperty();
+                    reader.skipUnknownProperty();
             }
         }
         reader.expect(JsonParser.Event.END_OBJECT);

@@ -1,0 +1,69 @@
+{
+  "title": "dcm4che Transfer Capability",
+  "description": "dcm4che proprietary Transfer Capability Attributes",
+  "type": "object",
+  "required": [
+    "dcmRelationalQueries",
+    "dcmCombinedDateTimeMatching",
+    "dcmFuzzySemanticMatching",
+    "dcmTimezoneQueryAdjustment"
+  ],
+  "properties": {
+    "dcmRelationalQueries": {
+      "title": "Relational Queries",
+      "description": "Enable/disable relational queries.",
+      "type": "boolean",
+      "default": false
+    },
+    "dcmCombinedDateTimeMatching": {
+      "title": "Combined Date Time Matching",
+      "description": "Enable/disable combined date time matching.",
+      "type": "boolean",
+      "default": false
+    },
+    "dcmFuzzySemanticMatching": {
+      "title": "Fuzzy Semantic Matching",
+      "description": "Enable/disable fuzzy semantic matching of person  names.",
+      "type": "boolean",
+      "default": false
+    },
+    "dcmTimezoneQueryAdjustment": {
+      "title": "Timezone Query Adjustment",
+      "description": "Enable/disable timezone query adjustment",
+      "type": "boolean",
+      "default": false
+    },
+    "dcmStorageConformance": {
+      "title": "Storage Conformance",
+      "description": "Indicates level of Conformance of a Storage SCP",
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "dcmDigitalSignatureSupport": {
+      "title": "Digital Signature Support",
+      "description": "Indicates level of Digital Signature Support of a Storage SCP",
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "dcmDataElementCoercion": {
+      "title": "Data Element Coercion",
+      "description": "Indicates coercion of Data Elements of a Storage SCP",
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2
+      ]
+    }
+  }
+}

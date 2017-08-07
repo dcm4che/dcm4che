@@ -1,0 +1,50 @@
+{
+  "title": "Network Connection",
+  "description": "Describes one TCP/UDP port on one network device.",
+  "type": "object",
+  "required": [
+    "dicomHostname"
+  ],
+  "properties": {
+    "cn": {
+      "title": "Name",
+      "description": "Arbitrary/Meaningful name for the Network Connection object",
+      "type": "string"
+    },
+    "dicomHostname": {
+      "title": "Hostname",
+      "description": "DNS name for this particular connection",
+      "type": "string"
+    },
+    "dicomPort": {
+      "title": "Port",
+      "description": "TCP/UDP port that a service is listening on. May be missing if this network connection is only used for outbound connections",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 99999
+    },
+    "dicomTLSCipherSuite": {
+      "title": "TLS CipherSuites",
+      "description": "The TLS CipherSuites that are supported on this particular connection. If not present TLS is disabled",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "SSL_RSA_WITH_NULL_SHA",
+          "TLS_RSA_WITH_AES_128_CBC_SHA",
+          "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
+        ]
+      }
+    },
+    "dicomInstalled": {
+      "title": "installed",
+      "description": "True if the Network Connection is installed on the network. If not present, information about the installed status of the Network Connection is inherited from the device",
+      "type": "boolean"
+    },
+    "dcmNetworkConnection": {
+      "title": "dcm4che Network Connection Attributes",
+      "description": "dcm4che proprietary Network Connection Attributes",
+      "$ref": "dcmNetworkConnection.schema.json"
+    }
+  }
+}

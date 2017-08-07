@@ -1,0 +1,31 @@
+{
+  "title": "dcm4che Network AE Attributes",
+  "description": "dcm4che proprietary Attributes of Network AE",
+  "type": "object",
+  "properties": {
+    "dcmAcceptedCallingAETitle": {
+      "title": "Accepted Calling AE Title",
+      "description": "Prohibit accepting associations from unlisted AE. If not present, any AE will be accepted",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dcmOtherAETitle": {
+      "title": "Other AE Title",
+      "description": "Additional AE Title of Network AE - will also accept Association RQs with such Called AE Title",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dcmMasqueradeCallingAETitle": {
+      "title": "Masquerade Calling AE Title",
+      "description": "AE Title used for initiating network associations, masquerading the actual AE Title for this Network AE - optional prefix [<Called AE Title>] limits the masquerading to association to a particular AE Title",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

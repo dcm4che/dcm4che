@@ -1,0 +1,106 @@
+{
+  "title": "Network AE",
+  "description": "Application entity that provides services on a network",
+  "type": "object",
+  "required": [
+    "dicomAETitle",
+    "dicomNetworkConnectionReference",
+    "dicomAssociationInitiator",
+    "dicomAssociationAcceptor"
+  ],
+  "properties": {
+    "dicomAETitle": {
+      "title": "AE Title",
+      "description": "Unique AE title for this Network AE",
+      "type": "string",
+      "order":1
+    },
+    "dicomNetworkConnectionReference": {
+      "title": "Network Connection Reference",
+      "description": "JSON Pointers to the Network Connection objects for this AE",
+      "type": "array",
+      "order":2,
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomAssociationInitiator": {
+      "title": "Association Initiator",
+      "description": "True if the Network AE can initiate associations.",
+      "type": "boolean",
+      "default": false,
+      "order":3
+    },
+    "dicomAssociationAcceptor": {
+      "title": "Association Acceptor",
+      "description": "True if the Network AE can accept associations.",
+      "type": "boolean",
+      "default": false,
+      "order":4
+    },
+    "dicomDescription": {
+      "title": "AE Description",
+      "description": "Unconstrained text description of the application entity",
+      "type": "string",
+      "order":5
+    },
+    "dicomApplicationCluster": {
+      "title": "Application Cluster",
+      "description": "Locally defined names for a subset of related applications",
+      "type": "array",
+      "order":6,
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomPreferredCalledAETitle": {
+      "title": "Preferred Called AE Title",
+      "description": "AE Title(s) that are preferred for initiating associations",
+      "type": "array",
+      "order":7,
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomPreferredCallingAETitle": {
+      "title": "Preferred Calling AE Title",
+      "description": "AE Title(s) that are preferred for accepting associations",
+      "type": "array",
+      "order":8,
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomSupportedCharacterSet": {
+      "title": "Supported Character Set",
+      "description": "Character Set(s) supported by the Network AE for data sets it receives",
+      "type": "array",
+      "order":9,
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomInstalled": {
+      "title": "installed",
+      "description": "True if the AE is installed on network. If not present, information about the installed status of the AE is inherited from the device",
+      "order":10,
+      "type": "boolean"
+    },
+    "dicomTransferCapability": {
+      "title": "Transfer Capabilities",
+      "description": "transfer capabilities provided by the application entity",
+      "type": "array",
+      "order":11,
+      "titleKey":"{cn}",
+      "items": {
+        "$ref": "transferCapability.schema.json"
+      }
+    },
+    "dcmNetworkAE": {
+      "title": "dcm4che Network AE Attributes",
+      "description": "dcm4che proprietary Attributes of Network AE",
+      "$ref": "dcmNetworkAE.schema.json",
+      "order":12
+    }
+  }
+}

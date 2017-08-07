@@ -36,32 +36,45 @@
     "dicomDeviceName": {
       "title": "Device Name",
       "description": "A unique name for this device",
-      "type": "string"
+      "type": "string",
+      "order":1
     },
     "dicomDescription": {
       "title": "Device Description",
       "description": "Unconstrained text description of the device",
-      "type": "string"
+      "type": "string",
+      "order":2
+    },
+    "dicomVendorData":{
+      "title": "Vendor Device Data",
+      "description": "Device specific vendor configuration information",
+      "type": "boolean",
+      "order":2
     },
     "dicomDeviceUID": {
       "title": "Device UID",
       "description": "Unique identifier of the device",
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-2]((\\.0)|(\\.[1-9][0-9]*))*$",
+      "order":3
     },
     "dicomManufacturer": {
       "title": "Manufacturer",
       "description": "Should be the same as the value of Manufacturer (0008,0070) in SOP instances created by this device",
-      "type": "string"
+      "type": "string",
+      "order":4
     },
     "dicomManufacturerModelName": {
       "title": "Manufacturer Model Name",
       "description": "Should be the same as the value of Manufacturer Model Name (0008,1090) in SOP instances created by this device",
-      "type": "string"
+      "type": "string",
+      "order":5
     },
     "dicomSoftwareVersion": {
       "title": "Software Version",
       "description": "Should be the same as the values of Software Versions (0018,1020) in SOP instances created by this device",
       "type": "array",
+      "order":6,
       "items": {
         "type": "string"
       }
@@ -69,17 +82,20 @@
     "dicomStationName": {
       "title": "Station Name",
       "description": "Should be the same as the value of Station Name (0008,1010) in SOP instances created by this device",
-      "type": "string"
+      "type": "string",
+      "order":7
     },
     "dicomDeviceSerialNumber": {
       "title": "Device Serial Number",
       "description": "Should be the same as the value of Device Serial Number (0018,1000) in SOP instances created by this device",
-      "type": "string"
+      "type": "string",
+      "order":8
     },
     "dicomPrimaryDeviceType": {
       "title": "Primary Device Type",
       "description": "Represents the kind of device and is most applicable for acquisition modalities",
       "type": "array",
+      "order":9,
       "items": {
         "type": "string"
       }
@@ -88,6 +104,7 @@
       "title": "Institution Name",
       "description": "Should be the same as the value of Institution Name (0008,0080) in SOP Instances created by this device",
       "type": "array",
+      "order":10,
       "items": {
         "type": "string"
       }
@@ -96,6 +113,7 @@
       "title": "Institution Code",
       "description": "Institution Code(s) in format (CV, CSD, \"CM\")",
       "type": "array",
+      "order":11,
       "items": {
         "type": "string"
       }
@@ -104,6 +122,7 @@
       "title": "Institution Address",
       "description": "Should be the same as the value of Institution Address (0008,0081) attribute in SOP Instances created by this device",
       "type": "array",
+      "order":12,
       "items": {
         "type": "string"
       }
@@ -112,6 +131,7 @@
       "title": "Institution Department Name",
       "description": "Should be the same as the value of Institutional Department Name (0008,1040) in SOP Instances created by this device",
       "type": "array",
+      "order":13,
       "items": {
         "type": "string"
       }
@@ -119,47 +139,56 @@
     "dicomIssuerOfPatientID": {
       "title": "Issuer of Patient ID",
       "description": "Default value for the Issuer of Patient ID (0010,0021), and optionally also default values for the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Patient ID Qualifiers Sequence (0010,0024) for SOP Instances created or queried by this device. Format: <Issuer of Patient ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
-      "type": "string"
+      "type": "string",
+      "order":14
     },
     "dicomIssuerOfAccessionNumber": {
       "title": "Issuer of Accession Number",
       "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Accession Number Sequence (0008,0051) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
-      "type": "string"
+      "type": "string",
+      "order":15
     },
     "dicomOrderPlacerIdentifier": {
       "title": "Order Placer Identifier",
       "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Placer Identifier Sequence (0040,0026) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
-      "type": "string"
+      "type": "string",
+      "order":16
     },
     "dicomOrderFillerIdentifier": {
       "title": "Order Filler Identifier",
       "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Filler Identifier Sequence (0040,0027) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
-      "type": "string"
+      "type": "string",
+      "order":17
     },
     "dicomIssuerOfAdmissionID": {
       "title": "Issuer of Admission ID",
       "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Admission ID Sequence (0038,0014) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
-      "type": "string"
+      "type": "string",
+      "order":18
     },
     "dicomIssuerOfServiceEpisodeID": {
       "title": "Issuer of Service Episode ID",
       "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Service Episode ID Sequence (0038,0064) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
-      "type": "string"
+      "type": "string",
+      "order":19
     },
     "dicomIssuerOfContainerIdentifier": {
       "title": "Issuer of Container Identifier",
       "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Container Identifier Sequence (0040,0513) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
-      "type": "string"
+      "type": "string",
+      "order":20
     },
     "dicomIssuerOfSpecimenIdentifier": {
       "title": "Issuer of Specimen Identifier",
       "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Specimen Identifier Sequence (0040,0562) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
-      "type": "string"
+      "type": "string",
+      "order":21
     },
     "dicomAuthorizedNodeCertificateReference": {
       "title": "Authorized Node Certificate Reference",
       "description": "The DNs for the certificates of nodes that are authorized to connect to this device",
       "type": "array",
+      "order":22,
       "items": {
         "type": "string"
       }
@@ -168,6 +197,7 @@
       "title": "This Node Certificate Reference",
       "description": "The DNs of the public certificate(s) for this node",
       "type": "array",
+      "order":23,
       "items": {
         "type": "string"
       }
@@ -175,810 +205,35 @@
     "dicomInstalled": {
       "title": "installed",
       "description": "Boolean to indicate whether this device is presently installed on the network",
-      "type": "boolean"
+      "type": "boolean",
+      "order":24,
+      "default": true
     },
     "dicomNetworkConnection": {
-      "title": "Network Connection",
-      "description": "Describes one TCP/UDP port on one network device.",
+      "title": "Network Connections",
+      "description": "network connections of the device",
       "type": "array",
+      "order":25,
+      "titleKey":"{dicomHostname}:{dicomPort} {cn}",
       "items": {
-        "type": "object",
-        "required": [
-          "dicomHostname"
-        ],
-        "properties": {
-          "cn": {
-            "title": "Name",
-            "description": "Arbitrary/Meaningful name for the Network Connection object",
-            "type": "string"
-          },
-          "dicomHostname": {
-            "title": "Hostname",
-            "description": "DNS name for this particular connection",
-            "type": "string"
-          },
-          "dicomPort": {
-            "title": "Port",
-            "description": "TCP/UDP port that a service is listening on. May be missing if this network connection is only used for outbound connections",
-            "type": "integer",
-            "minimum": 0,
-            "exclusiveMinimum": true
-          },
-          "dicomTLSCipherSuite": {
-            "title": "TLS CipherSuites",
-            "description": "The TLS CipherSuites that are supported on this particular connection. If not present TLS is disabled",
-            "type": "array",
-            "items": {
-              "enum": [
-                "SSL_RSA_WITH_NULL_SHA",
-                "TLS_RSA_WITH_AES_128_CBC_SHA",
-                "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
-              ]
-            }
-          },
-          "dicomInstalled": {
-            "title": "installed",
-            "description": "True if the Network Connection is installed on the network. If not present, information about the installed status of the Network Connection is inherited from the device",
-            "type": "boolean"
-          },
-          "dcmNetworkConnection": {
-            "title": "dcm4che Network Connection Attributes",
-            "description": "dcm4che proprietary Network Connection Attributes",
-            "type": "object",
-            "properties": {
-              "dcmProtocol": {
-                "title": "Protocol",
-                "description": "Protocol of Network Connection: DICOM, HL7, SYSLOG_TLS or SYSLOG_UDP; DICOM if absent",
-                "type": "string",
-                "enum": [
-                  "DICOM",
-                  "HL7",
-                  "SYSLOG_TLS",
-                  "SYSLOG_UDP"
-                ]
-              },
-              "dcmHTTPProxy": {
-                "title": "HTTP Proxy",
-                "description": "HTTP Proxy: [user:password@]host:port",
-                "type": "string"
-              },
-              "dcmTLSNeedClientAuth": {
-                "title": "TLS Need Client Auth",
-                "description": "Indicates if TLS client authentication is required; required if absent",
-                "type": "boolean"
-              },
-              "dcmTLSProtocol": {
-                "title": "TLS Protocol",
-                "description": "The Supported TLS Protocols; TLSv1, SSLv3 if absent",
-                "type": "string",
-                "enum": [
-                  "TLSv1",
-                  "SSLv3"
-                ]
-              },
-              "dcmTCPBacklog": {
-                "title": "TCP Backlog",
-                "description": "Maximum queue length for incoming TCP connections; 50 if absent",
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true
-              },
-              "dcmTCPConnectTimeout": {
-                "title": "TCP Connect Timeout",
-                "description": "TCP connect timeout in ms; no timeout if absent",
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true
-              },
-              "dcmTCPCloseDelay": {
-                "title": "TCP Close Delay",
-                "description": "TCP socket close delay in ms after send of A-ASSOCIATE-RJ, A-RELEASE-RP or A-ABORT PDU; 50 ms if absent",
-                "type": "integer",
-                "minimum": 0
-              },
-              "dcmTCPSendBufferSize": {
-                "title": "TCP Send Buffer Size",
-                "description": "TCP send buffer size; use system defaults if absent",
-                "type": "integer",
-                "minimum": 1024
-              },
-              "dcmTCPReceiveBufferSize": {
-                "title": "TCP Receive Buffer Size",
-                "description": "TCP receive buffer size; use system defaults if absent",
-                "type": "string",
-                "minimum": 1024
-              },
-              "dcmTCPNoDelay": {
-                "title": "TCP No Delay",
-                "description": "Enable/disable TCP_NODELAY (disable/enable Nagle algorithm); disable Nagle algorithm if absent",
-                "type": "boolean"
-              },
-              "dcmBindAddress": {
-                "title": "Bind Address",
-                "description": "Bind address of listening socket; use hostname of the connection if absent",
-                "type": "string"
-              },
-              "dcmClientBindAddress": {
-                "title": "Client Bind Address",
-                "description": "Bind address of outgoing connections; use hostname of the connection if absent",
-                "type": "string"
-              },
-              "dcmBlacklistedHostname": {
-                "title": "Blacklisted Hostname",
-                "description": "blacklisted DNS hostnames",
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "dcmSendPDULength": {
-                "title": "Send PDU Length",
-                "description": "Maximal length of emitted PDUs; 16378 if absent",
-                "type": "integer",
-                "minimum": 1024
-              },
-              "dcmReceivePDULength": {
-                "title": "Receive PDU Length",
-                "description": "Maximal length of received PDUs; 16378 if absent",
-                "type": "integer",
-                "minimum": 1024
-              },
-              "dcmMaxOpsPerformed": {
-                "title": "Max Ops Performed",
-                "description": "Maximal number of operations to perform asynchronously; 0 = infinite; 1 (=synchronous) if absent",
-                "type": "integer",
-                "minimum": 0
-             },
-              "dcmMaxOpsInvoked": {
-                "title": "Max Ops Invoked",
-                "description": "Maximal number of operations to invoke asynchronously; 0 = infinite; 1 (=synchronous) if absent",
-                "type": "integer",
-                "minimum": 0
-              },
-              "dcmPackPDV": {
-                "title": "Pack PDV",
-                "description": "Enable/disable packing of command and data PDVs into one P-DATA-TF PDU; enabled if absent",
-                "type": "boolean"
-              },
-              "dcmAARQTimeout": {
-                "title": "AA-RQ Timeout",
-                "description": "Timeout in ms for receive of A-ASSOCIATE-RQ PDU after TCP connect; no timeout if absent",
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true
-              },
-              "dcmAAACTimeout": {
-                "title": "AA-AC Timeout",
-                "description": "Timeout in ms for receive of A-ASSOCIATE-AC PDU after send of A-ASSOCIATE-RQ PDU; no timeout if absent",
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true
-              },
-              "dcmARRPTimeout": {
-                "title": "AR-RP Timeout",
-                "description": "Timeout in ms for receive of A-RELEASE-RP PDU after send of A-RELEASE-RQ PDU; no timeout if absent",
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true
-              },
-              "dcmResponseTimeout": {
-                "title": "Response Timeout",
-                "description": "Timeout in ms for receive of response message; no timeout if absent",
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true
-              },
-              "dcmRetrieveTimeout": {
-                "title": "Retrieve Timeout",
-                "description": "Timeout in ms for receive of C-GET-RSP or C-MOVE-RSP; no timeout if absent",
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true
-              },
-              "dcmIdleTimeout": {
-                "title": "Idle Timeout",
-                "description": "Indicates aborting of idle Associations after specified timeout in ms; no timeout if absent",
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true
-              }
-            }
-          }
-        }
+        "$ref": "networkConnection.schema.json"
       }
     },
     "dicomNetworkAE": {
-      "title": "Network AE",
-      "description": "Application entity that provides services on a network",
+      "title": "Network AEs",
+      "description": "Application entity provided by the device",
       "type": "array",
+      "titleKey":"{dicomAETitle}",
+      "order":26,
       "items": {
-        "type": "object",
-        "required": [
-          "dicomAETitle",
-          "dicomNetworkConnectionReference",
-          "dicomAssociationInitiator",
-          "dicomAssociationAcceptor"
-        ],
-        "properties": {
-          "dicomAETitle": {
-            "title": "AE Title",
-            "description": "Unique AE title for this Network AE",
-            "type": "string"
-          },
-          "dicomNetworkConnectionReference": {
-            "title": "Network Connection Reference",
-            "description": "JSON Pointers to the Network Connection objects for this AE",
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "dicomAssociationInitiator": {
-            "title": "Association Initiator",
-            "description": "True if the Network AE can initiate associations, false otherwise",
-            "type": "boolean"
-          },
-          "dicomAssociationAcceptor": {
-            "title": "Association Acceptor",
-            "description": "True if the Network AE can accept associations, false otherwise",
-            "type": "boolean"
-          },
-          "dicomDescription": {
-            "title": "AE Description",
-            "description": "Unconstrained text description of the application entity",
-            "type": "string"
-          },
-          "dicomApplicationCluster": {
-            "title": "Application Cluster",
-            "description": "Locally defined names for a subset of related applications",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "dicomPreferredCalledAETitle": {
-            "title": "Preferred Called AE Title",
-            "description": "AE Title(s) that are preferred for initiating associations",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "dicomPreferredCallingAETitle": {
-            "title": "Preferred Calling AE Title",
-            "description": "AE Title(s) that are preferred for accepting associations",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "dicomSupportedCharacterSet": {
-            "title": "Supported Character Set",
-            "description": "Character Set(s) supported by the Network AE for data sets it receives",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "dicomInstalled": {
-            "title": "installed",
-            "description": "True if the AE is installed on network. If not present, information about the installed status of the AE is inherited from the device",
-            "type": "boolean"
-          },
-          "dicomTransferCapability": {
-            "title": "Transfer Capability",
-            "description": "Each transfer capability specifies the SOP class that the Network AE can support, the mode that it can utilize (SCP or SCU), and the Transfer Syntax(es) that it can utilize",
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": [
-                "dicomSOPClass",
-                "dicomTransferRole",
-                "dicomTransferSyntax"
-              ],
-              "properties": {
-                "cn": {
-                  "title": "Name",
-                  "description": "Arbitrary/Meaningful name for the Transfer Capability object",
-                  "type": "string"
-                },
-                "dicomSOPClass": {
-                  "title": "SOP Class",
-                  "description": "SOP Class UID",
-                  "type": "string"
-                },
-                "dicomTransferRole": {
-                  "title": "Transfer Role",
-                  "description": "Either SCU or SCP",
-                  "type": "string",
-                  "enum": [ "SCP",  "SCU" ]
-                },
-                "dicomTransferSyntax": {
-                  "title": "Transfer Syntax",
-                  "description": "Transfer syntax(es) that may be requested as an SCU or that are offered as an SCP",
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "dcmTransferCapability": {
-                  "title": "dcm4che Transfer Capability",
-                  "description": "dcm4che proprietary Transfer Capability Attributes",
-                  "type": "object",
-                  "properties": {
-                    "dcmRelationalQueries": {
-                      "title": "Relational Queries",
-                      "description": "Enable/disable relational queries; disabled if absent",
-                      "type": "boolean"
-                    },
-                    "dcmCombinedDateTimeMatching": {
-                      "title": "Combined Date Time Matching",
-                      "description": "Enable/disable combined date time matching; disabled if absent",
-                      "type": "boolean"
-                    },
-                    "dcmFuzzySemanticMatching": {
-                      "title": "Fuzzy Semantic Matching",
-                      "description": "Enable/disable fuzzy semantic matching of person  names; disabled if absent",
-                      "type": "boolean"
-                    },
-                    "dcmTimezoneQueryAdjustment": {
-                      "title": "Timezone Query Adjustment",
-                      "description": "Enable/disable timezone query adjustment; disabled if absent",
-                      "type": "boolean"
-                    },
-                    "dcmStorageConformance": {
-                      "title": "Storage Conformance",
-                      "description": "Indicates level of Conformance of a Storage SCP",
-                      "type": "integer",
-                      "enum": [ 0, 1, 2, 3 ]
-                    },
-                    "dcmDigitalSignatureSupport": {
-                      "title": "Digital Signature Support",
-                      "description": "Indicates level of Digital Signature Support of a Storage SCP",
-                      "type": "integer",
-                      "enum": [ 0, 1, 2, 3 ]
-                    },
-                    "dcmDataElementCoercion": {
-                      "title": "Data Element Coercion",
-                      "description": "Indicates coercion of Data Elements of a Storage SCP",
-                      "type": "integer",
-                      "enum": [ 0, 1, 2 ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "dcmNetworkAE": {
-            "title": "dcm4che Network AE Attributes",
-            "description": "dcm4che proprietary Attributes of Network AE",
-            "type": "object",
-            "properties": {
-              "dcmAcceptedCallingAETitle": {
-                "title": "Accepted Calling AE Title",
-                "description": "Prohibit accepting associations from unlisted AE. If not present, any AE will be accepted",
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "dcmOtherAETitle": {
-                "title": "Other AE Title",
-                "description": "Additional AE Title of Network AE - will also accept Association RQs with such Called AE Title",
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
+        "$ref": "networkAE.schema.json"
       }
     },
     "dcmDevice": {
       "title": "dcm4che Device Attributes",
       "description": "dcm4che proprietary Device Attributes",
-      "type": "object",
-      "properties": {
-        "dcmLimitOpenAssociations": {
-          "title": "Limit Open Associations",
-          "description": "Limit open DICOM connections; rejects Association requests if the limit is exceeded; 0 (=no limit) if absent",
-          "type": "integer",
-          "minimum": 0
-        },
-        "dcmTrustStoreURL": {
-          "title": "Trust Store URL",
-          "description": "URL of Trust Store with Certificates for DICOM nodes that are authorized to connect to this node; overrides dicomAuthorizedNodeCertificateReference",
-          "type": "string"
-        },
-        "dcmTrustStoreType": {
-          "title": "Trust Store Type",
-          "description": "Key Store Type of Trust Store specified by dcmTrustStoreURL. JKS or PKCS12",
-          "type": "string",
-          "enum": [ "JKS", "PKCS12" ]
-        },
-        "dcmTrustStorePin": {
-          "title": "Trust Store Pin",
-          "description": "Key Store Password of Trust Store specified by Trust Store URL",
-          "type": "string"
-        },
-        "dcmTrustStorePinProperty": {
-          "title": "Trust Store Pin Property",
-          "description": "System property of Key Store Password of Trust Store specified by Trust Store URL",
-          "type": "string"
-        },
-        "dcmKeyStoreURL": {
-          "title": "Key Store URL",
-          "description": "URL of Key Store with private Key and certificate used to identify this DICOM node in TLS connections",
-          "type": "string"
-        },
-        "dcmKeyStoreType": {
-          "title": "Key Store Type",
-          "description": "Key Store Type of Key Store specified by Key Store URL. JKS or PKCS12",
-          "type": "string",
-          "enum": [ "JKS", "PKCS12" ]
-        },
-        "dcmKeyStorePin": {
-          "title": "Key Store Pin",
-          "description": "Key Store Password of Key Store specified by Key Store URL",
-          "type": "string"
-        },
-        "dcmKeyStorePinProperty": {
-          "title": "Key Store Pin Property",
-          "description": "System property of Key Store Password of Key Store specified by Key Store URL",
-          "type": "string"
-        },
-        "dcmKeyStoreKeyPin": {
-          "title": "Key Store Key Pin",
-          "description": "Key Password of Key Store specified by Key Store URL",
-          "type": "string"
-        },
-        "dcmKeyStoreKeyPinProperty": {
-          "title": "Key Store Key Pin Property",
-          "description": "System property of Key Password of Key Store specified by Key Store URL",
-          "type": "string"
-        },
-        "dcmTimeZoneOfDevice": {
-          "title": "Time Zone of Device",
-          "description": "Time Zone ID of the Device; matches Java TimeZone ID",
-          "type": "string"
-        }
-      }
-    },
-    "hl7Application": {
-      "title": "HL7 Application",
-      "description": "HL7 Application information",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "hl7ApplicationName",
-          "dicomNetworkConnectionReference"
-        ],
-        "properties": {
-          "hl7ApplicationName": {
-            "title": "HL7 Application name",
-            "description": "HL7 Application and Facility name (Application^Facility)",
-            "type": "string"
-          },
-          "dicomNetworkConnectionReference": {
-            "title": "Network Connection Reference",
-            "description": "The JSON Pointers to the Network Connection objects for this HL7 Application",
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "hl7AcceptedSendingApplication": {
-            "title": "Accepted Sending Application",
-            "description": "Application^Facility name of accepted Sending Application(s); any if absent",
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "hl7AcceptedMessageType": {
-            "title": "Accepted Message Type",
-            "description": "Message Type(s) (MessageType^TriggerEvent) of accepted messages",
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "hl7DefaultCharacterSet": {
-            "title": "Default Character Set",
-            "description": "Character Set used to decode received messages if not specified by MSH-18, ASCII if absent",
-            "type": "string"
-          },
-          "dicomInstalled": {
-            "title": "installed",
-            "description": "True if the HL7 Application is installed on network. If not present, information about the installed status of the HL7 Application is inherited from the device",
-            "type": "boolean"
-          }
-        }
-      }
-    },
-    "dcmImageReader": {
-      "title": "Image Reader",
-      "description": "Specifies Java Image IO Image Readers used for decompressing compressed DICOM images",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "dicomTransferSyntax",
-          "dcmIIOFormatName"
-        ],
-        "properties": {
-          "dicomTransferSyntax": {
-            "title": "Transfer Syntax",
-            "description": "Transfer Syntax of compressed DICOM image",
-            "type": "string"
-          },
-          "dcmIIOFormatName": {
-            "title": "Image IO Reader Format Name",
-            "description": "Image IO Reader Format Name",
-            "type": "string"
-          },
-          "dcmJavaClassName": {
-            "title": "Java Class Name",
-            "description": "Fully qualified Java class of Image IO Reader. If absent, use any Image Reader found for specified Format Name",
-            "type": "string"
-          },
-          "dcmPatchJPEGLS": {
-            "title": "Patch JPEG-LS",
-            "description": "Patch JPEG-LS before decompressing: JAI2ISO, ISO2JAI or ISO2JAI_IF_APP_OR_COM",
-            "type": "string",
-            "enum": ["JAI2ISO", "ISO2JAI", "ISO2JAI_IF_APP_OR_COM"]
-          }
-        }
-      }
-    },
-    "dcmImageWriter": {
-      "title": "Image Writer",
-      "description": "Specifies Java Image IO Image Writer and Write Parameter used for compressing DICOM images",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "dicomTransferSyntax",
-          "dcmIIOFormatName"
-        ],
-        "properties": {
-          "dicomTransferSyntax": {
-            "title": "Transfer Syntax",
-            "description": "Transfer Syntax to which to compress the DICOM image",
-            "type": "string"
-          },
-          "dcmIIOFormatName": {
-            "title": "Image IO Writer Format Name",
-            "description": "Image IO Writer Format Name",
-            "type": "string"
-          },
-          "dcmJavaClassName": {
-            "title": "Java Class Name",
-            "description": "Fully qualified Java class of Image IO Writer. If absent, use any Image Writer found for specified Format Name",
-            "type": "string"
-          },
-          "dcmPatchJPEGLS": {
-            "title": "Patch JPEG-LS",
-            "description": "Patch JPEG-LS after compressing: JAI2ISO, ISO2JAI or ISO2JAI_IF_APP_OR_COM",
-            "type": "string",
-            "enum": ["JAI2ISO", "ISO2JAI", "ISO2JAI_IF_APP_OR_COM"]
-          },
-          "dcmImageWriteParam": {
-            "title": "Image Write Param",
-            "description": "Image Write Parameter(s) (name=value) set at on Image Writer before compression",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "dcmAuditLogger": {
-      "title": "Audit Logger",
-      "description": "Audit Logger related information",
-      "type": "object",
-      "required": [
-        "dicomNetworkConnectionReference",
-        "dcmAuditRecordRepositoryDeviceName"
-      ],
-      "properties": {
-        "dicomNetworkConnectionReference": {
-          "title": "Network Connection Reference",
-          "description": "The JSON Pointers to the Network Connection objects used by this Audit Logger",
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "dcmAuditRecordRepositoryDeviceName": {
-          "title": "Audit Record Repository Device Name",
-          "description": "Device Name of Audit Record Repository to which Audit Messages are sent",
-          "type": "string"
-        },
-        "dcmAuditSourceID": {
-          "title": "Source ID",
-          "description": "RFC 3881 Audit Source ID; device name if absent",
-          "type": "string"
-        },
-        "dcmAuditEnterpriseSiteID": {
-          "title": "Enterprise Site ID",
-          "description": "RFC 3881 Audit Enterprise Site ID; value 'dicomInstitutionName' is replaced by the institution name of the DICOM device",
-          "type": "string"
-        },
-        "dcmAuditSourceTypeCode": {
-          "title": "Source Type Code",
-          "description": "RFC 3881 Audit Source Type Code; value 'dicomPrimaryDeviceType' is replaced by the primary type of the DICOM device",
-          "type": "array",
-          "items": { "type" : "string" }
-        },
-        "dcmAuditFacility": {
-          "title": "Syslog Facility",
-          "description": "RFC 5424 Syslog Facility value of audit message: 0-23; 10 (authpriv) if absent",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 13
-        },
-        "dcmAuditSuccessSeverity": {
-          "title": "Syslog Severity - Success",
-          "description": "RFC 5424 Syslog Severity of audit message with Event Outcome Indicator 0 (Success); 5 (notice) if absent",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 7
-        },
-        "dcmAuditMinorFailureSeverity": {
-          "title": "Syslog Severity - Failure",
-          "description": "RFC 5424 Syslog Severity of audit message with Event Outcome Indicator 4 (Minor failure); 4 (warning) if absent",
-          "type": "string"
-        },
-        "dcmAuditSeriousFailureSeverity": {
-          "title": "Syslog Severity - Failure",
-          "description": "RFC 5424 Syslog Severity of audit message with Event Outcome Indicator 8 (Serious failure); 3 (err) if absent",
-          "type": "string"
-        },
-        "dcmAuditMajorFailureSeverity": {
-          "title": "Syslog Severity - Major",
-          "description": "RFC 5424 Syslog Severity of audit message with Event Outcome Indicator 12 (Major failure); 2 (crit) if absent",
-          "type": "string"
-        },
-        "dcmAuditApplicationName": {
-          "title": "Syslog Application Name",
-          "description": "RFC 5424 Syslog APP-NAME of audit message; Audit Source ID if absent",
-          "type": "string"
-        },
-        "dcmAuditMessageID": {
-          "title": "Syslog Message ID",
-          "description": "RFC 5424 Syslog MSGID of audit message; DICOM+RFC3881 if absent",
-          "type": "string"
-        },
-        "dcmAuditMessageEncoding": {
-          "title": "Message Encoding",
-          "description": "Character encoding of RFC 5424 Syslog MSG part of audit message; UTF-8 if absent",
-          "type": "string"
-        },
-        "dcmAuditMessageBOM": {
-          "title": "Message BOM",
-          "description": "Enable/disable Unicode BOM prefix of RFC 5424 Syslog MSG part of audit message; include BOM if absent",
-          "type": "boolean"
-        },
-        "dcmAuditTimestampInUTC": {
-          "title": "Timestamp in UTC",
-          "description": "Specify if RFC 5424 Syslog TIMESTAMP and the Event Date/Time of the audit message are specified in Coordinated Universal Time or in Local Time; use Local Time zone if absent",
-          "type": "boolean"
-        },
-        "dcmAuditMessageFormatXML": {
-          "title": "Message Format XML",
-          "description": "Specify whether or not the XML audit message is formatted with linefeeds and indentation; disabled if absent",
-          "type": "boolean"
-        },
-        "dcmAuditMessageSchemaURI": {
-          "title": "Message Schema URI",
-          "description": "URI of DICOM Audit Message Schema referenced in audit message",
-          "type": "string"
-        },
-        "dcmAuditIncludeInstanceUID": {
-          "title": "Include Instance UIDs",
-          "description": "Indicates if Audit Log Message should contain optional Instance UIDs",
-          "type": "boolean"
-        },
-        "dcmAuditLoggerSpoolDirectoryURI": {
-          "title": "Spool Directory URI",
-          "description": "URI of spool directory used to store messages which could not delivered to the record repository; use system temporary directory if absent",
-          "type": "string"
-        },
-        "dcmAuditLoggerRetryInterval": {
-          "title": "Retry Interval",
-          "description": "Retry interval in s to re-sent messages which could not delivered to the record repository; do no retry to re-sent messages if absent",
-          "type": "string"
-        },
-        "dicomInstalled": {
-          "title": "installed",
-          "description": "True if the Audit Logger is installed on network. If not present, information about the installed status of the Audit Logger is inherited from the device",
-          "type": "boolean"
-        },
-        "dcmAuditSuppressCriteria": {
-          "title": "Audit Suppress Criteria",
-          "description": "Audit Suppress Criteria",
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": [ "cn" ],
-            "properties": {
-              "cn": {
-                "title": "Name",
-                "description": "Arbitrary/Meaningful name of the Audit Suppress Criteria",
-                "type": "string"
-              },
-              "dcmAuditEventID": {
-                "title": "Audit Event ID",
-                "description": "RFC 3881 Audit Event ID code and codeSystemName in format (CV, CSD, \"CM\")",
-                "type": "array",
-                "items" : { "type": "string" }
-              },
-              "dcmAuditEventTypeCode": {
-                "title": "Audit Event Type Code",
-                "description": "RFC 3881 Audit Event Type code in format (CV, CSD, \"CM\")",
-                "type": "array",
-                "items" : { "type": "string" }
-              },
-              "dcmAuditEventActionCode": {
-                "title": "Event Action Code",
-                "description": "RFC 3881 Audit Event Action Type code. Enumerated values: C, R, U, D, E",
-                "type": "array",
-                "items" : { "enum": ["C", "R", "U", "D", "E" ] }
-              },
-              "dcmAuditEventOutcomeIndicator": {
-                "title": "Event Outcome Indicator",
-                "description": "RFC 3881 Audit Event Outcome Indicator. Enumerated values: 0, 4, 8, 12",
-                "type": "array",
-                "items" : { "enum": ["0", "4", "8", "12"] }
-              },
-              "dcmAuditUserID": {
-                "title": "User ID",
-                "description": "RFC 3881 Audit Active Participant User ID",
-                "type": "array",
-                "items" : { "type": "string" }
-              },
-              "dcmAuditAlternativeUserID": {
-                "title": "Alternative User ID",
-                "description": "RFC 3881 Audit Active Participant Alternative User ID",
-                "type": "array",
-                "items" : { "type": "string" }
-              },
-              "dcmAuditUserRoleIDCode": {
-                "title": "User Role ID Code",
-                "description": "RFC 3881 Audit Active Participant User Role ID code in format (CV, CSD, \"CM\")",
-                "type": "array",
-                "items" : { "type": "string" }
-              },
-              "dcmAuditNetworkAccessPointID": {
-                "title": "Network Access Point ID",
-                "description": "RFC 3881 Audit Active Participant Network Access Point ID",
-                "type": "array",
-                "items" : { "type": "string" }
-              },
-              "dcmAuditUserIsRequestor": {
-                "title": "User is Requestor",
-                "description": "Indicates if Active Participant is initiator/requestor of the Audit Event as specified by RFC 3881",
-                "type": "boolean"
-              }
-            }
-          }
-        }
-      }
-    },
-    "dcmAuditRecordRepository": {
-      "title": "Audit Record Repository",
-      "description": "Audit Record Repository related information",
-      "type": "object",
-      "required": [
-        "dicomNetworkConnectionReference"
-      ],
-      "properties": {
-        "dicomNetworkConnectionReference": {
-          "title": "Network Connection Reference",
-          "description": "The JSON Pointers to the Network Connection objects of this Audit Record Repository",
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "dicomInstalled": {
-          "title": "installed",
-          "description": "True if the ARR is installed on network. If not present, information about the installed status of the ARR is inherited from the device",
-          "type": "boolean"
-        }
-      }
+      "$ref": "dcmDevice.schema.json",
+      "order":27
     }
   }
 }

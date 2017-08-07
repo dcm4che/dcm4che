@@ -1,0 +1,48 @@
+{
+  "title": "Transfer Capability",
+  "description": "Each transfer capability specifies the SOP class that the Network AE can support, the mode that it can utilize (SCP or SCU), and the Transfer Syntax(es) that it can utilize",
+  "type": "object",
+  "required": [
+    "dicomSOPClass",
+    "dicomTransferRole",
+    "dicomTransferSyntax"
+  ],
+  "properties": {
+    "cn": {
+      "title": "Name",
+      "description": "Arbitrary/Meaningful name for the Transfer Capability object",
+      "type": "string"
+    },
+    "dicomSOPClass": {
+      "title": "SOP Class",
+      "description": "SOP Class UID",
+      "type": "string",
+      "pattern": "^[0-2]((\\.0)|(\\.[1-9][0-9]*))*$",
+      "format": "dcmSOPClass"
+    },
+    "dicomTransferRole": {
+      "title": "DICOM Transfer Role",
+      "description": "DICOM Transfer Role.",
+      "type": "string",
+      "enum": [
+        "SCP",
+        "SCU"
+      ]
+    },
+    "dicomTransferSyntax": {
+      "title": "Transfer Syntax",
+      "description": "Transfer syntax(es) that may be requested as an SCU or that are offered as an SCP.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-2]((\\.0)|(\\.[1-9][0-9]*))*$",
+        "format": "dcmTransferSyntax"
+      }
+    },
+    "dcmTransferCapability": {
+      "title": "dcm4che Transfer Capability",
+      "description": "dcm4che proprietary Transfer Capability Attributes",
+      "$ref": "dcmTransferCapability.schema.json"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "title": "Image Writer",
+  "description": "Specifies Java Image IO Image Writer and Write Parameter used for compressing DICOM images",
+  "type": "object",
+  "required": [
+    "dicomTransferSyntax",
+    "dcmIIOFormatName"
+  ],
+  "properties": {
+    "dicomTransferSyntax": {
+      "title": "Transfer Syntax",
+      "description": "Transfer Syntax to which to compress the DICOM image",
+      "type": "string",
+      "pattern": "^[0-2]((\\.0)|(\\.[1-9][0-9]*))*$",
+      "format": "dcmTransferSyntax"
+    },
+    "dcmIIOFormatName": {
+      "title": "Image IO Writer Format Name",
+      "description": "Image IO Writer Format Name",
+      "type": "string"
+    },
+    "dcmJavaClassName": {
+      "title": "Java Class Name",
+      "description": "Fully qualified Java class of Image IO Writer. If absent, use any Image Writer found for specified Format Name",
+      "type": "string"
+    },
+    "dcmPatchJPEGLS": {
+      "title": "Patch JPEG-LS",
+      "description": "Patch JPEG-LS after compressing",
+      "type": "string",
+      "enum": [
+          "JAI2ISO",
+          "ISO2JAI",
+          "ISO2JAI_IF_APP_OR_COM"
+      ]
+    },
+    "dcmImageWriteParam": {
+      "title": "Image Write Param",
+      "description": "Image Write Parameter(s) (name=value) set at on Image Writer before compression",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

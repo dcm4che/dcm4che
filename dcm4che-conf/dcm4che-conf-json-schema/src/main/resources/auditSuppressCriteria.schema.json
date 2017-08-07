@@ -1,0 +1,97 @@
+{
+  "title": "Audit Suppress Criteria",
+  "description": "Audit Suppress Criteria",
+  "type": "object",
+  "required": [
+    "cn"
+  ],
+  "properties": {
+    "cn": {
+      "title": "Name",
+      "description": "Arbitrary/Meaningful name of the Audit Suppress Criteria",
+      "type": "string"
+    },
+    "dcmAuditEventID": {
+      "title": "Audit Event ID",
+      "description": "RFC 3881 Audit Event ID code and codeSystemName in format (CV, CSD, \"CM\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dcmAuditEventTypeCode": {
+      "title": "Audit Event Type Code",
+      "description": "RFC 3881 Audit Event Type code in format (CV, CSD, \"CM\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dcmAuditEventActionCode": {
+      "title": "Event Action Code",
+      "description": "RFC 3881 Audit Event Action Type code.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "C",
+          "R",
+          "U",
+          "D",
+          "E"
+        ]
+      }
+    },
+    "dcmAuditEventOutcomeIndicator": {
+      "title": "Event Outcome Indicator",
+      "description": "RFC 3881 Audit Event Outcome Indicator.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "0",
+          "4",
+          "8",
+          "12"
+        ]
+      }
+    },
+    "dcmAuditUserID": {
+      "title": "User ID",
+      "description": "RFC 3881 Audit Active Participant User ID",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dcmAuditAlternativeUserID": {
+      "title": "Alternative User ID",
+      "description": "RFC 3881 Audit Active Participant Alternative User ID",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dcmAuditUserRoleIDCode": {
+      "title": "User Role ID Code",
+      "description": "RFC 3881 Audit Active Participant User Role ID code in format (CV, CSD, \"CM\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dcmAuditNetworkAccessPointID": {
+      "title": "Network Access Point ID",
+      "description": "RFC 3881 Audit Active Participant Network Access Point ID",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dcmAuditUserIsRequestor": {
+      "title": "User is Requestor",
+      "description": "Indicates if Active Participant is initiator/requestor of the Audit Event as specified by RFC 3881",
+      "type": "boolean"
+    }
+  }
+}

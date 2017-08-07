@@ -1,0 +1,121 @@
+{
+  "title": "dcm4che Device Attributes",
+  "description": "dcm4che proprietary Device Attributes",
+  "type": "object",
+  "required": [
+    "dcmLimitOpenAssociations"
+  ],
+  "properties": {
+    "dcmLimitOpenAssociations": {
+      "title": "Limit Open Associations",
+      "description": "Limit open DICOM connections; rejects Association requests if the limit is exceeded. 0 = unlimited.",
+      "type": "integer",
+      "minimum": 0,
+      "default": 0
+    },
+    "dcmTrustStoreURL": {
+      "title": "Trust Store URL",
+      "description": "URL of Trust Store with Certificates for DICOM nodes that are authorized to connect to this node; overrides dicomAuthorizedNodeCertificateReference",
+      "type": "string"
+    },
+    "dcmTrustStoreType": {
+      "title": "Trust Store Type",
+      "description": "Key Store Type of Trust Store specified by dcmTrustStoreURL.",
+      "type":"string",
+      "enum": [ "JKS", "PKCS12" ]
+    },
+    "dcmTrustStorePin": {
+      "title": "Trust Store Pin",
+      "description": "Key Store Password of Trust Store specified by Trust Store URL",
+      "type": "string"
+    },
+    "dcmTrustStorePinProperty": {
+      "title": "Trust Store Pin Property",
+      "description": "System property of Key Store Password of Trust Store specified by Trust Store URL",
+      "type": "string"
+    },
+    "dcmKeyStoreURL": {
+      "title": "Key Store URL",
+      "description": "URL of Key Store with private Key and certificate used to identify this DICOM node in TLS connections",
+      "type": "string"
+    },
+    "dcmKeyStoreType": {
+      "title": "Key Store Type",
+      "description": "Key Store Type of Key Store specified by Key Store URL.",
+      "type": "string",
+      "enum": [ "JKS", "PKCS12"]
+
+    },
+    "dcmKeyStorePin": {
+      "title": "Key Store Pin",
+      "description": "Key Store Password of Key Store specified by Key Store URL",
+      "type": "string"
+    },
+    "dcmKeyStorePinProperty": {
+      "title": "Key Store Pin Property",
+      "description": "System property of Key Store Password of Key Store specified by Key Store URL",
+      "type": "string"
+    },
+    "dcmKeyStoreKeyPin": {
+      "title": "Key Store Key Pin",
+      "description": "Key Password of Key Store specified by Key Store URL",
+      "type": "string"
+    },
+    "dcmKeyStoreKeyPinProperty": {
+      "title": "Key Store Key Pin Property",
+      "description": "System property of Key Password of Key Store specified by Key Store URL",
+      "type": "string"
+    },
+    "dcmTimeZoneOfDevice": {
+      "title": "Time Zone of Device",
+      "description": "Time Zone ID of the Device; matches Java TimeZone ID",
+      "type": "string"
+    },
+    "hl7Application": {
+      "title": "HL7 Applications",
+      "description": "HL7 Applications provided by the Device",
+      "type": "array",
+      "titleKey":"{hl7ApplicationName}",
+      "order":28,
+      "items": {
+        "$ref": "hl7Application.schema.json"
+      }
+    },
+    "dcmImageWriter": {
+      "title": "Image Writers",
+      "description": "Specifies Java Image IO Image Writers with Write Parameters used for compressing DICOM images",
+      "type": "array",
+      "titleKey":"{dicomTransferSyntax}",
+      "order":29,
+      "items": {
+        "$ref": "imageWriter.schema.json"
+      }
+    },
+    "dcmImageReader": {
+      "title": "Image Readers",
+      "description": "Specifies Java Image IO Image Readers used for decompressing compressed DICOM images",
+      "type": "array",
+      "titleKey":"{dicomTransferSyntax}",
+      "order":30,
+      "items": {
+        "$ref": "imageReader.schema.json"
+      }
+    },
+    "dcmAuditLogger": {
+      "title": "Audit Logger",
+      "description": "Audit Logger related information",
+      "titleKey":"{cn}",
+      "type": "array",
+      "order":31,
+      "items" : {
+        "$ref": "auditLogger.schema.json"
+      }
+    },
+    "dcmAuditRecordRepository": {
+      "title": "Audit Record Repository",
+      "description": "Audit Record Repository related information",
+      "$ref": "auditRecordRepository.schema.json",
+      "order":32
+    }
+  }
+}

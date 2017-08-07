@@ -1,0 +1,73 @@
+{
+  "title": "HL7 Application",
+  "description": "HL7 Application information",
+  "type": "object",
+  "required": [
+    "hl7ApplicationName",
+    "dicomNetworkConnectionReference",
+    "hl7DefaultCharacterSet"
+  ],
+  "properties": {
+    "hl7ApplicationName": {
+      "title": "HL7 Application name",
+      "description": "HL7 Application and Facility name (Application|Facility)",
+      "type": "string"
+    },
+    "dicomNetworkConnectionReference": {
+      "title": "Network Connection Reference",
+      "description": "The JSON Pointers to the Network Connection objects for this HL7 Application",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hl7AcceptedSendingApplication": {
+      "title": "Accepted Sending Application",
+      "description": "Application|Facility name of accepted Sending Application(s); any if absent",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hl7OtherApplicationName": {
+      "title": "Other HL7 Application Name",
+      "description": "Additional HL7 Application and Facility name (Application|Facility) - will also accept HL7 messages with such Receiving Application and Facility name",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hl7AcceptedMessageType": {
+      "title": "Accepted Message Type",
+      "description": "Message Type(s) (MessageType^TriggerEvent) of accepted messages",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hl7DefaultCharacterSet": {
+      "title": "Default Character Set",
+      "description": "Character Set used to decode received messages if not specified by MSH-18.",
+      "type": "string",
+      "default": "ASCII"
+    },
+    "dicomDescription": {
+      "title": "HL7 Description",
+      "description": "Unconstrained text description of the HL7 Application",
+      "type": "string"
+    },
+    "dicomApplicationCluster": {
+      "title": "Application Cluster",
+      "description": "Locally defined names for a subset of related applications",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomInstalled": {
+      "title": "installed",
+      "description": "True if the HL7 Application is installed on network. If not present, information about the installed status of the HL7 Application is inherited from the device",
+      "type": "boolean"
+    }
+  }
+}

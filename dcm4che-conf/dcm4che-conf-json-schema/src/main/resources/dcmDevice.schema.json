@@ -1,5 +1,5 @@
 {
-  "title": "dcm4che Device Attributes",
+  "title": "Device Extension",
   "description": "dcm4che proprietary Device Attributes",
   "type": "object",
   "required": [

@@ -97,7 +97,7 @@
       }
     },
     "dcmNetworkAE": {
-      "title": "dcm4che Network AE Attributes",
+      "title": "Network AE Extension",
       "description": "dcm4che proprietary Attributes of Network AE",
       "$ref": "dcmNetworkAE.schema.json",
       "order":12

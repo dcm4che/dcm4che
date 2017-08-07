@@ -42,7 +42,7 @@
       "type": "boolean"
     },
     "dcmNetworkConnection": {
-      "title": "dcm4che Network Connection Attributes",
+      "title": "Network Connection Extension",
       "description": "dcm4che proprietary Network Connection Attributes",
       "$ref": "dcmNetworkConnection.schema.json"
     }

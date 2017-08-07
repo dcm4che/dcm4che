@@ -40,7 +40,7 @@
       }
     },
     "dcmTransferCapability": {
-      "title": "dcm4che Transfer Capability",
+      "title": "Transfer Capability Extension",
       "description": "dcm4che proprietary Transfer Capability Attributes",
       "$ref": "dcmTransferCapability.schema.json"
     }

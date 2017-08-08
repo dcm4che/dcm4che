@@ -207,7 +207,6 @@ public class AuditLogger {
     private Boolean installed;
     private Boolean includeInstanceUID = false;
     private File spoolDirectory;
-    private String spoolDirectoryURI;
     private String spoolFileNamePrefix = "audit";
     private String spoolFileNameSuffix= ".log";
     private int retryInterval;
@@ -507,6 +506,9 @@ public class AuditLogger {
      *          be used
      */
     public File getSpoolDirectory() {
+        if (spoolDirectory == null) {
+            spoolDirectory = new File(getTempPath());
+        }
         return spoolDirectory;
     }
 
@@ -523,12 +525,23 @@ public class AuditLogger {
     }
 
     public String getSpoolDirectoryURI() {
-        return spoolDirectoryURI;
+        return getSpoolDirectory().toURI().toASCIIString();
     }
 
     public void setSpoolDirectoryURI(String uri) {
-        this.spoolDirectory = uri != null ? new File(URI.create(StringUtils.replaceSystemProperties(uri))) : null;
-        this.spoolDirectoryURI = uri;
+        if (uri == null) {
+            setSpoolDirectory(new File(getTempPath()));
+        } else {
+            setSpoolDirectory(new File(URI.create(StringUtils.replaceSystemProperties(uri))));
+        }
+    }
+
+    public String getDefaultSpoolDirectoryURI() {
+        return new File(getTempPath()).toURI().toASCIIString();
+    }
+
+    private String getTempPath() {
+        return System.getProperty("java.io.tmpdir");
     }
 
     public String getSpoolNameFilePrefix() {
@@ -652,7 +665,7 @@ public class AuditLogger {
         setTimestampInUTC(from.timestampInUTC);
         setIncludeBOM(from.includeBOM);
         setFormatXML(from.formatXML);
-        setSpoolDirectoryURI(from.spoolDirectoryURI);
+        setSpoolDirectory(from.getSpoolDirectory());
         setSpoolFileNamePrefix(from.spoolFileNamePrefix);
         setSpoolFileNameSuffix(from.spoolFileNameSuffix);
         setRetryInterval(from.retryInterval);
@@ -765,15 +778,11 @@ public class AuditLogger {
     }
 
     private void spoolMessage(DatagramPacket msg) throws IOException {
-        if (spoolDirectory != null)
-            spoolDirectory.mkdirs();
+        getSpoolDirectory().mkdirs();
 
         File f = null;
         try {
-            f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, spoolDirectory);
-            if (spoolDirectory == null)
-                spoolDirectory = f.getParentFile();
-
+            f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, getSpoolDirectory());
             LOG.info("Spool audit message to {}", f);
             FileOutputStream out = new FileOutputStream(f);
             try {
@@ -847,18 +856,14 @@ public class AuditLogger {
 
     public int getNumberOfQueuedMessages() {
         try {
-            return spoolDirectory.list(FILENAME_FILTER).length;
+            return getSpoolDirectory().list(FILENAME_FILTER).length;
         } catch (NullPointerException e) {
             return 0;
         }
     }
 
     public File[] getQueuedMessages() {
-        try {
-            return spoolDirectory.listFiles(FILENAME_FILTER);
-        } catch (NullPointerException e) {
-            return null;
-        }
+        return getSpoolDirectory().listFiles(FILENAME_FILTER);
     }
 
     public synchronized void waitForNoQueuedMessages(long timeout)

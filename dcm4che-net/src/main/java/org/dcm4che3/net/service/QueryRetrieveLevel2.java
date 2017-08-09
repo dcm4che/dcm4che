@@ -43,6 +43,7 @@ package org.dcm4che3.net.service;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
@@ -54,16 +55,26 @@ import java.util.EnumSet;
  * @since Aug 2015
  */
 public enum QueryRetrieveLevel2 {
-    PATIENT(Tag.PatientID),
-    STUDY(Tag.StudyInstanceUID),
-    SERIES(Tag.SeriesInstanceUID),
-    IMAGE(Tag.SOPInstanceUID);
+    PATIENT(Tag.PatientID, VR.LO),
+    STUDY(Tag.StudyInstanceUID, VR.UI),
+    SERIES(Tag.SeriesInstanceUID, VR.UI),
+    IMAGE(Tag.SOPInstanceUID, VR.UI);
 
     private static ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
     private final int uniqueKey;
+    private final VR vrOfUniqueKey;
 
-    QueryRetrieveLevel2(int uniqueKey) {
+    QueryRetrieveLevel2(int uniqueKey, VR vrOfUniqueKey) {
         this.uniqueKey = uniqueKey;
+        this.vrOfUniqueKey = vrOfUniqueKey;
+    }
+
+    public int uniqueKey() {
+        return uniqueKey;
+    }
+
+    public VR vrOfUniqueKey() {
+        return vrOfUniqueKey;
     }
 
     public static QueryRetrieveLevel2 validateQueryIdentifier(

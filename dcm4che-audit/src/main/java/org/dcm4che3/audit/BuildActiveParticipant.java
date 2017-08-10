@@ -53,7 +53,7 @@ public class BuildActiveParticipant {
     public final String napTypeCode;
     public final boolean requester;
     public final AuditMessages.MediaType mediaType;
-    public final AuditMessages.RoleIDCode roleIDCode;
+    public final AuditMessages.RoleIDCode[] roleIDCode;
 
     public static class Builder {
         private final String userID;
@@ -63,7 +63,7 @@ public class BuildActiveParticipant {
         private String userName;
         private boolean requester;
         private AuditMessages.MediaType mediaType;
-        private AuditMessages.RoleIDCode roleIDCode;
+        private AuditMessages.RoleIDCode[] roleIDCode = {};
 
         public Builder(String userID, String napID) {
             this.userID = userID;
@@ -95,7 +95,7 @@ public class BuildActiveParticipant {
             return this;
         }
 
-        public Builder roleIDCode(AuditMessages.RoleIDCode val) {
+        public Builder roleIDCode(AuditMessages.RoleIDCode... val) {
             roleIDCode = val;
             return this;
         }

@@ -40,12 +40,8 @@ package org.dcm4che3.audit;
 
 
 import java.io.StringReader;
-import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
-import java.util.List;
-
-import org.dcm4che3.audit.AuditMessage;
-import org.dcm4che3.audit.AuditMessages;
 import org.junit.Test;
 
 /**
@@ -132,30 +128,31 @@ public class AuditMessageTest {
 
     @Test
     public void testDICOMInstancesTransferred() throws Exception {
-        EventIdentification ei = AuditMessages.getEI(new BuildEventIdentification.Builder(AuditMessages.EventID.DICOMInstancesTransferred,
-                AuditMessages.EventActionCode.Create, null, AuditMessages.EventOutcomeIndicator.Success).build());
-        BuildActiveParticipant ap1 = new BuildActiveParticipant.Builder("123", "192.168.1.2").requester(false)
+        BuildEventIdentification ei = new BuildEventIdentification.Builder(AuditMessages.EventID.DICOMInstancesTransferred,
+                AuditMessages.EventActionCode.Create, Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success).build();
+        BuildActiveParticipant[] activeParticipants = new BuildActiveParticipant[3];
+        activeParticipants[0] = new BuildActiveParticipant.Builder("123", "192.168.1.2").requester(false)
                 .altUserID(AuditMessages.alternativeUserIDForAETitle("AEFOO")).roleIDCode(AuditMessages.RoleIDCode.Source).build();
-        BuildActiveParticipant ap2 = new BuildActiveParticipant.Builder("67562", "192.168.1.5").requester(false)
+        activeParticipants[1] = new BuildActiveParticipant.Builder("67562", "192.168.1.5").requester(false)
                 .altUserID(AuditMessages.alternativeUserIDForAETitle("AEPACS")).roleIDCode(AuditMessages.RoleIDCode.Destination).build();
-        BuildActiveParticipant ap3 = new BuildActiveParticipant.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
+        activeParticipants[2] = new BuildActiveParticipant.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
                 .requester(true).altUserID("smith@nema").userName("Dr. Smith").roleIDCode(AuditMessages.RoleIDCode.Source).build();
-        List<ActiveParticipant> apList = AuditMessages.getApList(ap1, ap2, ap3);
+
         ParticipantObjectContainsStudy pocs = AuditMessages.getPocs("1.2.840.10008.2.3.4.5.6.7.78.8");
         HashSet<SOPClass> sopClasses = new HashSet<>();
         sopClasses.add(AuditMessages.getSOPC(null,  "1.2.840.10008.5.1.4.1.1.2", 1500));
         sopClasses.add(AuditMessages.getSOPC(null, "1.2.840.10008.5.1.4.1.1.11.1", 3));
         BuildParticipantObjectDescription pod = new BuildParticipantObjectDescription.Builder(sopClasses, pocs)
                 .acc(AuditMessages.getAccessions("12341234")).mpps(AuditMessages.getMPPS("1.2.840.10008.1.2.3.4.5")).build();
-        BuildParticipantObjectIdentification poi1 = new BuildParticipantObjectIdentification.Builder("1.2.840.10008.2.3.4.5.6.7.78.8",
+        BuildParticipantObjectIdentification poiStudy = new BuildParticipantObjectIdentification.Builder("1.2.840.10008.2.3.4.5.6.7.78.8",
                 AuditMessages.ParticipantObjectIDTypeCode.StudyInstanceUID, AuditMessages.ParticipantObjectTypeCode.SystemObject,
                 AuditMessages.ParticipantObjectTypeCodeRole.Resource).desc(AuditMessages.getPODesc(pod))
                 .lifeCycle(AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation).build();
-        BuildParticipantObjectIdentification poi2 = new BuildParticipantObjectIdentification.Builder("ptid12345",
+        BuildParticipantObjectIdentification poiPatient = new BuildParticipantObjectIdentification.Builder("ptid12345",
                 AuditMessages.ParticipantObjectIDTypeCode.PatientNumber, AuditMessages.ParticipantObjectTypeCode.Person,
                 AuditMessages.ParticipantObjectTypeCodeRole.Patient).name("John Doe").desc(AuditMessages.getPODesc(pod)).build();
-        List<ParticipantObjectIdentification> poiList = AuditMessages.getPoiList(poi1, poi2);
-        AuditMessage msg = AuditMessages.createMessage(ei, apList, poiList);
+
+        AuditMessage msg = AuditMessages.createMessage(ei, activeParticipants, poiStudy, poiPatient);
         msg.getAuditSourceIdentification().add(AuditMessages.createAuditSourceIdentification("Hospital", "ReadingRoom",
                         AuditMessages.AuditSourceTypeCode.EndUserDisplayDevice));
         AuditMessages.toXML(msg, System.out, true);

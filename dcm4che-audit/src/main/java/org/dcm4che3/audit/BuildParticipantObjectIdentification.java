@@ -55,7 +55,7 @@ public class BuildParticipantObjectIdentification {
     public final String lifeCycle;
     public final String sensitivity;
     public final ParticipantObjectDescription desc;
-    public final ParticipantObjectDetail detail;
+    public final ParticipantObjectDetail[] detail;
 
     public static class Builder {
         private final String id;
@@ -67,7 +67,7 @@ public class BuildParticipantObjectIdentification {
         private String lifeCycle;
         private String sensitivity;
         private ParticipantObjectDescription desc;
-        private ParticipantObjectDetail detail;
+        private ParticipantObjectDetail[] detail = {};
 
         public Builder(String id, AuditMessages.ParticipantObjectIDTypeCode idType,
                        String type, String role) {
@@ -102,7 +102,7 @@ public class BuildParticipantObjectIdentification {
             return this;
         }
 
-        public Builder detail(ParticipantObjectDetail val) {
+        public Builder detail(ParticipantObjectDetail... val) {
             detail = val;
             return this;
         }

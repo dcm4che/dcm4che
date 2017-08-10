@@ -52,7 +52,7 @@ public class BuildEventIdentification {
     public final Calendar eventDateTime;
     public final String outcome;
     public final String outcomeDesc;
-    public final EventTypeCode eventTypeCode;
+    public final EventTypeCode[] eventTypeCode;
 
     public static class Builder {
         private final AuditMessages.EventID eventID;
@@ -60,7 +60,7 @@ public class BuildEventIdentification {
         private final Calendar eventDateTime;
         private final String outcome;
         private String outcomeDesc;
-        private EventTypeCode eventTypeCode;
+        private EventTypeCode[] eventTypeCode = {};
 
         public Builder(AuditMessages.EventID eventID, String eventActionCode, Calendar eventDateTime, String outcome) {
             this.eventID = eventID;
@@ -74,7 +74,7 @@ public class BuildEventIdentification {
             return this;
         }
 
-        public Builder eventTypeCode(EventTypeCode val) {
+        public Builder eventTypeCode(EventTypeCode... val) {
             eventTypeCode = val;
             return this;
         }

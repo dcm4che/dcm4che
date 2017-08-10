@@ -96,30 +96,31 @@ public class AuditAuth {
         }
     }
 
-    private static EventIdentification getEI(AuditLogger log, Event event) {
+    private static BuildEventIdentification toBuildEventIdentification(AuditLogger log, Event event) {
         String outcome = event.getError() != null
                 ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success;
         EventTypeCode etc = event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
                 ? AuditMessages.EventTypeCode.Login : AuditMessages.EventTypeCode.Logout;
-        BuildEventIdentification ei = new BuildEventIdentification.Builder(AuditMessages.EventID.UserAuthentication,
+        return new BuildEventIdentification.Builder(AuditMessages.EventID.UserAuthentication,
                 AuditMessages.EventActionCode.Execute, log.timeStamp(), outcome).outcomeDesc(event.getError())
                 .eventTypeCode(etc).build();
-        return AuditMessages.getEI(ei);
     }
 
     private static void sendAuditMessage(Path file, Event event, AuditLogger log) throws IOException{
         AuthInfo info = new AuthInfo(new LineReader(file).getMainInfo());
-        BuildActiveParticipant ap1 = new BuildActiveParticipant.Builder(
+        BuildActiveParticipant[] activeParticipants = new BuildActiveParticipant[2];
+        activeParticipants[0] = new BuildActiveParticipant.Builder(
                 info.getField(AuthInfo.USER_NAME), info.getField(AuthInfo.IP_ADDR)).requester(true).build();
-        BuildActiveParticipant ap2 = new BuildActiveParticipant.Builder(log.getDevice().getDeviceName(),
-                log.getConnections().get(0).getHostname()).altUserID(AuditLogger.processID()).requester(false).build();
-        AuditMessage msg = AuditMessages.createMessage(getEI(log, event), AuditMessages.getApList(ap1, ap2), null);
+        activeParticipants[1] = new BuildActiveParticipant.Builder(log.getDevice().getDeviceName(),
+                log.getConnections().get(0).getHostname()).altUserID(AuditLogger.processID()).build();
+        AuditMessage msg = AuditMessages.createMessage(toBuildEventIdentification(log, event), activeParticipants);
         msg.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
         try {
             log.write(log.timeStamp(), msg);
         } catch (Exception e) {
             LOG.warn("Failed to emit audit message", e);
         }
+
         if (event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGIN_ERROR)
             Files.delete(file);
     }

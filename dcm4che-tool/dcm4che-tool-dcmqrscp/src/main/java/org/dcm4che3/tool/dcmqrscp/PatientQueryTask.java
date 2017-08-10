@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -44,25 +44,35 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.media.DicomDirReader;
+import org.dcm4che3.media.RecordFactory;
 import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.BasicQueryTask;
 import org.dcm4che3.net.service.DicomServiceException;
+import org.dcm4che3.util.StringUtils;
 
 class PatientQueryTask extends BasicQueryTask {
 
-    protected final DicomDirReader ddr;
-    protected final String availability;
     protected final String[] patIDs;
+    protected final DicomDirReader ddr;
+    protected final RecordFactory recFact;
+    protected final String availability;
+    protected final boolean ignoreCaseOfPN;
+    protected final boolean matchNoValue;
+    protected final int delayCFind;
     protected Attributes patRec;
 
-    public PatientQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys,
-            DicomDirReader ddr, String availability) throws DicomServiceException {
+    public PatientQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys, DcmQRSCP qrscp)
+            throws DicomServiceException {
         super(as, pc, rq, keys);
-        this.ddr = ddr;
-        this.availability = availability;
-        this.patIDs = keys.getStrings(Tag.PatientID);
+        this.patIDs = StringUtils.maskNull(keys.getStrings(Tag.PatientID));
+        this.ddr = qrscp.getDicomDirReader();
+        this.recFact = qrscp.getRecordFactory();
+        this.availability = qrscp.getInstanceAvailability();
+        this.ignoreCaseOfPN = qrscp.isIgnoreCaseOfPN();
+        this.matchNoValue = qrscp.isMatchNoValue();
+        this.delayCFind = qrscp.getDelayCFind();
         wrappedFindNextPatient();
     }
 
@@ -99,7 +109,10 @@ class PatientQueryTask extends BasicQueryTask {
                 match.getString(Tag.ReferencedSOPClassUIDInFile));
         match.setString(Tag.SOPInstanceUID, VR.UI,
                 match.getString(Tag.ReferencedSOPInstanceUIDInFile));
-
+        if (delayCFind > 0)
+            try {
+                Thread.sleep(delayCFind);
+            } catch (InterruptedException ignore) {}
         return adjust;
     }
 
@@ -113,11 +126,11 @@ class PatientQueryTask extends BasicQueryTask {
 
     protected boolean findNextPatient() throws IOException {
         if (patRec == null)
-            patRec = ddr.findPatientRecord(patIDs);
-        else if (patIDs != null && patIDs.length == 1)
+            patRec = ddr.findPatientRecord(keys, recFact, ignoreCaseOfPN, matchNoValue);
+        else if (patIDs.length == 1)
             patRec = null;
         else
-            patRec = ddr.findNextPatientRecord(patRec, patIDs);
+            patRec = ddr.findNextPatientRecord(patRec, keys, recFact, ignoreCaseOfPN, matchNoValue);
 
         return patRec != null;
     }

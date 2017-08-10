@@ -125,7 +125,7 @@ public class MoveTool implements TestTool{
 
         // ensure secure connection
         main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
-        main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
+        main.getRemoteConnection().setTlsProtocols(conn.tlsProtocols());
 
         main.getKeys().addAll(moveAttrs);
         main.setPriority(Priority.NORMAL);

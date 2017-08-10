@@ -29,7 +29,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>3.3.8-SNAPSHOT</version>
+    <version>3.3.9-SNAPSHOT</version>
   </parent>
   <artifactId>dcm4che-tool-wadors</artifactId>
   <name>dcm4che-tool-wadors</name>

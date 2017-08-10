@@ -5,8 +5,10 @@
     Procedure Step, the Hanging Protocol Query/Retrieve and the Color Palette
     Query/Retrieve Service Class. findscu only supports query functionality
     using the C-FIND message. It sends query keys to an Service Class Provider
-    (SCP) and waits for responses. Query keys can be specified in DICOM query
-    file(s) dcmfile_in or by options -m and -r.
+    (SCP) and waits for responses. Query keys can be specified in DICOM binary
+    file(s) dcmfile_in or xml file(s) dcmfile_in.xml or by options -m and -r.
+    For reference, sample files (patient.xml, study.xml, series.xml, instance.xml, mwl.xml)
+    with query keys on PATIENT, STUDY, SERIES, IMAGE and MWL levels are provided in etc/findscu folder.
     -
     Options:
         --accept-timeout <ms>                 timeout in ms for receiving
@@ -178,6 +180,8 @@
                                               equivalent to --tls-protocol
                                               SSLv2Hello --tls-protocol SSLv3
                                               --tls-protocol TLSv1
+                                              --tls-protocol TLSv1.1
+                                              --tls-protocol TLSv1.2
         --ssl3                                enable only TLS/SSL protocol
                                               SSLv3; equivalent to
                                               --tls-protocol SSLv3
@@ -214,17 +218,23 @@
                                               encryption; equivalent to
                                               --tls-cipher
                                               SSL_RSA_WITH_NULL_SHA
-        --tls-protocol <protocol>             TLS/SSL protocol to use.
-                                              Multiple TLS/SSL protocols may
-                                              be enabled by multiple
-                                              --tls-protocol options.
-                                              Supported values by SunJSSE 1.6:
+        --tls-protocol <protocol>             TLS/SSL protocol to use. Multiple
+                                              TLS/SSL protocols may be enabled
+                                              by multiple --tls-protocol
+                                              options. Supported values by
+                                              SunJSSE 1.8: TLSv1.2, TLSv1.1,
                                               TLSv1, SSLv3, SSLv2Hello. By
-                                              default, TLSv1 and SSLv3 are
-                                              enabled.
+                                              default, TLSv1.2, TLSv1.1, TLSv1
+                                              and SSLv3 are enabled.
         --tls1                                enable only TLS/SSL protocol
                                               TLSv1; equivalent to
                                               --tls-protocol TLSv1
+        --tls11                               enable only TLS/SSL protocol
+                                              TLSv1.1; equivalent to
+                                              --tls-protocol TLSv1.1
+        --tls12                               enable only TLS/SSL protocol
+                                              TLSv1.2; equivalent to
+                                              --tls-protocol TLSv1.2
         --trust-store <file|url>              file path of key store
                                               containing trusted certificates,
                                               resource:cacerts.jks by default
@@ -252,8 +262,13 @@
                                               .19/models/NativeDICOM'
                                               attribute in root element
     -
-    Examples:
+    Example 1:
     $ findscu -c DCMQRSCP@localhost:11112 -m PatientName=Doe^John -m
     StudyDate=20110510- -m ModalitiesInStudy=CT
     Query Query/Retrieve Service Class Provider DCMQRSCP listening on local
     port 11112 for CT Studies for Patient John Doe since 2011-05-10
+    -
+    Example 2:
+    $ findscu -c DCMQRSCP@localhost:11112 /etc/findscu/study.xml
+    Query Query/Retrieve Service Class Provider DCMQRSCP listening on local
+    port 11112 with query keys provided in /etc/findscu/study.xml file

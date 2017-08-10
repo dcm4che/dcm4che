@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che3.
+ * Java(TM), hosted at https://github.com/dcm4che/dcm4che3.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -131,7 +131,7 @@ public class AuditLogger extends DeviceExtension {
         debug            // (7)  -- debug-level messages
     }
 
-    public static final String MESSAGE_ID = "DICOM+RFC3881";
+    public static final String MESSAGE_ID = "IHE+RFC-3881";
 
     private static final int[] DIGITS_0X = {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',

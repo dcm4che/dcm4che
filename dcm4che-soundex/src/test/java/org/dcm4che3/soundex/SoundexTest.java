@@ -341,4 +341,12 @@ public class SoundexTest {
             Assert.assertEquals("", getSoundexEncoderString("�"));
         }
     }
+
+    /**
+     * http://www.dcm4che.org/jira/browse/DCMEEREQ-1298
+     */
+    @Test
+    public void testDoubleNames() {
+        Assert.assertEquals(getSoundexEncoderString("DA SILVA"), getSoundexEncoderString("DASILVA"));
+    }
 }

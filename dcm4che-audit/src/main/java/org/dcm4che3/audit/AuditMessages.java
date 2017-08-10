@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che3.
+ * Java(TM), hosted at https://github.com/dcm4che/dcm4che3.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -262,6 +262,14 @@ public class AuditMessages {
             new EventTypeCode("ITI-51", "IHE Transactions", "Multi-Patient Query");
         public static final EventTypeCode ITI_63_XCFFetch = 
             new EventTypeCode("ITI-63", "IHE Transactions", "XCF Fetch");
+        public static final EventTypeCode ITI_65_ProvideDocumentBundle =
+                new EventTypeCode("ITI-65", "IHE Transactions", "Provide Document Bundle");
+        public static final EventTypeCode ITI_66_FindDocumentManifests =
+                new EventTypeCode("ITI-66", "IHE Transactions", "Find Document Manifests");
+        public static final EventTypeCode ITI_67_FindDocumentReferences =
+                new EventTypeCode("ITI-67", "IHE Transactions", "Find Document References");
+        public static final EventTypeCode ITI_68_RetrieceDocument =
+                new EventTypeCode("ITI-68", "IHE Transactions", "Retriece Document");
 
         public EventTypeCode(String code, String codeSystemName,
                 String displayName) {

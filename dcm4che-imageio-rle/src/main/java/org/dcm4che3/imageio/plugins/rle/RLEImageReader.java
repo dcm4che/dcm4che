@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -48,6 +48,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.imageio.ImageReadParam;
@@ -242,6 +243,7 @@ public class RLEImageReader extends ImageReader {
 
     private void read(short[] data) throws IOException {
         readRLEHeader(2);
+        Arrays.fill(data, (short) 0);
         unrle(1, data);
         unrle(2, data);
     }

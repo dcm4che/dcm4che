@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -84,7 +84,7 @@ class TCPListener implements Listener {
         SSLContext sslContext = conn.getDevice().sslContext();
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
-        ss.setEnabledProtocols(conn.getTlsProtocols());
+        ss.setEnabledProtocols(conn.tlsProtocols());
         ss.setEnabledCipherSuites(conn.getTlsCipherSuites());
         ss.setNeedClientAuth(conn.isTlsNeedClientAuth());
         return ss;

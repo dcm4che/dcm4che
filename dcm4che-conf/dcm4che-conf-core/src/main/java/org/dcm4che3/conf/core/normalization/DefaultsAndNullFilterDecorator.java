@@ -39,22 +39,28 @@
  */
 package org.dcm4che3.conf.core.normalization;
 
-import java.util.*;
-
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.adapters.ArrayTypeAdapter;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Path;
-import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 import org.dcm4che3.conf.core.context.ContextFactory;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ConfigNodeTypesafeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
 
 /**
  *
@@ -181,7 +187,11 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
                     // for null array - set to default value
                     else if (property.isArray()) {
                         Object defaultNode = getDefaultValueFromClass(containerNodeClass, property);
-                        containerNode.put(property.getAnnotatedName(), defaultNode);
+                        if(defaultNode == null) {
+                            containerNode.put( property.getAnnotatedName(), new ArrayList() );
+                        }else {
+                            containerNode.put( property.getAnnotatedName(), defaultNode );
+                        }
                         return true;
                     }
                 }

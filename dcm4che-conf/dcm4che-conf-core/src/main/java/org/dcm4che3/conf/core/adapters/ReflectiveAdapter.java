@@ -281,39 +281,36 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
         for (ConfigProperty configurableChildProperty : ConfigReflection.getAllConfigurableFields(clazz))
             if (configurableChildProperty.getAnnotation(ConfigurableProperty.class).order() != 0) includeOrder = true;
-
-
+        
         // populate properties
 
-        for (ConfigProperty configurableChildProperty : ConfigReflection.getAllConfigurableFields(clazz)) {
+        for (ConfigProperty prop : ConfigReflection.getAllConfigurableFields(clazz)) {
 
-            ConfigurableProperty propertyAnnotation = configurableChildProperty.getAnnotation(ConfigurableProperty.class);
-
-            ConfigTypeAdapter childAdapter = ctx.getVitalizer().lookupTypeAdapter(configurableChildProperty);
+            ConfigTypeAdapter childAdapter = ctx.getVitalizer().lookupTypeAdapter(prop);
             Map<String, Object> childPropertyMetadata = new LinkedHashMap<String, Object>();
-            classMetaData.put(configurableChildProperty.getAnnotatedName(), childPropertyMetadata);
+            classMetaData.put(prop.getAnnotatedName(), childPropertyMetadata);
 
-            if (!propertyAnnotation.label().equals(""))
-                childPropertyMetadata.put("title", propertyAnnotation.label());
+            if (!"".equals( prop.getLabel() ) )
+                childPropertyMetadata.put("title", prop.getLabel());
 
-            if (!propertyAnnotation.description().equals(""))
-                childPropertyMetadata.put("description", propertyAnnotation.description());
+            if (!"".equals( prop.getDescription() ) )
+                childPropertyMetadata.put("description", prop.getDescription());
             try {
-                if (!propertyAnnotation.defaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE))
-                    childPropertyMetadata.put("default", childAdapter.normalize(propertyAnnotation.defaultValue(), configurableChildProperty, ctx));
+                if (!prop.getDefaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE))
+                    childPropertyMetadata.put("default", childAdapter.normalize(prop.getDefaultValue(), prop, ctx));
             } catch (ClassCastException e) {
                 childPropertyMetadata.put("default", 0);
             }
-            if (!configurableChildProperty.getTags().isEmpty())
-                childPropertyMetadata.put("tags", configurableChildProperty.getTags());
+            if (!prop.getTags().isEmpty())
+                childPropertyMetadata.put("tags", prop.getTags());
 
             if (includeOrder)
-                childPropertyMetadata.put("uiOrder", propertyAnnotation.order());
+                childPropertyMetadata.put("uiOrder", prop.getOrder());
 
-            childPropertyMetadata.put("uiGroup", propertyAnnotation.group());
+            childPropertyMetadata.put("uiGroup", prop.getGroup());
 
             // also merge in the metadata from this child itself
-            Map<String, Object> childMetaData = childAdapter.getSchema(configurableChildProperty, ctx);
+            Map<String, Object> childMetaData = childAdapter.getSchema(prop, ctx);
             if (childMetaData != null) childPropertyMetadata.putAll(childMetaData);
         }
 

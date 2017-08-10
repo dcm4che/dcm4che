@@ -39,6 +39,8 @@
                                          packet; equivalent to --tls-protocol
                                          SSLv2Hello --tls-protocol SSLv3
                                          --tls-protocol TLSv1
+                                         --tls-protocol TLSv1.1
+                                         --tls-protocol TLSv1.2
         --ssl3                           enable only TLS/SSL protocol SSLv3;
                                          equivalent to --tls-protocol SSLv3
         --tcp-delay                      set TCP_NODELAY socket option to
@@ -71,13 +73,22 @@
                                          encryption; equivalent to
                                          --tls-cipher SSL_RSA_WITH_NULL_SHA
         --tls-protocol <protocol>        TLS/SSL protocol to use. Multiple
-                                         TLS/SSL protocols may be enabled by
-                                         multiple --tls-protocol options.
-                                         Supported values by SunJSSE 1.6:
-                                         TLSv1, SSLv3, SSLv2Hello. By default,
-                                         TLSv1 and SSLv3 are enabled.
-        --tls1                           enable only TLS/SSL protocol TLSv1;
-                                         equivalent to --tls-protocol TLSv1
+                                         TLS/SSL protocols may be enabled
+                                         by multiple --tls-protocol
+                                         options. Supported values by
+                                         SunJSSE 1.8: TLSv1.2, TLSv1.1,
+                                         TLSv1, SSLv3, SSLv2Hello. By
+                                         default, TLSv1.2, TLSv1.1, TLSv1
+                                         and SSLv3 are enabled.
+        --tls1                           enable only TLS/SSL protocol
+                                         TLSv1; equivalent to
+                                         --tls-protocol TLSv1
+        --tls11                          enable only TLS/SSL protocol
+                                         TLSv1.1; equivalent to
+                                         --tls-protocol TLSv1.1
+        --tls12                          enable only TLS/SSL protocol
+                                         TLSv1.2; equivalent to
+                                         --tls-protocol TLSv1.2
         --trust-store <file|url>         file path of key store containing
                                          trusted certificates,
                                          resource:cacerts.jks by default

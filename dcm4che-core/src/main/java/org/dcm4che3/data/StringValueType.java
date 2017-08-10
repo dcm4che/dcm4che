@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -76,12 +76,22 @@ enum StringValueType implements ValueType {
         protected Object splitAndTrim(String s, SpecificCharacterSet cs) {
             return cs.toText(StringUtils.trimTrailing(s));
         }
+
+        @Override
+        protected Object toMultiValue(String s) {
+            return s;
+        }
     },
     UR(null, null) {
 
         @Override
         protected Object splitAndTrim(String s, SpecificCharacterSet cs) {
             return StringUtils.trimTrailing(s);
+        }
+
+        @Override
+        protected Object toMultiValue(String s) {
+            return s;
         }
     },
     DA("\\", TemporalType.DA),
@@ -469,8 +479,12 @@ enum StringValueType implements ValueType {
         if (s == null || s.isEmpty())
             return Value.NULL;
 
-        return s;
-    } 
+        return toMultiValue(s);
+    }
+
+    protected Object toMultiValue(String s) {
+        return StringUtils.splitAndTrim(s, '\\');
+    }
 
     @Override
     public Object toValue(String[] ss, boolean bigEndian) {

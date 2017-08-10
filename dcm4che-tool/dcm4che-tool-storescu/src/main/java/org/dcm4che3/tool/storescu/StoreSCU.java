@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -252,7 +252,7 @@ public class StoreSCU {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(conn, ae, cl);
             CLIUtils.configure(conn, cl);
-            main.remote.setTlsProtocols(conn.getTlsProtocols());
+            main.remote.setTlsProtocols(conn.tlsProtocols());
             main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             configureRelatedSOPClass(main, cl);
             main.setAttributes(new Attributes());

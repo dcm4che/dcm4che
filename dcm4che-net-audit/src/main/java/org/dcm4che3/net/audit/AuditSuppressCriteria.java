@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -380,7 +380,7 @@ public class AuditSuppressCriteria {
     }
 
     private boolean match(List<ActiveParticipant> aps) {
-        if (!containsActiveParticipantCriteria())
+        if (matchAnyActiveParticipant())
             return true;
 
         for (ActiveParticipant ap : aps) {
@@ -424,7 +424,7 @@ public class AuditSuppressCriteria {
         return false;
     }
 
-    public boolean containsActiveParticipantCriteria() {
+    private boolean matchAnyActiveParticipant() {
         return userIDs.length == 0
                 && alternativeUserIDs.length == 0
                 && roleIDCodes.length == 0

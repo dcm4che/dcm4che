@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -109,6 +109,10 @@ public class BulkData implements Value {
         this.offsets = offsets.clone();
         this.lengths = lengths.clone();
         this.bigEndian = bigEndian;
+    }
+
+    public String getURI() {
+        return uri;
     }
 
     /**

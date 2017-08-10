@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -67,12 +67,10 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.VR;
+import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXWriter;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.AAssociateRQ;
@@ -91,6 +89,8 @@ import org.dcm4che3.util.StringUtils;
  * and waits for responses.
  * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ *
  */
 public class FindSCU {
 
@@ -360,7 +360,7 @@ public class FindSCU {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
-            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
+            main.remote.setTlsProtocols(main.conn.tlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             configureServiceClass(main, cl);
             configureKeys(main, cl);
@@ -484,12 +484,15 @@ public class FindSCU {
         out = null;
     }
 
-    public void query(File f) throws IOException, InterruptedException {
+    public void query(File f) throws Exception {
         Attributes attrs;
+        String filePath = f.getPath();
+        String fileExt = filePath.substring(filePath.lastIndexOf(".")+1).toLowerCase();
         DicomInputStream dis = null;
         try {
-            dis = new DicomInputStream(f);
-            attrs = dis.readDataset(-1, -1);
+            attrs = fileExt.equals("xml")
+                    ? SAXReader.parse(filePath)
+                    : new DicomInputStream(f).readDataset(-1, -1);
             if (inFilter != null) {
                 attrs = new Attributes(inFilter.length + 1);
                 attrs.addSelected(attrs, inFilter);
@@ -497,10 +500,40 @@ public class FindSCU {
         } finally {
             SafeClose.close(dis);
         }
-        attrs.addAll(keys);
+        mergeKeys(attrs, keys);
         query(attrs);
     }
 
+    private static class MergeNested implements Attributes.Visitor {
+        private final Attributes keys;
+
+        MergeNested(Attributes keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public boolean visit(Attributes attrs, int tag, VR vr, Object val) {
+            if (isNotEmptySequence(val)) {
+                Object o = keys.remove(tag);
+                if (isNotEmptySequence(o))
+                    ((Sequence) val).get(0).addAll(((Sequence) o).get(0));
+            }
+            return true;
+        }
+
+        private static boolean isNotEmptySequence(Object val) {
+            return val instanceof Sequence && !((Sequence) val).isEmpty();
+        }
+    }
+
+    static void mergeKeys(Attributes attrs, Attributes keys) {
+        try {
+            attrs.accept(new MergeNested(keys), false);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        attrs.addAll(keys);
+    }
     
    public void query() throws IOException, InterruptedException {
         query(keys);

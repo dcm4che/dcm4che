@@ -39,15 +39,23 @@
  */
 package org.dcm4che3.conf.core.api.internal;
 
-import org.dcm4che3.conf.core.api.*;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.LDAP;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class shall NOT be referenced externally, it will be removed/renamed/refactored without notice.
@@ -55,23 +63,29 @@ import java.util.*;
  * @author Roman K
  */
 
-public class ConfigProperty {
+public class ConfigProperty
+{
 
-    private static final LDAP dummyLdapAnno = DummyConfigurableClass.class.getAnnotation(LDAP.class);
+    private static final LDAP dummyLdapAnno = DummyConfigurableClass.class.getAnnotation( LDAP.class );
     private static final Map<Type, Annotation> dummyAnnotations = new HashMap<Type, Annotation>();
 
-    static {
-        try {
-            ConfigurableProperty configurableProperty = DummyConfigurableClass.class.getField("dummy").getAnnotation(ConfigurableProperty.class);
-            dummyAnnotations.put(ConfigurableProperty.class, configurableProperty);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException("That was unexpected");
+    static
+    {
+        try
+        {
+            ConfigurableProperty configurableProperty = DummyConfigurableClass.class.getField( "dummy" ).getAnnotation( ConfigurableProperty.class );
+            dummyAnnotations.put( ConfigurableProperty.class, configurableProperty );
+        }
+        catch ( NoSuchFieldException e )
+        {
+            throw new RuntimeException( "That was unexpected" );
         }
     }
 
     private final Map<Type, Annotation> annotations;
 
     private final ConfigurableProperty configurablePropertyAnnotation;
+    private final String description;
     private LDAP ldapAnnotation;
 
     private final Type type;
@@ -104,120 +118,159 @@ public class ConfigProperty {
     private final Type[] genericsTypes;
     private final String defaultValue;
 
+    private final String label;
+    private int order;
+    private Object group;
 
-    public ConfigProperty(Map<Type, Annotation> annotations, String name, Type type) {
+    public ConfigProperty( Map<Type, Annotation> annotations, String name, Type type )
+    {
         this.annotations = annotations;
         this.name = name;
         this.type = type;
 
         // Annotations
-        configurablePropertyAnnotation = (ConfigurableProperty) this.annotations.get(ConfigurableProperty.class);
-        ldapAnnotation = (LDAP) this.annotations.get(LDAP.class);
+        configurablePropertyAnnotation = (ConfigurableProperty)this.annotations.get( ConfigurableProperty.class );
+        ldapAnnotation = (LDAP)this.annotations.get( LDAP.class );
 
-        if (ldapAnnotation == null)
+        if ( ldapAnnotation == null )
             ldapAnnotation = dummyLdapAnno;
 
         // Raw type
-        if (this.type instanceof ParameterizedType)
-            this.rawType = (Class) ((ParameterizedType) this.type).getRawType();
-        else {
-            this.rawType = (Class) this.type;
+        if ( this.type instanceof ParameterizedType )
+            this.rawType = (Class)((ParameterizedType)this.type).getRawType();
+        else
+        {
+            this.rawType = (Class)this.type;
         }
 
-        isOlockHash = configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.OptimisticLockingHash);
-        isUuid = configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.UUID);
+        isOlockHash = configurablePropertyAnnotation.type().equals( ConfigurablePropertyType.OptimisticLockingHash );
+        isUuid = configurablePropertyAnnotation.type().equals( ConfigurablePropertyType.UUID );
 
         //// annotated name ////
-        if (isUuid) {
+        if ( isUuid )
+        {
             annotatedName = Configuration.UUID_KEY;
-        } else if (isOlockHash) {
+        }
+        else if ( isOlockHash )
+        {
             annotatedName = Configuration.OLOCK_HASH_KEY;
-        } else if (configurablePropertyAnnotation.name().isEmpty()) {
+        }
+        else if ( configurablePropertyAnnotation.name().isEmpty() )
+        {
 
             annotatedName = this.name;
 
-            if (annotatedName == null)
-                throw new ConfigurationException("Property name not specified");
-        } else {
+            if ( annotatedName == null )
+                throw new ConfigurationException( "Property name not specified" );
+        }
+        else
+        {
             annotatedName = configurablePropertyAnnotation.name();
         }
 
         defaultValue = configurablePropertyAnnotation.defaultValue();
 
-        if (this.type instanceof ParameterizedType) {
-            genericsTypes = ((ParameterizedType) this.type).getActualTypeArguments();
-        } else
+        if ( this.type instanceof ParameterizedType )
+        {
+            genericsTypes = ((ParameterizedType)this.type).getActualTypeArguments();
+        }
+        else
             genericsTypes = null;
 
         isReference = configurablePropertyAnnotation.isReference() ||
-                configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.Reference);
+                configurablePropertyAnnotation.type().equals( ConfigurablePropertyType.Reference );
 
         isWeakReference = configurablePropertyAnnotation.weakReference();
 
         isExtensionsProperty = configurablePropertyAnnotation.isExtensionsProperty() ||
-                configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.ExtensionsProperty);
+                configurablePropertyAnnotation.type().equals( ConfigurablePropertyType.ExtensionsProperty );
 
-        isConfObject = ConfigReflection.isConfigurableClass(getRawClass());
+        isConfObject = ConfigReflection.isConfigurableClass( getRawClass() );
 
-        isCollection = Collection.class.isAssignableFrom(getRawClass());
-
+        isCollection = Collection.class.isAssignableFrom( getRawClass() );
 
         isCollectionOfReferences = configurablePropertyAnnotation.collectionOfReferences()
-                || configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.CollectionOfReferences);
+                || configurablePropertyAnnotation.type().equals( ConfigurablePropertyType.CollectionOfReferences );
 
-
-        isMapOfConfObjects = Map.class.isAssignableFrom(getRawClass())
-                && getPseudoPropertyForGenericsParamater(1).isConfObject()
+        isMapOfConfObjects = Map.class.isAssignableFrom( getRawClass() )
+                && getPseudoPropertyForGenericsParamater( 1 ).isConfObject()
                 && !isCollectionOfReferences()
                 && !isExtensionsProperty();
 
-        isCollectionOfConfObjects = Collection.class.isAssignableFrom(getRawClass())
-                && ConfigReflection.isConfigurableClass(getPseudoPropertyForGenericsParamater(0).getRawClass())
+        isCollectionOfConfObjects = Collection.class.isAssignableFrom( getRawClass() )
+                && ConfigReflection.isConfigurableClass( getPseudoPropertyForGenericsParamater( 0 ).getRawClass() )
                 && !isCollectionOfReferences();
 
         isArrayOfConfObjects = getRawClass().isArray()
-                && ConfigReflection.isConfigurableClass(getRawClass().getComponentType())
+                && ConfigReflection.isConfigurableClass( getRawClass().getComponentType() )
                 && !isCollectionOfReferences();
 
         isArray = rawType.isArray();
 
-        isMap = Map.class.isAssignableFrom(getRawClass());
-
+        isMap = Map.class.isAssignableFrom( getRawClass() );
 
         pseudoPropertyForCollectionElement = calcPseudoPropertyForCollectionElement();
         pseudoPropertyForConfigClassCollectionElement = calcPseudoPropertyForConfigClassCollectionElement();
 
-        if (rawType.isEnum()) {
-            try {
-                valueOfMethod = rawType.getMethod("valueOf", String.class);
+        if ( rawType.isEnum() )
+        {
+            try
+            {
+                valueOfMethod = rawType.getMethod( "valueOf", String.class );
 
                 enumRepresentation = configurablePropertyAnnotation.enumRepresentation();
 
-                Method valuesMethod = ((Class) getType()).getMethod("values");
-                enumValues = (Enum[]) valuesMethod.invoke(null);
+                Method valuesMethod = ((Class)getType()).getMethod( "values" );
+                enumValues = (Enum[])valuesMethod.invoke( null );
 
-            } catch (Exception e) {
-                throw new RuntimeException("Unexpected error while working with enum's methods", e);
+            }
+            catch ( Exception e )
+            {
+                throw new RuntimeException( "Unexpected error while working with enum's methods", e );
             }
 
-        } else {
+        }
+        else
+        {
             valueOfMethod = null;
             enumRepresentation = null;
             enumValues = null;
         }
 
+        label = !configurablePropertyAnnotation.label().isEmpty() || isOlockHash || isUuid ?
+                configurablePropertyAnnotation.label() :
+                camelCaseToReadableLabel( annotatedName );
+
+        description = configurablePropertyAnnotation.description();
+
+        order = configurablePropertyAnnotation.order();
+
+        group = configurablePropertyAnnotation.group();
 
     }
 
-    public ConfigProperty(Map<Type, Annotation> annotations, Type type) {
-        this(annotations, "dummy", type);
+    public String getLabel()
+    {
+        return label;
     }
 
-    public ConfigProperty(Type type) {
-        this(dummyAnnotations, type);
+    public String camelCaseToReadableLabel( String annotatedName )
+    {
+        return annotatedName.replaceAll( "(?<=[A-Z])(?=[A-Z][a-z])|(?<=[^A-Z])(?=[A-Z])|(?<=[A-Za-z])(?=[^A-Za-z])", " " );
     }
 
-    public ConfigProperty clone() {
+    public ConfigProperty( Map<Type, Annotation> annotations, Type type )
+    {
+        this( annotations, "dummy", type );
+    }
+
+    public ConfigProperty( Type type )
+    {
+        this( dummyAnnotations, type );
+    }
+
+    public ConfigProperty clone()
+    {
         return new ConfigProperty(
                 annotations,
                 getName(),
@@ -225,27 +278,35 @@ public class ConfigProperty {
         );
     }
 
-    public Enum<?> getEnumValueFor(String enumString) {
-        try {
-            return (Enum<?>) this.valueOfMethod.invoke(null, enumString);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Unexpected error while working with enum's methods", e);
-        } catch (InvocationTargetException e) {
-            throw new ConfigurationException("Error while trying to convert '" + enumString + "' to enum [" + getRawClass() + "]", e.getCause());
+    public Enum<?> getEnumValueFor( String enumString )
+    {
+        try
+        {
+            return (Enum<?>)this.valueOfMethod.invoke( null, enumString );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new RuntimeException( "Unexpected error while working with enum's methods", e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new ConfigurationException( "Error while trying to convert '" + enumString + "' to enum [" + getRawClass() + "]", e.getCause() );
         }
     }
 
-    public List<ConfigurableProperty.Tag> getTags() {
-        if (configurablePropertyAnnotation == null)
+    public List<ConfigurableProperty.Tag> getTags()
+    {
+        if ( configurablePropertyAnnotation == null )
             return new ArrayList<ConfigurableProperty.Tag>();
 
-        return new ArrayList<ConfigurableProperty.Tag>(Arrays.asList(configurablePropertyAnnotation.tags()));
+        return new ArrayList<ConfigurableProperty.Tag>( Arrays.asList( configurablePropertyAnnotation.tags() ) );
     }
 
     //TODO: cache
-    public ConfigProperty getPseudoPropertyForGenericsParamater(int genericParameterIndex) {
+    public ConfigProperty getPseudoPropertyForGenericsParamater( int genericParameterIndex )
+    {
 
-        Type typeForGenericsParameter = getTypeForGenericsParameter(genericParameterIndex);
+        Type typeForGenericsParameter = getTypeForGenericsParameter( genericParameterIndex );
 
         return new ConfigProperty(
                 annotations,
@@ -254,72 +315,81 @@ public class ConfigProperty {
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "ConfigProperty[name='" + name + "', annotatedName='" + annotatedName + "', rawType='" + rawType + "']";
     }
 
-
-    public boolean isExtensionsProperty() {
+    public boolean isExtensionsProperty()
+    {
         return isExtensionsProperty;
     }
 
-    public String getDefaultValue() {
+    public String getDefaultValue()
+    {
         return defaultValue;
     }
 
-    public boolean isOlockHash() {
+    public boolean isOlockHash()
+    {
         return isOlockHash;
     }
 
-    public boolean isCollectionOfReferences() {
+    public boolean isCollectionOfReferences()
+    {
         return isCollectionOfReferences;
     }
 
-    public boolean isReference() {
+    public boolean isReference()
+    {
         return isReference;
     }
 
-
-    public String getAnnotatedName() {
+    public String getAnnotatedName()
+    {
         return annotatedName;
     }
 
-    public boolean isUuid() {
+    public boolean isUuid()
+    {
         return isUuid;
     }
 
-    public boolean isWeakReference() {
+    public boolean isWeakReference()
+    {
         return isWeakReference;
     }
 
-    public Type getTypeForGenericsParameter(int genericParameterIndex) {
-        return genericsTypes[genericParameterIndex];
+    public Type getTypeForGenericsParameter( int genericParameterIndex )
+    {
+        return genericsTypes[ genericParameterIndex ];
     }
-
 
     /**
      * get type of generic/component for collection/Array, Value type for map
      *
      * @return
      */
-    public ConfigProperty getPseudoPropertyForConfigClassCollectionElement() {
+    public ConfigProperty getPseudoPropertyForConfigClassCollectionElement()
+    {
         return pseudoPropertyForConfigClassCollectionElement;
     }
 
-    public ConfigProperty calcPseudoPropertyForConfigClassCollectionElement() {
+    public ConfigProperty calcPseudoPropertyForConfigClassCollectionElement()
+    {
 
         Type type;
-        if (isMapOfConfObjects())
-            type = getTypeForGenericsParameter(1);
-        else if (isCollectionOfConfObjects())
-            type = getTypeForGenericsParameter(0);
-        else if (isArrayOfConfObjects())
+        if ( isMapOfConfObjects() )
+            type = getTypeForGenericsParameter( 1 );
+        else if ( isCollectionOfConfObjects() )
+            type = getTypeForGenericsParameter( 0 );
+        else if ( isArrayOfConfObjects() )
             type = getRawClass().getComponentType();
         else
             return null;
         //throw new IllegalArgumentException("This property is not a collection/array/map - "+getType());
 
-        return new ConfigProperty(annotations, type);
+        return new ConfigProperty( annotations, type );
     }
 
     /**
@@ -329,18 +399,20 @@ public class ConfigProperty {
      * @return null if not a collection/map
      */
 
-    public ConfigProperty getPseudoPropertyForCollectionElement() {
+    public ConfigProperty getPseudoPropertyForCollectionElement()
+    {
         return pseudoPropertyForCollectionElement;
     }
 
-    private ConfigProperty calcPseudoPropertyForCollectionElement() {
+    private ConfigProperty calcPseudoPropertyForCollectionElement()
+    {
 
         Type type;
-        if (Map.class.isAssignableFrom(getRawClass()))
-            type = getTypeForGenericsParameter(1);
-        else if (Collection.class.isAssignableFrom(getRawClass()))
-            type = getTypeForGenericsParameter(0);
-        else if (getRawClass().isArray())
+        if ( Map.class.isAssignableFrom( getRawClass() ) )
+            type = getTypeForGenericsParameter( 1 );
+        else if ( Collection.class.isAssignableFrom( getRawClass() ) )
+            type = getTypeForGenericsParameter( 0 );
+        else if ( getRawClass().isArray() )
             type = getRawClass().getComponentType();
         else
             return null;
@@ -355,65 +427,90 @@ public class ConfigProperty {
         );
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getAnnotation(Class<T> annotationType) {
-        if (annotationType.equals(ConfigurableProperty.class))
-            return (T) configurablePropertyAnnotation;
+    @SuppressWarnings( "unchecked" )
+    public <T> T getAnnotation( Class<T> annotationType )
+    {
+        if ( annotationType.equals( ConfigurableProperty.class ) )
+            return (T)configurablePropertyAnnotation;
 
-        if (annotationType.equals(LDAP.class))
-            return (T) ldapAnnotation;
+        if ( annotationType.equals( LDAP.class ) )
+            return (T)ldapAnnotation;
 
-        return (T) annotations.get(annotationType);
+        return (T)annotations.get( annotationType );
     }
 
-    public Class getRawClass() {
+    public Class getRawClass()
+    {
         return rawType;
     }
 
-    public boolean isMap() {
+    public boolean isMap()
+    {
         return isMap;
     }
 
-    public boolean isCollection() {
+    public boolean isCollection()
+    {
         return isCollection;
     }
 
-    public boolean isArray() {
+    public boolean isArray()
+    {
         return isArray;
     }
 
-    public Type getType() {
+    public Type getType()
+    {
         return type;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-
-    public boolean isConfObject() {
+    public boolean isConfObject()
+    {
         return isConfObject;
     }
 
-    public boolean isMapOfConfObjects() {
+    public boolean isMapOfConfObjects()
+    {
         return isMapOfConfObjects;
     }
 
-    public boolean isCollectionOfConfObjects() {
+    public boolean isCollectionOfConfObjects()
+    {
         return isCollectionOfConfObjects;
     }
 
-    public boolean isArrayOfConfObjects() {
+    public boolean isArrayOfConfObjects()
+    {
         return isArrayOfConfObjects;
     }
 
-    public Enum[] getEnumValues() {
+    public Enum[] getEnumValues()
+    {
         return enumValues;
     }
 
-    public ConfigurableProperty.EnumRepresentation getEnumRepresentation() {
+    public ConfigurableProperty.EnumRepresentation getEnumRepresentation()
+    {
         return enumRepresentation;
     }
 
+    public String getDescription()
+    {
+        return description;
+    }
 
+    public Object getOrder()
+    {
+        return order;
+    }
+
+    public Object getGroup()
+    {
+        return group;
+    }
 }

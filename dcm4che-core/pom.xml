@@ -13,7 +13,7 @@
    - License.
    -
    - The Original Code is part of dcm4che, an implementation of DICOM(TM) in
-   - Java(TM), hosted at https://github.com/gunterze/dcm4che.
+   - Java(TM), hosted at https://github.com/dcm4che.
    -
    - The Initial Developer of the Original Code is
    - Agfa Healthcare.
@@ -41,7 +41,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.3.8-SNAPSHOT</version>
+    <version>3.3.9-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-core</artifactId>
@@ -177,6 +177,14 @@
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
         <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
       </plugin>
     </plugins>
     <pluginManagement>

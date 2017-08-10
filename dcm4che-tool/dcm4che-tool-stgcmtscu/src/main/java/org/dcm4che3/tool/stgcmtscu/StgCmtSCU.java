@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -194,7 +194,7 @@ public class StgCmtSCU {
             CLIUtils.configureConnect(stgcmtscu.remote, stgcmtscu.rq, cl);
             CLIUtils.configureBind(conn, stgcmtscu.ae, cl);
             CLIUtils.configure(conn, cl);
-            stgcmtscu.remote.setTlsProtocols(conn.getTlsProtocols());
+            stgcmtscu.remote.setTlsProtocols(conn.tlsProtocols());
             stgcmtscu.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             stgcmtscu.setStatus(CLIUtils.getIntOption(cl, "status", 0));

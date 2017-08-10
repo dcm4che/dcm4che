@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -248,9 +248,21 @@ public class DicomDirReader implements Closeable {
                 pk("PATIENT", Tag.PatientID, VR.LO, ids), false, false);
     }
 
+    public Attributes findPatientRecord(Attributes keys, RecordFactory recFact,
+                                        boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+        return findRootDirectoryRecord(false,
+                keys(RecordType.PATIENT, keys, recFact), ignoreCaseOfPN, matchNoValue);
+    }
+
     public Attributes findNextPatientRecord(Attributes patRec, String... ids) throws IOException {
         return findNextDirectoryRecord(patRec, false,
                 pk("PATIENT", Tag.PatientID, VR.LO, ids), false, false);
+    }
+
+    public Attributes findNextPatientRecord(Attributes patRec, Attributes keys, RecordFactory recFact,
+                                            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+        return findNextDirectoryRecord(patRec, false,
+                keys(RecordType.PATIENT, keys, recFact), ignoreCaseOfPN, matchNoValue);
     }
 
     public Attributes findStudyRecord(Attributes patRec, String... iuids)
@@ -260,11 +272,23 @@ public class DicomDirReader implements Closeable {
                 false, false);
     }
 
+    public Attributes findStudyRecord(Attributes patRec, Attributes keys, RecordFactory recFact,
+                                      boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+        return findLowerDirectoryRecord(patRec, false,
+                keys(RecordType.STUDY, keys, recFact), ignoreCaseOfPN, matchNoValue);
+    }
+
     public Attributes findNextStudyRecord(Attributes studyRec, String... iuids)
             throws IOException {
         return findNextDirectoryRecord(studyRec, false,
                 pk("STUDY", Tag.StudyInstanceUID, VR.UI, iuids),
                 false, false);
+    }
+
+    public Attributes findNextStudyRecord(Attributes studyRec, Attributes keys, RecordFactory recFact,
+                                      boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+        return findNextDirectoryRecord(studyRec, false,
+                keys(RecordType.STUDY, keys, recFact), ignoreCaseOfPN, matchNoValue);
     }
 
     public Attributes findSeriesRecord(Attributes studyRec, String... iuids)
@@ -274,6 +298,12 @@ public class DicomDirReader implements Closeable {
                 false, false);
     }
 
+    public Attributes findSeriesRecord(Attributes studyRec, Attributes keys, RecordFactory recFact,
+                                      boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+        return findLowerDirectoryRecord(studyRec, false,
+                keys(RecordType.SERIES, keys, recFact), ignoreCaseOfPN, matchNoValue);
+    }
+
     public Attributes findNextSeriesRecord(Attributes seriesRec, String... iuids)
             throws IOException {
         return findNextDirectoryRecord(seriesRec, false, 
@@ -281,14 +311,32 @@ public class DicomDirReader implements Closeable {
                 false, false);
     }
 
+    public Attributes findNextSeriesRecord(Attributes seriesRec, Attributes keys, RecordFactory recFact,
+                                           boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+        return findNextDirectoryRecord(seriesRec, false,
+                keys(RecordType.SERIES, keys, recFact), ignoreCaseOfPN, matchNoValue);
+    }
+
     public Attributes findLowerInstanceRecord(Attributes seriesRec, boolean ignorePrivate,
             String... iuids) throws IOException {
         return findLowerDirectoryRecord(seriesRec, ignorePrivate, pk(iuids), false, false);
     }
 
+    public Attributes findLowerInstanceRecord(Attributes seriesRec, Attributes keys, RecordFactory recFact,
+                                      boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+        return findLowerDirectoryRecord(seriesRec, false,
+                keys(keys, recFact), ignoreCaseOfPN, matchNoValue);
+    }
+
     public Attributes findNextInstanceRecord(Attributes instRec, boolean ignorePrivate,
             String... iuids) throws IOException {
         return findNextDirectoryRecord(instRec, ignorePrivate, pk(iuids), false, false);
+    }
+
+    public Attributes findNextInstanceRecord(Attributes instRec, Attributes keys, RecordFactory recFact,
+                                           boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+        return findNextDirectoryRecord(instRec, false,
+                keys(keys, recFact), ignoreCaseOfPN, matchNoValue);
     }
 
     public Attributes findRootInstanceRecord(boolean ignorePrivate, String... iuids)
@@ -311,6 +359,24 @@ public class DicomDirReader implements Closeable {
         Attributes pk = new Attributes(1);
         pk.setString(Tag.ReferencedSOPInstanceUIDInFile, VR.UI, iuids);
         return pk;
+    }
+
+    private Attributes keys(RecordType type, Attributes attrs, RecordFactory recFact) {
+        int[] selection = recFact.getRecordKeys(type);
+        Attributes keys = new Attributes(selection.length + 1);
+        keys.setString(Tag.DirectoryRecordType, VR.CS, type.name());
+        keys.addSelected(attrs, selection);
+        return keys;
+    }
+
+    private Attributes keys(Attributes attrs, RecordFactory recFact) {
+        int[] selection = recFact.getRecordKeys(RecordType.SR_DOCUMENT);
+        Attributes keys = new Attributes(selection.length + 1);
+        String[] iuids = keys.getStrings(Tag.SOPInstanceUID);
+        if (iuids != null && iuids.length > 0)
+            keys.setString(Tag.ReferencedSOPInstanceUIDInFile, VR.CS, iuids);
+        keys.addSelected(attrs, selection);
+        return keys;
     }
 
     private Attributes findRecordInUse(int offset, boolean ignorePrivate, Attributes keys,
@@ -348,5 +414,4 @@ public class DicomDirReader implements Closeable {
     public static boolean isPrivate(Attributes rec) {
         return "PRIVATE".equals(rec.getString(Tag.DirectoryRecordType));
     }
-
 }

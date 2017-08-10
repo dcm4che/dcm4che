@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -156,7 +156,7 @@ public class IanSCU {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
-            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
+            main.remote.setTlsProtocols(main.conn.tlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             main.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             CLIUtils.addAttributes(main.attrs, cl.getOptionValues("s"));

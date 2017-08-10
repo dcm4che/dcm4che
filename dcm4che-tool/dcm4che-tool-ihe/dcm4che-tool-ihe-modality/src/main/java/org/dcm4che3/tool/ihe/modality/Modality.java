@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -199,7 +199,7 @@ public class Modality {
     }
 
     public static void setTlsParams(Connection remote, Connection conn) {
-        remote.setTlsProtocols(conn.getTlsProtocols());
+        remote.setTlsProtocols(conn.tlsProtocols());
         remote.setTlsCipherSuites(conn.getTlsCipherSuites());
     }
 

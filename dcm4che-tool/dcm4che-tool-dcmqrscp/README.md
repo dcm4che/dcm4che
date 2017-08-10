@@ -33,6 +33,8 @@
                                             be accepted.
         --connect-timeout <ms>              timeout in ms for TCP connect, no
                                             timeout by default
+        --delay-cfind <ms>                  delay in ms returning pending
+                                            C-FIND RSPs, no delay by default
         --dicomdir <file>                   specify path to a DICOMDIR file of
                                             a DICOM File-set into which
                                             received objects are stored and
@@ -65,6 +67,13 @@
                                             default
         --key-store-type <storetype>        type of key store containing the
                                             private key, JKS by default
+        --match-no-value                    if a matching key is not in the
+                                            directory record object, consider
+                                            the record to be a match anyway.
+        --match-pn-icase                    match PN attributes case
+                                            insensitive; by default matching
+                                            of any attribute value is case
+                                            sensitive.
         --max-ops-invoked <no>              maximum number of operations this
                                             AE may invoke asynchronously,
                                             unlimited by default
@@ -115,6 +124,10 @@
                                             accepted Query SOP Classes,
                                             resource:query-sop-classes.propert
                                             ies by default
+        --record-config <file|url>          file path or URL to configuration
+                                            of directory record attributes.
+                                            resource:org/dcm4che3/media/Record
+                                            Factory.xml by default
         --relational                        support relational queries and
                                             retrievals
         --release-timeout <ms>              timeout in ms for receiving
@@ -144,6 +157,8 @@
                                             --tls-protocol SSLv2Hello
                                             --tls-protocol SSLv3
                                             --tls-protocol TLSv1
+                                            --tls-protocol TLSv1.1
+                                            --tls-protocol TLSv1.2
         --ssl3                              enable only TLS/SSL protocol
                                             SSLv3; equivalent to
                                             --tls-protocol SSLv3
@@ -188,12 +203,19 @@
                                             TLS/SSL protocols may be enabled
                                             by multiple --tls-protocol
                                             options. Supported values by
-                                            SunJSSE 1.6: TLSv1, SSLv3,
-                                            SSLv2Hello. By default, TLSv1 and
-                                            SSLv3 are enabled.
+                                            SunJSSE 1.8: TLSv1, TLSv1.1,
+                                            TLSv1.2, SSLv3, SSLv2Hello. By
+                                            default, TLSv1, TLSv1.1 and
+                                            TLSv1.2 are enabled.
         --tls1                              enable only TLS/SSL protocol
                                             TLSv1; equivalent to
                                             --tls-protocol TLSv1
+        --tls11                             enable only TLS/SSL protocol
+                                            TLSv1.1; equivalent to
+                                            --tls-protocol TLSv1.1
+        --tls12                             enable only TLS/SSL protocol
+                                            TLSv1.2; equivalent to
+                                            --tls-protocol TLSv1.2
         --trust-store <file|url>            file path of key store containing
                                             trusted certificates,
                                             resource:cacerts.jks by default

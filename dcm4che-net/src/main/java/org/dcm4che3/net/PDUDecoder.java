@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -543,6 +543,10 @@ class PDUDecoder extends PDVInputStream {
             nextPDV(pdvmch & PDVType.COMMAND, pcid);
         }
         return false;
+    }
+
+    boolean isPendingPDV() {
+        return pcid != -1 && (pdvmch & PDVType.LAST) == 0;
     }
 
     @Override

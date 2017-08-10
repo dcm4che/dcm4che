@@ -6,7 +6,7 @@
     <parent>
         <artifactId>dcm4che-conf</artifactId>
         <groupId>org.dcm4che</groupId>
-        <version>3.3.8-SNAPSHOT</version>
+        <version>3.3.9-SNAPSHOT</version>
     </parent>
     <artifactId>dcm4che-conf-core-api</artifactId>
     <name>dcm4che-conf-core-api</name>
@@ -34,7 +34,7 @@
                         
                         temporary solution is export all package including internal package
                         -->
-                        <Export-Package>*</Export-Package>
+                        <Export-Package>org.dcm4che3.conf.*</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>

@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -121,6 +121,7 @@ public class Connection implements Serializable {
     public static final String TLS_RSA_WITH_NULL_SHA = "SSL_RSA_WITH_NULL_SHA";
     public static final String TLS_RSA_WITH_3DES_EDE_CBC_SHA = "SSL_RSA_WITH_3DES_EDE_CBC_SHA";
     public static final String TLS_RSA_WITH_AES_128_CBC_SHA = "TLS_RSA_WITH_AES_128_CBC_SHA";
+    private static final String[] DEFAULT_TLS_PROTOCOLS =  { "TLSv1.2", "TLSv1.1", "TLSv1" };
 
     private Device device;
 
@@ -219,7 +220,7 @@ public class Connection implements Serializable {
     private String httpProxyProviderVersion = ProxyService.DEFAULT_VERSION;
 
     @ConfigurableProperty(name = "dcmTLSProtocol")
-    private String[] tlsProtocols = {"TLSv1", "SSLv3"};
+    private String[] tlsProtocols = {};
 
     @ConfigurableProperty(name = "dcmBlacklistedHostname")
     private String[] blacklist = {};
@@ -728,6 +729,10 @@ public class Connection implements Serializable {
 
     public final boolean isTls() {
         return tlsCipherSuites.length > 0;
+    }
+
+    public final String[] tlsProtocols() {
+        return tlsProtocols.length != 0 ? tlsProtocols : DEFAULT_TLS_PROTOCOLS;
     }
 
     public final String[] getTlsProtocols() {
@@ -1242,7 +1247,7 @@ public class Connection implements Serializable {
         SSLSocket ssl = (SSLSocket) sf.createSocket(s,
                 remoteConn.getHostname(), remoteConn.getPort(), true);
         ssl.setEnabledProtocols(
-                intersect(remoteConn.tlsProtocols, tlsProtocols));
+                intersect(remoteConn.tlsProtocols(), tlsProtocols()));
         ssl.setEnabledCipherSuites(
                 intersect(remoteConn.tlsCipherSuites, tlsCipherSuites));
         ssl.startHandshake();
@@ -1264,8 +1269,8 @@ public class Connection implements Serializable {
         if (!isTls())
             return !remoteConn.isTls();
 
-        return hasCommon(remoteConn.tlsProtocols, tlsProtocols)
-                && hasCommon(remoteConn.tlsCipherSuites, tlsCipherSuites);
+        return hasCommon(remoteConn.tlsProtocols(), tlsProtocols())
+            && hasCommon(remoteConn.tlsCipherSuites, tlsCipherSuites);
     }
 
     private boolean hasCommon(String[] ss1, String[] ss2) {

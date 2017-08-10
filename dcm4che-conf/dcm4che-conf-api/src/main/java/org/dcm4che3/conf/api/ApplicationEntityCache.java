@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -63,6 +63,9 @@ public class ApplicationEntityCache
         if (ae == null)
             throw new ConfigurationNotFoundException(
                     "Unknown AE: " + aet);
+        if (!ae.isInstalled())
+            throw new ConfigurationNotFoundException(
+                    "AE: " + aet + " not installed");
         return ae;
     }
 }

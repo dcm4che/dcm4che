@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -790,7 +790,7 @@ public class Attributes implements Serializable {
 
     private static String[] toStrings(Object val) {
         return (val instanceof String) 
-                ? new String[] { (String) val } 
+                ? new String[] { (String) val }
                 : (String[]) val;
     }
 
@@ -2871,8 +2871,12 @@ public class Attributes implements Serializable {
 
     public static Attributes createFileMetaInformation(String iuid,
             String cuid, String tsuid) {
-        if (iuid.isEmpty() || cuid.isEmpty() || tsuid.isEmpty())
-            throw new IllegalArgumentException();
+        if (iuid == null || iuid.isEmpty())
+            throw new IllegalArgumentException("Missing SOP Instance UID");
+        if (cuid == null || cuid.isEmpty())
+            throw new IllegalArgumentException("Missing SOP Class UID");
+        if (tsuid == null || tsuid.isEmpty())
+            throw new IllegalArgumentException("Missing Transfer Syntax UID");
 
         Attributes fmi = new Attributes(6);
         fmi.setBytes(Tag.FileMetaInformationVersion, VR.OB,
@@ -2939,9 +2943,18 @@ public class Attributes implements Serializable {
 
         boolean ignoreCase = ignorePNCase && vr == VR.PN;
         for (String keyVal : keyVals) {
-            if (vr == VR.PN)
-                keyVal = new PersonName(keyVals[0]).toString();
-    
+            DateRange dateRange = null;
+            switch (vr) {
+                case PN:
+                    keyVal = new PersonName(keyVals[0]).toString();
+                    break;
+                case DA:
+                case DT:
+                case TM:
+                    dateRange = toDateRange(keyVal, vr);
+                    break;
+            }
+
             if (StringUtils.containsWildCard(keyVal)) {
                 Pattern pattern = StringUtils.compilePattern(keyVal, ignoreCase);
                 for (String val : vals) {
@@ -2959,6 +2972,12 @@ public class Attributes implements Serializable {
                 for (String val : vals) {
                     if (val == null)
                         if (matchNoValue)
+                            return true;
+                        else
+                            continue;
+                    if (dateRange != null)
+                        if (dateRange.contains(
+                                vr.toDate(val, getTimeZone(), 0, false, null, new DatePrecision())))
                             return true;
                         else
                             continue;
@@ -3363,5 +3382,92 @@ public class Attributes implements Serializable {
             }
         }
         return modified;
+    }
+
+    private int creatorIndexOf(String privateCreator, int groupNumber) {
+        if ((groupNumber & 1) == 0)
+            throw new IllegalArgumentException(
+                    "(" + TagUtils.shortToHexString(groupNumber) + ",xxxx) is not a private Group");
+
+        int group = groupNumber << 16;
+        int creatorTag = group | 0x10;
+        int index = indexOf(creatorTag);
+        if (index < 0)
+            index = -index-1;
+        while (index < size && (tags[index] & 0xffffff00) == group) {
+            if (vrs[index] == VR.LO) {
+                Object creatorID = decodeStringValue(index);
+                if (privateCreator.equals(creatorID))
+                    return index;
+            }
+            index++;
+            creatorTag++;
+        }
+        return -1;
+    }
+
+    public int removePrivateAttributes(String privateCreator, int groupNumber) {
+        int privateCreatorIndex = creatorIndexOf(privateCreator, groupNumber);
+        if (privateCreatorIndex < 0)
+            return 0;
+
+        int creatorTag = tags[privateCreatorIndex];
+        int privateTag = (creatorTag & 0xffff0000) | ((creatorTag & 0xff) << 8);
+        int srcPos = privateCreatorIndex + 1;
+        int start = srcPos;
+        while (start < size && tags[start] < privateTag)
+            start++;
+
+        int end = start;
+        while (end < size && (tags[end] & 0xffffff00) == privateTag)
+            end++;
+
+        int len1 = start - srcPos;
+        if (len1 > 0) {
+            System.arraycopy(tags, srcPos, tags, privateCreatorIndex, len1);
+            System.arraycopy(vrs, srcPos, vrs, privateCreatorIndex, len1);
+            System.arraycopy(values, srcPos, values, privateCreatorIndex, len1);
+        }
+
+        int len2 = size - end;
+        if (len2 > 0) {
+            int destPos = start - 1;
+            System.arraycopy(tags, end, tags, destPos, len2);
+            System.arraycopy(vrs, end, vrs, destPos, len2);
+            System.arraycopy(values, end, values, destPos, len2);
+        }
+        int removed = end - start;
+        int size1 = size - removed - 1;
+        Arrays.fill(tags, size1, size, 0);
+        Arrays.fill(vrs, size1, size, null);
+        Arrays.fill(values, size1, size, null);
+        size = size1;
+        return removed;
+    }
+
+    public int removePrivateAttributes() {
+        int size1 = size;
+        for (int i = 0; i < size1; i++) {
+            int j = i;
+            while (TagUtils.isPrivateGroup(tags[j]) && j < size1)
+                j++;
+            if (j > i) {
+                int len = size1 - j;
+                if (len > 0) {
+                    System.arraycopy(tags, j, tags, i, len);
+                    System.arraycopy(vrs, j, vrs, i, len);
+                    System.arraycopy(values, j, values, i, len);
+                }
+                size1 -= j - i;
+            }
+        }
+        int removed = size - size1;
+        if (removed > 0) {
+            Arrays.fill(tags, size1, size, 0);
+            Arrays.fill(vrs, size1, size, null);
+            Arrays.fill(values, size1, size, null);
+            size = size1;
+        }
+        return removed;
     }
 }

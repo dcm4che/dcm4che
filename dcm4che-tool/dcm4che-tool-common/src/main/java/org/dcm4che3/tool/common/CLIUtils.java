@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -54,7 +54,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
@@ -276,6 +275,8 @@ public class CLIUtils {
                 .withLongOpt("tls-protocol")
                 .create(null));
         opts.addOption(null, "tls1", false, rb.getString("tls1"));
+        opts.addOption(null, "tls11", false, rb.getString("tls11"));
+        opts.addOption(null, "tls12", false, rb.getString("tls12"));
         opts.addOption(null, "ssl3", false, rb.getString("ssl3"));
         opts.addOption(null, "ssl2Hello", false, rb.getString("ssl2Hello"));
         opts.addOption(null, "tls-noauth", false, rb.getString("tls-noauth"));
@@ -339,7 +340,7 @@ public class CLIUtils {
 
     public static CommandLine parseComandLine(String[] args, Options opts, 
             ResourceBundle rb2, Class<?> clazz) throws ParseException {
-        CommandLineParser parser = new PosixParser();
+        CommandLineParser parser = new DetectEndOfOptionsPosixParser();
         CommandLine cl = parser.parse(opts, args);
         if (cl.hasOption("h")) {
             HelpFormatter formatter = new HelpFormatter();
@@ -495,12 +496,16 @@ public class CLIUtils {
         else
             return;
 
-        if (cl.hasOption("tls1"))
+        if (cl.hasOption("tls12"))
+            conn.setTlsProtocols("TLSv1.2");
+        else if (cl.hasOption("tls11"))
+            conn.setTlsProtocols("TLSv1.1");
+        else if (cl.hasOption("tls1"))
             conn.setTlsProtocols("TLSv1");
         else if (cl.hasOption("ssl3"))
             conn.setTlsProtocols("SSLv3");
         else if (cl.hasOption("ssl2Hello"))
-            conn.setTlsProtocols("SSLv2Hello", "SSLv3", "TLSv1");
+            conn.setTlsProtocols("SSLv2Hello", "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2");
         else if (cl.hasOption("tls-protocol"))
             conn.setTlsProtocols(cl.getOptionValues("tls-protocol"));
 

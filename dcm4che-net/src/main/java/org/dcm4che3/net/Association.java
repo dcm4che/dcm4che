@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -568,6 +568,11 @@ public class Association {
     }
 
     void handleAReleaseRQ() throws IOException {
+        if (decoder.isPendingPDV()) {
+            LOG.info("{}: unexpected A-RELEASE-RQ after P-DATA-TF with pending PDV", this);
+            abort();
+            return;
+        }
         enterState(State.Sta8);
         waitForPerformingOps();
         LOG.info("{} << A-RELEASE-RP", name);
@@ -1225,7 +1230,7 @@ public class Association {
         String versionName = getRemoteImplVersionName();
         if (versionName != null)
             fmi.setString(Tag.ImplementationVersionName, VR.SH, versionName);
-        fmi.setString(Tag.SourceApplicationEntityTitle, VR.SH,
+        fmi.setString(Tag.SourceApplicationEntityTitle, VR.AE,
                 getRemoteAET());
         return fmi;
     }

@@ -12,7 +12,7 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
@@ -45,7 +45,6 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -162,7 +161,7 @@ public class StoreTool implements TestTool {
         main.getRemoteConnection().setPort(port);
         //ensure secure connection
         main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
-        main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
+        main.getRemoteConnection().setTlsProtocols(conn.tlsProtocols());
         main.setAttributes(new Attributes());
         // scan
         main.scanFiles(absoluteFileNames, false);

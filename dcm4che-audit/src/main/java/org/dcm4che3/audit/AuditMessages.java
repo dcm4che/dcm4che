@@ -896,7 +896,8 @@ public class AuditMessages {
         AuditMessage msg = new AuditMessage();
         msg.setEventIdentification(toEventIdentification(buildEventIdentification));
         for (BuildActiveParticipant buildActiveParticipant : buildActiveParticipants)
-            msg.getActiveParticipant().add(toActiveParticipant(buildActiveParticipant));
+            if (buildActiveParticipant != null)
+                msg.getActiveParticipant().add(toActiveParticipant(buildActiveParticipant));
         for (BuildParticipantObjectIdentification buildParticipantObjectIdentification : buildParticipantObjectIdentifications)
             msg.getParticipantObjectIdentification().add(toParticipantObjectIdentification(buildParticipantObjectIdentification));
         return msg;

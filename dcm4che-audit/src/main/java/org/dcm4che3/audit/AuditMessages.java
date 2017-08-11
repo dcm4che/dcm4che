@@ -658,8 +658,7 @@ public class AuditMessages {
         ap.setUserID(buildActiveParticipant.userID);
         ap.setAlternativeUserID(buildActiveParticipant.altUserID);
         ap.setUserName(buildActiveParticipant.userName);
-        if (buildActiveParticipant.requester)
-            ap.setUserIsRequestor(true);
+        ap.setUserIsRequestor(buildActiveParticipant.requester);
         ap.setNetworkAccessPointID(buildActiveParticipant.napID);
         ap.setNetworkAccessPointTypeCode(buildActiveParticipant.napTypeCode);
         ap.setMediaType(buildActiveParticipant.mediaType);

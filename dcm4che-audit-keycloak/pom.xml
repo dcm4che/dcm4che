@@ -49,20 +49,9 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <properties>
-    <keycloak.version>2.1.0.Final</keycloak.version>
+    <keycloak.version>3.2.1.Final</keycloak.version>
   </properties>
   <artifactId>dcm4che-audit-keycloak</artifactId>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.jboss.spec</groupId>
-        <artifactId>jboss-javaee-7.0</artifactId>
-        <version>1.0.2.Final</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
@@ -84,28 +73,10 @@
       <artifactId>keycloak-server-spi</artifactId>
       <version>${keycloak.version}</version>
     </dependency>
-    <!-- Import the CDI API -->
     <dependency>
-      <groupId>javax.enterprise</groupId>
-      <artifactId>cdi-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <!-- Import the Common Annotations API (JSR-250) -->
-    <dependency>
-      <groupId>org.jboss.spec.javax.annotation</groupId>
-      <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jaxrs</artifactId>
-      <version>3.0.14.Final</version>
-    </dependency>
-    <!-- Import the Servlet API -->
-    <dependency>
-      <groupId>org.jboss.spec.javax.servlet</groupId>
-      <artifactId>jboss-servlet-api_3.1_spec</artifactId>
-      <scope>provided</scope>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-server-spi-private</artifactId>
+      <version>${keycloak.version}</version>
     </dependency>
   </dependencies>
 

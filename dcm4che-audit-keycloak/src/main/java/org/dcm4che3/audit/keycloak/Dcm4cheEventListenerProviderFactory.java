@@ -46,16 +46,35 @@ import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Mar 2016
  */
 public class Dcm4cheEventListenerProviderFactory implements EventListenerProviderFactory {
+    private static String[] JBOSS_PROPERITIES = {
+            "jboss.home",
+            "jboss.modules",
+            "jboss.server.base",
+            "jboss.server.config",
+            "jboss.server.data",
+            "jboss.server.deploy",
+            "jboss.server.log",
+            "jboss.server.temp",
+    };
     private final Set<EventType> includedEvents = new HashSet<EventType>();
+
+    static void addJBossDirURLSystemProperties() {
+        for (String key : JBOSS_PROPERITIES) {
+            String url = new File(System.getProperty(key + ".dir")).toURI().toString();
+            System.setProperty(key + ".url", url.substring(0, url.length()-1));
+        }
+    }
 
     @Override
     public EventListenerProvider create(KeycloakSession keycloakSession) {
@@ -64,7 +83,8 @@ public class Dcm4cheEventListenerProviderFactory implements EventListenerProvide
 
     @Override
     public void init(Config.Scope scope) {
-        String[] includes = scope.getArray("includes");
+        addJBossDirURLSystemProperties();
+        String[] includes = scope.getArray("include-events");
         if (includes != null) {
             for (String e : includes) {
                 includedEvents.add(EventType.valueOf(e));
@@ -84,6 +104,6 @@ public class Dcm4cheEventListenerProviderFactory implements EventListenerProvide
 
     @Override
     public String getId() {
-        return "dcm4che-rest";
+        return "dcm4che-audit";
     }
 }

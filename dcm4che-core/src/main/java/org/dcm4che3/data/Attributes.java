@@ -2168,15 +2168,26 @@ public class Attributes implements Serializable {
         if (otherIndex >= 0 && vr != other.vrs[otherIndex])
             return false;
 
-        if (vr.isStringType())
-            if (vr == VR.IS)
-                return equalISValues(other, index, otherIndex);
-            else if (vr == VR.DS)
-                return equalDSValues(other, index, otherIndex);
-            else if (vr == VR.PN)
-                return equalPNValues(other, index, otherIndex);
-            else
-                return equalStringValues(other, index, otherIndex);
+        if (vr.isStringType()) {
+            try {
+                if (vr == VR.IS)
+                    return Arrays.equals(decodeISValue(index), other.decodeISValue(otherIndex));
+                else if (vr == VR.DS)
+                    return Arrays.equals(decodeDSValue(index), other.decodeDSValue(otherIndex));
+            } catch (NumberFormatException e) {
+            }
+            Object v1 = index < 0 ? Value.NULL : decodeStringValue(index);
+            Object v2 = otherIndex < 0 ? Value.NULL : other.decodeStringValue(otherIndex);
+            return (v1 instanceof String[])
+                    ? (v2 instanceof String[])
+                            && (vr == VR.PN
+                                ? equalPNValues((String[]) v1, (String[]) v2)
+                                : Arrays.equals((String[]) v1, (String[]) v2))
+                    : !(v2 instanceof String[])
+                            && (vr == VR.PN
+                                    ? equalPNValues(v1, v2)
+                                    : v1.equals(v2));
+        }
 
         Object v1 = index < 0 ? Value.NULL : values[index];
         Object v2 = otherIndex < 0 ? Value.NULL : other.values[otherIndex];
@@ -2189,22 +2200,6 @@ public class Attributes implements Serializable {
         } else
             return v1.equals(v2);
         return false;
-    }
-
-    private boolean equalISValues(Attributes other, int index, int otherIndex) {
-        try {
-            return Arrays.equals(decodeISValue(index), other.decodeISValue(otherIndex));
-        } catch (NumberFormatException e) {
-            return equalStringValues(other, index, otherIndex);
-        }
-    }
-
-    private boolean equalDSValues(Attributes other, int index, int otherIndex) {
-        try {
-            return Arrays.equals(decodeDSValue(index), other.decodeDSValue(otherIndex));
-        } catch (NumberFormatException e) {
-            return equalStringValues(other, index, otherIndex);
-        }
     }
 
     private boolean equalPNValues(Attributes other, int index, int otherIndex) {
@@ -2255,17 +2250,6 @@ public class Attributes implements Serializable {
 
     private static boolean equalPNValuesOrdered(String v1, String v2) {
         return v2.startsWith(v1) && containsOnly(v2, v1.length(), '^');
-    }
-
-    private boolean equalStringValues(Attributes other, int index, int otherIndex) {
-        Object v1 = index < 0 ? Value.NULL : values[index];
-        Object v2 = otherIndex < 0 ? Value.NULL : other.values[otherIndex];
-        if (v1 instanceof String[]) {
-            if (v2 instanceof String[])
-                return Arrays.equals((String[]) v1, (String[]) v2);
-        } else
-            return v1.equals(v2);
-        return false;
     }
 
     @Override

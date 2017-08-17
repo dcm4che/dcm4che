@@ -727,6 +727,7 @@ public class AuditLogger {
             GeneralSecurityException, IOException {
         if (getNumberOfQueuedMessages() > 0) {
             spoolMessage(msg);
+            scheduleRetry();
         } else {
             try {
                 activeConnection().sendMessage(msg);

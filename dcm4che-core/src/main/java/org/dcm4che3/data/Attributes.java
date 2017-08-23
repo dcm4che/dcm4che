@@ -2202,17 +2202,6 @@ public class Attributes implements Serializable {
         return false;
     }
 
-    private boolean equalPNValues(Attributes other, int index, int otherIndex) {
-        Object v1 = index < 0 ? Value.NULL : decodeStringValue(index);
-        Object v2 = otherIndex < 0 ? Value.NULL : other.decodeStringValue(otherIndex);
-        if (v1 instanceof String[]) {
-            if (v2 instanceof String[])
-                return equalPNValues((String[]) v1, (String[]) v2);
-        } else
-            return equalPNValues(v1, v2);
-        return false;
-    }
-
     private boolean equalPNValues(Object v1, Object v2) {
         return v1 == Value.NULL ? !containsPNValue(v2)
                 : v2 == Value.NULL ? !containsPNValue(v1)
@@ -2220,16 +2209,7 @@ public class Attributes implements Serializable {
     }
 
     private static boolean containsPNValue(Object v) {
-        return v != Value.NULL && !containsOnly((String) v, 0, '^', ' ');
-    }
-
-    private static boolean containsOnly(String s, int index, char ch1, int ch2) {
-        for (int i = index; i < s.length(); i++) {
-            char ch = s.charAt(i);
-            if (ch != ch1 && ch != ch2)
-                return false;
-        }
-        return true;
+        return v != Value.NULL && !new PersonName((String) v, true).isEmpty();
     }
 
     private static boolean equalPNValues(String[] v1, String[] v2) {
@@ -2244,13 +2224,7 @@ public class Attributes implements Serializable {
     }
 
     private static boolean equalPNValues(String v1, String v2) {
-        return v1.length() < v2.length()
-            ? equalPNValuesOrdered(v1, v2)
-            : equalPNValuesOrdered(v2, v1);
-    }
-
-    private static boolean equalPNValuesOrdered(String v1, String v2) {
-        return v2.startsWith(v1) && containsOnly(v2, v1.length(), '^', ' ');
+        return new PersonName(v1, true).equals(new PersonName(v2, true));
     }
 
     @Override

@@ -2220,14 +2220,15 @@ public class Attributes implements Serializable {
     }
 
     private static boolean containsPNValue(Object v) {
-        return v != Value.NULL && !containsOnly((String) v, 0, '^');
+        return v != Value.NULL && !containsOnly((String) v, 0, '^', ' ');
     }
 
-    private static boolean containsOnly(String s, int index, char ch) {
-        for (int i = index; i < s.length(); i++)
-            if (s.charAt(i) != ch)
+    private static boolean containsOnly(String s, int index, char ch1, int ch2) {
+        for (int i = index; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (ch != ch1 && ch != ch2)
                 return false;
-
+        }
         return true;
     }
 
@@ -2249,7 +2250,7 @@ public class Attributes implements Serializable {
     }
 
     private static boolean equalPNValuesOrdered(String v1, String v2) {
-        return v2.startsWith(v1) && containsOnly(v2, v1.length(), '^');
+        return v2.startsWith(v1) && containsOnly(v2, v1.length(), '^', ' ');
     }
 
     @Override

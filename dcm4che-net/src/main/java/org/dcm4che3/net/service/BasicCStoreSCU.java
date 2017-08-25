@@ -75,6 +75,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     protected List<T> completed = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> warning = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> failed = Collections.synchronizedList(new ArrayList<T>());
+	protected List<Throwable> failedErrors = Collections.synchronizedList(new ArrayList<Throwable>());
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
@@ -111,6 +112,11 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     public List<T> getFailed() {
         return failed;
     }
+	
+	@Override
+    public List<Throwable> getFailedErrors() {
+        return failedErrors;
+    }
 
     @Override
     public int getRemaining() {
@@ -144,6 +150,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                             "Unable to perform sub-operation on association to {}",
                             storeas.getRemoteAET(), e);
                     failed.add(inst);
+                    failedErrors.add(e);
                     while (iter.hasNext())
                         failed.add(iter.next());
                 }
@@ -174,6 +181,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                     UID.nameOf(inst.cuid), UID.nameOf(inst.tsuid),
                     storeas.getRemoteAET(), e);
             failed.add(inst);
+            failedErrors.add(e);
             return;
         }
 
@@ -287,13 +295,14 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         BasicCStoreSCUResp rsp = new BasicCStoreSCUResp();
         rsp.setStatus(status);
         rsp.setCompleted(completed.size());
-        rsp.setFailed(failed.size());
+        rsp.setFailed(failed.size());        
         rsp.setWarning(warning.size());
         if (!failed.isEmpty()) {
             String[] iuids = new String[failed.size()];
             for (int i = 0; i < iuids.length; i++)
                 iuids[i] = failed.get(i).iuid;
             rsp.setFailedUIDs(iuids);
+            rsp.setFailedErrors(failedErrors);
         }
         return rsp;
     }

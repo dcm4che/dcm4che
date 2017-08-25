@@ -60,9 +60,11 @@ public interface CStoreSCU<T extends InstanceLocator> {
     public abstract List<T> getWarning();
 
     public abstract List<T> getFailed();
+    
+    public abstract List<Throwable> getFailedErrors();
 
     public abstract BasicCStoreSCUResp cstore(List<T> instances, Association storeas, int priority);
     
-    public abstract boolean cancel();
+    public abstract boolean cancel();    
 
 }

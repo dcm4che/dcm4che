@@ -41,6 +41,8 @@ package org.dcm4che3.net.service;
 import org.dcm4che3.net.Status;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
@@ -53,6 +55,7 @@ public class BasicCStoreSCUResp {
     private int failed;
     private int warning;
     private String[] failedUIDs;
+	private List<Throwable> failedErrors = new ArrayList<Throwable>();
    
     public int getStatus() {
         return status;
@@ -84,6 +87,12 @@ public class BasicCStoreSCUResp {
     public void setFailedUIDs(String[] failedUIDs) {
         this.failedUIDs = failedUIDs;
     }
+	public List<Throwable> getFailedErrors() {
+        return failedErrors;
+    }
+    public void setFailedErrors(List<Throwable> failedErrors) {
+        this.failedErrors = failedErrors;
+    }
 
     public void extendResponse(BasicCStoreSCUResp addendumResponse) {
 
@@ -93,8 +102,9 @@ public class BasicCStoreSCUResp {
 
         setCompleted(getCompleted() + addendumResponse.getCompleted());
         setFailed(getFailed() + addendumResponse.getFailed());
+		addFailedErrors(addendumResponse.getFailedErrors());
         setWarning(getWarning() + addendumResponse.getWarning());
-
+		
         String[] currentFailedUIDs = getFailedUIDs();
         String[] newFailedUIDs = addendumResponse.getFailedUIDs();
         if (currentFailedUIDs == null) {
@@ -105,5 +115,12 @@ public class BasicCStoreSCUResp {
             setFailedUIDs(failedUIDs);
         }
 
+    }
+	
+	private void addFailedErrors(List<Throwable> failedErrors){    	
+    	if (failedErrors != null){
+    		this.failedErrors.addAll(failedErrors);
+    	}
+    	
     }
 }

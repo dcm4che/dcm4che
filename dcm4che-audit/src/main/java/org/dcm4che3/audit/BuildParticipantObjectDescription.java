@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -40,8 +40,6 @@
 
 package org.dcm4che3.audit;
 
-import java.util.HashSet;
-
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -49,33 +47,33 @@ import java.util.HashSet;
  */
 
 public class BuildParticipantObjectDescription {
-    public final HashSet<Accession> acc;
-    public final HashSet<MPPS> mpps;
-    public final HashSet<SOPClass> sopC;
+    public final Accession[] acc;
+    public final MPPS[] mpps;
+    public final SOPClass[] sopC;
     public final Boolean encrypted;
     public final Boolean anonymized;
     public final ParticipantObjectContainsStudy pocs;
 
     public static class Builder {
-        private HashSet<Accession> acc;
-        private HashSet<MPPS> mpps;
-        private final HashSet<SOPClass> sopC;
         private Boolean encrypted;
         private Boolean anonymized;
-        private final ParticipantObjectContainsStudy pocs;
+        private ParticipantObjectContainsStudy pocs;
+        private Accession[] acc = {};
+        private MPPS[] mpps = {};
+        private SOPClass[] sopC = {};
 
-        public Builder(HashSet<SOPClass> sopC, ParticipantObjectContainsStudy pocs) {
-            this.sopC = sopC;
-            this.pocs = pocs;
-        }
-
-        public Builder acc(HashSet<Accession> val) {
+        public Builder acc(Accession... val) {
             acc = val;
             return this;
         }
 
-        public Builder mpps(HashSet<MPPS> val) {
+        public Builder mpps(MPPS... val) {
             mpps = val;
+            return this;
+        }
+
+        public Builder sopC(SOPClass... val) {
+            sopC = val;
             return this;
         }
 
@@ -95,11 +93,11 @@ public class BuildParticipantObjectDescription {
     }
 
     private BuildParticipantObjectDescription(Builder builder) {
-        acc = builder.acc;
-        mpps = builder.mpps;
-        sopC = builder.sopC;
         encrypted = builder.encrypted;
         anonymized = builder.anonymized;
         pocs = builder.pocs;
+        acc = builder.acc;
+        mpps = builder.mpps;
+        sopC = builder.sopC;
     }
 }

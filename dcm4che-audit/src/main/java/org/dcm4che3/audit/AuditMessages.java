@@ -645,26 +645,20 @@ public class AuditMessages {
         return asi;
    }
 
-    public static ParticipantObjectDescription createParticipantObjectDescription(
-            HashSet<Accession> accessionList, HashSet<MPPS> mppsList,
-            HashSet<SOPClass> sopClasses, Boolean encrypted, Boolean anonymized,
-            ParticipantObjectContainsStudy pocs) {
+    private static ParticipantObjectDescription toParticipantObjectDescription(BuildParticipantObjectDescription poDesc) {
         ParticipantObjectDescription pod = new ParticipantObjectDescription();
-        if (null != accessionList)
-            for (Accession acc : accessionList)
-                pod.getAccession().add(acc);
-        if (null != mppsList)
-            for (MPPS mpps : mppsList)
-                pod.getMPPS().add(mpps);
-        if (null != sopClasses)
-            for (SOPClass sopC : sopClasses)
-                pod.getSOPClass().add(sopC);
-        pod.setEncrypted(encrypted);
-        pod.setAnonymized(anonymized);
-        pod.setParticipantObjectContainsStudy(pocs);
+        for (Accession acc : poDesc.acc)
+            pod.getAccession().add(acc);
+        for (MPPS mpps : poDesc.mpps)
+            pod.getMPPS().add(mpps);
+        for (SOPClass sopC : poDesc.sopC)
+            pod.getSOPClass().add(sopC);
+        pod.setEncrypted(poDesc.encrypted);
+        pod.setAnonymized(poDesc.anonymized);
+        pod.setParticipantObjectContainsStudy(poDesc.pocs);
         return pod;
     }
-    
+
     private static ParticipantObjectIdentification toParticipantObjectIdentification(
             BuildParticipantObjectIdentification buildParticipantObjectIdentification) {
         ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
@@ -676,7 +670,8 @@ public class AuditMessages {
         poi.setParticipantObjectTypeCodeRole(buildParticipantObjectIdentification.role);
         poi.setParticipantObjectDataLifeCycle(buildParticipantObjectIdentification.lifeCycle);
         poi.setParticipantObjectSensitivity(buildParticipantObjectIdentification.sensitivity);
-        poi.setParticipantObjectDescription(buildParticipantObjectIdentification.desc);
+        if (buildParticipantObjectIdentification.desc != null)
+            poi.setParticipantObjectDescription(toParticipantObjectDescription(buildParticipantObjectIdentification.desc));
         for (ParticipantObjectDetail participantObjectDetail : buildParticipantObjectIdentification.detail)
                 poi.getParticipantObjectDetail().add(participantObjectDetail);
         return poi;
@@ -846,28 +841,5 @@ public class AuditMessages {
 
     public static ParticipantObjectContainsStudy getPocs(String... studyUIDs) {
         return AuditMessages.createParticipantObjectContainsStudy(AuditMessages.createStudyIDs(studyUIDs));
-    }
-
-    public static ParticipantObjectDescription getPODesc(BuildParticipantObjectDescription desc) {
-        return AuditMessages.createParticipantObjectDescription(desc.acc, desc.mpps, desc.sopC, desc.encrypted,
-                desc.anonymized, desc.pocs);
-    }
-
-    public static HashSet<MPPS> getMPPS(String... mppsUIDs) {
-        HashSet<MPPS> mpps = new HashSet<>();
-        for (String mppsUID : mppsUIDs)
-            mpps.add(AuditMessages.createMPPS(mppsUID));
-        return mpps;
-    }
-
-    public static HashSet<Accession> getAccessions(String accNum) {
-        HashSet<Accession> accList = new HashSet<>();
-        if (accNum != null)
-            accList.add(AuditMessages.createAccession(accNum));
-        return accList;
-    }
-
-    public static SOPClass getSOPC(HashSet<String> instances, String uid, Integer numI) {
-        return AuditMessages.createSOPClass(instances, uid, numI);
     }
 }

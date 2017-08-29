@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -54,7 +54,7 @@ public class BuildParticipantObjectIdentification {
     public final String role;
     public final String lifeCycle;
     public final String sensitivity;
-    public final ParticipantObjectDescription desc;
+    public final BuildParticipantObjectDescription desc;
     public final ParticipantObjectDetail[] detail;
 
     public static class Builder {
@@ -66,7 +66,7 @@ public class BuildParticipantObjectIdentification {
         private String role;
         private String lifeCycle;
         private String sensitivity;
-        private ParticipantObjectDescription desc;
+        private BuildParticipantObjectDescription desc;
         private ParticipantObjectDetail[] detail = {};
 
         public Builder(String id, AuditMessages.ParticipantObjectIDTypeCode idType,
@@ -97,7 +97,7 @@ public class BuildParticipantObjectIdentification {
             return this;
         }
 
-        public Builder desc(ParticipantObjectDescription val) {
+        public Builder desc(BuildParticipantObjectDescription val) {
             desc = val;
             return this;
         }

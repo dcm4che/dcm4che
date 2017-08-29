@@ -609,21 +609,6 @@ public class AuditMessages {
 
     }
 
-    public static EventIdentification createEventIdentification(
-            EventID eventID, String action, Calendar eventDateTime,
-            String outcome, String outcomeDescription, org.dcm4che3.audit.EventTypeCode... types) {
-        EventIdentification ei = new EventIdentification();
-        ei.setEventID(eventID);
-        ei.setEventDateTime(
-                eventDateTime != null ? eventDateTime : Calendar.getInstance());
-        ei.setEventActionCode(action);
-        ei.setEventOutcomeIndicator(outcome);
-        ei.setEventOutcomeDescription(outcomeDescription);
-        for (org.dcm4che3.audit.EventTypeCode type : types)
-            ei.getEventTypeCode().add(type);
-        return ei;
-    }
-
     public static EventIdentification toEventIdentification(BuildEventIdentification buildEventIdentification) {
         EventIdentification ei = new EventIdentification();
         ei.setEventID(buildEventIdentification.eventID);
@@ -634,23 +619,6 @@ public class AuditMessages {
         for (org.dcm4che3.audit.EventTypeCode type : buildEventIdentification.eventTypeCode)
             ei.getEventTypeCode().add(type);
         return ei;
-    }
-
-    public static ActiveParticipant createActiveParticipant(
-            String userID, String altUserID, String name, boolean requestor,
-            String napID, String napTypeCode, MediaType mediaType,
-            RoleIDCode... roleIDs) {
-        ActiveParticipant ap = new ActiveParticipant();
-        ap.setUserID(userID);
-        ap.setAlternativeUserID(altUserID);
-        ap.setUserName(name);
-        ap.setUserIsRequestor(requestor);
-        ap.setNetworkAccessPointID(napID);
-        ap.setNetworkAccessPointTypeCode(napTypeCode);
-        ap.setMediaType(mediaType);
-        for (RoleIDCode roleID : roleIDs)
-            ap.getRoleIDCode().add(roleID);
-        return ap;
     }
 
     private static ActiveParticipant toActiveParticipant(BuildActiveParticipant buildActiveParticipant) {
@@ -696,28 +664,7 @@ public class AuditMessages {
         pod.setParticipantObjectContainsStudy(pocs);
         return pod;
     }
-
-    public static ParticipantObjectIdentification createParticipantObjectIdentification(
-            String id, ParticipantObjectIDTypeCode idType, String name,
-            byte[] query, String type, String role, String lifeCycle,
-            String sensitivity, ParticipantObjectDescription desc,
-            ParticipantObjectDetail... details) {
-        ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
-        poi.setParticipantObjectID(id);
-        poi.setParticipantObjectIDTypeCode(idType);
-        poi.setParticipantObjectName(name);
-        poi.setParticipantObjectQuery(query);
-        poi.setParticipantObjectTypeCode(type);
-        poi.setParticipantObjectTypeCodeRole(role);
-        poi.setParticipantObjectDataLifeCycle(lifeCycle);
-        poi.setParticipantObjectSensitivity(sensitivity);
-        poi.setParticipantObjectDescription(desc);
-        if (null != details)
-            for (ParticipantObjectDetail detail : details)
-                poi.getParticipantObjectDetail().add(detail);
-        return poi;
-    }
-
+    
     private static ParticipantObjectIdentification toParticipantObjectIdentification(
             BuildParticipantObjectIdentification buildParticipantObjectIdentification) {
         ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
@@ -882,11 +829,6 @@ public class AuditMessages {
         for (int i = 1; i < aets.length; i++)
             b.append(';').append(aets[i]);
         return b.toString();
-    }
-
-    public static EventIdentification getEI(BuildEventIdentification ei) {
-        return AuditMessages.createEventIdentification(ei.eventID, ei.eventActionCode, ei.eventDateTime,
-                ei.outcome, ei.outcomeDesc, ei.eventTypeCode);
     }
 
     public static AuditMessage createMessage(

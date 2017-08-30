@@ -96,22 +96,22 @@ public class AuditAuth {
         }
     }
 
-    private static BuildEventIdentification toBuildEventIdentification(AuditLogger log, Event event) {
+    private static EventIdentificationBuilder toBuildEventIdentification(AuditLogger log, Event event) {
         String outcome = event.getError() != null
                 ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success;
         EventTypeCode etc = event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
                 ? AuditMessages.EventTypeCode.Login : AuditMessages.EventTypeCode.Logout;
-        return new BuildEventIdentification.Builder(AuditMessages.EventID.UserAuthentication,
+        return new EventIdentificationBuilder.Builder(AuditMessages.EventID.UserAuthentication,
                 AuditMessages.EventActionCode.Execute, log.timeStamp(), outcome).outcomeDesc(event.getError())
                 .eventTypeCode(etc).build();
     }
 
     private static void sendAuditMessage(Path file, Event event, AuditLogger log) throws IOException{
         AuthInfo info = new AuthInfo(new LineReader(file).getMainInfo());
-        BuildActiveParticipant[] activeParticipants = new BuildActiveParticipant[2];
-        activeParticipants[0] = new BuildActiveParticipant.Builder(
+        ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
+        activeParticipants[0] = new ActiveParticipantBuilder.Builder(
                 info.getField(AuthInfo.USER_NAME), info.getField(AuthInfo.IP_ADDR)).requester(true).build();
-        activeParticipants[1] = new BuildActiveParticipant.Builder(log.getDevice().getDeviceName(),
+        activeParticipants[1] = new ActiveParticipantBuilder.Builder(log.getDevice().getDeviceName(),
                 log.getConnections().get(0).getHostname()).altUserID(AuditLogger.processID()).build();
         AuditMessage msg = AuditMessages.createMessage(toBuildEventIdentification(log, event), activeParticipants);
         msg.getAuditSourceIdentification().add(log.createAuditSourceIdentification());

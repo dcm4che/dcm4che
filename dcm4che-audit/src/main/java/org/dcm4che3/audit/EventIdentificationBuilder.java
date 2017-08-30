@@ -46,7 +46,7 @@ import java.util.Calendar;
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  * @since June 2016
  */
-public class BuildEventIdentification {
+public class EventIdentificationBuilder {
     public final AuditMessages.EventID eventID;
     public final String eventActionCode;
     public final Calendar eventDateTime;
@@ -79,12 +79,12 @@ public class BuildEventIdentification {
             return this;
         }
 
-        public BuildEventIdentification build() {
-            return new BuildEventIdentification(this);
+        public EventIdentificationBuilder build() {
+            return new EventIdentificationBuilder(this);
         }
     }
 
-    private BuildEventIdentification(Builder builder) {
+    private EventIdentificationBuilder(Builder builder) {
         eventID = builder.eventID;
         eventActionCode = builder.eventActionCode;
         eventDateTime = builder.eventDateTime;

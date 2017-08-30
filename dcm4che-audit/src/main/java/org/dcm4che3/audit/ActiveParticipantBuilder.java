@@ -45,7 +45,7 @@ package org.dcm4che3.audit;
  * @since June 2016
  */
 
-public class BuildActiveParticipant {
+public class ActiveParticipantBuilder {
     public final String userID;
     public final String napID;
     public final String altUserID;
@@ -100,12 +100,12 @@ public class BuildActiveParticipant {
             return this;
         }
 
-        public BuildActiveParticipant build() {
-            return new BuildActiveParticipant(this);
+        public ActiveParticipantBuilder build() {
+            return new ActiveParticipantBuilder(this);
         }
     }
 
-    private BuildActiveParticipant(Builder builder) {
+    private ActiveParticipantBuilder(Builder builder) {
         userID = builder.userID;
         napID = builder.napID;
         altUserID = builder.altUserID;

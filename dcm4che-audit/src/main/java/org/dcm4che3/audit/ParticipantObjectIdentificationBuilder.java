@@ -45,7 +45,7 @@ package org.dcm4che3.audit;
  * @since June 2016
  */
 
-public class BuildParticipantObjectIdentification {
+public class ParticipantObjectIdentificationBuilder {
     public final String id;
     public final AuditMessages.ParticipantObjectIDTypeCode idType;
     public final String name;
@@ -54,7 +54,7 @@ public class BuildParticipantObjectIdentification {
     public final String role;
     public final String lifeCycle;
     public final String sensitivity;
-    public final BuildParticipantObjectDescription desc;
+    public final ParticipantObjectDescriptionBuilder desc;
     public final ParticipantObjectDetail[] detail;
 
     public static class Builder {
@@ -66,7 +66,7 @@ public class BuildParticipantObjectIdentification {
         private String role;
         private String lifeCycle;
         private String sensitivity;
-        private BuildParticipantObjectDescription desc;
+        private ParticipantObjectDescriptionBuilder desc;
         private ParticipantObjectDetail[] detail = {};
 
         public Builder(String id, AuditMessages.ParticipantObjectIDTypeCode idType,
@@ -97,7 +97,7 @@ public class BuildParticipantObjectIdentification {
             return this;
         }
 
-        public Builder desc(BuildParticipantObjectDescription val) {
+        public Builder desc(ParticipantObjectDescriptionBuilder val) {
             desc = val;
             return this;
         }
@@ -107,12 +107,12 @@ public class BuildParticipantObjectIdentification {
             return this;
         }
 
-        public BuildParticipantObjectIdentification build() {
-            return new BuildParticipantObjectIdentification(this);
+        public ParticipantObjectIdentificationBuilder build() {
+            return new ParticipantObjectIdentificationBuilder(this);
         }
     }
 
-    private BuildParticipantObjectIdentification(Builder builder) {
+    private ParticipantObjectIdentificationBuilder(Builder builder) {
         id = builder.id;
         idType = builder.idType;
         name = builder.name;

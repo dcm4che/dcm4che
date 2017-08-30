@@ -609,28 +609,28 @@ public class AuditMessages {
 
     }
 
-    public static EventIdentification toEventIdentification(BuildEventIdentification buildEventIdentification) {
+    public static EventIdentification toEventIdentification(EventIdentificationBuilder eventIdentificationBuilder) {
         EventIdentification ei = new EventIdentification();
-        ei.setEventID(buildEventIdentification.eventID);
-        ei.setEventActionCode(buildEventIdentification.eventActionCode);
-        ei.setEventDateTime(buildEventIdentification.eventDateTime);
-        ei.setEventOutcomeIndicator(buildEventIdentification.outcome);
-        ei.setEventOutcomeDescription(buildEventIdentification.outcomeDesc);
-        for (org.dcm4che3.audit.EventTypeCode type : buildEventIdentification.eventTypeCode)
+        ei.setEventID(eventIdentificationBuilder.eventID);
+        ei.setEventActionCode(eventIdentificationBuilder.eventActionCode);
+        ei.setEventDateTime(eventIdentificationBuilder.eventDateTime);
+        ei.setEventOutcomeIndicator(eventIdentificationBuilder.outcome);
+        ei.setEventOutcomeDescription(eventIdentificationBuilder.outcomeDesc);
+        for (org.dcm4che3.audit.EventTypeCode type : eventIdentificationBuilder.eventTypeCode)
             ei.getEventTypeCode().add(type);
         return ei;
     }
 
-    private static ActiveParticipant toActiveParticipant(BuildActiveParticipant buildActiveParticipant) {
+    private static ActiveParticipant toActiveParticipant(ActiveParticipantBuilder activeParticipantBuilder) {
         ActiveParticipant ap = new ActiveParticipant();
-        ap.setUserID(buildActiveParticipant.userID);
-        ap.setAlternativeUserID(buildActiveParticipant.altUserID);
-        ap.setUserName(buildActiveParticipant.userName);
-        ap.setUserIsRequestor(buildActiveParticipant.requester);
-        ap.setNetworkAccessPointID(buildActiveParticipant.napID);
-        ap.setNetworkAccessPointTypeCode(buildActiveParticipant.napTypeCode);
-        ap.setMediaType(buildActiveParticipant.mediaType);
-        for (RoleIDCode roleID : buildActiveParticipant.roleIDCode)
+        ap.setUserID(activeParticipantBuilder.userID);
+        ap.setAlternativeUserID(activeParticipantBuilder.altUserID);
+        ap.setUserName(activeParticipantBuilder.userName);
+        ap.setUserIsRequestor(activeParticipantBuilder.requester);
+        ap.setNetworkAccessPointID(activeParticipantBuilder.napID);
+        ap.setNetworkAccessPointTypeCode(activeParticipantBuilder.napTypeCode);
+        ap.setMediaType(activeParticipantBuilder.mediaType);
+        for (RoleIDCode roleID : activeParticipantBuilder.roleIDCode)
             ap.getRoleIDCode().add(roleID);
         return ap;
     }
@@ -645,34 +645,37 @@ public class AuditMessages {
         return asi;
    }
 
-    private static ParticipantObjectDescription toParticipantObjectDescription(BuildParticipantObjectDescription poDesc) {
+    private static ParticipantObjectDescription toParticipantObjectDescription(ParticipantObjectDescriptionBuilder poDesc) {
         ParticipantObjectDescription pod = new ParticipantObjectDescription();
-        for (Accession acc : poDesc.acc)
-            pod.getAccession().add(acc);
-        for (MPPS mpps : poDesc.mpps)
-            pod.getMPPS().add(mpps);
+        for (String acc : poDesc.acc)
+            pod.getAccession().add(AuditMessages.createAccession(acc));
+        for (String mpps : poDesc.mpps)
+            pod.getMPPS().add(AuditMessages.createMPPS(mpps));
         for (SOPClass sopC : poDesc.sopC)
             pod.getSOPClass().add(sopC);
         pod.setEncrypted(poDesc.encrypted);
         pod.setAnonymized(poDesc.anonymized);
-        pod.setParticipantObjectContainsStudy(poDesc.pocs);
+        if (poDesc.pocsStudyUIDs.length > 1)
+            pod.setParticipantObjectContainsStudy(
+                    AuditMessages.createParticipantObjectContainsStudy(
+                            AuditMessages.createStudyIDs(poDesc.pocsStudyUIDs)));
         return pod;
     }
 
     private static ParticipantObjectIdentification toParticipantObjectIdentification(
-            BuildParticipantObjectIdentification buildParticipantObjectIdentification) {
+            ParticipantObjectIdentificationBuilder participantObjectIdentificationBuilder) {
         ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
-        poi.setParticipantObjectID(buildParticipantObjectIdentification.id);
-        poi.setParticipantObjectIDTypeCode(buildParticipantObjectIdentification.idType);
-        poi.setParticipantObjectName(buildParticipantObjectIdentification.name);
-        poi.setParticipantObjectQuery(buildParticipantObjectIdentification.query);
-        poi.setParticipantObjectTypeCode(buildParticipantObjectIdentification.type);
-        poi.setParticipantObjectTypeCodeRole(buildParticipantObjectIdentification.role);
-        poi.setParticipantObjectDataLifeCycle(buildParticipantObjectIdentification.lifeCycle);
-        poi.setParticipantObjectSensitivity(buildParticipantObjectIdentification.sensitivity);
-        if (buildParticipantObjectIdentification.desc != null)
-            poi.setParticipantObjectDescription(toParticipantObjectDescription(buildParticipantObjectIdentification.desc));
-        for (ParticipantObjectDetail participantObjectDetail : buildParticipantObjectIdentification.detail)
+        poi.setParticipantObjectID(participantObjectIdentificationBuilder.id);
+        poi.setParticipantObjectIDTypeCode(participantObjectIdentificationBuilder.idType);
+        poi.setParticipantObjectName(participantObjectIdentificationBuilder.name);
+        poi.setParticipantObjectQuery(participantObjectIdentificationBuilder.query);
+        poi.setParticipantObjectTypeCode(participantObjectIdentificationBuilder.type);
+        poi.setParticipantObjectTypeCodeRole(participantObjectIdentificationBuilder.role);
+        poi.setParticipantObjectDataLifeCycle(participantObjectIdentificationBuilder.lifeCycle);
+        poi.setParticipantObjectSensitivity(participantObjectIdentificationBuilder.sensitivity);
+        if (participantObjectIdentificationBuilder.desc != null)
+            poi.setParticipantObjectDescription(toParticipantObjectDescription(participantObjectIdentificationBuilder.desc));
+        for (ParticipantObjectDetail participantObjectDetail : participantObjectIdentificationBuilder.detail)
                 poi.getParticipantObjectDetail().add(participantObjectDetail);
         return poi;
     }
@@ -685,7 +688,7 @@ public class AuditMessages {
         return detail;
     }
 
-    public static MPPS createMPPS(String uid) {
+    private static MPPS createMPPS(String uid) {
         MPPS mpps = new MPPS();
         mpps.setUID(uid);
         return mpps;
@@ -701,13 +704,13 @@ public class AuditMessages {
         return sopClass;
     }
 
-    public static Instance createInstance(String uid) {
+    private static Instance createInstance(String uid) {
         Instance inst = new Instance();
         inst.setUID(uid);
         return inst;
     }
 
-    public static ParticipantObjectContainsStudy
+    private static ParticipantObjectContainsStudy
             createParticipantObjectContainsStudy(org.dcm4che3.audit.StudyIDs... studyIDs) {
         ParticipantObjectContainsStudy study = new ParticipantObjectContainsStudy();
         for (org.dcm4che3.audit.StudyIDs studyID : studyIDs)
@@ -715,13 +718,13 @@ public class AuditMessages {
         return study;
     }
 
-    public static Accession createAccession(String accessionNumber) {
+    private static Accession createAccession(String accessionNumber) {
         Accession accession = new Accession();
         accession.setNumber(accessionNumber);
         return accession;
     }
 
-    public static StudyIDs[] createStudyIDs(String... studyUIDs) {
+    private static StudyIDs[] createStudyIDs(String... studyUIDs) {
         Set<StudyIDs> set = new HashSet<>();
         for (String s : studyUIDs) {
             StudyIDs sID = new StudyIDs();
@@ -818,28 +821,16 @@ public class AuditMessages {
         return je.getValue();
     }
 
-    public static String getAET(String[] aets) {
-        StringBuilder b = new StringBuilder();
-        b.append(aets[0]);
-        for (int i = 1; i < aets.length; i++)
-            b.append(';').append(aets[i]);
-        return b.toString();
-    }
-
     public static AuditMessage createMessage(
-            BuildEventIdentification buildEventIdentification, BuildActiveParticipant[] buildActiveParticipants,
-            BuildParticipantObjectIdentification... buildParticipantObjectIdentifications) {
+            EventIdentificationBuilder eventIdentificationBuilder, ActiveParticipantBuilder[] activeParticipantBuilders,
+            ParticipantObjectIdentificationBuilder... participantObjectIdentificationBuilders) {
         AuditMessage msg = new AuditMessage();
-        msg.setEventIdentification(toEventIdentification(buildEventIdentification));
-        for (BuildActiveParticipant buildActiveParticipant : buildActiveParticipants)
-            if (buildActiveParticipant != null)
-                msg.getActiveParticipant().add(toActiveParticipant(buildActiveParticipant));
-        for (BuildParticipantObjectIdentification buildParticipantObjectIdentification : buildParticipantObjectIdentifications)
-            msg.getParticipantObjectIdentification().add(toParticipantObjectIdentification(buildParticipantObjectIdentification));
+        msg.setEventIdentification(toEventIdentification(eventIdentificationBuilder));
+        for (ActiveParticipantBuilder activeParticipantBuilder : activeParticipantBuilders)
+            if (activeParticipantBuilder != null)
+                msg.getActiveParticipant().add(toActiveParticipant(activeParticipantBuilder));
+        for (ParticipantObjectIdentificationBuilder participantObjectIdentificationBuilder : participantObjectIdentificationBuilders)
+            msg.getParticipantObjectIdentification().add(toParticipantObjectIdentification(participantObjectIdentificationBuilder));
         return msg;
-    }
-
-    public static ParticipantObjectContainsStudy getPocs(String... studyUIDs) {
-        return AuditMessages.createParticipantObjectContainsStudy(AuditMessages.createStudyIDs(studyUIDs));
     }
 }

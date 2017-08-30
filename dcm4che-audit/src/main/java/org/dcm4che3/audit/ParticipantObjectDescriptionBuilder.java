@@ -46,34 +46,39 @@ package org.dcm4che3.audit;
  * @since June 2016
  */
 
-public class BuildParticipantObjectDescription {
-    public final Accession[] acc;
-    public final MPPS[] mpps;
+public class ParticipantObjectDescriptionBuilder {
+    public final String[] acc;
+    public final String[] mpps;
     public final SOPClass[] sopC;
     public final Boolean encrypted;
     public final Boolean anonymized;
-    public final ParticipantObjectContainsStudy pocs;
+    public final String[] pocsStudyUIDs;
 
     public static class Builder {
         private Boolean encrypted;
         private Boolean anonymized;
-        private ParticipantObjectContainsStudy pocs;
-        private Accession[] acc = {};
-        private MPPS[] mpps = {};
+        private String[] pocsStudyUIDs = {};
+        private String[] acc = {};
+        private String[] mpps = {};
         private SOPClass[] sopC = {};
 
-        public Builder acc(Accession... val) {
+        public Builder acc(String... val) {
             acc = val;
             return this;
         }
 
-        public Builder mpps(MPPS... val) {
+        public Builder mpps(String... val) {
             mpps = val;
             return this;
         }
 
         public Builder sopC(SOPClass... val) {
             sopC = val;
+            return this;
+        }
+
+        public Builder pocsStudyUIDs(String... val) {
+            pocsStudyUIDs = val;
             return this;
         }
 
@@ -87,15 +92,15 @@ public class BuildParticipantObjectDescription {
             return this;
         }
 
-        public BuildParticipantObjectDescription build() {
-            return new BuildParticipantObjectDescription(this);
+        public ParticipantObjectDescriptionBuilder build() {
+            return new ParticipantObjectDescriptionBuilder(this);
         }
     }
 
-    private BuildParticipantObjectDescription(Builder builder) {
+    private ParticipantObjectDescriptionBuilder(Builder builder) {
         encrypted = builder.encrypted;
         anonymized = builder.anonymized;
-        pocs = builder.pocs;
+        pocsStudyUIDs = builder.pocsStudyUIDs;
         acc = builder.acc;
         mpps = builder.mpps;
         sopC = builder.sopC;

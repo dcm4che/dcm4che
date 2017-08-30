@@ -127,33 +127,31 @@ public class AuditMessageTest {
 
     @Test
     public void testDICOMInstancesTransferred() throws Exception {
-        BuildEventIdentification ei = new BuildEventIdentification.Builder(AuditMessages.EventID.DICOMInstancesTransferred,
+        EventIdentificationBuilder ei = new EventIdentificationBuilder.Builder(AuditMessages.EventID.DICOMInstancesTransferred,
                 AuditMessages.EventActionCode.Create, Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success).build();
-        BuildActiveParticipant[] activeParticipants = new BuildActiveParticipant[3];
-        activeParticipants[0] = new BuildActiveParticipant.Builder("123", "192.168.1.2").requester(false)
+        ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[3];
+        activeParticipants[0] = new ActiveParticipantBuilder.Builder("123", "192.168.1.2").requester(false)
                 .altUserID(AuditMessages.alternativeUserIDForAETitle("AEFOO")).roleIDCode(AuditMessages.RoleIDCode.Source).build();
-        activeParticipants[1] = new BuildActiveParticipant.Builder("67562", "192.168.1.5").requester(false)
+        activeParticipants[1] = new ActiveParticipantBuilder.Builder("67562", "192.168.1.5").requester(false)
                 .altUserID(AuditMessages.alternativeUserIDForAETitle("AEPACS")).roleIDCode(AuditMessages.RoleIDCode.Destination).build();
-        activeParticipants[2] = new BuildActiveParticipant.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
+        activeParticipants[2] = new ActiveParticipantBuilder.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
                 .requester(true).altUserID("smith@nema").userName("Dr. Smith").roleIDCode(AuditMessages.RoleIDCode.Source).build();
-
-        ParticipantObjectContainsStudy pocs = AuditMessages.getPocs("1.2.840.10008.2.3.4.5.6.7.78.8");
 
         SOPClass[] sopClasses = new SOPClass[2];
         sopClasses[0] = AuditMessages.createSOPClass(null,  "1.2.840.10008.5.1.4.1.1.2", 1500);
         sopClasses[1] = AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.11.1", 3);
 
-        BuildParticipantObjectDescription pod = new BuildParticipantObjectDescription.Builder()
+        ParticipantObjectDescriptionBuilder pod = new ParticipantObjectDescriptionBuilder.Builder()
                 .sopC(sopClasses)
-                .acc(AuditMessages.createAccession("12341234"))
-                .mpps(AuditMessages.createMPPS("1.2.840.10008.1.2.3.4.5"))
+                .acc("12341234")
+                .mpps("1.2.840.10008.1.2.3.4.5")
                 .build();
 
-        BuildParticipantObjectIdentification poiStudy = new BuildParticipantObjectIdentification.Builder("1.2.840.10008.2.3.4.5.6.7.78.8",
+        ParticipantObjectIdentificationBuilder poiStudy = new ParticipantObjectIdentificationBuilder.Builder("1.2.840.10008.2.3.4.5.6.7.78.8",
                 AuditMessages.ParticipantObjectIDTypeCode.StudyInstanceUID, AuditMessages.ParticipantObjectTypeCode.SystemObject,
                 AuditMessages.ParticipantObjectTypeCodeRole.Resource).desc(pod)
                 .lifeCycle(AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation).build();
-        BuildParticipantObjectIdentification poiPatient = new BuildParticipantObjectIdentification.Builder("ptid12345",
+        ParticipantObjectIdentificationBuilder poiPatient = new ParticipantObjectIdentificationBuilder.Builder("ptid12345",
                 AuditMessages.ParticipantObjectIDTypeCode.PatientNumber, AuditMessages.ParticipantObjectTypeCode.Person,
                 AuditMessages.ParticipantObjectTypeCodeRole.Patient).name("John Doe").build();
 

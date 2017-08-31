@@ -47,6 +47,8 @@ package org.dcm4che3.audit;
 
 public class ActiveParticipantBuilder {
     public final String userID;
+    public final AuditMessages.UserIDTypeCode userIDTypeCode;
+    public final String userTypeCode;
     public final String napID;
     public final String altUserID;
     public final String userName;
@@ -57,6 +59,8 @@ public class ActiveParticipantBuilder {
 
     public static class Builder {
         private final String userID;
+        private AuditMessages.UserIDTypeCode userIDTypeCode;
+        private String userTypeCode;
         private final String napID;
         private String napTypeCode;
         private String altUserID;
@@ -73,6 +77,12 @@ public class ActiveParticipantBuilder {
                                     ? AuditMessages.NetworkAccessPointTypeCode.IPAddress
                                     : AuditMessages.NetworkAccessPointTypeCode.MachineName
                                 : null;
+        }
+
+        public Builder userIDTypeCode(AuditMessages.UserIDTypeCode val) {
+            userIDTypeCode = val;
+            userTypeCode = userTypeCode(val);
+            return this;
         }
 
         public Builder altUserID(String val) {
@@ -107,6 +117,8 @@ public class ActiveParticipantBuilder {
 
     private ActiveParticipantBuilder(Builder builder) {
         userID = builder.userID;
+        userIDTypeCode = builder.userIDTypeCode;
+        userTypeCode = builder.userTypeCode;
         napID = builder.napID;
         altUserID = builder.altUserID;
         userName = builder.userName;
@@ -114,6 +126,14 @@ public class ActiveParticipantBuilder {
         requester = builder.requester;
         mediaType = builder.mediaType;
         roleIDCode = builder.roleIDCode;
+    }
+
+    private static String userTypeCode(AuditMessages.UserIDTypeCode userIDTypeCode) {
+        return userIDTypeCode == AuditMessages.UserIDTypeCode.NodeID || userIDTypeCode == AuditMessages.UserIDTypeCode.LocalUserID
+                ? AuditMessages.UserTypeCode.Person
+                : userIDTypeCode == AuditMessages.UserIDTypeCode.ApplicationFacility
+                    ? AuditMessages.UserTypeCode.Organization
+                    : AuditMessages.UserTypeCode.System;
     }
 }
 

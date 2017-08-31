@@ -96,9 +96,21 @@ ActiveParticipantType =
   element RoleIDCode { CodedValueType }*,
   element MediaType { CodedValueType }?, # DICOM extension to RFC-3881 schema
   attribute UserID { xsd:string },
+  element UserIDTypeCode { CodedValueType }?,
   attribute AlternativeUserID { xsd:string }?,
   attribute UserName { xsd:string }?,
   attribute UserIsRequestor { xsd:boolean }, # declared as required by DICOM extension to RFC-3881 schema
+  attribute UserTypeCode {       # optional type
+  ## Person
+    "1" |
+  ## System object
+    "2" |
+  ## Organization
+    "3" |
+  ## Other
+    "4" |
+  ## System
+    "5"}?,
   attribute NetworkAccessPointID { xsd:string }?,
   attribute NetworkAccessPointTypeCode {
     ## Machine Name, including DNS name

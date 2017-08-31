@@ -41,6 +41,7 @@ package org.dcm4che3.audit;
 
 import java.io.StringReader;
 import java.util.Calendar;
+
 import org.junit.Test;
 
 /**
@@ -129,13 +130,6 @@ public class AuditMessageTest {
     public void testDICOMInstancesTransferred() throws Exception {
         EventIdentificationBuilder ei = new EventIdentificationBuilder.Builder(AuditMessages.EventID.DICOMInstancesTransferred,
                 AuditMessages.EventActionCode.Create, Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success).build();
-        ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[3];
-        activeParticipants[0] = new ActiveParticipantBuilder.Builder("123", "192.168.1.2").requester(false)
-                .altUserID(AuditMessages.alternativeUserIDForAETitle("AEFOO")).roleIDCode(AuditMessages.RoleIDCode.Source).build();
-        activeParticipants[1] = new ActiveParticipantBuilder.Builder("67562", "192.168.1.5").requester(false)
-                .altUserID(AuditMessages.alternativeUserIDForAETitle("AEPACS")).roleIDCode(AuditMessages.RoleIDCode.Destination).build();
-        activeParticipants[2] = new ActiveParticipantBuilder.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
-                .requester(true).altUserID("smith@nema").userName("Dr. Smith").roleIDCode(AuditMessages.RoleIDCode.Source).build();
 
         SOPClass[] sopClasses = new SOPClass[2];
         sopClasses[0] = AuditMessages.createSOPClass(null,  "1.2.840.10008.5.1.4.1.1.2", 1500);
@@ -155,10 +149,30 @@ public class AuditMessageTest {
                 AuditMessages.ParticipantObjectIDTypeCode.PatientNumber, AuditMessages.ParticipantObjectTypeCode.Person,
                 AuditMessages.ParticipantObjectTypeCodeRole.Patient).name("John Doe").build();
 
-        AuditMessage msg = AuditMessages.createMessage(ei, activeParticipants, poiStudy, poiPatient);
+        AuditMessage msg = AuditMessages.createMessage(ei, activeParticipantBuilders(), poiStudy, poiPatient);
         msg.getAuditSourceIdentification().add(AuditMessages.createAuditSourceIdentification("Hospital", "ReadingRoom",
                         AuditMessages.AuditSourceTypeCode.EndUserDisplayDevice));
         AuditMessages.toXML(msg, System.out, true);
+    }
+
+    private ActiveParticipantBuilder[] activeParticipantBuilders() {
+        ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[3];
+
+        activeParticipants[0] = new ActiveParticipantBuilder.Builder("DCM4CHEE", "192.168.1.2")
+                .userIDTypeCode(AuditMessages.UserIDTypeCode.ArchiveDeviceAETs)
+                .altUserID(AuditMessages.alternativeUserIDForAETitle("AEFOO"))
+                .roleIDCode(AuditMessages.RoleIDCode.Source).build();
+        activeParticipants[1] = new ActiveParticipantBuilder.Builder("STORESCP", "192.168.1.5")
+                .userIDTypeCode(AuditMessages.UserIDTypeCode.StationAETitle)
+                .altUserID(AuditMessages.alternativeUserIDForAETitle("AEPACS"))
+                .roleIDCode(AuditMessages.RoleIDCode.Destination).build();
+        activeParticipants[2] = new ActiveParticipantBuilder.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
+                .userIDTypeCode(AuditMessages.UserIDTypeCode.LocalUserID)
+                .requester(true)
+                .altUserID("smith@nema")
+                .userName("Dr. Smith")
+                .roleIDCode(AuditMessages.RoleIDCode.Source).build();
+        return activeParticipants;
     }
 
     @Test

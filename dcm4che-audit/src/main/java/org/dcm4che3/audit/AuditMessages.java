@@ -485,6 +485,14 @@ public class AuditMessages {
         public static final String Other = "4";
     }
 
+    public static final class UserTypeCode {
+        public static final String Person = "1";
+        public static final String SystemObject = "2";
+        public static final String Organization = "3";
+        public static final String Other = "4";
+        public static final String System = "5";
+    }
+
     public static final class ParticipantObjectTypeCodeRole {
         public static final String Patient = "1";
         public static final String Location = "2";
@@ -609,6 +617,63 @@ public class AuditMessages {
 
     }
 
+    public static final class UserIDTypeCode
+            extends org.dcm4che3.audit.UserIDTypeCode {
+        public static final UserIDTypeCode StationAETitle =
+                new UserIDTypeCode("110119","DCM","Station AE Title");
+        public static final UserIDTypeCode NodeID =
+                new UserIDTypeCode("110182","DCM","Node ID");
+        public static final UserIDTypeCode LocalUserID =
+                new UserIDTypeCode("Cp1640-1","DCM","Local User ID");
+        public static final UserIDTypeCode LocalGroupID =
+                new UserIDTypeCode("Cp1640-2","DCM","Local Group ID");
+        public static final UserIDTypeCode ApplicationFacility =
+                new UserIDTypeCode("110116","DCM","Application and Facility");
+        public static final UserIDTypeCode ArchiveDevice =
+                new UserIDTypeCode("110117","DCM","Archive Device");
+        public static final UserIDTypeCode ArchiveDeviceAETs =
+                new UserIDTypeCode("110118","DCM","Archive Device AE Titles");
+        public static final UserIDTypeCode URI =
+                new UserIDTypeCode("12", "RFC-3881", "URI");
+
+        public UserIDTypeCode(String code) {
+            super.csdCode = code;
+        }
+
+        public UserIDTypeCode(String code, String codeSystemName,
+                                           String originalText) {
+            super.csdCode = code;
+            super.codeSystemName = codeSystemName;
+            super.originalText = originalText;
+        }
+
+        @Override
+        public void setCsdCode(String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setDisplayName(String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setOriginalText(String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setCodeSystem(String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setCodeSystemName(String value) {
+            throw new UnsupportedOperationException();
+        }
+
+    }
+
     public static EventIdentification toEventIdentification(EventIdentificationBuilder eventIdentificationBuilder) {
         EventIdentification ei = new EventIdentification();
         ei.setEventID(eventIdentificationBuilder.eventID);
@@ -624,6 +689,8 @@ public class AuditMessages {
     private static ActiveParticipant toActiveParticipant(ActiveParticipantBuilder activeParticipantBuilder) {
         ActiveParticipant ap = new ActiveParticipant();
         ap.setUserID(activeParticipantBuilder.userID);
+        ap.setUserIDTypeCode(activeParticipantBuilder.userIDTypeCode);
+        ap.setUserTypeCode(activeParticipantBuilder.userTypeCode);
         ap.setAlternativeUserID(activeParticipantBuilder.altUserID);
         ap.setUserName(activeParticipantBuilder.userName);
         ap.setUserIsRequestor(activeParticipantBuilder.requester);
@@ -832,5 +899,11 @@ public class AuditMessages {
         for (ParticipantObjectIdentificationBuilder participantObjectIdentificationBuilder : participantObjectIdentificationBuilders)
             msg.getParticipantObjectIdentification().add(toParticipantObjectIdentification(participantObjectIdentificationBuilder));
         return msg;
+    }
+
+    public static AuditMessages.UserIDTypeCode userIDTypeCode(String userID) {
+        return AuditMessages.isIP(userID)
+                ? AuditMessages.UserIDTypeCode.NodeID
+                : AuditMessages.UserIDTypeCode.LocalUserID;
     }
 }

@@ -205,11 +205,43 @@
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="RoleIDCode"/>
       <xs:element minOccurs="0" ref="MediaType"/>
+      <xs:element minOccurs="0" ref="UserIDTypeCode"/>
     </xs:sequence>
     <xs:attribute name="UserID" use="required" type="xs:string"/>
     <xs:attribute name="AlternativeUserID" type="xs:string"/>
     <xs:attribute name="UserName" type="xs:string"/>
     <xs:attribute name="UserIsRequestor" use="required" type="xs:boolean"/>
+    <xs:attribute name="UserTypeCode">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="1">
+            <xs:annotation>
+              <xs:documentation>Person</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="2">
+            <xs:annotation>
+              <xs:documentation>System object</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="3">
+            <xs:annotation>
+              <xs:documentation>Organization</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="4">
+            <xs:annotation>
+              <xs:documentation>Other</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="5">
+            <xs:annotation>
+              <xs:documentation>System</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="NetworkAccessPointID" type="xs:string"/>
     <xs:attribute name="NetworkAccessPointTypeCode">
       <xs:simpleType>
@@ -249,6 +281,11 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="MediaType">
+    <xs:complexType>
+      <xs:attributeGroup ref="CodedValueType"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="UserIDTypeCode">
     <xs:complexType>
       <xs:attributeGroup ref="CodedValueType"/>
     </xs:complexType>

@@ -108,11 +108,19 @@ public class AuditAuth {
 
     private static void sendAuditMessage(Path file, Event event, AuditLogger log) throws IOException{
         AuthInfo info = new AuthInfo(new LineReader(file).getMainInfo());
+
         ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
         activeParticipants[0] = new ActiveParticipantBuilder.Builder(
-                info.getField(AuthInfo.USER_NAME), info.getField(AuthInfo.IP_ADDR)).requester(true).build();
-        activeParticipants[1] = new ActiveParticipantBuilder.Builder(log.getDevice().getDeviceName(),
-                log.getConnections().get(0).getHostname()).altUserID(AuditLogger.processID()).build();
+                info.getField(AuthInfo.USER_NAME),
+                info.getField(AuthInfo.IP_ADDR))
+                .userIDTypeCode(AuditMessages.UserIDTypeCode.LocalUserID)
+                .requester(true).build();
+        activeParticipants[1] = new ActiveParticipantBuilder.Builder(
+                log.getDevice().getDeviceName(),
+                log.getConnections().get(0).getHostname())
+                .userIDTypeCode(AuditMessages.UserIDTypeCode.ArchiveDevice)
+                .altUserID(AuditLogger.processID()).build();
+
         AuditMessage msg = AuditMessages.createMessage(toBuildEventIdentification(log, event), activeParticipants);
         msg.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
         try {

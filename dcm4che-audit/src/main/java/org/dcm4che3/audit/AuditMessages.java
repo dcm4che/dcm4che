@@ -748,10 +748,13 @@ public class AuditMessages {
     }
 
     public static ParticipantObjectDetail createParticipantObjectDetail(
-            String type, byte[] value) {
+            String type, String value) {
+        if (value == null)
+            return null;
+
         ParticipantObjectDetail detail = new ParticipantObjectDetail();
         detail.setType(type);
-        detail.setValue(value);
+        detail.setValue(value.getBytes());
         return detail;
     }
 

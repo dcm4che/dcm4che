@@ -46,16 +46,16 @@ package org.dcm4che3.audit;
  */
 
 public class ActiveParticipantBuilder {
-    public final String userID;
-    public final AuditMessages.UserIDTypeCode userIDTypeCode;
-    public final String userTypeCode;
-    public final String napID;
-    public final String altUserID;
-    public final String userName;
-    public final String napTypeCode;
-    public final boolean requester;
-    public final AuditMessages.MediaType mediaType;
-    public final AuditMessages.RoleIDCode[] roleIDCode;
+    final String userID;
+    final AuditMessages.UserIDTypeCode userIDTypeCode;
+    final String userTypeCode;
+    final String napID;
+    final String altUserID;
+    final String userName;
+    final String napTypeCode;
+    final boolean requester;
+    final AuditMessages.MediaType mediaType;
+    final AuditMessages.RoleIDCode[] roleIDCode;
 
     public static class Builder {
         private final String userID;

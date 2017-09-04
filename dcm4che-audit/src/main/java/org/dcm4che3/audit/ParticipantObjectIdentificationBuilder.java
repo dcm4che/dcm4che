@@ -46,16 +46,16 @@ package org.dcm4che3.audit;
  */
 
 public class ParticipantObjectIdentificationBuilder {
-    public final String id;
-    public final AuditMessages.ParticipantObjectIDTypeCode idType;
-    public final String name;
-    public final byte[] query;
-    public final String type;
-    public final String role;
-    public final String lifeCycle;
-    public final String sensitivity;
-    public final ParticipantObjectDescriptionBuilder desc;
-    public final ParticipantObjectDetail[] detail;
+    final String id;
+    final AuditMessages.ParticipantObjectIDTypeCode idType;
+    final String name;
+    final byte[] query;
+    final String type;
+    final String role;
+    final String lifeCycle;
+    final String sensitivity;
+    final ParticipantObjectDescriptionBuilder desc;
+    final ParticipantObjectDetail[] detail;
 
     public static class Builder {
         private final String id;

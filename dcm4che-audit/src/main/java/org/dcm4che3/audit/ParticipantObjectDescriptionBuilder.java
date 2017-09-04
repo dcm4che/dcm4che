@@ -47,12 +47,12 @@ package org.dcm4che3.audit;
  */
 
 public class ParticipantObjectDescriptionBuilder {
-    public final String[] acc;
-    public final String[] mpps;
-    public final SOPClass[] sopC;
-    public final Boolean encrypted;
-    public final Boolean anonymized;
-    public final String[] pocsStudyUIDs;
+    final String[] acc;
+    final String[] mpps;
+    final SOPClass[] sopC;
+    final Boolean encrypted;
+    final Boolean anonymized;
+    final String[] pocsStudyUIDs;
 
     public static class Builder {
         private Boolean encrypted;

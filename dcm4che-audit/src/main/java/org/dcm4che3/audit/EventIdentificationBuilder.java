@@ -47,12 +47,12 @@ import java.util.Calendar;
  * @since June 2016
  */
 public class EventIdentificationBuilder {
-    public final AuditMessages.EventID eventID;
-    public final String eventActionCode;
-    public final Calendar eventDateTime;
-    public final String outcome;
-    public final String outcomeDesc;
-    public final EventTypeCode[] eventTypeCode;
+    final AuditMessages.EventID eventID;
+    final String eventActionCode;
+    final Calendar eventDateTime;
+    final String outcome;
+    final String outcomeDesc;
+    final EventTypeCode[] eventTypeCode;
 
     public static class Builder {
         private final AuditMessages.EventID eventID;

@@ -63,7 +63,7 @@
       <artifactId>junit</artifactId>
       <version>4.8.2</version>
       <type>jar</type>
-      <scope>compile</scope>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

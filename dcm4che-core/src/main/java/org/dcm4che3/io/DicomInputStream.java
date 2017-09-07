@@ -527,6 +527,14 @@ public class DicomInputStream extends FilterInputStream
                     break;
                 throw e;
             }
+            
+            // dcm4che3#159 - Skip child tags which exceed maximum specified len.
+            if (!undeflen && (pos + length) > endPos){ 
+                LOG.warn("Tag {} with length of {} exceeds specified len of {}.  Skipping.", TagUtils.toString(tag), length, len);
+                skip(endPos - pos);
+                break;
+            }
+            
             if (hasStopTag && tag == stopTag)
                 break;
             if (vr != null) {

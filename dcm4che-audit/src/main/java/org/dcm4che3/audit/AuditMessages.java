@@ -487,10 +487,7 @@ public class AuditMessages {
 
     public static final class UserTypeCode {
         public static final String Person = "1";
-        public static final String SystemObject = "2";
-        public static final String Organization = "3";
-        public static final String Other = "4";
-        public static final String System = "5";
+        public static final String Application = "2";
     }
 
     public static final class ParticipantObjectTypeCodeRole {

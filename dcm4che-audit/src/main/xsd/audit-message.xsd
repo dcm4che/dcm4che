@@ -221,22 +221,7 @@
           </xs:enumeration>
           <xs:enumeration value="2">
             <xs:annotation>
-              <xs:documentation>System object</xs:documentation>
-            </xs:annotation>
-          </xs:enumeration>
-          <xs:enumeration value="3">
-            <xs:annotation>
-              <xs:documentation>Organization</xs:documentation>
-            </xs:annotation>
-          </xs:enumeration>
-          <xs:enumeration value="4">
-            <xs:annotation>
-              <xs:documentation>Other</xs:documentation>
-            </xs:annotation>
-          </xs:enumeration>
-          <xs:enumeration value="5">
-            <xs:annotation>
-              <xs:documentation>System</xs:documentation>
+              <xs:documentation>Application</xs:documentation>
             </xs:annotation>
           </xs:enumeration>
         </xs:restriction>

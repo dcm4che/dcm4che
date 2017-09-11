@@ -103,14 +103,8 @@ ActiveParticipantType =
   attribute UserTypeCode {       # optional type
   ## Person
     "1" |
-  ## System object
-    "2" |
-  ## Organization
-    "3" |
-  ## Other
-    "4" |
-  ## System
-    "5"}?,
+  ## Application
+    "2"}?,
   attribute NetworkAccessPointID { xsd:string }?,
   attribute NetworkAccessPointTypeCode {
     ## Machine Name, including DNS name

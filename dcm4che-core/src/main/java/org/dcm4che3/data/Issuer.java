@@ -99,7 +99,7 @@ public class Issuer implements Serializable {
     public static Issuer fromIssuerOfPatientID(Attributes attrs) {
         String issuerOfPatientID = attrs.getString(Tag.IssuerOfPatientID);
         Attributes qualifiers = attrs.getNestedDataset(Tag.IssuerOfPatientIDQualifiersSequence);
-        if (issuerOfPatientID == null && (qualifiers == null || qualifiers.isEmpty()))
+        if (issuerOfPatientID == null && (qualifiers == null || !qualifiers.containsValue(Tag.UniversalEntityID)))
             return null;
 
         return new Issuer(issuerOfPatientID, qualifiers);

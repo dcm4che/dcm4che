@@ -625,7 +625,7 @@ public class AuditMessages {
         public static final UserIDTypeCode LocalGroupID =
                 new UserIDTypeCode("Cp1640-2","DCM","Local Group ID");
         public static final UserIDTypeCode ApplicationFacility =
-                new UserIDTypeCode("110116","DCM","Application and Facility");
+                new UserIDTypeCode("HL7APP","99DCM4CHEE","Application and Facility");
         public static final UserIDTypeCode DeviceName =
                 new UserIDTypeCode("113877","DCM","Device Name");
         public static final UserIDTypeCode URI =

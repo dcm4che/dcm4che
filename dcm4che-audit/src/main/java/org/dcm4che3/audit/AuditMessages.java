@@ -626,12 +626,12 @@ public class AuditMessages {
                 new UserIDTypeCode("Cp1640-2","DCM","Local Group ID");
         public static final UserIDTypeCode ApplicationFacility =
                 new UserIDTypeCode("110116","DCM","Application and Facility");
-        public static final UserIDTypeCode ArchiveDevice =
-                new UserIDTypeCode("110117","DCM","Archive Device");
-        public static final UserIDTypeCode ArchiveDeviceAETs =
-                new UserIDTypeCode("110118","DCM","Archive Device AE Titles");
+        public static final UserIDTypeCode DeviceName =
+                new UserIDTypeCode("113877","DCM","Device Name");
         public static final UserIDTypeCode URI =
                 new UserIDTypeCode("12", "RFC-3881", "URI");
+        public static final UserIDTypeCode PersonID =
+                new UserIDTypeCode("113871","DCM","Person ID");
 
         public UserIDTypeCode(String code) {
             super.csdCode = code;
@@ -904,6 +904,6 @@ public class AuditMessages {
     public static AuditMessages.UserIDTypeCode userIDTypeCode(String userID) {
         return AuditMessages.isIP(userID)
                 ? AuditMessages.UserIDTypeCode.NodeID
-                : AuditMessages.UserIDTypeCode.LocalUserID;
+                : AuditMessages.UserIDTypeCode.PersonID;
     }
 }

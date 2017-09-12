@@ -129,7 +129,7 @@ public class ActiveParticipantBuilder {
     }
 
     private static String userTypeCode(AuditMessages.UserIDTypeCode userIDTypeCode) {
-        return userIDTypeCode == AuditMessages.UserIDTypeCode.NodeID || userIDTypeCode == AuditMessages.UserIDTypeCode.LocalUserID
+        return userIDTypeCode == AuditMessages.UserIDTypeCode.NodeID || userIDTypeCode == AuditMessages.UserIDTypeCode.PersonID
                 ? AuditMessages.UserTypeCode.Person
                 : AuditMessages.UserTypeCode.Application;
     }

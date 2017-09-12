@@ -159,7 +159,7 @@ public class AuditMessageTest {
         ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[3];
 
         activeParticipants[0] = new ActiveParticipantBuilder.Builder("DCM4CHEE", "192.168.1.2")
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.ArchiveDeviceAETs)
+                .userIDTypeCode(AuditMessages.UserIDTypeCode.StationAETitle)
                 .altUserID(AuditMessages.alternativeUserIDForAETitle("AEFOO"))
                 .roleIDCode(AuditMessages.RoleIDCode.Source).build();
         activeParticipants[1] = new ActiveParticipantBuilder.Builder("STORESCP", "192.168.1.5")
@@ -167,7 +167,7 @@ public class AuditMessageTest {
                 .altUserID(AuditMessages.alternativeUserIDForAETitle("AEPACS"))
                 .roleIDCode(AuditMessages.RoleIDCode.Destination).build();
         activeParticipants[2] = new ActiveParticipantBuilder.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.LocalUserID)
+                .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
                 .requester(true)
                 .altUserID("smith@nema")
                 .userName("Dr. Smith")

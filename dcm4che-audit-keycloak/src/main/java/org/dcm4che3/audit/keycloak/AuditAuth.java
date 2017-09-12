@@ -113,12 +113,12 @@ public class AuditAuth {
         activeParticipants[0] = new ActiveParticipantBuilder.Builder(
                 info.getField(AuthInfo.USER_NAME),
                 info.getField(AuthInfo.IP_ADDR))
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.LocalUserID)
+                .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
                 .requester(true).build();
         activeParticipants[1] = new ActiveParticipantBuilder.Builder(
                 log.getDevice().getDeviceName(),
                 log.getConnections().get(0).getHostname())
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.ArchiveDevice)
+                .userIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName)
                 .altUserID(AuditLogger.processID()).build();
 
         AuditMessage msg = AuditMessages.createMessage(toBuildEventIdentification(log, event), activeParticipants);

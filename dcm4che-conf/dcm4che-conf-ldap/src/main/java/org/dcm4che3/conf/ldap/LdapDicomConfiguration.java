@@ -447,6 +447,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
         aetInfo.setApplicationCluster(
                 LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
+        aetInfo.setHl7ApplicationName(
+                LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
             aetInfo.getConnections().add(findConnection(connDN));
     }
@@ -917,6 +919,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return attrs;
 
         objectclass.add("dcmNetworkAE");
+        LdapUtils.storeNotNullOrDef(attrs, "hl7ApplicationName", ae.getHl7ApplicationName(), null);
         LdapUtils.storeNotEmpty(attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
         LdapUtils.storeNotEmpty(attrs, "dcmOtherAETitle", ae.getOtherAETitles());
         LdapUtils.storeNotEmpty(attrs, "dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
@@ -1359,6 +1362,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ae.setAcceptedCallingAETitles(LdapUtils.stringArray(attrs.get("dcmAcceptedCallingAETitle")));
         ae.setOtherAETitles(LdapUtils.stringArray(attrs.get("dcmOtherAETitle")));
         ae.setMasqueradeCallingAETitles(LdapUtils.stringArray(attrs.get("dcmMasqueradeCallingAETitle")));
+        ae.setHl7ApplicationName(LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.loadFrom(ae, attrs);
     }
@@ -1667,6 +1671,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dcmMasqueradeCallingAETitle",
                 a.getMasqueradeCallingAETitles(),
                 b.getMasqueradeCallingAETitles());
+        LdapUtils.storeDiffObject(mods, "hl7ApplicationName",
+                a.getHl7ApplicationName(),
+                b.getHl7ApplicationName(), null);
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeDiffs(a, b, mods);
         return mods;

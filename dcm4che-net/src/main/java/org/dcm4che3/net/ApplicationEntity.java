@@ -88,6 +88,7 @@ public class ApplicationEntity implements Serializable {
     private boolean acceptor = true;
     private boolean initiator = true;
     private Boolean installed;
+    private String hl7ApplicationName;
     private final LinkedHashSet<String> acceptedCallingAETs = new LinkedHashSet<>();
     private final LinkedHashSet<String> otherAETs = new LinkedHashSet<>();
     private final LinkedHashMap<String, String> masqueradeCallingAETs = new LinkedHashMap<>();
@@ -404,6 +405,14 @@ public class ApplicationEntity implements Serializable {
         this.installed = installed;
     }
 
+    public String getHl7ApplicationName() {
+        return hl7ApplicationName;
+    }
+
+    public void setHl7ApplicationName(String hl7ApplicationName) {
+        this.hl7ApplicationName = hl7ApplicationName;
+    }
+
     public DimseRQHandler getDimseRQHandler() {
         DimseRQHandler handler = dimseRQHandler;
         if (handler != null)
@@ -701,6 +710,7 @@ public class ApplicationEntity implements Serializable {
         masqueradeCallingAETs.clear();
         masqueradeCallingAETs.putAll(from.masqueradeCallingAETs);
         supportedCharacterSets = from.supportedCharacterSets;
+        hl7ApplicationName = from.hl7ApplicationName;
         acceptor = from.acceptor;
         initiator = from.initiator;
         installed = from.installed;

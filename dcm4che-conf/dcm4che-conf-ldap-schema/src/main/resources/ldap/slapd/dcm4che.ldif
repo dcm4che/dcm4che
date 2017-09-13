@@ -478,7 +478,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
   MAY (
     dcmAcceptedCallingAETitle $
     dcmOtherAETitle $
-    dcmMasqueradeCallingAETitle ) )
+    dcmMasqueradeCallingAETitle $
+    hl7ApplicationName ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
   DESC 'Extended DICOM Network Connection information'
   SUP top AUXILIARY

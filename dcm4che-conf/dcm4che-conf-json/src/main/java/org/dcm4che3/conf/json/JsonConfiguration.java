@@ -107,6 +107,7 @@ public class JsonConfiguration {
         gen.write("dicomAssociationAcceptor", aetInfo.getAssociationAcceptor());
         writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationCluster());
         writer.writeNotNull("dicomInstalled", aetInfo.getInstalled());
+        writer.writeNotNullOrDef("hl7ApplicationName", aetInfo.getHl7ApplicationName(), null);
         writeNotExtendedConns(aetInfo.getConnections(), writer);
         gen.writeEnd();
     }
@@ -558,6 +559,7 @@ public class JsonConfiguration {
             writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
             writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
             writer.writeNotEmpty("dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
+            writer.writeNotNullOrDef("hl7ApplicationName", ae.getHl7ApplicationName(), null);
             for (JsonConfigurationExtension ext : extensions)
                 ext.storeTo(ae, writer);
             writer.writeEnd();
@@ -626,6 +628,9 @@ public class JsonConfiguration {
                                 break;
                             case "dcmMasqueradeCallingAETitle":
                                 ae.setMasqueradeCallingAETitles(reader.stringArray());
+                                break;
+                            case "hl7ApplicationName":
+                                ae.setHl7ApplicationName(reader.stringValue());
                                 break;
                             default:
                                 if (!loadApplicationEntityExtension(device, ae, reader, config))

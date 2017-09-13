@@ -57,6 +57,7 @@ public class ApplicationEntityInfo implements Serializable {
     private Boolean associationAcceptor;
     private Boolean installed;
     private String[] otherAETitle;
+    private String hl7ApplicationName;
     private final List<Connection> conns = new ArrayList<>(1);
 
     public Boolean getInstalled() {
@@ -125,6 +126,14 @@ public class ApplicationEntityInfo implements Serializable {
 
     public List<Connection> getConnections() {
         return conns;
+    }
+
+    public void setHl7ApplicationName(String hl7ApplicationName) {
+        this.hl7ApplicationName = hl7ApplicationName;
+    }
+
+    public String getHl7ApplicationName() {
+        return hl7ApplicationName;
     }
 
     @Override

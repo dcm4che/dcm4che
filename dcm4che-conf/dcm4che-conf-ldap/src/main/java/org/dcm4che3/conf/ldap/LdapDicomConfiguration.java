@@ -109,6 +109,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             "dicomAssociationAcceptor",
             "dicomApplicationCluster",
             "dicomInstalled",
+            "hl7ApplicationName",
             "dicomNetworkConnectionReference"
     };
 

@@ -39,6 +39,7 @@
 package org.dcm4che3.conf.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -131,4 +132,20 @@ public class ConfigurationChanges {
         return objects.isEmpty();
     }
 
+    @Override
+    public String toString() {
+        if (isEmpty()) return "[]";
+
+        StringBuilder sb = new StringBuilder(objects.size() * 64);
+        for (ModifiedObject obj : objects) {
+            sb.append(obj.changeType).append(' ').append(obj.dn).append('\n');
+            if (obj.attributes != null) {
+                for (ModifiedAttribute attr : obj.attributes) {
+                    sb.append("  ").append(attr.name).append(": ")
+                            .append(attr.removedValues).append("=>").append(attr.addedValues).append('\n');
+                }
+            }
+        }
+        return sb.toString();
+    }
 }

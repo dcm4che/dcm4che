@@ -1091,6 +1091,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                     new ConfigurationChanges.ModifiedObject(deviceRef, ConfigurationChanges.ChangeType.U);
             List<ModificationItem> mods = new ArrayList<>(1);
             storeDiff(ldapObj, mods, "dicomVendorData", prev, vendorData);
+            if (!mods.isEmpty())
+                ctx.modifyAttributes(deviceRef, mods.get(0));
             diffs.add(ldapObj);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException("Device with specified name not found", e);

@@ -301,6 +301,8 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 hl7App.getAcceptedMessageTypes());
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7DefaultCharacterSet",
                 hl7App.getHL7DefaultCharacterSet(), "ASCII");
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7SendingCharacterSet",
+                hl7App.getHl7SendingCharacterSet(), "ASCII");
         LdapUtils.storeConnRefs(ldapObj, attrs, hl7App.getConnections(), deviceDN);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDescription", hl7App.getDescription(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomApplicationCluster", hl7App.getApplicationClusters());
@@ -347,6 +349,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         hl7app.setOtherApplicationNames(LdapUtils.stringArray(attrs.get("hl7OtherApplicationName")));
         hl7app.setAcceptedMessageTypes(LdapUtils.stringArray(attrs.get("hl7AcceptedMessageType")));
         hl7app.setHL7DefaultCharacterSet(LdapUtils.stringValue(attrs.get("hl7DefaultCharacterSet"), "ASCII"));
+        hl7app.setHl7SendingCharacterSet(LdapUtils.stringValue(attrs.get("hl7SendingCharacterSet"), "ASCII"));
         hl7app.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
         hl7app.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         hl7app.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
@@ -413,6 +416,9 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         LdapUtils.storeDiffObject(ldapObj, mods, "hl7DefaultCharacterSet",
                 a.getHL7DefaultCharacterSet(),
                 b.getHL7DefaultCharacterSet(), "ASCII");
+        LdapUtils.storeDiffObject(ldapObj, mods, "hl7SendingCharacterSet",
+                a.getHl7SendingCharacterSet(),
+                b.getHl7SendingCharacterSet(), "ASCII");
         LdapUtils.storeDiff(ldapObj, mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),

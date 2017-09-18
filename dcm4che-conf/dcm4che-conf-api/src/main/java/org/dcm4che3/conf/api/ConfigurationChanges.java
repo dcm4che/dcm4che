@@ -142,7 +142,8 @@ public class ConfigurationChanges {
             if (obj.attributes != null) {
                 for (ModifiedAttribute attr : obj.attributes) {
                     sb.append("  ").append(attr.name).append(": ")
-                            .append(attr.removedValues).append("=>").append(attr.addedValues).append('\n');
+                            .append(attr.removedValues).append("=>")
+                            .append(attr.addedValues).append('\n');
                 }
             }
         }

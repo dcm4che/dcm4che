@@ -52,6 +52,7 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
+import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
@@ -181,52 +182,82 @@ public class LdapUtils {
                 + ','  + baseDN;
     }
 
-    public static void storeDiff(List<ModificationItem> mods,
-            String attrId, boolean prev, boolean val, boolean defVal) {
-        if (val != prev)
+    public static void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
+                                 String attrId, boolean prev, boolean val, boolean defVal) {
+        if (val != prev) {
             mods.add((val == defVal)
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                             new BasicAttribute(attrId))
                     : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                             new BasicAttribute(attrId, LdapUtils.toString(val))));
+            if (ldapObj != null)
+                ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId, prev, val));
+        }
     }
 
-    public static void storeDiff(List<ModificationItem> mods,
-            String attrId, int prev, int val, int defVal) {
-        if (val != prev)
+    public static void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
+                                 String attrId, int prev, int val, int defVal) {
+        if (val != prev) {
             mods.add((val == defVal)
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                             new BasicAttribute(attrId))
                     : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                             new BasicAttribute(attrId, Integer.toString(val))));
+            if (ldapObj != null)
+                ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId, prev, val));
+        }
     }
 
-    public static <T> void storeDiffObject(List<ModificationItem> mods, String attrId,
-                                           T prev, T val, T defVal) {
+    public static <T> void storeDiffObject(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
+                                           String attrId, T prev, T val, T defVal) {
         if (val == null || val.equals(defVal)) {
-            if (prev != null && !prev.equals(defVal))
+            if (prev != null && !prev.equals(defVal)) {
                 mods.add(new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                         new BasicAttribute(attrId)));
-        } else if (!val.equals(prev))
+                if (ldapObj != null)
+                    ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId, prev, val));
+            }
+        } else if (!val.equals(prev)) {
             mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                     new BasicAttribute(attrId, LdapUtils.toString(val))));
+            if (ldapObj != null)
+                ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId, prev, val));
+        }
     }
 
-    public static <T> void storeDiff(List<ModificationItem> mods, String attrId,
-                                     T[] prevs, T[] vals, T... defVals) {
-        if (!LdapUtils.equals(prevs, vals))
+    public static <T> void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
+                                     String attrId, T[] prevs, T[] vals, T... defVals) {
+        if (!LdapUtils.equals(prevs, vals)) {
             mods.add((vals.length == 0 || LdapUtils.equals(defVals, vals))
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                             new BasicAttribute(attrId))
                     : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                             attr(attrId, vals)));
+            if (ldapObj != null) {
+                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrId);
+                for (T val : vals)
+                    attribute.addValue(val);
+                for (T prev : prevs)
+                    attribute.removeValue(prev);
+                ldapObj.add(attribute);
+            }
+        }
     }
 
-    public static void storeDiff(List<ModificationItem> mods, String attrId,
-            List<Connection> prevs, List<Connection> conns, String deviceDN) {
-        if (!LdapUtils.equalsConnRefs(prevs, conns, deviceDN))
+    public static void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
+                                 String attrId, List<Connection> prevs, List<Connection> conns, String deviceDN) {
+        if (!LdapUtils.equalsConnRefs(prevs, conns, deviceDN)) {
             mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                     connRefs(conns, deviceDN)));
+            if (ldapObj != null) {
+                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrId);
+                for (Connection conn : conns)
+                    attribute.addValue(LdapUtils.dnOf(conn, deviceDN));
+                for (Connection conn  : prevs)
+                    attribute.removeValue(LdapUtils.dnOf(conn, deviceDN));
+                ldapObj.add(attribute);
+            }
+        }
     }
 
     private static boolean equalsConnRefs(List<Connection> conns1,

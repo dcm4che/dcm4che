@@ -55,6 +55,7 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.data.Issuer;
@@ -490,7 +491,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized void persist(Device device, EnumSet<Option> options) throws ConfigurationException {
+    public synchronized ConfigurationChanges persist(Device device, EnumSet<Option> options)
+            throws ConfigurationException {
         ensureConfigurationExists();
         String deviceName = device.getDeviceName();
         String deviceDN = deviceRef(deviceName);
@@ -506,6 +508,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 updateCertificates(device);
             rollback = false;
             destroyDNs.clear();
+            ConfigurationChanges diffs = new ConfigurationChanges();
+            diffs.add(new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.C));
+            return diffs;
         } catch (NameAlreadyBoundException e) {
             throw new ConfigurationAlreadyExistsException(deviceName);
         } catch (NamingException e) {
@@ -586,7 +591,16 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized void merge(Device device, EnumSet<Option> options) throws ConfigurationException {
+    public ConfigurationChanges merge(Device device, EnumSet<Option> options) throws ConfigurationException {
+        ConfigurationChanges diffs = options.contains(Option.CONFIGURATION_CHANGES)
+                ? new ConfigurationChanges()
+                : null;
+        merge(device, options, diffs);
+        return diffs;
+    }
+
+    private synchronized void merge(Device device, EnumSet<Option> options, ConfigurationChanges diffs)
+        throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
@@ -599,8 +613,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (register) {
                 registerDiff(prev, device, destroyDNs);
             }
-            modifyAttributes(deviceDN, storeDiffs(prev, device, new ArrayList<ModificationItem>(), preserveVendorData));
-            mergeChilds(prev, device, deviceDN, preserveVendorData);
+            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                    ? new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.U)
+                    : null;
+            modifyAttributes(deviceDN,
+                    storeDiffs(ldapObj, prev, device, new ArrayList<ModificationItem>(), preserveVendorData));
+            if (diffs != null) diffs.add(ldapObj);
+            mergeChilds(diffs, prev, device, deviceDN, preserveVendorData);
             destroyDNs.clear();
             if (register) {
                 markForUnregister(prev, device, destroyDNs);
@@ -652,20 +671,25 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    private void mergeChilds(Device prev, Device device, String deviceDN, boolean preserveVendorData)
+    private void mergeChilds(ConfigurationChanges diffs, Device prev, Device device, String deviceDN, boolean preserveVendorData)
             throws NamingException, ConfigurationException {
-        mergeConnections(prev, device, deviceDN);
-        mergeAEs(prev, device, deviceDN, preserveVendorData);
+        mergeConnections(diffs, prev, device, deviceDN);
+        mergeAEs(diffs, prev, device, deviceDN, preserveVendorData);
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.mergeChilds(prev, device, deviceDN);
+            ext.mergeChilds(diffs, prev, device, deviceDN);
     }
 
     @Override
-    public synchronized void removeDevice(String name, EnumSet<Option> options) throws ConfigurationException {
+    public synchronized ConfigurationChanges removeDevice(String name, EnumSet<Option> options)
+            throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
-        removeDeviceWithDN(deviceRef(name), options != null && options.contains(Option.REGISTER));
+        String dn = deviceRef(name);
+        removeDeviceWithDN(dn, options != null && options.contains(Option.REGISTER));
+        ConfigurationChanges diffs = new ConfigurationChanges();
+        diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+        return diffs;
     }
 
     private void markForUnregister(String deviceDN, List<String> dns)
@@ -1053,26 +1077,27 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public boolean updateDeviceVendorData(String deviceName, byte[]... vendorData) throws ConfigurationException {
+    public ConfigurationChanges updateDeviceVendorData(String deviceName, byte[]... vendorData)
+            throws ConfigurationException {
         String deviceRef = deviceRef(deviceName);
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
+        ConfigurationChanges diffs = new ConfigurationChanges();
         try {
             Attributes attrs = getAttributes(deviceRef, new String[]{"dicomVendorData"});
             byte[][] prev = byteArrays(attrs.get("dicomVendorData"));
-            if (equals(prev, vendorData))
-                return false;
-
-            ctx.modifyAttributes(deviceRef, vendorData.length == 0
-                    ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("dicomVendorData"))
-                    : new ModificationItem(DirContext.REPLACE_ATTRIBUTE, attr("dicomVendorData", vendorData)));
-            return true;
+            ConfigurationChanges.ModifiedObject ldapObj =
+                    new ConfigurationChanges.ModifiedObject(deviceRef, ConfigurationChanges.ChangeType.U);
+            List<ModificationItem> mods = new ArrayList<>(1);
+            storeDiff(ldapObj, mods, "dicomVendorData", prev, vendorData);
+            diffs.add(ldapObj);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException("Device with specified name not found", e);
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         }
+        return diffs;
     }
 
     public Device loadDevice(String deviceDN) throws ConfigurationException {
@@ -1394,348 +1419,348 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return tc;
     }
 
-    private List<ModificationItem> storeDiffs(Device a, Device b,
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, Device a, Device b,
                                               List<ModificationItem> mods, boolean preserveVendorData) {
-        LdapUtils.storeDiffObject(mods, "dicomDescription",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription(), null);
-        LdapUtils.storeDiffObject(mods, "dicomDeviceUID",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomDeviceUID",
                 a.getDeviceUID(),
                 b.getDeviceUID(), null);
-        LdapUtils.storeDiffObject(mods, "dicomManufacturer",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomManufacturer",
                 a.getManufacturer(),
                 b.getManufacturer(), null);
-        LdapUtils.storeDiffObject(mods, "dicomManufacturerModelName",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomManufacturerModelName",
                 a.getManufacturerModelName(),
                 b.getManufacturerModelName(), null);
-        LdapUtils.storeDiff(mods, "dicomSoftwareVersion",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomSoftwareVersion",
                 a.getSoftwareVersions(),
                 b.getSoftwareVersions());
-        LdapUtils.storeDiffObject(mods, "dicomStationName",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomStationName",
                 a.getStationName(),
                 b.getStationName(), null);
-        LdapUtils.storeDiffObject(mods, "dicomDeviceSerialNumber",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomDeviceSerialNumber",
                 a.getDeviceSerialNumber(),
                 b.getDeviceSerialNumber(), null);
-        LdapUtils.storeDiffObject(mods, "dicomIssuerOfPatientID",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomIssuerOfPatientID",
                 a.getIssuerOfPatientID(),
                 b.getIssuerOfPatientID(), null);
-        LdapUtils.storeDiffObject(mods, "dicomIssuerOfAccessionNumber",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomIssuerOfAccessionNumber",
                 a.getIssuerOfAccessionNumber(),
                 b.getIssuerOfAccessionNumber(), null);
-        LdapUtils.storeDiffObject(mods, "dicomOrderPlacerIdentifier",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomOrderPlacerIdentifier",
                 a.getOrderPlacerIdentifier(),
                 b.getOrderPlacerIdentifier(), null);
-        LdapUtils.storeDiffObject(mods, "dicomOrderFillerIdentifier",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomOrderFillerIdentifier",
                 a.getOrderFillerIdentifier(),
                 b.getOrderFillerIdentifier(), null);
-        LdapUtils.storeDiffObject(mods, "dicomIssuerOfAdmissionID",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomIssuerOfAdmissionID",
                 a.getIssuerOfAdmissionID(),
                 b.getIssuerOfAdmissionID(), null);
-        LdapUtils.storeDiffObject(mods, "dicomIssuerOfServiceEpisodeID",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomIssuerOfServiceEpisodeID",
                 a.getIssuerOfServiceEpisodeID(),
                 b.getIssuerOfServiceEpisodeID(), null);
-        LdapUtils.storeDiffObject(mods, "dicomIssuerOfContainerIdentifier",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomIssuerOfContainerIdentifier",
                 a.getIssuerOfContainerIdentifier(),
                 b.getIssuerOfContainerIdentifier(), null);
-        LdapUtils.storeDiffObject(mods, "dicomIssuerOfSpecimenIdentifier",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomIssuerOfSpecimenIdentifier",
                 a.getIssuerOfSpecimenIdentifier(),
                 b.getIssuerOfSpecimenIdentifier(), null);
-        LdapUtils.storeDiff(mods, "dicomInstitutionName",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomInstitutionName",
                 a.getInstitutionNames(),
                 b.getInstitutionNames());
-        LdapUtils.storeDiff(mods, "dicomInstitutionCode",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomInstitutionCode",
                 a.getInstitutionCodes(),
                 b.getInstitutionCodes());
-        LdapUtils.storeDiff(mods, "dicomInstitutionAddress",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomInstitutionAddress",
                 a.getInstitutionAddresses(),
                 b.getInstitutionAddresses());
-        LdapUtils.storeDiff(mods, "dicomInstitutionDepartmentName",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomInstitutionDepartmentName",
                 a.getInstitutionalDepartmentNames(),
                 b.getInstitutionalDepartmentNames());
-        LdapUtils.storeDiff(mods, "dicomPrimaryDeviceType",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomPrimaryDeviceType",
                 a.getPrimaryDeviceTypes(),
                 b.getPrimaryDeviceTypes());
-        LdapUtils.storeDiff(mods, "dicomRelatedDeviceReference",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomRelatedDeviceReference",
                 a.getRelatedDeviceRefs(),
                 b.getRelatedDeviceRefs());
-        LdapUtils.storeDiff(mods, "dicomAuthorizedNodeCertificateReference",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomAuthorizedNodeCertificateReference",
                 a.getAuthorizedNodeCertificateRefs(),
                 b.getAuthorizedNodeCertificateRefs());
-        LdapUtils.storeDiff(mods, "dicomThisNodeCertificateReference",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomThisNodeCertificateReference",
                 a.getThisNodeCertificateRefs(),
                 b.getThisNodeCertificateRefs());
         if (!preserveVendorData)
-            storeDiff(mods, "dicomVendorData",
+            storeDiff(ldapObj, mods, "dicomVendorData",
                     a.getVendorData(),
                     b.getVendorData());
-        LdapUtils.storeDiffObject(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomInstalled",
                 a.isInstalled(),
                 b.isInstalled(), null);
         if (!extended)
             return mods;
 
-        LdapUtils.storeDiffObject(mods, "dcmLimitOpenAssociations",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmLimitOpenAssociations",
                 a.getLimitOpenAssociations(),
                 b.getLimitOpenAssociations(), null);
-        LdapUtils.storeDiffObject(mods, "dcmTrustStoreURL",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmTrustStoreURL",
                 a.getTrustStoreURL(),
                 b.getTrustStoreURL(), null);
-        LdapUtils.storeDiffObject(mods, "dcmTrustStoreType",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmTrustStoreType",
                 a.getTrustStoreType(),
                 b.getTrustStoreType(), null);
-        LdapUtils.storeDiffObject(mods, "dcmTrustStorePin",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmTrustStorePin",
                 a.getTrustStorePin(),
                 b.getTrustStorePin(), null);
-        LdapUtils.storeDiffObject(mods, "dcmTrustStorePinProperty",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmTrustStorePinProperty",
                 a.getTrustStorePinProperty(),
                 b.getTrustStorePinProperty(), null);
-        LdapUtils.storeDiffObject(mods, "dcmKeyStoreURL",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmKeyStoreURL",
                 a.getKeyStoreURL(),
                 b.getKeyStoreURL(), null);
-        LdapUtils.storeDiffObject(mods, "dcmKeyStoreType",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmKeyStoreType",
                 a.getKeyStoreType(),
                 b.getKeyStoreType(), null);
-        LdapUtils.storeDiffObject(mods, "dcmKeyStorePin",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmKeyStorePin",
                 a.getKeyStorePin(),
                 b.getKeyStorePin(), null);
-        LdapUtils.storeDiffObject(mods, "dcmKeyStorePinProperty",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmKeyStorePinProperty",
                 a.getKeyStorePinProperty(),
                 b.getKeyStorePinProperty(), null);
-        LdapUtils.storeDiffObject(mods, "dcmKeyStoreKeyPin",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmKeyStoreKeyPin",
                 a.getKeyStoreKeyPin(),
                 b.getKeyStoreKeyPin(), null);
-        LdapUtils.storeDiffObject(mods, "dcmKeyStoreKeyPinProperty",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmKeyStoreKeyPinProperty",
                 a.getKeyStoreKeyPinProperty(),
                 b.getKeyStoreKeyPinProperty(), null);
-        LdapUtils.storeDiffObject(mods, "dcmTimeZoneOfDevice",
-        	a.getTimeZoneOfDevice(),
-        	b.getTimeZoneOfDevice(), null);
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmTimeZoneOfDevice",
+                a.getTimeZoneOfDevice(),
+                b.getTimeZoneOfDevice(), null);
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeDiffs(a, b, mods);
+            ext.storeDiffs(ldapObj, a, b, mods);
         return mods;
     }
 
-    private List<ModificationItem> storeDiffs(Connection a, Connection b,
-            List<ModificationItem> mods) {
-        LdapUtils.storeDiffObject(mods, "dicomHostname",
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, Connection a, Connection b,
+                                              List<ModificationItem> mods) {
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomHostname",
                 a.getHostname(),
                 b.getHostname(), null);
-        LdapUtils.storeDiff(mods, "dicomPort",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomPort",
                 a.getPort(),
                 b.getPort(),
                 Connection.NOT_LISTENING);
-        LdapUtils.storeDiff(mods, "dicomTLSCipherSuite",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomTLSCipherSuite",
                 a.getTlsCipherSuites(),
                 b.getTlsCipherSuites());
-        LdapUtils.storeDiffObject(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled(), null);
         if (!extended)
             return mods;
 
-        LdapUtils.storeDiffObject(mods, "dcmProtocol", a.getProtocol(), b.getProtocol(), Protocol.DICOM);
-        LdapUtils.storeDiffObject(mods, "dcmHTTPProxy",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmProtocol", a.getProtocol(), b.getProtocol(), Protocol.DICOM);
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmHTTPProxy",
                 a.getHttpProxy(),
                 b.getHttpProxy(), null);
-        LdapUtils.storeDiff(mods, "dcmBlacklistedHostname",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmBlacklistedHostname",
                 a.getBlacklist(),
                 b.getBlacklist());
-        LdapUtils.storeDiff(mods, "dcmTCPBacklog",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmTCPBacklog",
                 a.getBacklog(),
                 b.getBacklog(),
                 Connection.DEF_BACKLOG);
-        LdapUtils.storeDiff(mods, "dcmTCPConnectTimeout",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmTCPConnectTimeout",
                 a.getConnectTimeout(),
                 b.getConnectTimeout(),
                 Connection.NO_TIMEOUT);
-        LdapUtils.storeDiff(mods, "dcmAARQTimeout",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAARQTimeout",
                 a.getRequestTimeout(),
                 b.getRequestTimeout(),
                 Connection.NO_TIMEOUT);
-        LdapUtils.storeDiff(mods, "dcmAAACTimeout",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAAACTimeout",
                 a.getAcceptTimeout(),
                 b.getAcceptTimeout(),
                 Connection.NO_TIMEOUT);
-        LdapUtils.storeDiff(mods, "dcmARRPTimeout",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmARRPTimeout",
                 a.getReleaseTimeout(),
                 b.getReleaseTimeout(),
                 Connection.NO_TIMEOUT);
-        LdapUtils.storeDiff(mods, "dcmResponseTimeout",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmResponseTimeout",
                 a.getResponseTimeout(),
                 b.getResponseTimeout(),
                 Connection.NO_TIMEOUT);
-        LdapUtils.storeDiff(mods, "dcmRetrieveTimeout",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmRetrieveTimeout",
                 a.getRetrieveTimeout(),
                 b.getRetrieveTimeout(),
                 Connection.NO_TIMEOUT);
-        LdapUtils.storeDiff(mods, "dcmIdleTimeout",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmIdleTimeout",
                 a.getIdleTimeout(),
                 b.getIdleTimeout(),
                 Connection.NO_TIMEOUT);
-        LdapUtils.storeDiff(mods, "dcmTCPCloseDelay",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmTCPCloseDelay",
                 a.getSocketCloseDelay(),
                 b.getSocketCloseDelay(),
                 Connection.DEF_SOCKETDELAY);
-        LdapUtils.storeDiff(mods, "dcmTCPSendBufferSize",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmTCPSendBufferSize",
                 a.getSendBufferSize(),
                 b.getSendBufferSize(),
                 Connection.DEF_BUFFERSIZE);
-        LdapUtils.storeDiff(mods, "dcmTCPReceiveBufferSize",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmTCPReceiveBufferSize",
                 a.getReceiveBufferSize(),
                 b.getReceiveBufferSize(),
                 Connection.DEF_BUFFERSIZE);
-        LdapUtils.storeDiff(mods, "dcmTCPNoDelay",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmTCPNoDelay",
                 a.isTcpNoDelay(),
                 b.isTcpNoDelay(),
                 true);
-        LdapUtils.storeDiffObject(mods, "dcmBindAddress",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmBindAddress",
                 a.getBindAddress(),
                 b.getBindAddress(), null);
-        LdapUtils.storeDiffObject(mods, "dcmClientBindAddress",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmClientBindAddress",
                 a.getClientBindAddress(),
                 b.getClientBindAddress(), null);
-        LdapUtils.storeDiff(mods, "dcmTLSProtocol",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmTLSProtocol",
                 a.getTlsProtocols(),
                 b.getTlsProtocols(),
                 Connection.DEFAULT_TLS_PROTOCOLS);
-        LdapUtils.storeDiff(mods, "dcmTLSNeedClientAuth",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmTLSNeedClientAuth",
                 a.isTlsNeedClientAuth(),
                 a.isTlsNeedClientAuth(),
                 true);
-        LdapUtils.storeDiff(mods, "dcmSendPDULength",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmSendPDULength",
                 a.getSendPDULength(),
                 b.getSendPDULength(),
                 Connection.DEF_MAX_PDU_LENGTH);
-        LdapUtils.storeDiff(mods, "dcmReceivePDULength",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmReceivePDULength",
                 a.getReceivePDULength(),
                 b.getReceivePDULength(),
                 Connection.DEF_MAX_PDU_LENGTH);
-        LdapUtils.storeDiff(mods, "dcmMaxOpsPerformed",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmMaxOpsPerformed",
                 a.getMaxOpsPerformed(),
                 b.getMaxOpsPerformed(),
                 Connection.SYNCHRONOUS_MODE);
-        LdapUtils.storeDiff(mods, "dcmMaxOpsInvoked",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmMaxOpsInvoked",
                 a.getMaxOpsInvoked(),
                 b.getMaxOpsInvoked(),
                 Connection.SYNCHRONOUS_MODE);
-        LdapUtils.storeDiff(mods, "dcmPackPDV",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmPackPDV",
                 a.isPackPDV(),
                 b.isPackPDV(),
                 true);
         return mods;
     }
 
-    private List<ModificationItem> storeDiffs(ApplicationEntity a,
-            ApplicationEntity b, String deviceDN, List<ModificationItem> mods, boolean preserveVendorData) {
-        LdapUtils.storeDiffObject(mods, "dicomDescription",
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, ApplicationEntity a,
+                                              ApplicationEntity b, String deviceDN, List<ModificationItem> mods, boolean preserveVendorData) {
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription(), null);
         if (!preserveVendorData)
-            storeDiff(mods, "dicomVendorData",
+            storeDiff(ldapObj, mods, "dicomVendorData",
                     a.getVendorData(),
                     b.getVendorData());
-        LdapUtils.storeDiff(mods, "dicomApplicationCluster",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomApplicationCluster",
                 a.getApplicationClusters(),
                 b.getApplicationClusters());
-        LdapUtils.storeDiff(mods, "dicomPreferredCallingAETitle",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomPreferredCallingAETitle",
                 a.getPreferredCallingAETitles(),
                 b.getPreferredCallingAETitles());
-        LdapUtils.storeDiff(mods, "dicomPreferredCalledAETitle",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomPreferredCalledAETitle",
                 a.getPreferredCalledAETitles(),
                 b.getPreferredCalledAETitles());
-        LdapUtils.storeDiffObject(mods, "dicomAssociationInitiator",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomAssociationInitiator",
                 a.isAssociationInitiator(),
                 b.isAssociationInitiator(), null);
-        LdapUtils.storeDiffObject(mods, "dicomAssociationAcceptor",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomAssociationAcceptor",
                 a.isAssociationAcceptor(),
                 b.isAssociationAcceptor(), null);
-        LdapUtils.storeDiff(mods, "dicomNetworkConnectionReference",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
-        LdapUtils.storeDiff(mods, "dicomSupportedCharacterSet",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomSupportedCharacterSet",
                 a.getSupportedCharacterSets(),
                 b.getSupportedCharacterSets());
-        LdapUtils.storeDiffObject(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled(), null);
         if (!extended)
             return mods;
 
-        LdapUtils.storeDiff(mods, "dcmAcceptedCallingAETitle",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAcceptedCallingAETitle",
                 a.getAcceptedCallingAETitles(),
                 b.getAcceptedCallingAETitles());
-        LdapUtils.storeDiff(mods, "dcmOtherAETitle",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmOtherAETitle",
                 a.getOtherAETitles(),
                 b.getOtherAETitles());
-        LdapUtils.storeDiff(mods, "dcmMasqueradeCallingAETitle",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmMasqueradeCallingAETitle",
                 a.getMasqueradeCallingAETitles(),
                 b.getMasqueradeCallingAETitles());
-        LdapUtils.storeDiffObject(mods, "hl7ApplicationName",
+        LdapUtils.storeDiffObject(ldapObj, mods, "hl7ApplicationName",
                 a.getHl7ApplicationName(),
                 b.getHl7ApplicationName(), null);
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeDiffs(a, b, mods);
+            ext.storeDiffs(ldapObj, a, b, mods);
         return mods;
     }
 
-    private List<ModificationItem> storeDiffs(TransferCapability a,
-            TransferCapability b, List<ModificationItem> mods) {
-        LdapUtils.storeDiffObject(mods, "dicomSOPClass",
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, TransferCapability a,
+                                              TransferCapability b, List<ModificationItem> mods) {
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomSOPClass",
                 a.getSopClass(),
                 b.getSopClass(), null);
-        LdapUtils.storeDiffObject(mods, "dicomTransferRole",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomTransferRole",
                 a.getRole(),
                 b.getRole(), null);
-        LdapUtils.storeDiff(mods, "dicomTransferSyntax",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomTransferSyntax",
                 a.getTransferSyntaxes(),
                 b.getTransferSyntaxes());
         if (!extended)
             return mods;
 
-        storeDiffs(a.getQueryOptions(), b.getQueryOptions(), mods);
-        storeDiffs(a.getStorageOptions(), b.getStorageOptions(), mods);
+        storeDiffs(ldapObj, a.getQueryOptions(), b.getQueryOptions(), mods);
+        storeDiffs(ldapObj, a.getStorageOptions(), b.getStorageOptions(), mods);
         return mods;
     }
 
-    private void storeDiffs(EnumSet<QueryOption> prev,
-            EnumSet<QueryOption> val, List<ModificationItem> mods) {
+    private void storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, EnumSet<QueryOption> prev,
+                            EnumSet<QueryOption> val, List<ModificationItem> mods) {
         if (prev != null ? prev.equals(val) : val == null)
             return;
 
-        LdapUtils.storeDiff(mods, "dcmRelationalQueries",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmRelationalQueries",
                 prev != null && prev.contains(QueryOption.RELATIONAL),
                 val != null && val.contains(QueryOption.RELATIONAL),
                 false);
-        LdapUtils.storeDiff(mods, "dcmCombinedDateTimeMatching",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmCombinedDateTimeMatching",
                 prev != null && prev.contains(QueryOption.DATETIME),
                 val != null && val.contains(QueryOption.DATETIME),
                 false);
-        LdapUtils.storeDiff(mods, "dcmFuzzySemanticMatching",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmFuzzySemanticMatching",
                 prev != null && prev.contains(QueryOption.FUZZY),
                 val != null && val.contains(QueryOption.FUZZY),
                 false);
-        LdapUtils.storeDiff(mods, "dcmTimezoneQueryAdjustment",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmTimezoneQueryAdjustment",
                 prev != null && prev.contains(QueryOption.TIMEZONE),
                 val != null && val.contains(QueryOption.TIMEZONE),
                 false);
     }
 
-    private void storeDiffs(StorageOptions prev,
-            StorageOptions val, List<ModificationItem> mods) {
+    private void storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, StorageOptions prev,
+                            StorageOptions val, List<ModificationItem> mods) {
         if (prev != null ? prev.equals(val) : val == null)
             return;
 
-        LdapUtils.storeDiff(mods, "dcmStorageConformance",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmStorageConformance",
                 prev != null ? prev.getLevelOfSupport().ordinal() : -1,
                 val != null ? val.getLevelOfSupport().ordinal() : -1,
                 -1);
-        LdapUtils.storeDiff(mods, "dcmDigitalSignatureSupport",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmDigitalSignatureSupport",
                 prev != null ? prev.getDigitalSignatureSupport().ordinal() : -1,
                 val != null ? val.getDigitalSignatureSupport().ordinal() : -1,
                 -1);
-        LdapUtils.storeDiff(mods, "dcmDataElementCoercion",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmDataElementCoercion",
                 prev != null ? prev.getElementCoercion().ordinal() : -1,
                 val != null ? val.getElementCoercion().ordinal() : -1,
                 -1);
@@ -1756,35 +1781,43 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return attr != null ? new Issuer((String) attr.get()) : null;
     }
 
-    private void mergeAEs(Device prevDev, Device dev, String deviceDN, boolean preserveVendorData)
+    private void mergeAEs(ConfigurationChanges diffs, Device prevDev, Device dev, String deviceDN, boolean preserveVendorData)
             throws NamingException {
         Collection<String> aets = dev.getApplicationAETitles();
         for (String aet : prevDev.getApplicationAETitles()) {
-            if (!aets.contains(aet))
-                destroySubcontextWithChilds(aetDN(aet, deviceDN));
+            if (!aets.contains(aet)) {
+                String aetDN = aetDN(aet, deviceDN);
+                destroySubcontextWithChilds(aetDN);
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(aetDN, ConfigurationChanges.ChangeType.D));
+            }
         }
         Collection<String> prevAETs = prevDev.getApplicationAETitles();
         for (ApplicationEntity ae : dev.getApplicationEntities()) {
             String aet = ae.getAETitle();
             if (!prevAETs.contains(aet)) {
                 store(ae, deviceDN);
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(aetDN(aet, deviceDN), ConfigurationChanges.ChangeType.C));
             } else
-                merge(prevDev.getApplicationEntity(aet), ae, deviceDN, preserveVendorData);
+                merge(diffs, prevDev.getApplicationEntity(aet), ae, deviceDN, preserveVendorData);
         }
     }
 
-    private void merge(ApplicationEntity prev, ApplicationEntity ae,
+    private void merge(ConfigurationChanges diffs, ApplicationEntity prev, ApplicationEntity ae,
                        String deviceDN, boolean preserveVendorData) throws NamingException {
         String aeDN = aetDN(ae.getAETitle(), deviceDN);
-        modifyAttributes(aeDN, storeDiffs(prev, ae, deviceDN, new ArrayList<ModificationItem>(), preserveVendorData));
-        mergeChilds(prev, ae, aeDN);
+        ConfigurationChanges.ModifiedObject ldapObj = diffs != null ? new ConfigurationChanges.ModifiedObject(aeDN, ConfigurationChanges.ChangeType.U) : null;
+        modifyAttributes(aeDN, storeDiffs(ldapObj, prev, ae, deviceDN, new ArrayList<ModificationItem>(), preserveVendorData));
+        if (diffs != null) diffs.add(ldapObj);
+        mergeChilds(diffs, prev, ae, aeDN);
     }
 
-    private void mergeChilds(ApplicationEntity prev, ApplicationEntity ae,
-            String aeDN) throws NamingException {
-        merge(prev.getTransferCapabilities(), ae.getTransferCapabilities(), aeDN);
+    private void mergeChilds(ConfigurationChanges diffs, ApplicationEntity prev, ApplicationEntity ae,
+                             String aeDN) throws NamingException {
+        merge(diffs, prev.getTransferCapabilities(), ae.getTransferCapabilities(), aeDN);
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.mergeChilds(prev, ae, aeDN);
+            ext.mergeChilds(diffs, prev, ae, aeDN);
     }
 
     public void modifyAttributes(String dn, List<ModificationItem> mods)
@@ -1799,39 +1832,61 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     
-    private void merge(Collection<TransferCapability> prevs,
-            Collection<TransferCapability> tcs, String aeDN) throws NamingException {
+    private void merge(ConfigurationChanges diffs, Collection<TransferCapability> prevs,
+                       Collection<TransferCapability> tcs, String aeDN) throws NamingException {
         for (TransferCapability tc : prevs) {
             String dn = dnOf(tc, aeDN);
-            if (findByDN(aeDN, tcs, dn) == null)
+            if (findByDN(aeDN, tcs, dn) == null) {
                 destroySubcontext(dn);
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+            }
         }
         for (TransferCapability tc : tcs) {
             String dn = dnOf(tc, aeDN);
             TransferCapability prev = findByDN(aeDN, prevs, dn);
-            if (prev == null)
+            if (prev == null) {
                 createSubcontext(dn, storeTo(tc, new BasicAttributes(true)));
-            else
-                modifyAttributes(dn, storeDiffs(prev, tc, new ArrayList<ModificationItem>()));
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+            } else {
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
+                        : null;
+                modifyAttributes(dn, storeDiffs(ldapObj, prev, tc, new ArrayList<ModificationItem>()));
+                if (diffs != null)
+                    diffs.add(ldapObj);
+            }
         }
     }
 
-    private void mergeConnections(Device prevDev, Device device, String deviceDN)
+    private void mergeConnections(ConfigurationChanges diffs, Device prevDev, Device device, String deviceDN)
             throws NamingException {
         List<Connection> prevs = prevDev.listConnections();
         List<Connection> conns = device.listConnections();
         for (Connection prev : prevs) {
             String dn = LdapUtils.dnOf(prev, deviceDN);
-            if (LdapUtils.findByDN(deviceDN, conns, dn) == null)
+            if (LdapUtils.findByDN(deviceDN, conns, dn) == null) {
                 destroySubcontext(dn);
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+            }
         }
         for (Connection conn : conns) {
             String dn = LdapUtils.dnOf(conn, deviceDN);
             Connection prev = LdapUtils.findByDN(deviceDN, prevs, dn);
-            if (prev == null)
+            if (prev == null) {
                 createSubcontext(dn, storeTo(conn, new BasicAttributes(true)));
-            else
-                modifyAttributes(dn, storeDiffs(prev, conn, new ArrayList<ModificationItem>()));
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+            } else {
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
+                        : null;
+                modifyAttributes(dn, storeDiffs(ldapObj, prev, conn, new ArrayList<ModificationItem>()));
+                if (diffs != null)
+                    diffs.add(ldapObj);
+            }
         }
     }
 
@@ -1843,14 +1898,23 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return null;
     }
 
-    private static void storeDiff(List<ModificationItem> mods, String attrId,
-            byte[][] prevs, byte[][] vals) {
-        if (!equals(prevs, vals))
+    private static void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods, String attrId,
+                                  byte[][] prevs, byte[][] vals) {
+        if (!equals(prevs, vals)) {
             mods.add((vals.length == 0)
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
-                            new BasicAttribute(attrId))
+                        new BasicAttribute(attrId))
                     : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                            attr(attrId, vals)));
+                        attr(attrId, vals)));
+            if (ldapObj != null) {
+                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrId);
+                for (byte[] val : vals)
+                    attribute.addValue(val.length + " bytes");
+                for (byte[] prev : prevs)
+                    attribute.removeValue(prev.length + " bytes");
+                ldapObj.add(attribute);
+            }
+        }
     }
 
     private static boolean equals(byte[][] a, byte[][] a2) {
@@ -1890,7 +1954,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             attrs.put(attr(attrID, vals));
     }
 
-    private static <T> Attribute attr(String attrID, byte[]... vals) {
+    private static Attribute attr(String attrID, byte[]... vals) {
         Attribute attr = new BasicAttribute(attrID);
         for (byte[] val : vals)
             attr.add(val);
@@ -1937,38 +2001,48 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    public void merge(AttributeCoercions prevs, AttributeCoercions acs, 
-            String parentDN) throws NamingException {
+    public void merge(ConfigurationChanges diffs, AttributeCoercions prevs, AttributeCoercions acs,
+                      String parentDN) throws NamingException {
         for (AttributeCoercion prev : prevs) {
             String cn = prev.getCommonName();
-            if (acs.findByCommonName(cn) == null)
-                destroySubcontext(LdapUtils.dnOf("cn", cn, parentDN));
+            if (acs.findByCommonName(cn) == null) {
+                String dn = LdapUtils.dnOf("cn", cn, parentDN);
+                destroySubcontext(dn);
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+            }
         }
         for (AttributeCoercion ac : acs) {
             String cn = ac.getCommonName();
             String dn = LdapUtils.dnOf("cn", cn, parentDN);
             AttributeCoercion prev = prevs.findByCommonName(cn);
-            if (prev == null)
+            if (prev == null) {
                 createSubcontext(dn, storeTo(ac, new BasicAttributes(true)));
-            else
-                modifyAttributes(dn, storeDiffs(prev, ac, 
-                        new ArrayList<ModificationItem>()));
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+            } else {
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
+                        : null;
+                modifyAttributes(dn, storeDiffs(ldapObj, prev, ac, new ArrayList<ModificationItem>()));
+                if (diffs != null) diffs.add(ldapObj);
+            }
         }
     }
 
-    private List<ModificationItem> storeDiffs(AttributeCoercion prev,
-            AttributeCoercion ac, ArrayList<ModificationItem> mods) {
-        LdapUtils.storeDiffObject(mods, "dcmDIMSE", prev.getDIMSE(), ac.getDIMSE(), null);
-        LdapUtils.storeDiffObject(mods, "dicomTransferRole",
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, AttributeCoercion prev,
+                                              AttributeCoercion ac, ArrayList<ModificationItem> mods) {
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmDIMSE", prev.getDIMSE(), ac.getDIMSE(), null);
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomTransferRole",
                 prev.getRole(),
                 ac.getRole(), null);
-        LdapUtils.storeDiff(mods, "dcmAETitle", 
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAETitle",
                 prev.getAETitles(),
                 ac.getAETitles());
-        LdapUtils.storeDiff(mods, "dcmSOPClass",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmSOPClass",
                 prev.getSOPClasses(),
                 ac.getSOPClasses());
-        LdapUtils.storeDiffObject(mods, "dcmURI", prev.getURI(), ac.getURI(), null);
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmURI", prev.getURI(), ac.getURI(), null);
         return mods;
     }
 

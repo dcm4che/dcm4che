@@ -52,6 +52,7 @@ import javax.naming.directory.SearchResult;
 import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
+import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
@@ -65,8 +66,6 @@ import org.slf4j.LoggerFactory;
  * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
 public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtension {
-
-    private static final String CN_AUDIT_LOGGER = "cn=Audit Logger,";
 
     private static final Logger LOG = LoggerFactory.getLogger(
             LdapAuditLoggerConfiguration.class);
@@ -290,15 +289,19 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
     }
 
     @Override
-    protected void mergeChilds(Device prev, Device device, String deviceDN)
+    protected void mergeChilds(ConfigurationChanges diffs, Device prev, Device device, String deviceDN)
             throws NamingException {
         AuditLoggerDeviceExtension prevAuditLoggerExt = prev.getDeviceExtension(AuditLoggerDeviceExtension.class);
         AuditLoggerDeviceExtension auditLoggerExt = device.getDeviceExtension(AuditLoggerDeviceExtension.class);
 
         if (prevAuditLoggerExt != null)
             for (String appName : prevAuditLoggerExt.getAuditLoggerNames()) {
-                if (auditLoggerExt == null || !auditLoggerExt.containsAuditLogger(appName))
-                    config.destroySubcontextWithChilds(auditLoggerDN(appName, deviceDN));
+                if (auditLoggerExt == null || !auditLoggerExt.containsAuditLogger(appName)) {
+                    String dn = auditLoggerDN(appName, deviceDN);
+                    config.destroySubcontextWithChilds(dn);
+                    if (diffs != null)
+                        diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+                }
             }
 
         if (auditLoggerExt == null)
@@ -308,148 +311,166 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             String appName = logger.getCommonName();
             if (prevAuditLoggerExt == null || !prevAuditLoggerExt.containsAuditLogger(appName)) {
                 store(deviceDN, logger);
+                if (diffs != null) {
+                    String dn = auditLoggerDN(appName, deviceDN);
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+                }
             } else
-                merge(prevAuditLoggerExt.getAuditLogger(appName), logger, deviceDN);
+                merge(diffs, prevAuditLoggerExt.getAuditLogger(appName), logger, deviceDN);
         }
     }
 
-    private void merge(AuditLogger prevLogger, AuditLogger logger, String deviceDN)
+    private void merge(ConfigurationChanges diffs, AuditLogger prevLogger, AuditLogger logger, String deviceDN)
             throws NamingException {
         String appDN = auditLoggerDN(logger.getCommonName(), deviceDN);
-        config.modifyAttributes(appDN, storeDiffs(prevLogger, logger, deviceDN, new ArrayList<ModificationItem>()));
-        mergeAuditSuppressCriteria(prevLogger, logger, appDN);
+        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.U)
+                : null;
+        config.modifyAttributes(appDN,
+                storeDiffs(ldapObj, prevLogger, logger, deviceDN, new ArrayList<ModificationItem>()));
+        if (diffs != null) diffs.add(ldapObj);
+        mergeAuditSuppressCriteria(diffs, prevLogger, logger, appDN);
     }
 
-    private void mergeAuditSuppressCriteria(AuditLogger prevLogger,
-            AuditLogger logger, String auditLoggerDN) throws NamingException {
+    private void mergeAuditSuppressCriteria(ConfigurationChanges diffs, AuditLogger prevLogger,
+                                            AuditLogger logger, String auditLoggerDN) throws NamingException {
         for (AuditSuppressCriteria prevCriteria : prevLogger.getAuditSuppressCriteriaList()) {
             String cn = prevCriteria.getCommonName();
-            if (logger.findAuditSuppressCriteriaByCommonName(cn) == null)
-                config.destroySubcontext(LdapUtils.dnOf("cn", cn, auditLoggerDN));
+            if (logger.findAuditSuppressCriteriaByCommonName(cn) == null) {
+                String dn = LdapUtils.dnOf("cn", cn, auditLoggerDN);
+                config.destroySubcontext(dn);
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+            }
         }
         for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
             String cn = criteria.getCommonName();
             String dn = LdapUtils.dnOf("cn", cn, auditLoggerDN);
             AuditSuppressCriteria prev = prevLogger.findAuditSuppressCriteriaByCommonName(cn);
-            if (prev == null)
-                config.createSubcontext(
-                        dn,
-                        storeTo(criteria, new BasicAttributes(true)));
-            else
-                config.modifyAttributes(dn, storeDiffs(prev, criteria, 
+            if (prev == null) {
+                config.createSubcontext(dn, storeTo(criteria, new BasicAttributes(true)));
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+            } else {
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
+                        : null;
+                config.modifyAttributes(dn, storeDiffs(ldapObj, prev, criteria,
                         new ArrayList<ModificationItem>()));
+                if (diffs != null) diffs.add(ldapObj);
+            }
         }
     }
 
-    private List<ModificationItem> storeDiffs(AuditLogger a, AuditLogger b,
-            String deviceDN, ArrayList<ModificationItem> mods) {
-        LdapUtils.storeDiff(mods, "dcmAuditFacility",
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, AuditLogger a, AuditLogger b,
+                                              String deviceDN, ArrayList<ModificationItem> mods) {
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditFacility",
                 a.getFacility().ordinal(),
                 b.getFacility().ordinal(),
                 10);
-        LdapUtils.storeDiff(mods, "dcmAuditSuccessSeverity",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditSuccessSeverity",
                 a.getSuccessSeverity().ordinal(),
                 b.getSuccessSeverity().ordinal(),
                 5);
-        LdapUtils.storeDiff(mods, "dcmAuditMinorFailureSeverity",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditMinorFailureSeverity",
                 a.getMinorFailureSeverity().ordinal(),
                 b.getMinorFailureSeverity().ordinal(),
                 4);
-        LdapUtils.storeDiff(mods, "dcmAuditSeriousFailureSeverity",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditSeriousFailureSeverity",
                 a.getSeriousFailureSeverity().ordinal(),
                 b.getSeriousFailureSeverity().ordinal(),
                 3);
-        LdapUtils.storeDiff(mods, "dcmAuditMajorFailureSeverity",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditMajorFailureSeverity",
                 a.getMajorFailureSeverity().ordinal(),
                 b.getMajorFailureSeverity().ordinal(),
                 2);
-        LdapUtils.storeDiffObject(mods, "dcmAuditSourceID",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditSourceID",
                 a.getAuditSourceID(),
                 b.getAuditSourceID(), null);
-        LdapUtils.storeDiffObject(mods, "dcmAuditEnterpriseSiteID",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditEnterpriseSiteID",
                 a.getAuditEnterpriseSiteID(),
                 b.getAuditEnterpriseSiteID(), null);
-        LdapUtils.storeDiff(mods, "dcmAuditSourceTypeCode",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditSourceTypeCode",
                 a.getAuditSourceTypeCodes(),
                 b.getAuditSourceTypeCodes());
-        LdapUtils.storeDiffObject(mods, "dcmAuditApplicationName",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditApplicationName",
                 a.getApplicationName(),
                 b.getApplicationName(), null);
-        LdapUtils.storeDiffObject(mods, "dcmAuditMessageID",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditMessageID",
                 a.getMessageID(),
                 b.getMessageID(),
                 AuditLogger.MESSAGE_ID);
-        LdapUtils.storeDiffObject(mods, "dcmAuditMessageEncoding",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditMessageEncoding",
                 a.getEncoding(),
                 b.getEncoding(),
                 "UTF-8");
-        LdapUtils.storeDiffObject(mods, "dcmAuditMessageSchemaURI",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditMessageSchemaURI",
                 a.getSchemaURI(),
                 b.getSchemaURI(),
                 AuditMessages.SCHEMA_URI);
-        LdapUtils.storeDiff(mods, "dcmAuditMessageBOM",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditMessageBOM",
                 a.isIncludeBOM(),
                 b.isIncludeBOM(),
                 true);
-        LdapUtils.storeDiff(mods, "dcmAuditMessageFormatXML",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditMessageFormatXML",
                 a.isFormatXML(),
                 b.isFormatXML(),
                 false);
-        LdapUtils.storeDiff(mods, "dcmAuditTimestampInUTC",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditTimestampInUTC",
                 a.isTimestampInUTC(),
                 b.isTimestampInUTC(),
                 false);
-        LdapUtils.storeDiff(mods, "dicomNetworkConnectionReference",
+        LdapUtils.storeDiff(ldapObj, mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
-        LdapUtils.storeDiffObject(mods, "dcmAuditRecordRepositoryDeviceReference",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditRecordRepositoryDeviceReference",
                 arrDeviceRef(a),
                 arrDeviceRef(b), null);
-        LdapUtils.storeDiff(mods, "dcmAuditIncludeInstanceUID", 
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditIncludeInstanceUID",
                 a.isIncludeInstanceUID(), 
                 b.isIncludeInstanceUID(), 
                 false);
-        LdapUtils.storeDiffObject(mods, "dcmAuditLoggerSpoolDirectoryURI",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditLoggerSpoolDirectoryURI",
                 a.getSpoolDirectoryURI(),
                 b.getSpoolDirectoryURI(), null);
-        LdapUtils.storeDiff(mods, "dcmAuditLoggerRetryInterval", 
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditLoggerRetryInterval",
                 a.getRetryInterval(), 
                 b.getRetryInterval(), 
                 0);
-        LdapUtils.storeDiffObject(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled(), null);
         return mods;
     }
 
-    private List<ModificationItem> storeDiffs(AuditSuppressCriteria a,
-            AuditSuppressCriteria b, ArrayList<ModificationItem> mods) {
-        LdapUtils.storeDiff(mods, "dcmAuditEventID",
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, AuditSuppressCriteria a,
+                                              AuditSuppressCriteria b, ArrayList<ModificationItem> mods) {
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditEventID",
                 a.getEventIDsAsStringArray(),
                 b.getEventIDsAsStringArray());
-        LdapUtils.storeDiff(mods, "dcmAuditEventTypeCode",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditEventTypeCode",
                 a.getEventTypeCodesAsStringArray(),
                 b.getEventTypeCodesAsStringArray());
-        LdapUtils.storeDiff(mods, "dcmAuditEventActionCode",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditEventActionCode",
                 a.getEventActionCodes(),
                 b.getEventActionCodes());
-        LdapUtils.storeDiff(mods, "dcmAuditEventOutcomeIndicator",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditEventOutcomeIndicator",
                 a.getEventOutcomeIndicators(),
                 b.getEventOutcomeIndicators());
-        LdapUtils.storeDiff(mods, "dcmAuditUserID",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditUserID",
                 a.getUserIDs(),
                 b.getUserIDs());
-        LdapUtils.storeDiff(mods, "dcmAuditAlternativeUserID",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditAlternativeUserID",
                 a.getAlternativeUserIDs(),
                 b.getAlternativeUserIDs());
-        LdapUtils.storeDiff(mods, "dcmAuditUserRoleIDCode",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditUserRoleIDCode",
                 a.getUserRoleIDCodesAsStringArray(),
                 b.getUserRoleIDCodesAsStringArray());
-        LdapUtils.storeDiff(mods, "dcmAuditNetworkAccessPointID",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAuditNetworkAccessPointID",
                 a.getNetworkAccessPointIDs(),
                 b.getNetworkAccessPointIDs());
-        LdapUtils.storeDiffObject(mods, "dcmAuditUserIsRequestor",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditUserIsRequestor",
                 a.getUserIsRequestor(),
                 b.getUserIsRequestor(), null);
         return mods;

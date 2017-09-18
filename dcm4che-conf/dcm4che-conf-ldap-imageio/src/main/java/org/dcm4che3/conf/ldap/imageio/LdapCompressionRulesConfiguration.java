@@ -48,6 +48,7 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchResult;
 
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
+import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.imageio.codec.CompressionRule;
 import org.dcm4che3.imageio.codec.CompressionRules;
@@ -117,12 +118,16 @@ public class LdapCompressionRulesConfiguration {
             LdapUtils.stringArray(attrs.get("dcmImageWriteParam")));
     }
 
-    public void merge(CompressionRules prevRules, CompressionRules rules,
-            String parentDN) throws NamingException {
+    public void merge(ConfigurationChanges diffs, CompressionRules prevRules, CompressionRules rules,
+                      String parentDN) throws NamingException {
         for (CompressionRule prevRule : prevRules) {
             String cn = prevRule.getCommonName();
-            if (rules == null || rules.findByCommonName(cn) == null)
-                config.destroySubcontext(LdapUtils.dnOf("cn", cn, parentDN));
+            if (rules == null || rules.findByCommonName(cn) == null) {
+                String dn = LdapUtils.dnOf("cn", cn, parentDN);
+                config.destroySubcontext(dn);
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+            }
         }
         for (CompressionRule rule : rules) {
             String cn = rule.getCommonName();
@@ -130,39 +135,46 @@ public class LdapCompressionRulesConfiguration {
             CompressionRule prevRule = prevRules != null
                     ? prevRules.findByCommonName(cn)
                     : null;
-            if (prevRule == null)
+            if (prevRule == null) {
                 config.createSubcontext(dn,
-                        storeTo(prevRule, new BasicAttributes(true)));
-            else
-                config.modifyAttributes(dn, storeDiffs(prevRule, rule, 
+                        storeTo(rule, new BasicAttributes(true)));
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+            } else {
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
+                        : null;
+                config.modifyAttributes(dn, storeDiffs(ldapObj, prevRule, rule,
                         new ArrayList<ModificationItem>()));
+                if (diffs != null) diffs.add(ldapObj);
+            }
         }
     }
 
-    private List<ModificationItem> storeDiffs(CompressionRule prev,
-            CompressionRule rule, List<ModificationItem> mods) {
-        LdapUtils.storeDiff(mods, "dcmPhotometricInterpretation",
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, CompressionRule prev,
+                                              CompressionRule rule, List<ModificationItem> mods) {
+        LdapUtils.storeDiff(ldapObj, mods, "dcmPhotometricInterpretation",
                 prev.getPhotometricInterpretations(),
                 rule.getPhotometricInterpretations());
-        LdapUtils.storeDiffObject(mods, "dcmBitsStored",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmBitsStored",
                 prev.getBitsStored(),
                 rule.getBitsStored(), null);
-        LdapUtils.storeDiff(mods, "dcmPixelRepresentation",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmPixelRepresentation",
                 prev.getPixelRepresentation(),
                 rule.getPixelRepresentation(), -1);
-        LdapUtils.storeDiff(mods, "dcmAETitle",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAETitle",
                 prev.getAETitles(),
                 rule.getAETitles());
-        LdapUtils.storeDiff(mods, "dcmSOPClass",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmSOPClass",
                 prev.getSOPClasses(),
                 rule.getSOPClasses());
-        LdapUtils.storeDiff(mods, "dcmBodyPartExamined",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmBodyPartExamined",
                 prev.getBodyPartExamined(),
                 rule.getBodyPartExamined());
-        LdapUtils.storeDiffObject(mods, "dicomTransferSyntax",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomTransferSyntax",
                 prev.getTransferSyntax(),
                 rule.getTransferSyntax(), null);
-        LdapUtils.storeDiff(mods, "dcmImageWriteParam",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmImageWriteParam",
                 prev.getImageWriteParams(),
                 rule.getImageWriteParams());
        return mods;

@@ -45,6 +45,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.ModificationItem;
 
+import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
@@ -78,9 +79,9 @@ public class LdapDicomConfigurationExtension {
     protected void loadChilds(Device device, String deviceDN)
             throws NamingException, ConfigurationException { }
 
-    protected void storeDiffs(Device prev, Device device, List<ModificationItem> mods) {}
+    protected void storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, Device prev, Device device, List<ModificationItem> mods) {}
 
-    protected void mergeChilds(Device prev, Device device, String deviceDN)
+    protected void mergeChilds(ConfigurationChanges diffs, Device prev, Device device, String deviceDN)
             throws NamingException, ConfigurationException { }
 
     protected void storeTo(ApplicationEntity ae, Attributes attrs) {}
@@ -96,12 +97,12 @@ public class LdapDicomConfigurationExtension {
             throws NamingException, ConfigurationException {
     }
 
-    protected void storeDiffs(ApplicationEntity a, ApplicationEntity b,
-            List<ModificationItem> mods) {
+    protected void storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, ApplicationEntity a, ApplicationEntity b,
+                              List<ModificationItem> mods) {
     }
 
-    protected void mergeChilds(ApplicationEntity prev, ApplicationEntity ae,
-            String aeDN) throws NamingException {
+    protected void mergeChilds(ConfigurationChanges diffs, ApplicationEntity prev, ApplicationEntity ae,
+                               String aeDN) throws NamingException {
     }
 
     protected void register(Device device, List<String> dns) throws ConfigurationException {

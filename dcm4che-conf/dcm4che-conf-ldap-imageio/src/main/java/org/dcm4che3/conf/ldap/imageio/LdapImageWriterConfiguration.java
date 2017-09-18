@@ -37,9 +37,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.ldap.imageio;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
+import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
+import org.dcm4che3.conf.api.ConfigurationChanges;
+import org.dcm4che3.conf.ldap.LdapUtils;
+import org.dcm4che3.imageio.codec.ImageWriterFactory;
+import org.dcm4che3.imageio.codec.ImageWriterFactory.ImageWriterParam;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.imageio.ImageWriterExtension;
 
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
@@ -48,14 +53,9 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchResult;
-
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
-import org.dcm4che3.conf.ldap.LdapUtils;
-import org.dcm4che3.imageio.codec.ImageWriterFactory;
-import org.dcm4che3.imageio.codec.ImageWriterFactory.ImageWriterParam;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.imageio.ImageWriterExtension;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -133,51 +133,67 @@ public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtensio
     }
 
     @Override
-    protected void mergeChilds(Device prev, Device device, String deviceDN)
+    protected void mergeChilds(ConfigurationChanges diffs, Device prev, Device device, String deviceDN)
             throws NamingException {
-        ImageWriterExtension prevExt =
-                prev.getDeviceExtension(ImageWriterExtension.class);
-        ImageWriterExtension ext =
-                device.getDeviceExtension(ImageWriterExtension.class);
+        ImageWriterExtension prevExt = prev.getDeviceExtension(ImageWriterExtension.class);
+        ImageWriterExtension ext = device.getDeviceExtension(ImageWriterExtension.class);
+        if (ext == null && prevExt == null)
+            return;
+
+        String dn = CN_IMAGE_READER_FACTORY + deviceDN;
         if (ext == null) {
-            if (prevExt != null)
-                config.destroySubcontextWithChilds(CN_IMAGE_READER_FACTORY + deviceDN);
-            return;
-        }
-        if (prevExt == null) {
+            config.destroySubcontextWithChilds(dn);
+            if (diffs != null)
+                diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+        } else if (prevExt == null) {
             store(deviceDN, ext.getImageWriterFactory());
-            return;
+            if (diffs != null)
+                diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+        } else {
+            merge(diffs, prevExt.getImageWriterFactory(), ext.getImageWriterFactory(), dn);
         }
-        String imageWritersDN = CN_IMAGE_READER_FACTORY + deviceDN;
-        ImageWriterFactory factory = ext.getImageWriterFactory();
-        ImageWriterFactory prevFactory = prevExt.getImageWriterFactory();
-        for (Entry<String, ImageWriterParam> entry : prevFactory.getEntries()) {
+    }
+
+    private void merge(ConfigurationChanges diffs, ImageWriterFactory prev, ImageWriterFactory factory, String imageWritersDN)
+            throws NamingException {
+        for (Entry<String, ImageWriterParam> entry : prev.getEntries()) {
             String tsuid = entry.getKey();
-            if (factory.get(tsuid) == null)
-                config.destroySubcontext(dnOf(tsuid, imageWritersDN));
+            if (factory.get(tsuid) == null) {
+                String dn = dnOf(tsuid, imageWritersDN);
+                config.destroySubcontext(dn);
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+            }
         }
         for (Entry<String, ImageWriterParam> entry : factory.getEntries()) {
             String tsuid = entry.getKey();
             String dn = dnOf(tsuid, imageWritersDN);
-            ImageWriterParam prevParam = prevFactory.get(tsuid);
-            if (prevParam == null)
+            ImageWriterParam prevParam = prev.get(tsuid);
+            if (prevParam == null) {
                 config.createSubcontext(dn,
                         storeTo(tsuid, entry.getValue(), new BasicAttributes(true)));
-            else
+                if (diffs != null)
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+            } else {
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
+                        : null;
                 config.modifyAttributes(dn,
-                        storeDiffs(prevParam, entry.getValue(), new ArrayList<ModificationItem>()));
+                        storeDiffs(ldapObj, prevParam, entry.getValue(), new ArrayList<ModificationItem>()));
+                if (diffs != null) diffs.add(ldapObj);
+            }
         }
     }
 
-    private List<ModificationItem> storeDiffs(ImageWriterParam prevParam,
-            ImageWriterParam param, List<ModificationItem> mods) {
-        LdapUtils.storeDiffObject(mods, "dcmIIOFormatName",
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, ImageWriterParam prevParam,
+                                              ImageWriterParam param, List<ModificationItem> mods) {
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmIIOFormatName",
                 prevParam.formatName, param.formatName, null);
-        LdapUtils.storeDiffObject(mods, "dcmJavaClassName",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmJavaClassName",
                 prevParam.className, param.className, null);
-        LdapUtils.storeDiffObject(mods, "dcmPatchJPEGLS",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmPatchJPEGLS",
                 prevParam.patchJPEGLS, param.patchJPEGLS, null);
-        LdapUtils.storeDiff(mods, "dcmImageWriteParam",
+        LdapUtils.storeDiff(ldapObj, mods, "dcmImageWriteParam",
                 prevParam.getImageWriteParams(), param.getImageWriteParams());
        return mods;
     }

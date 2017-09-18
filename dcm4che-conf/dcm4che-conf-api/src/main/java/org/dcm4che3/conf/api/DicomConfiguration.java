@@ -55,7 +55,7 @@ import org.dcm4che3.net.DeviceInfo;
 public interface DicomConfiguration extends Closeable {
 
     enum Option {
-        REGISTER, PRESERVE_VENDOR_DATA, PRESERVE_CERTIFICATE
+        REGISTER, PRESERVE_VENDOR_DATA, PRESERVE_CERTIFICATE, CONFIGURATION_CHANGES
     }
 
     boolean configurationExists() throws ConfigurationException;
@@ -98,15 +98,15 @@ public interface DicomConfiguration extends Closeable {
 
     String[] listRegisteredAETitles() throws ConfigurationException;
 
-    void persist(Device device, EnumSet<Option> options) throws ConfigurationException;
+    ConfigurationChanges persist(Device device, EnumSet<Option> options) throws ConfigurationException;
 
-    void merge(Device device, EnumSet<Option> options) throws ConfigurationException;
+    ConfigurationChanges merge(Device device, EnumSet<Option> options) throws ConfigurationException;
 
-    void removeDevice(String name, EnumSet<Option> options) throws ConfigurationException;
+    ConfigurationChanges removeDevice(String name, EnumSet<Option> options) throws ConfigurationException;
 
     byte[][] loadDeviceVendorData(String deviceName) throws ConfigurationException;
 
-    boolean updateDeviceVendorData(String deviceName, byte[]... vendorData) throws ConfigurationException;
+    ConfigurationChanges updateDeviceVendorData(String deviceName, byte[]... vendorData) throws ConfigurationException;
 
     String deviceRef(String name);
 

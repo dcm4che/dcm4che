@@ -575,6 +575,8 @@ public class AuditMessages {
         public static final ParticipantObjectIDTypeCode IHE_XDS_METADATA =
                 new ParticipantObjectIDTypeCode("urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd",
                         "IHE XDS Metadata", "submission set classificationNode");
+        public static final ParticipantObjectIDTypeCode DeviceName =
+                new ParticipantObjectIDTypeCode("113877","DCM","Device Name");
 
         public ParticipantObjectIDTypeCode(String code) {
             super.csdCode = code;

@@ -64,7 +64,7 @@ enum HL7ProtocolHandler implements TCPProtocolHandler {
             try {
                data = conn.getDevice().getDeviceExtension(HL7DeviceExtension.class).onMessage(conn, s, msg);
             } catch (HL7Exception e) {
-                data = HL7Message.makeACK(msg.msh(), e.getAcknowledgmentCode(), e.getErrorMessage()).getBytes(null);
+                data = HL7Message.makeACK(msg.msh(), e).getBytes(null);
             }
             mllp.writeMessage(data);
         }

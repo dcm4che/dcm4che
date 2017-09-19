@@ -167,4 +167,12 @@ public class HL7Message extends ArrayList<HL7Segment> {
         qbp.add(rcp);
         return qbp;
     }
+
+    public static HL7Message makeACK(HL7Segment msh, HL7Exception e) {
+        HL7Message ack = makeACK(msh, e.getAcknowledgmentCode(), e.getErrorMessage());
+        HL7Segment err = e.getErrorSegment();
+        if (err != null)
+            ack.add(err);
+        return ack;
+    }
 }

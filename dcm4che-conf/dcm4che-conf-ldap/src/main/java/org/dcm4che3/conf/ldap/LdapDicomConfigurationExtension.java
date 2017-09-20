@@ -68,9 +68,9 @@ public class LdapDicomConfigurationExtension {
         this.config = config;
     }
 
-    protected void storeTo(Device device, Attributes attrs) { }
+    protected void storeTo(ConfigurationChanges.ModifiedObject ldapObj, Device device, Attributes attrs) { }
 
-    protected void storeChilds(String deviceDN, Device device)
+    protected void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device)
             throws NamingException, ConfigurationException { }
 
     protected void loadFrom(Device device, Attributes attrs)
@@ -84,9 +84,9 @@ public class LdapDicomConfigurationExtension {
     protected void mergeChilds(ConfigurationChanges diffs, Device prev, Device device, String deviceDN)
             throws NamingException, ConfigurationException { }
 
-    protected void storeTo(ApplicationEntity ae, Attributes attrs) {}
+    protected void storeTo(ConfigurationChanges.ModifiedObject ldapObj, ApplicationEntity ae, Attributes attrs) {}
 
-    protected void storeChilds(String aeDN, ApplicationEntity ae)
+    protected void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String aeDN, ApplicationEntity ae)
             throws NamingException { }
 
     protected void loadFrom(ApplicationEntity ae, Attributes attrs)

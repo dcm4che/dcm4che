@@ -95,7 +95,7 @@ public class ConfigurationChanges {
         public ModifiedObject(String dn, ChangeType changeType) {
             this.dn = dn;
             this.changeType = changeType;
-            this.attributes = changeType == ChangeType.U
+            this.attributes = changeType != ChangeType.D
                     ? new ArrayList<ModifiedAttribute>()
                     : null;
         }

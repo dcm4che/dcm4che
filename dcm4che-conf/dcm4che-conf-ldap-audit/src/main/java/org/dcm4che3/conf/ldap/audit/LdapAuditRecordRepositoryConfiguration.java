@@ -64,26 +64,26 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
             "cn=Audit Record Repository,";
 
     @Override
-    protected void storeChilds(String deviceDN, Device device)
+    protected void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device)
             throws NamingException {
         AuditRecordRepository arr =
                 device.getDeviceExtension(AuditRecordRepository.class);
         if (arr != null)
-            store(deviceDN, arr);
+            store(ldapObj, deviceDN, arr);
     }
 
-    private void store(String deviceDN, AuditRecordRepository arr)
+    private void store(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, AuditRecordRepository arr)
             throws NamingException {
         config.createSubcontext(CN_AUDIT_RECORD_REPOSITORY + deviceDN,
-                storeTo(arr, deviceDN, new BasicAttributes(true)));
+                storeTo(ldapObj, arr, deviceDN, new BasicAttributes(true)));
     }
 
-    private Attributes storeTo(AuditRecordRepository arr, String deviceDN,
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, AuditRecordRepository arr, String deviceDN,
             Attributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "dcmAuditRecordRepository"));
-        LdapUtils.storeConnRefs(attrs, arr.getConnections(),
+        LdapUtils.storeConnRefs(ldapObj, attrs, arr.getConnections(),
                 deviceDN);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomInstalled",
                 arr.getInstalled(), null);
         return attrs;
     }
@@ -125,9 +125,12 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
             if (diffs != null)
                 diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
         } else if (prevARR == null) {
-            store(deviceDN, arr);
+            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
+                    : null;
+            store(ldapObj, deviceDN, arr);
             if (diffs != null)
-                diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+                diffs.add(ldapObj);
         } else {
             ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                     ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)

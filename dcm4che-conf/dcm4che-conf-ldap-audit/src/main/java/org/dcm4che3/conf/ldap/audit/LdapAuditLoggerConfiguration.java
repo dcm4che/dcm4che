@@ -71,24 +71,24 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             LdapAuditLoggerConfiguration.class);
 
     @Override
-    protected void storeChilds(String deviceDN, Device device) throws NamingException {
+    protected void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device) throws NamingException {
         AuditLoggerDeviceExtension auditLoggerExt = device.getDeviceExtension(AuditLoggerDeviceExtension.class);
         if (auditLoggerExt == null)
             return;
 
         for (AuditLogger auditLogger : auditLoggerExt.getAuditLoggers())
-            store(deviceDN, auditLogger);
+            store(ldapObj, deviceDN, auditLogger);
     }
 
-    private void store(String deviceDN, AuditLogger logger)
+    private void store(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, AuditLogger logger)
             throws NamingException {
         String appDN = auditLoggerDN(logger.getCommonName(), deviceDN);
         config.createSubcontext(appDN,
-                storeTo(logger, deviceDN, new BasicAttributes(true)));
+                storeTo(ldapObj, logger, deviceDN, new BasicAttributes(true)));
         for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
             config.createSubcontext(
                     LdapUtils.dnOf("cn", criteria.getCommonName(), appDN),
-                    storeTo(criteria, new BasicAttributes(true)));
+                    storeTo(ldapObj, criteria, new BasicAttributes(true)));
         }
     }
 
@@ -96,73 +96,73 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         return LdapUtils.dnOf("cn" , name, deviceDN);
     }
 
-    private Attributes storeTo(AuditLogger logger, String deviceDN, Attributes attrs) {
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, AuditLogger logger, String deviceDN, Attributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "dcmAuditLogger"));
-        LdapUtils.storeNotNullOrDef(attrs, "cn", logger.getCommonName(), null);
-        LdapUtils.storeNotDef(attrs, "dcmAuditFacility",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "cn", logger.getCommonName(), null);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditFacility",
                 logger.getFacility().ordinal(), 10);
-        LdapUtils.storeNotDef(attrs, "dcmAuditSuccessSeverity",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditSuccessSeverity",
                 logger.getSuccessSeverity().ordinal(), 5);
-        LdapUtils.storeNotDef(attrs, "dcmAuditMinorFailureSeverity",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditMinorFailureSeverity",
                 logger.getMinorFailureSeverity().ordinal(), 4);
-        LdapUtils.storeNotDef(attrs, "dcmAuditSeriousFailureSeverity",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditSeriousFailureSeverity",
                 logger.getSeriousFailureSeverity().ordinal(), 3);
-        LdapUtils.storeNotDef(attrs, "dcmAuditMajorFailureSeverity",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditMajorFailureSeverity",
                 logger.getMajorFailureSeverity().ordinal(), 2);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditSourceID",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditSourceID",
                 logger.getAuditSourceID(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditEnterpriseSiteID",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditEnterpriseSiteID",
                 logger.getAuditEnterpriseSiteID(), null);
-        LdapUtils.storeNotEmpty(attrs, "dcmAuditSourceTypeCode",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAuditSourceTypeCode",
                 logger.getAuditSourceTypeCodes());
-        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditApplicationName",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditApplicationName",
                 logger.getApplicationName(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditMessageID",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditMessageID",
                 logger.getMessageID(), AuditLogger.MESSAGE_ID);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditMessageEncoding",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditMessageEncoding",
                 logger.getEncoding(), "UTF-8");
-        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditMessageSchemaURI",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditMessageSchemaURI",
                 logger.getSchemaURI(), AuditMessages.SCHEMA_URI);
-        LdapUtils.storeNotDef(attrs, "dcmAuditMessageBOM",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditMessageBOM",
                 logger.isIncludeBOM(), true);
-        LdapUtils.storeNotDef(attrs, "dcmAuditMessageFormatXML",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditMessageFormatXML",
                 logger.isFormatXML(), false);
-        LdapUtils.storeNotDef(attrs, "dcmAuditTimestampInUTC",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditTimestampInUTC",
                 logger.isTimestampInUTC(), false);
-        LdapUtils.storeConnRefs(attrs, logger.getConnections(), deviceDN);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditRecordRepositoryDeviceReference",
+        LdapUtils.storeConnRefs(ldapObj, attrs, logger.getConnections(), deviceDN);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditRecordRepositoryDeviceReference",
                 config.deviceRef(logger.getAuditRecordRepositoryDeviceName()), null);
-        LdapUtils.storeNotDef(attrs, "dcmAuditIncludeInstanceUID", 
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditIncludeInstanceUID",
                 logger.isIncludeInstanceUID(), false);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditLoggerSpoolDirectoryURI",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditLoggerSpoolDirectoryURI",
                 logger.getSpoolDirectoryURI(), null);
-        LdapUtils.storeNotDef(attrs, "dcmAuditLoggerRetryInterval",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditLoggerRetryInterval",
                 logger.getRetryInterval(), 0);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomInstalled",
                 logger.getInstalled(), null);
         return attrs;
     }
 
-    private Attributes storeTo(AuditSuppressCriteria criteria, BasicAttributes attrs) {
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, AuditSuppressCriteria criteria, BasicAttributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "dcmAuditSuppressCriteria"));
         attrs.put(new BasicAttribute("cn", criteria.getCommonName()));
-        LdapUtils.storeNotEmpty(attrs, "dcmAuditEventID",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAuditEventID",
                 criteria.getEventIDsAsStringArray());
-        LdapUtils.storeNotEmpty(attrs, "dcmAuditEventTypeCode",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAuditEventTypeCode",
                 criteria.getEventTypeCodesAsStringArray());
-        LdapUtils.storeNotEmpty(attrs, "dcmAuditEventActionCode",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAuditEventActionCode",
                 criteria.getEventActionCodes());
-        LdapUtils.storeNotEmpty(attrs, "dcmAuditEventOutcomeIndicator",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAuditEventOutcomeIndicator",
                 criteria.getEventOutcomeIndicators());
-        LdapUtils.storeNotEmpty(attrs, "dcmAuditUserID",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAuditUserID",
                 criteria.getUserIDs());
-        LdapUtils.storeNotEmpty(attrs, "dcmAuditAlternativeUserID",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAuditAlternativeUserID",
                 criteria.getAlternativeUserIDs());
-        LdapUtils.storeNotEmpty(attrs, "dcmAuditUserRoleIDCode",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAuditUserRoleIDCode",
                 criteria.getUserRoleIDCodesAsStringArray());
-        LdapUtils.storeNotEmpty(attrs, "dcmAuditNetworkAccessPointID",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAuditNetworkAccessPointID",
                 criteria.getNetworkAccessPointIDs());
-        LdapUtils.storeNotNullOrDef(attrs, "dcmAuditUserIsRequestor",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditUserIsRequestor",
                 criteria.getUserIsRequestor(), null);
         return attrs;
     }
@@ -310,11 +310,12 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         for (AuditLogger logger : auditLoggerExt.getAuditLoggers()) {
             String appName = logger.getCommonName();
             if (prevAuditLoggerExt == null || !prevAuditLoggerExt.containsAuditLogger(appName)) {
-                store(deviceDN, logger);
-                if (diffs != null) {
-                    String dn = auditLoggerDN(appName, deviceDN);
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
-                }
+                String dn = auditLoggerDN(appName, deviceDN);
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C) : null;
+                store(ldapObj, deviceDN, logger);
+                if (diffs != null)
+                    diffs.add(ldapObj);
             } else
                 merge(diffs, prevAuditLoggerExt.getAuditLogger(appName), logger, deviceDN);
         }
@@ -348,9 +349,12 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             String dn = LdapUtils.dnOf("cn", cn, auditLoggerDN);
             AuditSuppressCriteria prev = prevLogger.findAuditSuppressCriteriaByCommonName(cn);
             if (prev == null) {
-                config.createSubcontext(dn, storeTo(criteria, new BasicAttributes(true)));
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
+                        : null;
+                config.createSubcontext(dn, storeTo(ldapObj, criteria, new BasicAttributes(true)));
                 if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+                    diffs.add(ldapObj);
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)

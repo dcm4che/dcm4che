@@ -269,44 +269,44 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
     }
 
     @Override
-    protected void storeChilds(String deviceDN, Device device) throws NamingException {
+    protected void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device) throws NamingException {
         HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
         if (hl7Ext == null)
             return;
 
         for (HL7Application hl7App : hl7Ext.getHL7Applications())
-            store(hl7App, deviceDN);
+            store(ldapObj, hl7App, deviceDN);
     }
 
-    private void store(HL7Application hl7App, String deviceDN) throws NamingException {
+    private void store(ConfigurationChanges.ModifiedObject ldapObj, HL7Application hl7App, String deviceDN) throws NamingException {
         String appDN = hl7appDN(hl7App.getApplicationName(), deviceDN);
         config.createSubcontext(appDN,
-                storeTo(hl7App, deviceDN, new BasicAttributes(true)));
+                storeTo(ldapObj, hl7App, deviceDN, new BasicAttributes(true)));
         for (LdapHL7ConfigurationExtension ext : extensions)
-            ext.storeChilds(appDN, hl7App);
+            ext.storeChilds(ldapObj, appDN, hl7App);
     }
 
     private String hl7appDN(String name, String deviceDN) {
         return LdapUtils.dnOf("hl7ApplicationName" , name, deviceDN);
     }
 
-    private Attributes storeTo(HL7Application hl7App, String deviceDN, Attributes attrs) {
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, HL7Application hl7App, String deviceDN, Attributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "hl7Application"));
-        LdapUtils.storeNotNullOrDef(attrs, "hl7ApplicationName",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7ApplicationName",
                 hl7App.getApplicationName(), null);
-        LdapUtils.storeNotEmpty(attrs, "hl7AcceptedSendingApplication",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "hl7AcceptedSendingApplication",
                 hl7App.getAcceptedSendingApplications());
-        LdapUtils.storeNotEmpty(attrs, "dcmOtherApplicationNames", hl7App.getOtherApplicationNames());
-        LdapUtils.storeNotEmpty(attrs, "hl7AcceptedMessageType",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmOtherApplicationNames", hl7App.getOtherApplicationNames());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "hl7AcceptedMessageType",
                 hl7App.getAcceptedMessageTypes());
-        LdapUtils.storeNotNullOrDef(attrs, "hl7DefaultCharacterSet",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7DefaultCharacterSet",
                 hl7App.getHL7DefaultCharacterSet(), "ASCII");
-        LdapUtils.storeConnRefs(attrs, hl7App.getConnections(), deviceDN);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomDescription", hl7App.getDescription(), null);
-        LdapUtils.storeNotEmpty(attrs, "dicomApplicationCluster", hl7App.getApplicationClusters());
-        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled", hl7App.getInstalled(), null);
+        LdapUtils.storeConnRefs(ldapObj, attrs, hl7App.getConnections(), deviceDN);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDescription", hl7App.getDescription(), null);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomApplicationCluster", hl7App.getApplicationClusters());
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomInstalled", hl7App.getInstalled(), null);
         for (LdapHL7ConfigurationExtension ext : extensions)
-            ext.storeTo(hl7App, deviceDN, attrs);
+            ext.storeTo(ldapObj, hl7App, deviceDN, attrs);
         return attrs;
     }
 
@@ -377,9 +377,12 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         for (HL7Application hl7app : hl7Ext.getHL7Applications()) {
             String appName = hl7app.getApplicationName();
             if (prevHL7Ext == null || !prevHL7Ext.containsHL7Application(appName)) {
-                store(hl7app, deviceDN);
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(hl7appDN(appName, deviceDN), ConfigurationChanges.ChangeType.C)
+                        : null;
+                store(ldapObj, hl7app, deviceDN);
                 if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(hl7appDN(appName, deviceDN), ConfigurationChanges.ChangeType.C));
+                    diffs.add(ldapObj);
             } else
                 merge(diffs, prevHL7Ext.getHL7Application(appName), hl7app, deviceDN);
         }

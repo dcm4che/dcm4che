@@ -498,18 +498,28 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         String deviceDN = deviceRef(deviceName);
         boolean rollback = false;
         ArrayList<String> destroyDNs = new ArrayList<>();
+
+        ConfigurationChanges diffs = options.contains(Option.CONFIGURATION_CHANGES)
+                ? new ConfigurationChanges()
+                : null;
+
         try {
             if (options != null && options.contains(Option.REGISTER))
                 register(device, destroyDNs);
-            createSubcontext(deviceDN, storeTo(device, new BasicAttributes(true)));
+
+            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                    ? new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.C)
+                    : null;
+
+            createSubcontext(deviceDN, storeTo(ldapObj, device, new BasicAttributes(true)));
             rollback = true;
-            storeChilds(deviceDN, device);
+            storeChilds(ldapObj, deviceDN, device);
             if (options == null || !options.contains(Option.PRESERVE_CERTIFICATE))
                 updateCertificates(device);
             rollback = false;
             destroyDNs.clear();
-            ConfigurationChanges diffs = new ConfigurationChanges();
-            diffs.add(new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.C));
+            if (diffs != null)
+                diffs.add(ldapObj);
             return diffs;
         } catch (NameAlreadyBoundException e) {
             throw new ConfigurationAlreadyExistsException(deviceName);
@@ -565,29 +575,30 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             storeCertificates(dn, certs);
     }
 
-    private void storeChilds(String deviceDN, Device device) throws NamingException, ConfigurationException {
+    private void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device)
+            throws NamingException, ConfigurationException {
         for (Connection conn : device.listConnections())
-            createSubcontext(LdapUtils.dnOf(conn, deviceDN), storeTo(conn, new BasicAttributes(true)));
+            createSubcontext(LdapUtils.dnOf(conn, deviceDN), storeTo(ldapObj, conn, new BasicAttributes(true)));
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeChilds(deviceDN, device);
+            ext.storeChilds(ldapObj, deviceDN, device);
         for (ApplicationEntity ae : device.getApplicationEntities()) {
-            store(ae, deviceDN);
+            store(ldapObj, ae, deviceDN);
         }
     }
 
-    private void store(ApplicationEntity ae, String deviceDN) throws NamingException {
+    private void store(ConfigurationChanges.ModifiedObject ldapObj, ApplicationEntity ae, String deviceDN) throws NamingException {
         String aeDN = aetDN(ae.getAETitle(), deviceDN);
-        createSubcontext(aeDN, storeTo(ae, deviceDN, new BasicAttributes(true)));
-        storeChilds(aeDN, ae);
+        createSubcontext(aeDN, storeTo(ldapObj, ae, deviceDN, new BasicAttributes(true)));
+        storeChilds(ldapObj, aeDN, ae);
     }
 
-    private void storeChilds(String aeDN, ApplicationEntity ae)
+    private void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String aeDN, ApplicationEntity ae)
             throws NamingException {
         for (TransferCapability tc : ae.getTransferCapabilities())
-            createSubcontext(dnOf(tc, aeDN), storeTo(tc, new BasicAttributes(true)));
+            createSubcontext(dnOf(tc, aeDN), storeTo(ldapObj, tc, new BasicAttributes(true)));
 
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeChilds(aeDN, ae);
+            ext.storeChilds(ldapObj, aeDN, ae);
     }
 
     @Override
@@ -803,185 +814,185 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    private Attributes storeTo(Device device, Attributes attrs) {
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, Device device, Attributes attrs) {
         BasicAttribute objectclass = new BasicAttribute("objectclass", "dicomDevice");
         attrs.put(objectclass);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomDeviceName", device.getDeviceName(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomDescription", device.getDescription(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomDeviceUID", device.getDeviceUID(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomManufacturer", device.getManufacturer(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomManufacturerModelName",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDeviceName", device.getDeviceName(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDescription", device.getDescription(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDeviceUID", device.getDeviceUID(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomManufacturer", device.getManufacturer(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomManufacturerModelName",
                 device.getManufacturerModelName(), null);
-        LdapUtils.storeNotEmpty(attrs, "dicomSoftwareVersion",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomSoftwareVersion",
                 device.getSoftwareVersions());
-        LdapUtils.storeNotNullOrDef(attrs, "dicomStationName", device.getStationName(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomDeviceSerialNumber",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomStationName", device.getStationName(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDeviceSerialNumber",
                 device.getDeviceSerialNumber(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfPatientID",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomIssuerOfPatientID",
                 device.getIssuerOfPatientID(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfAccessionNumber",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomIssuerOfAccessionNumber",
                 device.getIssuerOfAccessionNumber(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomOrderPlacerIdentifier",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomOrderPlacerIdentifier",
                 device.getOrderPlacerIdentifier(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomOrderFillerIdentifier",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomOrderFillerIdentifier",
                 device.getOrderFillerIdentifier(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfAdmissionID",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomIssuerOfAdmissionID",
                 device.getIssuerOfAdmissionID(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfServiceEpisodeID",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomIssuerOfServiceEpisodeID",
                 device.getIssuerOfServiceEpisodeID(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfContainerIdentifier",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomIssuerOfContainerIdentifier",
                 device.getIssuerOfContainerIdentifier(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomIssuerOfSpecimenIdentifier",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomIssuerOfSpecimenIdentifier",
                 device.getIssuerOfSpecimenIdentifier(), null);
-        LdapUtils.storeNotEmpty(attrs, "dicomInstitutionName",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomInstitutionName",
                 device.getInstitutionNames());
-        LdapUtils.storeNotEmpty(attrs, "dicomInstitutionCode",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomInstitutionCode",
                 device.getInstitutionCodes());
-        LdapUtils.storeNotEmpty(attrs, "dicomInstitutionAddress",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomInstitutionAddress",
                 device.getInstitutionAddresses());
-        LdapUtils.storeNotEmpty(attrs, "dicomInstitutionDepartmentName",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomInstitutionDepartmentName",
                 device.getInstitutionalDepartmentNames());
-        LdapUtils.storeNotEmpty(attrs, "dicomPrimaryDeviceType",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomPrimaryDeviceType",
                 device.getPrimaryDeviceTypes());
-        LdapUtils.storeNotEmpty(attrs, "dicomRelatedDeviceReference",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomRelatedDeviceReference",
                 device.getRelatedDeviceRefs());
-        LdapUtils.storeNotEmpty(attrs, "dicomAuthorizedNodeCertificateReference",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomAuthorizedNodeCertificateReference",
                 device.getAuthorizedNodeCertificateRefs());
-        LdapUtils.storeNotEmpty(attrs, "dicomThisNodeCertificateReference",
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomThisNodeCertificateReference",
                 device.getThisNodeCertificateRefs());
-        storeNotEmpty(attrs, "dicomVendorData", device.getVendorData());
-        LdapUtils.storeBoolean(attrs, "dicomInstalled", device.isInstalled());
+        storeNotEmpty(ldapObj, attrs, "dicomVendorData", device.getVendorData());
+        LdapUtils.storeBoolean(ldapObj, attrs, "dicomInstalled", device.isInstalled());
         if (!extended)
             return attrs;
 
         objectclass.add("dcmDevice");
-        LdapUtils.storeNotDef(attrs, "dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmTrustStoreURL", device.getTrustStoreURL(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmTrustStoreType", device.getTrustStoreType(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmTrustStorePin", device.getTrustStorePin(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmTrustStorePinProperty", device.getTrustStorePinProperty(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStoreURL", device.getKeyStoreURL(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStoreType", device.getKeyStoreType(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStorePin", device.getKeyStorePin(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmTimeZoneOfDevice", device.getTimeZoneOfDevice(), null);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmTrustStoreURL", device.getTrustStoreURL(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmTrustStoreType", device.getTrustStoreType(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmTrustStorePin", device.getTrustStorePin(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmTrustStorePinProperty", device.getTrustStorePinProperty(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmKeyStoreURL", device.getKeyStoreURL(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmKeyStoreType", device.getKeyStoreType(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmKeyStorePin", device.getKeyStorePin(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmTimeZoneOfDevice", device.getTimeZoneOfDevice(), null);
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeTo(device, attrs);
+            ext.storeTo(ldapObj, device, attrs);
         return attrs;
     }
 
-    private Attributes storeTo(Connection conn, Attributes attrs) {
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, Connection conn, Attributes attrs) {
         BasicAttribute objectclass = new BasicAttribute("objectclass", "dicomNetworkConnection");
         attrs.put(objectclass);
-        LdapUtils.storeNotNullOrDef(attrs, "cn", conn.getCommonName(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomHostname", conn.getHostname(), null);
-        LdapUtils.storeNotDef(attrs, "dicomPort", conn.getPort(), Connection.NOT_LISTENING);
-        LdapUtils.storeNotEmpty(attrs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
-        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled", conn.getInstalled(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "cn", conn.getCommonName(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomHostname", conn.getHostname(), null);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dicomPort", conn.getPort(), Connection.NOT_LISTENING);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomInstalled", conn.getInstalled(), null);
         if (!extended)
             return attrs;
 
         objectclass.add("dcmNetworkConnection");
-        LdapUtils.storeNotNullOrDef(attrs, "dcmProtocol", conn.getProtocol(), Protocol.DICOM);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmHTTPProxy", conn.getHttpProxy(), null);
-        LdapUtils.storeNotEmpty(attrs, "dcmBlacklistedHostname", conn.getBlacklist());
-        LdapUtils.storeNotDef(attrs, "dcmTCPBacklog",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmProtocol", conn.getProtocol(), Protocol.DICOM);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmHTTPProxy", conn.getHttpProxy(), null);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmBlacklistedHostname", conn.getBlacklist());
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPBacklog",
                 conn.getBacklog(), Connection.DEF_BACKLOG);
-        LdapUtils.storeNotDef(attrs, "dcmTCPConnectTimeout",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPConnectTimeout",
                 conn.getConnectTimeout(), Connection.NO_TIMEOUT);
-        LdapUtils.storeNotDef(attrs, "dcmAARQTimeout",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAARQTimeout",
                 conn.getRequestTimeout(), Connection.NO_TIMEOUT);
-        LdapUtils.storeNotDef(attrs, "dcmAAACTimeout",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAAACTimeout",
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
-        LdapUtils.storeNotDef(attrs, "dcmARRPTimeout",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmARRPTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
-        LdapUtils.storeNotDef(attrs, "dcmResponseTimeout",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmResponseTimeout",
                 conn.getResponseTimeout(), Connection.NO_TIMEOUT);
-        LdapUtils.storeNotDef(attrs, "dcmRetrieveTimeout",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmRetrieveTimeout",
                 conn.getRetrieveTimeout(), Connection.NO_TIMEOUT);
-        LdapUtils.storeNotDef(attrs, "dcmIdleTimeout",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
-        LdapUtils.storeNotDef(attrs, "dcmTCPCloseDelay",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPCloseDelay",
                 conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
-        LdapUtils.storeNotDef(attrs, "dcmTCPSendBufferSize",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPSendBufferSize",
                 conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE);
-        LdapUtils.storeNotDef(attrs, "dcmTCPReceiveBufferSize",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
-        LdapUtils.storeNotDef(attrs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmBindAddress", conn.getBindAddress(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dcmClientBindAddress", conn.getClientBindAddress(), null);
-        LdapUtils.storeNotDef(attrs, "dcmSendPDULength",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmBindAddress", conn.getBindAddress(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmClientBindAddress", conn.getClientBindAddress(), null);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmSendPDULength",
                 conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
-        LdapUtils.storeNotDef(attrs, "dcmReceivePDULength",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmReceivePDULength",
                 conn.getReceivePDULength(), Connection.DEF_MAX_PDU_LENGTH);
-        LdapUtils.storeNotDef(attrs, "dcmMaxOpsPerformed",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmMaxOpsPerformed",
                 conn.getMaxOpsPerformed(), Connection.SYNCHRONOUS_MODE);
-        LdapUtils.storeNotDef(attrs, "dcmMaxOpsInvoked",
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmMaxOpsInvoked",
                 conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE);
-        LdapUtils.storeNotDef(attrs, "dcmPackPDV", conn.isPackPDV(), true);
-        LdapUtils.storeNotEmpty(attrs, "dcmTLSProtocol", conn.getTlsProtocols(), Connection.DEFAULT_TLS_PROTOCOLS);
-        LdapUtils.storeNotDef(attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmPackPDV", conn.isPackPDV(), true);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmTLSProtocol", conn.getTlsProtocols(), Connection.DEFAULT_TLS_PROTOCOLS);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
         return attrs;
     }
 
-    private Attributes storeTo(ApplicationEntity ae, String deviceDN, Attributes attrs) {
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, ApplicationEntity ae, String deviceDN, Attributes attrs) {
         BasicAttribute objectclass = new BasicAttribute("objectclass", "dicomNetworkAE");
         attrs.put(objectclass);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomAETitle", ae.getAETitle(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomDescription", ae.getDescription(), null);
-        storeNotEmpty(attrs, "dicomVendorData", ae.getVendorData());
-        LdapUtils.storeNotEmpty(attrs, "dicomApplicationCluster", ae.getApplicationClusters());
-        LdapUtils.storeNotEmpty(attrs, "dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
-        LdapUtils.storeNotEmpty(attrs, "dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
-        LdapUtils.storeBoolean(attrs, "dicomAssociationInitiator", ae.isAssociationInitiator());
-        LdapUtils.storeBoolean(attrs, "dicomAssociationAcceptor",  ae.isAssociationAcceptor());
-        LdapUtils.storeConnRefs(attrs, ae.getConnections(), deviceDN);
-        LdapUtils.storeNotEmpty(attrs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
-        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled", ae.getInstalled(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomAETitle", ae.getAETitle(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDescription", ae.getDescription(), null);
+        storeNotEmpty(ldapObj, attrs, "dicomVendorData", ae.getVendorData());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomApplicationCluster", ae.getApplicationClusters());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
+        LdapUtils.storeBoolean(ldapObj, attrs, "dicomAssociationInitiator", ae.isAssociationInitiator());
+        LdapUtils.storeBoolean(ldapObj, attrs, "dicomAssociationAcceptor",  ae.isAssociationAcceptor());
+        LdapUtils.storeConnRefs(ldapObj, attrs, ae.getConnections(), deviceDN);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomInstalled", ae.getInstalled(), null);
         if (!extended)
             return attrs;
 
         objectclass.add("dcmNetworkAE");
-        LdapUtils.storeNotNullOrDef(attrs, "hl7ApplicationName", ae.getHl7ApplicationName(), null);
-        LdapUtils.storeNotEmpty(attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
-        LdapUtils.storeNotEmpty(attrs, "dcmOtherAETitle", ae.getOtherAETitles());
-        LdapUtils.storeNotEmpty(attrs, "dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7ApplicationName", ae.getHl7ApplicationName(), null);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmOtherAETitle", ae.getOtherAETitles());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeTo(ae, attrs);
+            ext.storeTo(ldapObj, ae, attrs);
         return attrs;
     }
 
-    private Attributes storeTo(TransferCapability tc, Attributes attrs) {
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, TransferCapability tc, Attributes attrs) {
         BasicAttribute objectclass = new BasicAttribute("objectclass", "dicomTransferCapability");
         attrs.put(objectclass);
-        LdapUtils.storeNotNullOrDef(attrs, "cn", tc.getCommonName(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomSOPClass", tc.getSopClass(), null);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomTransferRole", tc.getRole(), null);
-        LdapUtils.storeNotEmpty(attrs, "dicomTransferSyntax", tc.getTransferSyntaxes());
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "cn", tc.getCommonName(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomSOPClass", tc.getSopClass(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomTransferRole", tc.getRole(), null);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomTransferSyntax", tc.getTransferSyntaxes());
         if (!extended)
             return attrs;
 
         objectclass.add("dcmTransferCapability");
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
-            LdapUtils.storeNotDef(attrs, "dcmRelationalQueries",
+            LdapUtils.storeNotDef(ldapObj, attrs, "dcmRelationalQueries",
                     queryOpts.contains(QueryOption.RELATIONAL), false);
-            LdapUtils.storeNotDef(attrs, "dcmCombinedDateTimeMatching",
+            LdapUtils.storeNotDef(ldapObj, attrs, "dcmCombinedDateTimeMatching",
                     queryOpts.contains(QueryOption.DATETIME), false);
-            LdapUtils.storeNotDef(attrs, "dcmFuzzySemanticMatching",
+            LdapUtils.storeNotDef(ldapObj, attrs, "dcmFuzzySemanticMatching",
                     queryOpts.contains(QueryOption.FUZZY), false);
-            LdapUtils.storeNotDef(attrs, "dcmTimezoneQueryAdjustment",
+            LdapUtils.storeNotDef(ldapObj, attrs, "dcmTimezoneQueryAdjustment",
                     queryOpts.contains(QueryOption.TIMEZONE), false);
         }
         StorageOptions storageOpts = tc.getStorageOptions();
         if (storageOpts != null) {
-            LdapUtils.storeInt(attrs, "dcmStorageConformance",
+            LdapUtils.storeInt(ldapObj, attrs, "dcmStorageConformance",
                     storageOpts.getLevelOfSupport().ordinal());
-            LdapUtils.storeInt(attrs, "dcmDigitalSignatureSupport",
+            LdapUtils.storeInt(ldapObj, attrs, "dcmDigitalSignatureSupport",
                     storageOpts.getDigitalSignatureSupport().ordinal());
-            LdapUtils.storeInt(attrs, "dcmDataElementCoercion",
+            LdapUtils.storeInt(ldapObj, attrs, "dcmDataElementCoercion",
                     storageOpts.getElementCoercion().ordinal());
         }
         return attrs;
@@ -1797,9 +1808,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         for (ApplicationEntity ae : dev.getApplicationEntities()) {
             String aet = ae.getAETitle();
             if (!prevAETs.contains(aet)) {
-                store(ae, deviceDN);
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(aetDN(aet, deviceDN), ConfigurationChanges.ChangeType.C)
+                        : null;
+                store(ldapObj, ae, deviceDN);
                 if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(aetDN(aet, deviceDN), ConfigurationChanges.ChangeType.C));
+                    diffs.add(ldapObj);
             } else
                 merge(diffs, prevDev.getApplicationEntity(aet), ae, deviceDN, preserveVendorData);
         }
@@ -1847,9 +1861,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             String dn = dnOf(tc, aeDN);
             TransferCapability prev = findByDN(aeDN, prevs, dn);
             if (prev == null) {
-                createSubcontext(dn, storeTo(tc, new BasicAttributes(true)));
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
+                        : null;
+                createSubcontext(dn, storeTo(ldapObj, tc, new BasicAttributes(true)));
                 if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+                    diffs.add(ldapObj);
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
@@ -1877,9 +1894,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             String dn = LdapUtils.dnOf(conn, deviceDN);
             Connection prev = LdapUtils.findByDN(deviceDN, prevs, dn);
             if (prev == null) {
-                createSubcontext(dn, storeTo(conn, new BasicAttributes(true)));
+                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
+                        : null;
+                createSubcontext(dn, storeTo(ldapObj, conn, new BasicAttributes(true)));
                 if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+                    diffs.add(ldapObj);
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
@@ -1948,6 +1968,18 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             ? LdapUtils.dnOf("cn", cn , aeDN)
             : LdapUtils.dnOf("dicomSOPClass", tc.getSopClass(),
                    "dicomTransferRole", tc.getRole().toString(), aeDN);
+    }
+
+    private static void storeNotEmpty(ConfigurationChanges.ModifiedObject ldapObj, Attributes attrs, String attrID, byte[]... vals) {
+        if (vals != null && vals.length > 0) {
+            attrs.put(attr(attrID, vals));
+            if (ldapObj != null) {
+                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrID);
+                for (byte[] val : vals)
+                    attribute.addValue(val.length + " bytes");
+                ldapObj.add(attribute);
+            }
+        }
     }
 
     private static void storeNotEmpty(Attributes attrs, String attrID, byte[]... vals) {

@@ -63,28 +63,36 @@ import java.util.Map.Entry;
  */
 public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtension {
 
-    private static final String CN_IMAGE_READER_FACTORY = "cn=Image Writer Factory,";
+    private static final String CN_IMAGE_WRITER_FACTORY = "cn=Image Writer Factory,";
 
     @Override
-    protected void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device) throws NamingException {
+    protected void storeChilds(ConfigurationChanges diffs, String deviceDN, Device device) throws NamingException {
         ImageWriterExtension ext =
                 device.getDeviceExtension(ImageWriterExtension.class);
         if (ext != null)
-            store(ldapObj, deviceDN, ext.getImageWriterFactory());
+            store(diffs, deviceDN, ext.getImageWriterFactory());
     }
 
     private String dnOf(String tsuid, String imageWritersDN) {
         return LdapUtils.dnOf("dicomTransferSyntax" ,tsuid, imageWritersDN);
     }
 
-    private void store(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, ImageWriterFactory factory) throws NamingException {
-        String imageWritersDN = CN_IMAGE_READER_FACTORY + deviceDN;
+    private void store(ConfigurationChanges diffs, String deviceDN, ImageWriterFactory factory) throws NamingException {
+        String imageWritersDN = CN_IMAGE_WRITER_FACTORY + deviceDN;
+        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                ? new ConfigurationChanges.ModifiedObject(imageWritersDN, ConfigurationChanges.ChangeType.C) : null;
         config.createSubcontext(imageWritersDN,
                 LdapUtils.attrs("dcmImageWriterFactory", "cn", "Image Writer Factory"));
+        if (diffs != null)
+            diffs.add(ldapObj);
         for (Entry<String, ImageWriterParam> entry : factory.getEntries()) {
             String tsuid = entry.getKey();
+            ConfigurationChanges.ModifiedObject ldapObj1 = diffs != null
+                    ? new ConfigurationChanges.ModifiedObject(imageWritersDN, ConfigurationChanges.ChangeType.C) : null;
             config.createSubcontext(dnOf(tsuid, imageWritersDN),
-                    storeTo(ldapObj, tsuid, entry.getValue(), new BasicAttributes(true)));
+                    storeTo(ldapObj1, tsuid, entry.getValue(), new BasicAttributes(true)));
+            if (diffs != null)
+                diffs.add(ldapObj1);
         }
     }
 
@@ -101,7 +109,7 @@ public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtensio
     @Override
     protected void loadChilds(Device device, String deviceDN)
             throws NamingException, ConfigurationException {
-        String imageWritersDN = CN_IMAGE_READER_FACTORY + deviceDN;
+        String imageWritersDN = CN_IMAGE_WRITER_FACTORY + deviceDN;
         try {
             config.getAttributes(imageWritersDN);
         } catch (NameNotFoundException e) {
@@ -140,18 +148,14 @@ public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtensio
         if (ext == null && prevExt == null)
             return;
 
-        String dn = CN_IMAGE_READER_FACTORY + deviceDN;
+        String dn = CN_IMAGE_WRITER_FACTORY + deviceDN;
         if (ext == null) {
             config.destroySubcontextWithChilds(dn);
             if (diffs != null)
                 diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
-        } else if (prevExt == null) {
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C) : null;
-            store(ldapObj, deviceDN, ext.getImageWriterFactory());
-            if (diffs != null)
-                diffs.add(ldapObj);
-        } else {
+        } else if (prevExt == null)
+            store(diffs, deviceDN, ext.getImageWriterFactory());
+        else {
             merge(diffs, prevExt.getImageWriterFactory(), ext.getImageWriterFactory(), dn);
         }
     }

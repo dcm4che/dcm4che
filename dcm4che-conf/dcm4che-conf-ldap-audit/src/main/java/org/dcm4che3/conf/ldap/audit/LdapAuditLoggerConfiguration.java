@@ -71,24 +71,33 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             LdapAuditLoggerConfiguration.class);
 
     @Override
-    protected void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device) throws NamingException {
+    protected void storeChilds(ConfigurationChanges diffs, String deviceDN, Device device) throws NamingException {
         AuditLoggerDeviceExtension auditLoggerExt = device.getDeviceExtension(AuditLoggerDeviceExtension.class);
         if (auditLoggerExt == null)
             return;
 
         for (AuditLogger auditLogger : auditLoggerExt.getAuditLoggers())
-            store(ldapObj, deviceDN, auditLogger);
+            store(diffs, deviceDN, auditLogger);
     }
 
-    private void store(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, AuditLogger logger)
+    private void store(ConfigurationChanges diffs, String deviceDN, AuditLogger logger)
             throws NamingException {
         String appDN = auditLoggerDN(logger.getCommonName(), deviceDN);
+        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.C)
+                : null;
         config.createSubcontext(appDN,
                 storeTo(ldapObj, logger, deviceDN, new BasicAttributes(true)));
+        if (diffs != null)
+            diffs.add(ldapObj);
         for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
-            config.createSubcontext(
-                    LdapUtils.dnOf("cn", criteria.getCommonName(), appDN),
-                    storeTo(ldapObj, criteria, new BasicAttributes(true)));
+            String dn = LdapUtils.dnOf("cn", criteria.getCommonName(), appDN);
+            ConfigurationChanges.ModifiedObject ldapObj1 = diffs != null
+                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
+                    : null;
+            config.createSubcontext(dn, storeTo(ldapObj1, criteria, new BasicAttributes(true)));
+            if (diffs != null)
+                diffs.add(ldapObj1);
         }
     }
 
@@ -309,14 +318,9 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
 
         for (AuditLogger logger : auditLoggerExt.getAuditLoggers()) {
             String appName = logger.getCommonName();
-            if (prevAuditLoggerExt == null || !prevAuditLoggerExt.containsAuditLogger(appName)) {
-                String dn = auditLoggerDN(appName, deviceDN);
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C) : null;
-                store(ldapObj, deviceDN, logger);
-                if (diffs != null)
-                    diffs.add(ldapObj);
-            } else
+            if (prevAuditLoggerExt == null || !prevAuditLoggerExt.containsAuditLogger(appName))
+                store(diffs, deviceDN, logger);
+            else
                 merge(diffs, prevAuditLoggerExt.getAuditLogger(appName), logger, deviceDN);
         }
     }

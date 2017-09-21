@@ -73,7 +73,7 @@ public class LdapHL7ConfigurationExtension {
 
     public void storeTo(ConfigurationChanges.ModifiedObject ldapObj, HL7Application hl7App, String deviceDN, Attributes attrs) {}
 
-    public void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String appDN, HL7Application hl7App) throws NamingException {}
+    public void storeChilds(ConfigurationChanges diffs, String appDN, HL7Application hl7App) throws NamingException {}
 
     public void loadFrom(HL7Application hl7App, Attributes attrs) throws NamingException {}
 

@@ -513,13 +513,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
             createSubcontext(deviceDN, storeTo(ldapObj, device, new BasicAttributes(true)));
             rollback = true;
-            storeChilds(ldapObj, deviceDN, device);
+            if (diffs != null)
+                diffs.add(ldapObj);
+            storeChilds(diffs, deviceDN, device);
             if (options == null || !options.contains(Option.PRESERVE_CERTIFICATE))
                 updateCertificates(device);
             rollback = false;
             destroyDNs.clear();
-            if (diffs != null)
-                diffs.add(ldapObj);
             return diffs;
         } catch (NameAlreadyBoundException e) {
             throw new ConfigurationAlreadyExistsException(deviceName);
@@ -575,30 +575,46 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             storeCertificates(dn, certs);
     }
 
-    private void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device)
+    private void storeChilds(ConfigurationChanges diffs, String deviceDN, Device device)
             throws NamingException, ConfigurationException {
-        for (Connection conn : device.listConnections())
-            createSubcontext(LdapUtils.dnOf(conn, deviceDN), storeTo(ldapObj, conn, new BasicAttributes(true)));
-        for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeChilds(ldapObj, deviceDN, device);
-        for (ApplicationEntity ae : device.getApplicationEntities()) {
-            store(ldapObj, ae, deviceDN);
+        for (Connection conn : device.listConnections()) {
+            String dn = LdapUtils.dnOf(conn, deviceDN);
+            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
+                    : null;
+            createSubcontext(dn, storeTo(ldapObj, conn, new BasicAttributes(true)));
+            if (diffs != null)
+                diffs.add(ldapObj);
         }
-    }
-
-    private void store(ConfigurationChanges.ModifiedObject ldapObj, ApplicationEntity ae, String deviceDN) throws NamingException {
-        String aeDN = aetDN(ae.getAETitle(), deviceDN);
-        createSubcontext(aeDN, storeTo(ldapObj, ae, deviceDN, new BasicAttributes(true)));
-        storeChilds(ldapObj, aeDN, ae);
-    }
-
-    private void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String aeDN, ApplicationEntity ae)
-            throws NamingException {
-        for (TransferCapability tc : ae.getTransferCapabilities())
-            createSubcontext(dnOf(tc, aeDN), storeTo(ldapObj, tc, new BasicAttributes(true)));
-
         for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeChilds(ldapObj, aeDN, ae);
+            ext.storeChilds(diffs, deviceDN, device);
+        for (ApplicationEntity ae : device.getApplicationEntities())
+            store(diffs, ae, deviceDN);
+    }
+
+    private void store(ConfigurationChanges diffs, ApplicationEntity ae, String deviceDN) throws NamingException {
+        String aeDN = aetDN(ae.getAETitle(), deviceDN);
+        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                ? new ConfigurationChanges.ModifiedObject(aeDN, ConfigurationChanges.ChangeType.C)
+                : null;
+        createSubcontext(aeDN, storeTo(ldapObj, ae, deviceDN, new BasicAttributes(true)));
+        if (diffs != null)
+            diffs.add(ldapObj);
+        storeChilds(diffs, aeDN, ae);
+    }
+
+    private void storeChilds(ConfigurationChanges diffs, String aeDN, ApplicationEntity ae)
+            throws NamingException {
+        for (TransferCapability tc : ae.getTransferCapabilities()) {
+            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                    ? new ConfigurationChanges.ModifiedObject(aeDN, ConfigurationChanges.ChangeType.C)
+                    : null;
+            createSubcontext(dnOf(tc, aeDN), storeTo(ldapObj, tc, new BasicAttributes(true)));
+            if (diffs != null)
+                diffs.add(ldapObj);
+        }
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.storeChilds(diffs, aeDN, ae);
     }
 
     @Override
@@ -1807,14 +1823,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         Collection<String> prevAETs = prevDev.getApplicationAETitles();
         for (ApplicationEntity ae : dev.getApplicationEntities()) {
             String aet = ae.getAETitle();
-            if (!prevAETs.contains(aet)) {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                        ? new ConfigurationChanges.ModifiedObject(aetDN(aet, deviceDN), ConfigurationChanges.ChangeType.C)
-                        : null;
-                store(ldapObj, ae, deviceDN);
-                if (diffs != null)
-                    diffs.add(ldapObj);
-            } else
+            if (!prevAETs.contains(aet))
+                store(diffs, ae, deviceDN);
+            else
                 merge(diffs, prevDev.getApplicationEntity(aet), ae, deviceDN, preserveVendorData);
         }
     }

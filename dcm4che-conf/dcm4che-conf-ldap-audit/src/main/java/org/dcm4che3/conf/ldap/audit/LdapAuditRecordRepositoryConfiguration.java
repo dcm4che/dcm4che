@@ -64,12 +64,19 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
             "cn=Audit Record Repository,";
 
     @Override
-    protected void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device)
+    protected void storeChilds(ConfigurationChanges diffs, String deviceDN, Device device)
             throws NamingException {
         AuditRecordRepository arr =
                 device.getDeviceExtension(AuditRecordRepository.class);
-        if (arr != null)
+        if (arr != null) {
+            String dn = CN_AUDIT_RECORD_REPOSITORY + deviceDN;
+            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
+                    : null;
             store(ldapObj, deviceDN, arr);
+            if (diffs != null)
+                diffs.add(ldapObj);
+        }
     }
 
     private void store(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, AuditRecordRepository arr)

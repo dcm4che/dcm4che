@@ -66,25 +66,33 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
     private static final String CN_IMAGE_READER_FACTORY = "cn=Image Reader Factory,";
 
     @Override
-    protected void storeChilds(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, Device device) throws NamingException {
+    protected void storeChilds(ConfigurationChanges diffs, String deviceDN, Device device) throws NamingException {
         ImageReaderExtension ext =
                 device.getDeviceExtension(ImageReaderExtension.class);
         if (ext != null)
-            store(ldapObj, deviceDN, ext.getImageReaderFactory());
+            store(diffs, deviceDN, ext.getImageReaderFactory());
     }
 
     private String dnOf(String tsuid, String imageReadersDN) {
         return LdapUtils.dnOf("dicomTransferSyntax" ,tsuid, imageReadersDN);
     }
 
-    private void store(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, ImageReaderFactory factory) throws NamingException {
+    private void store(ConfigurationChanges diffs, String deviceDN, ImageReaderFactory factory) throws NamingException {
         String imageReadersDN = CN_IMAGE_READER_FACTORY + deviceDN;
+        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                ? new ConfigurationChanges.ModifiedObject(imageReadersDN, ConfigurationChanges.ChangeType.C) : null;
         config.createSubcontext(imageReadersDN,
                 LdapUtils.attrs("dcmImageReaderFactory", "cn", "Image Reader Factory"));
+        if (diffs != null)
+            diffs.add(ldapObj);
         for (Entry<String, ImageReaderParam> entry : factory.getEntries()) {
             String tsuid = entry.getKey();
-            config.createSubcontext(dnOf(tsuid, imageReadersDN),
-                    storeTo(ldapObj, tsuid, entry.getValue(), new BasicAttributes(true)));
+            String dn = dnOf(tsuid, imageReadersDN);
+            ConfigurationChanges.ModifiedObject ldapObj1 = diffs != null
+                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C) : null;
+            config.createSubcontext(dn, storeTo(ldapObj1, tsuid, entry.getValue(), new BasicAttributes(true)));
+            if (diffs != null)
+                diffs.add(ldapObj1);
         }
     }
 
@@ -142,13 +150,9 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
             config.destroySubcontextWithChilds(dn);
             if (diffs != null)
                 diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
-        } else if (prevExt == null) {
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C) : null;
-            store(ldapObj, deviceDN, ext.getImageReaderFactory());
-            if (diffs != null)
-                diffs.add(ldapObj);
-        } else {
+        } else if (prevExt == null)
+            store(diffs, deviceDN, ext.getImageReaderFactory());
+        else {
             merge(diffs, prevExt.getImageReaderFactory(), ext.getImageReaderFactory(), dn);
         }
     }

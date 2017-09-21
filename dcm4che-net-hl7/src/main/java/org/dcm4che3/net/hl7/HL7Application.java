@@ -134,11 +134,11 @@ public class HL7Application implements Serializable {
         this.hl7DefaultCharacterSet = hl7DefaultCharacterSet;
     }
 
-    public String getHl7SendingCharacterSet() {
+    public String getHL7SendingCharacterSet() {
         return hl7SendingCharacterSet;
     }
 
-    public void setHl7SendingCharacterSet(String hl7SendingCharacterSet) {
+    public void setHL7SendingCharacterSet(String hl7SendingCharacterSet) {
         this.hl7SendingCharacterSet = hl7SendingCharacterSet;
     }
 
@@ -362,7 +362,7 @@ public class HL7Application implements Serializable {
 
     protected void setHL7ApplicationAttributes(HL7Application src) {
         setHL7DefaultCharacterSet(src.hl7DefaultCharacterSet);
-        setHl7SendingCharacterSet(src.hl7SendingCharacterSet);
+        setHL7SendingCharacterSet(src.hl7SendingCharacterSet);
         setAcceptedSendingApplications(src.getAcceptedSendingApplications());
         setOtherApplicationNames(src.getOtherApplicationNames());
         setAcceptedMessageTypes(src.getAcceptedMessageTypes());

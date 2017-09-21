@@ -107,7 +107,7 @@ public class JsonHL7Configuration extends JsonConfigurationExtension {
         writer.writeNotEmpty("hl7OtherApplicationName", hl7App.getOtherApplicationNames());
         writer.writeNotEmpty("hl7AcceptedMessageType", hl7App.getAcceptedMessageTypes());
         writer.writeNotNullOrDef("hl7DefaultCharacterSet", hl7App.getHL7DefaultCharacterSet(), "ASCII");
-        writer.writeNotNullOrDef("hl7SendingCharacterSet", hl7App.getHl7SendingCharacterSet(), "ASCII");
+        writer.writeNotNullOrDef("hl7SendingCharacterSet", hl7App.getHL7SendingCharacterSet(), "ASCII");
         writer.writeNotNullOrDef("dicomDescription", hl7App.getDescription(), null);
         writer.writeNotEmpty("dicomApplicationCluster", hl7App.getApplicationClusters());
         for (JsonHL7ConfigurationExtension ext : extensions)
@@ -156,7 +156,7 @@ public class JsonHL7Configuration extends JsonConfigurationExtension {
                     hl7App.setHL7DefaultCharacterSet(reader.stringValue());
                     break;
                 case "hl7SendingCharacterSet":
-                    hl7App.setHl7SendingCharacterSet(reader.stringValue());
+                    hl7App.setHL7SendingCharacterSet(reader.stringValue());
                     break;
                 case "dicomDescription":
                     hl7App.setDescription(reader.stringValue());

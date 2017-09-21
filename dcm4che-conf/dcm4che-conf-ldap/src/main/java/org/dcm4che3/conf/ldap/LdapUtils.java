@@ -96,16 +96,10 @@ public class LdapUtils {
             if (ldapObj != null) {
                 ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute("dicomNetworkConnectionReference");
                 for (Connection conn : conns)
-                    attribute.addValue(conn);
+                    attribute.addValue(LdapUtils.dnOf(conn, deviceDN));
                 ldapObj.add(attribute);
             }
         }
-    }
-
-    public static void storeConnRefs(Attributes attrs, Collection<Connection> conns,
-            String deviceDN) {
-        if (!conns.isEmpty())
-            attrs.put(LdapUtils.connRefs(conns, deviceDN));
     }
 
     private static Attribute connRefs(Collection<Connection> conns,

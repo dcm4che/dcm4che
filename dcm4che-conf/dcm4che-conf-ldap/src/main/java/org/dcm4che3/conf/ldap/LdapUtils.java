@@ -197,14 +197,13 @@ public class LdapUtils {
     }
 
     public static void storeNotDef(ConfigurationChanges.ModifiedObject ldapObj, Attributes attrs, String attrID, int val, int defVal) {
-        if (val != defVal) {
-            LdapUtils.storeInt(attrs, attrID, val);
-            if (ldapObj != null) {
-                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrID);
-                attribute.addValue(val);
-                ldapObj.add(attribute);
-            }
+        if (ldapObj != null) {
+            ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrID);
+            attribute.addValue(val);
+            ldapObj.add(attribute);
         }
+        if (val != defVal)
+            LdapUtils.storeInt(attrs, attrID, val);
     }
 
     public static void storeNotDef(Attributes attrs, String attrID, int val, int defVal) {
@@ -213,14 +212,13 @@ public class LdapUtils {
     }
 
     public static void storeNotDef(ConfigurationChanges.ModifiedObject ldapObj, Attributes attrs, String attrID, boolean val, boolean defVal) {
-        if (val != defVal) {
-            LdapUtils.storeBoolean(attrs, attrID, val);
-            if (ldapObj != null) {
-                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrID);
-                attribute.addValue(val);
-                ldapObj.add(attribute);
-            }
+        if (ldapObj != null) {
+            ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrID);
+            attribute.addValue(val);
+            ldapObj.add(attribute);
         }
+        if (val != defVal)
+            LdapUtils.storeBoolean(attrs, attrID, val);
     }
 
     public static Attribute storeBoolean(Attributes attrs, String attrID, boolean val) {

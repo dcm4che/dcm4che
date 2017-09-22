@@ -1993,11 +1993,6 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    private static void storeNotEmpty(Attributes attrs, String attrID, byte[]... vals) {
-        if (vals != null && vals.length > 0)
-            attrs.put(attr(attrID, vals));
-    }
-
     private static Attribute attr(String attrID, byte[]... vals) {
         Attribute attr = new BasicAttribute(attrID);
         for (byte[] val : vals)

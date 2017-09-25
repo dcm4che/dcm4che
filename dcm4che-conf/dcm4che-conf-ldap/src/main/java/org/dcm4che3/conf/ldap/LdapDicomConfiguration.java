@@ -499,27 +499,34 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         boolean rollback = false;
         ArrayList<String> destroyDNs = new ArrayList<>();
 
-        ConfigurationChanges diffs = options.contains(Option.CONFIGURATION_CHANGES)
+        boolean verbose = options.contains(Option.CONFIGURATION_CHANGES_VERBOSE);
+        ConfigurationChanges diffs = options.contains(Option.CONFIGURATION_CHANGES) || verbose
                 ? new ConfigurationChanges()
                 : null;
+
+        if (diffs != null)
+            diffs.setConfigurationVerbose(verbose);
 
         try {
             if (options != null && options.contains(Option.REGISTER))
                 register(device, destroyDNs);
 
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+            ConfigurationChanges.ModifiedObject ldapObj = diffs != null && verbose
                     ? new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.C)
                     : null;
 
             createSubcontext(deviceDN, storeTo(ldapObj, device, new BasicAttributes(true)));
             rollback = true;
-            if (diffs != null)
+            if (diffs != null && verbose)
                 diffs.add(ldapObj);
             storeChilds(diffs, deviceDN, device);
             if (options == null || !options.contains(Option.PRESERVE_CERTIFICATE))
                 updateCertificates(device);
             rollback = false;
             destroyDNs.clear();
+            if (diffs != null && !verbose)
+                diffs.add(new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.C));
+
             return diffs;
         } catch (NameAlreadyBoundException e) {
             throw new ConfigurationAlreadyExistsException(deviceName);

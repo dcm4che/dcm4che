@@ -119,6 +119,8 @@ public class ConfigurationChanges {
 
     private final List<ModifiedObject> objects = new ArrayList<>();
 
+    private boolean verbose = false;
+
     public List<ModifiedObject> modifiedObjects() {
         return objects;
     }
@@ -130,6 +132,14 @@ public class ConfigurationChanges {
 
     public boolean isEmpty() {
         return objects.isEmpty();
+    }
+
+    public boolean isConfigurationVerbose() {
+        return verbose;
+    }
+
+    public void setConfigurationVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     @Override

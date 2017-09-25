@@ -55,7 +55,7 @@ import org.dcm4che3.net.DeviceInfo;
 public interface DicomConfiguration extends Closeable {
 
     enum Option {
-        REGISTER, PRESERVE_VENDOR_DATA, PRESERVE_CERTIFICATE, CONFIGURATION_CHANGES
+        REGISTER, PRESERVE_VENDOR_DATA, PRESERVE_CERTIFICATE, CONFIGURATION_CHANGES, CONFIGURATION_CHANGES_VERBOSE
     }
 
     boolean configurationExists() throws ConfigurationException;

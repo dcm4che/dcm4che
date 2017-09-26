@@ -154,7 +154,7 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
         } else if (prevExt == null) {
             store(diffs, deviceDN, ext.getImageReaderFactory());
             if (isNonVerbose(diffs))
-                diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+                diffs.add(dn);
         }
         else {
             merge(diffs, prevExt.getImageReaderFactory(), ext.getImageReaderFactory(), dn);

@@ -322,8 +322,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             if (prevAuditLoggerExt == null || !prevAuditLoggerExt.containsAuditLogger(appName)) {
                 store(diffs, deviceDN, logger);
                 if (isNonVerbose(diffs))
-                    diffs.add(new ConfigurationChanges.ModifiedObject(
-                            auditLoggerDN(logger.getCommonName(), deviceDN), ConfigurationChanges.ChangeType.C));
+                    diffs.add(auditLoggerDN(logger.getCommonName(), deviceDN));
             }
             else
                 merge(diffs, prevAuditLoggerExt.getAuditLogger(appName), logger, deviceDN);

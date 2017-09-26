@@ -387,7 +387,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             if (prevHL7Ext == null || !prevHL7Ext.containsHL7Application(appName)) {
                 store(diffs, hl7app, deviceDN);
                 if (isNonVerbose(diffs))
-                    diffs.add(new ConfigurationChanges.ModifiedObject(hl7appDN(appName, deviceDN), ConfigurationChanges.ChangeType.C));
+                    diffs.add(hl7appDN(appName, deviceDN));
             }
             else
                 merge(diffs, prevHL7Ext.getHL7Application(appName), hl7app, deviceDN);

@@ -133,7 +133,7 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
         } else if (prevARR == null) {
             store(diffs, deviceDN, arr);
             if (isNonVerbose(diffs))
-                diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+                diffs.add(dn);
         } else {
             ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                     ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)

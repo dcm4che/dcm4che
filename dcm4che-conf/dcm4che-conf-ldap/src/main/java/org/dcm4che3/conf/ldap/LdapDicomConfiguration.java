@@ -526,7 +526,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             rollback = false;
             destroyDNs.clear();
             if (isNonVerbose(diffs))
-                diffs.add(new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.C));
+                diffs.add(deviceDN);
             return diffs;
         } catch (NameAlreadyBoundException e) {
             throw new ConfigurationAlreadyExistsException(deviceName);
@@ -1845,7 +1845,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (!prevAETs.contains(aet)) {
                 store(diffs, ae, deviceDN);
                 if (isNonVerbose(diffs))
-                    diffs.add(new ConfigurationChanges.ModifiedObject(aetDN(aet, deviceDN), ConfigurationChanges.ChangeType.C));
+                    diffs.add(aetDN(aet, deviceDN));
             }
             else
                 merge(diffs, prevDev.getApplicationEntity(aet), ae, deviceDN, preserveVendorData);
@@ -1901,7 +1901,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 if (ldapObj != null)
                     diffs.add(ldapObj);
                 if (isNonVerbose(diffs))
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+                    diffs.add(dn);
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
@@ -1936,7 +1936,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 if (ldapObj != null)
                     diffs.add(ldapObj);
                 if (isNonVerbose(diffs))
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+                    diffs.add(dn);
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)

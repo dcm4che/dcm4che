@@ -499,34 +499,34 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         boolean rollback = false;
         ArrayList<String> destroyDNs = new ArrayList<>();
 
-        boolean verbose = options.contains(Option.CONFIGURATION_CHANGES_VERBOSE);
-        ConfigurationChanges diffs = options.contains(Option.CONFIGURATION_CHANGES) || verbose
-                ? new ConfigurationChanges()
-                : null;
-
-        if (diffs != null)
-            diffs.setConfigurationVerbose(verbose);
-
         try {
             if (options != null && options.contains(Option.REGISTER))
                 register(device, destroyDNs);
 
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null && verbose
+            ConfigurationChanges diffs = options != null
+                    && (options.contains(Option.CONFIGURATION_CHANGES) || options.contains(Option.CONFIGURATION_CHANGES_VERBOSE))
+                        ? new ConfigurationChanges()
+                        : null;
+
+            if (diffs != null)
+                diffs.setConfigurationVerbose(options.contains(Option.CONFIGURATION_CHANGES_VERBOSE));
+
+            ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
                     ? new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.C)
                     : null;
 
             createSubcontext(deviceDN, storeTo(ldapObj, device, new BasicAttributes(true)));
             rollback = true;
-            if (diffs != null && verbose)
+            if (ldapObj != null)
                 diffs.add(ldapObj);
+
             storeChilds(diffs, deviceDN, device);
             if (options == null || !options.contains(Option.PRESERVE_CERTIFICATE))
                 updateCertificates(device);
             rollback = false;
             destroyDNs.clear();
-            if (diffs != null && !verbose)
+            if (isNonVerbose(diffs))
                 diffs.add(new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.C));
-
             return diffs;
         } catch (NameAlreadyBoundException e) {
             throw new ConfigurationAlreadyExistsException(deviceName);
@@ -544,6 +544,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             }
             unregister(destroyDNs);
         }
+    }
+
+    private boolean isVerbose(ConfigurationChanges diffs) {
+        return  diffs != null && diffs.isConfigurationVerbose();
+    }
+
+    private boolean isNonVerbose(ConfigurationChanges diffs) {
+        return  diffs != null && !diffs.isConfigurationVerbose();
     }
 
     private void unregister(ArrayList<String> destroyDNs) {
@@ -586,11 +594,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             throws NamingException, ConfigurationException {
         for (Connection conn : device.listConnections()) {
             String dn = LdapUtils.dnOf(conn, deviceDN);
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+            ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
                     ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                     : null;
             createSubcontext(dn, storeTo(ldapObj, conn, new BasicAttributes(true)));
-            if (diffs != null)
+            if (ldapObj != null)
                 diffs.add(ldapObj);
         }
         for (LdapDicomConfigurationExtension ext : extensions)
@@ -601,11 +609,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private void store(ConfigurationChanges diffs, ApplicationEntity ae, String deviceDN) throws NamingException {
         String aeDN = aetDN(ae.getAETitle(), deviceDN);
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+        ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
                 ? new ConfigurationChanges.ModifiedObject(aeDN, ConfigurationChanges.ChangeType.C)
                 : null;
         createSubcontext(aeDN, storeTo(ldapObj, ae, deviceDN, new BasicAttributes(true)));
-        if (diffs != null)
+        if (ldapObj != null)
             diffs.add(ldapObj);
         storeChilds(diffs, aeDN, ae);
     }
@@ -613,11 +621,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private void storeChilds(ConfigurationChanges diffs, String aeDN, ApplicationEntity ae)
             throws NamingException {
         for (TransferCapability tc : ae.getTransferCapabilities()) {
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+            ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
                     ? new ConfigurationChanges.ModifiedObject(aeDN, ConfigurationChanges.ChangeType.C)
                     : null;
             createSubcontext(dnOf(tc, aeDN), storeTo(ldapObj, tc, new BasicAttributes(true)));
-            if (diffs != null)
+            if (ldapObj != null)
                 diffs.add(ldapObj);
         }
         for (LdapDicomConfigurationExtension ext : extensions)
@@ -627,8 +635,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     @Override
     public ConfigurationChanges merge(Device device, EnumSet<Option> options) throws ConfigurationException {
         ConfigurationChanges diffs = options.contains(Option.CONFIGURATION_CHANGES)
-                ? new ConfigurationChanges()
-                : null;
+                                        || options.contains(Option.CONFIGURATION_CHANGES_VERBOSE)
+                                            ? new ConfigurationChanges()
+                                            : null;
         merge(device, options, diffs);
         return diffs;
     }
@@ -652,7 +661,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                     : null;
             modifyAttributes(deviceDN,
                     storeDiffs(ldapObj, prev, device, new ArrayList<ModificationItem>(), preserveVendorData));
-            if (diffs != null) diffs.add(ldapObj);
+            if (diffs != null) {
+                diffs.add(ldapObj);
+                diffs.setConfigurationVerbose(options != null && options.contains(Option.CONFIGURATION_CHANGES_VERBOSE));
+            }
             mergeChilds(diffs, prev, device, deviceDN, preserveVendorData);
             destroyDNs.clear();
             if (register) {
@@ -1830,8 +1842,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         Collection<String> prevAETs = prevDev.getApplicationAETitles();
         for (ApplicationEntity ae : dev.getApplicationEntities()) {
             String aet = ae.getAETitle();
-            if (!prevAETs.contains(aet))
+            if (!prevAETs.contains(aet)) {
                 store(diffs, ae, deviceDN);
+                if (isNonVerbose(diffs))
+                    diffs.add(new ConfigurationChanges.ModifiedObject(aetDN(aet, deviceDN), ConfigurationChanges.ChangeType.C));
+            }
             else
                 merge(diffs, prevDev.getApplicationEntity(aet), ae, deviceDN, preserveVendorData);
         }
@@ -1879,12 +1894,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             String dn = dnOf(tc, aeDN);
             TransferCapability prev = findByDN(aeDN, prevs, dn);
             if (prev == null) {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                         : null;
                 createSubcontext(dn, storeTo(ldapObj, tc, new BasicAttributes(true)));
-                if (diffs != null)
+                if (ldapObj != null)
                     diffs.add(ldapObj);
+                if (isNonVerbose(diffs))
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
@@ -1912,12 +1929,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             String dn = LdapUtils.dnOf(conn, deviceDN);
             Connection prev = LdapUtils.findByDN(deviceDN, prevs, dn);
             if (prev == null) {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+                ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                         : null;
                 createSubcontext(dn, storeTo(ldapObj, conn, new BasicAttributes(true)));
-                if (diffs != null)
+                if (ldapObj != null)
                     diffs.add(ldapObj);
+                if (isNonVerbose(diffs))
+                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)

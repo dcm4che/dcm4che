@@ -68,21 +68,20 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
             throws NamingException {
         AuditRecordRepository arr =
                 device.getDeviceExtension(AuditRecordRepository.class);
-        if (arr != null) {
-            String dn = CN_AUDIT_RECORD_REPOSITORY + deviceDN;
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
-                    : null;
-            store(ldapObj, deviceDN, arr);
-            if (diffs != null)
-                diffs.add(ldapObj);
-        }
+        if (arr != null)
+            store(diffs, deviceDN, arr);
     }
 
-    private void store(ConfigurationChanges.ModifiedObject ldapObj, String deviceDN, AuditRecordRepository arr)
+    private void store(ConfigurationChanges diffs, String deviceDN, AuditRecordRepository arr)
             throws NamingException {
-        config.createSubcontext(CN_AUDIT_RECORD_REPOSITORY + deviceDN,
+        String dn = CN_AUDIT_RECORD_REPOSITORY + deviceDN;
+        ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
+                ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
+                : null;
+        config.createSubcontext(dn,
                 storeTo(ldapObj, arr, deviceDN, new BasicAttributes(true)));
+        if (ldapObj != null)
+            diffs.add(ldapObj);
     }
 
     private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, AuditRecordRepository arr, String deviceDN,
@@ -132,12 +131,9 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
             if (diffs != null)
                 diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
         } else if (prevARR == null) {
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
-                    : null;
-            store(ldapObj, deviceDN, arr);
-            if (diffs != null)
-                diffs.add(ldapObj);
+            store(diffs, deviceDN, arr);
+            if (isNonVerbose(diffs))
+                diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
         } else {
             ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                     ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
@@ -159,6 +155,14 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
                 a.getInstalled(),
                 b.getInstalled(), null);
         return mods;
+    }
+
+    private boolean isNonVerbose(ConfigurationChanges diffs) {
+        return diffs != null && !diffs.isConfigurationVerbose();
+    }
+
+    private boolean isVerbose(ConfigurationChanges diffs) {
+        return diffs != null && diffs.isConfigurationVerbose();
     }
 
 }

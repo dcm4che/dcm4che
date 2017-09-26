@@ -280,12 +280,12 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
     private void store(ConfigurationChanges diffs, HL7Application hl7App, String deviceDN) throws NamingException {
         String appDN = hl7appDN(hl7App.getApplicationName(), deviceDN);
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+        ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
                 ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.C)
                 : null;
         config.createSubcontext(appDN,
                 storeTo(ldapObj, hl7App, deviceDN, new BasicAttributes(true)));
-        if (diffs != null)
+        if (ldapObj != null)
             diffs.add(ldapObj);
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.storeChilds(diffs, appDN, hl7App);
@@ -384,8 +384,11 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
         for (HL7Application hl7app : hl7Ext.getHL7Applications()) {
             String appName = hl7app.getApplicationName();
-            if (prevHL7Ext == null || !prevHL7Ext.containsHL7Application(appName))
+            if (prevHL7Ext == null || !prevHL7Ext.containsHL7Application(appName)) {
                 store(diffs, hl7app, deviceDN);
+                if (isNonVerbose(diffs))
+                    diffs.add(new ConfigurationChanges.ModifiedObject(hl7appDN(appName, deviceDN), ConfigurationChanges.ChangeType.C));
+            }
             else
                 merge(diffs, prevHL7Ext.getHL7Application(appName), hl7app, deviceDN);
         }
@@ -498,4 +501,13 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             LdapUtils.safeClose(ne);
         }
     }
+
+    private boolean isNonVerbose(ConfigurationChanges diffs) {
+        return diffs != null && !diffs.isConfigurationVerbose();
+    }
+
+    private boolean isVerbose(ConfigurationChanges diffs) {
+        return diffs != null && diffs.isConfigurationVerbose();
+    }
+
 }

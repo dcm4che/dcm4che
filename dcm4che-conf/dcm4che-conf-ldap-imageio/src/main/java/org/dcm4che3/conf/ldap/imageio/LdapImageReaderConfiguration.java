@@ -79,19 +79,20 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
 
     private void store(ConfigurationChanges diffs, String deviceDN, ImageReaderFactory factory) throws NamingException {
         String imageReadersDN = CN_IMAGE_READER_FACTORY + deviceDN;
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
+        boolean verbose = isVerbose(diffs);
+        ConfigurationChanges.ModifiedObject ldapObj = verbose
                 ? new ConfigurationChanges.ModifiedObject(imageReadersDN, ConfigurationChanges.ChangeType.C) : null;
         config.createSubcontext(imageReadersDN,
                 LdapUtils.attrs("dcmImageReaderFactory", "cn", "Image Reader Factory"));
-        if (diffs != null)
+        if (ldapObj != null)
             diffs.add(ldapObj);
         for (Entry<String, ImageReaderParam> entry : factory.getEntries()) {
             String tsuid = entry.getKey();
             String dn = dnOf(tsuid, imageReadersDN);
-            ConfigurationChanges.ModifiedObject ldapObj1 = diffs != null
+            ConfigurationChanges.ModifiedObject ldapObj1 = verbose
                     ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C) : null;
             config.createSubcontext(dn, storeTo(ldapObj1, tsuid, entry.getValue(), new BasicAttributes(true)));
-            if (diffs != null)
+            if (ldapObj1 != null)
                 diffs.add(ldapObj1);
         }
     }
@@ -150,8 +151,11 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
             config.destroySubcontextWithChilds(dn);
             if (diffs != null)
                 diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
-        } else if (prevExt == null)
+        } else if (prevExt == null) {
             store(diffs, deviceDN, ext.getImageReaderFactory());
+            if (isNonVerbose(diffs))
+                diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
+        }
         else {
             merge(diffs, prevExt.getImageReaderFactory(), ext.getImageReaderFactory(), dn);
         }
@@ -200,6 +204,14 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
         LdapUtils.storeDiffObject(ldapObj, mods, "dcmPatchJPEGLS",
                 prevParam.patchJPEGLS, param.patchJPEGLS, null);
        return mods;
+    }
+
+    private boolean isNonVerbose(ConfigurationChanges diffs) {
+        return diffs != null && !diffs.isConfigurationVerbose();
+    }
+
+    private boolean isVerbose(ConfigurationChanges diffs) {
+        return diffs != null && diffs.isConfigurationVerbose();
     }
 
 }

@@ -75,11 +75,12 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
     private void store(ConfigurationChanges diffs, String deviceDN, AuditRecordRepository arr)
             throws NamingException {
         String dn = CN_AUDIT_RECORD_REPOSITORY + deviceDN;
-        ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
+        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                 ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                 : null;
         config.createSubcontext(dn,
-                storeTo(ldapObj, arr, deviceDN, new BasicAttributes(true)));
+                storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                        arr, deviceDN, new BasicAttributes(true)));
         if (ldapObj != null)
             diffs.add(ldapObj);
     }
@@ -132,8 +133,6 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
                 diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
         } else if (prevARR == null) {
             store(diffs, deviceDN, arr);
-            if (isNonVerbose(diffs))
-                diffs.add(dn);
         } else {
             ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                     ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
@@ -155,14 +154,6 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
                 a.getInstalled(),
                 b.getInstalled(), null);
         return mods;
-    }
-
-    private boolean isNonVerbose(ConfigurationChanges diffs) {
-        return diffs != null && !diffs.isConfigurationVerbose();
-    }
-
-    private boolean isVerbose(ConfigurationChanges diffs) {
-        return diffs != null && diffs.isConfigurationVerbose();
     }
 
 }

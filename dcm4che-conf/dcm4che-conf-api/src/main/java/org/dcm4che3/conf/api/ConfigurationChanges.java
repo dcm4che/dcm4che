@@ -39,7 +39,6 @@
 package org.dcm4che3.conf.api;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -119,7 +118,11 @@ public class ConfigurationChanges {
 
     private final List<ModifiedObject> objects = new ArrayList<>();
 
-    private boolean verbose = false;
+    private final boolean verbose ;
+
+    public ConfigurationChanges(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     public List<ModifiedObject> modifiedObjects() {
         return objects;
@@ -138,12 +141,8 @@ public class ConfigurationChanges {
         return objects.isEmpty();
     }
 
-    public boolean isConfigurationVerbose() {
+    public boolean isVerbose() {
         return verbose;
-    }
-
-    public void setConfigurationVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     @Override

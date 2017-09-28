@@ -280,15 +280,16 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
     private void store(ConfigurationChanges diffs, HL7Application hl7App, String deviceDN) throws NamingException {
         String appDN = hl7appDN(hl7App.getApplicationName(), deviceDN);
-        ConfigurationChanges.ModifiedObject ldapObj = isVerbose(diffs)
+        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                 ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.C)
                 : null;
         config.createSubcontext(appDN,
-                storeTo(ldapObj, hl7App, deviceDN, new BasicAttributes(true)));
+                storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                        hl7App, deviceDN, new BasicAttributes(true)));
         if (ldapObj != null)
             diffs.add(ldapObj);
         for (LdapHL7ConfigurationExtension ext : extensions)
-            ext.storeChilds(diffs, appDN, hl7App);
+            ext.storeChilds(diffs != null && diffs.isVerbose() ? diffs : null, appDN, hl7App);
     }
 
     private String hl7appDN(String name, String deviceDN) {
@@ -386,8 +387,6 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             String appName = hl7app.getApplicationName();
             if (prevHL7Ext == null || !prevHL7Ext.containsHL7Application(appName)) {
                 store(diffs, hl7app, deviceDN);
-                if (isNonVerbose(diffs))
-                    diffs.add(hl7appDN(appName, deviceDN));
             }
             else
                 merge(diffs, prevHL7Ext.getHL7Application(appName), hl7app, deviceDN);
@@ -500,14 +499,6 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         } finally {
             LdapUtils.safeClose(ne);
         }
-    }
-
-    private boolean isNonVerbose(ConfigurationChanges diffs) {
-        return diffs != null && !diffs.isConfigurationVerbose();
-    }
-
-    private boolean isVerbose(ConfigurationChanges diffs) {
-        return diffs != null && diffs.isConfigurationVerbose();
     }
 
 }

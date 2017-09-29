@@ -141,10 +141,6 @@ public class ConfigurationChanges {
             objects.add(object);
     }
 
-    public void add(String dn) {
-        objects.add(new ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
-    }
-
     public boolean isEmpty() {
         return objects.isEmpty();
     }

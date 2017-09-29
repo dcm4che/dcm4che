@@ -124,12 +124,20 @@ public class ConfigurationChanges {
         this.verbose = verbose;
     }
 
+    public static <T> T nullifyIfNotVerbose(ConfigurationChanges diffs, T obj) {
+        return diffs != null && diffs.isVerbose() ? obj : null;
+    }
+
+    public static ModifiedObject newModifiedObjectIfVerbose(ConfigurationChanges diffs, String dn, ChangeType changeType) {
+        return diffs != null && diffs.isVerbose() ? new ModifiedObject(dn, changeType) : null;
+    }
+
     public List<ModifiedObject> modifiedObjects() {
         return objects;
     }
 
     public void add(ModifiedObject object) {
-        if (object.attributes == null || !object.attributes.isEmpty())
+        if (object.changeType != ChangeType.U || !object.attributes.isEmpty())
             objects.add(object);
     }
 

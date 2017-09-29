@@ -79,7 +79,7 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
                 ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                 : null;
         config.createSubcontext(dn,
-                storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         arr, deviceDN, new BasicAttributes(true)));
         if (ldapObj != null)
             diffs.add(ldapObj);

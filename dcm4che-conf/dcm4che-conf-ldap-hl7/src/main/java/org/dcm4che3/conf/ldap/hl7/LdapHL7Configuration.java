@@ -284,12 +284,12 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.C)
                 : null;
         config.createSubcontext(appDN,
-                storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         hl7App, deviceDN, new BasicAttributes(true)));
         if (ldapObj != null)
             diffs.add(ldapObj);
         for (LdapHL7ConfigurationExtension ext : extensions)
-            ext.storeChilds(diffs != null && diffs.isVerbose() ? diffs : null, appDN, hl7App);
+            ext.storeChilds(ConfigurationChanges.nullifyIfNotVerbose(diffs, diffs), appDN, hl7App);
     }
 
     private String hl7appDN(String name, String deviceDN) {

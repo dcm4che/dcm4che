@@ -87,15 +87,14 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.C)
                 : null;
         config.createSubcontext(appDN,
-                storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         logger, deviceDN, new BasicAttributes(true)));
         if (ldapObj != null)
             diffs.add(ldapObj);
         for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
             String dn = LdapUtils.dnOf("cn", criteria.getCommonName(), appDN);
-            ConfigurationChanges.ModifiedObject ldapObj1 = diffs != null && diffs.isVerbose()
-                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
-                    : null;
+            ConfigurationChanges.ModifiedObject ldapObj1 =
+                    ConfigurationChanges.newModifiedObjectIfVerbose(diffs, dn, ConfigurationChanges.ChangeType.C);
             config.createSubcontext(dn, storeTo(ldapObj1, criteria, new BasicAttributes(true)));
             if (ldapObj1 != null)
                 diffs.add(ldapObj1);
@@ -359,7 +358,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                         : null;
                 config.createSubcontext(dn,
-                        storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                        storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                                 criteria, new BasicAttributes(true)));
                 if (diffs != null)
                     diffs.add(ldapObj);

@@ -509,13 +509,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                     : null;
 
             createSubcontext(deviceDN,
-                    storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                    storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                             device, new BasicAttributes(true)));
             rollback = true;
             if (ldapObj != null)
                 diffs.add(ldapObj);
 
-            storeChilds(diffs != null && diffs.isVerbose() ? diffs : null, deviceDN, device);
+            storeChilds(ConfigurationChanges.nullifyIfNotVerbose(diffs, diffs), deviceDN, device);
             if (options == null || !options.contains(Option.PRESERVE_CERTIFICATE))
                 updateCertificates(device);
             rollback = false;
@@ -606,11 +606,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 ? new ConfigurationChanges.ModifiedObject(aeDN, ConfigurationChanges.ChangeType.C)
                 : null;
         createSubcontext(aeDN,
-                storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         ae, deviceDN, new BasicAttributes(true)));
         if (ldapObj != null)
             diffs.add(ldapObj);
-        storeChilds(diffs != null && diffs.isVerbose() ? diffs : null, aeDN, ae);
+        storeChilds(ConfigurationChanges.nullifyIfNotVerbose(diffs, diffs), aeDN, ae);
     }
 
     private void storeChilds(ConfigurationChanges diffs, String aeDN, ApplicationEntity ae)
@@ -1887,7 +1887,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                         : null;
                 createSubcontext(dn,
-                        storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                        storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                                 tc, new BasicAttributes(true)));
                 if (ldapObj != null)
                     diffs.add(ldapObj);
@@ -1922,7 +1922,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                         : null;
                 createSubcontext(dn,
-                        storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                        storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                                 conn, new BasicAttributes(true)));
                 if (ldapObj != null)
                     diffs.add(ldapObj);

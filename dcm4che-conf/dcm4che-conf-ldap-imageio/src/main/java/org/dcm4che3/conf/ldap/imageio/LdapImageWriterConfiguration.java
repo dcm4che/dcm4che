@@ -87,8 +87,8 @@ public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtensio
             diffs.add(ldapObj);
         for (Entry<String, ImageWriterParam> entry : factory.getEntries()) {
             String tsuid = entry.getKey();
-            ConfigurationChanges.ModifiedObject ldapObj1 = diffs != null && diffs.isVerbose()
-                    ? new ConfigurationChanges.ModifiedObject(imageWritersDN, ConfigurationChanges.ChangeType.C) : null;
+            ConfigurationChanges.ModifiedObject ldapObj1 =
+                ConfigurationChanges.newModifiedObjectIfVerbose(diffs, imageWritersDN, ConfigurationChanges.ChangeType.C);
             config.createSubcontext(dnOf(tsuid, imageWritersDN),
                     storeTo(ldapObj1, tsuid, entry.getValue(), new BasicAttributes(true)));
             if (ldapObj1 != null)
@@ -181,7 +181,7 @@ public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtensio
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                         : null;
                 config.createSubcontext(dn,
-                        storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                        storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                                 tsuid, entry.getValue(), new BasicAttributes(true)));
                 if (diffs != null)
                     diffs.add(ldapObj);

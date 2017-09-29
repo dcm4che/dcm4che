@@ -88,8 +88,8 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
         for (Entry<String, ImageReaderParam> entry : factory.getEntries()) {
             String tsuid = entry.getKey();
             String dn = dnOf(tsuid, imageReadersDN);
-            ConfigurationChanges.ModifiedObject ldapObj1 = diffs != null && diffs.isVerbose()
-                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C) : null;
+            ConfigurationChanges.ModifiedObject ldapObj1 =
+                    ConfigurationChanges.newModifiedObjectIfVerbose(diffs, dn, ConfigurationChanges.ChangeType.C);
             config.createSubcontext(dn, storeTo(ldapObj1, tsuid, entry.getValue(), new BasicAttributes(true)));
             if (ldapObj1 != null)
                 diffs.add(ldapObj1);
@@ -178,7 +178,7 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
                         : null;
                 config.createSubcontext(dn,
-                        storeTo(diffs != null && diffs.isVerbose() ? ldapObj : null,
+                        storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                                 tsuid, entry.getValue(), new BasicAttributes(true)));
                 if (diffs != null)
                     diffs.add(ldapObj);

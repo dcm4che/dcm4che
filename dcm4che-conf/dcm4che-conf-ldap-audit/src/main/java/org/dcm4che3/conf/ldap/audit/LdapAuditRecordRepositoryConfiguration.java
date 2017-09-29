@@ -75,13 +75,11 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
     private void store(ConfigurationChanges diffs, String deviceDN, AuditRecordRepository arr)
             throws NamingException {
         String dn = CN_AUDIT_RECORD_REPOSITORY + deviceDN;
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
-                : null;
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
         config.createSubcontext(dn,
                 storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         arr, deviceDN, new BasicAttributes(true)));
-        ConfigurationChanges.addModifiedObject(diffs, ldapObj);
     }
 
     private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, AuditRecordRepository arr, String deviceDN,
@@ -133,10 +131,10 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
             store(diffs, deviceDN, arr);
         } else {
             ConfigurationChanges.ModifiedObject ldapObj =
-                    ConfigurationChanges.newModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
+                    ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
             config.modifyAttributes(dn,
                     storeDiffs(ldapObj, prevARR, arr, deviceDN, new ArrayList<ModificationItem>()));
-            ConfigurationChanges.addModifiedObject(diffs, ldapObj);
+            ConfigurationChanges.removeLastIfEmpty(diffs, ldapObj);
         }
     }
 

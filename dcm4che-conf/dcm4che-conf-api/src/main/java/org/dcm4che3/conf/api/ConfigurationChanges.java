@@ -89,14 +89,11 @@ public class ConfigurationChanges {
     public static class ModifiedObject {
         private final String dn;
         private final ChangeType changeType;
-        private final List<ModifiedAttribute> attributes;
+        private final List<ModifiedAttribute> attributes = new ArrayList<>();
 
         public ModifiedObject(String dn, ChangeType changeType) {
             this.dn = dn;
             this.changeType = changeType;
-            this.attributes = changeType != ChangeType.D
-                    ? new ArrayList<ModifiedAttribute>()
-                    : null;
         }
 
         public String dn() {
@@ -105,6 +102,10 @@ public class ConfigurationChanges {
 
         public ChangeType changeType() {
             return changeType;
+        }
+
+        public boolean isEmpty() {
+            return attributes.isEmpty();
         }
 
         public List<ModifiedAttribute> modifiedAttributes() {
@@ -128,12 +129,13 @@ public class ConfigurationChanges {
         return diffs != null && diffs.isVerbose() ? obj : null;
     }
 
-    public static ModifiedObject newModifiedObject(ConfigurationChanges diffs, String dn, ChangeType changeType) {
-        return diffs != null ? new ModifiedObject(dn, changeType) : null;
-    }
+    public static ModifiedObject addModifiedObjectIfVerbose(ConfigurationChanges diffs, String dn, ChangeType changeType) {
+        if (diffs == null && !diffs.isVerbose())
+            return null;
 
-    public static ModifiedObject newModifiedObjectIfVerbose(ConfigurationChanges diffs, String dn, ChangeType changeType) {
-        return diffs != null && diffs.isVerbose() ? new ModifiedObject(dn, changeType) : null;
+        ModifiedObject object = new ModifiedObject(dn, changeType);
+        diffs.add(object);
+        return object;
     }
 
     public static ModifiedObject addModifiedObject(ConfigurationChanges diffs, String dn, ChangeType changeType) {
@@ -145,8 +147,13 @@ public class ConfigurationChanges {
         return object;
     }
 
-    public static void addModifiedObject(ConfigurationChanges diffs, ModifiedObject obj) {
-        if (obj != null) diffs.add(obj);
+    public static void removeLastIfEmpty(ConfigurationChanges diffs, ModifiedObject obj) {
+        if (obj != null && obj.isEmpty())
+            diffs.removeLast();
+    }
+
+    private void removeLast() {
+        objects.remove(objects.size()-1);
     }
 
     public List<ModifiedObject> modifiedObjects() {
@@ -154,8 +161,7 @@ public class ConfigurationChanges {
     }
 
     public void add(ModifiedObject object) {
-        if (object.changeType != ChangeType.U || !object.attributes.isEmpty())
-            objects.add(object);
+        objects.add(object);
     }
 
     public boolean isEmpty() {

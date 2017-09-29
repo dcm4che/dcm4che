@@ -88,13 +88,11 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         config.createSubcontext(appDN,
                 storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         logger, deviceDN, new BasicAttributes(true)));
-        ConfigurationChanges.addModifiedObject(diffs, ldapObj);
         for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
             String dn = LdapUtils.dnOf("cn", criteria.getCommonName(), appDN);
             ConfigurationChanges.ModifiedObject ldapObj1 =
-                    ConfigurationChanges.newModifiedObjectIfVerbose(diffs, dn, ConfigurationChanges.ChangeType.C);
+                    ConfigurationChanges.addModifiedObjectIfVerbose(diffs, dn, ConfigurationChanges.ChangeType.C);
             config.createSubcontext(dn, storeTo(ldapObj1, criteria, new BasicAttributes(true)));
-            ConfigurationChanges.addModifiedObject(diffs, ldapObj1);
         }
     }
 
@@ -326,10 +324,10 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             throws NamingException {
         String appDN = auditLoggerDN(logger.getCommonName(), deviceDN);
         ConfigurationChanges.ModifiedObject ldapObj =
-                ConfigurationChanges.newModifiedObject(diffs, appDN, ConfigurationChanges.ChangeType.U);
+                ConfigurationChanges.addModifiedObject(diffs, appDN, ConfigurationChanges.ChangeType.U);
         config.modifyAttributes(appDN,
                 storeDiffs(ldapObj, prevLogger, logger, deviceDN, new ArrayList<ModificationItem>()));
-        ConfigurationChanges.addModifiedObject(diffs, ldapObj);
+        ConfigurationChanges.removeLastIfEmpty(diffs, ldapObj);
         mergeAuditSuppressCriteria(diffs, prevLogger, logger, appDN);
     }
 
@@ -355,10 +353,10 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                                 criteria, new BasicAttributes(true)));
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj =
-                        ConfigurationChanges.newModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
+                        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
                 config.modifyAttributes(dn, storeDiffs(ldapObj, prev, criteria,
                         new ArrayList<ModificationItem>()));
-                ConfigurationChanges.addModifiedObject(diffs, ldapObj);
+                ConfigurationChanges.removeLastIfEmpty(diffs, ldapObj);
             }
         }
     }

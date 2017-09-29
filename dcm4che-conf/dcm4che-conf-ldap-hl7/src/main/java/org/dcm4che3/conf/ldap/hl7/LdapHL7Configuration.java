@@ -393,10 +393,10 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             throws NamingException {
         String appDN = hl7appDN(app.getApplicationName(), deviceDN);
         ConfigurationChanges.ModifiedObject ldapObj =
-                ConfigurationChanges.newModifiedObject(diffs, appDN, ConfigurationChanges.ChangeType.U);
+                ConfigurationChanges.addModifiedObject(diffs, appDN, ConfigurationChanges.ChangeType.U);
         config.modifyAttributes(appDN, storeDiffs(ldapObj, prev, app, deviceDN,
                 new ArrayList<ModificationItem>()));
-        ConfigurationChanges.addModifiedObject(diffs, ldapObj);
+        ConfigurationChanges.removeLastIfEmpty(diffs, ldapObj);
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.mergeChilds(diffs, prev, app, appDN);
     }

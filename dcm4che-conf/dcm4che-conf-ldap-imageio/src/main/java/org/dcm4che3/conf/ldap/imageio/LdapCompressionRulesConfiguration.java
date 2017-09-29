@@ -141,10 +141,10 @@ public class LdapCompressionRulesConfiguration {
                         storeTo(rule, new BasicAttributes(true)));
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj =
-                        ConfigurationChanges.newModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
+                        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
                 config.modifyAttributes(dn, storeDiffs(ldapObj, prevRule, rule,
                         new ArrayList<ModificationItem>()));
-                ConfigurationChanges.addModifiedObject(diffs, ldapObj);
+                ConfigurationChanges.removeLastIfEmpty(diffs, ldapObj);
             }
         }
     }

@@ -87,9 +87,8 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
             String tsuid = entry.getKey();
             String dn = dnOf(tsuid, imageReadersDN);
             ConfigurationChanges.ModifiedObject ldapObj1 =
-                    ConfigurationChanges.newModifiedObjectIfVerbose(diffs, dn, ConfigurationChanges.ChangeType.C);
+                    ConfigurationChanges.addModifiedObjectIfVerbose(diffs, dn, ConfigurationChanges.ChangeType.C);
             config.createSubcontext(dn, storeTo(ldapObj1, tsuid, entry.getValue(), new BasicAttributes(true)));
-            ConfigurationChanges.addModifiedObject(diffs, ldapObj1);
         }
     }
 
@@ -176,10 +175,10 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
                                 tsuid, entry.getValue(), new BasicAttributes(true)));
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj =
-                        ConfigurationChanges.newModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
+                        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
                 config.modifyAttributes(dn,
                         storeDiffs(ldapObj, prevParam, entry.getValue(), new ArrayList<ModificationItem>()));
-                ConfigurationChanges.addModifiedObject(diffs, ldapObj);
+                ConfigurationChanges.removeLastIfEmpty(diffs, ldapObj);
             }
         }
     }

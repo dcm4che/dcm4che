@@ -83,21 +83,18 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
     private void store(ConfigurationChanges diffs, String deviceDN, AuditLogger logger)
             throws NamingException {
         String appDN = auditLoggerDN(logger.getCommonName(), deviceDN);
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.C)
-                : null;
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.addModifiedObject(diffs, appDN, ConfigurationChanges.ChangeType.C);
         config.createSubcontext(appDN,
                 storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         logger, deviceDN, new BasicAttributes(true)));
-        if (ldapObj != null)
-            diffs.add(ldapObj);
+        ConfigurationChanges.addModifiedObject(diffs, ldapObj);
         for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
             String dn = LdapUtils.dnOf("cn", criteria.getCommonName(), appDN);
             ConfigurationChanges.ModifiedObject ldapObj1 =
                     ConfigurationChanges.newModifiedObjectIfVerbose(diffs, dn, ConfigurationChanges.ChangeType.C);
             config.createSubcontext(dn, storeTo(ldapObj1, criteria, new BasicAttributes(true)));
-            if (ldapObj1 != null)
-                diffs.add(ldapObj1);
+            ConfigurationChanges.addModifiedObject(diffs, ldapObj1);
         }
     }
 
@@ -308,8 +305,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 if (auditLoggerExt == null || !auditLoggerExt.containsAuditLogger(appName)) {
                     String dn = auditLoggerDN(appName, deviceDN);
                     config.destroySubcontextWithChilds(dn);
-                    if (diffs != null)
-                        diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+                    ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
                 }
             }
 
@@ -329,12 +325,11 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
     private void merge(ConfigurationChanges diffs, AuditLogger prevLogger, AuditLogger logger, String deviceDN)
             throws NamingException {
         String appDN = auditLoggerDN(logger.getCommonName(), deviceDN);
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.U)
-                : null;
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.newModifiedObject(diffs, appDN, ConfigurationChanges.ChangeType.U);
         config.modifyAttributes(appDN,
                 storeDiffs(ldapObj, prevLogger, logger, deviceDN, new ArrayList<ModificationItem>()));
-        if (diffs != null) diffs.add(ldapObj);
+        ConfigurationChanges.addModifiedObject(diffs, ldapObj);
         mergeAuditSuppressCriteria(diffs, prevLogger, logger, appDN);
     }
 
@@ -345,8 +340,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             if (logger.findAuditSuppressCriteriaByCommonName(cn) == null) {
                 String dn = LdapUtils.dnOf("cn", cn, auditLoggerDN);
                 config.destroySubcontext(dn);
-                if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+                ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
             }
         }
         for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
@@ -354,21 +348,17 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             String dn = LdapUtils.dnOf("cn", cn, auditLoggerDN);
             AuditSuppressCriteria prev = prevLogger.findAuditSuppressCriteriaByCommonName(cn);
             if (prev == null) {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
-                        : null;
+                ConfigurationChanges.ModifiedObject ldapObj =
+                        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
                 config.createSubcontext(dn,
                         storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                                 criteria, new BasicAttributes(true)));
-                if (diffs != null)
-                    diffs.add(ldapObj);
             } else {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
-                        : null;
+                ConfigurationChanges.ModifiedObject ldapObj =
+                        ConfigurationChanges.newModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
                 config.modifyAttributes(dn, storeDiffs(ldapObj, prev, criteria,
                         new ArrayList<ModificationItem>()));
-                if (diffs != null) diffs.add(ldapObj);
+                ConfigurationChanges.addModifiedObject(diffs, ldapObj);
             }
         }
     }

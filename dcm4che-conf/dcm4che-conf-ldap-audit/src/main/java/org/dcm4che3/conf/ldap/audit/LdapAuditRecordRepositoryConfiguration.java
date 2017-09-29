@@ -81,8 +81,7 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
         config.createSubcontext(dn,
                 storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         arr, deviceDN, new BasicAttributes(true)));
-        if (ldapObj != null)
-            diffs.add(ldapObj);
+        ConfigurationChanges.addModifiedObject(diffs, ldapObj);
     }
 
     private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, AuditRecordRepository arr, String deviceDN,
@@ -129,17 +128,15 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
         String dn = CN_AUDIT_RECORD_REPOSITORY + deviceDN;
         if (arr == null) {
             config.destroySubcontextWithChilds(dn);
-            if (diffs != null)
-                diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+            ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
         } else if (prevARR == null) {
             store(diffs, deviceDN, arr);
         } else {
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
-                    : null;
+            ConfigurationChanges.ModifiedObject ldapObj =
+                    ConfigurationChanges.newModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
             config.modifyAttributes(dn,
                     storeDiffs(ldapObj, prevARR, arr, deviceDN, new ArrayList<ModificationItem>()));
-            if (diffs != null) diffs.add(ldapObj);
+            ConfigurationChanges.addModifiedObject(diffs, ldapObj);
         }
     }
 

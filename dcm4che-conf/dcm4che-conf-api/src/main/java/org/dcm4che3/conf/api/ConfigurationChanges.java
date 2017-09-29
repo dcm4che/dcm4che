@@ -128,8 +128,25 @@ public class ConfigurationChanges {
         return diffs != null && diffs.isVerbose() ? obj : null;
     }
 
+    public static ModifiedObject newModifiedObject(ConfigurationChanges diffs, String dn, ChangeType changeType) {
+        return diffs != null ? new ModifiedObject(dn, changeType) : null;
+    }
+
     public static ModifiedObject newModifiedObjectIfVerbose(ConfigurationChanges diffs, String dn, ChangeType changeType) {
         return diffs != null && diffs.isVerbose() ? new ModifiedObject(dn, changeType) : null;
+    }
+
+    public static ModifiedObject addModifiedObject(ConfigurationChanges diffs, String dn, ChangeType changeType) {
+        if (diffs == null)
+            return null;
+
+        ModifiedObject object = new ModifiedObject(dn, changeType);
+        diffs.add(object);
+        return object;
+    }
+
+    public static void addModifiedObject(ConfigurationChanges diffs, ModifiedObject obj) {
+        if (obj != null) diffs.add(obj);
     }
 
     public List<ModifiedObject> modifiedObjects() {

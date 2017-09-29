@@ -504,17 +504,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 register(device, destroyDNs);
 
             ConfigurationChanges diffs = configurationChangesOf(options);
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                    ? new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.C)
-                    : null;
-
+            ConfigurationChanges.ModifiedObject ldapObj =
+                    ConfigurationChanges.addModifiedObject(diffs, deviceDN, ConfigurationChanges.ChangeType.C);
             createSubcontext(deviceDN,
                     storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                             device, new BasicAttributes(true)));
             rollback = true;
-            if (ldapObj != null)
-                diffs.add(ldapObj);
-
             storeChilds(ConfigurationChanges.nullifyIfNotVerbose(diffs, diffs), deviceDN, device);
             if (options == null || !options.contains(Option.PRESERVE_CERTIFICATE))
                 updateCertificates(device);
@@ -587,12 +582,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             throws NamingException, ConfigurationException {
         for (Connection conn : device.listConnections()) {
             String dn = LdapUtils.dnOf(conn, deviceDN);
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                    ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
-                    : null;
+            ConfigurationChanges.ModifiedObject ldapObj =
+                    ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
             createSubcontext(dn, storeTo(ldapObj, conn, new BasicAttributes(true)));
-            if (ldapObj != null)
-                diffs.add(ldapObj);
         }
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeChilds(diffs, deviceDN, device);
@@ -602,26 +594,20 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private void store(ConfigurationChanges diffs, ApplicationEntity ae, String deviceDN) throws NamingException {
         String aeDN = aetDN(ae.getAETitle(), deviceDN);
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                ? new ConfigurationChanges.ModifiedObject(aeDN, ConfigurationChanges.ChangeType.C)
-                : null;
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.addModifiedObject(diffs, aeDN, ConfigurationChanges.ChangeType.C);
         createSubcontext(aeDN,
                 storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         ae, deviceDN, new BasicAttributes(true)));
-        if (ldapObj != null)
-            diffs.add(ldapObj);
         storeChilds(ConfigurationChanges.nullifyIfNotVerbose(diffs, diffs), aeDN, ae);
     }
 
     private void storeChilds(ConfigurationChanges diffs, String aeDN, ApplicationEntity ae)
             throws NamingException {
         for (TransferCapability tc : ae.getTransferCapabilities()) {
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                    ? new ConfigurationChanges.ModifiedObject(aeDN, ConfigurationChanges.ChangeType.C)
-                    : null;
+            ConfigurationChanges.ModifiedObject ldapObj =
+                    ConfigurationChanges.addModifiedObject(diffs, aeDN, ConfigurationChanges.ChangeType.C);
             createSubcontext(dnOf(tc, aeDN), storeTo(ldapObj, tc, new BasicAttributes(true)));
-            if (ldapObj != null)
-                diffs.add(ldapObj);
         }
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeChilds(diffs, aeDN, ae);
@@ -648,14 +634,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (register) {
                 registerDiff(prev, device, destroyDNs);
             }
-            ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                    ? new ConfigurationChanges.ModifiedObject(deviceDN, ConfigurationChanges.ChangeType.U)
-                    : null;
+            ConfigurationChanges.ModifiedObject ldapObj =
+                    ConfigurationChanges.newModifiedObject(diffs, deviceDN, ConfigurationChanges.ChangeType.U);
             modifyAttributes(deviceDN,
                     storeDiffs(ldapObj, prev, device, new ArrayList<ModificationItem>(), preserveVendorData));
-            if (diffs != null) {
-                diffs.add(ldapObj);
-            }
+            ConfigurationChanges.addModifiedObject(diffs, ldapObj);
             mergeChilds(diffs, prev, device, deviceDN, preserveVendorData);
             destroyDNs.clear();
             if (register) {
@@ -725,7 +708,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         String dn = deviceRef(name);
         removeDeviceWithDN(dn, options != null && options.contains(Option.REGISTER));
         ConfigurationChanges diffs = new ConfigurationChanges(false);
-        diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
         return diffs;
     }
 
@@ -1125,7 +1108,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             Attributes attrs = getAttributes(deviceRef, new String[]{"dicomVendorData"});
             byte[][] prev = byteArrays(attrs.get("dicomVendorData"));
             ConfigurationChanges.ModifiedObject ldapObj =
-                    new ConfigurationChanges.ModifiedObject(deviceRef, ConfigurationChanges.ChangeType.U);
+                    ConfigurationChanges.newModifiedObject(diffs, deviceRef, ConfigurationChanges.ChangeType.C);
             List<ModificationItem> mods = new ArrayList<>(1);
             storeDiff(ldapObj, mods, "dicomVendorData", prev, vendorData);
             modifyAttributes(deviceRef, mods);
@@ -1826,8 +1809,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (!aets.contains(aet)) {
                 String aetDN = aetDN(aet, deviceDN);
                 destroySubcontextWithChilds(aetDN);
-                if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(aetDN, ConfigurationChanges.ChangeType.D));
+                ConfigurationChanges.addModifiedObject(diffs, aetDN, ConfigurationChanges.ChangeType.D);
             }
         }
         Collection<String> prevAETs = prevDev.getApplicationAETitles();
@@ -1844,9 +1826,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private void merge(ConfigurationChanges diffs, ApplicationEntity prev, ApplicationEntity ae,
                        String deviceDN, boolean preserveVendorData) throws NamingException {
         String aeDN = aetDN(ae.getAETitle(), deviceDN);
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null ? new ConfigurationChanges.ModifiedObject(aeDN, ConfigurationChanges.ChangeType.U) : null;
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.newModifiedObject(diffs, aeDN, ConfigurationChanges.ChangeType.U);
         modifyAttributes(aeDN, storeDiffs(ldapObj, prev, ae, deviceDN, new ArrayList<ModificationItem>(), preserveVendorData));
-        if (diffs != null) diffs.add(ldapObj);
+        ConfigurationChanges.addModifiedObject(diffs, ldapObj);
         mergeChilds(diffs, prev, ae, aeDN);
     }
 
@@ -1875,8 +1858,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             String dn = dnOf(tc, aeDN);
             if (findByDN(aeDN, tcs, dn) == null) {
                 destroySubcontext(dn);
-                if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+                ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
             }
         }
         for (TransferCapability tc : tcs) {
@@ -1889,15 +1871,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 createSubcontext(dn,
                         storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                                 tc, new BasicAttributes(true)));
-                if (ldapObj != null)
-                    diffs.add(ldapObj);
+                ConfigurationChanges.addModifiedObject(diffs, ldapObj);
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj = diffs != null
                         ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
                         : null;
                 modifyAttributes(dn, storeDiffs(ldapObj, prev, tc, new ArrayList<ModificationItem>()));
-                if (diffs != null)
-                    diffs.add(ldapObj);
+                ConfigurationChanges.addModifiedObject(diffs, ldapObj);
             }
         }
     }
@@ -1910,29 +1890,23 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             String dn = LdapUtils.dnOf(prev, deviceDN);
             if (LdapUtils.findByDN(deviceDN, conns, dn) == null) {
                 destroySubcontext(dn);
-                if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+                ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
             }
         }
         for (Connection conn : conns) {
             String dn = LdapUtils.dnOf(conn, deviceDN);
             Connection prev = LdapUtils.findByDN(deviceDN, prevs, dn);
             if (prev == null) {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
-                        : null;
+                ConfigurationChanges.ModifiedObject ldapObj =
+                        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
                 createSubcontext(dn,
                         storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                                 conn, new BasicAttributes(true)));
-                if (ldapObj != null)
-                    diffs.add(ldapObj);
             } else {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
-                        : null;
+                ConfigurationChanges.ModifiedObject ldapObj =
+                        ConfigurationChanges.newModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
                 modifyAttributes(dn, storeDiffs(ldapObj, prev, conn, new ArrayList<ModificationItem>()));
-                if (diffs != null)
-                    diffs.add(ldapObj);
+                ConfigurationChanges.addModifiedObject(diffs, ldapObj);
             }
         }
     }
@@ -2062,8 +2036,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (acs.findByCommonName(cn) == null) {
                 String dn = LdapUtils.dnOf("cn", cn, parentDN);
                 destroySubcontext(dn);
-                if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+                ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
             }
         }
         for (AttributeCoercion ac : acs) {
@@ -2071,15 +2044,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             String dn = LdapUtils.dnOf("cn", cn, parentDN);
             AttributeCoercion prev = prevs.findByCommonName(cn);
             if (prev == null) {
+                ConfigurationChanges.ModifiedObject ldapObj =
+                        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
                 createSubcontext(dn, storeTo(ac, new BasicAttributes(true)));
-                if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C));
             } else {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
-                        : null;
+                ConfigurationChanges.ModifiedObject ldapObj =
+                    ConfigurationChanges.newModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
                 modifyAttributes(dn, storeDiffs(ldapObj, prev, ac, new ArrayList<ModificationItem>()));
-                if (diffs != null) diffs.add(ldapObj);
+                ConfigurationChanges.addModifiedObject(diffs, ldapObj);
             }
         }
     }

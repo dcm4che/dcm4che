@@ -79,20 +79,17 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
 
     private void store(ConfigurationChanges diffs, String deviceDN, ImageReaderFactory factory) throws NamingException {
         String imageReadersDN = CN_IMAGE_READER_FACTORY + deviceDN;
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                ? new ConfigurationChanges.ModifiedObject(imageReadersDN, ConfigurationChanges.ChangeType.C) : null;
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.addModifiedObject(diffs, imageReadersDN, ConfigurationChanges.ChangeType.C);
         config.createSubcontext(imageReadersDN,
                 LdapUtils.attrs("dcmImageReaderFactory", "cn", "Image Reader Factory"));
-        if (ldapObj != null)
-            diffs.add(ldapObj);
         for (Entry<String, ImageReaderParam> entry : factory.getEntries()) {
             String tsuid = entry.getKey();
             String dn = dnOf(tsuid, imageReadersDN);
             ConfigurationChanges.ModifiedObject ldapObj1 =
                     ConfigurationChanges.newModifiedObjectIfVerbose(diffs, dn, ConfigurationChanges.ChangeType.C);
             config.createSubcontext(dn, storeTo(ldapObj1, tsuid, entry.getValue(), new BasicAttributes(true)));
-            if (ldapObj1 != null)
-                diffs.add(ldapObj1);
+            ConfigurationChanges.addModifiedObject(diffs, ldapObj1);
         }
     }
 
@@ -148,8 +145,7 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
         String dn = CN_IMAGE_READER_FACTORY + deviceDN;
         if (ext == null) {
             config.destroySubcontextWithChilds(dn);
-            if (diffs != null)
-                diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+            ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
         } else if (prevExt == null) {
             store(diffs, deviceDN, ext.getImageReaderFactory());
         }
@@ -165,8 +161,7 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
             if (factory.get(tsuid) == null) {
                 String dn = dnOf(tsuid, imageReadersDN);
                 config.destroySubcontext(dn);
-                if (diffs != null)
-                    diffs.add(new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.D));
+                ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
             }
         }
         for (Entry<String, ImageReaderParam> entry : factory.getEntries()) {
@@ -174,21 +169,17 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
             String dn = dnOf(tsuid, imageReadersDN);
             ImageReaderParam prevParam = prev.get(tsuid);
             if (prevParam == null) {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.C)
-                        : null;
+                ConfigurationChanges.ModifiedObject ldapObj =
+                        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
                 config.createSubcontext(dn,
                         storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                                 tsuid, entry.getValue(), new BasicAttributes(true)));
-                if (diffs != null)
-                    diffs.add(ldapObj);
             } else {
-                ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                        ? new ConfigurationChanges.ModifiedObject(dn, ConfigurationChanges.ChangeType.U)
-                        : null;
+                ConfigurationChanges.ModifiedObject ldapObj =
+                        ConfigurationChanges.newModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
                 config.modifyAttributes(dn,
                         storeDiffs(ldapObj, prevParam, entry.getValue(), new ArrayList<ModificationItem>()));
-                if (diffs != null) diffs.add(ldapObj);
+                ConfigurationChanges.addModifiedObject(diffs, ldapObj);
             }
         }
     }

@@ -280,14 +280,11 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
     private void store(ConfigurationChanges diffs, HL7Application hl7App, String deviceDN) throws NamingException {
         String appDN = hl7appDN(hl7App.getApplicationName(), deviceDN);
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null
-                ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.C)
-                : null;
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.addModifiedObject(diffs, appDN, ConfigurationChanges.ChangeType.C);
         config.createSubcontext(appDN,
                 storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
                         hl7App, deviceDN, new BasicAttributes(true)));
-        if (ldapObj != null)
-            diffs.add(ldapObj);
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.storeChilds(ConfigurationChanges.nullifyIfNotVerbose(diffs, diffs), appDN, hl7App);
     }
@@ -375,8 +372,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             for (String appName : prevHL7Ext.getHL7ApplicationNames()) {
                 if (hl7Ext == null || !hl7Ext.containsHL7Application(appName)) {
                     config.destroySubcontextWithChilds(hl7appDN(appName, deviceDN));
-                    if (diffs != null)
-                        diffs.add(new ConfigurationChanges.ModifiedObject(hl7appDN(appName, deviceDN), ConfigurationChanges.ChangeType.D));
+                    ConfigurationChanges.addModifiedObject(diffs, hl7appDN(appName, deviceDN), ConfigurationChanges.ChangeType.D);
                 }
             }
 
@@ -396,10 +392,11 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
     private void merge(ConfigurationChanges diffs, HL7Application prev, HL7Application app, String deviceDN)
             throws NamingException {
         String appDN = hl7appDN(app.getApplicationName(), deviceDN);
-        ConfigurationChanges.ModifiedObject ldapObj = diffs != null ? new ConfigurationChanges.ModifiedObject(appDN, ConfigurationChanges.ChangeType.U) : null;
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.newModifiedObject(diffs, appDN, ConfigurationChanges.ChangeType.U);
         config.modifyAttributes(appDN, storeDiffs(ldapObj, prev, app, deviceDN,
                 new ArrayList<ModificationItem>()));
-        if (diffs != null) diffs.add(ldapObj);
+        ConfigurationChanges.addModifiedObject(diffs, ldapObj);
         for (LdapHL7ConfigurationExtension ext : extensions)
             ext.mergeChilds(diffs, prev, app, appDN);
     }

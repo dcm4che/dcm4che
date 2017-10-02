@@ -130,7 +130,7 @@ public class ConfigurationChanges {
     }
 
     public static ModifiedObject addModifiedObjectIfVerbose(ConfigurationChanges diffs, String dn, ChangeType changeType) {
-        if (diffs == null && !diffs.isVerbose())
+        if (diffs == null || !diffs.isVerbose())
             return null;
 
         ModifiedObject object = new ModifiedObject(dn, changeType);

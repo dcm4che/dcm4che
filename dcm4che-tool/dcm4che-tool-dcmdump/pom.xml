@@ -57,7 +57,6 @@
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-common</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

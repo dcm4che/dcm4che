@@ -23,13 +23,11 @@
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-conf-api</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-net-hl7</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>

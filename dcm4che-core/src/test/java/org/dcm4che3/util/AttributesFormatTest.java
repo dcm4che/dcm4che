@@ -53,6 +53,8 @@ public class AttributesFormatTest {
 
     private static final String TEST_PATTERN = 
         "{00080020,date,yyyy/MM/dd}/{00080030,time,HH}/{0020000D,hash}/{0020000E,hash}/{00080008[1]}/{00080018}.dcm";
+    private static final String TEST_PATTERN_MD5 = 
+        "{00080020,date,yyyy/MM/dd}/{00080030,time,HH}/{0020000D,hash}/{0020000E,hash}/{00080018,md5}.dcm";
 
     @Test
     public void testFormat() {
@@ -65,6 +67,18 @@ public class AttributesFormatTest {
         attrs.setString(Tag.SOPInstanceUID, VR.UI, "1.2.3.4.5");
         assertEquals("2011/10/12/09/02C82A3A/71668980/PRIMARY/1.2.3.4.5.dcm",
                 new AttributesFormat(TEST_PATTERN).format(attrs));
+    }
+    
+    @Test
+    public void testFormatMD5() {
+        Attributes attrs = new Attributes();
+        attrs.setString(Tag.StudyDate, VR.DA, "20111012");
+        attrs.setString(Tag.StudyTime, VR.TM, "0930");
+        attrs.setString(Tag.StudyInstanceUID, VR.UI, "1.2.3");
+        attrs.setString(Tag.SeriesInstanceUID, VR.UI, "1.2.3.4");
+        attrs.setString(Tag.SOPInstanceUID, VR.UI, "1.2.3.4.5");
+        assertEquals("2011/10/12/09/02C82A3A/71668980/08vpsu2l2shpb0kc3orpgfnhv0.dcm",
+                new AttributesFormat(TEST_PATTERN_MD5).format(attrs));
     }
 
 }

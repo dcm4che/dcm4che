@@ -1,4 +1,4 @@
-dcm4che-3.x DICOM Toolkit
+dcm4che DICOM Toolkit & Library
 =========================
 Sources: https://github.com/dcm4che/dcm4che  
 Binaries: https://sourceforge.net/projects/dcm4che/files/dcm4che3  

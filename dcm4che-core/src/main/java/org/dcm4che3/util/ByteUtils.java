@@ -78,21 +78,31 @@ public class ByteUtils {
         return (bytes[off + 1] << 8)  + (bytes[off] & 255);
     }
 
-    public static void bytesToShorts(byte[] src, int srcPos, short[] dest, int destPos, int length, boolean bigEndian) {
+    public static void bytesToShorts(byte[] b, short[] s, int off, int len, boolean bigEndian) {
         if (bigEndian)
-            bytesToShortsBE(src, srcPos, dest, destPos, length);
+            bytesToShortsBE(b, s, off, len);
         else
-            bytesToShortsLE(src, srcPos, dest, destPos, length);
+            bytesToShortsLE(b, s, off, len);
     }
 
-    public static void bytesToShortsBE(byte[] src, int srcPos, short[] dest, int destPos, int length) {
-        for (int i = 0; i < length; i++)
-            dest[destPos+i] = (short) bytesToShortBE(src, srcPos + (i << 1));
+    public static void bytesToShortsLE(byte[] b, short[] s, int off, int len) {
+        int boff = 0;
+        for (int j = 0; j < len; j++) {
+            int b0 = b[boff + 1];
+            int b1 = b[boff] & 0xff;
+            s[off + j] = (short)((b0 << 8) | b1);
+            boff += 2;
+        }
     }
 
-    public static void bytesToShortsLE(byte[] src, int srcPos, short[] dest, int destPos, int length) {
-        for (int i = 0; i < length; i++)
-            dest[destPos+i] = (short) bytesToShortLE(src, srcPos+(i<<1));
+    public static void bytesToShortsBE(byte[] b, short[] s, int off, int len) {
+        int boff = 0;
+        for (int j = 0; j < len; j++) {
+            int b0 = b[boff];
+            int b1 = b[boff + 1] & 0xff;
+            s[off + j] = (short)((b0 << 8) | b1);
+            boff += 2;
+        }
     }
 
     public static int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
@@ -347,6 +357,14 @@ public class ByteUtils {
         byte t = b2[0];
         b2[0] = b1[last];
         b1[last] = t;
+    }
+
+    public static byte[] intsToBytesLE(int... values) {
+        byte[] ret = new byte[4*values.length];
+        for(int i=0; i<values.length; i++) {
+            intToBytesLE(values[i],ret, 4*i);
+        }
+        return ret;
     }
 
 }

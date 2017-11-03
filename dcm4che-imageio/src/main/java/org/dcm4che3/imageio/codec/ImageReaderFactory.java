@@ -38,19 +38,6 @@
 
 package org.dcm4che3.imageio.codec;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
-import org.dcm4che3.util.ResourceLocator;
-import org.dcm4che3.util.SafeClose;
-import org.dcm4che3.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +49,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.data.UID;
+import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che3.util.ResourceLocator;
+import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides Image Readers for different DICOM transfer syntaxes and MIME types.
@@ -232,15 +233,19 @@ public class ImageReaderFactory implements Serializable {
         URL url;
         try {
             url = new URL(name);
+            LOG.debug("Loading {} image reader factory", url);
         } catch (MalformedURLException e) {
-            url = ResourceLocator.getResourceURL(name, this.getClass());
+            url = ResourceLocator.getResourceURL(name, this.getClass());            
             if (url == null) {
                 File f = new File(name);
                 if(f.exists() && f.isFile()) {
                     url = f.toURI().toURL();
+                    LOG.debug("Loading file {}", f.getAbsoluteFile());
                 } else {
                     throw new IOException("No such resource: " + name);
                 }
+            } else {
+                LOG.debug("Loading {} resource", url);
             }
         }
         InputStream in = url.openStream();

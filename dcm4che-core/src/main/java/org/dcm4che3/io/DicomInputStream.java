@@ -74,8 +74,8 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class DicomInputStream extends FilterInputStream
-    implements DicomInputHandler {
+public class DicomInputStream extends FilterInputStream 
+    implements CloneIt<DicomInputStream,IOException>, DicomInputHandler {
 
     public enum IncludeBulkData { NO, YES, URI }
 
@@ -100,6 +100,11 @@ public class DicomInputStream extends FilterInputStream
     private static final int ZLIB_HEADER = 0x789c;
     private static final int DEF_ALLOCATE_LIMIT = 0x4000000; // 64MiB
 
+    // Length of the buffer used for readFully(short[], int, int)
+    private static final int BYTE_BUF_LENGTH = 8192;
+
+    private CloneIt<InputStream,IOException> originalInput;
+    private byte[] byteBuf;
     private int allocateLimit = DEF_ALLOCATE_LIMIT;
     private String uri;
     private String tsuid;
@@ -133,13 +138,17 @@ public class DicomInputStream extends FilterInputStream
     private FileOutputStream blkOut;
     private long blkOutPos;
 
+    @SuppressWarnings("unchecked")
     public DicomInputStream(InputStream in, String tsuid) throws IOException {
         super(in);
+        if( in instanceof CloneIt ) originalInput = (CloneIt<InputStream, IOException>) in;
         switchTransferSyntax(tsuid);
     }
 
+    @SuppressWarnings("unchecked")
     public DicomInputStream(InputStream in) throws IOException {
         super(in.markSupported() ? in : new BufferedInputStream(in));
+        if( in instanceof CloneIt ) originalInput = (CloneIt<InputStream, IOException>) in;
         guessTransferSyntax();
     }
 
@@ -384,6 +393,24 @@ public class DicomInputStream extends FilterInputStream
         StreamUtils.readFully(this, b, off, len);
     }
 
+    public void readFully(short[] s, int off, int len) throws IOException {
+        if (off < 0 || len < 0 || off + len > s.length || off + len < 0) {
+            throw new IndexOutOfBoundsException
+                    ("off < 0 || len < 0 || off + len > s.length!");
+        }
+
+        if (byteBuf == null)
+            byteBuf = new byte[BYTE_BUF_LENGTH];
+
+        while (len > 0) {
+            int nelts = Math.min(len, byteBuf.length/2);
+            readFully(byteBuf, 0, nelts*2);
+            ByteUtils.bytesToShorts(byteBuf, s, off, nelts, bigEndian);
+            off += nelts;
+            len -= nelts;
+        }
+    }
+
     public int readHeader() throws IOException {
         byte[] buf = buffer;
         tagPos = pos; 
@@ -409,6 +436,21 @@ public class DicomInputStream extends FilterInputStream
         length = ByteUtils.bytesToInt(buf, 4, bigEndian);
         return tag;
     }
+
+    public boolean readItemHeader() throws IOException {
+        for(;;) {
+            readHeader();
+            if (tag == Tag.Item)
+                return true;
+            if (tag == Tag.SequenceDelimitationItem) {
+                if (length != 0)
+                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
+                return false;
+            }
+            skipAttribute(UNEXPECTED_ATTRIBUTE);
+        }
+    }
+
 
     public Attributes readCommand() throws IOException {
         if (bigEndian || explicitVR)
@@ -819,5 +861,51 @@ public class DicomInputStream extends FilterInputStream
         this.bigEndian = false;
         this.explicitVR = false;
         return true;
+    }
+
+    /** Part of the cloneit implementation */
+    private DicomInputStream(DicomInputStream src) throws IOException {
+        super(src.originalInput.cloneIt());
+        if( src.byteBuf!=null ) {
+            byteBuf = new byte[src.byteBuf.length];
+            System.arraycopy(src.byteBuf, 0, byteBuf, 0, byteBuf.length);
+        }
+        allocateLimit = src.allocateLimit;
+        uri = src.uri;
+        tsuid = src.tsuid;
+        preamble = src.preamble;
+        fileMetaInformation = src.fileMetaInformation;
+        hasfmi = src.hasfmi;
+        bigEndian = src.bigEndian;
+        explicitVR = src.explicitVR;
+        includeBulkData = src.includeBulkData;
+        includeFragmentBulkData = src.includeFragmentBulkData;
+        pos = src.pos;
+        fmiEndPos = src.fmiEndPos;
+        tagPos = src.tagPos;
+        markPos = src.markPos;
+        tag = src.tag;
+        vr = src.vr;
+        length = src.length;
+        // TODO - figure out how to adjust the right handler here.
+        handler = this;
+        bulkDataDescriptor = src.bulkDataDescriptor;
+        System.arraycopy(src.buffer, 0, buffer, 0, buffer.length);
+        // itemPointers
+        decodeUNWithIVRLE = src.decodeUNWithIVRLE;
+        addBulkDataReferences = src.addBulkDataReferences;
+
+        catBlkFiles = true;
+        blkFilePrefix = src.blkFilePrefix;
+        blkFileSuffix = src.blkFileSuffix;;
+        blkDirectory = src.blkDirectory;
+        blkFiles = (src.blkFiles!=null ? new ArrayList<>(src.blkFiles) : null);
+        blkURI = src.blkURI;
+        // We can't really handle middle of blk out operations, so ignore blkOut;
+    }
+    
+    @Override
+    public DicomInputStream cloneIt() throws IOException {
+        return new DicomInputStream(this);
     }
 }

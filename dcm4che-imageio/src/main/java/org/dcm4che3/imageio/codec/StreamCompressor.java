@@ -214,11 +214,11 @@ public class StreamCompressor extends StreamDecompressor {
             break;
         case DataBuffer.TYPE_USHORT:
             dis.readFully(buf);
-            ByteUtils.bytesToShorts(buf, 0, ((DataBufferUShort) db).getData(), 0, buf.length >> 1, dis.bigEndian());
+            ByteUtils.bytesToShorts(buf, ((DataBufferUShort) db).getData(), 0, buf.length >> 1, dis.bigEndian());
             break;
         case DataBuffer.TYPE_SHORT:
             dis.readFully(buf);
-            ByteUtils.bytesToShorts(buf, 0, ((DataBufferShort) db).getData(), 0, buf.length >> 1, dis.bigEndian());
+            ByteUtils.bytesToShorts(buf, ((DataBufferShort) db).getData(), 0, buf.length >> 1, dis.bigEndian());
             break;
         default:
             throw new UnsupportedOperationException("Unsupported Datatype: " + db.getDataType());

@@ -47,12 +47,16 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteOrder;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
@@ -61,15 +65,14 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageInputStreamImpl;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.Sequence;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.image.LookupTable;
 import org.dcm4che3.image.LookupTableFactory;
@@ -80,9 +83,11 @@ import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderParam;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
+import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
 import org.dcm4che3.imageio.stream.ImageInputStreamAdapter;
 import org.dcm4che3.imageio.stream.SegmentedImageInputStream;
 import org.dcm4che3.io.BulkDataDescriptor;
+import org.dcm4che3.io.CloneIt;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.util.ByteUtils;
@@ -90,35 +95,75 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Image Reader implementation that reads from DICOM files.  Supports several
+ * types of inputs to support various types of conditions on the reading side.
+ * Provide a DicomInputStream to support single-pass streaming reading,
+ * where images must be read in increasing frame number, and binary/byte
+ * reading similarly.
+ * Pass an ImageInputStream to support random-access reading, with initial
+ * reading only up to the pixel data basic offset table, and all large objects
+ * being included as binary BulkData objects.
+ *
+ * Support for video format, and/or raw read/streaming by using the iisOfFrame method,
+ * noting that calling the length method on that input will cause a scan-forward
+ * for video and last image.
+ * 
+ * Support for asynchronous usage by cloning the image reader.  Usage is:
+ * try(DicomImageReader reader2 = reader1.cloneIt()) {
+ *   // Use reader2
+ * }
+ * This requires implementation of CloneIt on the input object, with the new
+ * input being closed on closing the reader2 instance.
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Bill Wallace <wayfarer3130@gmail.com>
  * @since Feb 2013
  *
  */
-public class DicomImageReader extends ImageReader {
+public class DicomImageReader extends ImageReader implements CloneIt<DicomImageReader, IOException>, Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(DicomImageReader.class);
+    
+    private static final Set<String> VIDEO_TSUID = new HashSet<>();
+    static {
+        VIDEO_TSUID.add(UID.MPEG2);
+        VIDEO_TSUID.add(UID.MPEG2MainProfileHighLevel);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel41);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For2DVideo);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For3DVideo);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264StereoHighProfileLevel42);
+        VIDEO_TSUID.add(UID.HEVCH265Main10ProfileLevel51);
+        VIDEO_TSUID.add(UID.HEVCH265MainProfileLevel51);
+    }
 
     private ImageInputStream iis;
 
-    private Attributes ds;
+    private DicomInputStream dis;
+
+    private EncapsulatedPixelDataImageInputStream epdiis;
 
     private DicomMetaData metadata;
 
+    private BulkData pixelData;
+
+    private Fragments pixelDataFragments;
+
+    private byte[] pixeldataBytes;
+
+    private int pixelDataLength;
+
+    private VR pixelDataVR;
+
+    private File pixelDataFile;
+
     private int frames;
+
+    private int flushedFrames;
 
     private int width;
 
     private int height;
-
-    private BulkData pixelBulkData;
-
-    private final VR.Holder pixeldataVR = new VR.Holder();
-
-    private Fragments pixeldataFragments;
-
-    private File pixeldataFile;
-
-    private byte[] pixeldataBytes;
 
     private ImageReader decompressor;
 
@@ -139,9 +184,56 @@ public class DicomImageReader extends ImageReader {
     private int frameLength;
 
     private PhotometricInterpretation pmi;
-
+    
     public DicomImageReader(ImageReaderSpi originatingProvider) {
         super(originatingProvider);
+    }
+
+    
+    /** Makes a clone object of src, useful to allow asynchronous reading of multiple frames, but assumes that the input
+     * objects are similarly cloneable.  The offset table is shared/common.
+     * @throws IOException 
+     * @throws FileNotFoundException 
+     */
+    @SuppressWarnings("unchecked")
+    private DicomImageReader(DicomImageReader src) throws FileNotFoundException, IOException {
+        super(src.originatingProvider);
+        if( src.iis!=null ) {
+            if( src.pixelDataFile!=null ) {
+                this.iis = new FileImageInputStream(src.pixelDataFile);
+            } else {
+                this.iis = ((CloneIt<ImageInputStream,IOException>) src.iis).cloneIt();
+            }
+        }
+        if( src.dis!=null ) {
+            this.dis = src.dis.cloneIt();
+            
+        }
+//        if( src.epdiis!=null ) {
+//            this.epdiis = src.epdiis.cloneIt();
+//        }
+        // Note this copies the array itself, so the values are shared.
+        this.metadata = src.metadata;
+        this.pixelData = src.pixelData;
+        this.pixelDataFragments = src.pixelDataFragments;
+        this.pixelDataLength = src.pixelDataLength;
+        this.pixelDataVR = src.pixelDataVR;
+        this.pixelDataFile = src.pixelDataFile;
+        this.frames = src.frames;        
+        this.flushedFrames = src.flushedFrames;
+        this.width = src.width;
+        this.height = src.height;
+        this.decompressor = null;
+        this.rle = src.rle;
+        // TODO - examine the patch JpegLS data to see if this still works.
+        this.patchJpegLS = src.patchJpegLS;
+        this.samples = src.samples;        
+        this.banded = src.banded;
+        this.bitsStored = src.bitsStored;
+        this.bitsAllocated = src.bitsAllocated;
+        this.dataType = src.dataType;
+        this.frameLength = src.frameLength;
+        this.pmi = src.pmi;
     }
 
     @Override
@@ -149,20 +241,50 @@ public class DicomImageReader extends ImageReader {
             boolean ignoreMetadata) {
         super.setInput(input, seekForwardOnly, ignoreMetadata);
         resetInternalState();
-        if (input instanceof DicomMetaData) {
-            setMetadata((DicomMetaData) input);
-            if (pixelBulkData != null) {
-                pixeldataFile = pixelBulkData.getFile();
-            } else if (pixeldataFragments != null && pixeldataFragments.size() > 1) {
-                Object fragment = pixeldataFragments.get(1);
-                if (fragment instanceof BulkData) {
-                    pixeldataFile = ((BulkData) fragment).getFile();
-                } else if (!(fragment instanceof byte[])) {
-                    throw new IllegalArgumentException("Fragments is neither BulkData nor byte[]; instead it is " + fragment.getClass());
-                }
+        if (input instanceof InputStream) {
+            try {
+                dis = (input instanceof DicomInputStream)
+                        ? (DicomInputStream) input
+                        : new DicomInputStream((InputStream) input);
+            } catch (IOException e) {
+               throw new IllegalArgumentException(e.getMessage());
             }
+        } else if (input instanceof DicomMetaData) {
+            DicomMetaData metadata = (DicomMetaData) input;
+            initPixelDataFromAttributes(metadata.getAttributes());
+            initPixelDataFile();
+            setMetadata(metadata);
         } else {
             iis = (ImageInputStream) input;
+        }
+    }
+
+    private void initPixelDataFromAttributes(Attributes ds) {
+        VR.Holder holder = new VR.Holder();
+        Object value = ds.getValue(Tag.PixelData, holder);
+        if (value != null) {
+            pixelDataVR = holder.vr;
+            if (value instanceof BulkData) {
+                pixelData = (BulkData) value;
+                pixelDataLength = pixelData.length();
+            } else if( value instanceof byte[] ) {
+                pixeldataBytes = (byte[]) value;
+                pixelDataLength = pixeldataBytes.length;
+            } else { // value instanceof Fragments
+                pixelDataFragments = (Fragments) value;
+                pixelDataLength = -1;
+            }
+        }
+    }
+
+    private void initPixelDataFile() {
+        if (pixelData != null)
+            pixelDataFile = pixelData.getFile();
+        else if (pixelDataFragments != null && pixelDataFragments.size() > 1) {
+            Object frag = pixelDataFragments.get(1);
+            if( frag instanceof BulkData ) {
+                pixelDataFile = ((BulkData) frag).getFile();
+            }
         }
     }
 
@@ -234,21 +356,18 @@ public class DicomImageReader extends ImageReader {
         return Collections.singletonList(imageType).iterator();
     }
 
-    private void openiis() throws FileNotFoundException, IOException {
+    private void openiis() throws IOException {
         if (iis == null) {
-            if (pixeldataFile != null) {
-                iis = new FileImageInputStream(pixeldataFile);
+            if (pixelDataFile != null) {
+                iis = new FileImageInputStream(pixelDataFile);
             } else if (pixeldataBytes != null) {
                 iis = new MemoryCacheImageInputStream(new ByteArrayInputStream(pixeldataBytes));
-            } else if (pixeldataFragments != null) {
-                iis = new MemoryCacheImageInputStream(
-                     new ByteArrayInputStream((byte[]) pixeldataFragments.get(1)));
             }
         }
     }
 
     private void closeiis() throws IOException {
-        if (pixeldataFile != null && iis != null) {
+        if ( (pixelDataFile != null || pixeldataBytes!=null) && iis != null) {
             iis.close();
             iis = null;
         }
@@ -295,34 +414,47 @@ public class DicomImageReader extends ImageReader {
                     LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
                 return wr;
             }
-            iis.setByteOrder(ds.bigEndian()
-                    ? ByteOrder.BIG_ENDIAN
-                    : ByteOrder.LITTLE_ENDIAN);
-            if (pixelBulkData != null) {
-                iis.seek(pixelBulkData.offset() + frameIndex * frameLength);
-            } else if (pixeldataBytes != null) {
-                iis.seek(frameIndex * frameLength);
-            } else if (pixeldataFragments != null && pixeldataFile == null) {
-              throw new RuntimeException("fix this?");
-            }
-
             WritableRaster wr = Raster.createWritableRaster(
                     createSampleModel(dataType, banded), null);
             DataBuffer buf = wr.getDataBuffer();
+            if (dis != null) {
+                dis.skipFully((frameIndex - flushedFrames) * frameLength);
+                flushedFrames = frameIndex + 1;
+            } else if (pixeldataBytes != null) {
+                iis.setByteOrder(bigEndian()
+                        ? ByteOrder.BIG_ENDIAN
+                        : ByteOrder.LITTLE_ENDIAN);
+                iis.seek(frameIndex * frameLength);
+            } else {
+                iis.setByteOrder(bigEndian()
+                        ? ByteOrder.BIG_ENDIAN
+                        : ByteOrder.LITTLE_ENDIAN);
+                iis.seek(pixelData.offset() + frameIndex * frameLength);
+            }
             if (buf instanceof DataBufferByte) {
                 byte[][] data = ((DataBufferByte) buf).getBankData();
                 for (byte[] bs : data)
+                    if (dis != null)
+                        dis.readFully(bs);
+                    else
                     iis.readFully(bs);
-                if (pixelBulkData.bigEndian && pixeldataVR.vr == VR.OW)
+                if (pixelDataVR == VR.OW && bigEndian())
                     ByteUtils.swapShorts(data);
             } else {
                 short[] data = ((DataBufferUShort) buf).getData();
-                iis.readFully(data, 0, data.length);
+                if (dis != null)
+                    dis.readFully(data, 0, data.length);
+                else
+                    iis.readFully(data, 0, data.length);
             }
             return wr;
         } finally {
             closeiis();
         }
+    }
+
+    public boolean bigEndian() {
+        return metadata.getAttributes().bigEndian();
     }
 
     private ImageReadParam decompressParam(ImageReadParam param) {
@@ -409,13 +541,30 @@ public class DicomImageReader extends ImageReader {
     }
 
     @SuppressWarnings("resource")
-    private ImageInputStreamImpl iisOfFrame(int frameIndex)
-            throws IOException {
-        SegmentedImageInputStream siis = SegmentedImageInputStream.ofFrame(
-                iis, pixeldataFragments, frameIndex, frames);
+    private ImageInputStream iisOfFrame(int frameIndex) throws IOException {
+        ImageInputStream iisOfFrame;
+        if (epdiis != null) {
+            seekFrame(frameIndex);
+            iisOfFrame = epdiis;
+        } else {
+            iisOfFrame = new SegmentedImageInputStream(
+                    iis, pixelDataFragments, frameIndex);
+        }
         return patchJpegLS != null
-                ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)
-                : siis;
+                ? new PatchJPEGLSImageInputStream(iisOfFrame, patchJpegLS)
+                : iisOfFrame;
+    }
+
+    private void seekFrame(int frameIndex) throws IOException {
+        assert frameIndex >= flushedFrames;
+        if (frameIndex == flushedFrames)
+            epdiis.seekCurrentFrame();
+        else while (frameIndex > flushedFrames) {
+            if (!epdiis.seekNextFrame()) {
+                throw new IOException("Data Fragments only contains " + (flushedFrames + 1) + " frames");
+            }
+            flushedFrames++;
+        }
     }
 
     private void applyOverlay(int gg0000, WritableRaster raster,
@@ -541,24 +690,101 @@ public class DicomImageReader extends ImageReader {
         if (metadata != null)
             return;
 
+        if (dis != null) {
+            Attributes fmi = dis.readFileMetaInformation();
+            Attributes ds = dis.readDataset(-1, Tag.PixelData);
+            if (dis.tag() == Tag.PixelData) {
+                pixelDataVR = dis.vr();
+                pixelDataLength = dis.length();
+                if (pixelDataLength == -1)
+                    epdiis = new EncapsulatedPixelDataImageInputStream(dis, ds.getInt(Tag.NumberOfFrames, 1));
+            }
+            setMetadata(new DicomMetaData(fmi, ds));
+            return;
+        }
         if (iis == null)
             throw new IllegalStateException("Input not set");
 
-        @SuppressWarnings("resource")
         DicomInputStream dis = new DicomInputStream(new ImageInputStreamAdapter(iis));
         dis.setIncludeBulkData(IncludeBulkData.URI);
         dis.setBulkDataDescriptor(BulkDataDescriptor.PIXELDATA);
         dis.setURI("java:iis"); // avoid copy of pixeldata to temporary file
         Attributes fmi = dis.readFileMetaInformation();
-        Attributes ds = dis.readDataset(-1, -1);
+        Attributes ds = dis.readDataset(-1, Tag.PixelData);
+        if( dis.tag() == Tag.PixelData ) {
+            pixelDataVR = dis.vr();
+            pixelDataLength = dis.length();            
+        }
         setMetadata(new DicomMetaData(fmi, ds));
+        initPixelDataIIS(dis);
+    }
+
+    /** Initializes the pixel data reading from an image input stream */
+    private void initPixelDataIIS(DicomInputStream dis) throws IOException {
+        if( pixelDataLength==0 ) return;
+        if( pixelDataLength>0 ) {
+            pixelData = new BulkData("pixeldata://", dis.getPosition(), dis.length(),dis.bigEndian());
+            metadata.getAttributes().setValue(Tag.PixelData, pixelDataVR, pixelData);
+            return;
+        }
+        dis.readItemHeader();
+        byte[] b = new byte[dis.length()];
+        dis.readFully(b);        
+
+        long start = dis.getPosition();
+        pixelDataFragments = new Fragments(null, Tag.PixelData, pixelDataVR, dis.bigEndian(), isVideo() ? 16 : frames);
+        pixelDataFragments.add(b);
+        
+        generateOffsetLengths(pixelDataFragments, isVideo() ? 1 : frames,b, start);
+    }
+
+    public boolean isVideo() {
+        return isVideo(metadata.getFileMetaInformation().getString(Tag.TransferSyntaxUID));
+    }
+
+    /** Indicate if the given transfer syntax is video */
+    public static boolean isVideo(String tsuid) {
+        return VIDEO_TSUID.contains(tsuid);
+    }
+
+
+    /** Creates an offset/length table based on the frame positions */
+    public static void generateOffsetLengths(Fragments pixelData, int frames, byte[] basicOffsetTable, long start) {
+        long lastOffset = 0;
+        BulkData lastFrag = null;
+        for(int frame=0; frame<frames; frame++) {
+            long offset = frame>0 ? 1 : 0;
+            int offsetStart = frame*4;
+            if( basicOffsetTable.length>=offsetStart+4 ) {
+                offset = ByteUtils.bytesToIntLE(basicOffsetTable, offsetStart);
+                if( offset!=1 ) {
+                    // Handle > 4 gb total image size by assuming incrementing modulo 4gb
+                    offset = offset | (lastOffset & 0xFFFFFF00000000l);
+                    if( offset < lastOffset ) offset += 0x100000000l;
+                    lastOffset = offset;
+                    LOG.trace("Found offset {} for frame {}", offset, frame);
+                }
+            }
+            long position = -1;
+            if( offset!=1 ) {
+                position = start+offset+8;
+            }
+            BulkData frag = new BulkData("compressedPixelData://", position,-1, false);
+            if( lastFrag!=null && position!=-1 ) {
+                lastFrag.setLength(position-8-lastFrag.offset());
+            }
+            lastFrag = frag;
+            pixelData.add(frag);
+            if( offset==0 && frame>0) {
+                start = -1;
+            }
+        }
     }
 
     private void setMetadata(DicomMetaData metadata) {
         this.metadata = metadata;
-        this.ds = metadata.getAttributes();
-        Object pixeldata = ds.getValue(Tag.PixelData, pixeldataVR );
-        if (pixeldata != null) {
+        Attributes ds = metadata.getAttributes();
+        if (pixelDataLength != 0) {
             frames = ds.getInt(Tag.NumberOfFrames, 1);
             width = ds.getInt(Tag.Columns, 0);
             height = ds.getInt(Tag.Rows, 0);
@@ -566,21 +792,17 @@ public class DicomImageReader extends ImageReader {
             banded = samples > 1 && ds.getInt(Tag.PlanarConfiguration, 0) != 0;
             bitsAllocated = ds.getInt(Tag.BitsAllocated, 8);
             bitsStored = ds.getInt(Tag.BitsStored, bitsAllocated);
-            dataType = bitsAllocated <= 8 ? DataBuffer.TYPE_BYTE
+            dataType = bitsAllocated <= 8 ? DataBuffer.TYPE_BYTE 
                                           : DataBuffer.TYPE_USHORT;
             pmi = PhotometricInterpretation.fromString(
                     ds.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
-            if (pixeldata instanceof BulkData) {
+            if (pixelDataLength != -1) {
                 this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
-                this.pixelBulkData = (BulkData) pixeldata;
-            } else if (pixeldata instanceof byte[]) {
-                this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
-                this.pixeldataBytes = (byte[]) pixeldata;
-            } else { // Fragments
+            } else {
                 Attributes fmi = metadata.getFileMetaInformation();
                 if (fmi == null)
                     throw new IllegalArgumentException("Missing File Meta Information for Data Set with compressed Pixel Data");
-
+                
                 String tsuid = fmi.getString(Tag.TransferSyntaxUID);
                 ImageReaderParam param =
                         ImageReaderFactory.getImageReaderParam(tsuid);
@@ -589,7 +811,6 @@ public class DicomImageReader extends ImageReader {
                 this.rle = tsuid.equals(UID.RLELossless);
                 this.decompressor = ImageReaderFactory.getImageReader(param);
                 this.patchJpegLS = param.patchJPEGLS;
-                this.pixeldataFragments = (Fragments) pixeldata;
             }
         }
     }
@@ -609,16 +830,18 @@ public class DicomImageReader extends ImageReader {
     }
 
     private void resetInternalState() {
+        dis = null;
         metadata = null;
-        ds = null;
-        pixeldataFile = null;
+        pixelData = null;
+        pixelDataFragments = null;
+        pixelDataVR = null;
+        pixelDataLength = 0;
+        pixeldataBytes = null;
+        pixelDataFile = null;
         frames = 0;
+        flushedFrames = 0;
         width = 0;
         height = 0;
-        pixelBulkData = null;
-        frameLength = 0;
-        pixeldataFragments = null;
-        pixeldataBytes = null;
         if (decompressor != null) {
             decompressor.dispose();
             decompressor = null;
@@ -633,6 +856,10 @@ public class DicomImageReader extends ImageReader {
 
         if (frameIndex < 0 || frameIndex >= frames)
             throw new IndexOutOfBoundsException("imageIndex: " + frameIndex);
+
+        if (dis != null && frameIndex < flushedFrames)
+            throw new IllegalStateException(
+                    "input stream position already after requested frame #" + (frameIndex + 1));
     }
 
     @Override
@@ -640,4 +867,25 @@ public class DicomImageReader extends ImageReader {
         resetInternalState();
     }
 
+    /** Clones this object, requires that the input stream objects are also all cloneable */
+    @Override
+    public DicomImageReader cloneIt() throws IOException {
+        return new DicomImageReader(this);
+    }
+
+
+    public ImageInputStream getImageInputStream() {
+        return iis;
+    }
+
+    /** Returns a byte array containing the raw bytes of the given frame */
+    public byte[] readBytes(int frame, ImageReadParam readParam) {
+        return null;
+    }
+
+
+    @Override
+    public void close() throws IOException {
+        dispose();
+    }
 }

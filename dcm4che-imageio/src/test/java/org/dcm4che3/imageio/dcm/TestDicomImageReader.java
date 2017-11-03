@@ -38,11 +38,14 @@
 
 package org.dcm4che3.imageio.dcm;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -53,14 +56,21 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.Fragments;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
+import org.dcm4che3.imageio.plugins.dcm.DicomImageReader;
 import org.dcm4che3.imageio.plugins.dcm.DicomMetaData;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.SafeClose;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -69,9 +79,9 @@ import org.junit.Test;
  */
 public class TestDicomImageReader {
 
-    private static final String NM_MF = "src/test/data/NM-MONO2-16-13x-heart";
+    private static final String NM_MF = "../../src/test/data/NM-MONO2-16-13x-heart";
     private static final String NM_MF_CHECKSUM = "B2813DA2FE5B79A1B3CAF18DBD25023E2F84D4FE";
-    private static final String US_MF_RLE = "src/test/data/US-PAL-8-10x-echo";
+    private static final String US_MF_RLE = "../../src/test/data/US-PAL-8-10x-echo";
     private static final String US_MF_RLE_CHECKSUM = "5F4909DEDD7D1E113CC69172C693B4705FEE5B46";
 
 
@@ -89,7 +99,49 @@ public class TestDicomImageReader {
     }
 
     @Test
-    public void testReadRasterFromImageInputStream() throws Exception {
+    public void testGeneratePixelDataFragments_fromEmpty() {
+        byte[] basicOffsetTable = new byte[0];
+        Attributes attributes = new Attributes();
+        Fragments pixelDataFragments = attributes.newFragments(Tag.PixelData, VR.OB, 16);
+        DicomImageReader.generateOffsetLengths(pixelDataFragments, 1, basicOffsetTable, 16384);
+        assertThat(pixelDataFragments).hasSize(1)
+            .contains(new BulkData("compressedPixelData://",16384l+8,-1,false));
+        
+        pixelDataFragments.clear();
+        DicomImageReader.generateOffsetLengths(pixelDataFragments, 4, basicOffsetTable, 16384);
+        assertThat(pixelDataFragments).hasSize(4)
+        .contains(new BulkData("compressedPixelData://",16384l+8,-1,false),
+                new BulkData("compressedPixelData://", -1, -1, false),
+                new BulkData("compressedPixelData://", -1, -1, false),
+                new BulkData("compressedPixelData://", -1, -1, false));
+    }
+    
+    @Test
+    public void testGeneratePixelDataFragments_fromPartialTable() throws IOException {
+        Attributes attributes = new Attributes();
+        long start = 10944l;
+        long current = start;
+        long[] longOffsets = new long[]{current, current+=128, current+=65536, current+= 0xffffff00l, current+=2048, current+= 1000 }; 
+        int[] offsets = new int[longOffsets.length+2];
+        for(int i=0; i<offsets.length; i++) offsets[i] = i< longOffsets.length ? (int) (longOffsets[i]-start) : 1;        
+        byte[] basicOffsetTable = ByteUtils.intsToBytesLE(offsets);
+
+        Fragments pixelDataFragments = attributes.newFragments(Tag.PixelData, VR.OB, 16);
+        DicomImageReader.generateOffsetLengths(pixelDataFragments, offsets.length, basicOffsetTable, longOffsets[0]);
+        assertThat(pixelDataFragments).hasSize(offsets.length)
+        .contains(
+                new BulkData("compressedPixelData://",longOffsets[0]+8,longOffsets[1]-longOffsets[0]-8,false),
+                new BulkData("compressedPixelData://",longOffsets[1]+8,longOffsets[2]-longOffsets[1]-8,false),
+                new BulkData("compressedPixelData://",longOffsets[2]+8,longOffsets[3]-longOffsets[2]-8,false),
+                new BulkData("compressedPixelData://",longOffsets[3]+8,longOffsets[4]-longOffsets[3]-8,false),
+                new BulkData("compressedPixelData://",longOffsets[4]+8,longOffsets[5]-longOffsets[4]-8,false),
+                new BulkData("compressedPixelData://",longOffsets[5]+8,-1,false),
+                new BulkData("compressedPixelData://", -1, -1, false),
+                new BulkData("compressedPixelData://", -1, -1, false));
+    }
+    
+    @Test
+    public void testReadRasterFromImageInputStream_NM() throws Exception {
         Raster result = testReadRasterFromImageInputStream(NM_MF, 5);
         Assert.assertEquals(NM_MF_CHECKSUM, rasterChecksum(result));
     }
@@ -124,9 +176,39 @@ public class TestDicomImageReader {
         Assert.assertEquals(US_MF_RLE_CHECKSUM, rasterChecksum(result));
     }
 
-    private Raster testReadRasterFromImageInputStream(String pathname, int imageIndex)
+    @Test
+    public void testReadRasterFromImageInputStream_CPLX() throws IOException {
+        testReadRasterFromImageInputStream("cplx_p02.dcm", 1);
+    }
+
+    @Test
+    public void testReadLastRasterFromCompressedImageInputStream() throws IOException {
+        testReadRasterFromImageInputStream("US-PAL-8-10x-echo", 9);
+    }
+
+    @Test
+    public void testReadFirstRasterFromCompressedImageInputStream() throws IOException {
+        testReadRasterFromImageInputStream("US-PAL-8-10x-echo", 0);
+    }
+
+    @Test
+    public void testReadRasterFromInputStream() throws IOException {
+        testReadRasterFromInputStream("cplx_p02.dcm", 1);
+    }
+
+    @Test
+    public void testReadRasterFromCompressedInputStream() throws IOException {
+        testReadRasterFromInputStream("US-PAL-8-10x-echo", 5);
+    }
+
+    @Test
+    public void testReadRasterFromAttributes_cplx() throws IOException {
+        testReadRasterFromAttributes("cplx_p02.dcm", 1, IncludeBulkData.URI);
+    }
+
+    private Raster testReadRasterFromImageInputStream(String ifname, int imageIndex)
             throws IOException {
-        FileImageInputStream iis = new FileImageInputStream(new File(pathname));
+        FileImageInputStream iis = new FileImageInputStream(new File("target/test-data/" + ifname));
         try {
             return testReadRasterFromInput(iis, imageIndex);
         } finally {
@@ -134,9 +216,18 @@ public class TestDicomImageReader {
         }
     }
 
-    private Raster testReadRasterFromAttributes(String pathname, int imageIndex, IncludeBulkData includeBulkData)
+    private Raster testReadRasterFromInputStream(String ifname, int imageIndex)
             throws IOException {
-        DicomInputStream dis = new DicomInputStream(new File(pathname));
+        FileInputStream is = new FileInputStream(new File("target/test-data/" + ifname));
+        try {
+            return testReadRasterFromInput(is, imageIndex);
+        } finally {
+            SafeClose.close(is);
+        }
+    }
+
+    private Raster testReadRasterFromAttributes(String ifname, int imageIndex, IncludeBulkData includeBulkData) throws IOException {
+        DicomInputStream dis = new DicomInputStream(new File("target/test-data/" + ifname));
         Attributes attrs;
         try {
             dis.setIncludeBulkData(includeBulkData);
@@ -144,15 +235,13 @@ public class TestDicomImageReader {
         } finally {
             SafeClose.close(dis);
         }
-        return testReadRasterFromInput(
-                new DicomMetaData(dis.getFileMetaInformation(), attrs),
-                imageIndex);
+        return testReadRasterFromInput(new DicomMetaData(dis.getFileMetaInformation(), attrs), imageIndex);
     }
 
     private Raster testReadRasterFromInput(Object input, int imageIndex)
             throws IOException {
         reader.setInput(input);
-        return reader.readRaster(imageIndex, null);
+        return reader.readRaster(imageIndex, reader.getDefaultReadParam());
     }
 
     /**

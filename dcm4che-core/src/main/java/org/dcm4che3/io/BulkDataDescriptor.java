@@ -38,16 +38,15 @@
 
 package org.dcm4che3.io;
 
-import java.util.List;
-
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.ItemPointer;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.util.TagUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Bill Wallace <wayfarer3130@gmail.com>
  *
  */
 public abstract class BulkDataDescriptor {
@@ -81,7 +80,20 @@ public abstract class BulkDataDescriptor {
         @Override
         public boolean isBulkData(String privateCreator, int tag, VR vr, int length,
                                       ItemPointer... itemPointer) {
-            return tag == Tag.PixelData;
+            if (tag == Tag.PixelData)
+                return true;
+            // Don't need any binary tags larger than a LUT containing 64k elements, which is 64*1024*2
+            switch (vr) {
+            case OB:
+            case OD:
+            case OF:
+            case OL:
+            case OW:
+            case UN:
+                return length > 64*1024*2;
+                default:
+            }
+            return false;
         }
     };
 

@@ -107,6 +107,11 @@ public class RLEImageReader extends ImageReader {
         super.setInput(input, seekForwardOnly, ignoreMetadata);
         resetInternalState();
         iis = (ImageInputStream) input;
+        try {
+            headerPos = iis.getStreamPosition();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void resetInternalState() {

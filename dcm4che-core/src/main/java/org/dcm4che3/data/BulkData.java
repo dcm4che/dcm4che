@@ -56,12 +56,13 @@ import org.dcm4che3.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Bill Wallace <wayfarer3130@gmail.com>
  */
 public class BulkData implements Value {
 
     public static final int MAGIC_LEN = 0xfbfb;
 
-    public final String uri;
+    public String uri;
     public final String uuid;
     public final boolean bigEndian;
 
@@ -92,6 +93,16 @@ public class BulkData implements Value {
         this.offset = offset;
         this.length = length;
         this.bigEndian = bigEndian;
+    }
+
+    public BulkData(String uri, long offset, long length, boolean bigEndian) {
+        this.uuid = null;
+        this.uriPathEnd = uri.length();
+        this.uri = uri + "?offset=" + offset + "&length=" + length;
+        this.offset = offset;
+        this.length = (int) length;
+        this.bigEndian = bigEndian;
+        setLength(length);
     }
 
     public BulkData(String uri, long[] offsets, int[] lengths, boolean bigEndian) {
@@ -259,6 +270,25 @@ public class BulkData implements Value {
     public long offset() {
         return offset;
     }
+    
+    public void setLength(long newLength) {
+        if( newLength!=-1 && (newLength & 1)==1 ) {
+            throw new IllegalArgumentException("Length of bulk data must be even, but was: "+newLength);
+        }
+        if( newLength > 0xFFFFFFFEL || newLength<-1 ) {
+            throw new IllegalArgumentException("Length of bulk data must not be negative or larger than an unsigned int, but was:"+newLength);
+        }
+        length = (int) newLength;
+        uri = uri.substring(0, uriPathEnd) + "?offset=" + offset + "&length=" + length;
+    }
+    
+    public void setOffset(long newOffset) {
+        if( newOffset<8 || (newOffset & 0x1)==1 ) {
+            throw new IllegalArgumentException("Offset must be at least 8 and even, but was "+newOffset);
+        }
+        offset = newOffset;
+        uri = uri.substring(0, uriPathEnd) + "?offset=" + offset + "&length=" + length;
+    }
 
     public int length() {
         return length;
@@ -412,6 +442,16 @@ public class BulkData implements Value {
         result = prime * result + ((uri == null) ? 0 : uri.hashCode());
         result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
         return result;
+    }
+
+    /** Returns the index after the segment ends */
+    public long getSegmentEnd() {
+        return offset() + longLength();
+    }
+
+    /** Gets the actual length as a long so it can represent the 2 gb to 4 gb range of lengths */
+    public long longLength() {
+        return length & 0xFFFFFFFFl;
     }
 
 }

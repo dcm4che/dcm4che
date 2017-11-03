@@ -35,55 +35,12 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che3.io;
 
-package org.dcm4che3.util;
-
-import java.net.URL;
-
-/**
- * Utility methods to locate resources on the context classloader or
- * the class loader that loaded the class passed as parameter. 
- * 
- * @author Umberto Cappellini <umberto.cappellini@agfa.com>
+/** What the Java version should have been, defines the clone class as being public, and returning the indicated type 
  * @author Bill Wallace <wayfarer3130@gmail.com>
  */
-public class ResourceLocator {
-    
-    public static String resourceURL(String name) {
-        ClassLoader tcl = Thread.currentThread().getContextClassLoader();
-        URL url = tcl.getResource(name);
-        return url != null ? url.toString() : null;
-    }
-    
-    public static String getResource(String resource, Object source) {
-        Class<?> c = source == null ? null : source.getClass();
-        return getResource(resource, c);
-    }
+public interface CloneIt<T,E extends Exception> {
 
-    public static String getResource(String resource, Class<?> c) {
-        URL url = getResourceURL(resource, c);
-        return url != null ? url.toString() : null;
-    }
-
-    public static URL getResourceURL(String resource, Object source) {
-        Class<?> c = source == null ? null : source.getClass();
-        return getResourceURL(resource, c);
-    }
-
-    public static URL getResourceURL(String resource, Class<?> c) {
-        if (c != null) {
-            ClassLoader classLoader = c.getClassLoader();
-            if (classLoader != null) {
-                URL url = classLoader.getResource(resource);
-                if( url!=null ) return url;
-            }
-        }
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (classLoader != null) {
-            URL url = classLoader.getResource(resource);
-            if( url!=null ) return url;
-        }
-        return ClassLoader.getSystemResource(resource);
-    }
-
+    public T cloneIt() throws E;
 }

@@ -23,6 +23,26 @@
           </instructions>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <resourceBundles>
+                <resourceBundle>org.dcm4che:dcm4che-test-data:5.11.0</resourceBundle>
+              </resourceBundles>
+              <attachToMain>false</attachToMain>
+              <attachToTest>false</attachToTest>
+              <outputDirectory>${project.build.directory}/test-data</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -48,8 +68,21 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+	<groupId>org.assertj</groupId>
+	<artifactId>assertj-core</artifactId>
+	<scope>test</scope>
+	<version>3.8.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.media</groupId>
+      <artifactId>jai_imageio</artifactId>
+      <version>1.2-pre-dr-b04</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

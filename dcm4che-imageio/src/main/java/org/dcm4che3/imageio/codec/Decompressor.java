@@ -198,7 +198,7 @@ public class Decompressor {
             throws IOException {
 
         if (pixels instanceof Fragments && ((Fragments) pixels).get(index+1) instanceof BulkData)
-            iis = SegmentedImageInputStream.ofFrame(iis, (Fragments) pixels, index, imageParams.getFrames());
+            iis = new SegmentedImageInputStream(iis, (Fragments) pixels, imageParams.getFrames()==1 ? -1 : index);
 
         if (decompressedImage == null && tsType == TransferSyntaxType.RLE)
             decompressedImage = BufferedImageUtils.createBufferedImage(imageParams, tsType);

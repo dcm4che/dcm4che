@@ -38,109 +38,166 @@
 
 package org.dcm4che3.imageio.stream;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
- */
+  * Treats a specified portion of an image input stream as it's own input stream.  Can handle open-ended
+  * specified sub-regions by specifying a -1 frame, which will treat all fragments as though they are part
+  * of the segment, and will look for new segments in the DICOM original data once the first part
+  * is read past. 
+  * @author Gunter Zeilinger <gunterze@gmail.com>
+  * @author Bill Wallace <wayfarer3130@gmail.com>
+  */
 public class SegmentedImageInputStream extends ImageInputStreamImpl {
 
     private final ImageInputStream stream;
-    private final boolean autoExtend;
-    private long[] segmentPositionsList;
-    private int[] segmentLengths;
-    private int curSegment;
-    private long curSegmentEnd;
-    private byte[] header = new byte[8];
+    private int curSegment=0;
+    private int firstSegment=1, lastSegment=Integer.MAX_VALUE;
+    // The end of the current segment, in streamPos units, not in underlying stream units
+    private long curSegmentEnd=-1;
+    private final List<Object> fragments;
+    private byte[] byteFrag;
+    
 
+    /** Create a segmented input stream, that updates the bulk data entries as required, frameIndex
+     * of -1 means the entire object/value.
+     */
     public SegmentedImageInputStream(ImageInputStream stream,
-                                     long[] segmentPositionsList, int[] segmentLengths)
-                    throws IOException {
+            Fragments pixeldataFragments, int frameIndex) throws IOException {
+        if( frameIndex==-1 ) {
+            frameIndex = 0;
+        } else {
+            firstSegment = frameIndex+1;
+            lastSegment = frameIndex+2;
+        }
+        this.fragments = pixeldataFragments;
         this.stream = stream;
-        this.segmentPositionsList = segmentPositionsList.clone();
-        this.segmentLengths = segmentLengths.clone();
-        this.autoExtend = false;
+        this.curSegment = frameIndex;
         seek(0);
     }
 
-    public SegmentedImageInputStream(ImageInputStream stream, long pos, int len, boolean autoExtend)
-            throws IOException {
-        this.stream = stream;
-        this.segmentPositionsList = new long[]{ pos };
-        this.segmentLengths = new int[]{ len };
-        this.autoExtend = autoExtend;
+    public SegmentedImageInputStream(ImageInputStream iis, long streamPosition, int length, boolean singleFrame) throws IOException {
+        fragments = new Fragments(null, Tag.PixelData, VR.OB, false, 16);
+        if( !singleFrame ) {
+            lastSegment = 2;
+        } 
+        fragments.add(new byte[0]);
+        fragments.add(new BulkData("pixelData://",  streamPosition, length, false));
+        stream = iis;
         seek(0);
-    }
-
-    public static SegmentedImageInputStream ofFrame(ImageInputStream iis, Fragments fragments, int index, int frames)
-            throws IOException {
-        if (frames > 1) {
-            if (fragments.size() != frames +1)
-                throw new UnsupportedOperationException(
-                        "Number of Fragments [" + fragments.size()
-                                + "] != Number of Frames [" + frames + "] + 1");
-            Object fragment = fragments.get(index+1);
-            if (fragment instanceof BulkData) {
-                BulkData bulkData = (BulkData) fragment;
-                return new SegmentedImageInputStream(iis, bulkData.offset(), bulkData.length(), false);
-            } else if (fragment instanceof byte[]) {
-                // If the fragments contain byte arrays, we can just make a new ImageInputStream
-                // with the fragment data, instead of trying to slice it out.
-                byte[] byteFragment = (byte[]) fragment;
-                return new SegmentedImageInputStream(
-                    new MemoryCacheImageInputStream(
-                        new ByteArrayInputStream(byteFragment)), 0, byteFragment.length, false);
-            }
-        }
-        int n = fragments.size() - 1;
-        long[] offsets = new long[n];
-        int[] lengths = new int[n];
-        for (int i = 0; i < n; i++) {
-            BulkData bulkData = (BulkData) fragments.get(i+1);
-            offsets[i] = bulkData.offset();
-            lengths[i] = bulkData.length();
-        }
-        return new SegmentedImageInputStream(iis, offsets, lengths);
-    }
-
-    public long getLastSegmentEnd() {
-        int i = segmentPositionsList.length - 1;
-        return segmentPositionsList[i] + segmentLengths[i];
-    }
-
-    private int offsetOf(int segment) {
-        int pos = 0;
-        for (int i = 0; i < segment; ++i)
-            pos += segmentLengths[i];
-        return pos;
     }
 
     @Override
     public void seek(long pos) throws IOException {
         super.seek(pos);
-        for (int i = 0, off = 0; i < segmentLengths.length; i++) {
-            int end = off + segmentLengths[i];
-            if (pos < end) {
-                stream.seek(segmentPositionsList[i] + pos - off);
-                curSegment = i;
-                curSegmentEnd = end;
+        long beforePos = 0;
+        for (int i = firstSegment; i<lastSegment; i++) {
+            BulkData bulk = null;
+            long bulkOffset = -1;
+            int bulkLength = -1;
+            synchronized(fragments) {
+                if( i < fragments.size() ) {
+                    Object fragment = fragments.get(i);
+                    if(fragment instanceof BulkData) {
+                        bulk = (BulkData) fragments.get(i);
+                        bulkOffset = bulk.offset();
+                        bulkLength = bulk.length();
+                    } else {
+                        byteFrag = (byte[]) fragment;
+                        bulkLength = byteFrag.length;
+                        bulkOffset = beforePos;
+                    }
+                    
+                }
+            }
+            if( bulkOffset==-1 || bulkLength==-1 ) {
+                bulk = updateBulkData(i);
+                bulkOffset = bulk.offset();
+                bulkLength = bulk.length();
+            }
+            // We are past end of input, but we didn't know soon enough
+            if( i>=lastSegment ) {
+                curSegment = -1;
                 return;
             }
-            off = end;
+            long deltaInEnd = pos-beforePos;
+            beforePos += bulkLength & 0xFFFFFFFFl;            
+            if (pos < beforePos) {
+                curSegment = i;
+                curSegmentEnd = beforePos;
+                if( bulk!=null ) {
+                    stream.seek(bulk.offset() + deltaInEnd);
+                }
+                return;
+            }
         }
         curSegment = -1;
+    }
+
+    BulkData updateBulkData(int endBulk) throws IOException {
+        BulkData last = null;
+        for(int i=1; i<=endBulk; i++) {
+            BulkData bulk = null;
+            long bulkOffset = -1;
+            int bulkLength = -1;
+            synchronized(fragments) {
+                if( i < fragments.size() ) {
+                    bulk = (BulkData) fragments.get(i);
+                    bulkOffset = bulk.offset();
+                    bulkLength = bulk.length();
+                }
+            }
+            if( bulkOffset==-1  ) {
+                long testOffset = last.offset() + (0xFFFFFFFFl & last.length());
+                bulk = readBulkAt(testOffset, i);
+            } else if( bulkLength==-1 ) {
+                bulk = readBulkAt(bulkOffset-8, i);
+            }
+            if( bulk==null ) {
+                return null;
+            }
+            last = bulk;
+        }
+        return last;
+    }
+
+    BulkData readBulkAt(long testOffset, int at) throws IOException {
+        byte[] data = new byte[8];
+        stream.seek(testOffset);        
+        int size = stream.read(data);
+        if( size<8 ) return null;
+        int tag =ByteUtils.bytesToTagLE(data, 0);
+        if( tag==Tag.SequenceDelimitationItem ) {
+            // Safe to read un-protected now as we know there are no more items to update.
+            lastSegment = fragments.size();
+            return null;
+        }
+        if( tag!=Tag.Item ) {
+            throw new IOException("At "+testOffset+" isn't an Item("+Integer.toHexString(Tag.Item)+"), but is "+Integer.toHexString(tag));
+        }
+        int itemLen = ByteUtils.bytesToIntLE(data, 4);
+        BulkData bulk;
+        synchronized(fragments) {
+            if( at < fragments.size() ) {
+                bulk = (BulkData) fragments.get(at);
+                bulk.setOffset(testOffset+8);
+                bulk.setLength(itemLen);
+            } else {
+                bulk = new BulkData("compressedPixelData://", testOffset+8,itemLen,false);
+                fragments.add(bulk);
+            }
+        }
+        return bulk;
     }
 
     @Override
@@ -162,30 +219,13 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
 
         if (streamPos < curSegmentEnd)
             return true;
+        
+        seek(streamPos);
 
-        if (curSegment+1 >= segmentPositionsList.length) {
-            if (!autoExtend)
-                return false;
-
-            stream.mark();
-            stream.readFully(header);
-            stream.reset();
-            if (ByteUtils.bytesToTagLE(header, 0) != Tag.Item)
-                return false;
-
-            addSegment(getLastSegmentEnd() + 8, ByteUtils.bytesToIntLE(header, 4));
-        }
-
-        seek(offsetOf(curSegment+1));
+        if (curSegment < 0 || curSegment >= lastSegment)
+            return false;
+        
         return true;
-    }
-
-    private void addSegment(long pos, int len) {
-        int i = segmentPositionsList.length;
-        segmentPositionsList = Arrays.copyOf(segmentPositionsList, i + 1);
-        segmentLengths = Arrays.copyOf(segmentLengths, i+1);
-        segmentPositionsList[i] = pos;
-        segmentLengths[i] = len;
     }
 
     @Override
@@ -194,11 +234,24 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
             return -1;
 
         bitOffset = 0;
-        int nbytes = stream.read(b, off,
-                Math.min(len, (int) (curSegmentEnd-streamPos)));
+        int bytesToRead = Math.min(len, (int) (curSegmentEnd-streamPos));
+        int nbytes;
+        if( byteFrag!=null ) {
+            System.arraycopy(byteFrag, (int) (streamPos-curSegmentEnd+byteFrag.length), b, off, bytesToRead);
+            nbytes = bytesToRead;
+        } else {
+            nbytes = stream.read(b, off, bytesToRead );
+        }
         if (nbytes != -1) {
             streamPos += nbytes;
         }
         return nbytes;
+    }
+
+    public long getLastSegmentEnd() {
+        synchronized(fragments) {
+            BulkData bulk = (BulkData) fragments.get(fragments.size()-1);
+            return bulk.getSegmentEnd();
+        }
     }
 }

@@ -299,14 +299,7 @@ public class Compressor extends Decompressor implements Closeable {
                 Compressor.this.extractEmbeddedOverlays(frameIndex, bi);
                 if (bitsStored < bitsAllocated)
                     Compressor.this.nullifyUnusedBits(bitsStored, bi);
-                cache = new MemoryCacheImageOutputStream(cacheout) {
-
-                    @Override
-                    public void flush() throws IOException {
-                        // defer flush to writeTo()
-                        LOG.debug("Ignore invoke of MemoryCacheImageOutputStream.flush()");
-                    }
-                };
+                cache = new FlushlessMemoryCacheImageOutputStream(cacheout);                
                 compressor.setOutput(patchJPEGLS != null
                         ? new PatchJPEGLSImageOutputStream(cache, patchJPEGLS)
                         : cache);
@@ -337,6 +330,19 @@ public class Compressor extends Decompressor implements Closeable {
 
         public void set(OutputStream out) {
             this.out = out;
+        }
+    }
+
+    private static class FlushlessMemoryCacheImageOutputStream extends MemoryCacheImageOutputStream {
+        
+        public FlushlessMemoryCacheImageOutputStream(OutputStream stream) {
+            super(stream);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            // defer flush to writeTo()
+            LOG.debug("Ignore invoke of MemoryCacheImageOutputStream.flush()");
         }
     }
 

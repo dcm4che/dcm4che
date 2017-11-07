@@ -67,15 +67,13 @@
   <el tag="7777xx3C" keyword="SeriesMetadataStoragePath" vr="LO" vm="1-n">Series Metadata Storage Path</el>
   <el tag="7777xx3D" keyword="SeriesMetadataStorageObjectSize" vr="UL" vm="1">Series Metadata Storage Object Size</el>
   <el tag="7777xx3E" keyword="SeriesMetadataStorageObjectDigest" vr="LO" vm="1">Series Metadata Storage Object Digest</el>
-  <el tag="7777xx3F" keyword="SeriesSizeInKB" vr="UL" vm="1">Series Size in KB</el>
-  <el tag="7777xx40" keyword="SeriesSizeBytes" vr="US" vm="1">Series Size Bytes</el>
-  <el tag="7777xx50" keyword="InstanceReceiveDateTime" vr="DT" vm="1">Instance Receive Date Time</el>
-  <el tag="7777xx51" keyword="InstanceUpdateDateTime" vr="DT" vm="1">Instance Update Date Time</el>
-  <el tag="7777xx52" keyword="RejectionCodeSequence" vr="SQ" vm="1">Rejection Code Sequence</el>
-  <el tag="7777xx53" keyword="InstanceExternalRetrieveAETitle" vr="AE" vm="1">Instance External Retrieve AE Title</el>
-  <el tag="7777xx60" keyword="StorageID" vr="LO" vm="1">Storage ID</el>
-  <el tag="7777xx61" keyword="StoragePath" vr="LO" vm="1-n">Storage Path</el>
-  <el tag="7777xx62" keyword="StorageTransferSyntaxUID" vr="UI" vm="1">Storage Transfer Syntax UID</el>
-  <el tag="7777xx63" keyword="StorageObjectSize" vr="UL" vm="1">Storage Object Size</el>
-  <el tag="7777xx64" keyword="StorageObjectDigest" vr="LO" vm="1">Storage Object Digest</el>
+  <el tag="7777xx40" keyword="InstanceReceiveDateTime" vr="DT" vm="1">Instance Receive Date Time</el>
+  <el tag="7777xx41" keyword="InstanceUpdateDateTime" vr="DT" vm="1">Instance Update Date Time</el>
+  <el tag="7777xx42" keyword="RejectionCodeSequence" vr="SQ" vm="1">Rejection Code Sequence</el>
+  <el tag="7777xx43" keyword="InstanceExternalRetrieveAETitle" vr="AE" vm="1">Instance External Retrieve AE Title</el>
+  <el tag="7777xx50" keyword="StorageID" vr="LO" vm="1">Storage ID</el>
+  <el tag="7777xx51" keyword="StoragePath" vr="LO" vm="1-n">Storage Path</el>
+  <el tag="7777xx52" keyword="StorageTransferSyntaxUID" vr="UI" vm="1">Storage Transfer Syntax UID</el>
+  <el tag="7777xx53" keyword="StorageObjectSize" vr="UL" vm="1">Storage Object Size</el>
+  <el tag="7777xx54" keyword="StorageObjectDigest" vr="LO" vm="1">Storage Object Digest</el>
 </elements>

@@ -1648,9 +1648,11 @@ public class Attributes implements Serializable {
             return null;
 
         Object value = values[index];
-//        if (value instanceof Sequence)
-//            ((Sequence) value).clear();
-
+        if (value instanceof Sequence) {
+            for (Attributes attrs : ((Sequence) value)) {
+                    attrs.setParent(null);
+            }
+        }
         int numMoved = size - index - 1;
         if (numMoved > 0) {
             System.arraycopy(tags, index+1, tags, index, numMoved);
@@ -2448,7 +2450,7 @@ public class Attributes implements Serializable {
     }
 
     /**
-     * Invokes {@link Visitor.visit} for each attribute in this instance. The
+     * Invokes {@link Visitor#visit} for each attribute in this instance. The
      * operation will be aborted if <code>visitor.visit()</code> returns <code>false</code>.
      * 
      * @param visitor

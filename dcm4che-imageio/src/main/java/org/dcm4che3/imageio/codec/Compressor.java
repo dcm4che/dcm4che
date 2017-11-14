@@ -342,19 +342,19 @@ public class Compressor implements Closeable {
         }
     }
 
-	private static class FlushlessMemoryCacheImageOutputStream extends MemoryCacheImageOutputStream {
+    private static class FlushlessMemoryCacheImageOutputStream extends MemoryCacheImageOutputStream {
+        
+        public FlushlessMemoryCacheImageOutputStream(OutputStream stream) {
+            super(stream);
+        }
 
-		public FlushlessMemoryCacheImageOutputStream(OutputStream stream) {
-	        super(stream);
-	    }	
-		
-		@Override
-		public void flush() throws IOException {
-		    // defer flush to writeTo()
-		    LOG.debug("Ignore invoke of MemoryCacheImageOutputStream.flush()");
-		}
-	}
-	
+        @Override
+        public void flush() throws IOException {
+            // defer flush to writeTo()
+            LOG.debug("Ignore invoke of MemoryCacheImageOutputStream.flush()");
+        }
+    }
+
     public BufferedImage readFrame(int frameIndex) throws IOException {
         if (iis == null)
             iis = createImageInputStream(frameIndex);

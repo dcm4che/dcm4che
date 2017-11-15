@@ -96,6 +96,19 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         stream = iis;
         seek(0);
     }
+    
+    /** Just read from the raw data segment - this gets converted to an in-memory fragments object,
+     * which is then handled as a single fragment, with no basic offset table. Basically just an easy
+     * way to get an image input stream on a byte array.
+     */
+    public SegmentedInputImageStream(byte[] data) throws IOException {
+        stream = null;
+        fragments = new Fragments(VR.OB,false,2);
+        fragments.add(new byte[0]);
+        fragments.add(data);
+        lastSegment = 2;
+        seek(0);
+    }
 
     @Override
     public void seek(long pos) throws IOException {

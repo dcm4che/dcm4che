@@ -46,7 +46,6 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,7 +60,6 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
@@ -275,7 +273,7 @@ public class DicomImageReader extends ImageReader {
             if (pixelDataFile != null) {
                 iis = new FileImageInputStream(pixelDataFile);
             } else if (pixeldataBytes != null) {
-                iis = new MemoryCacheImageInputStream(new ByteArrayInputStream(pixeldataBytes));
+                iis = new SegmentedInputImageStream(pixeldataBytes);
             }
         }
     }

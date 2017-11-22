@@ -9,19 +9,19 @@ import java.util.EnumSet;
  */
 public class DefaultTransferCapabilities {
     public static final String[] IMAGE_TSUIDS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian,
-        UID.DeflatedExplicitVRLittleEndian,
-        UID.ExplicitVRBigEndianRetired,
-        UID.JPEGBaseline1,
-        UID.JPEGExtended24,
         UID.JPEGLossless,
         UID.JPEGLosslessNonHierarchical14,
         UID.JPEGLSLossless,
-        UID.JPEGLSLossyNearLossless,
         UID.JPEG2000LosslessOnly,
+        UID.RLELossless,
+        UID.JPEGBaseline1,
+        UID.JPEGExtended24,
+        UID.JPEGLSLossyNearLossless,
         UID.JPEG2000,
-        UID.RLELossless
+        UID.DeflatedExplicitVRLittleEndian,
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRBigEndianRetired
     };
     public static final String[] VIDEO_TSUIDS = {
         UID.JPEGBaseline1,
@@ -31,10 +31,10 @@ public class DefaultTransferCapabilities {
         UID.MPEG4AVCH264HighProfileLevel41
     };
     public static final String[] OTHER_TSUIDS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian,
         UID.DeflatedExplicitVRLittleEndian,
-        UID.ExplicitVRBigEndianRetired,
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRBigEndianRetired
     };
     public static final String[] IMAGE_CUIDS = {
         UID.ComputedRadiographyImageStorage,

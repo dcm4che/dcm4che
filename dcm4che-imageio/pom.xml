@@ -34,7 +34,7 @@
             </goals>
             <configuration>
               <resourceBundles>
-                <resourceBundle>org.dcm4che:dcm4che-test-data:5.11.0</resourceBundle>
+		      <resourceBundle>org.dcm4che:dcm4che-test-data:${project.version}</resourceBundle>
               </resourceBundles>
               <attachToMain>false</attachToMain>
               <attachToTest>false</attachToTest>
@@ -50,6 +50,12 @@
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-test-data</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>

@@ -52,8 +52,10 @@ import java.security.MessageDigest;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
+import org.assertj.core.api.Fail;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
@@ -83,6 +85,9 @@ public class TestDicomImageReader {
     private static final String US_MF_RLE_CHECKSUM = "5F4909DEDD7D1E113CC69172C693B4705FEE5B46";
 
     DicomImageReader reader;
+    
+    private static final String postPixelCreator = "TEST";
+    private static final int postPixelTag = 0xE0290001;
 
     @Before
     public void setUp() throws Exception {
@@ -93,6 +98,59 @@ public class TestDicomImageReader {
     public void tearDown() throws Exception {
         if (reader != null)
             reader.dispose();
+    }
+
+    @Test 
+    public void testReadCompressedPostPixelData_fromImageInputStream() throws IOException {
+        try(FileImageInputStream is = new FileImageInputStream(new File("target/test-data/" + US_MF_RLE))) {
+            testReadPostPixelData(is);
+        }
+    }
+    
+    @Test 
+    public void testReadUncompressedPostPixelData_fromImageInputStream() throws IOException {
+        try(FileImageInputStream is = new FileImageInputStream(new File("target/test-data/" + NM_MF))) {
+            testReadPostPixelData(is);
+        }
+    }
+    
+    @Test 
+    public void testReadCompressedPostPixelData_fromInputStream() throws IOException {
+        try(FileInputStream is = new FileInputStream(new File("target/test-data/" + US_MF_RLE))) {
+            testReadPostPixelData(is);
+        }
+    }
+    
+    @Test 
+    public void testReadUncompressedPostPixelData_fromInputStream() throws IOException {
+        try(FileInputStream is = new FileInputStream(new File("target/test-data/" + NM_MF))) {
+            testReadPostPixelData(is);
+        }
+    }
+    
+    private void testReadPostPixelData(Object input) throws IOException {
+        reader.setInput(input);
+        DicomMetaData metadataOrig = reader.getStreamMetadata();
+        Attributes attr = metadataOrig.getAttributes();
+        assertThat(attr.getString(postPixelCreator, postPixelTag)).isNull();
+        int frames = attr.getInt(Tag.NumberOfFrames, 1);
+        for(int i=0; i<frames; i+=3) {
+            Raster r= reader.readRaster(i, null);
+            assertThat(r).isNotNull();
+        }
+        Attributes postAttr = reader.readPostPixeldata();
+        assertThat(postAttr.getString(postPixelCreator,postPixelTag)).isEqualTo("Value");
+        if( input instanceof ImageInputStream ) {
+            // Must not throw an exception
+            reader.readRaster(0, null);
+        } else {
+        	try {
+        		reader.readRaster(0, null);
+        		Fail.fail("Should not be able to read the raster on an input stream after reading post pixel data.");
+        	} catch(IllegalStateException e) {
+                // Expected to throw an exception
+        	}
+        }
     }
 
     @Test

@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
@@ -95,6 +96,8 @@ import org.slf4j.LoggerFactory;
 public class DicomImageReader extends ImageReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(DicomImageReader.class);
+
+	public static final String POST_PIXEL_DATA = "postPixelData";
     
     private ImageInputStream iis;
 
@@ -290,11 +293,37 @@ public class DicomImageReader extends ImageReader {
         return new DicomImageReadParam();
     }
 
+    /** 
+     * Gets the stream metadata.  May not contain post pixel data unless
+     * there are no images or the getStreamMetadata has been called with the post pixel data 
+     * node being specified.
+     */
     @Override
     public DicomMetaData getStreamMetadata() throws IOException {
         readMetadata();
         return metadata;
     }
+    
+    /**
+     * Gets the stream metadata.
+     * If nodeNames contains POST_PIXEL_DATA constant "postPixelData" then
+     * read the post pixel data as well.  In an InputStream instance that can
+     * only safely be done after all pixel data is read.  On imageInputStream it
+     * may be slow for large multiframes, but can safely be done at any time.
+     */
+    @Override
+    public DicomMetaData getStreamMetadata(String formatName,
+            Set<String> nodeNames)
+            		throws IOException
+    {
+    	DicomMetaData ret = getStreamMetadata();
+    	if( nodeNames!=null && nodeNames.contains(POST_PIXEL_DATA)) {
+    		readPostPixeldata();
+    		return getStreamMetadata();
+    	}
+    	return ret;
+    }
+
 
     @Override
     public IIOMetadata getImageMetadata(int frameIndex) throws IOException {
@@ -366,7 +395,11 @@ public class DicomImageReader extends ImageReader {
     }
 
     private boolean bigEndian() {
-        return metadata.getAttributes().bigEndian();
+        return metadata.bigEndian();
+    }
+    
+    private String getTransferSyntaxUID() {
+    	return metadata.getTransferSyntaxUID();
     }
 
     private ImageReadParam decompressParam(ImageReadParam param) {
@@ -464,6 +497,8 @@ public class DicomImageReader extends ImageReader {
         if (epdiis != null) {
             seekFrame(frameIndex);
             iisOfFrame = epdiis;
+        } else if( pixelDataFragments==null ) {
+        	return null;
         } else {
             iisOfFrame = new SegmentedInputImageStream(
                     iis, pixelDataFragments, frameIndex);
@@ -775,6 +810,46 @@ public class DicomImageReader extends ImageReader {
             throw new IllegalStateException(
                     "input stream position already after requested frame #" + (frameIndex + 1));
     }
+    
+    /** Reads post-pixel data tags, will skip past any remaining images (which may be very slow), and
+     * add any post-pixel data information to the attributes object.
+     * NOTE: This read will read past image data, and may end up scanning/seeking through multiframe or video data in order tofind the
+     * post pixel data.  This may be slow.
+     *
+     * Replaces the attributes object with a new one, thus is thread safe for other uses of the object.
+     *
+     * Does NOT work with LEI compressed data.
+     */
+    public Attributes readPostPixeldata() throws IOException {
+    	if( frames==0 ) return metadata.getAttributes();
+    	
+        if( dis!=null ) {
+        	if( flushedFrames > frames ) {
+        		return metadata.getAttributes();
+        	}
+            dis.skipFully((frames - flushedFrames) * frameLength);
+            flushedFrames = frames+1;
+            return readPostAttr(dis);
+    	}
+    	long offset;
+    	if( pixelData!=null ) {
+    		offset = pixelData.offset()+pixelData.longLength();
+    	} else {
+    		SegmentedInputImageStream siis = (SegmentedInputImageStream) iisOfFrame(-1);
+    		offset = siis.getOffsetPostPixelData();
+    	}
+        iis.seek(offset);
+        @SuppressWarnings("resource")
+        DicomInputStream dis = new DicomInputStream(new ImageInputStreamAdapter(iis), getTransferSyntaxUID());
+        return readPostAttr(dis);
+    }
+    
+    private Attributes readPostAttr(DicomInputStream dis) throws IOException {
+        Attributes postAttr = dis.readDataset(-1, -1);
+        postAttr.addAll(metadata.getAttributes());
+        metadata = new DicomMetaData(metadata.getFileMetaInformation(), postAttr);
+        return postAttr;
+   }
 
     @Override
     public void dispose() {

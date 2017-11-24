@@ -89,7 +89,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Reads header and image data from a DICOM object.
+ * 
+ * Supports compressed and uncompressed images from a DicomMetaData object, an InputStream/DicomInputStream or an ImageInputStream.
+ * For ImageInputStream, the access supports random/out of order reading from the input for everything except deflated streams.
+ * For InputStream type data, only sequential access to images is supported, including deflated.
+ * For DicomMetaData, random access is fully supported, and can have been read from a deflated stream.
+ * Objects without pixel data are also supported, although only the metadata can be read from them (mostly for the use case that it is unknown whether or not there is
+ * pixel data).
+ * 
+ * Tag values after the pixel data are not read up-front for performance reasons/ability to actually read them up front.  Call the relevant methods below to read that data.
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Bill Wallace <wayfarer3130@gmail.com>
  * @since Feb 2013
  *
  */
@@ -97,7 +109,7 @@ public class DicomImageReader extends ImageReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(DicomImageReader.class);
 
-	public static final String POST_PIXEL_DATA = "postPixelData";
+    public static final String POST_PIXEL_DATA = "postPixelData";
     
     private ImageInputStream iis;
 
@@ -314,14 +326,14 @@ public class DicomImageReader extends ImageReader {
     @Override
     public DicomMetaData getStreamMetadata(String formatName,
             Set<String> nodeNames)
-            		throws IOException
+                    throws IOException
     {
-    	DicomMetaData ret = getStreamMetadata();
-    	if( nodeNames!=null && nodeNames.contains(POST_PIXEL_DATA)) {
-    		readPostPixeldata();
-    		return getStreamMetadata();
-    	}
-    	return ret;
+        DicomMetaData ret = getStreamMetadata();
+        if( nodeNames!=null && nodeNames.contains(POST_PIXEL_DATA)) {
+            readPostPixeldata();
+            return getStreamMetadata();
+        }
+        return ret;
     }
 
 
@@ -399,7 +411,7 @@ public class DicomImageReader extends ImageReader {
     }
     
     private String getTransferSyntaxUID() {
-    	return metadata.getTransferSyntaxUID();
+        return metadata.getTransferSyntaxUID();
     }
 
     private ImageReadParam decompressParam(ImageReadParam param) {
@@ -498,7 +510,7 @@ public class DicomImageReader extends ImageReader {
             seekFrame(frameIndex);
             iisOfFrame = epdiis;
         } else if( pixelDataFragments==null ) {
-        	return null;
+            return null;
         } else {
             iisOfFrame = new SegmentedInputImageStream(
                     iis, pixelDataFragments, frameIndex);
@@ -813,31 +825,29 @@ public class DicomImageReader extends ImageReader {
     
     /** Reads post-pixel data tags, will skip past any remaining images (which may be very slow), and
      * add any post-pixel data information to the attributes object.
-     * NOTE: This read will read past image data, and may end up scanning/seeking through multiframe or video data in order tofind the
+     * NOTE: This read will read past image data, and may end up scanning/seeking through multiframe or video data in order to find the
      * post pixel data.  This may be slow.
      *
      * Replaces the attributes object with a new one, thus is thread safe for other uses of the object.
-     *
-     * Does NOT work with LEI compressed data.
      */
     public Attributes readPostPixeldata() throws IOException {
-    	if( frames==0 ) return metadata.getAttributes();
-    	
+        if( frames==0 ) return metadata.getAttributes();
+        
         if( dis!=null ) {
-        	if( flushedFrames > frames ) {
-        		return metadata.getAttributes();
-        	}
+            if( flushedFrames > frames ) {
+                return metadata.getAttributes();
+            }
             dis.skipFully((frames - flushedFrames) * frameLength);
             flushedFrames = frames+1;
             return readPostAttr(dis);
-    	}
-    	long offset;
-    	if( pixelData!=null ) {
-    		offset = pixelData.offset()+pixelData.longLength();
-    	} else {
-    		SegmentedInputImageStream siis = (SegmentedInputImageStream) iisOfFrame(-1);
-    		offset = siis.getOffsetPostPixelData();
-    	}
+        }
+        long offset;
+        if( pixelData!=null ) {
+            offset = pixelData.offset()+pixelData.longLength();
+        } else {
+            SegmentedInputImageStream siis = (SegmentedInputImageStream) iisOfFrame(-1);
+            offset = siis.getOffsetPostPixelData();
+        }
         iis.seek(offset);
         @SuppressWarnings("resource")
         DicomInputStream dis = new DicomInputStream(new ImageInputStreamAdapter(iis), getTransferSyntaxUID());

@@ -144,12 +144,12 @@ public class TestDicomImageReader {
             // Must not throw an exception
             reader.readRaster(0, null);
         } else {
-        	try {
-        		reader.readRaster(0, null);
-        		Fail.fail("Should not be able to read the raster on an input stream after reading post pixel data.");
-        	} catch(IllegalStateException e) {
+            try {
+                reader.readRaster(0, null);
+                Fail.fail("Should not be able to read the raster on an input stream after reading post pixel data.");
+            } catch(IllegalStateException e) {
                 // Expected to throw an exception
-        	}
+            }
         }
     }
 

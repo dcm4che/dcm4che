@@ -106,9 +106,6 @@ import org.dcm4che3.util.TagUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -140,6 +137,7 @@ public class DcmQRSCP {
     private boolean sendPendingCGet;
     private int sendPendingCMoveInterval;
     private int delayCFind;
+    private int delayCStore;
     private boolean ignoreCaseOfPN;
     private boolean matchNoValue;
     private final FilesetInfo fsInfo = new FilesetInfo();
@@ -285,7 +283,7 @@ public class DcmQRSCP {
                 return null;
 
             RetrieveTaskImpl retrieveTask = new RetrieveTaskImpl(
-                    Dimse.C_GET_RQ, as, pc, rq, matches, as, withoutBulkData);
+                    Dimse.C_GET_RQ, as, pc, rq, matches, as, withoutBulkData, delayCStore);
             retrieveTask.setSendPendingRSP(isSendPendingCGet());
             return retrieveTask;
         }
@@ -325,8 +323,8 @@ public class DcmQRSCP {
 
             AAssociateRQ aarq = makeAAssociateRQ(as.getLocalAET(), moveDest, matches);
             Association storeas = openStoreAssociation(as, remote, aarq);
-            BasicRetrieveTask retrieveTask = new BasicRetrieveTask(
-                    Dimse.C_MOVE_RQ, as, pc, rq, matches, storeas);
+            BasicRetrieveTask retrieveTask = new RetrieveTaskImpl(
+                    Dimse.C_MOVE_RQ, as, pc, rq, matches, storeas, false, delayCStore);
             retrieveTask.setSendPendingRSPInterval(getSendPendingCMoveInterval());
             return retrieveTask;
         }
@@ -554,6 +552,14 @@ public class DcmQRSCP {
         this.delayCFind = delayCFind;
     }
 
+    public int getDelayCStore() {
+        return delayCStore;
+    }
+
+    public void setDelayCStore(int delayCStore) {
+        this.delayCStore = delayCStore;
+    }
+
     public final void setRecordFactory(RecordFactory recFact) {
         this.recFact = recFact;
     }
@@ -579,6 +585,7 @@ public class DcmQRSCP {
         addStgCmtOptions(opts);
         addSendingPendingOptions(opts);
         addDelayCFindOptions(opts);
+        addDelayCStoreOptions(opts);
         addRemoteConnectionsOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmQRSCP.class);
     }
@@ -620,6 +627,16 @@ public class DcmQRSCP {
                 .withArgName("ms")
                 .withDescription(rb.getString("delay-cfind"))
                 .withLongOpt("delay-cfind")
+                .create());
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addDelayCStoreOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("ms")
+                .withDescription(rb.getString("delay-cstore"))
+                .withLongOpt("delay-cstore")
                 .create());
     }
 
@@ -696,6 +713,7 @@ public class DcmQRSCP {
             configureStgCmt(main, cl);
             configureSendPending(main, cl);
             configureDelayCFind(main, cl);
+            configureDelayCStore(main, cl);
             configureRemoteConnections(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
@@ -749,6 +767,11 @@ public class DcmQRSCP {
     private static void configureDelayCFind(DcmQRSCP main, CommandLine cl) {
         if (cl.hasOption("delay-cfind"))
                 main.setDelayCFind(Integer.parseInt(cl.getOptionValue("delay-cfind")));
+    }
+
+    private static void configureDelayCStore(DcmQRSCP main, CommandLine cl) {
+        if (cl.hasOption("delay-cstore"))
+                main.setDelayCStore(Integer.parseInt(cl.getOptionValue("delay-cstore")));
     }
 
     private static void configureTransferCapability(DcmQRSCP main, CommandLine cl)

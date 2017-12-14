@@ -121,6 +121,7 @@ public class Connection implements Serializable {
     private int releaseTimeout;
     private int responseTimeout;
     private int retrieveTimeout;
+    private boolean retrieveTimeoutTotal;
     private int idleTimeout;
     private int socketCloseDelay = DEF_SOCKETDELAY;
     private int sendBufferSize;
@@ -502,6 +503,14 @@ public class Connection implements Serializable {
 
     public final void setRetrieveTimeout(int timeout) {
         this.retrieveTimeout = timeout;
+    }
+
+    public final boolean isRetrieveTimeoutTotal() {
+        return retrieveTimeoutTotal;
+    }
+
+    public final void setRetrieveTimeoutTotal(boolean retrieveTimeoutTotal) {
+        this.retrieveTimeoutTotal = retrieveTimeoutTotal;
     }
 
     public final int getIdleTimeout() {

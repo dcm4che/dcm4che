@@ -330,6 +330,12 @@ attributetype ( 1.2.40.0.13.1.15.0.3.64 NAME 'dcmMasqueradeCallingAETitle'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 
+attributetype ( 1.2.40.0.13.1.15.0.3.65 NAME 'dcmRetrieveTimeoutTotal'
+  DESC 'Indicates if the timer with the specified timeout for outstanding C-GET and C-MOVE RSPs shall be restarted on receive of pending RSPs (=false or absent) or not (=true).'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+
 attributetype ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -487,7 +493,7 @@ attributetype ( 1.2.40.0.13.1.15.1.3.27 NAME 'dcmAuditNetworkAccessPointID'
 
 attributetype ( 1.2.40.0.13.1.15.1.3.28 NAME 'dcmAuditUserIsRequestor'
   DESC 'Indicates if Active Participant is initiator/requestor of the Audit Event as specified by RFC 3881'
-  EQUALITY booleanMatch 
+  EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 
@@ -605,6 +611,7 @@ objectclass ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
     dcmARRPTimeout $
     dcmResponseTimeout $
     dcmRetrieveTimeout $
+    dcmRetrieveTimeoutTotal $
     dcmIdleTimeout ) )
 
 objectclass ( 1.2.40.0.13.1.15.0.4.8 NAME 'dcmTransferCapability'
@@ -635,7 +642,7 @@ objectclass ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL
   MUST (
-    cn $ 
+    cn $
     dicomNetworkConnectionReference $
     dcmAuditRecordRepositoryDeviceReference )
   MAY (
@@ -662,7 +669,7 @@ objectclass ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
 objectclass ( 1.2.40.0.13.1.15.1.4.2 NAME 'dcmAuditSuppressCriteria'
   DESC 'Audit Suppress Criteria'
   SUP top STRUCTURAL
-  MUST ( cn ) 
+  MUST ( cn )
   MAY (
     dcmAuditEventID $
     dcmAuditEventTypeCode $
@@ -678,8 +685,8 @@ objectclass ( 1.2.40.0.13.1.15.1.4.2 NAME 'dcmAuditSuppressCriteria'
 objectclass ( 1.2.40.0.13.1.15.2.4.1 NAME 'dcmAuditRecordRepository'
   DESC 'Audit Record Repository related information'
   SUP top STRUCTURAL
-  MUST ( 
-    cn $ 
+  MUST (
+    cn $
     dicomNetworkConnectionReference )
   MAY (
     dicomInstalled ) )
@@ -687,13 +694,13 @@ objectclass ( 1.2.40.0.13.1.15.2.4.1 NAME 'dcmAuditRecordRepository'
 objectclass ( 1.2.40.0.13.1.15.3.4.3 NAME 'hl7UniqueApplicationNamesRegistryRoot'
   DESC 'Root of the Unique HL7 Application Name Registry Hierarchy'
   SUP top STRUCTURAL
-  MUST ( cn ) 
+  MUST ( cn )
   MAY ( description ) )
 
 objectclass ( 1.2.40.0.13.1.15.3.4.5 NAME 'hl7Application'
   DESC 'HL7 Application information'
   SUP top STRUCTURAL
-  MUST ( 
+  MUST (
     hl7ApplicationName $
     dicomNetworkConnectionReference )
   MAY (
@@ -719,8 +726,8 @@ objectclass ( 1.2.40.0.13.1.15.4.4.1 NAME 'dcmImageReaderFactory'
 objectclass ( 1.2.40.0.13.1.15.4.4.2 NAME 'dcmImageReader'
   DESC 'Image Reader related information'
   SUP top STRUCTURAL
-  MUST ( 
-    dicomTransferSyntax $ 
+  MUST (
+    dicomTransferSyntax $
     dcmIIOFormatName )
   MAY (
     dcmJavaClassName $
@@ -734,8 +741,8 @@ objectclass ( 1.2.40.0.13.1.15.4.4.3 NAME 'dcmImageWriterFactory'
 objectclass ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
   DESC 'Image Reader related information'
   SUP top STRUCTURAL
-  MUST ( 
-    dicomTransferSyntax $ 
+  MUST (
+    dicomTransferSyntax $
     dcmIIOFormatName )
   MAY (
     dcmJavaClassName $
@@ -745,10 +752,10 @@ objectclass ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
 objectclass ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
   DESC 'Compression rule'
   SUP top STRUCTURAL
-  MUST ( 
-    cn $ 
-    dcmPhotometricInterpretation $ 
-    dcmBitsStored $ 
+  MUST (
+    cn $
+    dcmPhotometricInterpretation $
+    dcmBitsStored $
     dicomTransferSyntax )
   MAY (
     dcmPixelRepresentation $
@@ -756,9 +763,9 @@ objectclass ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
     dcmSOPClass $
     dcmBodyPartExamined $
     dcmImageWriteParam ) )
-    
+
 objectclass ( 1.2.40.0.13.1.15.4.4.6 NAME 'dcmCollection'
   DESC 'Collection folder'
   SUP top STRUCTURAL
-  MUST ( 
-    cn  ))    
+  MUST (
+    cn  ))

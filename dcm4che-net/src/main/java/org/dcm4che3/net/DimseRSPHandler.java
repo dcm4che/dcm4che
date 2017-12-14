@@ -41,6 +41,7 @@ package org.dcm4che3.net;
 import java.io.IOException;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.net.pdu.PresentationContext;
 
 /**
@@ -51,7 +52,8 @@ public class DimseRSPHandler {
 
     private final int msgId;
     private PresentationContext pc;
-    private Timeout timeout;
+    private volatile Timeout timeout;
+    private boolean stopOnPending;
 
     public DimseRSPHandler(int msgId) {
         this.msgId = msgId;
@@ -65,8 +67,13 @@ public class DimseRSPHandler {
         return msgId;
     }
 
-    final void setTimeout(Timeout timeout) {
+    final void setTimeout(Timeout timeout, boolean stopOnPending) {
         this.timeout = timeout;
+        this.stopOnPending = stopOnPending;
+    }
+
+    boolean isStopOnPending() {
+        return stopOnPending;
     }
 
     public void cancel(Association as) throws IOException {
@@ -74,7 +81,8 @@ public class DimseRSPHandler {
     }
 
     public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
-        stopTimeout(as);
+        if (stopOnPending || !Status.isPending(cmd.getInt(Tag.Status, -1)))
+            stopTimeout(as);
     }
 
     public void onClose(Association as) {

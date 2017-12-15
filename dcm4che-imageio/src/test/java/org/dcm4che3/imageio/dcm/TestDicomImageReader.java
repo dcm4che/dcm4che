@@ -261,6 +261,28 @@ public class TestDicomImageReader {
     }
 
     @Test
+    public void testReadBytesImageInputStream_Uncompressed() throws IOException {
+        try(FileImageInputStream is = new FileImageInputStream(new File(TEST_DATA_DIR+CPLX_P02))) {
+        	reader.setInput(is);
+        	byte[] data = reader.readBytes(0, null);
+        	assertThat(data).hasSize(524288);
+        }
+    }
+
+    @Test
+    public void testReadBytesImageInputStream_Compressed() throws IOException {
+    	byte[] rawRead;
+    	try (DicomInputStream dis = new DicomInputStream(new File(TEST_DATA_DIR+US_MF_RLE))) {
+    		rawRead = (byte[]) ((Fragments) dis.readDataset(-1,-1).getValue(Tag.PixelData)).get(1);
+    	}
+        try(FileImageInputStream is = new FileImageInputStream(new File(TEST_DATA_DIR+US_MF_RLE))) {
+        	reader.setInput(is);
+        	byte[] data = reader.readBytes(0, null);
+        	assertThat(data).hasSize(50104).containsExactly(rawRead);
+        }
+    }
+
+    @Test
     public void testReadLastRasterFromCompressedImageInputStream() throws IOException {
         testReadRasterFromImageInputStream(US_MF_RLE, 9);
     }

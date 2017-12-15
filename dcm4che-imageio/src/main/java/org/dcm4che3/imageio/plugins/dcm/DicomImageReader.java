@@ -46,6 +46,7 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -869,4 +870,60 @@ public class DicomImageReader extends ImageReader {
         resetInternalState();
     }
 
+    /**
+     * Reads the byte stream of a compressed image as an array, returns null for
+     * non-compressed or too large images
+     * 
+     * @throws IOException
+     */
+    public byte[] readBytes(int frameIndex, ImageReadParam param) throws IOException {
+        readMetadata();
+        checkIndex(frameIndex);
+
+        openiis();
+        try {
+            if (decompressor != null) {
+                ImageInputStream iisOfFrame = iisOfFrame(frameIndex);
+                long length = iisOfFrame.length();
+                if (length >= 0) {
+                    if (length > Integer.MAX_VALUE)
+                        return null;
+                    byte[] ret = new byte[(int) length];
+                    iisOfFrame.readFully(ret);
+                    return ret;
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buf = new byte[1024 * 32];
+                int len = iisOfFrame.read(buf);
+                while (len >= 0) {
+                    baos.write(buf, 0, len);
+                    len = iisOfFrame.read(buf);
+                }
+                return baos.toByteArray();
+            }
+
+            // Uncompressed image data
+            if (dis != null) {
+                dis.skipFully((frameIndex - flushedFrames) * frameLength);
+                flushedFrames = frameIndex + 1;
+            } else if (pixeldataBytes != null) {
+                iis.setByteOrder(bigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+                iis.seek(frameIndex * frameLength);
+            } else {
+                iis.setByteOrder(bigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+                iis.seek(pixelData.offset() + frameIndex * frameLength);
+            }
+            byte[] ret = new byte[frameLength];
+            if (dis != null)
+                dis.readFully(ret);
+            else
+                iis.readFully(ret);
+            if (pixelDataVR == VR.OW && bigEndian()) {
+                ByteUtils.swapShorts(ret, 0, ret.length);
+            }
+            return ret;
+        } finally {
+            closeiis();
+        }
+    }
 }

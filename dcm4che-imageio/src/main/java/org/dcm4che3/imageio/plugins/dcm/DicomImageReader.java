@@ -46,6 +46,7 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -664,8 +665,9 @@ public class DicomImageReader extends ImageReader {
                 if (pixelDataLength == -1)
                     epdiis = new EncapsulatedPixelDataImageInputStream(dis, ds.getInt(Tag.NumberOfFrames, 1));
             } else {
-                Attributes postPixelData = dis.readDataset(-1, -1);
-                ds.addAll(postPixelData);
+                try {
+                    dis.readAttributes(ds, -1, -1);
+                } catch (EOFException e) {};
             }
             setMetadata(new DicomMetaData(fmi, ds));
             return;
@@ -683,8 +685,9 @@ public class DicomImageReader extends ImageReader {
             pixelDataVR = dis.vr();
             pixelDataLength = dis.length();            
         } else {
-            Attributes postPixelData = dis.readDataset(-1, -1);
-            ds.addAll(postPixelData);
+            try {
+                dis.readAttributes(ds, -1, -1);
+            } catch (EOFException e) {};
         }
         setMetadata(new DicomMetaData(fmi, ds));
         initPixelDataIIS(dis);

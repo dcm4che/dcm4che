@@ -46,6 +46,7 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -78,11 +79,13 @@ import org.junit.Test;
  */
 public class TestDicomImageReader {
 
+	private static final String TEST_DATA_DIR = "target/test-data/";
     private static final String CPLX_P02 = "cplx_p02.dcm";
     private static final String NM_MF = "NM-MONO2-16-13x-heart";
     private static final String NM_MF_CHECKSUM = "B2813DA2FE5B79A1B3CAF18DBD25023E2F84D4FE";
     private static final String US_MF_RLE = "US-PAL-8-10x-echo";
     private static final String US_MF_RLE_CHECKSUM = "5F4909DEDD7D1E113CC69172C693B4705FEE5B46";
+    private static final String REPORT_DFL = "report_dfl";
 
     DicomImageReader reader;
     
@@ -98,6 +101,26 @@ public class TestDicomImageReader {
     public void tearDown() throws Exception {
         if (reader != null)
             reader.dispose();
+    }
+    
+    @Test
+    public void testReadNoPixelData_InputStream() throws FileNotFoundException, IOException {
+    	try(FileInputStream is = new FileInputStream(new File(TEST_DATA_DIR+REPORT_DFL))) {
+    		reader.setInput(is);
+    		reader.getStreamMetadata();
+    		Attributes withPostPixelData = reader.readPostPixeldata();
+    		assertThat(withPostPixelData.getString(Tag.ValueType)).isEqualTo("CONTAINER");
+    	}
+    }
+
+    @Test
+    public void testReadNoPixelData_ImageInputStream() throws FileNotFoundException, IOException {
+    	try(FileImageInputStream is = new FileImageInputStream(new File(TEST_DATA_DIR+REPORT_DFL))) {
+    		reader.setInput(is);
+    		reader.getStreamMetadata();
+    		Attributes withPostPixelData = reader.readPostPixeldata();
+    		assertThat(withPostPixelData.getString(Tag.ValueType)).isEqualTo("CONTAINER");
+    	}
     }
 
     @Test 

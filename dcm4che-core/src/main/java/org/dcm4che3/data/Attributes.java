@@ -38,22 +38,32 @@
 
 package org.dcm4che3.data;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.regex.Pattern;
+
 import org.dcm4che3.data.IOD.DataElement;
 import org.dcm4che3.data.IOD.DataElementType;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.util.*;
+import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.DateUtils;
+import org.dcm4che3.util.Deidentifier;
+import org.dcm4che3.util.StringUtils;
+import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -1951,8 +1961,10 @@ public class Attributes implements Serializable {
     }
 
     private Object set(String privateCreator, int tag, VR vr, Object value) {
-        if (vr == null)
-            throw new NullPointerException("vr");
+        if (vr == null) {
+            LOG.warn("Provided NULL vr for {}:{} value {}", privateCreator,Integer.toHexString(tag), value);
+            vr = VR.UN;
+        }
 
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, true);
@@ -2199,6 +2211,12 @@ public class Attributes implements Serializable {
     }
 
     public boolean addWithoutBulkData(Attributes other, BulkDataDescriptor descriptor) {
+        List<ItemPointer> itemPointers = new ArrayList<>();
+        itemPointers.addAll(Arrays.asList(other.itemPointers()));
+        return addWithoutBulkData(other,descriptor,itemPointers);
+    }
+    
+    private boolean addWithoutBulkData(Attributes other, BulkDataDescriptor descriptor, List<ItemPointer> itemPointers) {
         final boolean toggleEndian = bigEndian != other.bigEndian;
         final int[] tags = other.tags;
         final VR[] srcVRs = other.vrs;
@@ -2207,7 +2225,6 @@ public class Attributes implements Serializable {
         int numAdd = 0;
         String privateCreator = null;
         int creatorTag = 0;
-        ItemPointer[] itemPointer = itemPointers();
         for (int i = 0; i < otherSize; i++) {
             int tag = tags[i];
             VR vr = srcVRs[i];
@@ -2236,30 +2253,31 @@ public class Attributes implements Serializable {
             int vallen = (value instanceof byte[])
                     ? ((byte[])value).length
                     : -1;
-            if (descriptor.isBulkData(privateCreator, tag, vr, vallen, itemPointer))
+            if (descriptor.isBulkData(itemPointers, privateCreator, tag, vr, vallen))
                 continue;
 
             if (value instanceof Sequence) {
                 Sequence src = (Sequence) value;
-                setWithoutBulkData(privateCreator, tag, src, descriptor);
+                setWithoutBulkData(itemPointers, privateCreator, tag, src, descriptor);
             } else if (value instanceof Fragments) {
                 set(privateCreator, tag, (Fragments) value);
             } else {
-                set(privateCreator, tag, vr,
-                        toggleEndian(vr, value, toggleEndian));
+                set(privateCreator, tag, vr, toggleEndian(vr, value, toggleEndian));
             }
             numAdd++;
         }
         return numAdd != 0;
     }
 
-    private void setWithoutBulkData(String privateCreator, int tag, Sequence seq,
+    private void setWithoutBulkData(List<ItemPointer> itemPointers, String privateCreator, int tag, Sequence seq,
                                     BulkDataDescriptor descriptor) {
         Sequence newSequence = newSequence(privateCreator, tag, seq.size());
         for (Attributes item : seq) {
             Attributes newItem = new Attributes(bigEndian, item.size());
             newSequence.add(newItem);
-            newItem.addWithoutBulkData(item, descriptor);
+            itemPointers.add(new ItemPointer(privateCreator, tag, newSequence.size()));
+            newItem.addWithoutBulkData(item, descriptor, itemPointers);
+            itemPointers.remove(itemPointers.size()-1);
         }
     }
 

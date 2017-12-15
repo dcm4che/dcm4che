@@ -38,6 +38,8 @@
 
 package org.dcm4che3.io;
 
+import java.util.List;
+
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.ItemPointer;
 import org.dcm4che3.data.Tag;
@@ -54,8 +56,7 @@ public abstract class BulkDataDescriptor {
     public final static BulkDataDescriptor DEFAULT = new BulkDataDescriptor() {
 
         @Override
-        public boolean isBulkData(String privateCreator, int tag, VR vr, int length,
-                                      ItemPointer... itemPointer) {
+        public boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length) {
             switch (TagUtils.normalizeRepeatingGroup(tag)) {
             case Tag.PixelDataProviderURL:
             case Tag.AudioSampleData:
@@ -66,10 +67,10 @@ public abstract class BulkDataDescriptor {
             case Tag.FloatPixelData:
             case Tag.DoubleFloatPixelData:
             case Tag.PixelData:
-                return itemPointer.length == 0;
+                return itemPointer.isEmpty();
             case Tag.WaveformData:
-                return itemPointer.length == 1
-                    && itemPointer[0].sequenceTag == Tag.WaveformSequence;
+                return itemPointer.size() == 1 
+                && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
             }
             return false;
         }
@@ -78,22 +79,11 @@ public abstract class BulkDataDescriptor {
     public final static BulkDataDescriptor PIXELDATA = new BulkDataDescriptor() {
 
         @Override
-        public boolean isBulkData(String privateCreator, int tag, VR vr, int length,
-                                      ItemPointer... itemPointer) {
+        public boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length) {
             if (tag == Tag.PixelData)
                 return true;
-            // Don't need any binary tags larger than a LUT containing 64k elements, which is 64*1024*2
-            switch (vr) {
-            case OB:
-            case OD:
-            case OF:
-            case OL:
-            case OW:
-            case UN:
-                return length > 64*1024*2;
-                default:
-            }
-            return false;
+            // Don't need any private tags larger than 64k
+            return TagUtils.isPrivateTag(tag) && length>64*1024; 
         }
     };
 
@@ -101,8 +91,7 @@ public abstract class BulkDataDescriptor {
         return new BulkDataDescriptor() {
 
             @Override
-            public boolean isBulkData(String privateCreator, int tag, VR vr, int length,
-                                      ItemPointer... itemPointer) {
+            public boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length) {
                 Attributes item = blkAttrs;
                 for (ItemPointer ip : itemPointer) {
                     item = item.getNestedDataset(
@@ -113,7 +102,6 @@ public abstract class BulkDataDescriptor {
         };
     }
 
-    public abstract boolean isBulkData(String privateCreator, int tag, VR vr, int length,
-                                       ItemPointer... itemPointer);
+    public abstract boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length);
 
 }

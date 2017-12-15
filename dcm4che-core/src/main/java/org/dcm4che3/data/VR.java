@@ -221,6 +221,10 @@ public enum VR {
     }
 
     private static int indexOf(int code) {
+        if( code==0 ) {
+            code = VR.UN.code;
+            LOG.info("0 VR code value being treated as UN");
+        }
         int code1 = code - 0x4141;
         return (code1 & 0xffffe0e0) == 0 ? ((code1 & 0xff00) >> 3) + (code1 & 0xff) : -1;
     }

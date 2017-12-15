@@ -5,3 +5,5 @@
 .idea/
 target/
 *.tmp
+/.metadata/
+.recommenders/

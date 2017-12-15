@@ -280,6 +280,11 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.64 NAME 'dcmMasqueradeCallingAETitle'
   DESC 'AE Title used for initiating network associations, masquerading the actual AE Title for this Network AE - optional prefix [<Called AE Title>] limits the masquerading to association to a particular AE Title'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.65 NAME 'dcmRetrieveTimeoutTotal'
+  DESC 'Indicates if the timer with the specified timeout for outstanding C-GET and C-MOVE RSPs shall be restarted on receive of pending RSPs (=false or absent) or not (=true).'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -519,6 +524,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
     dcmARRPTimeout $
     dcmResponseTimeout $
     dcmRetrieveTimeout $
+    dcmRetrieveTimeoutTotal $
     dcmIdleTimeout ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.8 NAME 'dcmTransferCapability'
   DESC 'Extended Transfer Capabilities for an Application Entity'
@@ -622,8 +628,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.1 NAME 'dcmImageReaderFactory'
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.2 NAME 'dcmImageReader'
   DESC 'Image Reader related information'
   SUP top STRUCTURAL
-  MUST ( 
-    dicomTransferSyntax $ 
+  MUST (
+    dicomTransferSyntax $
     dcmIIOFormatName )
   MAY (
     dcmJavaClassName $
@@ -635,8 +641,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.3 NAME 'dcmImageWriterFactory'
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
   DESC 'Image Reader related information'
   SUP top STRUCTURAL
-  MUST ( 
-    dicomTransferSyntax $ 
+  MUST (
+    dicomTransferSyntax $
     dcmIIOFormatName )
   MAY (
     dcmJavaClassName $
@@ -645,10 +651,10 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
   DESC 'Compression rule'
   SUP top STRUCTURAL
-  MUST ( 
-    cn $ 
-    dcmPhotometricInterpretation $ 
-    dcmBitsStored $ 
+  MUST (
+    cn $
+    dcmPhotometricInterpretation $
+    dcmBitsStored $
     dicomTransferSyntax )
   MAY (
     dcmPixelRepresentation $
@@ -659,5 +665,5 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.6 NAME 'dcmCollection'
   DESC 'Collection folder'
   SUP top STRUCTURAL
-  MUST ( 
-    cn  ))    
+  MUST (
+    cn  ))

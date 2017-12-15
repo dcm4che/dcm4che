@@ -277,6 +277,11 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.64 NAME 'dcmMasqueradeCallingAETitle'
   DESC 'AE Title used for initiating network associations, masquerading the actual AE Title for this Network AE - optional prefix [<Called AE Title>] limits the masquerading to association to a particular AE Title'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.65 NAME 'dcmRetrieveTimeoutTotal'
+  DESC 'Indicates if the timer with the specified timeout for outstanding C-GET and C-MOVE RSPs shall be restarted on receive of pending RSPs (=false or absent) or not (=true).'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -407,7 +412,7 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.27 NAME 'dcmAuditNetworkAccessPointID'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.28 NAME 'dcmAuditUserIsRequestor'
   DESC 'Indicates if Active Participant is initiator/requestor of the Audit Event as specified by RFC 3881'
-  EQUALITY booleanMatch 
+  EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.3.3.1 NAME 'hl7ApplicationName'
@@ -512,6 +517,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
     dcmARRPTimeout $
     dcmResponseTimeout $
     dcmRetrieveTimeout $
+    dcmRetrieveTimeoutTotal $
     dcmIdleTimeout ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.8 NAME 'dcmTransferCapability'
   DESC 'Extended Transfer Capabilities for an Application Entity'
@@ -539,7 +545,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL
   MUST (
-    cn $ 
+    cn $
     dicomNetworkConnectionReference $
     dcmAuditRecordRepositoryDeviceReference )
   MAY (
@@ -565,7 +571,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
 olcObjectClasses: ( 1.2.40.0.13.1.15.1.4.2 NAME 'dcmAuditSuppressCriteria'
   DESC 'Audit Suppress Criteria'
   SUP top STRUCTURAL
-  MUST ( cn ) 
+  MUST ( cn )
   MAY (
     dcmAuditEventID $
     dcmAuditEventTypeCode $
@@ -579,20 +585,20 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.1.4.2 NAME 'dcmAuditSuppressCriteria'
 olcObjectClasses: ( 1.2.40.0.13.1.15.2.4.1 NAME 'dcmAuditRecordRepository'
   DESC 'Audit Record Repository related information'
   SUP top STRUCTURAL
-  MUST ( 
-    cn $ 
+  MUST (
+    cn $
     dicomNetworkConnectionReference )
   MAY (
     dicomInstalled ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.3.4.3 NAME 'hl7UniqueApplicationNamesRegistryRoot'
   DESC 'Root of the Unique HL7 Application Name Registry Hierarchy'
   SUP top STRUCTURAL
-  MUST ( cn ) 
+  MUST ( cn )
   MAY ( description ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.3.4.5 NAME 'hl7Application'
   DESC 'HL7 Application information'
   SUP top STRUCTURAL
-  MUST ( 
+  MUST (
     hl7ApplicationName $
     dicomNetworkConnectionReference )
   MAY (
@@ -615,8 +621,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.1 NAME 'dcmImageReaderFactory'
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.2 NAME 'dcmImageReader'
   DESC 'Image Reader related information'
   SUP top STRUCTURAL
-  MUST ( 
-    dicomTransferSyntax $ 
+  MUST (
+    dicomTransferSyntax $
     dcmIIOFormatName )
   MAY (
     dcmJavaClassName $
@@ -628,8 +634,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.3 NAME 'dcmImageWriterFactory'
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
   DESC 'Image Reader related information'
   SUP top STRUCTURAL
-  MUST ( 
-    dicomTransferSyntax $ 
+  MUST (
+    dicomTransferSyntax $
     dcmIIOFormatName )
   MAY (
     dcmJavaClassName $
@@ -638,10 +644,10 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
   DESC 'Compression rule'
   SUP top STRUCTURAL
-  MUST ( 
-    cn $ 
-    dcmPhotometricInterpretation $ 
-    dcmBitsStored $ 
+  MUST (
+    cn $
+    dcmPhotometricInterpretation $
+    dcmBitsStored $
     dicomTransferSyntax )
   MAY (
     dcmPixelRepresentation $
@@ -652,5 +658,5 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.6 NAME 'dcmCollection'
   DESC 'Collection folder'
   SUP top STRUCTURAL
-  MUST ( 
-    cn  ))    
+  MUST (
+    cn  ))

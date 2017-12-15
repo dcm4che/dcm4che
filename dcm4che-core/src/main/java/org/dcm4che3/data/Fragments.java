@@ -87,6 +87,10 @@ public class Fragments extends ArrayList<Object> implements Value {
     private final VR vr;
     private final boolean bigEndian;
 
+    public Fragments(VR vr, boolean bigEndian, int initialCapacity) {
+    	this(null,-1,vr,bigEndian,initialCapacity);
+    }
+    
     public Fragments(String privateCreator, int tag, VR vr, boolean bigEndian, int initialCapacity) {
         super(initialCapacity);
         this.privateCreator = privateCreator;
@@ -99,6 +103,7 @@ public class Fragments extends ArrayList<Object> implements Value {
         return privateCreator;
     }
 
+    /** Returns the tag containing this fragments object, or -1 if unknown */
     public final int tag() {
         return tag;
     }

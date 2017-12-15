@@ -125,7 +125,7 @@ public class DicomInputStream extends FilterInputStream
     private DicomInputHandler handler = this;
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
-    private ItemPointer[] itemPointers = {};
+    private List<ItemPointer> itemPointers = new ArrayList<ItemPointer>(4);
     private boolean decodeUNWithIVRLE = true;
     private boolean addBulkDataReferences;
 
@@ -300,7 +300,7 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public final int level() {
-        return itemPointers.length;
+        return itemPointers.size();
     }
 
     public final int tag() {
@@ -525,8 +525,6 @@ public class DicomInputStream extends FilterInputStream
 
     public void readAttributes(Attributes attrs, int len, int stopTag)
             throws IOException {
-        ItemPointer[] prevItemPointers = itemPointers;
-        itemPointers = attrs.itemPointers();
         boolean undeflen = len == -1;
         boolean hasStopTag = stopTag != -1;
         long endPos =  pos + (len & 0xffffffffL);
@@ -563,7 +561,6 @@ public class DicomInputStream extends FilterInputStream
             } else
                 skipAttribute(UNEXPECTED_ATTRIBUTE);
         }
-        itemPointers = prevItemPointers;
     }
 
     @Override
@@ -635,8 +632,8 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public boolean isBulkData(Attributes attrs) {
-        return bulkDataDescriptor.isBulkData(
-                attrs.getPrivateCreator(tag), tag, vr, length, itemPointers);
+        return bulkDataDescriptor.isBulkData(itemPointers,
+                attrs.getPrivateCreator(tag), tag, vr, length);
     }
 
     @Override
@@ -703,21 +700,23 @@ public class DicomInputStream extends FilterInputStream
         String privateCreator = attrs.getPrivateCreator(sqtag);
         boolean undefLen = len == -1;
         long endPos = pos + (len & 0xffffffffL);
-        for (int i = 0; undefLen || pos < endPos; ++i) {
-            readHeader();
-            if (tag == Tag.Item) {
-                handler.readValue(this, seq);
-            } else if (tag == Tag.SequenceDelimitationItem) {
-                if (length != 0)
-                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
-                break;
-            } else
-                skipAttribute(UNEXPECTED_ATTRIBUTE);
+        for (int i = 0; (undefLen || pos < endPos) && readItemHeader(); ++i) {
+            addItemPointer(sqtag, privateCreator, i);
+            handler.readValue(this, seq);
+            removeItemPointer();
         }
         if (seq.isEmpty())
             attrs.setNull(sqtag, VR.SQ);
         else
             seq.trimToSize();
+    }
+
+    private void addItemPointer(int sqtag, String privateCreator, int itemIndex) {
+        itemPointers.add(new ItemPointer(privateCreator, sqtag, itemIndex));
+    }
+
+    private void removeItemPointer() {
+        itemPointers.remove(itemPointers.size() - 1);
     }
 
     public Attributes readItem() throws IOException {

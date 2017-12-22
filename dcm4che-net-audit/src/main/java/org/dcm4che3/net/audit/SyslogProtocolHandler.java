@@ -68,32 +68,15 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
     @Override
     public void onAccept(Connection conn, Socket s) throws IOException {
-        InputStream in = s.getInputStream();
-        byte[] data = new byte[INIT_MSG_LEN];
-        int length;
-        s.setSoTimeout(conn.getIdleTimeout());
-        while ((length = readMessageLength(in, s)) > 0) {
-            if (length > MAX_MSG_LEN) {
-                LOG.warn("Message length: {} received from {} exceeds limit {}",
-                        length, s, MAX_MSG_LEN);
-                break;
-            }
-            if (length > data.length)
-                data = new byte[length];
-
-            if (readMessage(in, data, length) < length) {
-                LOG.warn("Connection closed by remote host {} during receive of message",
-                         s);
-                break;
-            }
-            LOG.info("Received Syslog message of {} bytes from {}",
-                    length, s);
-            onMessage(data, 0, length, conn, s.getInetAddress());
-        }
-        conn.close(s);
+        conn.getDevice().execute(new SyslogReceiverTLS(conn, s));
     }
 
-    private int readMessageLength(InputStream in, Socket s) throws IOException {
+    @Override
+    public void onReceive(Connection conn, DatagramPacket packet) {
+        conn.getDevice().execute(new SyslogReceiverUDP(conn, packet));
+    }
+
+    private static int readMessageLength(InputStream in, Socket s) throws IOException {
         int ch;
         try {
             ch = in.read();
@@ -118,7 +101,7 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
         return len;
    }
 
-    private int readMessage(InputStream in, byte[] data, int len) throws IOException {
+    private static int readMessage(InputStream in, byte[] data, int len) throws IOException {
         int count, n = 0;
         while (n < len && (count = in.read(data, n, len - n)) > 0) {
             n += count;
@@ -126,18 +109,8 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
         return n;
     }
 
-    @Override
-    public void onReceive(Connection conn, DatagramPacket packet) {
-        LOG.info("Received UDP Syslog message of {} bytes from {}", 
-                packet.getLength(), packet.getAddress());
-        onMessage(packet.getData(), packet.getOffset(), packet.getLength(), 
-                conn, packet.getAddress());
-    }
-
-    private void onMessage(byte[] data, int offset, int length,
+    private static void onMessage(AuditRecordRepository arr, byte[] data, int offset, int length,
             Connection conn, InetAddress from) {
-        AuditRecordRepository arr = conn.getDevice()
-                .getDeviceExtension(AuditRecordRepository.class);
         if (LOG.isDebugEnabled()) {
             LOG.debug(prompt(data, MSG_PROMPT_LEN));
         }
@@ -204,6 +177,71 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
                     : new String(data, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class SyslogReceiverTLS implements Runnable {
+        private final Connection conn;
+        private final Socket s;
+        private final AuditRecordRepository arr;
+
+        public SyslogReceiverTLS(Connection conn, Socket s) {
+            this.conn = conn;
+            this.s = s;
+            this.arr = conn.getDevice().getDeviceExtensionNotNull(AuditRecordRepository.class);
+        }
+
+        @Override
+        public void run() {
+            try {
+                InputStream in = s.getInputStream();
+                byte[] data = new byte[INIT_MSG_LEN];
+                int length;
+                s.setSoTimeout(conn.getIdleTimeout());
+                while ((length = readMessageLength(in, s)) > 0) {
+                    if (length > MAX_MSG_LEN) {
+                        LOG.warn("Message length: {} received from {} exceeds limit {}",
+                                length, s, MAX_MSG_LEN);
+                        break;
+                    }
+                    if (length > data.length)
+                        data = new byte[length];
+
+                    if (readMessage(in, data, length) < length) {
+                        LOG.warn("Connection closed by remote host {} during receive of message",
+                                s);
+                        break;
+                    }
+                    LOG.info("Received Syslog message of {} bytes from {}",
+                            length, s);
+                    onMessage(arr, data, 0, length, conn, s.getInetAddress());
+                }
+            } catch (IOException e) {
+                LOG.warn("Exception on accepted connection {}:",s, e);
+            } finally {
+                conn.close(s);
+            }
+        }
+    }
+
+    private static class SyslogReceiverUDP implements Runnable {
+        private final Connection conn;
+        private final DatagramPacket packet;
+        private final AuditRecordRepository arr;
+
+        public SyslogReceiverUDP(Connection conn, DatagramPacket packet) {
+            this.conn = conn;
+            this.packet = packet;
+            this.arr = conn.getDevice().getDeviceExtensionNotNull(AuditRecordRepository.class);
+        }
+
+        @Override
+        public void run() {
+            LOG.info("Received UDP Syslog message of {} bytes from {}",
+                    packet.getLength(), packet.getAddress());
+            onMessage(arr, packet.getData(), packet.getOffset(), packet.getLength(),
+                    conn, packet.getAddress());
+
         }
     }
 }

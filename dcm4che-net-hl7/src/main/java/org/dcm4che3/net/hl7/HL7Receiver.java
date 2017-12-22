@@ -1,4 +1,4 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/dcm4che.
+ * Java(TM), hosted at https://github.com/gunterze/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,25 +34,51 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ */
 
 package org.dcm4che3.net.hl7;
 
+import org.dcm4che3.hl7.HL7Exception;
+import org.dcm4che3.hl7.HL7Message;
+import org.dcm4che3.hl7.MLLPConnection;
+import org.dcm4che3.net.Connection;
+
 import java.io.IOException;
 import java.net.Socket;
-
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.TCPProtocolHandler;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-enum HL7ProtocolHandler implements TCPProtocolHandler {
-    INSTANCE;
+class HL7Receiver implements Runnable {
 
-    @Override
-    public void onAccept(Connection conn, Socket s) throws IOException {
-        conn.getDevice().execute(new HL7Receiver(conn, s));
+    private final Connection conn;
+    private final MLLPConnection mllp;
+    private final HL7DeviceExtension hl7dev;
+
+    public HL7Receiver(Connection conn, Socket s) throws IOException {
+        this.conn = conn;
+        this.hl7dev = conn.getDevice().getDeviceExtensionNotNull(HL7DeviceExtension.class);
+        this.mllp = new MLLPConnection(s);
+    }
+
+    public void run() {
+        byte[] data;
+        try {
+            mllp.getSocket().setSoTimeout(conn.getIdleTimeout());
+            while ((data = mllp.readMessage()) != null) {
+                UnparsedHL7Message msg = new UnparsedHL7Message(data);
+                try {
+                    data = hl7dev.onMessage(conn, mllp.getSocket(), msg);
+                } catch (HL7Exception e) {
+                    data = HL7Message.makeACK(msg.msh(), e).getBytes(null);
+                }
+                mllp.writeMessage(data);
+            }
+        } catch (IOException e) {
+            Connection.LOG.warn("Exception on accepted HL7 connection {}:", mllp.getSocket(), e);
+        } finally {
+            conn.close(mllp.getSocket());
+        }
     }
 }

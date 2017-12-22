@@ -42,6 +42,7 @@ package org.dcm4che3.conf.json;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.net.*;
+import org.dcm4che3.net.hl7.HL7ApplicationInfo;
 
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;

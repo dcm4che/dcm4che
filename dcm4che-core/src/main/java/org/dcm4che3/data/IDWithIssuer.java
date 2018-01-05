@@ -148,6 +148,11 @@ public class IDWithIssuer {
             attrs = new Attributes(3);
 
         attrs.setString(Tag.PatientID, VR.LO, id);
+        
+        if(attrs.getString(Tag.TypeOfPatientID) == null || attrs.getString(Tag.TypeOfPatientID).isEmpty()){
+        	attrs.setString(Tag.TypeOfPatientID,VR.CS,"TEXT");
+        }
+                
         if (issuer == null && identifierTypeCode == null) {
             return attrs;
         }

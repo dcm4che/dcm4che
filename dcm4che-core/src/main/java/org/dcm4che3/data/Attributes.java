@@ -53,7 +53,6 @@ import java.util.regex.Pattern;
 
 import org.dcm4che3.data.IOD.DataElement;
 import org.dcm4che3.data.IOD.DataElementType;
-import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
@@ -70,11 +69,14 @@ import org.slf4j.LoggerFactory;
  */
 public class Attributes implements Serializable {
 
-
-
     public interface Visitor {
         boolean visit(Attributes attrs, int tag, VR vr, Object value)
                 throws Exception;
+    }
+
+    public interface SequenceVisitor extends Visitor {
+        void startItem(int sqTag, int itemIndex);
+        void endItem();
     }
 
     private static final Logger LOG = 
@@ -485,7 +487,7 @@ public class Attributes implements Serializable {
     }
 
     private double[] decodeDSValue(int index) {
-        Object value = values[index];
+        Object value = index < 0 ? Value.NULL : values[index];
         if (value == Value.NULL)
             return ByteUtils.EMPTY_DOUBLES;
 
@@ -518,7 +520,7 @@ public class Attributes implements Serializable {
     }
 
     private int[] decodeISValue(int index) {
-        Object value = values[index];
+        Object value = index < 0 ? Value.NULL : values[index];
         if (value == Value.NULL)
             return ByteUtils.EMPTY_INTS;
 
@@ -1961,10 +1963,8 @@ public class Attributes implements Serializable {
     }
 
     private Object set(String privateCreator, int tag, VR vr, Object value) {
-        if (vr == null) {
-            LOG.warn("Provided NULL vr for {}:{} value {}", privateCreator,Integer.toHexString(tag), value);
-            vr = VR.UN;
-        }
+        if (vr == null)
+            throw new NullPointerException("vr");
 
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, true);
@@ -2027,7 +2027,7 @@ public class Attributes implements Serializable {
             values[index] = value;
             return oldValue;
         }
-        insert(-index - 1, tag, vr, value);
+        insert(-index-1, tag, vr, value);
         return null;
     }
 
@@ -2208,77 +2208,6 @@ public class Attributes implements Serializable {
                     toggleEndian(vr, value, bigEndian != other.bigEndian));
         }
         return true;
-    }
-
-    public boolean addWithoutBulkData(Attributes other, BulkDataDescriptor descriptor) {
-        List<ItemPointer> itemPointers = new ArrayList<>();
-        itemPointers.addAll(Arrays.asList(other.itemPointers()));
-        return addWithoutBulkData(other,descriptor,itemPointers);
-    }
-    
-    private boolean addWithoutBulkData(Attributes other, BulkDataDescriptor descriptor, List<ItemPointer> itemPointers) {
-        final boolean toggleEndian = bigEndian != other.bigEndian;
-        final int[] tags = other.tags;
-        final VR[] srcVRs = other.vrs;
-        final Object[] srcValues = other.values;
-        final int otherSize = other.size;
-        int numAdd = 0;
-        String privateCreator = null;
-        int creatorTag = 0;
-        for (int i = 0; i < otherSize; i++) {
-            int tag = tags[i];
-            VR vr = srcVRs[i];
-            Object value = srcValues[i];
-            if (TagUtils.isPrivateCreator(tag)) {
-                if (contains(tag))
-                    continue; // do not overwrite private creator IDs
-
-                if (vr == VR.LO) {
-                    value = other.decodeStringValue(i);
-                    if ((value instanceof String)
-                            && creatorTagOf((String) value, tag, false) != -1)
-                        continue; // do not add duplicate private creator ID
-                }
-            }
-            if (TagUtils.isPrivateTag(tag)) {
-                int tmp = TagUtils.creatorTagOf(tag);
-                if (creatorTag != tmp) {
-                    creatorTag = tmp;
-                    privateCreator = other.privateCreatorOf(tag);
-                }
-            } else {
-                creatorTag = 0;
-                privateCreator = null;
-            }
-            int vallen = (value instanceof byte[])
-                    ? ((byte[])value).length
-                    : -1;
-            if (descriptor.isBulkData(itemPointers, privateCreator, tag, vr, vallen))
-                continue;
-
-            if (value instanceof Sequence) {
-                Sequence src = (Sequence) value;
-                setWithoutBulkData(itemPointers, privateCreator, tag, src, descriptor);
-            } else if (value instanceof Fragments) {
-                set(privateCreator, tag, (Fragments) value);
-            } else {
-                set(privateCreator, tag, vr, toggleEndian(vr, value, toggleEndian));
-            }
-            numAdd++;
-        }
-        return numAdd != 0;
-    }
-
-    private void setWithoutBulkData(List<ItemPointer> itemPointers, String privateCreator, int tag, Sequence seq,
-                                    BulkDataDescriptor descriptor) {
-        Sequence newSequence = newSequence(privateCreator, tag, seq.size());
-        for (Attributes item : seq) {
-            Attributes newItem = new Attributes(bigEndian, item.size());
-            newSequence.add(newItem);
-            itemPointers.add(new ItemPointer(privateCreator, tag, newSequence.size()));
-            newItem.addWithoutBulkData(item, descriptor, itemPointers);
-            itemPointers.remove(itemPointers.size()-1);
-        }
     }
 
     /**
@@ -2853,9 +2782,15 @@ public class Attributes implements Serializable {
             if (!visitor.visit(this, tags[i], vrs[i], values[i]))
                 return false;
             if (visitNestedDatasets && (values[i] instanceof Sequence)) {
+                int itemIndex = 0;
                 for (Attributes item : (Sequence) values[i]) {
+                    if (visitor instanceof SequenceVisitor)
+                        ((SequenceVisitor) visitor).startItem(tags[i], itemIndex);
                     if (!item.accept(visitor, true))
                         return false;
+                    if (visitor instanceof SequenceVisitor)
+                        ((SequenceVisitor) visitor).endItem();
+                    itemIndex++;
                 }
             }
         }
@@ -3407,6 +3342,57 @@ public class Attributes implements Serializable {
             }
         }
         return modified;
+    }
+
+    public static void unifyCharacterSets(Attributes... attrsList) {
+        if (attrsList.length == 0)
+            return;
+
+        SpecificCharacterSet utf8 = SpecificCharacterSet.valueOf("ISO_IR 192");
+        SpecificCharacterSet commonCS = attrsList[0].getSpecificCharacterSet();
+        if (!commonCS.equals(utf8)) {
+            for (int i = 1; i < attrsList.length; i++) {
+                SpecificCharacterSet cs = attrsList[i].getSpecificCharacterSet();
+                if (!(cs.equals(commonCS) || cs.isASCII() && commonCS.containsASCII())) {
+                    if (commonCS.isASCII() && cs.containsASCII())
+                        commonCS = cs;
+                    else {
+                        commonCS = utf8;
+                        break;
+                    }
+                }
+            }
+        }
+        for (Attributes attrs : attrsList) {
+            SpecificCharacterSet cs = attrs.getSpecificCharacterSet();
+            if (!(cs.equals(commonCS))) {
+                if (!cs.isASCII() || !commonCS.containsASCII())
+                    attrs.decodeStringValuesUsingSpecificCharacterSet();
+                attrs.setString(Tag.SpecificCharacterSet, VR.CS, commonCS.toCodes());
+            }
+        }
+    }
+
+    public int removeAllBulkData() {
+        int removed = 0;
+        for (int i = 0; i < size; i++) {
+            Object value = values[i];
+            if (value instanceof BulkData) {
+                int srcPos = i + 1;
+                int len = size - srcPos;
+                System.arraycopy(tags, srcPos, tags, i, len);
+                System.arraycopy(vrs, srcPos, vrs, i, len);
+                System.arraycopy(values, srcPos, values, i, len);
+                i--;
+                size--;
+                removed++;
+            } else if (value instanceof Sequence) {
+                for (Attributes item : (Sequence) value) {
+                    removed += item.removeAllBulkData();
+                }
+            }
+        }
+        return removed;
     }
 
     private int creatorIndexOf(String privateCreator, int groupNumber) {

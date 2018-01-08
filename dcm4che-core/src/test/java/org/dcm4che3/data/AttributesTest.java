@@ -47,7 +47,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
-import org.dcm4che3.io.BulkDataDescriptor;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.DatePrecision;
+import org.dcm4che3.data.DateRange;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StringUtils;
@@ -383,37 +387,6 @@ public class AttributesTest {
         assertEquals(5, modified.size());
         assertEquals("AccessionNumber", modified.getString(Tag.AccessionNumber));
         assertModified(modified);
-    }
-
-    @Test
-    public void testAddWithoutBulkData() {
-        Attributes a = new Attributes();
-        Attributes b = new Attributes();
-
-        a.setInt(Tag.BitsAllocated, VR.US, 8);
-        a.setBytes(Tag.PixelData, VR.OW, new byte[1000]);
-
-        Attributes wfItem = new Attributes();
-        wfItem.setString(Tag.WaveformOriginality, VR.CS, "ORIGINAL");
-        wfItem.setBytes(Tag.WaveformData, VR.OB, new byte[1000]);
-
-        Sequence wfSeq = a.newSequence(Tag.WaveformSequence, 1);
-        wfSeq.add(wfItem);
-
-        a.setString("org.dcm4che", 0x99990001, VR.SH, "test");
-
-        b.addWithoutBulkData(a, BulkDataDescriptor.DEFAULT);
-
-        assertEquals(8, b.getInt(Tag.BitsAllocated, 0));
-        assertFalse(b.contains(Tag.PixelData));
-
-        Attributes wfItem2 = b.getNestedDataset(Tag.WaveformSequence);
-        assertNotNull(wfItem2);
-        assertEquals("ORIGINAL", wfItem2.getString(Tag.WaveformOriginality));
-        assertFalse(wfItem2.contains(Tag.WaveformData));
-
-        assertEquals("org.dcm4che", b.getString(0x99990010));
-        assertEquals("test", b.getString(0x99991001));
     }
 
     @Test

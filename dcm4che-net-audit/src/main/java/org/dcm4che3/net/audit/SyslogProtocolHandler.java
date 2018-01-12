@@ -60,7 +60,7 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
     INSTANCE;
 
     private static final int INIT_MSG_LEN = 8192;
-    private static final int MAX_MSG_LEN = 65536;
+    private static final int MAX_MSG_LEN = 1024*1024*20; //20mb
     private static final int MAX_MSG_PREFIX = 200;
     private static final int MSG_PROMPT_LEN = 8192;
 

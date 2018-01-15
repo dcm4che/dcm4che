@@ -45,10 +45,15 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.TCPProtocolHandler;
 import org.dcm4che3.net.UDPProtocolHandler;
+import org.dcm4che3.util.SafeClose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,40 +62,61 @@ import org.slf4j.LoggerFactory;
  *
  */
 enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
-    INSTANCE;
+    // MAX POOL SIZE: 20
+    INSTANCE ( new ThreadPoolExecutor(0, 20, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>()));
 
     private static final int INIT_MSG_LEN = 8192;
     private static final int MAX_MSG_LEN = 1024*1024*20; //20mb
     private static final int MAX_MSG_PREFIX = 200;
     private static final int MSG_PROMPT_LEN = 8192;
-
     private static Logger LOG = LoggerFactory.getLogger(SyslogProtocolHandler.class);
 
-    @Override
-    public void onAccept(Connection conn, Socket s) throws IOException {
-        InputStream in = s.getInputStream();
-        byte[] data = new byte[INIT_MSG_LEN];
-        int length;
-        s.setSoTimeout(conn.getIdleTimeout());
-        while ((length = readMessageLength(in, s)) > 0) {
-            if (length > MAX_MSG_LEN) {
-                LOG.warn("Message length: {} received from {} exceeds limit {}",
-                        length, s, MAX_MSG_LEN);
-                break;
-            }
-            if (length > data.length)
-                data = new byte[length];
+    private final ThreadPoolExecutor executor;
 
-            if (readMessage(in, data, length) < length) {
-                LOG.warn("Connection closed by remote host {} during receive of message",
-                         s);
-                break;
+
+    private SyslogProtocolHandler(ThreadPoolExecutor executor)
+    {
+        this.executor = executor;
+    }
+
+    @Override
+    public void onAccept(final Connection conn, final Socket s) throws IOException {
+        this.executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try
+                {
+                    InputStream in = s.getInputStream();
+                    byte[] data = new byte[INIT_MSG_LEN];
+                    int length;
+                    s.setSoTimeout(conn.getIdleTimeout());
+                    while ((length = readMessageLength(in, s)) > 0) {
+                        if (length > MAX_MSG_LEN) {
+                            LOG.warn("Message length: {} received from {} exceeds limit {}",
+                                    length, s, MAX_MSG_LEN);
+                            break;
+                        }
+                        if (length > data.length)
+                            data = new byte[length];
+
+                        if (readMessage(in, data, length) < length) {
+                            LOG.warn("Connection closed by remote host {} during receive of message",
+                                    s);
+                            break;
+                        }
+                        LOG.info("Received Syslog message of {} bytes from {}",
+                                length, s);
+                        onMessage(data, 0, length, conn, s.getInetAddress());
+                    }
+                    SafeClose.close(s);
+                }
+                catch ( IOException e )
+                {
+                    LOG.warn("{}: i/o exception: {}", new Object[] { "SyslogProtocolHandler", e});
+                    SafeClose.close(s);
+                }
             }
-            LOG.info("Received Syslog message of {} bytes from {}",
-                    length, s);
-            onMessage(data, 0, length, conn, s.getInetAddress());
-        }
-        conn.close(s);
+        });
     }
 
     private int readMessageLength(InputStream in, Socket s) throws IOException {

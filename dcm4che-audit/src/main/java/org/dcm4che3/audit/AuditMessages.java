@@ -371,9 +371,9 @@ public class AuditMessages {
         public static final RoleIDCode ApplicationLauncher = 
                 new RoleIDCode("110151","DCM","Application Launcher");
         public static final RoleIDCode Destination = 
-                new RoleIDCode("110152","DCM","Destination");
+                new RoleIDCode("110152","DCM","Destination Role ID");
         public static final RoleIDCode Source = 
-                new RoleIDCode("110153","DCM","Source");
+                new RoleIDCode("110153","DCM","Source Role ID");
         public static final RoleIDCode DestinationMedia = 
                 new RoleIDCode("110154","DCM","Destination Media");
         public static final RoleIDCode SourceMedia = 

@@ -75,8 +75,8 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
     private SyslogProtocolHandler()
     {
-        this.executor = new ThreadPoolExecutor(0, 20, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        //this.executor = null;
+        //this.executor = new ThreadPoolExecutor(0, 20, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+        this.executor = null;
     }
 
     @Override

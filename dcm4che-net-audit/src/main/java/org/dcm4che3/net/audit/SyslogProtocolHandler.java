@@ -45,8 +45,13 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.Device;
 import org.dcm4che3.net.TCPProtocolHandler;
 import org.dcm4che3.net.UDPProtocolHandler;
 import org.slf4j.Logger;
@@ -66,14 +71,34 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
     private static Logger LOG = LoggerFactory.getLogger(SyslogProtocolHandler.class);
 
+    private ThreadPoolExecutor executor;
+
+    private SyslogProtocolHandler()
+    {
+        this.executor = new ThreadPoolExecutor(0, 20, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+        //this.executor = null;
+    }
+
     @Override
     public void onAccept(Connection conn, Socket s) throws IOException {
-        conn.getDevice().execute(new SyslogReceiverTLS(conn, s));
+        execute(new SyslogReceiverTLS(conn, s), conn.getDevice().getExecutor());
     }
 
     @Override
     public void onReceive(Connection conn, DatagramPacket packet) {
-        conn.getDevice().execute(new SyslogReceiverUDP(conn, packet));
+        execute(new SyslogReceiverUDP(conn, packet), conn.getDevice().getExecutor());
+    }
+
+    private void execute ( Runnable runnable, Executor defaultExecutor ) {
+
+        if (executor!=null) {
+            executor.execute( runnable );
+        }
+        else if (defaultExecutor!=null) {
+            defaultExecutor.execute( runnable );
+        }
+        else
+            throw new IllegalStateException("executor not initalized");
     }
 
     private static int readMessageLength(InputStream in, Socket s) throws IOException {

@@ -148,8 +148,17 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public DicomInputStream(File file) throws IOException {
-        this(new FileInputStream(file));
+        super(new BufferedInputStream(new FileInputStream(file)));
         uri = file.toURI().toString();
+        try {
+            guessTransferSyntax();
+        }catch(IOException ioException) {
+            try {
+                if(this.in != null)
+                    this.in.close();
+            }catch(Exception ignore) {} 
+            throw ioException;
+        } 
     }
 
     public final String getTransferSyntax() {

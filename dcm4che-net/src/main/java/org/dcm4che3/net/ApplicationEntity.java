@@ -515,14 +515,16 @@ public class ApplicationEntity implements Serializable {
                    PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED,
                    rqpc.getTransferSyntax());
 
-       for (String ts : rqpc.getTransferSyntaxes())
-           if (tc.containsTransferSyntax(ts)) {
-               byte[] info = negotiate(rq.getExtNegotiationFor(as), tc);
-               if (info != null)
-                   ac.addExtendedNegotiation(new ExtendedNegotiation(as, info));
-               return new PresentationContext(pcid,
-                       PresentationContext.ACCEPTANCE, ts);
-           }
+        // Iterate through the transfer capabilities since the order indicates preference.
+        for (String ts : tc.getTransferSyntaxes())
+            if ("*".equals(ts) || rqpc.containsTransferSyntax(ts)) {
+                byte[] info = negotiate(rq.getExtNegotiationFor(as), tc);
+                if (info != null)
+                    ac.addExtendedNegotiation(new ExtendedNegotiation(as, info));
+                return new PresentationContext(pcid,
+                        PresentationContext.ACCEPTANCE,
+                        "*".equals(ts) ? rqpc.getTransferSyntax() : ts);
+            }
 
        return new PresentationContext(pcid,
                 PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED,

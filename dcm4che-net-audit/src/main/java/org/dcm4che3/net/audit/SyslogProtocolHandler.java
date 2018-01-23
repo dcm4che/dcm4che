@@ -45,7 +45,13 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+<<<<<<< HEAD
 import java.util.concurrent.Executor;
+=======
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+>>>>>>> 707fa95... change ThreadPoolExecutor for SyslogProtocolHandler
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +68,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
-    INSTANCE;
+
+    INSTANCE ( );
 
     private static final int INIT_MSG_LEN = 8192;
     private static final int MAX_MSG_LEN = 1024*1024*20; //20mb
@@ -75,8 +82,9 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
     private SyslogProtocolHandler()
     {
-        this.executor = new ThreadPoolExecutor(0, 20, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        //this.executor = null;
+        // MIN and MAX POOL SIZE: 4
+        this.executor = new ThreadPoolExecutor(4, 4, 600L, TimeUnit.SECONDS, new LinkedBlockingQueue<>( 1000 ));
+        this.executor.allowCoreThreadTimeOut( true );
     }
 
     @Override

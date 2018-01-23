@@ -46,6 +46,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -62,8 +64,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
-    // MAX POOL SIZE: 20
-    INSTANCE ( new ThreadPoolExecutor(0, 20, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>()));
+
+    INSTANCE ( );
 
     private static final int INIT_MSG_LEN = 8192;
     private static final int MAX_MSG_LEN = 1024*1024*20; //20mb
@@ -74,9 +76,11 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
     private final ThreadPoolExecutor executor;
 
 
-    private SyslogProtocolHandler(ThreadPoolExecutor executor)
+    private SyslogProtocolHandler()
     {
-        this.executor = executor;
+        // MIN and MAX POOL SIZE: 4
+        this.executor = new ThreadPoolExecutor(4, 4, 600L, TimeUnit.SECONDS, new LinkedBlockingQueue<>( 1000 ));
+        this.executor.allowCoreThreadTimeOut( true );
     }
 
     @Override

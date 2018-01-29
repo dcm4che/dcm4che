@@ -269,12 +269,12 @@ public class AuditMessages {
             new EventTypeCode("ITI-51", "IHE Transactions", "Multi-Patient Query");
         public static final EventTypeCode ITI_63_XCFFetch = 
             new EventTypeCode("ITI-63", "IHE Transactions", "XCF Fetch");
-        public static final EventTypeCode CancelMessage =
-                new EventTypeCode("CANCEL", "99DCM4CHEE", "Cancel Message");
-        public static final EventTypeCode RescheduleMessage =
-                new EventTypeCode("RESCHEDULE", "99DCM4CHEE", "Reschedule Message");
-        public static final EventTypeCode DeleteMessage =
-                new EventTypeCode("DELETE", "99DCM4CHEE", "Delete Message");
+        public static final EventTypeCode CancelTask =
+                new EventTypeCode("CANCEL", "99DCM4CHEE", "Cancel Task");
+        public static final EventTypeCode RescheduleTask =
+                new EventTypeCode("RESCHEDULE", "99DCM4CHEE", "Reschedule Task");
+        public static final EventTypeCode DeleteTask =
+                new EventTypeCode("DELETE", "99DCM4CHEE", "Delete Task");
 
         public EventTypeCode(String code, String codeSystemName,
                 String originalText) {

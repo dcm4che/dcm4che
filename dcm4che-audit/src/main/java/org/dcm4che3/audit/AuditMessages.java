@@ -269,6 +269,12 @@ public class AuditMessages {
             new EventTypeCode("ITI-51", "IHE Transactions", "Multi-Patient Query");
         public static final EventTypeCode ITI_63_XCFFetch = 
             new EventTypeCode("ITI-63", "IHE Transactions", "XCF Fetch");
+        public static final EventTypeCode CancelMessage =
+                new EventTypeCode("CANCEL", "99DCM4CHEE", "Cancel Message");
+        public static final EventTypeCode RescheduleMessage =
+                new EventTypeCode("RESCHEDULE", "99DCM4CHEE", "Reschedule Message");
+        public static final EventTypeCode DeleteMessage =
+                new EventTypeCode("DELETE", "99DCM4CHEE", "Delete Message");
 
         public EventTypeCode(String code, String codeSystemName,
                 String originalText) {
@@ -572,6 +578,10 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
         public static final ParticipantObjectIDTypeCode QIDO_QUERY =
                 new ParticipantObjectIDTypeCode("QIDO","99DCM4CHEE","QIDO_Query");
+        public static final ParticipantObjectIDTypeCode TASK =
+                new ParticipantObjectIDTypeCode("TASK","99DCM4CHEE","Archive Task");
+        public static final ParticipantObjectIDTypeCode TASKS =
+                new ParticipantObjectIDTypeCode("TASKS","99DCM4CHEE","Archive Tasks");
         public static final ParticipantObjectIDTypeCode IHE_XDS_METADATA =
                 new ParticipantObjectIDTypeCode("urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd",
                         "IHE XDS Metadata", "submission set classificationNode");

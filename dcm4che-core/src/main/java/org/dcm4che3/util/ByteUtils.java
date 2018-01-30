@@ -359,4 +359,11 @@ public class ByteUtils {
         b1[last] = t;
     }
 
+    public static byte[] intsToBytesLE(int... values) {
+        byte[] ret = new byte[4*values.length];
+        for(int i=0; i<values.length; i++) {
+            intToBytesLE(values[i],ret, 4*i);
+        }
+        return ret;
+    }
 }

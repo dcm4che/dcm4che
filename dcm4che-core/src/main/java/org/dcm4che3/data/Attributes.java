@@ -119,6 +119,13 @@ public class Attributes implements Serializable {
         init(initialCapacity);
     }
 
+    public void clear() {
+        size = 0;
+        Arrays.fill(tags, 0);
+        Arrays.fill(vrs, null);
+        Arrays.fill(values, null);
+    }
+
     private void init(int initialCapacity) {
         this.tags = new int[initialCapacity];
         this.vrs = new VR[initialCapacity];
@@ -367,6 +374,19 @@ public class Attributes implements Serializable {
         return indexOf(tag);
     }
 
+    /**
+     * resolves to the actual private tag,
+     * given a private tag with placeholers (like 0011,xx13)
+     */
+    public int tagOf(String privateCreator, int tag) {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
+            if (creatorTag == -1)
+                return -1;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        return tag;
+    }
     private int creatorTagOf(String privateCreator, int tag, boolean reserve) {
         if (!TagUtils.isPrivateGroup(tag))
             throw new IllegalArgumentException(TagUtils.toString(tag)

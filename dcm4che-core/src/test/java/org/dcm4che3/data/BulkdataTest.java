@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,63 +36,43 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.imageio.plugins.dcm;
+package org.dcm4che3.data;
 
-import javax.imageio.metadata.IIOInvalidTreeException;
-import javax.imageio.metadata.IIOMetadata;
+import static org.junit.Assert.assertEquals;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
-import org.w3c.dom.Node;
+import org.junit.Test;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * Tests Bulkdata methods.
+ * 
+ * @author Bill Wallace <wayfarer3130@gmail.com>
  */
-public class DicomMetaData extends IIOMetadata {
+public class BulkdataTest {
+    long offset = 3l*Integer.MAX_VALUE;
+    long length = 0xFFFF0000l;
+    String url = "file:///someFile.dcm";
+    BulkData bulk = new BulkData(url,offset,(int) length,false);
 
-    private final Attributes fileMetaInformation;
-    private final Attributes attributes;
-
-    public DicomMetaData(Attributes fileMetaInformation, Attributes attributes) {
-        this.fileMetaInformation = fileMetaInformation;
-        this.attributes = attributes;
-    }
-
-    public final Attributes getFileMetaInformation() {
-        return fileMetaInformation;
-    }
-
-    public final Attributes getAttributes() {
-        return attributes;
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return true;
-    }
-
-    @Override
-    public Node getAsTree(String formatName) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void mergeTree(String formatName, Node root)
-            throws IIOInvalidTreeException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void reset() {
-        throw new UnsupportedOperationException();
+    @Test
+    public void testBulkdata_create() {
+        assertEquals(url+"?offset="+offset+"&length="+((int) length),bulk.getURI());
+        assertEquals(length,bulk.longLength());
+        assertEquals(offset,bulk.offset());
+        BulkData bulk2 = new BulkData(url,offset,(int) length, false);
+        assertEquals(bulk,bulk2);
+        assertEquals(bulk.hashCode(),bulk2.hashCode());
     }
     
-    public String getTransferSyntaxUID() {
-    	return getFileMetaInformation().getString(Tag.TransferSyntaxUID);
+    @Test
+    public void testBulkdata_update() {
+        BulkData bulkUnknown = new BulkData(url,-1l, -1, false);
+        assertEquals(url+"?offset=-1&length=-1",bulkUnknown.getURI());
+        assertEquals(-1,bulkUnknown.longLength());
+        assertEquals(-1,bulkUnknown.offset());
+        bulkUnknown.setLength(length);
+        bulkUnknown.setOffset(offset);
+        assertEquals(bulk,bulkUnknown);
+        assertEquals(bulk.hashCode(),bulkUnknown.hashCode());
     }
 
-    public boolean bigEndian() {
-        return getAttributes().bigEndian();
-    }
 }

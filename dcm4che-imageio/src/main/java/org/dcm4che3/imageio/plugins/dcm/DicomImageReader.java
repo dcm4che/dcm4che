@@ -47,6 +47,7 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.EOFException;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,7 +107,7 @@ import org.slf4j.LoggerFactory;
  * @since Feb 2013
  *
  */
-public class DicomImageReader extends ImageReader {
+public class DicomImageReader extends ImageReader implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(DicomImageReader.class);
 
@@ -869,4 +870,8 @@ public class DicomImageReader extends ImageReader {
         resetInternalState();
     }
 
+    @Override
+    public void close() {
+    	dispose();
+    }
 }

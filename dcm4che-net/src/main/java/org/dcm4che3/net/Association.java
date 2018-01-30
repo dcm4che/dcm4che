@@ -716,12 +716,13 @@ public class Association {
             throw new AAbort();
         }
         rspHandler.onDimseRSP(this, cmd, data);
-        if (pending && rspHandler.isStopOnPending())
-            startTimeout(msgId, dimse.isRetrieveRQ()
-                    ? conn.getRetrieveTimeout()
-                    : conn.getResponseTimeout(),
-                    true);
-        else {
+        if (pending) {
+            if (rspHandler.isStopOnPending())
+                startTimeout(msgId, dimse.isRetrieveRQ()
+                                ? conn.getRetrieveTimeout()
+                                : conn.getResponseTimeout(),
+                        true);
+        } else {
             incReceivedCount(dimse);
             removeDimseRSPHandler(msgId);
             if (rspHandlerForMsgId.isEmpty() && performing == 0)

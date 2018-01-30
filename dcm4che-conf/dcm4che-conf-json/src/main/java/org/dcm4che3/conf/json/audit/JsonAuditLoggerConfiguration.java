@@ -101,7 +101,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
         writer.writeNotDef("dcmAuditMessageFormatXML", auditLogger.isFormatXML(), false);
         writer.writeNotNullOrDef("dcmAuditMessageSchemaURI", auditLogger.getSchemaURI(), AuditMessages.SCHEMA_URI);
         writer.writeNotDef("dcmAuditIncludeInstanceUID", auditLogger.isIncludeInstanceUID(), false);
-        writer.writeNotNullOrDef("dcmAuditLoggerSpoolDirectoryURI", auditLogger.getSpoolDirectoryURI(), null);
+        writer.writeNotNullOrDef("dcmAuditLoggerSpoolDirectoryURI", auditLogger.getSpoolDirectoryURI(), auditLogger.getDefaultSpoolDirectoryURI());
         writer.writeNotDef("dcmAuditLoggerRetryInterval", auditLogger.getRetryInterval(), 0);
         writeAuditSuppressCriteriaList(writer, auditLogger.getAuditSuppressCriteriaList());
         writer.writeEnd();

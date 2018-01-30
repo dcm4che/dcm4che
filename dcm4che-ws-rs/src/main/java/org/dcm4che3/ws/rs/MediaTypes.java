@@ -207,6 +207,28 @@ public class MediaTypes {
             new MediaType("text", "rtf");
 
     /**
+     * "text/csv"
+     */
+    public final static String TEXT_CSV = "text/csv";
+
+    /**
+     * "text/csv"
+     */
+    public final static MediaType TEXT_CSV_TYPE =
+            new MediaType("text", "csv");
+
+    /**
+     * "text/csv;charset=utf-8"
+     */
+    public final static String TEXT_CSV_UTF8 = "text/csv;charset=utf-8";
+
+    /**
+     * "text/csv;charset=utf-8"
+     */
+    public final static MediaType TEXT_CSV_UTF8_TYPE =
+            new MediaType("text", "csv", "utf-8");
+
+    /**
      * "application/zip"
      */
     public final static String APPLICATION_ZIP = "application/zip";

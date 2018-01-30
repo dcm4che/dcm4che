@@ -135,6 +135,7 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
             }
             if( bulkOffset==-1 || bulkLength==-1 ) {
                 bulk = updateBulkData(i);
+                if( bulk==null ) return;
                 bulkOffset = bulk.offset();
                 bulkLength = bulk.length();
             }
@@ -278,4 +279,20 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         ret = getLastSegmentEnd();
         return ret+8;
     }
+
+    /** Gets the position/offsets of the fragments associated with this input, may read/seek to the end of the stream to do so.  
+     * Returns null if the fragments are not BulkData instances */
+    public long[] getImageInputStreamOffsetLength() throws IOException {
+        seek(0xFFFFFFFFFFFFl);
+        long[] ret = new long[2*(lastSegment-firstSegment)];
+        for(int seg=firstSegment; seg<lastSegment; seg++) {
+            Object fragment = fragments.get(seg);
+            if( !(fragment instanceof BulkData) ) return null;
+            BulkData bulk = (BulkData) fragment;
+            ret[(seg-firstSegment)*2] = bulk.offset();
+            ret[(seg-firstSegment)*2+1] = bulk.longLength();
+        }
+        return ret;
+    }
+    
 }

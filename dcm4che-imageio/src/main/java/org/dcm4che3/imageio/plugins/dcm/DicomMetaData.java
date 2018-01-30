@@ -38,11 +38,15 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.w3c.dom.Node;
 
 /**
@@ -50,6 +54,18 @@ import org.w3c.dom.Node;
  *
  */
 public class DicomMetaData extends IIOMetadata {
+    private static final Set<String> VIDEO_TSUID = new HashSet<>();
+    static {
+        VIDEO_TSUID.add(UID.MPEG2);
+        VIDEO_TSUID.add(UID.MPEG2MainProfileHighLevel);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel41);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For2DVideo);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For3DVideo);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264StereoHighProfileLevel42);
+        VIDEO_TSUID.add(UID.HEVCH265Main10ProfileLevel51);
+        VIDEO_TSUID.add(UID.HEVCH265MainProfileLevel51);
+    }
 
     private final Attributes fileMetaInformation;
     private final Attributes attributes;
@@ -95,4 +111,13 @@ public class DicomMetaData extends IIOMetadata {
     public boolean bigEndian() {
         return getAttributes().bigEndian();
     }
+
+    public boolean isVideo() {
+        return isVideo(getTransferSyntaxUID());
+    }
+	
+    public static boolean isVideo(String tsuid) {
+        return VIDEO_TSUID.contains(tsuid);
+    }
+
 }

@@ -46,6 +46,7 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.Closeable;
 import java.io.File;
@@ -112,7 +113,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(DicomImageReader.class);
 
     public static final String POST_PIXEL_DATA = "postPixelData";
-    
+
     private ImageInputStream iis;
 
     private DicomInputStream dis;
@@ -359,7 +360,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         try {
             if (decompressor != null) {
                 decompressor.setInput(iisOfFrame(frameIndex));
-    
+ 
                 if (LOG.isDebugEnabled())
                     LOG.debug("Start decompressing frame #" + (frameIndex + 1));
                 Raster wr = pmi.decompress() == pmi && decompressor.canReadRaster()
@@ -408,7 +409,13 @@ public class DicomImageReader extends ImageReader implements Closeable {
         }
     }
 
-    private boolean bigEndian() {
+    /** Gets the VR of the pixel data, needed for reading raw input stream */
+    public VR getPixelDataVR() {
+        return pixelDataVR;
+    }
+
+    /** Gets the endianness of the data, needed for reading raw input stream */
+    public boolean bigEndian() {
         return metadata.bigEndian();
     }
     
@@ -710,7 +717,16 @@ public class DicomImageReader extends ImageReader implements Closeable {
         pixelDataFragments = new Fragments(pixelDataVR, dis.bigEndian(), frames);
         pixelDataFragments.add(b);
         
-        generateOffsetLengths(pixelDataFragments, frames,b, start);
+        generateOffsetLengths(pixelDataFragments, isVideo() ? 1 : frames,b, start);
+    }
+
+    private boolean isVideo() {
+        return metadata.isVideo();
+    }
+    
+    /** Returns the image input stream that this object was created with, or null if it isn't using an iis. */ 
+    public ImageInputStream getImageInputStream() {
+    	return iis;
     }
 
     /** Creates an offset/length table based on the frame positions */
@@ -870,7 +886,75 @@ public class DicomImageReader extends ImageReader implements Closeable {
         resetInternalState();
     }
 
-    @Override
+    /** Gets the offsets of the given frame, 0 for video/all */
+    public long[] getImageInputStreamOffsetLength(int frameIndex) throws IOException {
+    	readMetadata();
+        if( iis==null ) return null;
+        if( isVideo() || frames==1 ) frameIndex = -1;
+        @SuppressWarnings("resource")
+        SegmentedInputImageStream iisOfFrame = new SegmentedInputImageStream(
+                iis, pixelDataFragments, frameIndex);        
+        return iisOfFrame.getImageInputStreamOffsetLength();
+    }
+
+    /**
+     * Reads the byte stream of a compressed image as an array, returns null for
+     * non-compressed or too large images
+     * 
+     * @throws IOException
+     */
+    public byte[] readBytes(int frameIndex, ImageReadParam param) throws IOException {
+        readMetadata();
+        checkIndex(frameIndex);
+
+        openiis();
+        try {
+            if (decompressor != null) {
+                ImageInputStream iisOfFrame = iisOfFrame(frameIndex);
+                long length = iisOfFrame.length();
+                if (length >= 0) {
+                    if (length > Integer.MAX_VALUE)
+                        return null;
+                    byte[] ret = new byte[(int) length];
+                    iisOfFrame.readFully(ret);
+                    return ret;
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buf = new byte[1024 * 32];
+                int len = iisOfFrame.read(buf);
+                while (len >= 0) {
+                    baos.write(buf, 0, len);
+                    len = iisOfFrame.read(buf);
+                }
+                return baos.toByteArray();
+            }
+
+            // Uncompressed image data
+            if (dis != null) {
+                dis.skipFully((frameIndex - flushedFrames) * frameLength);
+                flushedFrames = frameIndex + 1;
+            } else if (pixeldataBytes != null) {
+                iis.setByteOrder(bigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+                iis.seek(frameIndex * frameLength);
+            } else {
+                iis.setByteOrder(bigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+                iis.seek(pixelData.offset() + frameIndex * frameLength);
+            }
+            byte[] ret = new byte[frameLength];
+            if (dis != null)
+                dis.readFully(ret);
+            else
+                iis.readFully(ret);
+            if (pixelDataVR == VR.OW && bigEndian()) {
+                ByteUtils.swapShorts(ret, 0, ret.length);
+            }
+            return ret;
+        } finally {
+            closeiis();
+        }
+    }
+
+  @Override
     public void close() {
     	dispose();
     }

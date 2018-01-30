@@ -261,6 +261,49 @@ public class TestDicomImageReader {
     }
 
     @Test
+    public void testReadBytesImageInputStream_Uncompressed() throws IOException {
+        try(FileImageInputStream is = new FileImageInputStream(new File(TEST_DATA_DIR+CPLX_P02))) {
+        	reader.setInput(is);
+        	byte[] data = reader.readBytes(0, null);
+        	assertThat(data).hasSize(524288);
+        }
+    }
+
+    @Test
+    public void testReadBytesImageInputStream_Compressed() throws IOException {
+    	byte[] rawRead;
+    	try (DicomInputStream dis = new DicomInputStream(new File(TEST_DATA_DIR+US_MF_RLE))) {
+    		rawRead = (byte[]) ((Fragments) dis.readDataset(-1,-1).getValue(Tag.PixelData)).get(1);
+    	}
+        try(FileImageInputStream is = new FileImageInputStream(new File(TEST_DATA_DIR+US_MF_RLE))) {
+        	reader.setInput(is);
+        	byte[] data = reader.readBytes(0, null);
+        	assertThat(data).hasSize(50104).containsExactly(rawRead);
+        }
+    }
+    
+    @Test
+    public void testReadImageOffsets_Compressed() throws IOException {
+    	byte[] rawRead;
+    	try (DicomInputStream dis = new DicomInputStream(new File(TEST_DATA_DIR+US_MF_RLE))) {
+    		rawRead = (byte[]) ((Fragments) dis.readDataset(-1,-1).getValue(Tag.PixelData)).get(1);
+    	}
+        try(FileImageInputStream is = new FileImageInputStream(new File(TEST_DATA_DIR+US_MF_RLE))) {
+        	reader.setInput(is);
+        	long[] offsets = reader.getImageInputStreamOffsetLength(0);
+        	assertThat(offsets).containsExactly(2476+8,50104);
+        	byte[] offsetRead = new byte[(int) offsets[1]];
+        	reader.getImageInputStream().readFully(offsetRead);
+        	assertThat(offsetRead).containsExactly(rawRead);
+        	assertThat(reader.getPixelDataVR()).isEqualTo(VR.OB);
+        	
+        	long[] allOffsets = reader.getImageInputStreamOffsetLength(-1);
+        	assertThat(allOffsets).hasSize(20);
+        }
+    }
+
+
+    @Test
     public void testReadLastRasterFromCompressedImageInputStream() throws IOException {
         testReadRasterFromImageInputStream(US_MF_RLE, 9);
     }

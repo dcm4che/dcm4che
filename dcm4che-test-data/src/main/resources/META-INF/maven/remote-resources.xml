@@ -46,6 +46,7 @@
     <remoteResources>
         <remoteResource>cplx_p02.dcm</remoteResource>
         <remoteResource>DICOMDIR</remoteResource>
+        <remoteResource>NM-MONO2-16-13x-heart</remoteResource>
         <remoteResource>NM1_JPLY</remoteResource>
         <remoteResource>OT-PAL-8-face</remoteResource>
         <remoteResource>ovly_p01.dcm</remoteResource>

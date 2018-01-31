@@ -11,6 +11,7 @@
     <remoteResource>ldap/schema/dcm4che.schema</remoteResource>
     <remoteResource>ldap/schema/dicom.schema</remoteResource>
     <remoteResource>ldap/slapd/dcm4che.ldif</remoteResource>
+    <remoteResource>ldap/slapd/dcm4che-modify.ldif</remoteResource>
     <remoteResource>ldap/slapd/dicom.ldif</remoteResource>
   </remoteResources>
   <sourceEncoding>UTF-8</sourceEncoding>

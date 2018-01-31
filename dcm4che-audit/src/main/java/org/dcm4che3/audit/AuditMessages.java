@@ -269,6 +269,12 @@ public class AuditMessages {
             new EventTypeCode("ITI-51", "IHE Transactions", "Multi-Patient Query");
         public static final EventTypeCode ITI_63_XCFFetch = 
             new EventTypeCode("ITI-63", "IHE Transactions", "XCF Fetch");
+        public static final EventTypeCode CancelTask =
+                new EventTypeCode("CANCEL", "99DCM4CHEE", "Cancel Task");
+        public static final EventTypeCode RescheduleTask =
+                new EventTypeCode("RESCHEDULE", "99DCM4CHEE", "Reschedule Task");
+        public static final EventTypeCode DeleteTask =
+                new EventTypeCode("DELETE", "99DCM4CHEE", "Delete Task");
 
         public EventTypeCode(String code, String codeSystemName,
                 String originalText) {
@@ -371,9 +377,9 @@ public class AuditMessages {
         public static final RoleIDCode ApplicationLauncher = 
                 new RoleIDCode("110151","DCM","Application Launcher");
         public static final RoleIDCode Destination = 
-                new RoleIDCode("110152","DCM","Destination");
+                new RoleIDCode("110152","DCM","Destination Role ID");
         public static final RoleIDCode Source = 
-                new RoleIDCode("110153","DCM","Source");
+                new RoleIDCode("110153","DCM","Source Role ID");
         public static final RoleIDCode DestinationMedia = 
                 new RoleIDCode("110154","DCM","Destination Media");
         public static final RoleIDCode SourceMedia = 
@@ -572,9 +578,15 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
         public static final ParticipantObjectIDTypeCode QIDO_QUERY =
                 new ParticipantObjectIDTypeCode("QIDO","99DCM4CHEE","QIDO_Query");
+        public static final ParticipantObjectIDTypeCode TASK =
+                new ParticipantObjectIDTypeCode("TASK","99DCM4CHEE","Archive Task");
+        public static final ParticipantObjectIDTypeCode TASKS =
+                new ParticipantObjectIDTypeCode("TASKS","99DCM4CHEE","Archive Tasks");
         public static final ParticipantObjectIDTypeCode IHE_XDS_METADATA =
                 new ParticipantObjectIDTypeCode("urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd",
                         "IHE XDS Metadata", "submission set classificationNode");
+        public static final ParticipantObjectIDTypeCode DeviceName =
+                new ParticipantObjectIDTypeCode("113877","DCM","Device Name");
 
         public ParticipantObjectIDTypeCode(String code) {
             super.csdCode = code;

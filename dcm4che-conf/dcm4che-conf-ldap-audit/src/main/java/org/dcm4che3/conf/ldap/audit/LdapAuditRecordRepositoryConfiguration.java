@@ -49,6 +49,7 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
 
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
+import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditRecordRepository;
@@ -63,26 +64,30 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
             "cn=Audit Record Repository,";
 
     @Override
-    protected void storeChilds(String deviceDN, Device device)
+    protected void storeChilds(ConfigurationChanges diffs, String deviceDN, Device device)
             throws NamingException {
         AuditRecordRepository arr =
                 device.getDeviceExtension(AuditRecordRepository.class);
         if (arr != null)
-            store(deviceDN, arr);
+            store(diffs, deviceDN, arr);
     }
 
-    private void store(String deviceDN, AuditRecordRepository arr)
+    private void store(ConfigurationChanges diffs, String deviceDN, AuditRecordRepository arr)
             throws NamingException {
-        config.createSubcontext(CN_AUDIT_RECORD_REPOSITORY + deviceDN,
-                storeTo(arr, deviceDN, new BasicAttributes(true)));
+        String dn = CN_AUDIT_RECORD_REPOSITORY + deviceDN;
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
+        config.createSubcontext(dn,
+                storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
+                        arr, deviceDN, new BasicAttributes(true)));
     }
 
-    private Attributes storeTo(AuditRecordRepository arr, String deviceDN,
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, AuditRecordRepository arr, String deviceDN,
             Attributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "dcmAuditRecordRepository"));
-        LdapUtils.storeConnRefs(attrs, arr.getConnections(),
+        LdapUtils.storeConnRefs(ldapObj, attrs, arr.getConnections(),
                 deviceDN);
-        LdapUtils.storeNotNullOrDef(attrs, "dicomInstalled",
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomInstalled",
                 arr.getInstalled(), null);
         return attrs;
     }
@@ -111,31 +116,36 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
     }
 
     @Override
-    protected void mergeChilds(Device prev, Device device, String deviceDN)
+    protected void mergeChilds(ConfigurationChanges diffs, Device prev, Device device, String deviceDN)
             throws NamingException {
         AuditRecordRepository prevARR = prev.getDeviceExtension(AuditRecordRepository.class);
         AuditRecordRepository arr = device.getDeviceExtension(AuditRecordRepository.class);
+        if (arr == null && prevARR == null)
+            return;
+
+        String dn = CN_AUDIT_RECORD_REPOSITORY + deviceDN;
         if (arr == null) {
-            if (prevARR != null)
-                config.destroySubcontextWithChilds(CN_AUDIT_RECORD_REPOSITORY + deviceDN);
-            return;
+            config.destroySubcontextWithChilds(dn);
+            ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
+        } else if (prevARR == null) {
+            store(diffs, deviceDN, arr);
+        } else {
+            ConfigurationChanges.ModifiedObject ldapObj =
+                    ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
+            config.modifyAttributes(dn,
+                    storeDiffs(ldapObj, prevARR, arr, deviceDN, new ArrayList<ModificationItem>()));
+            ConfigurationChanges.removeLastIfEmpty(diffs, ldapObj);
         }
-        if (prevARR == null) {
-            store(deviceDN, arr);
-            return;
-        }
-        config.modifyAttributes(CN_AUDIT_RECORD_REPOSITORY + deviceDN,
-                storeDiffs(prevARR, arr, deviceDN, new ArrayList<ModificationItem>()));
     }
 
-    private List<ModificationItem> storeDiffs(AuditRecordRepository a,
-            AuditRecordRepository b, String deviceDN,
-            ArrayList<ModificationItem> mods) {
-        LdapUtils.storeDiff(mods, "dicomNetworkConnectionReference",
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, AuditRecordRepository a,
+                                              AuditRecordRepository b, String deviceDN,
+                                              ArrayList<ModificationItem> mods) {
+        LdapUtils.storeDiff(ldapObj, mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
-        LdapUtils.storeDiffObject(mods, "dicomInstalled",
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled(), null);
         return mods;

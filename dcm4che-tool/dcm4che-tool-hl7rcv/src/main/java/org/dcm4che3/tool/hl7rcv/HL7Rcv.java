@@ -95,7 +95,9 @@ public class HL7Rcv {
             try {
                 return HL7Rcv.this.onMessage(msg);
             } catch (Exception e) {
-                throw new HL7Exception(HL7Exception.AE, e);
+                throw new HL7Exception(
+                        new ERRSegment(msg.msh()).setUserMessage(e.getMessage()),
+                        e);
             }
         }
     };

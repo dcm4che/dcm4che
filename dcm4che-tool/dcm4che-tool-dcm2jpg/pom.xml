@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che.tool</groupId>
     <artifactId>dcm4che-tool</artifactId>
-    <version>5.10.6</version>
+    <version>5.12.0</version>
   </parent>
   <artifactId>dcm4che-tool-dcm2jpg</artifactId>
   <name>dcm4che-tool-dcm2jpg</name>
@@ -29,7 +29,6 @@
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-common</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

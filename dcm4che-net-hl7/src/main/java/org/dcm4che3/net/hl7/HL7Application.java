@@ -50,6 +50,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.dcm4che3.hl7.ERRSegment;
 import org.dcm4che3.hl7.HL7Exception;
 import org.dcm4che3.hl7.HL7Segment;
 import org.dcm4che3.hl7.MLLPConnection;
@@ -69,6 +70,7 @@ public class HL7Application implements Serializable {
     private Device device;
     private String name;
     private String hl7DefaultCharacterSet = "ASCII";
+    private String hl7SendingCharacterSet = "ASCII";
     private Boolean installed;
     private String description;
     private String[] applicationClusters = {};
@@ -130,6 +132,14 @@ public class HL7Application implements Serializable {
 
     public final void setHL7DefaultCharacterSet(String hl7DefaultCharacterSet) {
         this.hl7DefaultCharacterSet = hl7DefaultCharacterSet;
+    }
+
+    public String getHL7SendingCharacterSet() {
+        return hl7SendingCharacterSet;
+    }
+
+    public void setHL7SendingCharacterSet(String hl7SendingCharacterSet) {
+        this.hl7SendingCharacterSet = hl7SendingCharacterSet;
     }
 
     public String[] getAcceptedSendingApplications() {
@@ -237,18 +247,41 @@ public class HL7Application implements Serializable {
     byte[] onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
         HL7Segment msh = msg.msh();
         if (!(isInstalled() && conns.contains(conn)))
-            throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
+            throw new HL7Exception(
+                    new ERRSegment(msh)
+                            .setHL7ErrorCode(ERRSegment.TableValueNotFound)
+                            .setErrorLocation(ERRSegment.UnknownReceivingApplication)
+                            .setUserMessage("Receiving Application not recognized"));
         if (!(acceptedSendingApplications.isEmpty()
                 || acceptedSendingApplications.contains(msh.getSendingApplicationWithFacility())))
-            throw new HL7Exception(HL7Exception.AR, "Sending Application not recognized");
+            throw new HL7Exception(
+                    new ERRSegment(msh)
+                            .setHL7ErrorCode(ERRSegment.TableValueNotFound)
+                            .setErrorLocation(ERRSegment.UnknownSendingApplication)
+                            .setUserMessage("Sending Application not recognized"));
+        String messageType = msh.getMessageType();
         if (!(acceptedMessageTypes.contains("*")
-                || acceptedMessageTypes.contains(msh.getMessageType())))
-            throw new HL7Exception(HL7Exception.AR, "Message Type not supported");
+                || acceptedMessageTypes.contains(messageType)))
+            throw new HL7Exception(
+                    new ERRSegment(msh)
+                            .setHL7ErrorCode(unsupportedMessageTypeOrEventCode(messageType.substring(0,3)))
+                            .setUserMessage("Message Type not supported"));
 
         HL7MessageListener listener = getHL7MessageListener();
         if (listener == null)
-            throw new HL7Exception(HL7Exception.AE, "No HL7 Message Listener configured");
+            throw new HL7Exception(new ERRSegment(msh)
+                            .setHL7ErrorCode(ERRSegment.ApplicationInternalError)
+                            .setUserMessage("No HL7 Message Listener configured"));
+
         return listener.onMessage(this, conn, s, msg);
+    }
+
+    private String unsupportedMessageTypeOrEventCode(String messageType) {
+        for (String acceptedMessageType : acceptedMessageTypes) {
+            if (acceptedMessageType.startsWith(messageType))
+                return ERRSegment.UnsupportedEventCode;
+        }
+        return ERRSegment.UnsupportedMessageType;
     }
 
     public MLLPConnection connect(Connection remote)
@@ -329,6 +362,7 @@ public class HL7Application implements Serializable {
 
     protected void setHL7ApplicationAttributes(HL7Application src) {
         setHL7DefaultCharacterSet(src.hl7DefaultCharacterSet);
+        setHL7SendingCharacterSet(src.hl7SendingCharacterSet);
         setAcceptedSendingApplications(src.getAcceptedSendingApplications());
         setOtherApplicationNames(src.getOtherApplicationNames());
         setAcceptedMessageTypes(src.getAcceptedMessageTypes());

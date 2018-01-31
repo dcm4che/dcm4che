@@ -277,6 +277,7 @@ public class ApplicationEntity implements Serializable {
             aets[i] = entry.getKey().equals("*")
                     ? entry.getValue()
                     : '[' + entry.getKey() + ']' + entry.getValue();
+            i++;
         }
         return aets;
     }

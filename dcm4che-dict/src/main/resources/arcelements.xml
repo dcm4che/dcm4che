@@ -51,6 +51,8 @@
   <el tag="7777xx26" keyword="FailedRetrievesOfStudy" vr="US" vm="1">Failed Retrieves of Study</el>
   <el tag="7777xx27" keyword="StudyAccessControlID" vr="LO" vm="1">Study Access Control ID</el>
   <el tag="7777xx28" keyword="StorageIDsOfStudy" vr="LO" vm="1-n">Storage IDs of Study</el>
+  <el tag="7777xx29" keyword="StudySizeInKB" vr="UL" vm="1">Study Size in KB</el>
+  <el tag="7777xx2A" keyword="StudySizeBytes" vr="US" vm="1">Study Size Bytes</el>
   <el tag="7777xx30" keyword="SeriesReceiveDateTime" vr="DT" vm="1">Series Receive Date Time</el>
   <el tag="7777xx31" keyword="SeriesUpdateDateTime" vr="DT" vm="1">Series Update Date Time</el>
   <el tag="7777xx33" keyword="SeriesExpirationDate" vr="DA" vm="1">Series Expiration Date</el>

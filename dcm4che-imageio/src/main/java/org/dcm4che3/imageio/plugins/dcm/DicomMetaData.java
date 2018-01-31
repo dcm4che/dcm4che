@@ -42,6 +42,7 @@ import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.w3c.dom.Node;
 
 /**
@@ -86,5 +87,12 @@ public class DicomMetaData extends IIOMetadata {
     public void reset() {
         throw new UnsupportedOperationException();
     }
+    
+    public String getTransferSyntaxUID() {
+    	return getFileMetaInformation().getString(Tag.TransferSyntaxUID);
+    }
 
+    public boolean bigEndian() {
+        return getAttributes().bigEndian();
+    }
 }

@@ -45,6 +45,7 @@ import javax.naming.directory.ModificationItem;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
+import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.net.hl7.HL7Application;
 
 /**
@@ -70,15 +71,16 @@ public class LdapHL7ConfigurationExtension {
         return config != null ? config.getDicomConfiguration() : null;
     }
 
-    public void storeTo(HL7Application hl7App, String deviceDN, Attributes attrs) {}
+    public void storeTo(ConfigurationChanges.ModifiedObject ldapObj, HL7Application hl7App, String deviceDN, Attributes attrs) {}
 
-    public void storeChilds(String appDN, HL7Application hl7App) throws NamingException {}
+    public void storeChilds(ConfigurationChanges diffs, String appDN, HL7Application hl7App) throws NamingException {}
 
     public void loadFrom(HL7Application hl7App, Attributes attrs) throws NamingException {}
 
     public void loadChilds(HL7Application hl7App, String appDN) throws NamingException, ConfigurationException {}
 
-    public void storeDiffs(HL7Application a, HL7Application b, List<ModificationItem> mods) {}
+    public void storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, HL7Application a, HL7Application b, List<ModificationItem> mods) {}
 
-    public void mergeChilds(HL7Application prev, HL7Application hl7App, String appDN) throws NamingException {}
+    public void mergeChilds(ConfigurationChanges diffs, HL7Application prev, HL7Application hl7App, String appDN)
+            throws NamingException {}
 }

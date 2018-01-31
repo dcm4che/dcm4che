@@ -3,7 +3,7 @@
   <parent>
     <artifactId>dcm4che-conf</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>5.10.6</version>
+    <version>5.12.0</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-conf-ldap-hl7</artifactId>
@@ -18,7 +18,6 @@
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-conf-ldap</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>

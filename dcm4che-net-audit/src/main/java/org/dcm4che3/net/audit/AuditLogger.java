@@ -56,12 +56,12 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.security.AccessController;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -83,6 +83,7 @@ import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.security.action.GetPropertyAction;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -507,7 +508,7 @@ public class AuditLogger {
      *          be used
      */
     public File getSpoolDirectory() {
-        return spoolDirectory;
+        return spoolDirectory();
     }
 
     /**
@@ -520,6 +521,7 @@ public class AuditLogger {
      */
     public void setSpoolDirectory(File directory) {
         this.spoolDirectory = directory;
+        this.spoolDirectoryURI = directory != null ? directory.toURI().toString() : null;
     }
 
     public String getSpoolDirectoryURI() {
@@ -727,6 +729,7 @@ public class AuditLogger {
             GeneralSecurityException, IOException {
         if (getNumberOfQueuedMessages() > 0) {
             spoolMessage(msg);
+            scheduleRetry();
         } else {
             try {
                 activeConnection().sendMessage(msg);
@@ -770,9 +773,7 @@ public class AuditLogger {
 
         File f = null;
         try {
-            f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, spoolDirectory);
-            if (spoolDirectory == null)
-                spoolDirectory = f.getParentFile();
+            f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, spoolDirectory());
 
             LOG.info("Spool audit message to {}", f);
             FileOutputStream out = new FileOutputStream(f);
@@ -791,10 +792,7 @@ public class AuditLogger {
     }
 
     public void sendQueuedMessages() {
-        File dir = spoolDirectory;
-        if (dir == null)
-            return;
-
+        File dir = spoolDirectory();
         try {
             File[] queuedMessages = dir.listFiles(FILENAME_FILTER);
             byte[] b = null;
@@ -846,19 +844,11 @@ public class AuditLogger {
     }
 
     public int getNumberOfQueuedMessages() {
-        try {
-            return spoolDirectory.list(FILENAME_FILTER).length;
-        } catch (NullPointerException e) {
-            return 0;
-        }
+        return getQueuedMessages().length;
     }
 
     public File[] getQueuedMessages() {
-        try {
-            return spoolDirectory.listFiles(FILENAME_FILTER);
-        } catch (NullPointerException e) {
-            return null;
-        }
+        return spoolDirectory().listFiles(FILENAME_FILTER);
     }
 
     public synchronized void waitForNoQueuedMessages(long timeout)
@@ -1243,5 +1233,14 @@ public class AuditLogger {
 
     public final Device getDevice() {
         return device;
+    }
+
+    private static class LazyHolder {
+        static final File tmpdir = new File(AccessController
+                .doPrivileged(new GetPropertyAction("java.io.tmpdir")));
+    }
+
+    private File spoolDirectory() {
+        return spoolDirectory != null ? spoolDirectory : LazyHolder.tmpdir;
     }
 }

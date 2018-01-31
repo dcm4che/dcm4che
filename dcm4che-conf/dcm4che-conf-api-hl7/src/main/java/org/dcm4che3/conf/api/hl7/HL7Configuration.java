@@ -39,8 +39,7 @@
 package org.dcm4che3.conf.api.hl7;
 
 import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.net.ApplicationEntityInfo;
-import org.dcm4che3.net.HL7ApplicationInfo;
+import org.dcm4che3.net.hl7.HL7ApplicationInfo;
 import org.dcm4che3.net.hl7.HL7Application;
 
 /**

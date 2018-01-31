@@ -38,6 +38,7 @@
 
 package org.dcm4che3.net.hl7;
 
+import org.dcm4che3.hl7.ERRSegment;
 import org.dcm4che3.hl7.HL7Exception;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.DeviceExtension;
@@ -128,7 +129,11 @@ public class HL7DeviceExtension extends DeviceExtension {
     byte[] onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
         HL7Application hl7App = getHL7Application(msg.msh().getReceivingApplicationWithFacility(), true);
         if (hl7App == null)
-            throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
+            throw new HL7Exception(
+                    new ERRSegment(msg.msh())
+                            .setHL7ErrorCode(ERRSegment.TableValueNotFound)
+                            .setErrorLocation(ERRSegment.UnknownReceivingApplication)
+                            .setUserMessage("Receiving Application not recognized"));
         return hl7App.onMessage(conn, s, msg);
     }
 

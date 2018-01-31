@@ -119,6 +119,13 @@ public class Attributes implements Serializable {
         init(initialCapacity);
     }
 
+    public void clear() {
+        size = 0;
+        Arrays.fill(tags, 0);
+        Arrays.fill(vrs, null);
+        Arrays.fill(values, null);
+    }
+
     private void init(int initialCapacity) {
         this.tags = new int[initialCapacity];
         this.vrs = new VR[initialCapacity];
@@ -367,6 +374,19 @@ public class Attributes implements Serializable {
         return indexOf(tag);
     }
 
+    /**
+     * resolves to the actual private tag,
+     * given a private tag with placeholers (like 0011,xx13)
+     */
+    public int tagOf(String privateCreator, int tag) {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
+            if (creatorTag == -1)
+                return -1;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        return tag;
+    }
     private int creatorTagOf(String privateCreator, int tag, boolean reserve) {
         if (!TagUtils.isPrivateGroup(tag))
             throw new IllegalArgumentException(TagUtils.toString(tag)
@@ -768,10 +788,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.IS)
-            value = decodeISValue(index);
 
         try {
+            if (vr == VR.IS)
+                value = decodeISValue(index);
+
             return vr.toInt(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
@@ -803,10 +824,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.IS)
-            value = decodeISValue(index);
 
         try {
+            if (vr == VR.IS)
+                value = decodeISValue(index);
+
             return vr.toInts(value, bigEndian);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
@@ -850,10 +872,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.DS)
-            value = decodeDSValue(index);
 
         try {
+            if (vr == VR.DS)
+                value = decodeDSValue(index);
+
             return vr.toFloat(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as float", TagUtils.toString(tag), vr);
@@ -885,10 +908,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.DS)
-            value = decodeDSValue(index);
 
         try {
+            if (vr == VR.DS)
+                value = decodeDSValue(index);
+
             return vr.toFloats(value, bigEndian);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as float", TagUtils.toString(tag), vr);
@@ -932,10 +956,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.DS)
-            value = decodeDSValue(index);
 
         try {
+            if (vr == VR.DS)
+                value = decodeDSValue(index);
+
             return vr.toDouble(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as double", TagUtils.toString(tag), vr);
@@ -967,9 +992,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.DS)
-            value = decodeDSValue(index);
+
         try {
+            if (vr == VR.DS)
+                value = decodeDSValue(index);
+
             return vr.toDoubles(value, bigEndian);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as double", TagUtils.toString(tag), vr);
@@ -1648,9 +1675,11 @@ public class Attributes implements Serializable {
             return null;
 
         Object value = values[index];
-//        if (value instanceof Sequence)
-//            ((Sequence) value).clear();
-
+        if (value instanceof Sequence) {
+            for (Attributes attrs : ((Sequence) value)) {
+                    attrs.setParent(null);
+            }
+        }
         int numMoved = size - index - 1;
         if (numMoved > 0) {
             System.arraycopy(tags, index+1, tags, index, numMoved);
@@ -2448,7 +2477,7 @@ public class Attributes implements Serializable {
     }
 
     /**
-     * Invokes {@link Visitor.visit} for each attribute in this instance. The
+     * Invokes {@link Visitor#visit} for each attribute in this instance. The
      * operation will be aborted if <code>visitor.visit()</code> returns <code>false</code>.
      * 
      * @param visitor

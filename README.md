@@ -1,4 +1,4 @@
-dcm4che-3.x DICOM Toolkit
+dcm4che DICOM Toolkit & Library
 =========================
 Sources: https://github.com/dcm4che/dcm4che  
 Binaries: https://sourceforge.net/projects/dcm4che/files/dcm4che3  
@@ -55,6 +55,7 @@ Utilities
 - [dcm2xml][]: Convert DICOM file in XML presentation
 - [dcmdir][]: Dump, create or update DICOMDIR file
 - [dcmdump][]: Dump DICOM file in textual form
+- [dcmldap][]: Insert/remove configuration entries for Network AEs into/from LDAP server
 - [dcmqrscp][]: Simple DICOM archive
 - [dcmvalidate][]: Validate DICOM object according a specified Information Object Definition
 - [emf2sf][]: Convert DICOM Enhanced Multi-frame image to legacy DICOM Single-frame images
@@ -66,6 +67,7 @@ Utilities
 - [hl7snd][]: Send HL7 v2.x message
 - [ianscp][]: DICOM Instance Availability Notification receiver 
 - [ianscu][]: Send DICOM Instance Availability Notification
+- [jpg2dcm][]: Convert JPEG images or MPEG videos in DICOM files
 - [mkkos][]: Make DICOM Key Object Selection Document
 - [modality][]: Simulates DICOM Modality
 - [movescu][]: Invoke DICOM C-MOVE Retrieve request
@@ -74,6 +76,7 @@ Utilities
 - [stgcmtscu][]: Invoke DICOM Storage Commitment Request
 - [storescp][]: DICOM Composite Object Receiver
 - [storescu][]: Send DICOM Composite Objects
+- [stowrs][]: Send DICOM Composite Objects or Bulkdata file over Web
 - [xml2dcm][]: Create/Update DICOM file from/with XML presentation
 - [xml2hl7][]: Create HL7 v2.x message from XML presentation
 - [xml2prefs][]: Import Java Preferences
@@ -83,6 +86,7 @@ Utilities
 [dcm2xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2xml/README.md
 [dcmdir]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdir/README.md
 [dcmdump]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdump/README.md
+[dcmldap]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmldap/README.md
 [dcmqrscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmqrscp/README.md
 [dcmvalidate]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmvalidate/README.md
 [emf2sf]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-emf2sf/README.md
@@ -94,6 +98,7 @@ Utilities
 [hl7snd]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7snd/README.md
 [ianscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscp/README.md
 [ianscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscu/README.md
+[jpg2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-jpg2dcm/README.md
 [mkkos]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mkkos/README.md
 [modality]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ihe/dcm4che-tool-ihe-modality/README.md
 [movescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-movescu/README.md
@@ -102,6 +107,7 @@ Utilities
 [stgcmtscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stgcmtscu/README.md
 [storescp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescp/README.md
 [storescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescu/README.md
+[stowrs]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stowrs/README.md
 [xml2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2dcm/README.md
 [xml2hl7]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2hl7/README.md
 [xml2prefs]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2prefs/README.md

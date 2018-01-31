@@ -30,7 +30,8 @@
     "hl7ApplicationName": {
       "title": "HL7 Application name",
       "description": "HL7 Application and Facility name (Application|Facility) associated with this AE",
-      "type": "string"
+      "type": "string",
+      "format": "hl7ApplicationName"
     }
   }
 }

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>5.10.6</version>
+    <version>5.12.0</version>
   </parent>
   <artifactId>dcm4che-imageio-rle</artifactId>
   <packaging>bundle</packaging>
@@ -22,7 +22,6 @@
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>

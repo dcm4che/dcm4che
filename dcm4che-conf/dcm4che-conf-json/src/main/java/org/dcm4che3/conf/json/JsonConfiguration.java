@@ -42,6 +42,7 @@ package org.dcm4che3.conf.json;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.net.*;
+import org.dcm4che3.net.hl7.HL7ApplicationInfo;
 
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;
@@ -384,6 +385,8 @@ public class JsonConfiguration {
                     conn.getResponseTimeout(), Connection.NO_TIMEOUT);
             writer.writeNotDef("dcmRetrieveTimeout",
                     conn.getRetrieveTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmRetrieveTimeoutTotal",
+                    conn.isRetrieveTimeoutTotal(), false);
             writer.writeNotDef("dcmIdleTimeout", conn.getIdleTimeout(), Connection.NO_TIMEOUT);
             writer.writeNotDef("dcmTCPCloseDelay",
                     conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
@@ -473,6 +476,9 @@ public class JsonConfiguration {
                                 break;
                             case "dcmRetrieveTimeout":
                                 conn.setRetrieveTimeout(reader.intValue());
+                                break;
+                            case "dcmRetrieveTimeoutTotal":
+                                conn.setRetrieveTimeoutTotal(reader.booleanValue());
                                 break;
                             case "dcmIdleTimeout":
                                 conn.setIdleTimeout(reader.intValue());

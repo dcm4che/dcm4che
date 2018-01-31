@@ -966,6 +966,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return attrs;
 
         objectclass.add("dcmNetworkAE");
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmPreferredTransferSyntax",
+                LdapUtils.addOrdinalPrefix(ae.getPreferredTransferSyntaxes()));
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7ApplicationName", ae.getHl7ApplicationName(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmOtherAETitle", ae.getOtherAETitles());
@@ -986,6 +988,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return attrs;
 
         objectclass.add("dcmTransferCapability");
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmPreferredTransferSyntax",
+                LdapUtils.addOrdinalPrefix(tc.getPreferredTransferSyntaxes()));
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
             LdapUtils.storeNotDef(ldapObj, attrs, "dcmRelationalQueries",
@@ -1188,6 +1192,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!LdapUtils.hasObjectClass(attrs, "dcmTransferCapability"))
             return;
 
+        tc.setPreferredTransferSyntaxes(LdapUtils.removeOrdinalPrefix(
+                LdapUtils.stringArray(attrs.get("dcmPreferredTransferSyntax"))));
         tc.setQueryOptions(toQueryOptions(attrs));
         tc.setStorageOptions(toStorageOptions(attrs));
     }
@@ -1409,6 +1415,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return;
 
         ae.setAcceptedCallingAETitles(LdapUtils.stringArray(attrs.get("dcmAcceptedCallingAETitle")));
+        ae.setPreferredTransferSyntaxes(LdapUtils.removeOrdinalPrefix(
+                LdapUtils.stringArray(attrs.get("dcmPreferredTransferSyntax"))));
         ae.setOtherAETitles(LdapUtils.stringArray(attrs.get("dcmOtherAETitle")));
         ae.setMasqueradeCallingAETitles(LdapUtils.stringArray(attrs.get("dcmMasqueradeCallingAETitle")));
         ae.setHl7ApplicationName(LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
@@ -1715,6 +1723,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!extended)
             return mods;
 
+        LdapUtils.storeDiffWithOrdinalPrefix(ldapObj, mods, "dcmPreferredTransferSyntax",
+                a.getPreferredTransferSyntaxes(),
+                b.getPreferredTransferSyntaxes());
         LdapUtils.storeDiff(ldapObj, mods, "dcmAcceptedCallingAETitle",
                 a.getAcceptedCallingAETitles(),
                 b.getAcceptedCallingAETitles());
@@ -1746,6 +1757,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!extended)
             return mods;
 
+        LdapUtils.storeDiffWithOrdinalPrefix(ldapObj, mods, "dcmPreferredTransferSyntax",
+                a.getPreferredTransferSyntaxes(),
+                b.getPreferredTransferSyntaxes());
         storeDiffs(ldapObj, a.getQueryOptions(), b.getQueryOptions(), mods);
         storeDiffs(ldapObj, a.getStorageOptions(), b.getStorageOptions(), mods);
         return mods;

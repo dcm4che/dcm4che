@@ -39,7 +39,7 @@
 package org.dcm4che3.net;
 
 import java.io.Serializable;
-import java.util.EnumSet;
+import java.util.*;
 
 import org.dcm4che3.data.UID;
 import org.dcm4che3.util.StringUtils;
@@ -69,6 +69,7 @@ public class TransferCapability implements Serializable {
     private String sopClass;
     private Role role;
     private String[] transferSyntaxes;
+    private String[] prefTransferSyntaxes = {};
     private EnumSet<QueryOption> queryOptions;
     private StorageOptions storageOptions;
 
@@ -170,23 +171,48 @@ public class TransferCapability implements Serializable {
     }
 
     public void setTransferSyntaxes(String... transferSyntaxes) {
-        if (transferSyntaxes.length == 0)
-            throw new IllegalArgumentException("missing transferSyntax");
-        for (String ts : transferSyntaxes)
-            if (ts.isEmpty())
-                throw new IllegalArgumentException("empty transferSyntax");
-        this.transferSyntaxes = transferSyntaxes;
+        this.transferSyntaxes = StringUtils.requireContainsNoEmpty(
+                StringUtils.requireNotEmpty(transferSyntaxes, "missing transferSyntax"),
+                "empty transferSyntax");
+    }
+
+    public String[] getPreferredTransferSyntaxes() {
+        return prefTransferSyntaxes;
+    }
+
+    public void setPreferredTransferSyntaxes(String... transferSyntaxes) {
+        this.prefTransferSyntaxes =
+                StringUtils.requireContainsNoEmpty(transferSyntaxes, "empty transferSyntax");
     }
 
     public boolean containsTransferSyntax(String ts) {
-        if ("*".equals(transferSyntaxes[0]))
-            return true;
+        return "*".equals(transferSyntaxes[0]) || StringUtils.contains(transferSyntaxes, ts);
+    }
 
-        for (String s : transferSyntaxes)
-            if (ts.equals(s))
-                return true;
+    public String selectTransferSyntax(String... transferSyntaxes) {
+        if (transferSyntaxes.length == 1)
+            return containsTransferSyntax(transferSyntaxes[0]) ? transferSyntaxes[0] : null;
 
-        return false;
+        List<String> acceptable = retainAcceptable(transferSyntaxes);
+        if (acceptable.isEmpty())
+            return null;
+
+        for (String prefTransferSyntax : prefTransferSyntaxes.length > 0
+                ? prefTransferSyntaxes
+                : ae.getPreferredTransferSyntaxes())
+            if (acceptable.contains(prefTransferSyntax))
+                return prefTransferSyntax;
+
+        return acceptable.get(0);
+    }
+
+    private List<String> retainAcceptable(String[] transferSyntaxes) {
+        List<String> acceptable = new ArrayList<>(transferSyntaxes.length);
+        for (String transferSyntax : transferSyntaxes) {
+            if (containsTransferSyntax(transferSyntax))
+                acceptable.add(transferSyntax);
+        }
+        return acceptable;
     }
 
     public void setQueryOptions(EnumSet<QueryOption> queryOptions) {

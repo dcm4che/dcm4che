@@ -38,6 +38,7 @@
 package org.dcm4che3.conf.ldap;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TimeZone;
@@ -333,6 +334,27 @@ public class LdapUtils {
         }
     }
 
+    public static void storeDiffWithOrdinalPrefix(ConfigurationChanges.ModifiedObject ldapObj,
+                                                  List<ModificationItem> mods,
+                                                  String attrId, String[] prevs, String[] vals) {
+        if (!Arrays.equals(prevs, vals)) {
+            String[] valsWithOrdinalPrefix = addOrdinalPrefix(vals);
+            mods.add((vals.length == 0)
+                    ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+                            new BasicAttribute(attrId))
+                    : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                            attr(attrId, valsWithOrdinalPrefix)));
+            if (ldapObj != null) {
+                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrId);
+                for (String val : valsWithOrdinalPrefix)
+                    attribute.addValue(val);
+                for (String prev : addOrdinalPrefix(prevs))
+                    attribute.removeValue(prev);
+                ldapObj.add(attribute);
+            }
+        }
+    }
+
     public static void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
                                  String attrId, List<Connection> prevs, List<Connection> conns, String deviceDN) {
         if (!LdapUtils.equalsConnRefs(prevs, conns, deviceDN)) {
@@ -483,4 +505,37 @@ public class LdapUtils {
         storeNotNullOrDef(attrs, attrID, attrVal, null);
         return attrs;
     }
+
+    public static String[] addOrdinalPrefix(String[] vals) {
+        String[] result = new String[vals.length];
+        for (int i = 0; i < result.length; i++) {
+            String val = vals[i];
+            int vallen = val.length();
+            char[] cs = new char[3 + vallen];
+            cs[0] = '{';
+            cs[1] = DIGITS[i];
+            cs[2] = '}';
+            val.getChars(0, vallen, cs, 3);
+            result[i] = new String(cs);
+        }
+        return result;
+    }
+
+    public static String[] removeOrdinalPrefix(String[] vals) {
+        Arrays.sort(vals);
+        String[] result = new String[vals.length];
+        for (int i = 0; i < result.length; i++)
+            result[i] = vals[i].substring(3);
+        return result;
+    }
+
+    private final static char[] DIGITS = {
+            '0' , '1' , '2' , '3' , '4' , '5' ,
+            '6' , '7' , '8' , '9' , 'A' , 'B' ,
+            'C' , 'D' , 'E' , 'F' , 'G' , 'H' ,
+            'I' , 'J' , 'K' , 'L' , 'M' , 'N' ,
+            'O' , 'P' , 'Q' , 'R' , 'S' , 'T' ,
+            'U' , 'V' , 'W' , 'X' , 'Y' , 'Z'
+    };
+
 }

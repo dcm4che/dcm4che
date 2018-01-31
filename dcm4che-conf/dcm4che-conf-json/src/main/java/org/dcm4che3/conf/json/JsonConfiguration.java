@@ -562,6 +562,7 @@ public class JsonConfiguration {
         writeTransferCapabilitiesTo(ae, writer, extended);
         if (extended) {
             writer.writeStartObject("dcmNetworkAE");
+            writer.writeNotEmpty("dcmPreferredTransferSyntax", ae.getPreferredTransferSyntaxes());
             writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
             writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
             writer.writeNotEmpty("dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
@@ -626,6 +627,9 @@ public class JsonConfiguration {
                     reader.expect(JsonParser.Event.START_OBJECT);
                     while (reader.next() == JsonParser.Event.KEY_NAME) {
                         switch (reader.getString()) {
+                            case "dcmPreferredTransferSyntax":
+                                ae.setPreferredTransferSyntaxes(reader.stringArray());
+                                break;
                             case "dcmAcceptedCallingAETitle":
                                 ae.setAcceptedCallingAETitles(reader.stringArray());
                                 break;
@@ -680,6 +684,7 @@ public class JsonConfiguration {
         writer.writeNotNullOrDef("dicomTransferRole", tc.getRole().toString(), null);
         writer.writeNotEmpty("dicomTransferSyntax", tc.getTransferSyntaxes());
         if (extended) {
+            writer.writeNotEmpty("dcmPreferredTransferSyntax", tc.getPreferredTransferSyntaxes());
             EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
             StorageOptions storageOpts = tc.getStorageOptions();
             if (queryOpts != null || storageOpts != null) {
@@ -738,6 +743,9 @@ public class JsonConfiguration {
                     reader.expect(JsonParser.Event.START_OBJECT);
                     while (reader.next() == JsonParser.Event.KEY_NAME) {
                         switch (reader.getString()) {
+                            case "dcmPreferredTransferSyntax":
+                                tc.setPreferredTransferSyntaxes(reader.stringArray());
+                                break;
                             case "dcmRelationalQueries":
                                 if (reader.booleanValue()) {
                                     if (queryOpts == null)

@@ -75,7 +75,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     protected List<T> completed = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> warning = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> failed = Collections.synchronizedList(new ArrayList<T>());
-	protected List<Throwable> failedErrors = Collections.synchronizedList(new ArrayList<Throwable>());
+	protected Throwable lastError;
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
@@ -114,8 +114,8 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     }
 	
 	@Override
-    public List<Throwable> getFailedErrors() {
-        return failedErrors;
+    public Throwable getLastError() {
+        return lastError;
     }
 
     @Override
@@ -150,7 +150,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                             "Unable to perform sub-operation on association to {}",
                             storeas.getRemoteAET(), e);
                     failed.add(inst);
-                    failedErrors.add(e);
+                    lastError = e;
                     while (iter.hasNext())
                         failed.add(iter.next());
                 }
@@ -181,7 +181,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                     UID.nameOf(inst.cuid), UID.nameOf(inst.tsuid),
                     storeas.getRemoteAET(), e);
             failed.add(inst);
-            failedErrors.add(e);
+            lastError = e;
             return;
         }
 
@@ -302,7 +302,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
             for (int i = 0; i < iuids.length; i++)
                 iuids[i] = failed.get(i).iuid;
             rsp.setFailedUIDs(iuids);
-            rsp.setFailedErrors(failedErrors);
+            rsp.setLastError(lastError);
         }
         return rsp;
     }

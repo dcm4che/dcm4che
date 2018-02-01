@@ -55,7 +55,7 @@ public class BasicCStoreSCUResp {
     private int failed;
     private int warning;
     private String[] failedUIDs;
-	private List<Throwable> failedErrors = new ArrayList<Throwable>();
+	private Throwable lastError;
    
     public int getStatus() {
         return status;
@@ -87,11 +87,11 @@ public class BasicCStoreSCUResp {
     public void setFailedUIDs(String[] failedUIDs) {
         this.failedUIDs = failedUIDs;
     }
-	public List<Throwable> getFailedErrors() {
-        return failedErrors;
+	public Throwable getLastError() {
+        return lastError;
     }
-    public void setFailedErrors(List<Throwable> failedErrors) {
-        this.failedErrors = failedErrors;
+    public void setLastError(Throwable lastError) {
+        this.lastError = lastError;
     }
 
     public void extendResponse(BasicCStoreSCUResp addendumResponse) {
@@ -102,7 +102,7 @@ public class BasicCStoreSCUResp {
 
         setCompleted(getCompleted() + addendumResponse.getCompleted());
         setFailed(getFailed() + addendumResponse.getFailed());
-		addFailedErrors(addendumResponse.getFailedErrors());
+		setLastError(addendumResponse.getLastError());
         setWarning(getWarning() + addendumResponse.getWarning());
 		
         String[] currentFailedUIDs = getFailedUIDs();
@@ -114,13 +114,5 @@ public class BasicCStoreSCUResp {
             System.arraycopy(newFailedUIDs, 0, failedUIDs, currentFailedUIDs.length, newFailedUIDs.length);
             setFailedUIDs(failedUIDs);
         }
-
-    }
-	
-	private void addFailedErrors(List<Throwable> failedErrors){    	
-    	if (failedErrors != null){
-    		this.failedErrors.addAll(failedErrors);
-    	}
-    	
     }
 }

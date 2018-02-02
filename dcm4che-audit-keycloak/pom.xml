@@ -49,7 +49,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <properties>
-    <keycloak.version>3.4.0.Final</keycloak.version>
+    <keycloak.version>3.4.3.Final</keycloak.version>
   </properties>
   <artifactId>dcm4che-audit-keycloak</artifactId>
   <dependencies>

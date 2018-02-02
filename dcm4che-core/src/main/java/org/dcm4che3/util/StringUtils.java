@@ -375,7 +375,7 @@ public class StringUtils {
 
     public static <T> boolean contains(T[] a, T o) {
         for (T t : a)
-            if (Objects.equals(t, a))
+            if (Objects.equals(t, o))
                 return true;
         return false;
     }

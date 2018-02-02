@@ -135,6 +135,9 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
             }
             if( bulkOffset==-1 || bulkLength==-1 ) {
                 bulk = updateBulkData(i);
+                if(bulk == null) {
+                    return;
+                }
                 bulkOffset = bulk.offset();
                 bulkLength = bulk.length();
             }

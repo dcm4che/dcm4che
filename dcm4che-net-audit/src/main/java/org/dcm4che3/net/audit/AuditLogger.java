@@ -81,6 +81,8 @@ public class AuditLogger extends DeviceExtension {
 
     private static final String DEVICE_NAME_IN_FILENAME_SEPARATOR = "-._";
 
+    private static final String[] PARALLEL_LOGGERS = {"AuditLogger1", "AuditLogger2"};
+
     private static Disruptor<AuditMessageEvent> disruptor;
 
     public enum SendStatus {
@@ -277,7 +279,7 @@ public class AuditLogger extends DeviceExtension {
             collectionOfReferences = true)
     private List<Connection> connections = new ArrayList<Connection>(1);
 
-    private transient MessageBuilder builder;
+    private transient Map<String,MessageBuilder> builder = new HashMap<String, MessageBuilder>();
     private transient Map<String,ActiveConnection> activeConnection = new HashMap<String, ActiveConnection>();
     private transient ScheduledFuture<?> retryTimer;
     private transient Exception lastException;
@@ -793,10 +795,27 @@ public class AuditLogger extends DeviceExtension {
      */
     public SendStatus write(Calendar timeStamp, AuditMessage msg)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
+        return write(timeStamp, msg, PARALLEL_LOGGERS[0]);
+    }
+
+    /**
+     * Send Audit Messages using a different parallel connection for each PARALLEL_AUDIT_LOGGERS
+     * To be intended as internal usage and triggered by the asynchronous AuditMessageEventHandler
+     *
+     * @param timeStamp
+     * @param msg
+     * @param clientName
+     * @return
+     * @throws IncompatibleConnectionException
+     * @throws GeneralSecurityException
+     * @throws IOException
+     */
+    protected SendStatus write(Calendar timeStamp, AuditMessage msg, String clientName)
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException {
         if (isAuditMessageSuppressed(msg))
             return SendStatus.SUPPRESSED;
 
-        return sendMessage(builder().createMessage(timeStamp, msg));
+        return sendMessage(clientName, builder(clientName).createMessage(clientName,timeStamp, msg));
     }
 
     public void writeAsync(Calendar timeStamp, AuditMessage msg)
@@ -807,35 +826,55 @@ public class AuditLogger extends DeviceExtension {
 
         RingBuffer<AuditMessageEvent> ringBuffer = getDisruptor(this).getRingBuffer();
 
-        long sequence = ringBuffer.next();  // Grab the next sequence
-        try
-        {
-            AuditMessageEvent msgenrtry = ringBuffer.get(sequence); // Get the entry in the Disruptor
-            // for the sequence
-            msgenrtry.setLogger(this);  // Fill with data
-            msgenrtry.setMessage(msg);
+        long sequence = 0;  // Grab the next sequence
+        boolean skip=false;
+        try {
+            sequence = ringBuffer.tryNext();
+        } catch (InsufficientCapacityException e) {
+            LOG.warn("could not send audit",e);
+            skip=true;
         }
-        finally
-        {
-            ringBuffer.publish(sequence);
+
+        if (!skip) {
+            try
+            {
+                AuditMessageEvent msgenrtry = ringBuffer.get(sequence); // Get the entry in the Disruptor
+                // for the sequence
+                msgenrtry.setLogger(this);  // Fill with data
+                msgenrtry.setMessage(msg);
+            }
+            finally
+            {
+                ringBuffer.publish(sequence);
+            }
         }
+
     }
 
     public SendStatus write(Calendar timeStamp, Severity severity,
                             byte[] data, int off, int len)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
-        return sendMessage(
-                builder().createMessage(timeStamp, severity, data, off, len));
+        return sendMessage(PARALLEL_LOGGERS[0],
+                builder(PARALLEL_LOGGERS[0]).createMessage(timeStamp, severity, data, off, len));
     }
 
-    private MessageBuilder builder() {
-        if (builder == null)
-            builder = new MessageBuilder();
+    /**
+     * Returns a MessageBuilder.
+     * Each client must have his own MessageBuilder.
+     */
+    private MessageBuilder builder(String clientName) {
 
-        return builder;
+        if (builder.get(clientName) == null) {
+            MessageBuilder messageBuilder = new MessageBuilder();
+            builder.put(clientName, messageBuilder);
+            return messageBuilder;
+        }
+        else {
+            return builder.get(clientName);
+        }
     }
 
-    private SendStatus sendMessage(DatagramPacket msg) throws IncompatibleConnectionException,
+    private SendStatus sendMessage(String clientName, DatagramPacket msg) throws IncompatibleConnectionException,
             GeneralSecurityException, IOException {
         String deviceName;
         SendStatus status = SendStatus.SENT;
@@ -845,7 +884,7 @@ public class AuditLogger extends DeviceExtension {
 	            spoolMessage(deviceName, msg);
 	        } else {
 	            try {
-	                activeConnection(arrDev).sendMessage(msg);
+	                activeConnection(clientName, arrDev).sendMessage(msg);
 	                lastSentTimeInMillis = System.currentTimeMillis();
 	            } catch (IOException e) {
 	                lastException = e;
@@ -945,7 +984,7 @@ public class AuditLogger extends DeviceExtension {
 	                        file.renameTo(dest);
 	                        continue;
 	                    }
-                    	activeConnection(arrDev).sendMessage(new DatagramPacket(b, 0, len));
+                    	activeConnection(PARALLEL_LOGGERS[0], arrDev).sendMessage(new DatagramPacket(b, 0, len));
 	                    lastSentTimeInMillis = System.currentTimeMillis();
 	                    if (file.delete())
 	                        LOG.debug("Delete spool file {}", file);
@@ -1026,13 +1065,13 @@ public class AuditLogger extends DeviceExtension {
             	LOG.error("Failed to close active connection to {}", entry.getKey(), e);
                 throw new AssertionError(e);
             }
-            this.activeConnection.clear();
         }
+        this.activeConnection.clear();
     }
 
-    private synchronized ActiveConnection activeConnection(Device arrDev)
+    private synchronized ActiveConnection activeConnection(String clientName, Device arrDev)
             throws IncompatibleConnectionException {
-        ActiveConnection activeConnection = this.activeConnection.get(arrDev.getDeviceName());
+        ActiveConnection activeConnection = this.activeConnection.get(clientName+"."+arrDev.getDeviceName());
         if (activeConnection != null)
             return activeConnection;
 
@@ -1049,7 +1088,7 @@ public class AuditLogger extends DeviceExtension {
                         activeConnection = conn.getProtocol().isTCP()
                                         ? new TCPConnection(conn, remoteConn)
                                         : new UDPConnection(conn, remoteConn);
-                        this.activeConnection.put(arrDev.getDeviceName(), activeConnection);
+                        this.activeConnection.put(clientName+"."+arrDev.getDeviceName(), activeConnection);
                         return activeConnection;
                     }
         throw new IncompatibleConnectionException(
@@ -1104,14 +1143,14 @@ public class AuditLogger extends DeviceExtension {
 
     private class MessageBuilder extends ByteArrayOutputStream {
 
-        DatagramPacket createMessage(Calendar timeStamp, AuditMessage msg) {
+        DatagramPacket createMessage(String clientName, Calendar timeStamp, AuditMessage msg) {
             try {
                 reset();
                 writeHeader(severityOf(msg), timeStamp);
                 if (!supplement95) {
-                    AuditMessages.toXML(msg, builder, formatXML, encoding, schemaURI);
+                    AuditMessages.toXML(msg, builder(clientName), formatXML, encoding, schemaURI);
                 } else {
-                    AuditMessages.toSupplement95XML(msg, builder, formatXML, encoding, schemaURI);
+                    AuditMessages.toSupplement95XML(msg, builder(clientName), formatXML, encoding, schemaURI);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -1396,12 +1435,13 @@ public class AuditLogger extends DeviceExtension {
         AuditMessageEventFactory factory = new AuditMessageEventFactory();
 
         // Specify the size of the ring buffer, must be power of 2.
-        int bufferSize = 8;
+        int bufferSize = 1024;
 
         Disruptor<AuditMessageEvent> disruptorInstance = new Disruptor<AuditMessageEvent>(factory, bufferSize, executor);
 
-        // Connect the handler
-        disruptorInstance.handleEventsWith(new AuditMessageEventHandler());
+        // Connect the handlers (each handler runs in a separate thread)
+        disruptorInstance.handleEventsWith(
+                new AuditMessageEventHandler(PARALLEL_LOGGERS[0]),new AuditMessageEventHandler(PARALLEL_LOGGERS[1]));
 
         // Start the Disruptor, starts all threads running
         disruptorInstance.start();

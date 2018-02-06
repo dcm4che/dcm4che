@@ -15,10 +15,16 @@ public class AuditMessageEventHandler implements EventHandler<AuditMessageEvent>
 
     private static Logger LOG = LoggerFactory.getLogger(AuditMessageEventHandler.class);
 
+    private String clientName;
+
+    public AuditMessageEventHandler(String clientName) {
+        this.clientName = clientName;
+    }
+
     public void onEvent(AuditMessageEvent event, long sequence, boolean endOfBatch) throws Exception
     {
         try {
-            event.getLogger().write(event.getLogger().timeStamp(),event.getMessage());
+            event.getLogger().write(event.getLogger().timeStamp(),event.getMessage(),clientName);
         } catch (Throwable e) {
             LOG.warn("could not send audit",e);
         }

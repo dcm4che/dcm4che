@@ -38,7 +38,8 @@
     -t,--type <arg>                 specify the value for Content-type header : xml or json. 
                                     The value of Content-type will then be sent in request header 
                                     as application/dicom+xml or application/dicom+json.
-    -u,--url <arg>                  specify the request URL.
+       --url <url>                  Specify the request URL.
+    -u,--user  <user>:<password>    Specify the user name and password to use for server authentication.
     -V,--version                    output version information and exit
 
     -

@@ -79,11 +79,7 @@ import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.TagUtils;
-import org.dcm4che3.util.ByteUtils;
-import org.dcm4che3.util.DateUtils;
-import org.dcm4che3.util.StreamUtils;
-import org.dcm4che3.util.UIDUtils;
+import org.dcm4che3.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,6 +93,7 @@ public class StowRS {
     private Attributes keys;
     private static Options opts;
     private String URL;
+    private String user;
     private boolean noAppn;
     private boolean pixelHeader;
     private JPEGHeader jpegHeader;
@@ -146,7 +143,8 @@ public class StowRS {
                 .withValueSeparator().withDescription(rb.getString("metadata"))
                 .create("m"));
         opts.addOption("f", "file", true, rb.getString("file"));
-        opts.addOption("u", "url", true, rb.getString("url"));
+        opts.addOption("url", true, rb.getString("url"));
+        opts.addOption("u", "user", true, rb.getString("user"));
         opts.addOption("t", "type", true, rb.getString("type"));
         opts.addOption("ph", "pixel-header", true, rb.getString("pixel-header"));
         opts.addOption("na","no-appn", true, rb.getString("no-appn"));
@@ -192,9 +190,10 @@ public class StowRS {
             throws Exception {
         if (files.isEmpty())
             throw new MissingArgumentException("No pixel data files or dicom files specified");
-        if ((instance.URL = cl.getOptionValue("u")) == null)
+        if ((instance.URL = cl.getOptionValue("url")) == null)
             throw new MissingOptionException("Missing url.");
         LOG.info("Check extension of first file only to determine whether STOW is for dicom or non dicom type of objects.");
+        instance.user = cl.getOptionValue("u");
         instance.contentType = getContentType(cl.getOptionValue("t"), files.get(0));
         instance.metadataFile = cl.getOptionValue("f");
         instance.accept = getAccept(cl.getOptionValue("a"), instance.contentType);
@@ -392,11 +391,16 @@ public class StowRS {
             connection.setRequestProperty("Content-Type",
                     "multipart/related; type=" + instance.contentType + "; boundary=" + boundary);
             connection.setRequestProperty("Accept", instance.accept);
+            logOutgoing(connection);
+            if (instance.user != null) {
+                String basicAuth = basicAuth(instance.user);
+                LOG.info("> Authorization: " + basicAuth);
+                connection.setRequestProperty("Authorization", basicAuth);
+            }
             out = connection.getOutputStream();
             out.write(("\r\n--" + boundary + "\r\n").getBytes());
             out.write(("Content-Type: " + instance.contentType + "\r\n").getBytes());
             out.write("\r\n".getBytes());
-            logOutgoing(connection);
             writeData(instance, metadata, files, out);
             out.write(("\r\n--" + boundary + "--\r\n").getBytes());
             out.flush();
@@ -409,6 +413,14 @@ public class StowRS {
             if (out != null)
                 out.close();
         }
+    }
+
+    private static String basicAuth(String userPswd) {
+        byte[] userPswdBytes = userPswd.getBytes();
+        int len = (userPswdBytes.length * 4 / 3 + 3) & ~3;
+        char[] ch = new char[len];
+        Base64.encode(userPswdBytes, 0, userPswdBytes.length, ch, 0);
+        return "Basic " + new String(ch);
     }
 
     private static void logOutgoing(HttpURLConnection connection) {

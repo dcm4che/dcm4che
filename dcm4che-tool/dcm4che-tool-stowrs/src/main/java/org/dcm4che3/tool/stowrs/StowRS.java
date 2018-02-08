@@ -143,8 +143,10 @@ public class StowRS {
                 .withValueSeparator().withDescription(rb.getString("metadata"))
                 .create("m"));
         opts.addOption("f", "file", true, rb.getString("file"));
-        opts.addOption("url", true, rb.getString("url"));
-        opts.addOption("u", "user", true, rb.getString("user"));
+        opts.addOption(OptionBuilder.hasArg().withArgName("url").withLongOpt("url")
+                .withDescription(rb.getString("url")).create());
+        opts.addOption(OptionBuilder.hasArg().withArgName("user:password").withLongOpt("user")
+                .withDescription(rb.getString("user")).create("u"));
         opts.addOption("t", "type", true, rb.getString("type"));
         opts.addOption("ph", "pixel-header", true, rb.getString("pixel-header"));
         opts.addOption("na","no-appn", true, rb.getString("no-appn"));

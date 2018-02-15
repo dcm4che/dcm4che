@@ -64,6 +64,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.MissingOptionException;
+import org.apache.log4j.BasicConfigurator;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
@@ -163,6 +164,7 @@ public class StowRS {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
+        BasicConfigurator.configure();
         CommandLine cl = null;
         try {
             cl = parseCommandLine(args);
@@ -411,6 +413,7 @@ public class StowRS {
             LOG.info("STOW successful!");
         } catch (Exception e) {
             LOG.error("Exception : " + e.getMessage());
+            e.printStackTrace();
         } finally {
             if (out != null)
                 out.close();

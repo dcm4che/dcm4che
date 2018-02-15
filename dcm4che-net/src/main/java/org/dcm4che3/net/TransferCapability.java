@@ -39,9 +39,7 @@
 package org.dcm4che3.net;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
@@ -84,6 +82,9 @@ public class TransferCapability implements Serializable {
 
     @ConfigurableProperty(name="dicomTransferSyntax")
     private String[] transferSyntaxes;
+
+    @ConfigurableProperty(name="dcmPreferredTransferSyntax")
+    private String[] preferredTransferSyntaxes = {};
 
     @LDAP(  booleanBasedEnumStorageOptions = {"dcmRelationalQueries","dcmCombinedDateTimeMatching","dcmFuzzySemanticMatching","dcmTimezoneQueryAdjustment"},
             noContainerNode = true)
@@ -192,23 +193,48 @@ public class TransferCapability implements Serializable {
     }
 
     public void setTransferSyntaxes(String... transferSyntaxes) {
-        if (transferSyntaxes.length == 0)
-            throw new IllegalArgumentException("missing transferSyntax");
-        for (String ts : transferSyntaxes)
-            if (ts.isEmpty())
-                throw new IllegalArgumentException("empty transferSyntax");
-        this.transferSyntaxes = transferSyntaxes;
+        this.transferSyntaxes = StringUtils.requireContainsNoEmpty(
+                StringUtils.requireNotEmpty(transferSyntaxes, "missing transferSyntax"),
+                "empty transferSyntax");
+    }
+
+    public String[] getPreferredTransferSyntaxes() {
+        return preferredTransferSyntaxes;
+    }
+
+    public void setPreferredTransferSyntaxes(String... transferSyntaxes) {
+        this.preferredTransferSyntaxes =
+                StringUtils.requireContainsNoEmpty(transferSyntaxes, "empty transferSyntax");
     }
 
     public boolean containsTransferSyntax(String ts) {
-        if ("*".equals(transferSyntaxes[0]))
-            return true;
+        return "*".equals(transferSyntaxes[0]) || StringUtils.contains(transferSyntaxes, ts);
+    }
 
-        for (String s : transferSyntaxes)
-            if (ts.equals(s))
-                return true;
+    public String selectTransferSyntax(String... transferSyntaxes) {
+        if (transferSyntaxes.length == 1)
+            return containsTransferSyntax(transferSyntaxes[0]) ? transferSyntaxes[0] : null;
 
-        return false;
+        List<String> acceptable = retainAcceptable(transferSyntaxes);
+        if (acceptable.isEmpty())
+            return null;
+
+        for (String prefTransferSyntax : preferredTransferSyntaxes.length > 0
+                ? preferredTransferSyntaxes
+                : ae.getPreferredTransferSyntaxes())
+            if (acceptable.contains(prefTransferSyntax))
+                return prefTransferSyntax;
+
+        return acceptable.get(0);
+    }
+
+    private List<String> retainAcceptable(String[] transferSyntaxes) {
+        List<String> acceptable = new ArrayList<>(transferSyntaxes.length);
+        for (String transferSyntax : transferSyntaxes) {
+            if (containsTransferSyntax(transferSyntax))
+                acceptable.add(transferSyntax);
+        }
+        return acceptable;
     }
 
     public void setQueryOptions(EnumSet<QueryOption> queryOptions) {
@@ -243,6 +269,7 @@ public class TransferCapability implements Serializable {
         newTc.setStorageOptions(getStorageOptions() == null ? null : getStorageOptions().copy());
         newTc.setSopClass(getSopClass());
         newTc.setTransferSyntaxes(Arrays.copyOf(getTransferSyntaxes(),getTransferSyntaxes().length));
+        newTc.setPreferredTransferSyntaxes(Arrays.copyOf(getPreferredTransferSyntaxes(),getPreferredTransferSyntaxes().length));
 
         return newTc;
     }
@@ -255,6 +282,10 @@ public class TransferCapability implements Serializable {
         UIDUtils.promptTo(sopClass, sb).append(StringUtils.LINE_SEPARATOR);
         for (String ts : transferSyntaxes) {
             sb.append(indent2).append("ts: ");
+            UIDUtils.promptTo(ts, sb).append(StringUtils.LINE_SEPARATOR);
+        }
+        for (String ts : preferredTransferSyntaxes) {
+            sb.append(indent2).append("preferred ts: ");
             UIDUtils.promptTo(ts, sb).append(StringUtils.LINE_SEPARATOR);
         }
         if (queryOptions != null)

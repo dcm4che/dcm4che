@@ -101,6 +101,9 @@ public class ApplicationEntity implements Serializable {
     @ConfigurableProperty(name = "dicomPreferredCallingAETitle")
     private String[] preferredCallingAETitles = {};
 
+    @ConfigurableProperty(name = "dcmPreferredTransferSyntax")
+    private String[] preferredTransferSyntaxes = {};
+
     @ConfigurableProperty(name = "dicomSupportedCharacterSet")
     private String[] supportedCharacterSets = {};
 
@@ -339,6 +342,15 @@ public class ApplicationEntity implements Serializable {
         preferredCallingAETitles = aets;
     }
 
+    public String[] getPreferredTransferSyntaxes() {
+        return preferredTransferSyntaxes;
+    }
+
+    public void setPreferredTransferSyntaxes(String... transferSyntaxes) {
+        this.preferredTransferSyntaxes =
+                StringUtils.requireContainsNoEmpty(transferSyntaxes, "empty transferSyntax");
+    }
+
     public String[] getAcceptedCallingAETitles() {
         return acceptedCallingAETitlesSet.toArray(
                 new String[acceptedCallingAETitlesSet.size()]);
@@ -547,20 +559,17 @@ public class ApplicationEntity implements Serializable {
                     PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED,
                     rqpc.getTransferSyntax());
 
-        // Iterate through the transfer capabilities since the order indicates preference.
-        for (String ts : tc.getTransferSyntaxes())
-            if ("*".equals(ts) || rqpc.containsTransferSyntax(ts)) {
-                byte[] info = negotiate(rq.getExtNegotiationFor(as), tc);
-                if (info != null)
-                    ac.addExtendedNegotiation(new ExtendedNegotiation(as, info));
-                return new PresentationContext(pcid,
-                        PresentationContext.ACCEPTANCE,
-                        "*".equals(ts) ? rqpc.getTransferSyntax() : ts);
-            }
+        String ts = tc.selectTransferSyntax(rqpc.getTransferSyntaxes());
+        if (ts == null)
+            return new PresentationContext(pcid,
+                    PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED,
+                    rqpc.getTransferSyntax());
 
+        byte[] info = negotiate(rq.getExtNegotiationFor(as), tc);
+        if (info != null)
+            ac.addExtendedNegotiation(new ExtendedNegotiation(as, info));
         return new PresentationContext(pcid,
-                PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED,
-                rqpc.getTransferSyntax());
+                PresentationContext.ACCEPTANCE, ts);
     }
 
     private TransferCapability roleSelection(AAssociateRQ rq,
@@ -761,6 +770,7 @@ public class ApplicationEntity implements Serializable {
         setPreferredCallingAETitles(from.preferredCallingAETitles);
         setAcceptedCallingAETitles(from.getAcceptedCallingAETitles());
         setSupportedCharacterSets(from.supportedCharacterSets);
+        setPreferredTransferSyntaxes(from.preferredTransferSyntaxes);
         setAssociationAcceptor(from.associationAcceptor);
         setAssociationInitiator(from.associationInitiator);
         setAeInstalled(from.aeInstalled);

@@ -70,6 +70,7 @@ import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.SafeClose;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -77,6 +78,7 @@ import org.junit.Test;
  * @since Jan 2015
  *
  */
+@Ignore
 public class TestDicomImageReader {
 
 	private static final String TEST_DATA_DIR = "target/test-data/";

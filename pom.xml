@@ -117,6 +117,7 @@
     <module>dcm4che-hl7</module>
     <module>dcm4che-image</module>
     <module>dcm4che-imageio</module>
+    <module>dcm4che-imageio-opencv</module>
     <module>dcm4che-imageio-rle</module>
     <module>dcm4che-mime</module>
     <module>dcm4che-net</module>

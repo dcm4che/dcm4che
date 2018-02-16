@@ -38,6 +38,12 @@
 
 package org.dcm4che3.net.audit;
 
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.TCPProtocolHandler;
+import org.dcm4che3.net.UDPProtocolHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -45,23 +51,10 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-<<<<<<< HEAD
 import java.util.concurrent.Executor;
-=======
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
->>>>>>> 707fa95... change ThreadPoolExecutor for SyslogProtocolHandler
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.TCPProtocolHandler;
-import org.dcm4che3.net.UDPProtocolHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

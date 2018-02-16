@@ -412,8 +412,7 @@ public class StowRS {
             connection.disconnect();
             LOG.info("STOW successful!");
         } catch (Exception e) {
-            LOG.error("Exception : " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("Stow: ", e);
         } finally {
             if (out != null)
                 out.close();

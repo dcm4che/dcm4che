@@ -53,9 +53,6 @@ import java.util.TreeMap;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.util.ResourceLocator;
@@ -70,27 +67,20 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
  */
-@LDAP(objectClasses = "dcmImageReaderFactory")
-@ConfigurableClass
 public class ImageReaderFactory implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImageReaderFactory.class);
 
     private static final long serialVersionUID = -2881173333124498212L;
 
-    @LDAP(objectClasses = "dcmImageReader")
-    @ConfigurableClass
     public static class ImageReaderParam implements Serializable {
 
         private static final long serialVersionUID = 6593724836340684578L;
 
-        @ConfigurableProperty(name = "dcmIIOFormatName")
         public String formatName;
 
-        @ConfigurableProperty(name = "dcmJavaClassName")
         public String className;
 
-        @ConfigurableProperty(name = "dcmPatchJPEGLS")
         public PatchJPEGLS patchJPEGLS;
 
         public ImageReaderParam() {
@@ -135,19 +125,8 @@ public class ImageReaderFactory implements Serializable {
 
     private static ImageReaderFactory defaultFactory;
 
-    @LDAP(distinguishingField = "dicomTransferSyntax", noContainerNode = true)
-    @ConfigurableProperty(
-            name="dicomImageReaderMap",
-            label = "Image Readers by Transfer Syntax",
-            description = "Image readers by Transfer Syntax"
-    )
     private Map<String, ImageReaderParam> mapTransferSyntaxUIDs = new TreeMap<String, ImageReaderParam>();
     
-    @ConfigurableProperty(
-            name="dicomImageReaderMapMime",
-            label = "Image Readers by MIME type",
-            description = "Image readers by MIME type"
-    )
     private Map<String, ImageReaderParam> mapMimeTypes = new TreeMap<String, ImageReaderParam>();
 
     public Map<String, ImageReaderParam> getMapTransferSyntaxUIDs() {

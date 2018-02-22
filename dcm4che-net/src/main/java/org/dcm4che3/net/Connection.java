@@ -49,11 +49,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.proxy.ProxyManager;
 import org.dcm4che3.net.proxy.ProxyService;
 import org.dcm4che3.util.SafeClose;
@@ -75,8 +70,6 @@ import org.slf4j.LoggerFactory;
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-@LDAP(objectClasses = {"dicomNetworkConnection", "dcmNetworkConnection"})
-@ConfigurableClass(referable = true)
 public class Connection implements Serializable {
 
     private static final long serialVersionUID = -7814748788035232055L;
@@ -125,119 +118,75 @@ public class Connection implements Serializable {
 
     private Device device;
 
-    @ConfigurableProperty(name = "cn", label = "Name", tags = Tag.PRIMARY)
     private String commonName;
 
-    @ConfigurableProperty(name = "dicomHostname", label = "Hostname", tags = Tag.PRIMARY)
     private String hostname;
 
-    @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
     private String olockHash;
 
-    @ConfigurableProperty(type = ConfigurablePropertyType.UUID)
     private String uuid = UUID.randomUUID().toString();
 
-    @ConfigurableProperty(name = "dcmBindAddress")
     private String bindAddress;
 
-    @ConfigurableProperty(name = "dcmClientBindAddress")
     private String clientBindAddress;
 
-    @ConfigurableProperty(name = "dcmHTTPProxy")
     private String httpProxy;
 
-    @ConfigurableProperty(
-            name = "dicomPort",
-            defaultValue = "-1",
-            label = "Port",
-            tags = Tag.PRIMARY)
     private int port = NOT_LISTENING;
 
-    @ConfigurableProperty(name = "dcmTCPBacklog", defaultValue = "50")
     private int backlog = DEF_BACKLOG;
 
-    @ConfigurableProperty(name = "dcmTCPConnectTimeout", defaultValue = NO_TIMEOUT_STR)
     private int connectTimeout;
 
-    @ConfigurableProperty(name = "dcmAARQTimeout", defaultValue = NO_TIMEOUT_STR)
     private int requestTimeout;
 
-    @ConfigurableProperty(name = "dcmAAACTimeout", defaultValue = NO_TIMEOUT_STR)
     private int acceptTimeout;
 
-    @ConfigurableProperty(name = "dcmARRPTimeout", defaultValue = NO_TIMEOUT_STR)
     private int releaseTimeout;
 
-    @ConfigurableProperty(name = "dcmResponseTimeout", defaultValue = NO_TIMEOUT_STR)
     private int responseTimeout;
 
-    @ConfigurableProperty(name = "dcmRetrieveTimeout", defaultValue = NO_TIMEOUT_STR)
     private int retrieveTimeout;
 
-    @ConfigurableProperty(name = "dcmIdleTimeout", defaultValue = NO_TIMEOUT_STR)
     private int idleTimeout;
 
-    @ConfigurableProperty(name = "dcmSocketTimeout", defaultValue = NO_TIMEOUT_STR)
     private int socketTimeout;
 
-    @ConfigurableProperty(name = "dcmTCPCloseDelay", defaultValue = "50")
     private int socketCloseDelay = DEF_SOCKETDELAY;
 
-    @ConfigurableProperty(name = "dcmTCPSendBufferSize", defaultValue = DEF_BUFFERSIZE_STR)
     private int sendBufferSize;
 
-    @ConfigurableProperty(name = "dcmTCPReceiveBufferSize", defaultValue = DEF_BUFFERSIZE_STR)
     private int receiveBufferSize;
 
-    @ConfigurableProperty(name = "dcmSendPDULength", defaultValue = "16378")
     private int sendPDULength = DEF_MAX_PDU_LENGTH;
 
-    @ConfigurableProperty(name = "dcmReceivePDULength", defaultValue = "16378")
     private int receivePDULength = DEF_MAX_PDU_LENGTH;
 
-    @ConfigurableProperty(name = "dcmMaxOpsPerformed", defaultValue = "1")
     private int maxOpsPerformed = SYNCHRONOUS_MODE;
 
-    @ConfigurableProperty(name = "dcmMaxOpsInvoked", defaultValue = "1")
     private int maxOpsInvoked = SYNCHRONOUS_MODE;
 
-    @ConfigurableProperty(name = "dcmPackPDV", defaultValue = "true")
     private boolean packPDV = true;
 
-    @ConfigurableProperty(name = "dcmTCPNoDelay", defaultValue = "true")
     private boolean tcpNoDelay = true;
-
-    @ConfigurableProperty(name = "dcmTLSNeedClientAuth", defaultValue = "true")
+    
     private boolean tlsNeedClientAuth = true;
 
-    @ConfigurableProperty(name = "dicomTLSCipherSuite")
     private String[] tlsCipherSuites = {};
 
-    @ConfigurableProperty(name = "dcmHTTPProxyProviderName", defaultValue = ProxyService.DEFAULT_PROVIDER_NAME)
     private String httpProxyProviderName = ProxyService.DEFAULT_PROVIDER_NAME; 
 
-    @ConfigurableProperty(name = "dcmHTTPProxyProviderVersion", defaultValue = ProxyService.DEFAULT_VERSION)
     private String httpProxyProviderVersion = ProxyService.DEFAULT_VERSION;
 
-    @ConfigurableProperty(name = "dcmTLSProtocol")
     private String[] tlsProtocols = {};
 
-    @ConfigurableProperty(name = "dcmBlacklistedHostname")
     private String[] blacklist = {};
 
-    @ConfigurableProperty(name = "dicomInstalled")
     private Boolean connectionInstalled;
 
-    @ConfigurableProperty(name = "connectionExtensions", isExtensionsProperty = true)
     private Map<Class<? extends ConnectionExtension>, ConnectionExtension> extensions =
             new HashMap<Class<? extends ConnectionExtension>, ConnectionExtension>();
 
-    @ConfigurableProperty(
-            name = "dcmProtocol",
-            defaultValue = "DICOM",
-            label = "Protocol",
-            tags = Tag.PRIMARY
-    )
     private Protocol protocol = Protocol.DICOM;
 
     private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =

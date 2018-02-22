@@ -39,9 +39,6 @@
 
 package org.dcm4che3.net;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.AEExtension;
 
 import java.util.ArrayList;
@@ -52,24 +49,16 @@ import java.util.Collection;
  * 
  */
 
-@LDAP(objectClasses = "dcmExternalArchiveAEExtension", noContainerNode = true)
-@ConfigurableClass
 public class ExternalArchiveAEExtension extends AEExtension {
 
     private static final long serialVersionUID = -2390448404282661045L;
 
-    @ConfigurableProperty(name = "dcmAEFetchPriority")
     private int aeFetchPriority;
 
-    @ConfigurableProperty(name = "dcmAEPrefersForwarding", defaultValue="false")
     private boolean prefersForwarding = false;
 
-    @ConfigurableProperty(name = "dcmLinkedQueryAETs",
-            description = "List of AETs linked to this (tipically store) AET and to be used for query/retrieve",
-            collectionOfReferences = true)
     private Collection<ApplicationEntity> linkedQueryAETs = new ArrayList<ApplicationEntity>();
 
-    @ConfigurableProperty(name = "dcmDefaultForStorage", defaultValue="false")
     private boolean defaultForStorage = false;
 
     public int getAeFetchPriority() {

@@ -38,9 +38,6 @@
 
 package org.dcm4che3.imageio.codec;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.image.PhotometricInterpretation;
@@ -56,7 +53,6 @@ import java.util.List;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Roman K
  */
-@ConfigurableClass
 public class CompressionRules
         implements Iterable<CompressionRule>, Serializable {
     
@@ -65,8 +61,6 @@ public class CompressionRules
     /**
      * This list has a consistent order wrt config save/load
      */
-    @LDAP(noContainerNode = true)
-    @ConfigurableProperty
     private List<CompressionRule> list = new ArrayList<CompressionRule>();
 
     /**

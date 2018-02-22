@@ -44,9 +44,6 @@ import com.lmax.disruptor.dsl.ProducerType;
 import org.dcm4che3.audit.*;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.audit.AuditMessage;
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
@@ -73,8 +70,6 @@ import java.util.concurrent.TimeUnit;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
-@LDAP(objectClasses = "dcmAuditLogger")
-@ConfigurableClass
 public class AuditLogger extends DeviceExtension {
 
     private static final String DICOM_PRIMARY_DEVICE_TYPE = "dicomPrimaryDeviceType";
@@ -172,88 +167,45 @@ public class AuditLogger extends DeviceExtension {
     };
     private static volatile AuditLogger defaultLogger;
 
-    @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference",
-            label = "ARR Device",
-            description = "Devices that correspond to Audit Record Repositories to which audit messages are sent",
-            tags = ConfigurableProperty.Tag.PRIMARY,
-            collectionOfReferences = true)
     private List<Device> auditRecordRepositoryDevices = new ArrayList<Device>();
 
-    @ConfigurableProperty(
-            name = "dcmAuditFacility",
-            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "10")
     private Facility facility = Facility.authpriv;
 
-    @ConfigurableProperty(
-            name = "dcmAuditSuccessSeverity",
-            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "5"
-    )
     private Severity successSeverity = Severity.notice;
 
-    @ConfigurableProperty(
-            name = "dcmAuditMinorFailureSeverity",
-            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "4"
-    )
     private Severity minorFailureSeverity = Severity.warning;
 
-    @ConfigurableProperty(
-            name = "dcmAuditSeriousFailureSeverity",
-            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "3"
-    )
     private Severity seriousFailureSeverity = Severity.err;
 
-    @ConfigurableProperty(
-            name = "dcmAuditMajorFailureSeverity",
-            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "2"
-    )
     private Severity majorFailureSeverity = Severity.crit;
 
 
-    @ConfigurableProperty(name = "dcmAuditApplicationName")
     private String applicationName;
 
-    @ConfigurableProperty(name = "dcmAuditSourceID")
     private String auditSourceID;
 
-    @ConfigurableProperty(name = "dcmAuditEnterpriseSiteID")
     private String auditEnterpriseSiteID;
 
-    @ConfigurableProperty(name = "dcmAuditSourceTypeCode")
     private String[] auditSourceTypeCodes = {};
 
-    @ConfigurableProperty(name = "dcmAuditMessageID", defaultValue = MESSAGE_ID)
     private String messageID = MESSAGE_ID;
 
-    @ConfigurableProperty(name = "dcmAuditMessageEncoding", defaultValue = "UTF-8")
     private String encoding = "UTF-8";
 
-    @ConfigurableProperty(name = "dcmAuditMessageSchemaURI", defaultValue =AuditMessages.SCHEMA_URI )
     private String schemaURI = AuditMessages.SCHEMA_URI;
 
-    @ConfigurableProperty(name = "dcmAuditTimestampInUTC", defaultValue = "false")
     private boolean timestampInUTC = false;
 
-    @ConfigurableProperty(name = "dcmAuditMessageBOM", defaultValue = "true")
     private boolean includeBOM = true;
 
-    @ConfigurableProperty(name = "dcmAuditMessageFormatXML", defaultValue = "false")
     private boolean formatXML;
 
-    @ConfigurableProperty(name = "dcmAuditMessageSupplement95Schema", defaultValue = "false")
     private boolean supplement95;
 
-    @ConfigurableProperty(name = "dicomInstalled")
     private Boolean auditLoggerInstalled;
 
-    @ConfigurableProperty(name = "dcmAuditIncludeInstanceUID")
     private Boolean doIncludeInstanceUID = false;
 
-    @ConfigurableProperty(name = "dcmAuditLoggerSpoolDirectoryURI")
     private String spoolDirectoryURI;
 
     private File spoolDirectory;
@@ -261,22 +213,11 @@ public class AuditLogger extends DeviceExtension {
     private String spoolFileNamePrefix = "audit";
     private String spoolFileNameSuffix = ".log";
 
-    @ConfigurableProperty(name = "dcmAuditLoggerRetryInterval", defaultValue = "0")
     private int retryInterval;
 
-    @LDAP(
-            noContainerNode = true,
-            distinguishingField = "cn"
-    )
-    @ConfigurableProperty(name = "dcmAuditSuppressCriteria")
     private final List<AuditSuppressCriteria> suppressAuditMessageFilters =
             new ArrayList<AuditSuppressCriteria>(0);
 
-    @ConfigurableProperty(name = "dicomNetworkConnectionReference",
-            label = "Connections",
-            description = "Connections that can be used to send audit messages",
-            tags = ConfigurableProperty.Tag.PRIMARY,
-            collectionOfReferences = true)
     private List<Connection> connections = new ArrayList<Connection>(1);
 
     private transient Map<String,MessageBuilder> builder = new HashMap<String, MessageBuilder>();

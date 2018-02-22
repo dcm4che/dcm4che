@@ -41,9 +41,6 @@ package org.dcm4che3.imageio.codec;
 import java.io.Serializable;
 import java.util.EnumSet;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.StringUtils;
@@ -52,24 +49,17 @@ import org.dcm4che3.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@LDAP(objectClasses = "dcmCompressionRule")
-@ConfigurableClass
 public class CompressionRule
         implements Comparable<CompressionRule>, Serializable {
 
     private static final long serialVersionUID = 2010254518169306864L;
 
-    @ConfigurableProperty(name = "cn")
     private String commonName;
 
-    @LDAP(noContainerNode = true)
-    @ConfigurableProperty(name = "condition")
     private Condition condition;
 
-    @ConfigurableProperty(name = "dicomTransferSyntax")
     private String tsuid;
 
-    @ConfigurableProperty(name = "dcmImageWriteParam")
     private Property[] imageWriteParams;
 
     public CompressionRule() {
@@ -174,39 +164,28 @@ public class CompressionRule
         return condition.compareTo(o.condition);
     }
 
-    @ConfigurableClass
     public static class Condition
             implements Comparable<Condition>, Serializable {
 
         private static final long serialVersionUID = -4069284624944470710L;
 
-        @ConfigurableProperty(name = "dcmPhotometricInterpretation")
         EnumSet<PhotometricInterpretation> pmis;
 
         /**
          * Proxy-property, actually stored in bitsStoredMask, see getter/setter
          */
-        @ConfigurableProperty(name = "dcmBitsStored")
         int bitsStoredMaskArray[];
 
         int bitsStoredMask;
 
-        @ConfigurableProperty(
-                name = "dcmPixelRepresentation",
-                description = "If equals to -1, ignores pixel representation",
-                defaultValue = "-1")
         int pixelRepresentation = -1;
 
-        @ConfigurableProperty(name = "dcmAETitle")
         String[] aeTitles;
 
-        @ConfigurableProperty(name = "dcmSOPClass")
         String[] sopClasses;
 
-        @ConfigurableProperty(name = "dcmImageType")
         String[] imageType;
         
-        @ConfigurableProperty(name = "dcmBodyPartExamined")
         String[] bodyPartExamined;
 
         int weight;

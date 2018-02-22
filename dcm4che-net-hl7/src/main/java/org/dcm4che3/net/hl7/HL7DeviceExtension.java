@@ -38,9 +38,6 @@
 
 package org.dcm4che3.net.hl7;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.hl7.HL7Exception;
 import org.dcm4che3.hl7.HL7Segment;
 import org.dcm4che3.net.Connection;
@@ -55,8 +52,6 @@ import java.util.TreeMap;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@LDAP(noContainerNode = true)
-@ConfigurableClass
 public class HL7DeviceExtension extends DeviceExtension {
 
     private static final long serialVersionUID = -411853996726542266L;
@@ -66,8 +61,6 @@ public class HL7DeviceExtension extends DeviceExtension {
                 Connection.Protocol.HL7, HL7ProtocolHandler.INSTANCE);
     }
 
-    @LDAP(noContainerNode = true, distinguishingField = "hl7ApplicationName")
-    @ConfigurableProperty(name="hl7Apps", label = "HL7 Applications")
     private Map<String, HL7Application> hl7apps = new TreeMap<String, HL7Application>();
 
     private transient HL7MessageListener hl7MessageListener;

@@ -38,9 +38,6 @@
 
 package org.dcm4che3.net.hl7;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.hl7.HL7Exception;
 import org.dcm4che3.hl7.HL7Segment;
 import org.dcm4che3.hl7.MLLPConnection;
@@ -58,47 +55,26 @@ import java.util.*;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-@LDAP(objectClasses = "hl7Application")
-@ConfigurableClass
 public class HL7Application implements Serializable {
 
     private static final long serialVersionUID = -1765110968524548056L;
 
     private Device device;
 
-    @ConfigurableProperty(name = "hl7ApplicationName",
-            label = "HL7 application name",
-            description = "HL7 Application and Facility name (Application^Facility)"
-    )
     private String applicationName;
 
-    @ConfigurableProperty(name = "hl7DefaultCharacterSet",
-            label = "Default character set",
-            description = "Character Set used to decode received messages if not specified by MSH-18, ASCII if absent")
     private String HL7DefaultCharacterSet;
 
-    @ConfigurableProperty(name = "dicomInstalled")
     private Boolean hl7Installed;
 
-    @ConfigurableProperty(name = "hl7AcceptedSendingApplication",
-            label = "Accepted applications",
-            description = "Application^Facility name of accepted Sending Application(s); any if absent")
     private Set<String> acceptedSendingApplicationsSet =
             new LinkedHashSet<String>();
 
-    @ConfigurableProperty(name = "hl7AcceptedMessageType",
-            label = "Accepted message types",
-            description = "Message Type(s) (MessageType^TriggerEvent) of accepted messages")
     private Set<String> acceptedMessageTypesSet =
             new LinkedHashSet<String>();
 
-    @ConfigurableProperty(name = "dicomNetworkConnectionReference",
-            label = "Connections",
-            description = "Which connections are used by this HL7 application",
-            collectionOfReferences = true)
     private List<Connection> conns = new ArrayList<Connection>(1);
 
-    @ConfigurableProperty(name = "hl7AppExtensions", isExtensionsProperty = true)
     private Map<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension> extensions =
             new HashMap<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension>();
 

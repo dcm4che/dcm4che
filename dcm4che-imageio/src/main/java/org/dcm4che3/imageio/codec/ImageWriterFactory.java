@@ -38,9 +38,6 @@
 
 package org.dcm4che3.imageio.codec;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.util.Property;
@@ -70,32 +67,23 @@ import java.util.TreeMap;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
  */
-@LDAP(objectClasses = "dcmImageWriterFactory")
-@ConfigurableClass
 public class ImageWriterFactory implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(ImageWriterFactory.class);
 
     private static final long serialVersionUID = 6328126996969794374L;
 
-    @LDAP(objectClasses = "dcmImageWriter")
-    @ConfigurableClass
     public static class ImageWriterParam implements Serializable {
 
         private static final long serialVersionUID = 3521737269113651910L;
 
-        @ConfigurableProperty(name="dcmIIOFormatName")
         public String formatName;
 
-        @ConfigurableProperty(name="dcmJavaClassName")
         public String className;
 
-        @ConfigurableProperty(name="dcmPatchJPEGLS")
         public PatchJPEGLS patchJPEGLS;
 
-        @ConfigurableProperty(name = "dcmImageWriteParam")
         public Property[] imageWriteParams;
 
-        @ConfigurableProperty(name = "dcmWriteIIOMetadata")
         public Property[] iioMetadata;
 
         public ImageWriterParam() {
@@ -174,19 +162,8 @@ public class ImageWriterFactory implements Serializable {
 
     private static ImageWriterFactory defaultFactory;
 
-    @LDAP(distinguishingField = "dicomTransferSyntax", noContainerNode = true)
-    @ConfigurableProperty(
-        name="dicomImageWriterMap",
-        label = "Image Writers by transfer syntax",
-        description = "Image writers by transfer syntax"
-    )
     private Map<String, ImageWriterParam> mapTransferSyntaxUIDs = new TreeMap<String, ImageWriterParam>();
     
-    @ConfigurableProperty(
-            name="dicomImageWriterMapMime",
-            label = "Image Writers by MIME type",
-            description = "Image writers by MIME type"
-    )
     private Map<String, ImageWriterParam> mapMimeTypes = new TreeMap<String, ImageWriterParam>();
 
     public Map<String, ImageWriterParam> getMapTransferSyntaxUIDs() {

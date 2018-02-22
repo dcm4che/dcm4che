@@ -38,11 +38,6 @@
 
 package org.dcm4che3.net;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.util.StringUtils;
@@ -71,127 +66,114 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-@LDAP(
-        objectClasses = {"dcmDevice", "dicomDevice"},
-        distinguishingField = "dicomDeviceName")
-@ConfigurableClass(referable = true)
+
 public class Device implements Serializable {
 
     private static final long serialVersionUID = -5816872456184522866L;
 
-    @ConfigurableProperty(name = "dicomDeviceName", label = "Device name", tags = Tag.PRIMARY)
+    
     private String deviceName;
 
     /**
      * Temporarily gets assigned the value of device name with a prefix
      * @see Device#setDeviceName(String)
      */
-    @ConfigurableProperty(type = ConfigurablePropertyType.UUID)
+    
     private String uuid;
 
-    @ConfigurableProperty(name = "dicomDescription")
     private String description;
 
-    @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
+    
     private String olockHash;
 
-    @ConfigurableProperty(name = "dicomManufacturer")
+    
     private String manufacturer;
 
-    @ConfigurableProperty(name = "dicomManufacturerModelName")
+    
     private String manufacturerModelName;
 
-    @ConfigurableProperty(name = "dicomStationName")
+    
     private String stationName;
 
-    @ConfigurableProperty(name = "dicomDeviceSerialNumber")
+    
     private String deviceSerialNumber;
 
-    @ConfigurableProperty(name = "dcmTrustStoreURL")
+    
     private String trustStoreURL;
 
-    @ConfigurableProperty(name = "dcmTrustStoreType")
+    
     private String trustStoreType;
 
-    @ConfigurableProperty(name = "dcmTrustStorePin")
+    
     private String trustStorePin;
 
-    @ConfigurableProperty(name = "dcmTrustStorePinProperty")
+    
     private String trustStorePinProperty;
 
-    @ConfigurableProperty(name = "dcmKeyStoreURL")
+    
     private String keyStoreURL;
 
-    @ConfigurableProperty(name = "dcmKeyStoreType")
+    
     private String keyStoreType;
 
-    @ConfigurableProperty(name = "dcmKeyStorePin")
+    
     private String keyStorePin;
 
-    @ConfigurableProperty(name = "dcmKeyStorePinProperty")
+    
     private String keyStorePinProperty;
 
-    @ConfigurableProperty(name = "dcmKeyStoreKeyPin")
+   
     private String keyStoreKeyPin;
 
-    @ConfigurableProperty(name = "dcmKeyStoreKeyPinProperty")
+
     private String keyStoreKeyPinProperty;
 
-    @ConfigurableProperty(name = "dicomIssuerOfPatientID")
+
     private Issuer issuerOfPatientID;
 
-    @ConfigurableProperty(name = "dicomIssuerOfAccessionNumber")
+    
     private Issuer issuerOfAccessionNumber;
 
-    @ConfigurableProperty(name = "dicomOrderPlacerIdentifier")
+    
     private Issuer orderPlacerIdentifier;
 
-    @ConfigurableProperty(name = "dicomOrderFillerIdentifier")
+    
     private Issuer orderFillerIdentifier;
 
-    @ConfigurableProperty(name = "dicomIssuerOfAdmissionID")
+    
     private Issuer issuerOfAdmissionID;
 
-    @ConfigurableProperty(name = "dicomIssuerOfServiceEpisodeID")
+    
     private Issuer issuerOfServiceEpisodeID;
 
-    @ConfigurableProperty(name = "dicomIssuerOfContainerIdentifier")
+    
     private Issuer issuerOfContainerIdentifier;
 
-    @ConfigurableProperty(name = "dicomIssuerOfSpecimenIdentifier")
+    
     private Issuer issuerOfSpecimenIdentifier;
 
-    @ConfigurableProperty(name = "dicomSoftwareVersion")
+    
     private String[] softwareVersions = {};
 
-    @ConfigurableProperty(name = "dicomPrimaryDeviceType")
+    
     private String[] primaryDeviceTypes = {};
 
-    @ConfigurableProperty(name = "dicomInstitutionName")
     private String[] institutionNames = {};
 
-    @ConfigurableProperty(name = "dicomInstitutionCode")
     private Code[] institutionCodes = {};
 
-    @ConfigurableProperty(name = "dicomInstitutionAddress")
     private String[] institutionAddresses = {};
 
-    @ConfigurableProperty(name = "dicomInstitutionDepartmentName")
     private String[] institutionalDepartmentNames = {};
 
-    @ConfigurableProperty(name = "dicomRelatedDeviceReference")
     private String[] relatedDeviceRefs = {};
 
-    @ConfigurableProperty(name = "dicomVendorData")
     private byte[][] vendorData = {};
 
-    @ConfigurableProperty(name = "dcmLimitOpenAssociations")
     private int limitOpenAssociations;
 
-    @ConfigurableProperty(name = "dicomInstalled")
     private boolean installed = true;
 
-    @ConfigurableProperty(name = "dcmTimeZoneOfDevice")
     private TimeZone timeZoneOfDevice;
 
 
@@ -202,31 +184,16 @@ public class Device implements Serializable {
             new LinkedHashMap<String, X509Certificate[]>();
 
 
-    @LDAP(noContainerNode = true)
-    @ConfigurableProperty(
-            name = "dicomConnection",
-            label = "Connections"
-    )
     private final List<Connection> connections = new ArrayList<Connection>();
 
     /**
      * Note: This only maps the main AE titles to application entities.
      * {@link #aliasApplicationEntitiesMap} will contain also alias AE titles.
      */
-    @LDAP(noContainerNode = true)
-    @ConfigurableProperty(
-            name = "dicomNetworkAE",
-            label = "Application Entities"
-    )
     private final Map<String, ApplicationEntity> applicationEntitiesMap =
             new TreeMap<String, ApplicationEntity>();
 
 
-    @ConfigurableProperty(isReference = true,
-            name = "dcmDefaultAE",
-            tags = Tag.PRIMARY,
-            description = "Default AE to be used by both services running locally on this device as well as external services"
-    )
     private ApplicationEntity defaultAE;
 
     /**
@@ -235,7 +202,6 @@ public class Device implements Serializable {
      */
     private final transient Map<String, ApplicationEntity> aliasApplicationEntitiesMap = new TreeMap<String, ApplicationEntity>();
 
-    @ConfigurableProperty(name = "deviceExtensions", isExtensionsProperty = true)
     private Map<Class<? extends DeviceExtension>, DeviceExtension> extensions =
             new HashMap<Class<? extends DeviceExtension>, DeviceExtension>();
 

@@ -1,7 +1,5 @@
 package org.dcm4che3.net;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.data.UID;
 
 import java.io.Serializable;
@@ -14,7 +12,6 @@ import static org.dcm4che3.net.TransferCapability.Role.SCU;
  *
  * @author Roman K
  */
-@ConfigurableClass
 public class TCGroupConfigAEExtension extends AEExtension {
 
     /**
@@ -29,15 +26,9 @@ public class TCGroupConfigAEExtension extends AEExtension {
         STORAGE_COMMITMENT
     }
 
-    @ConfigurableProperty(
-            label = "Enabled transfer capability groups - SCU"
-    )
     Map<String, TCGroupDetails> scuTCs = new TreeMap<String, TCGroupDetails>();
 
 
-    @ConfigurableProperty(
-            label = "Enabled transfer capability groups - SCP"
-    )
     Map<String, TCGroupDetails> scpTCs = new TreeMap<String, TCGroupDetails>();
 
     public TCGroupConfigAEExtension() {
@@ -110,25 +101,15 @@ public class TCGroupConfigAEExtension extends AEExtension {
         this.scpTCs = scpTCs;
     }
 
-    @ConfigurableClass
     public static class TCGroupDetails implements Serializable {
 
         public TCGroupDetails() {
         }
 
-        @ConfigurableProperty
         private List<String> excludedTransferSyntaxes = new ArrayList<String>();
-
-        @ConfigurableProperty(
-                description = "If not empty, all the syntaxes but those specified by this parameter" +
-                "will be effectively removed from this AE's transfer capabilities")
+        
         private List<String> whitelistedTransferSyntaxes = new ArrayList<String>();
 
-        @ConfigurableProperty(
-                label = "Excluded SOP classes",
-                description = "This AE will include all transfer capabilities from the corresponding group, " +
-                        "except those with SOP classes specified here"
-        )
         private List<String> excludedTransferCapabilities = new ArrayList<String>();
 
         public List<String> getExcludedTransferSyntaxes() {

@@ -38,12 +38,6 @@
 
 package org.dcm4che3.net;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
-import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.conf.core.api.Parent;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.pdu.*;
 import org.dcm4che3.util.StringUtils;
@@ -68,8 +62,6 @@ import java.util.*;
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-@LDAP(objectClasses = {"dcmNetworkAE", "dicomNetworkAE"}, distinguishingField = "dicomAETitle")
-@ConfigurableClass(referable = true)
 public class ApplicationEntity implements Serializable {
 
     private static final long serialVersionUID = 3883790997057469573L;
@@ -77,54 +69,37 @@ public class ApplicationEntity implements Serializable {
     protected static final Logger LOG = LoggerFactory.getLogger(ApplicationEntity.class);
 
 
-    @ConfigurableProperty(name = "dicomAETitle", tags = Tag.PRIMARY)
     private String AETitle;
 
-    @ConfigurableProperty(type = ConfigurablePropertyType.UUID, description = "An immutable unique identifier")
     private String uuid = UUID.randomUUID().toString();
 
-    @ConfigurableProperty(name = "dicomDescription")
     private String description;
 
-    @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
     private String olockHash;
 
-    @ConfigurableProperty(name = "dicomVendorData")
     private byte[][] vendorData = {};
 
-    @ConfigurableProperty(name = "dicomApplicationCluster")
     private String[] applicationClusters = {};
 
-    @ConfigurableProperty(name = "dicomPreferredCalledAETitle")
     private String[] preferredCalledAETitles = {};
 
-    @ConfigurableProperty(name = "dicomPreferredCallingAETitle")
     private String[] preferredCallingAETitles = {};
 
-    @ConfigurableProperty(name = "dcmPreferredTransferSyntax")
     private String[] preferredTransferSyntaxes = {};
 
-    @ConfigurableProperty(name = "dicomSupportedCharacterSet")
     private String[] supportedCharacterSets = {};
 
-    @ConfigurableProperty(name = "dicomInstalled")
     private Boolean aeInstalled;
 
-    @ConfigurableProperty(name = "dcmAcceptedCallingAETitle")
     private final Set<String> acceptedCallingAETitlesSet =
             new LinkedHashSet<String>();
 
     // Connections are dereferenced by DicomConfiguration
-    @ConfigurableProperty(name = "dicomNetworkConnectionReference", collectionOfReferences = true, tags = Tag.PRIMARY)
     private final List<Connection> connections = new ArrayList<Connection>(1);
 
     /**
      * "Proxy" property, actually forwards everything to scuTCs and scpTCs in its setter/getter
      */
-    @LDAP(noContainerNode = true)
-    @ConfigurableProperty(name = "dcmTransferCapability",
-            description = "DICOM Transfer Capabilities",
-            tags = Tag.PRIMARY)
     private Collection<TransferCapability> transferCapabilities;
 
     // populated/collected by transferCapabilities' setter/getter
@@ -135,21 +110,16 @@ public class ApplicationEntity implements Serializable {
     private final Map<String, TransferCapability> scpTCs =
             new TreeMap<String, TransferCapability>();
 
-    @ConfigurableProperty(name = "aeExtensions", isExtensionsProperty = true)
     private Map<Class<? extends AEExtension>, AEExtension> extensions =
             new HashMap<Class<? extends AEExtension>, AEExtension>();
 
-    @ConfigurableProperty(name = "dicomAssociationAcceptor")
     private boolean associationAcceptor = true;
 
-    @ConfigurableProperty(name = "dicomAssociationInitiator")
     private boolean associationInitiator = true;
 
-    @ConfigurableProperty(name = "dcmAETitleAliases",
             label = "Aliases (alternative AE titles)")
     private List<String> AETitleAliases = new ArrayList<String>();
 
-    @Parent
     private Device device;
 
     private transient DimseRQHandler dimseRQHandler;

@@ -39,9 +39,6 @@
 
 package org.dcm4che3.net.web;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.AEExtension;
 
 /**
@@ -49,28 +46,20 @@ import org.dcm4che3.net.AEExtension;
  * 
  */
 
-@LDAP(objectClasses = "dcmArchiveAEWebServices", noContainerNode = true)
-@ConfigurableClass
 public class WebServiceAEExtension extends AEExtension {
 
     private static final long serialVersionUID = -2390448404282661045L;
 
-    @ConfigurableProperty(name = "dcmWadoRSBaseURL")
     private String wadoRSBaseURL;
 
-    @ConfigurableProperty(name = "dcmWadoURIBaseURL")
     private String wadoURIBaseURL;
 
-    @ConfigurableProperty(name = "dcmStowRSBaseURL")
     private String stowRSBaseURL;
 
-    @ConfigurableProperty(name = "dcmQidoRSBaseURL")
     private String qidoRSBaseURL;
 
-    @ConfigurableProperty(name = "dcmRsCapabilitiesBaseURL")
     private String rsCapabilitiesBaseURL;
     
-    @ConfigurableProperty(name = "dcmStowQidoVerificationDelaySec", defaultValue = "60")
     private int stowQidoVerificationDelaySec;
 
     public String getWadoRSBaseURL() {

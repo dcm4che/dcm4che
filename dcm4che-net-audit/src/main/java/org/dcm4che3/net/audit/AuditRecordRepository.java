@@ -42,9 +42,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.DeviceExtension;
 
@@ -52,8 +49,6 @@ import org.dcm4che3.net.DeviceExtension;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@LDAP(objectClasses = "dcmAuditRecordRepository")
-@ConfigurableClass
 public class AuditRecordRepository extends DeviceExtension {
 
     private static final long serialVersionUID = -2279487409324427161L;
@@ -65,13 +60,10 @@ public class AuditRecordRepository extends DeviceExtension {
                 Connection.Protocol.SYSLOG_UDP, SyslogProtocolHandler.INSTANCE);
     }
 
-    @ConfigurableProperty(name="dicomInstalled")
     private Boolean arrInstalled;
 
-    @ConfigurableProperty(name="dicomNetworkConnectionReference", collectionOfReferences = true)
     private final List<Connection> connections = new ArrayList<Connection>(1);
     
-    @ConfigurableProperty(name="auditRecordCodeCachingEnabled", defaultValue = "false")
     private boolean auditRecordCodeCachingEnabled;
 
     private transient AuditRecordHandler handler;

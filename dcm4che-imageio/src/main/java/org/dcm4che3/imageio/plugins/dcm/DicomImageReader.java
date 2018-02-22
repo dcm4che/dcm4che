@@ -76,6 +76,7 @@ import org.dcm4che3.image.LookupTableFactory;
 import org.dcm4che3.image.Overlays;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.image.StoredValue;
+import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderParam;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
@@ -664,7 +665,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 pixelDataVR = dis.vr();
                 pixelDataLength = dis.length();
                 if (pixelDataLength == -1)
-                    epdiis = new EncapsulatedPixelDataImageInputStream(dis, ds.getInt(Tag.NumberOfFrames, 1));
+                    epdiis = new EncapsulatedPixelDataImageInputStream(dis, new ImageDescriptor(ds));
             } else {
                 try {
                     dis.readAttributes(ds, -1, -1);

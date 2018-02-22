@@ -40,6 +40,7 @@
 
 package org.dcm4che3.imageio.stream;
 
+import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
@@ -55,7 +56,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
     private final DicomInputStream dis;
-    private final int frames;
+    private final ImageDescriptor imageDescriptor;
     private final byte[] basicOffsetTable;
     private final int frameStartWord;
     private int fragmStartWord;
@@ -64,16 +65,21 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
     private long frameEndPos = -1L;
     private boolean endOfStream;
 
-    public EncapsulatedPixelDataImageInputStream(DicomInputStream dis, int frames) throws IOException {
+    public EncapsulatedPixelDataImageInputStream(DicomInputStream dis, ImageDescriptor imageDescriptor)
+            throws IOException {
         super(dis);
         this.dis = dis;
-        this.frames = frames;
+        this.imageDescriptor = imageDescriptor;
         dis.readItemHeader();
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
         basicOffsetTable = b;
         readItemHeader();
         frameStartWord = fragmStartWord;
+    }
+
+    public ImageDescriptor getImageDescriptor() {
+        return imageDescriptor;
     }
 
     @Override
@@ -157,7 +163,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         if (streamPos < fragmEndPos)
             return false;
 
-        if (readItemHeader() && !(frames > 1 && fragmStartWord == frameStartWord))
+        if (readItemHeader() && !(imageDescriptor.isMultiframe() && fragmStartWord == frameStartWord))
             return false;
 
         frameEndPos = streamPos;
@@ -167,5 +173,4 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
     public boolean isEndOfStream() {
         return endOfStream;
     }
-
 }

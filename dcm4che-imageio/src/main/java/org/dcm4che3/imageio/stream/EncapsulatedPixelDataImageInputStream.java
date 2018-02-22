@@ -44,6 +44,8 @@ import org.dcm4che3.io.DicomInputStream;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Objects;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -51,6 +53,7 @@ import java.io.IOException;
  */
 public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInputStream {
 
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
     private final DicomInputStream dis;
     private final int frames;
     private final byte[] basicOffsetTable;
@@ -111,6 +114,28 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         frameStartPos = streamPos;
         frameEndPos = -1L;
         return !endOfStream;
+    }
+
+    /**
+     * Reads all bytes of one frame from this input stream and writes the bytes to the given output stream. After
+     * {@link #seekNextFrame} returning {@code true}, the method will read the bytes of the next frame. This method
+     * does not close either stream.
+     *
+     * @param out the output stream, non-null
+     * @return the number of bytes transferred
+     * @throws IOException if an I/O error occurs when reading or writing
+     * @throws NullPointerException if out is {@code null}
+     */
+    public long transferTo(OutputStream out) throws IOException {
+        Objects.requireNonNull(out, "out");
+        long transferred = 0;
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        int read;
+        while ((read = this.read(buffer, 0, DEFAULT_BUFFER_SIZE)) > 0) {
+            out.write(buffer, 0, read);
+            transferred += read;
+        }
+        return transferred;
     }
 
     private boolean readItemHeader() throws IOException {

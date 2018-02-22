@@ -48,6 +48,7 @@ import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.util.ByteUtils;
 
 /**
@@ -67,7 +68,7 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
     private long curSegmentEnd=-1;
     private final List<Object> fragments;
     private byte[] byteFrag;
-    
+    private ImageDescriptor imageDescriptor;
 
     /** Create a segmented input stream, that updates the bulk data entries as required, frameIndex
      * of -1 means the entire object/value.
@@ -96,7 +97,15 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         stream = iis;
         seek(0);
     }
-    
+
+    public ImageDescriptor getImageDescriptor() {
+        return imageDescriptor;
+    }
+
+    public void setImageDescriptor(ImageDescriptor imageDescriptor) {
+        this.imageDescriptor = imageDescriptor;
+    }
+
     /** Just read from the raw data segment - this gets converted to an in-memory fragments object,
      * which is then handled as a single fragment, with no basic offset table. Basically just an easy
      * way to get an image input stream on a byte array.

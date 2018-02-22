@@ -76,4 +76,6 @@
   <el tag="7777xx52" keyword="StorageTransferSyntaxUID" vr="UI" vm="1">Storage Transfer Syntax UID</el>
   <el tag="7777xx53" keyword="StorageObjectSize" vr="UL" vm="1">Storage Object Size</el>
   <el tag="7777xx54" keyword="StorageObjectDigest" vr="LO" vm="1">Storage Object Digest</el>
+  <el tag="7777xxE0" keyword="XRoadPersonStatus" vr="CS" vm="1">X-Road Person Status</el>
+  <el tag="7777xxE1" keyword="XRoadDataStatus" vr="CS" vm="1">X-Road Data Status</el>
 </elements>

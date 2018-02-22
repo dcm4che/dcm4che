@@ -40,10 +40,13 @@
 
 package org.dcm4che3.imageio.stream;
 
+import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Objects;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -51,8 +54,9 @@ import java.io.IOException;
  */
 public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInputStream {
 
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
     private final DicomInputStream dis;
-    private final int frames;
+    private final ImageDescriptor imageDescriptor;
     private final byte[] basicOffsetTable;
     private final int frameStartWord;
     private int fragmStartWord;
@@ -61,16 +65,21 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
     private long frameEndPos = -1L;
     private boolean endOfStream;
 
-    public EncapsulatedPixelDataImageInputStream(DicomInputStream dis, int frames) throws IOException {
+    public EncapsulatedPixelDataImageInputStream(DicomInputStream dis, ImageDescriptor imageDescriptor)
+            throws IOException {
         super(dis);
         this.dis = dis;
-        this.frames = frames;
+        this.imageDescriptor = imageDescriptor;
         dis.readItemHeader();
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
         basicOffsetTable = b;
         readItemHeader();
         frameStartWord = fragmStartWord;
+    }
+
+    public ImageDescriptor getImageDescriptor() {
+        return imageDescriptor;
     }
 
     @Override
@@ -113,6 +122,28 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         return !endOfStream;
     }
 
+    /**
+     * Reads all bytes of one frame from this input stream and writes the bytes to the given output stream. After
+     * {@link #seekNextFrame} returning {@code true}, the method will read the bytes of the next frame. This method
+     * does not close either stream.
+     *
+     * @param out the output stream, non-null
+     * @return the number of bytes transferred
+     * @throws IOException if an I/O error occurs when reading or writing
+     * @throws NullPointerException if out is {@code null}
+     */
+    public long transferTo(OutputStream out) throws IOException {
+        Objects.requireNonNull(out, "out");
+        long transferred = 0;
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        int read;
+        while ((read = this.read(buffer, 0, DEFAULT_BUFFER_SIZE)) > 0) {
+            out.write(buffer, 0, read);
+            transferred += read;
+        }
+        return transferred;
+    }
+
     private boolean readItemHeader() throws IOException {
         if (!dis.readItemHeader()) {
             endOfStream = true;
@@ -132,7 +163,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         if (streamPos < fragmEndPos)
             return false;
 
-        if (readItemHeader() && !(frames > 1 && fragmStartWord == frameStartWord))
+        if (readItemHeader() && !(imageDescriptor.isMultiframe() && fragmStartWord == frameStartWord))
             return false;
 
         frameEndPos = streamPos;
@@ -142,5 +173,4 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
     public boolean isEndOfStream() {
         return endOfStream;
     }
-
 }

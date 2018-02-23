@@ -224,4 +224,9 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
         }
         return transferred;
     }
+
+    @Override
+    protected void finalize() {
+        // disable finalizer of ImageInputStreamImpl
+    }
 }

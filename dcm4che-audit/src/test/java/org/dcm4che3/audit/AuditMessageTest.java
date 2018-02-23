@@ -98,7 +98,7 @@ public class AuditMessageTest {
             + "<AuditSourceIdentification"
             + " AuditEnterpriseSiteID=\"Hospital\""
             + " AuditSourceID=\"ReadingRoom\">"
-            + "<AuditSourceTypeCode code=\"1\"/>"
+            + "<AuditSourceTypeCode csd-code=\"1\"/>"
             + "</AuditSourceIdentification>"
             + "<ParticipantObjectIdentification"
             + " ParticipantObjectID=\"1.2.840.10008.2.3.4.5.6.7.78.8\""

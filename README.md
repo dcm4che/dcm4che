@@ -22,11 +22,6 @@ After installation of [Maven 3](http://maven.apache.org):
 Modules
 -------
 - dcm4che-audit
-- dcm4che-conf
-  - dcm4che-conf-api
-  - dcm4che-conf-api-hl7
-  - dcm4che-conf-core
-  - dcm4che-conf-core-api
 - dcm4che-core
 - dcm4che-emf
 - dcm4che-hl7

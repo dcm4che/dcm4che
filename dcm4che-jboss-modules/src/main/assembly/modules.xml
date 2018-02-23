@@ -23,46 +23,6 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/api/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-api</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/core-api/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-core-api</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/core/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-core</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/dicom/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-dicom</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/api-hl7/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-api-hl7</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
       <outputDirectory>/modules/org/dcm4che/core/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-core</include>

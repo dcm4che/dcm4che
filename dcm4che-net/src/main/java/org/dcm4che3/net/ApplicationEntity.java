@@ -117,7 +117,6 @@ public class ApplicationEntity implements Serializable {
 
     private boolean associationInitiator = true;
 
-            label = "Aliases (alternative AE titles)")
     private List<String> AETitleAliases = new ArrayList<String>();
 
     private Device device;

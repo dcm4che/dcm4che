@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<module xmlns="urn:jboss:module:1.1" name="org.dcm4che.conf.core-api">
-    <resources>
-        <resource-root path="dcm4che-conf-core-api-${version}.jar"/>
-    </resources>
-    <dependencies>
-        <module name="org.apache.commons.beanutils" export="true"/>
-    </dependencies>
-</module>

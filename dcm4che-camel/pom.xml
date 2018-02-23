@@ -25,12 +25,6 @@
       <version>${camel.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-conf-dicom</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>

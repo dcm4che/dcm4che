@@ -110,10 +110,6 @@
       <outputDirectory>lib</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-audit</include>
-        <include>org.dcm4che:dcm4che-conf-api</include>
-        <include>org.dcm4che:dcm4che-conf-dicom</include>
-        <include>org.dcm4che:dcm4che-conf-core</include>
-        <include>org.dcm4che:dcm4che-conf-core-api</include>
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che:dcm4che-emf</include>
         <include>org.dcm4che:dcm4che-filecache</include>

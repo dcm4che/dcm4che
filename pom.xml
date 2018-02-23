@@ -144,7 +144,7 @@
     <repository>
       <id>www.dcm4che.org</id>
       <name>dcm4che Repository</name>
-      <url>https://www.dcm4che.org/maven2</url>
+      <url>http://www.dcm4che.org/maven2</url>
     </repository>
     <repository>
       <id>jboss</id>

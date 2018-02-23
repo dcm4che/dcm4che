@@ -44,6 +44,9 @@ import java.util.Arrays;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
+import org.dcm4che3.imageio.codec.ImageDescriptor;
+import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
+import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +79,14 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
             this.patchPos = streamPos + param.getOffset();
             this.patch = param.getBytes();
         }
+    }
+
+    public ImageDescriptor getImageDescriptor() {
+        return (iis instanceof EncapsulatedPixelDataImageInputStream)
+            ? ((EncapsulatedPixelDataImageInputStream) iis).getImageDescriptor()
+            : (iis instanceof SegmentedInputImageStream)
+                ? ((SegmentedInputImageStream) iis).getImageDescriptor()
+                : null;
     }
 
     private byte[] firstBytesOf(ImageInputStream iis) throws IOException {

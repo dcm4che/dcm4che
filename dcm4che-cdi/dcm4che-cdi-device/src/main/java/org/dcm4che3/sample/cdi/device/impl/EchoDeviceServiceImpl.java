@@ -34,7 +34,8 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * ***** END LICENSE BLOCK ***** *//*
+
 
 package org.dcm4che3.sample.cdi.device.impl;
 
@@ -53,10 +54,12 @@ import org.dcm4che3.net.service.DicomService;
 import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.sample.cdi.device.EchoDeviceService;
 
+*/
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
- */
+ *//*
+
 @ApplicationScoped
 public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceService {
 
@@ -107,3 +110,4 @@ public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceSe
     }
 
 }
+*/

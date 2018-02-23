@@ -34,16 +34,17 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * ***** END LICENSE BLOCK ***** *//*
+
 
 package org.dcm4che3.sample.osgi.device.impl;
 
-import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceService;
 import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.sample.osgi.device.EchoDeviceService;
 
+*/
 /**
  * Bundle implementing and starting a generic Dicom Device.
  * Start method is defined in blueprint.xml, and invoked by the
@@ -54,7 +55,8 @@ import org.dcm4che3.sample.osgi.device.EchoDeviceService;
  * 
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * 
- */
+ *//*
+
 public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceService {
 
     private String deviceName;
@@ -99,3 +101,4 @@ public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceSe
 
 
 }
+*/

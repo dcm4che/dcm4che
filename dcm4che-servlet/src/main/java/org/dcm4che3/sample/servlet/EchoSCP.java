@@ -34,7 +34,8 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * ***** END LICENSE BLOCK ***** *//*
+
 
 package org.dcm4che3.sample.servlet;
 
@@ -43,10 +44,12 @@ import org.dcm4che3.net.DeviceService;
 import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.DicomServiceRegistry;
 
+*/
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
- */
+ *//*
+
 public class EchoSCP extends DeviceService implements EchoSCPMBean {
 
     private static EchoSCP instance;
@@ -74,3 +77,4 @@ public class EchoSCP extends DeviceService implements EchoSCPMBean {
 
 
 }
+*/

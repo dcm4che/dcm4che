@@ -34,7 +34,8 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * ***** END LICENSE BLOCK ***** *//*
+
 
 package org.dcm4che3.camel.test;
 
@@ -53,10 +54,12 @@ import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.service.DicomServiceException;
 
+*/
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
- */
+ *//*
+
 public class EchoSCP implements Processor {
 
     public static void main(String[] args) throws Exception {
@@ -88,3 +91,4 @@ public class EchoSCP implements Processor {
     }
 
 }
+*/

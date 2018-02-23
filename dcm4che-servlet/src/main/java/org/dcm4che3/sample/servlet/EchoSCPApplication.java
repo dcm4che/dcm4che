@@ -34,7 +34,8 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * ***** END LICENSE BLOCK ***** *//*
+
 package org.dcm4che3.sample.servlet;
 
 import java.util.Collections;
@@ -43,10 +44,12 @@ import java.util.Set;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
+*/
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
- */
+ *//*
+
 @ApplicationPath("/echoscp")
 public class EchoSCPApplication extends Application {
 
@@ -56,3 +59,4 @@ public class EchoSCPApplication extends Application {
     }
 
 }
+*/

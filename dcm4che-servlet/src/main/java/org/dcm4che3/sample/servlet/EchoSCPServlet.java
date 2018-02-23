@@ -34,7 +34,8 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * ***** END LICENSE BLOCK ***** *//*
+
 
 package org.dcm4che3.sample.servlet;
 
@@ -48,10 +49,12 @@ import javax.servlet.http.HttpServlet;
 
 import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
 
+*/
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
- */
+ *//*
+
 @SuppressWarnings("serial")
 public class EchoSCPServlet extends HttpServlet {
 
@@ -97,3 +100,4 @@ public class EchoSCPServlet extends HttpServlet {
     }
 
 }
+*/

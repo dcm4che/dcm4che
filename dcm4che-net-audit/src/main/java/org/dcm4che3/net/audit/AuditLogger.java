@@ -478,13 +478,13 @@ public class AuditLogger extends DeviceExtension {
             if (code.equals(DICOM_PRIMARY_DEVICE_TYPE)) {
                 for (String type : device.getPrimaryDeviceTypes()) {
                     AuditSourceTypeCode astc = new AuditSourceTypeCode();
-                    astc.setCode(type);
+                    astc.setCsdCode(type);
                     astc.setCodeSystemName("DCM");
                     asi.getAuditSourceTypeCode().add(astc);
                 }
             } else {
                 AuditSourceTypeCode astc = new AuditSourceTypeCode();
-                astc.setCode(code);
+                astc.setCsdCode(code);
                 asi.getAuditSourceTypeCode().add(astc);
             }
         }

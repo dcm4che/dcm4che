@@ -322,12 +322,12 @@ public class AuditMessages {
                 new AuditSourceTypeCode("9");
 
         public AuditSourceTypeCode(String code) {
-            super.code = code;
+            super.csdCode = code;
         }
 
         public AuditSourceTypeCode(String code, String codeSystemName,
                 String displayName) {
-            super.code = code;
+            super.csdCode = code;
             super.codeSystemName = codeSystemName;
             super.displayName = displayName;
         }

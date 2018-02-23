@@ -110,7 +110,7 @@
     so that any controlled terminology can also be used.
   -->
   <xs:attributeGroup name="AuditSourceTypeCodeContent">
-    <xs:attribute name="code" use="required">
+    <xs:attribute name="csd-code" use="required">
       <xs:simpleType>
         <xs:union memberTypes="xs:token">
           <xs:simpleType>

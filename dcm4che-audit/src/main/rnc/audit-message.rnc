@@ -78,7 +78,7 @@ AuditMessageType =
   # CP1362 : Define AuditSourceTypeCode so that an isolated single digit value is acceptable, or a token with other csd attributes
   # so that any controlled terminology can also be used.
   AuditSourceTypeCodeContent =
-  attribute code {
+  attribute csd-code {
   ## End-user display device, diagnostic device
   "1" |
   ## Data acquisition device or instrument

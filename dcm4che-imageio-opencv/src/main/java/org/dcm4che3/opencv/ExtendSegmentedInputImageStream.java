@@ -2,15 +2,19 @@ package org.dcm4che3.opencv;
 
 import java.io.File;
 
+import org.dcm4che3.imageio.codec.ImageDescriptor;
+
 public class ExtendSegmentedInputImageStream {
     private final File file;
     private final long[] segmentPositions;
     private final long[] segmentLengths;
+    private final ImageDescriptor imageDescriptor;
 
-    public ExtendSegmentedInputImageStream(File file, long[] segmentPositions, int[] segmentLengths) {
+    public ExtendSegmentedInputImageStream(File file, long[] segmentPositions, int[] segmentLengths, ImageDescriptor imageDescriptor) {
         this.file = file;
         this.segmentPositions = segmentPositions;
         this.segmentLengths = segmentLengths == null ? null : getDoubleArray(segmentLengths);
+        this.imageDescriptor = imageDescriptor;
     }
 
     public long[] getSegmentPositions() {
@@ -39,5 +43,9 @@ public class ExtendSegmentedInputImageStream {
             a[i] = array[i];
         }
         return a;
+    }
+
+    public ImageDescriptor getImageDescriptor() {
+        return imageDescriptor;
     }
 }

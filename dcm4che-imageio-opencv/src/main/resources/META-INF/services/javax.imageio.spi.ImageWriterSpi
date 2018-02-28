@@ -1,1 +1,2 @@
-#org.dcm4che3.opencv.NativeDicomImageWriterSpi
+org.dcm4che3.opencv.NativeJLSImageWriterSpi
+org.dcm4che3.opencv.NativeJLSLossyImageWriterSpi

@@ -5,15 +5,12 @@ import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.SampleModel;
 import java.io.Closeable;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
-import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -24,6 +21,10 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
+import org.dcm4che3.image.PhotometricInterpretation;
+import org.dcm4che3.imageio.codec.ImageDescriptor;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.slf4j.Logger;
@@ -157,7 +158,7 @@ public class NativeImageReader extends ImageReader implements Closeable {
     @Override
     public Iterator<ImageTypeSpecifier> getImageTypes(int frameIndex) throws IOException {
 
-        ImageTypeSpecifier imageType = createImageType(null, null, null, null, null, null);
+        ImageTypeSpecifier imageType = createImageType(params, null, null, null, null, null);
 
         return Collections.singletonList(imageType).iterator();
     }
@@ -199,176 +200,37 @@ public class NativeImageReader extends ImageReader implements Closeable {
 
     @Override
     public BufferedImage read(int imageIndex, ImageReadParam param) throws IOException {
-        PlanarImage img = getNativeImage(imageIndex, param);
-        return ImageConversion.toBufferedImage(img);
+        return ImageConversion.toBufferedImage(getNativeImage(param));
     }
 
-    private PlanarImage getNativeImage(int frameIndex, ImageReadParam param) throws IOException {
+    private PlanarImage getNativeImage(ImageReadParam param) throws IOException {
         StreamSegment seg = StreamSegment.getStreamSegment(iis, param);
-        if (seg instanceof FileStreamSegment) {
-            int dataType = DataBuffer.TYPE_USHORT;
-            int dcmFlags =
-                dataType == DataBuffer.TYPE_SHORT ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
+        ImageDescriptor desc = seg.getImageDescriptor();
 
-            // Force JPEG Baseline (1.2.840.10008.1.2.4.50) to YBR_FULL_422 color model when RGB (error made by some
-            // constructors). RGB color model doesn't make sense for lossy jpeg.
-            // http://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_8.2.html#sect_8.2.1
-            // if (pmi.name().startsWith("YBR")
-            // || ("RGB".equalsIgnoreCase(pmi.name()) && UID.JPEGBaseline1.equals(tsuid))) {
-            // dcmFlags |= Imgcodecs.DICOM_IMREAD_YBR;
-            // }
-            if (iis.getByteOrder() == ByteOrder.BIG_ENDIAN) {
-//                dcmFlags |= Imgcodecs.DICOM_IMREAD_BIGENDIAN;
-            }
-            if (dataType == DataBuffer.TYPE_FLOAT || dataType == DataBuffer.TYPE_DOUBLE) {
-                dcmFlags |= Imgcodecs.DICOM_IMREAD_FLOAT;
-            }
+        int dcmFlags = desc.isSigned() ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
+        // Force JPEG Baseline (1.2.840.10008.1.2.4.50) to YBR_FULL_422 color model when RGB (error made by some
+        // constructors). RGB color model doesn't make sense for lossy jpeg.
+        // http://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_8.2.html#sect_8.2.1
+        PhotometricInterpretation pmi = desc.getPhotometricInterpretation();
+        if (pmi.name().startsWith("YBR") || ("RGB".equalsIgnoreCase(pmi.name()) && params.getJpegMarker() == 0xffc0)) {
+            dcmFlags |= Imgcodecs.DICOM_IMREAD_YBR;
+        }
+
+        if (seg instanceof FileStreamSegment) {
+
             MatOfDouble positions =
                 new MatOfDouble(ExtendSegmentedInputImageStream.getDoubleArray(seg.getSegPosition()));
             MatOfDouble lengths = new MatOfDouble(ExtendSegmentedInputImageStream.getDoubleArray(seg.getSegLength()));
 
-            return ImageCV.toImageCV(Imgcodecs.dicomJpgRead(((FileStreamSegment) seg).getFilePath(), positions,
-                lengths, dcmFlags, Imgcodecs.IMREAD_UNCHANGED));
+            return ImageCV.toImageCV(Imgcodecs.dicomJpgRead(((FileStreamSegment) seg).getFilePath(), positions, lengths,
+                dcmFlags, Imgcodecs.IMREAD_UNCHANGED));
+        } else if (seg instanceof MemoryStreamSegment) {
+            byte[] b = ((MemoryStreamSegment) seg).getCache();
+            Mat buf = new Mat(1, b.length, CvType.CV_8UC1);
+            buf.put(0, 0, b);
+            return ImageCV.toImageCV(Imgcodecs.dicomJpgRead(buf, dcmFlags, Imgcodecs.IMREAD_UNCHANGED));
         }
         return null;
-    }
-
-    private PlanarImage getNativeImage(File file, int frame) throws IOException {
-
-        // String tsuid = getTransferSyntaxUID();
-        //// boolean rawData = !(pixelDataFragments != null && pixelDataFragments.size() > 1) || rle;
-        // ExtendSegmentedInputImageStream extParams = buildSegmentedImageInputStream(file, frame);
-        //
-        // if (extParams.getSegmentPositions() != null) {
-        // int dcmFlags =
-        // dataType == DataBuffer.TYPE_SHORT ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
-        //
-        // // Force JPEG Baseline (1.2.840.10008.1.2.4.50) to YBR_FULL_422 color model when RGB (error made by some
-        // // constructors). RGB color model doesn't make sense for lossy jpeg.
-        // // http://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_8.2.html#sect_8.2.1
-        // if (pmi.name().startsWith("YBR")
-        // || ("RGB".equalsIgnoreCase(pmi.name()) && UID.JPEGBaseline1.equals(tsuid))) {
-        // dcmFlags |= Imgcodecs.DICOM_IMREAD_YBR;
-        // }
-        // if (bigEndian()) {
-        // dcmFlags |= Imgcodecs.DICOM_IMREAD_BIGENDIAN;
-        // }
-        // if (dataType == DataBuffer.TYPE_FLOAT || dataType == DataBuffer.TYPE_DOUBLE) {
-        // dcmFlags |= Imgcodecs.DICOM_IMREAD_FLOAT;
-        // }
-        //// if (rle) {
-        //// dcmFlags |= Imgcodecs.DICOM_IMREAD_RLE;
-        //// }
-        //
-        // MatOfDouble positions =
-        // new MatOfDouble(ExtendSegmentedInputImageStream.getDoubleArray(extParams.getSegmentPositions()));
-        // MatOfDouble lengths =
-        // new MatOfDouble(ExtendSegmentedInputImageStream.getDoubleArray(extParams.getSegmentLengths()));
-        //
-        // return ImageCV.toImageCV(Imgcodecs.dicomJpgRead(file.getAbsolutePath(), positions, lengths, dcmFlags,
-        // Imgcodecs.IMREAD_UNCHANGED));
-        // }
-
-        return null;
-    }
-
-    private boolean decodeJpeg2000(ImageInputStream iis) throws IOException {
-        iis.mark();
-        try {
-            int marker = (iis.read() << 8) | iis.read();
-
-            if (marker == 0xFF4F) {
-                return true;
-            }
-
-            iis.reset();
-            iis.mark();
-            byte[] b = new byte[12];
-            iis.readFully(b);
-
-            // Verify the signature box
-            // The length of the signature box is 12
-            if (b[0] != 0 || b[1] != 0 || b[2] != 0 || b[3] != 12) {
-                return false;
-            }
-
-            // The signature box type is "jP "
-            if ((b[4] & 0xff) != 0x6A || (b[5] & 0xFF) != 0x50 || (b[6] & 0xFF) != 0x20 || (b[7] & 0xFF) != 0x20) {
-                return false;
-            }
-
-            // The signature content is 0x0D0A870A
-            if ((b[8] & 0xFF) != 0x0D || (b[9] & 0xFF) != 0x0A || (b[10] & 0xFF) != 0x87 || (b[11] & 0xFF) != 0x0A) {
-                return false;
-            }
-
-            return true;
-        } finally {
-            iis.reset();
-        }
-    }
-
-    private boolean decodeJpeg(ImageInputStream iis) throws IOException {
-        // jpeg and jpeg-ls
-        iis.mark();
-        try {
-            int byte1 = iis.read();
-            int byte2 = iis.read();
-            // Magic numbers for JPEG (general jpeg marker)
-            if ((byte1 != 0xFF) || (byte2 != 0xD8)) {
-                return false;
-            }
-            do {
-                byte1 = iis.read();
-                byte2 = iis.read();
-                // Something wrong, but try to read it anyway
-                if (byte1 != 0xFF) {
-                    break;
-                }
-                // Start of scan
-                if (byte2 == 0xDA) {
-                    break;
-                }
-                // Start of Frame, also known as SOF55, indicates a JPEG-LS file.
-                if (byte2 == 0xF7) {
-                    return true;
-                }
-                // 0xffc0: // SOF_0: JPEG baseline
-                // 0xffc1: // SOF_1: JPEG extended sequential DCT
-                // 0xffc2: // SOF_2: JPEG progressive DCT
-                // 0xffc3: // SOF_3: JPEG lossless sequential
-                if ((byte2 >= 0xC0) && (byte2 <= 0xC3)) {
-                    return true;
-                }
-                // 0xffc5: // SOF_5: differential (hierarchical) extended sequential, Huffman
-                // 0xffc6: // SOF_6: differential (hierarchical) progressive, Huffman
-                // 0xffc7: // SOF_7: differential (hierarchical) lossless, Huffman
-                if ((byte2 >= 0xC5) && (byte2 <= 0xC7)) {
-                    return true;
-                }
-                // 0xffc9: // SOF_9: extended sequential, arithmetic
-                // 0xffca: // SOF_10: progressive, arithmetic
-                // 0xffcb: // SOF_11: lossless, arithmetic
-                if ((byte2 >= 0xC9) && (byte2 <= 0xCB)) {
-                    return true;
-                }
-                // 0xffcd: // SOF_13: differential (hierarchical) extended sequential, arithmetic
-                // 0xffce: // SOF_14: differential (hierarchical) progressive, arithmetic
-                // 0xffcf: // SOF_15: differential (hierarchical) lossless, arithmetic
-                if ((byte2 >= 0xCD) && (byte2 <= 0xCF)) {
-                    return true;
-                }
-                int length = iis.read() << 8;
-                length += iis.read();
-                length -= 2;
-                while (length > 0) {
-                    length -= iis.skipBytes(length);
-                }
-            } while (true);
-            return true;
-        } finally {
-            iis.reset();
-        }
     }
 
     public static SOFSegment getSOFSegment(ImageInputStream iis) throws IOException {
@@ -446,6 +308,7 @@ public class NativeImageReader extends ImageReader implements Closeable {
         if (iis != null && params.getBytesPerLine() < 1) {
             SOFSegment sof = getSOFSegment(iis);
             if (sof != null) {
+                params.setJpegMarker(sof.getMarker());
                 params.setWidth(sof.getSamplesPerLine());
                 params.setHeight(sof.getLines());
                 params.setBitsPerSample(sof.getSamplePrecision());

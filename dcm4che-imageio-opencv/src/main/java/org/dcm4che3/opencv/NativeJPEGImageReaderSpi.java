@@ -18,7 +18,7 @@ public class NativeJPEGImageReaderSpi extends ImageReaderSpi {
 
     public NativeJPEGImageReaderSpi() {
         super("Weasis Team", "1.0", NAMES, SUFFIXES, MIMES, NativeImageReader.class.getName(),
-            new Class[] { ImageInputStream.class }, new String[] { NativeDicomImageWriterSpi.class.getName() }, false, // supportsStandardStreamMetadataFormat
+            new Class[] { ImageInputStream.class }, new String[] {  }, false, // supportsStandardStreamMetadataFormat
             null, // nativeStreamMetadataFormatName
             null, // nativeStreamMetadataFormatClassName
             null, // extraStreamMetadataFormatNames

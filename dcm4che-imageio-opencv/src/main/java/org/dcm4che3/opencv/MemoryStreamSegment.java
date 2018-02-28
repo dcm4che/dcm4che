@@ -1,37 +1,26 @@
 package org.dcm4che3.opencv;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
+import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class MemoryStreamSegment extends StreamSegment {
     private static final Logger LOGGER = LoggerFactory.getLogger(MemoryStreamSegment.class);
 
-    private final byte[] inputStream;
+    private final byte[] cache;
 
-    MemoryStreamSegment(byte[] b) {
-        super(new long[] { 0 }, new long[] { b.length });
-        this.inputStream = b;
+    MemoryStreamSegment(byte[] b, ImageDescriptor imageDescriptor) {
+        super(new long[] { 0 }, new long[] { b.length }, imageDescriptor);
+        this.cache = b;
     }
 
-    @Override
-    public ByteBuffer getDirectByteBuffer(int segment) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocateDirect((int) segLength[segment]);
-        buffer.order(ByteOrder.nativeOrder());
-        buffer.put(inputStream);
-        return buffer;
-    }
-
-    @Override
-    public ByteBuffer getDirectByteBuffer(int startSeg, int endSeg) throws IOException {
-        return getDirectByteBuffer(startSeg);
+    public byte[] getCache() {
+        return cache;
     }
 
     public static ByteArrayInputStream getByteArrayInputStream(MemoryCacheImageInputStream inputStream) {

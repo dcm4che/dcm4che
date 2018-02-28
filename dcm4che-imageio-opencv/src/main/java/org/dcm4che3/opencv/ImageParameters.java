@@ -35,6 +35,7 @@ public class ImageParameters {
     private int format;
     private boolean signedData;
     private boolean initSignedData;
+    private int jpegMarker;
 
     public ImageParameters() {
         this(0, 0, 0, 0, false);
@@ -160,7 +161,13 @@ public class ImageParameters {
         this.bands = bands;
     }
 
+    public int getJpegMarker() {
+        return jpegMarker;
+    }
 
+    public void setJpegMarker(int jpegMarker) {
+        this.jpegMarker = jpegMarker;
+    }
 
     @Override
     public String toString() {

@@ -39,11 +39,16 @@
 package org.dcm4che3.imageio.codec.jpeg;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
+import org.dcm4che3.imageio.codec.ImageDescriptor;
+import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
+import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +60,7 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
     private static final Logger LOG =
             LoggerFactory.getLogger(PatchJPEGLSImageInputStream.class);
 
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
     private final ImageInputStream iis;
     private long patchPos;
     private byte[] patch;
@@ -76,6 +82,14 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
             this.patchPos = streamPos + param.getOffset();
             this.patch = param.getBytes();
         }
+    }
+
+    public ImageDescriptor getImageDescriptor() {
+        return (iis instanceof EncapsulatedPixelDataImageInputStream)
+            ? ((EncapsulatedPixelDataImageInputStream) iis).getImageDescriptor()
+            : (iis instanceof SegmentedInputImageStream)
+                ? ((SegmentedInputImageStream) iis).getImageDescriptor()
+                : null;
     }
 
     private byte[] firstBytesOf(ImageInputStream iis) throws IOException {
@@ -190,4 +204,29 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
         iis.seek(adjustStreamPosition(pos));
     }
 
+    /**
+     * Reads all bytes from this image input stream and writes the bytes to the given output stream. This method
+     * does not close either stream.
+     *
+     * @param out the output stream, non-null
+     * @return the number of bytes transferred
+     * @throws IOException if an I/O error occurs when reading or writing
+     * @throws NullPointerException if out is {@code null}
+     */
+    public long transferTo(OutputStream out) throws IOException {
+        Objects.requireNonNull(out, "out");
+        long transferred = 0;
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        int read;
+        while ((read = this.read(buffer, 0, DEFAULT_BUFFER_SIZE)) > 0) {
+            out.write(buffer, 0, read);
+            transferred += read;
+        }
+        return transferred;
+    }
+
+    @Override
+    protected void finalize() {
+        // disable finalizer of ImageInputStreamImpl
+    }
 }

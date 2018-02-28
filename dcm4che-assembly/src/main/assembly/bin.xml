@@ -118,6 +118,8 @@
         <include>org.dcm4che:dcm4che-conf-ldap-hl7</include>
         <include>org.dcm4che:dcm4che-conf-ldap-imageio</include>
         <include>org.dcm4che:dcm4che-core</include>
+        <include>org.dcm4che:dcm4che-dcmr</include>
+        <include>org.dcm4che:dcm4che-deident</include>
         <include>org.dcm4che:dcm4che-emf</include>
         <include>org.dcm4che:dcm4che-hl7</include>
         <include>org.dcm4che:dcm4che-image</include>
@@ -139,6 +141,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcmldap</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmvalidate</include>
+        <include>org.dcm4che.tool:dcm4che-tool-deidentify</include>
         <include>org.dcm4che.tool:dcm4che-tool-emf2sf</include>
         <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-getscu</include>

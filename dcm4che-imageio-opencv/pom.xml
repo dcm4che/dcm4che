@@ -10,8 +10,8 @@
 	<name>dcm4che-imageio-opencv</name>
 
 	<properties>
-		<weasis.version>3.0.0-SNAPSHOT</weasis.version>
-		<weasis.opencv.native.version>3.4.0-dcmR1</weasis.opencv.native.version>
+		<weasis.version>3.0.0-RC1</weasis.version>
+		<weasis.opencv.native.version>3.4.0-dcmR3</weasis.opencv.native.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<repositories>

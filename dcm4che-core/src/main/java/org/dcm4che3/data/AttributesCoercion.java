@@ -46,4 +46,5 @@ package org.dcm4che3.data;
  */
 public interface AttributesCoercion {
     void coerce(Attributes attrs, Attributes modified);
+    String remapUID(String uid);
 }

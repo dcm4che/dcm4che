@@ -3244,32 +3244,25 @@ public class Attributes implements Serializable {
         }
     }
 
-    public void replaceUIDSelected(Map<String, String> uidMap, int... selection) {
+    public void replaceUIDSelected(int... selection) {
         for (int i = 0; i < size; i++) {
             if (Arrays.binarySearch(selection, tags[i]) >= 0
                     && values[i] != Value.NULL) {
-                values[i] = replaceUIDs(uidMap, decodeStringValue(i));
+                values[i] = replaceUIDs(decodeStringValue(i));
             }
         }
     }
 
-    private Object replaceUIDs(Map<String, String> uidMap, Object val) {
+    private Object replaceUIDs(Object val) {
         if (val instanceof String) {
-            return createUIDIfAbsent(uidMap, (String) val);
+            return UIDUtils.remapUID((String) val);
         }
         if (val instanceof String[]) {
             String[] ss = (String[]) val;
             for (int i = 0; i < ss.length; i++) {
-                ss[i] = createUIDIfAbsent(uidMap, ss[i]);
+                ss[i] = UIDUtils.remapUID(ss[i]);
             }
         }
-        return val;
-    }
-
-    private String createUIDIfAbsent(Map<String, String> uidMap, String key) {
-        String val = uidMap.get(key);
-        if (val == null)
-            uidMap.put(key, val = UIDUtils.createUID());
         return val;
     }
 

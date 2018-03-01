@@ -1,5 +1,5 @@
 /*
- * *** BEGIN LICENSE BLOCK *****
+ * **** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2015
+ * Portions created by the Initial Developer are Copyright (C) 2015-2018
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,37 +35,44 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * *** END LICENSE BLOCK *****
+ * **** END LICENSE BLOCK *****
+ *
  */
 
-package org.dcm4che3.data;
+package org.dcm4che3.deident;
+
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.AttributesCoercion;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @since Aug 2015
+ * @since Mar 2018
  */
-public class MergeAttributesCoercion implements AttributesCoercion {
-    private final Attributes newAttrs;
-    private AttributesCoercion next;
+public class DeIdentificationAttributesCoercion implements AttributesCoercion {
 
-    public MergeAttributesCoercion(Attributes mergedAttrs, AttributesCoercion next) {
-        this.newAttrs = mergedAttrs;
+    private final DeIdentifier deIdentifier;
+    private final AttributesCoercion next;
+
+    public DeIdentificationAttributesCoercion(DeIdentifier deIdentifier, AttributesCoercion next) {
+        this.deIdentifier = deIdentifier;
         this.next = next;
+    }
+
+    public static AttributesCoercion valueOf(DeIdentifier.Option[] options, AttributesCoercion next) {
+        return options != null && options.length > 0
+                ? new DeIdentificationAttributesCoercion(new DeIdentifier(options), next)
+                : next;
     }
 
     @Override
     public String remapUID(String uid) {
-        return next != null ? next.remapUID(uid) : uid;
+        String remappedUID = deIdentifier.remapUID(uid);
+        return next != null ? next.remapUID(remappedUID) : remappedUID;
     }
 
     @Override
     public void coerce(Attributes attrs, Attributes modified) {
-        Attributes.unifyCharacterSets(attrs, newAttrs);
-        if (modified != null) {
-            attrs.update(Attributes.UpdatePolicy.OVERWRITE, newAttrs, modified);
-        } else {
-            attrs.addAll(newAttrs);
-        }
+        deIdentifier.deidentify(attrs);
         if (next != null)
             next.coerce(attrs, modified);
     }

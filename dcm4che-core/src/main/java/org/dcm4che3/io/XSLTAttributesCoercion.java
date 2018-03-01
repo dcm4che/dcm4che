@@ -62,6 +62,11 @@ public class XSLTAttributesCoercion implements AttributesCoercion {
         this.next = next;
     }
 
+    @Override
+    public String remapUID(String uid) {
+        return next != null ? next.remapUID(uid) : uid;
+    }
+
     public boolean isIncludeNameSpaceDeclaration() {
         return includeNameSpaceDeclaration;
     }

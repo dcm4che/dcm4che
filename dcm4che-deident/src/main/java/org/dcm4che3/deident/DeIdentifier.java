@@ -43,6 +43,7 @@ package org.dcm4che3.deident;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.dcmr.DeIdentificationMethod;
+import org.dcm4che3.util.UIDUtils;
 
 import java.util.*;
 
@@ -399,9 +400,9 @@ public class DeIdentifier {
 //                DeIdentificationMethod.RetainLongitudinalTemporalInformationModifiedDatesOption),
 //        RetainPatientCharacteristicsOption(DeIdentificationMethod.RetainPatientCharacteristicsOption),
         RetainDeviceIdentityOption(DeIdentificationMethod.RetainDeviceIdentityOption),
-        RetainUIDsOption(DeIdentificationMethod.RetainUIDsOption),
-        //        RetainSafePrivateOption(DeIdentificationMethod.RetainSafePrivateOption),
-        RetainInstitutionIdentityOption(DeIdentificationMethod.RetainInstitutionIdentityOption);
+        RetainInstitutionIdentityOption(DeIdentificationMethod.RetainInstitutionIdentityOption),
+        RetainUIDsOption(DeIdentificationMethod.RetainUIDsOption);
+//        RetainSafePrivateOption(DeIdentificationMethod.RetainSafePrivateOption);
 
         private final Code code;
 
@@ -443,8 +444,8 @@ public class DeIdentifier {
         dummyValues.setString(tag, vr, s);
     }
 
-    public void deidentify(Attributes attrs, Map<String,String> uidMap) {
-        deidentifyItem(attrs, uidMap);
+    public void deidentify(Attributes attrs) {
+        deidentifyItem(attrs);
         correct(attrs);
         attrs.setString(Tag.PatientIdentityRemoved, VR.CS, YES);
         attrs.setString(Tag.LongitudinalTemporalInformationModified, VR.CS,
@@ -453,6 +454,14 @@ public class DeIdentifier {
         for (Option option : options) {
             sq.add(option.code.toItem());
         }
+    }
+
+    public String remapUID(String uid) {
+        return options.contains(Option.RetainUIDsOption) ? uid : UIDUtils.remapUID(uid);
+    }
+
+    public boolean equalOptions(Option... options) {
+        return EnumSet.of(Option.BasicApplicationConfidentialityProfile, options).equals(options);
     }
 
     private static int[] cat(int[] a, int[] b) {
@@ -497,14 +506,14 @@ public class DeIdentifier {
         }
     }
 
-    private void deidentifyItem(Attributes attrs, final Map<String,String> uidMap) {
+    private void deidentifyItem(Attributes attrs) {
         attrs.removePrivateAttributes();
         attrs.removeCurveData();
         attrs.removeOverlayData();
         attrs.removeSelected(x);
         attrs.replaceSelected(dummyValues, o);
         if (!options.contains(Option.RetainUIDsOption))
-            attrs.replaceUIDSelected(uidMap, u);
+            attrs.replaceUIDSelected(u);
 
         try {
             attrs.accept(new Attributes.Visitor() {
@@ -512,7 +521,7 @@ public class DeIdentifier {
                 public boolean visit(Attributes attrs, int tag, VR vr, Object value) throws Exception {
                     if (value instanceof Sequence)
                         for (Attributes item : (Sequence) value)
-                            deidentifyItem(item, uidMap);
+                            deidentifyItem(item);
                     return true;
                 }
             }, false);

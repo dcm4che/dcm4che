@@ -65,7 +65,6 @@ public class Deidentify {
     private static ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.deidentify.messages");
 
     private final DeIdentifier deidentifier;
-    private final Map<String,String> uidMap = new HashMap<>();
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
 
     public Deidentify(DeIdentifier.Option... options) {
@@ -185,7 +184,7 @@ public class Deidentify {
             fmi = dis.readFileMetaInformation();
             dataset = dis.readDataset(-1, -1);
         }
-        deidentifier.deidentify(dataset, uidMap);
+        deidentifier.deidentify(dataset);
         if (fmi != null)
             fmi = dataset.createFileMetaInformation(fmi.getString(Tag.TransferSyntaxUID));
         try (DicomOutputStream dos = new DicomOutputStream(dest)) {

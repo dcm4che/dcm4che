@@ -3,9 +3,7 @@ package org.dcm4che3.opencv;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -13,22 +11,17 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.FileCacheImageInputStream;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
-import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
-import org.dcm4che3.imageio.codec.Transcoder;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
-import org.dcm4che3.imageio.plugins.dcm.DicomImageReaderSpi;
 import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
 import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
-import org.dcm4che3.io.DicomInputStream;
+import org.opencv.core.Core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +29,7 @@ public abstract class StreamSegment {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamSegment.class);
 
     static {
-        // System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        System.loadLibrary("opencv_java340");
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 
     private final long[] segPosition;
@@ -319,25 +311,5 @@ public abstract class StreamSegment {
         } finally {
             iis.reset();
         }
-    }
-
-    public static void main(String[] args) throws IOException {
-        IIORegistry.getDefaultInstance().registerServiceProvider(new DicomImageReaderSpi());
-        IIORegistry.getDefaultInstance().registerServiceProvider(new NativeJLSImageWriterSpi());
-
-        final File ifile = new File("/home/nicolas/Data/Pictures/ImagesTest/DICOM/Compression and TSUID/jai-jpls-issue/JAI_JLSL_NOT_PATCHED.dcm");
-        final File ofile = new File("/home/nicolas/Data/Pictures/out/a-jpglsnonpatch.dcm");
-        Transcoder.Handler handler = new Transcoder.Handler() {
-            @Override
-            public OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException {
-                transcoder.setDestinationTransferSyntax(UID.ExplicitVRLittleEndian);
-                return new FileOutputStream(ofile);
-            }
-        };
-        try (Transcoder transcoder = new Transcoder(ifile)) {
-            transcoder.setIncludeFileMetaInformation(true);
-            transcoder.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
-            transcoder.transcode(handler);
-        }
-    }
+    }   
 }

@@ -77,6 +77,8 @@ public class DeIdentifier {
             Tag.CurrentObserverTrial,
             Tag.CurrentPatientLocation,
             Tag.CustodialOrganizationSequence,
+            Tag.Date, // Content Item Attribute
+            Tag.DateTime, // Content Item Attribute
             Tag.DataSetTrailingPadding,
             Tag.DerivationDescription,
             Tag.DigitalSignatureUID,
@@ -157,6 +159,7 @@ public class DeIdentifier {
             Tag.PerformingPhysicianName,
             Tag.PersonAddress,
             Tag.PersonIdentificationCodeSequence,
+            Tag.PersonName, // Content Item Attribute
             Tag.PersonTelecomInformation,
             Tag.PersonTelephoneNumbers,
             Tag.PhysicianApprovingInterpretation,
@@ -208,6 +211,8 @@ public class DeIdentifier {
             Tag.TelephoneNumberTrial,
             Tag.TextComments,
             Tag.TextString,
+            Tag.TextValue, // Content Item Attribute
+            Tag.Time, // Content Item Attribute
             Tag.TopicAuthor,
             Tag.TopicKeywords,
             Tag.TopicSubject,
@@ -249,6 +254,7 @@ public class DeIdentifier {
             Tag.InstanceCreationDate, // missing in Part 15
             Tag.InstanceCreationTime, // missing in Part 15
             Tag.LastMenstrualDate,
+            Tag.ObservationDateTime,
             Tag.ObservationDateTrial,
             Tag.ObservationTimeTrial,
             Tag.OverlayDate,

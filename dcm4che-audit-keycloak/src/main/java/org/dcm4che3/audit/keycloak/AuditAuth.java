@@ -45,6 +45,8 @@ import org.dcm4che3.util.StringUtils;
 
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RoleModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +59,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -67,51 +71,79 @@ public class AuditAuth {
     private static final Logger LOG = LoggerFactory.getLogger(AuditAuth.class);
     private static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
 
-    static void spoolAuditMsg(Event event, AuditLogger log) {
+    static void spoolAuditMsg(Event event, AuditLogger log, KeycloakSession keycloakSession) {
         String dataDir = System.getProperty(JBOSS_SERVER_DATA_DIR);
         Path dir = Paths.get(dataDir, "audit-auth-spool", log.getCommonName().replaceAll(" ", "_"));
-        Path file;
         try {
             if (!Files.exists(dir))
                 Files.createDirectories(dir);
-            if ((event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGOUT_ERROR)
-                    && Files.exists(dir.resolve(event.getSessionId()))) {
-                sendAuditMessage(dir.resolve(event.getSessionId()), event, log);
+            if (isLogout(event) && Files.exists(dir.resolve(event.getSessionId()))) {
+                sendAuditMessage(dir.resolve(event.getSessionId()), event, log, keycloakSession);
                 return;
             }
-            if (event.getType() == EventType.LOGIN_ERROR && event.getError() != null)
-                file = Files.createTempFile(dir, event.getIpAddress(), null);
-            else {
-                if (event.getType() == EventType.LOGIN && Files.exists(dir.resolve(event.getSessionId())))
-                    return;
-                file = Files.createFile(dir.resolve(event.getSessionId()));
-            }
-            try (LineWriter writer = new LineWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8,
-                StandardOpenOption.APPEND))) {
-                writer.writeLine(new AuthInfo(event));
-            }
-            sendAuditMessage(file, event, log);
+            auditLogin(dir, log, event, keycloakSession);
         } catch (Exception e) {
             LOG.warn("Failed to write to Audit Spool File - {} ", e);
         }
     }
 
-    private static EventIdentificationBuilder toBuildEventIdentification(AuditLogger log, Event event) {
-        String outcome = event.getError() != null
-                ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success;
-        EventTypeCode etc = event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
-                ? AuditMessages.EventTypeCode.Login : AuditMessages.EventTypeCode.Logout;
-        return new EventIdentificationBuilder.Builder(AuditMessages.EventID.UserAuthentication,
-                AuditMessages.EventActionCode.Execute, log.timeStamp(), outcome).outcomeDesc(event.getError())
-                .eventTypeCode(etc).build();
+    private static void auditLogin(Path dir, AuditLogger log, Event event, KeycloakSession keycloakSession) {
+        try {
+            Path file = event.getType() == EventType.LOGIN_ERROR
+                    ? Files.createTempFile(dir, event.getIpAddress(), null)
+                    : event.getType() == EventType.LOGIN && !Files.exists(dir.resolve(event.getSessionId()))
+                        ? Files.createFile(dir.resolve(event.getSessionId()))
+                        : null;
+
+            if (file == null)
+                return;
+
+            try (LineWriter writer = new LineWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
+                writer.writeLine(new AuthInfo(event));
+            }
+            sendAuditMessage(file, event, log, keycloakSession);
+        } catch (Exception e) {
+            LOG.warn("Audit Login Exception: {}" + e);
+        }
     }
 
-    private static void sendAuditMessage(Path file, Event event, AuditLogger log) throws IOException{
+    private static boolean isLogout(Event event) {
+        return event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGOUT_ERROR;
+    }
+
+    private static EventIdentificationBuilder userAuthenticateEventIDBuilder(AuditLogger log, Event event) {
+        String outcome = event.getError();
+        return new EventIdentificationBuilder.Builder(
+                AuditMessages.EventID.UserAuthentication,
+                AuditMessages.EventActionCode.Execute,
+                log.timeStamp(),
+                outcome != null ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success)
+                .outcomeDesc(outcome)
+                .eventTypeCode(isLogout(event) ? AuditMessages.EventTypeCode.Logout : AuditMessages.EventTypeCode.Login)
+                .build();
+    }
+
+    private static EventIdentificationBuilder securityAlertEventIDBuilder(AuditLogger log, Event event) {
+        String outcome = event.getError();
+        return new EventIdentificationBuilder.Builder(
+                AuditMessages.EventID.SecurityAlert,
+                AuditMessages.EventActionCode.Execute,
+                log.timeStamp(),
+                outcome != null ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success)
+                .outcomeDesc(outcome)
+                .eventTypeCode(isLogout(event)
+                        ? AuditMessages.EventTypeCode.EmergencyOverrideStopped : AuditMessages.EventTypeCode.EmergencyOverrideStarted)
+                .build();
+    }
+
+    private static void sendAuditMessage(Path file, Event event, AuditLogger log, KeycloakSession keycloakSession)
+            throws IOException{
         AuthInfo info = new AuthInfo(new LineReader(file).getMainInfo());
 
         ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
+        String userName = info.getField(AuthInfo.USER_NAME);
         activeParticipants[0] = new ActiveParticipantBuilder.Builder(
-                info.getField(AuthInfo.USER_NAME),
+                userName,
                 info.getField(AuthInfo.IP_ADDR))
                 .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
                 .requester(true).build();
@@ -121,16 +153,36 @@ public class AuditAuth {
                 .userIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName)
                 .altUserID(AuditLogger.processID()).build();
 
-        AuditMessage msg = AuditMessages.createMessage(toBuildEventIdentification(log, event), activeParticipants);
-        msg.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
-        try {
-            log.write(log.timeStamp(), msg);
-        } catch (Exception e) {
-            LOG.warn("Failed to emit audit message", e);
+        AuditMessage msgUserAuthenticate = AuditMessages.createMessage(userAuthenticateEventIDBuilder(log, event), activeParticipants);
+        msgUserAuthenticate.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
+        emitAudit(log, msgUserAuthenticate);
+
+        if (userRoles(userName, keycloakSession).contains(System.getProperty("super-user-role"))) {
+            AuditMessage msgSecurityAlert = AuditMessages.createMessage(securityAlertEventIDBuilder(log, event), activeParticipants);
+            msgSecurityAlert.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
+            emitAudit(log, msgSecurityAlert);
         }
 
         if (event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGIN_ERROR)
             Files.delete(file);
+    }
+
+    private static List<String> userRoles(String userName, KeycloakSession keycloakSession) {
+        List<String> userRoles = new ArrayList<>();
+        for (RoleModel roleMapping : keycloakSession.users()
+                                      .getUserByUsername(userName, keycloakSession.getContext().getRealm())
+                                      .getRoleMappings())
+            userRoles.add(roleMapping.getName());
+        return userRoles;
+    }
+
+    private static void emitAudit(AuditLogger log, AuditMessage msg) {
+        try {
+            AuditLogger.SendStatus write = log.write(log.timeStamp(), msg);
+            System.out.println("log send status: " + write);
+        } catch (Exception e) {
+            LOG.warn("Failed to emit audit message", e);
+        }
     }
 
     static class LineWriter implements Closeable {

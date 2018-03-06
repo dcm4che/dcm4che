@@ -78,7 +78,7 @@ public class Dcm4cheEventListenerProviderFactory implements EventListenerProvide
 
     @Override
     public EventListenerProvider create(KeycloakSession keycloakSession) {
-        return new Dcm4cheEventListenerProvider(Collections.unmodifiableSet(includedEvents));
+        return new Dcm4cheEventListenerProvider(Collections.unmodifiableSet(includedEvents), keycloakSession);
     }
 
     @Override

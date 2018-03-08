@@ -109,7 +109,7 @@
       </DicomAttribute>
       <DicomAttribute keyword="OverlayNumber" tag="00200022" vr="IS"/>
     </Item>
-     <Item number="6">
+    <Item number="6">
       <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
         <Value number="1">VOI LUT</Value>
       </DicomAttribute>
@@ -119,7 +119,7 @@
       </DicomAttribute>
       <DicomAttribute keyword="LUTNumber" tag="00200026" vr="IS"/>
     </Item>
-     <Item number="7">
+    <Item number="7">
       <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
         <Value number="1">CURVE</Value>
       </DicomAttribute>

@@ -83,6 +83,7 @@ public abstract class StreamSegment {
                     fRaf.setAccessible(true);
                     Integer curSegment = (Integer) fCurSegment.get(iis);
                     if (curSegment != null && curSegment >= 0) {
+                        ImageDescriptor desc = iis.getImageDescriptor();
                         Field ffragments = clazz.getDeclaredField("fragments");
                         Field flastSegment = clazz.getDeclaredField("lastSegment");
                         if (ffragments != null && flastSegment != null) {
@@ -90,6 +91,9 @@ public abstract class StreamSegment {
                             flastSegment.setAccessible(true);
                             List<Object> fragments = (List<Object>) ffragments.get(iis);
                             Integer lastSegment = (Integer) flastSegment.get(iis);
+                            if(!desc.isMultiframe() && lastSegment < fragments.size()) {
+                                lastSegment = fragments.size();
+                            }
                             RandomAccessFile raf = (RandomAccessFile) fRaf.get(fstream);
 
                             long[] segPositions = new long[lastSegment - curSegment];
@@ -118,7 +122,7 @@ public abstract class StreamSegment {
                              * PS 3.5.8.2 Though a fragment may not contain encoded data from more than one frame, the
                              * encoded data from one frame may span multiple fragments. See note in Section 8.2.
                              */
-                            return new FileStreamSegment(raf, segPositions, segLength, iis.getImageDescriptor());
+                            return new FileStreamSegment(raf, segPositions, segLength, desc);
                         }
                     }
                 }

@@ -60,6 +60,8 @@
   </organization>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <weasis.version>3.0.0-RC1</weasis.version>
+    <weasis.opencv.native.version>3.4.0-dcmR3</weasis.opencv.native.version>
   </properties>
   <build>
     <extensions>
@@ -147,6 +149,10 @@
       <id>www.dcm4che.org</id>
       <name>dcm4che Repository</name>
       <url>http://maven.dcm4che.org</url>
+    </repository>
+    <repository>
+      <id>nroduit-mvn-repo-master</id>
+      <url>https://raw.github.com/nroduit/mvn-repo/master/</url>
     </repository>
     <repository>
       <id>jboss</id>

@@ -124,7 +124,7 @@
         <include>org.dcm4che:dcm4che-hl7</include>
         <include>org.dcm4che:dcm4che-image</include>
         <include>org.dcm4che:dcm4che-imageio</include>
-	    <include>org.dcm4che:dcm4che-imageio-opencv:jar</include>
+        <include>org.dcm4che:dcm4che-imageio-opencv</include>
         <include>org.dcm4che:dcm4che-imageio-rle</include>
         <include>org.dcm4che:dcm4che-json</include>
         <include>org.dcm4che:dcm4che-mime</include>
@@ -170,6 +170,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
         <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
+        <include>org.weasis.opencv:weasis-opencv-core</include>
         <include>com.sun.media:jai_imageio</include>
         <include>com.sun.media:clibwrapper_jiio</include>
         <include>org.slf4j:slf4j-api</include>
@@ -197,11 +198,43 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
-      <outputDirectory>lib</outputDirectory>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/linux-i686</outputDirectory>
       <includes>
-        <include>org.dcm4che:dcm4che-imageio-opencv:zip:native</include>
+        <include>*:*:so:linux-x86:*</include>
       </includes>
-      <unpack>true</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/linux-x86_64</outputDirectory>
+      <includes>
+        <include>*:*:so:linux-x86-64:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/macosx-x86_64</outputDirectory>
+      <includes>
+        <include>*:*:jnilib:macosx-x86-64:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/win-i686</outputDirectory>
+      <includes>
+        <include>*:*:dll:windows-x86:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/win-x86_64</outputDirectory>
+      <includes>
+        <include>*:*:dll:windows-x86-64:*</include>
+      </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
   </dependencySets>

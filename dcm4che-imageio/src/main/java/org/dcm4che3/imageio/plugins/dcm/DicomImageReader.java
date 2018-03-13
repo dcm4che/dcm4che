@@ -688,6 +688,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         Attributes fmi = dis.readFileMetaInformation();
         Attributes ds = dis.readDataset(-1, Tag.PixelData);
         if( dis.tag() == Tag.PixelData ) {
+            imageDescriptor = new ImageDescriptor(ds);
             pixelDataVR = dis.vr();
             pixelDataLength = dis.length();            
         } else {

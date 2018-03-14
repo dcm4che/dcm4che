@@ -39,7 +39,9 @@
 package org.dcm4che3.tool.dcm2dcm;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +60,7 @@ import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.codec.Compressor;
 import org.dcm4che3.imageio.codec.Decompressor;
+import org.dcm4che3.imageio.codec.Transcoder;
 import org.dcm4che3.imageio.codec.TransferSyntaxType;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
@@ -66,6 +69,8 @@ import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.SafeClose;
+
+import javax.xml.stream.Location;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -79,6 +84,7 @@ public class Dcm2Dcm {
     private TransferSyntaxType tstype;
     private boolean retainfmi;
     private boolean nofmi;
+    private boolean legacy;
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
     private final List<Property> params = new ArrayList<Property>();
 
@@ -97,6 +103,10 @@ public class Dcm2Dcm {
 
     public final void setWithoutFileMetaInformation(boolean nofmi) {
         this.nofmi = nofmi;
+    }
+
+    public void setLegacy(boolean legacy) {
+        this.legacy = legacy;
     }
 
     public final void setEncodingOptions(DicomEncodingOptions encOpts) {
@@ -193,6 +203,10 @@ public class Dcm2Dcm {
                 .withValueSeparator()
                 .withDescription(rb.getString("compression-param"))
                 .create("C"));
+        opts.addOption(OptionBuilder
+                .withLongOpt("legacy")
+                .withDescription(rb.getString("legacy"))
+                .create());
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Dcm2Dcm.class);
         return cl;
     }
@@ -211,7 +225,7 @@ public class Dcm2Dcm {
                 main.setTransferSyntax(transferSyntaxOf(cl, UID.ExplicitVRLittleEndian));
                 main.setRetainFileMetaInformation(cl.hasOption("f"));
             }
-
+            main.setLegacy(cl.hasOption("legacy"));
             if (cl.hasOption("verify"))
                 main.addCompressionParam("maxPixelValueError",
                         cl.getParsedOptionValue("verify"));
@@ -278,7 +292,11 @@ public class Dcm2Dcm {
          if (dest.isDirectory())
              dest = new File(dest, src.getName());
          try {
-             transcode(src, dest);
+             if (legacy)
+                 transcode(src, dest);
+             else
+                 transcodeWithTranscoder(src, dest);
+
              System.out.println(
                      MessageFormat.format(rb.getString("transcoded"),
                              src, dest));
@@ -311,8 +329,7 @@ public class Dcm2Dcm {
                     tsuid = adjustTransferSyntax(tsuid,
                             dataset.getInt(Tag.BitsStored, 8));
                     compressor = new Compressor(dataset, dis.getTransferSyntax());
-                    compressor.compress(tsuid,
-                            params.toArray(new Property[params.size()]));
+                    compressor.compress(tsuid, params.toArray(new Property[0]));
                 } else if (pixeldata instanceof Fragments)
                     Decompressor.decompress(dataset, dis.getTransferSyntax());
             }
@@ -330,6 +347,23 @@ public class Dcm2Dcm {
             SafeClose.close(dos);
         }
      }
+
+    public void transcodeWithTranscoder(File src, final File dest) throws IOException {
+        try (Transcoder transcoder = new Transcoder(src)) {
+            transcoder.setIncludeFileMetaInformation(!nofmi);
+            transcoder.setRetainFileMetaInformation(retainfmi);
+            transcoder.setEncodingOptions(encOpts);
+            transcoder.setDestinationTransferSyntax(tsuid);
+            if (tstype.isPixeldataEncapsulated())
+                transcoder.setCompressParams(params.toArray(new Property[0]));
+            transcoder.transcode(new Transcoder.Handler(){
+                @Override
+                public OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException {
+                    return new FileOutputStream(dest);
+                }
+            });
+        }
+    }
 
     private String adjustTransferSyntax(String tsuid, int bitsStored) {
         switch (tstype) {

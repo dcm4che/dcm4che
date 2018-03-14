@@ -34,6 +34,8 @@
                                   1.2.840.10008.1.2.4.70
         --jpls                    compress JPEG LS Lossless; equivalent to -t
                                   1.2.840.10008.1.2.4.80
+        --legacy                  use legacy Compressor/Decompressor instead
+                                  Transcoder
      -Q <encoding-rate>           encoding rate in bits per pixel of JPEG 2000
                                   Lossy compression
      -q <quality>                 compression quality (0.0-1.0) of JPEG Lossy

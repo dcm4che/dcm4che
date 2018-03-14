@@ -46,10 +46,7 @@ import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
 import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
-import org.dcm4che3.io.BulkDataDescriptor;
-import org.dcm4che3.io.DicomInputHandler;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.io.*;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.SafeClose;
@@ -64,6 +61,7 @@ import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.*;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -87,7 +85,11 @@ public class Transcoder implements Closeable {
 
     private final Attributes dataset;
 
+    private boolean retainFileMetaInformation;
+
     private boolean includeFileMetaInformation;
+
+    private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
 
     private boolean closeInputStream = true;
 
@@ -160,6 +162,10 @@ public class Transcoder implements Closeable {
         destTransferSyntaxType = srcTransferSyntaxType;
     }
 
+    public void setEncodingOptions(DicomEncodingOptions encOpts) {
+        this.encOpts = Objects.requireNonNull(encOpts);
+    }
+
     public void setConcatenateBulkDataFiles(boolean catBlkFiles) {
         dis.setConcatenateBulkDataFiles(catBlkFiles);
     }
@@ -206,6 +212,14 @@ public class Transcoder implements Closeable {
 
     public void setIncludeFileMetaInformation(boolean includeFileMetaInformation) {
         this.includeFileMetaInformation = includeFileMetaInformation;
+    }
+
+    public boolean isRetainFileMetaInformation() {
+        return retainFileMetaInformation;
+    }
+
+    public void setRetainFileMetaInformation(boolean retainFileMetaInformation) {
+        this.retainFileMetaInformation = retainFileMetaInformation;
     }
 
     public ImageDescriptor getImageDescriptor() {
@@ -684,13 +698,20 @@ public class Transcoder implements Closeable {
     private void initDicomOutputStream() throws IOException {
         dos = new DicomOutputStream(handler.newOutputStream(this, dataset),
                 includeFileMetaInformation ? UID.ExplicitVRLittleEndian : destTransferSyntax);
+        dos.setEncodingOptions(encOpts);
     }
 
     private void writeDataset() throws IOException {
-        dos.writeDataset(includeFileMetaInformation
-                        ? dataset.createFileMetaInformation(destTransferSyntax)
-                        : null,
-                dataset);
+        Attributes fmi = null;
+        if (includeFileMetaInformation) {
+            if (retainFileMetaInformation)
+                fmi = dis.getFileMetaInformation();
+            if (fmi == null)
+                fmi = dataset.createFileMetaInformation(destTransferSyntax);
+            else
+                fmi.setString(Tag.TransferSyntaxUID, VR.UI, destTransferSyntax);
+        }
+        dos.writeDataset(fmi, dataset);
     }
 
     private Property[] cat(Property[] a, Property[] b) {

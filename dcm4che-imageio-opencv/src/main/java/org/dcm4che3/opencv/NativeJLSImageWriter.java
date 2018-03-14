@@ -13,6 +13,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
@@ -21,6 +22,9 @@ import org.weasis.opencv.data.ImageCV;
 import org.weasis.opencv.op.ImageConversion;
 
 class NativeJLSImageWriter extends ImageWriter {
+    static {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    }
     private ImageOutputStream stream = null;
 
     NativeJLSImageWriter(ImageWriterSpi originatingProvider) throws IOException {
@@ -29,16 +33,11 @@ class NativeJLSImageWriter extends ImageWriter {
 
     @Override
     public ImageWriteParam getDefaultWriteParam() {
-        return new ImageWriteParam(getLocale());
+        return new JPEGLSImageWriteParam(getLocale());
     }
 
     @Override
     public void write(IIOMetadata streamMetadata, IIOImage image, ImageWriteParam param) throws IOException {
-        writeImage(streamMetadata, image, param, false);
-    }
-
-    protected void writeImage(IIOMetadata streamMetadata, IIOImage image, ImageWriteParam param, boolean lossy)
-        throws IOException {
         if (output == null) {
             throw new IllegalStateException("input cannot be null");
         }
@@ -69,7 +68,8 @@ class NativeJLSImageWriter extends ImageWriter {
                 CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
             MatOfInt dicomParams =
                 new MatOfInt(Imgcodecs.IMREAD_UNCHANGED, dcmFlags, mat.width(), mat.height(), Imgcodecs.DICOM_CP_JPLS,
-                    channels, elemSize * 8, Imgcodecs.ILV_SAMPLE, mat.width() * elemSize, lossy ? 2 : 0);
+                    channels, elemSize * 8, Imgcodecs.ILV_SAMPLE, mat.width() * elemSize,
+                        param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0);
             Mat buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");
             if (buf.empty()) {
                 throw new IIOException("Native JPEG-LS encoding error: null image");

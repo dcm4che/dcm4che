@@ -149,8 +149,12 @@ public class Dcm2Dcm {
                 .withDescription(rb.getString("jpll"))
                 .create());
         tsGroup.addOption(OptionBuilder
-                .withLongOpt("jpls")
-                .withDescription(rb.getString("jpls"))
+                .withLongOpt("jlsl")
+                .withDescription(rb.getString("jlsl"))
+                .create());
+        tsGroup.addOption(OptionBuilder
+                .withLongOpt("jlsn")
+                .withDescription(rb.getString("jlsn"))
                 .create());
         tsGroup.addOption(OptionBuilder
                 .withLongOpt("j2kr")
@@ -198,6 +202,12 @@ public class Dcm2Dcm {
                 .withDescription(rb.getString("encoding-rate"))
                 .create("Q"));
         opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("near-lossless")
+                .withType(PatternOptionBuilder.NUMBER_VALUE)
+                .withDescription(rb.getString("near-lossless"))
+                .create("N"));
+        opts.addOption(OptionBuilder
                 .hasArgs()
                 .withArgName("name=value")
                 .withValueSeparator()
@@ -242,6 +252,10 @@ public class Dcm2Dcm {
                 main.addCompressionParam("encodingRate",
                         cl.getParsedOptionValue("Q"));
 
+            if (cl.hasOption("N"))
+                main.addCompressionParam("nearLossless",
+                        cl.getParsedOptionValue("N"));
+
             String[] cparams = cl.getOptionValues("C");
             if (cparams != null)
                 for (int i = 0; i < cparams.length;)
@@ -276,7 +290,8 @@ public class Dcm2Dcm {
                 : cl.hasOption("defl") ? UID.DeflatedExplicitVRLittleEndian
                 : cl.hasOption("jpeg") ? UID.JPEGBaseline1
                 : cl.hasOption("jpll") ? UID.JPEGLossless
-                : cl.hasOption("jpls") ? UID.JPEGLSLossless
+                : cl.hasOption("jlsl") ? UID.JPEGLSLossless
+                : cl.hasOption("jlsn") ? UID.JPEGLSLossyNearLossless
                 : cl.hasOption("j2kr") ? UID.JPEG2000LosslessOnly
                 : cl.hasOption("j2ki") ? UID.JPEG2000
                 : cl.getOptionValue("t", def);

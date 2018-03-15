@@ -79,6 +79,5 @@ if [ -n "$IMAGE_WRITER_FACTORY" ]; then
     JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che3.imageio.codec.ImageWriterFactory=$IMAGE_WRITER_FACTORY"
 fi
 
-JAVA_OPTS="$JAVA_OPTS -Djava.library.path=${JAVA_LIBRARY_PATH}"
 # Execute the JVM
 exec "$JAVA" $JAVA_OPTS -cp "$CP" $MAIN_CLASS "$@"

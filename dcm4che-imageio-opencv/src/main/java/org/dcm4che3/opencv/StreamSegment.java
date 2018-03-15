@@ -17,6 +17,7 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
+import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
@@ -54,16 +55,9 @@ public abstract class StreamSegment {
             return getFileStreamSegment((SegmentedInputImageStream) iis);
         } else if (iis instanceof FileCacheImageInputStream) {
             throw new IllegalArgumentException("No adaptor implemented yet for FileCacheImageInputStream");
-        } else if (iis instanceof EncapsulatedPixelDataImageInputStream) {
-            EncapsulatedPixelDataImageInputStream stream = (EncapsulatedPixelDataImageInputStream) iis;
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            stream.transferTo(out);
-            return new MemoryStreamSegment(out.toByteArray(), stream.getImageDescriptor());
-        } else if (iis instanceof PatchJPEGLSImageInputStream) {
-            PatchJPEGLSImageInputStream stream = (PatchJPEGLSImageInputStream) iis;
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            stream.transferTo(out);
-            return new MemoryStreamSegment(out.toByteArray(), stream.getImageDescriptor());
+        } else if (iis instanceof BytesWithImageImageDescriptor) {
+            BytesWithImageImageDescriptor stream = (BytesWithImageImageDescriptor) iis;
+            return new MemoryStreamSegment(stream.getBytes(), stream.getImageDescriptor());
         }
         throw new IllegalArgumentException("No stream adaptor found for " + iis.getClass().getName() + "!");
     }

@@ -532,7 +532,7 @@ public class Transcoder implements Closeable {
     }
 
     private void compressFrame(int frameIndex) throws IOException {
-        ExtMemoryCacheImageOutputStream ios = new ExtMemoryCacheImageOutputStream();
+        ExtMemoryCacheImageOutputStream ios = new ExtMemoryCacheImageOutputStream(imageDescriptor);
         compressor.setOutput(compressorParam.patchJPEGLS != null
                 ? new PatchJPEGLSImageOutputStream(ios, compressorParam.patchJPEGLS)
                 : ios);

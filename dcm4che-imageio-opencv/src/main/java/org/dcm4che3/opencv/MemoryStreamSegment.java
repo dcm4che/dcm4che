@@ -2,6 +2,7 @@ package org.dcm4che3.opencv;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
@@ -12,14 +13,14 @@ import org.slf4j.LoggerFactory;
 class MemoryStreamSegment extends StreamSegment {
     private static final Logger LOGGER = LoggerFactory.getLogger(MemoryStreamSegment.class);
 
-    private final byte[] cache;
+    private final ByteBuffer cache;
 
-    MemoryStreamSegment(byte[] b, ImageDescriptor imageDescriptor) {
-        super(new long[] { 0 }, new long[] { b.length }, imageDescriptor);
+    MemoryStreamSegment(ByteBuffer b, ImageDescriptor imageDescriptor) {
+        super(new long[] { 0 }, new long[] { b.limit() }, imageDescriptor);
         this.cache = b;
     }
 
-    public byte[] getCache() {
+    public ByteBuffer getCache() {
         return cache;
     }
 

@@ -11,6 +11,7 @@ import java.awt.image.SampleModel;
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -37,12 +38,15 @@ public class NativeImageReader extends ImageReader implements Closeable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeImageReader.class);
 
+    private final boolean canEncodeSigned;
+
     private final ImageParameters params = new ImageParameters();
 
     private ImageInputStream iis;
 
-    protected NativeImageReader(ImageReaderSpi originatingProvider) {
+    protected NativeImageReader(ImageReaderSpi originatingProvider, boolean canEncodeSigned) {
         super(originatingProvider);
+        this.canEncodeSigned = canEncodeSigned;
     }
 
     @Override
@@ -207,7 +211,9 @@ public class NativeImageReader extends ImageReader implements Closeable {
         StreamSegment seg = StreamSegment.getStreamSegment(iis, param);
         ImageDescriptor desc = seg.getImageDescriptor();
 
-        int dcmFlags = desc.isSigned() ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
+        int dcmFlags = (canEncodeSigned && desc.isSigned())
+                ? Imgcodecs.DICOM_IMREAD_SIGNED
+                : Imgcodecs.DICOM_IMREAD_UNSIGNED;
         // Force JPEG Baseline (1.2.840.10008.1.2.4.50) to YBR_FULL_422 color model when RGB (error made by some
         // constructors). RGB color model doesn't make sense for lossy jpeg.
         // http://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_8.2.html#sect_8.2.1
@@ -225,9 +231,9 @@ public class NativeImageReader extends ImageReader implements Closeable {
             return ImageCV.toImageCV(Imgcodecs.dicomJpgRead(((FileStreamSegment) seg).getFilePath(), positions, lengths,
                 dcmFlags, Imgcodecs.IMREAD_UNCHANGED));
         } else if (seg instanceof MemoryStreamSegment) {
-            byte[] b = ((MemoryStreamSegment) seg).getCache();
-            Mat buf = new Mat(1, b.length, CvType.CV_8UC1);
-            buf.put(0, 0, b);
+            ByteBuffer b = ((MemoryStreamSegment) seg).getCache();
+            Mat buf = new Mat(1, b.limit(), CvType.CV_8UC1);
+            buf.put(0, 0, b.array());
             return ImageCV.toImageCV(Imgcodecs.dicomJpgRead(buf, dcmFlags, Imgcodecs.IMREAD_UNCHANGED));
         }
         return null;

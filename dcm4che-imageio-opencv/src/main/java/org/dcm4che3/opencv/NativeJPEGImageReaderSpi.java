@@ -101,6 +101,6 @@ public class NativeJPEGImageReaderSpi extends ImageReaderSpi {
 
     @Override
     public ImageReader createReaderInstance(Object extension) throws IIOException {
-        return new NativeImageReader(this);
+        return new NativeImageReader(this, false);
     }
 }

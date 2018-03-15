@@ -96,6 +96,11 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-imageio-opencv</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-imageio-rle</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -138,6 +143,46 @@
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-ws-rs</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.opencv</groupId>
+      <artifactId>weasis-opencv-core</artifactId>
+      <version>${weasis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.thirdparty.org.opencv</groupId>
+      <artifactId>libopencv_java</artifactId>
+      <version>${weasis.opencv.native.version}</version>
+      <type>so</type>
+      <classifier>linux-x86-64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.thirdparty.org.opencv</groupId>
+      <artifactId>libopencv_java</artifactId>
+      <version>${weasis.opencv.native.version}</version>
+      <type>so</type>
+      <classifier>linux-x86</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.thirdparty.org.opencv</groupId>
+      <artifactId>libopencv_java</artifactId>
+      <version>${weasis.opencv.native.version}</version>
+      <type>jnilib</type>
+      <classifier>macosx-x86-64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.thirdparty.org.opencv</groupId>
+      <artifactId>opencv_java</artifactId>
+      <version>${weasis.opencv.native.version}</version>
+      <type>dll</type>
+      <classifier>windows-x86</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.thirdparty.org.opencv</groupId>
+      <artifactId>opencv_java</artifactId>
+      <version>${weasis.opencv.native.version}</version>
+      <type>dll</type>
+      <classifier>windows-x86-64</classifier>
     </dependency>
   </dependencies>
   <build>

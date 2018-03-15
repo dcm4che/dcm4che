@@ -40,21 +40,22 @@
 
 package org.dcm4che3.imageio.stream;
 
+import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Objects;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Aug 2015
  */
-public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInputStream {
+public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInputStream
+        implements BytesWithImageImageDescriptor {
 
-    private static final int DEFAULT_BUFFER_SIZE = 8192;
     private final DicomInputStream dis;
     private final ImageDescriptor imageDescriptor;
     private final byte[] basicOffsetTable;
@@ -78,6 +79,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         frameStartWord = fragmStartWord;
     }
 
+    @Override
     public ImageDescriptor getImageDescriptor() {
         return imageDescriptor;
     }
@@ -122,26 +124,16 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         return !endOfStream;
     }
 
-    /**
-     * Reads all bytes of one frame from this input stream and writes the bytes to the given output stream. After
-     * {@link #seekNextFrame} returning {@code true}, the method will read the bytes of the next frame. This method
-     * does not close either stream.
-     *
-     * @param out the output stream, non-null
-     * @return the number of bytes transferred
-     * @throws IOException if an I/O error occurs when reading or writing
-     * @throws NullPointerException if out is {@code null}
-     */
-    public long transferTo(OutputStream out) throws IOException {
-        Objects.requireNonNull(out, "out");
-        long transferred = 0;
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+    @Override
+    public ByteBuffer getBytes() throws IOException {
+        byte[] array = new byte[8192];
+        int length = 0;
         int read;
-        while ((read = this.read(buffer, 0, DEFAULT_BUFFER_SIZE)) > 0) {
-            out.write(buffer, 0, read);
-            transferred += read;
+        while ((read = this.read(array, length, array.length - length)) > 0) {
+            if ((length += read) == array.length)
+                array = Arrays.copyOf(array, array.length << 1);
         }
-        return transferred;
+        return ByteBuffer.wrap(array, 0, length);
     }
 
     private boolean readItemHeader() throws IOException {

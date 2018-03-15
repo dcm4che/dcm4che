@@ -147,8 +147,50 @@
       <outputDirectory>/modules/org/dcm4che/imageio/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-imageio</include>
+        <include>org.dcm4che:dcm4che-imageio-opencv</include>
+        <include>org.weasis.opencv:weasis-opencv-core</include>
       </includes>
       <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/linux-i686</outputDirectory>
+      <includes>
+        <include>*:*:so:linux-x86:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/linux-x86_64</outputDirectory>
+      <includes>
+        <include>*:*:so:linux-x86-64:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/macosx-x86_64</outputDirectory>
+      <includes>
+        <include>*:*:jnilib:macosx-x86-64:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/win-i686</outputDirectory>
+      <includes>
+        <include>*:*:dll:windows-x86:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/win-x86_64</outputDirectory>
+      <includes>
+        <include>*:*:dll:windows-x86-64:*</include>
+      </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>

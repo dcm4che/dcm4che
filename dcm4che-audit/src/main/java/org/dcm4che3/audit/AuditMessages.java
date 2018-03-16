@@ -275,6 +275,42 @@ public class AuditMessages {
                 new EventTypeCode("RESCHEDULE", "99DCM4CHEE", "Reschedule Task");
         public static final EventTypeCode DeleteTask =
                 new EventTypeCode("DELETE", "99DCM4CHEE", "Delete Task");
+        public static final EventTypeCode x0110 =
+                new EventTypeCode("0110", "99DCM4CHEE", "Processing Failure");
+        public static final EventTypeCode x0118 =
+                new EventTypeCode("0118", "99DCM4CHEE", "No Such SOP Class");
+        public static final EventTypeCode x0122 =
+                new EventTypeCode("0122", "99DCM4CHEE", "SOP Class Not Supported");
+        public static final EventTypeCode x0124 =
+                new EventTypeCode("0124", "99DCM4CHEE", "Not Authorized");
+        public static final EventTypeCode x0211 =
+                new EventTypeCode("0211", "99DCM4CHEE", "Unrecognized Operation");
+        public static final EventTypeCode x0212 =
+                new EventTypeCode("0212", "99DCM4CHEE", "Mistyped Argument");
+        public static final EventTypeCode A700 =
+                new EventTypeCode("A700", "99DCM4CHEE", "Out Of Resources");
+        public static final EventTypeCode A900 =
+                new EventTypeCode("A900", "99DCM4CHEE", "Identifier Does Not Match SOP Class");
+        public static final EventTypeCode A770 =
+                new EventTypeCode("A770", "99DCM4CHEE", "Duplicate Rejection Note");
+        public static final EventTypeCode A771 =
+                new EventTypeCode("A771", "99DCM4CHEE", "Subsequent Occurrence of Rejected Object");
+        public static final EventTypeCode A772 =
+                new EventTypeCode("A772", "99DCM4CHEE", "Rejection Failed No Such Instance");
+        public static final EventTypeCode A773 =
+                new EventTypeCode("A773", "99DCM4CHEE", "Rejection Failed Class Instance Conflict");
+        public static final EventTypeCode A774 =
+                new EventTypeCode("A774", "99DCM4CHEE", "Rejection Failed Already Rejected");
+        public static final EventTypeCode A775 =
+                new EventTypeCode("A775", "99DCM4CHEE", "Rejection for Retention Policy Expired not allowed");
+        public static final EventTypeCode A776 =
+                new EventTypeCode("A776", "99DCM4CHEE", "Retention Policy of Study not yet expired");
+        public static final EventTypeCode A777 =
+                new EventTypeCode("A777", "99DCM4CHEE", "Patient ID missing in object");
+        public static final EventTypeCode A778 =
+                new EventTypeCode("A778", "99DCM4CHEE", "Conflicting Patient ID not accepted");
+        public static final EventTypeCode C409 =
+                new EventTypeCode("C409", "99DCM4CHEE", "Different Study Instance UID");
 
         public EventTypeCode(String code, String codeSystemName,
                 String originalText) {

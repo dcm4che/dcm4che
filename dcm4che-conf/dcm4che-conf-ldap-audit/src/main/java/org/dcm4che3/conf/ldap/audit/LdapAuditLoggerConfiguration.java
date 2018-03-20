@@ -207,12 +207,13 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         return auditLogger;
     }
 
-    private Device loadAuditRecordRepository(String arrDeviceRef) throws ConfigurationException {
+    private Device loadAuditRecordRepository(String arrDeviceRef) {
         try {
             return config.loadDevice(arrDeviceRef);
         } catch (ConfigurationException e) {
-            throw new ConfigurationException("Failed to load Audit Record Repository "
+            LOG.info("Failed to load Audit Record Repository "
                     + arrDeviceRef + " referenced by Audit Logger", e);
+            return null;
         }
     }
 

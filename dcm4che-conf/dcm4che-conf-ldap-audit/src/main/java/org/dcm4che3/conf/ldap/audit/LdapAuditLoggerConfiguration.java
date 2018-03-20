@@ -202,17 +202,18 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         String arrDeviceDN = LdapUtils.stringValue(attrs.get("dcmAuditRecordRepositoryDeviceReference"), null);
         auditLogger.setAuditRecordRepositoryDevice(deviceDN.equals(arrDeviceDN)
                 ? device
-                : loadAuditRecordRepository(arrDeviceDN));
+                : loadAuditRecordRepository(arrDeviceDN, auditLogger));
         loadAuditSuppressCriteria(auditLogger, auditLoggerDN(auditLogger.getCommonName(), deviceDN));
         return auditLogger;
     }
 
-    private Device loadAuditRecordRepository(String arrDeviceRef) {
+    private Device loadAuditRecordRepository(String arrDeviceRef, AuditLogger auditLogger) {
         try {
             return config.loadDevice(arrDeviceRef);
         } catch (ConfigurationException e) {
             LOG.info("Failed to load Audit Record Repository "
                     + arrDeviceRef + " referenced by Audit Logger", e);
+            auditLogger.setDeviceName(arrDeviceRef.substring(arrDeviceRef.indexOf("=") + 1, arrDeviceRef.indexOf(",cn=Devices")));
             return null;
         }
     }

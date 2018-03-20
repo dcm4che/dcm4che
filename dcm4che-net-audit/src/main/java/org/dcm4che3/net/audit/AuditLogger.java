@@ -212,6 +212,7 @@ public class AuditLogger {
     private String spoolFileNamePrefix = "audit";
     private String spoolFileNameSuffix= ".log";
     private int retryInterval;
+    private String deviceName;
 
     private final List<AuditSuppressCriteria> suppressAuditMessageFilters =
             new ArrayList<AuditSuppressCriteria>(0);
@@ -254,6 +255,14 @@ public class AuditLogger {
 
     public final Device getAuditRecordRepositoryDevice() {
         return arrDevice;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     public String getAuditRecordRepositoryDeviceName() {

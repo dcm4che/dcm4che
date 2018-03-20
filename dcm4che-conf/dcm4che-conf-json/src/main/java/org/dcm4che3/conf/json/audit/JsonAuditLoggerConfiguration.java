@@ -79,7 +79,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
         writer.writeNotNullOrDef("cn", auditLogger.getCommonName(), null);
         writer.writeNotNullOrDef("dcmAuditRecordRepositoryDeviceName",
                 auditLogger.getAuditRecordRepositoryDevice() != null
-                        ? auditLogger.getAuditRecordRepositoryDevice().getDeviceName() : auditLogger.getDeviceName();, null);
+                        ? auditLogger.getAuditRecordRepositoryDevice().getDeviceName() : auditLogger.getDeviceName(), null);
         writer.writeConnRefs(device.listConnections(), auditLogger.getConnections());
         writer.writeNotNull("dicomInstalled", auditLogger.getInstalled());
         writer.writeNotNullOrDef("dcmAuditSourceID", auditLogger.getAuditSourceID(), null);

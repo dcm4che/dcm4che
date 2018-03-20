@@ -164,7 +164,9 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                     logger.setCommonName(reader.stringValue());
                     break;
                 case "dcmAuditRecordRepositoryDeviceName":
-                    logger.setAuditRecordRepositoryDevice(config.findDevice(reader.stringValue()));
+                    Device auditRecordRepositoryDevice = config.findDevice(reader.stringValue());
+                    if (auditRecordRepositoryDevice != null)
+                        logger.setAuditRecordRepositoryDevice(auditRecordRepositoryDevice);
                     break;
                 case "dicomNetworkConnectionReference":
                     for (String connRef : reader.stringArray())

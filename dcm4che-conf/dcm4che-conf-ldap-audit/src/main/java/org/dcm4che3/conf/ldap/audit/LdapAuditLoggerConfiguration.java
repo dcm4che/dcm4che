@@ -135,7 +135,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 logger.isTimestampInUTC(), false);
         LdapUtils.storeConnRefs(ldapObj, attrs, logger.getConnections(), deviceDN);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditRecordRepositoryDeviceReference",
-                config.deviceRef(logger.getAuditRecordRepositoryDeviceName()), null);
+                config.deviceRef(logger.getAuditRecordRepositoryDeviceNameNotNull()), null);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmAuditIncludeInstanceUID",
                 logger.isIncludeInstanceUID(), false);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditLoggerSpoolDirectoryURI",
@@ -173,8 +173,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
 
 
     @Override
-    protected void loadChilds(Device device, String deviceDN)
-            throws NamingException, ConfigurationException {
+    protected void loadChilds(Device device, String deviceDN) throws NamingException {
         NamingEnumeration<SearchResult> ne =
                 config.search(deviceDN, "(objectclass=dcmAuditLogger)");
         try {
@@ -192,29 +191,30 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         }
     }
 
-    private AuditLogger loadAuditLogger(SearchResult sr, String deviceDN,
-                                        Device device) throws NamingException, ConfigurationException {
+    private AuditLogger loadAuditLogger(SearchResult sr, String deviceDN, Device device)
+            throws NamingException {
         Attributes attrs = sr.getAttributes();
         AuditLogger auditLogger = new AuditLogger(LdapUtils.stringValue(attrs.get("cn"), null));
         loadFrom(auditLogger, attrs);
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
             auditLogger.addConnection(LdapUtils.findConnection(connDN, deviceDN, device));
         String arrDeviceDN = LdapUtils.stringValue(attrs.get("dcmAuditRecordRepositoryDeviceReference"), null);
-        auditLogger.setAuditRecordRepositoryDevice(deviceDN.equals(arrDeviceDN)
-                ? device
-                : loadAuditRecordRepository(arrDeviceDN, auditLogger));
-        loadAuditSuppressCriteria(auditLogger, auditLoggerDN(auditLogger.getCommonName(), deviceDN));
+        if (deviceDN.equals(arrDeviceDN)) {
+            auditLogger.setAuditRecordRepositoryDevice(device);
+        } else {
+            loadAuditRecordRepositoryDevice(auditLogger, arrDeviceDN);
+        }
+       loadAuditSuppressCriteria(auditLogger, auditLoggerDN(auditLogger.getCommonName(), deviceDN));
         return auditLogger;
     }
 
-    private Device loadAuditRecordRepository(String arrDeviceRef, AuditLogger auditLogger) {
+    private void loadAuditRecordRepositoryDevice(AuditLogger auditLogger, String arrDeviceDN) {
         try {
-            return config.loadDevice(arrDeviceRef);
+            auditLogger.setAuditRecordRepositoryDevice(config.loadDevice(arrDeviceDN));
         } catch (ConfigurationException e) {
-            LOG.info("Failed to load Audit Record Repository "
-                    + arrDeviceRef + " referenced by Audit Logger", e);
-            auditLogger.setDeviceName(arrDeviceRef.substring(arrDeviceRef.indexOf("=") + 1, arrDeviceRef.indexOf(",cn=Devices")));
-            return null;
+            LOG.info("Failed to load Audit Record Repository {} referenced by Audit Logger", arrDeviceDN, e);
+            auditLogger.setAuditRecordRepositoryDeviceName(
+                    LdapUtils.cutAttrValueFromDN(arrDeviceDN, "dicomDeviceName"));
         }
     }
 
@@ -425,8 +425,8 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 b.getConnections(),
                 deviceDN);
         LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditRecordRepositoryDeviceReference",
-                arrDeviceRef(a),
-                arrDeviceRef(b), null);
+                config.deviceRef(a.getAuditRecordRepositoryDeviceNameNotNull()),
+                config.deviceRef(b.getAuditRecordRepositoryDeviceNameNotNull()), null);
         LdapUtils.storeDiff(ldapObj, mods, "dcmAuditIncludeInstanceUID",
                 a.isIncludeInstanceUID(), 
                 b.isIncludeInstanceUID(), 
@@ -474,13 +474,6 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 a.getUserIsRequestor(),
                 b.getUserIsRequestor(), null);
         return mods;
-    }
-
-    private String arrDeviceRef(AuditLogger a) {
-        Device arrDevice = a.getAuditRecordRepositoryDevice();
-        return arrDevice != null
-                ? config.deviceRef(arrDevice.getDeviceName())
-                : null;
     }
 
 }

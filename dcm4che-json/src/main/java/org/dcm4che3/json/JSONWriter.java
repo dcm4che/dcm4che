@@ -57,6 +57,7 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputHandler;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.util.Base64;
+import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
@@ -135,12 +136,13 @@ public class JSONWriter implements DicomInputHandler {
             Fragments frags = (Fragments) value;
             for (Object frag : frags) {
                 gen.writeStartObject();
-                if (!(frag instanceof Value && ((Value) frag).isEmpty())) 
-                    if (frag instanceof BulkData)
-                        writeBulkData((BulkData) frag);
-                    else {
-                        writeInlineBinary(frags.vr(), (byte[]) frag, bigEndian, true);
-                    }
+                if (frag instanceof BulkData)
+                    writeBulkData((BulkData) frag);
+                else {
+                    if (frag instanceof Value && ((Value) frag).isEmpty())
+                        frag = ByteUtils.EMPTY_BYTES;
+                    writeInlineBinary(frags.vr(), (byte[]) frag, bigEndian, true);
+                }
                 gen.writeEnd();
             }
             gen.writeEnd();
@@ -351,6 +353,9 @@ public class JSONWriter implements DicomInputHandler {
                 writeInlineBinary(frags.vr(), dis.readValue(), 
                         dis.bigEndian(), false);
             }
+        } else if (len == 0) {
+            writeInlineBinary(frags.vr(), ByteUtils.EMPTY_BYTES,
+                    dis.bigEndian(), false);
         }
         gen.writeEnd();
     }

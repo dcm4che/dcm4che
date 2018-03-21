@@ -343,7 +343,7 @@ public class JSONReader {
         next();
         byte[] bytes = null;
         String bulkDataURI = null;
-        while (next() != Event.KEY_NAME) {
+        while ( event == Event.KEY_NAME ) {
             switch (getString()) {
                 case "BulkDataURI":
                     bulkDataURI = valueString();
@@ -356,6 +356,7 @@ public class JSONReader {
                             + "\", expected \"InlineBinary\""
                             + " or \"BulkDataURI\"", parser.getLocation());
             }
+            if (next() == Event.KEY_NAME) break;
         }
         expect(Event.END_OBJECT);
         return bulkDataURI != null && !skipBulkDataURI

@@ -55,10 +55,15 @@ CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.7.5.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.17.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.2.jar"
 
-# Setup jai-imageio native library path
+# Setup the native library path
 if [ "x$JAVA_LIBRARY_PATH" = "x" ]; then
     if [ "x$PLATFORM" = "x" ]; then
-        PLATFORM=linux-`uname -m`
+    	"$JAVA" -d64 -version > /dev/null 2>&1
+    	if [ $? -eq 0 ]; then
+    		PLATFORM=linux-x86_64
+		else
+    		PLATFORM=linux-i686
+		fi
     fi
     JAVA_LIBRARY_PATH=$DCM4CHE_HOME/lib/${PLATFORM}
 fi

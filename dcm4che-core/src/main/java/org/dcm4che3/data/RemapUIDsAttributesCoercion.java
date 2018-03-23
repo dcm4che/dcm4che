@@ -40,6 +40,7 @@
 
 package org.dcm4che3.data;
 
+import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.UIDUtils;
 
 import java.util.Map;
@@ -55,6 +56,12 @@ public class RemapUIDsAttributesCoercion implements AttributesCoercion {
     public RemapUIDsAttributesCoercion(Map<String, String> uidMap, AttributesCoercion next) {
         this.uidMap = uidMap;
         this.next = next;
+    }
+
+    @Override
+    public String remapUID(String uid) {
+        String remappedUID = uidMap != null ? StringUtils.maskNull(uidMap.get(uid), uid) : uid;
+        return next != null ? next.remapUID(remappedUID) : remappedUID;
     }
 
     @Override

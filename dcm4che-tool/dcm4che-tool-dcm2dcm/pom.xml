@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che.tool</groupId>
     <artifactId>dcm4che-tool</artifactId>
-    <version>5.12.0</version>
+    <version>5.13.0</version>
   </parent>
   <artifactId>dcm4che-tool-dcm2dcm</artifactId>
   <name>dcm4che-tool-dcm2dcm</name>
@@ -18,6 +18,12 @@
       <artifactId>dcm4che-imageio-rle</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.dcm4che</groupId>
+    	<artifactId>dcm4che-imageio-opencv</artifactId>
+    	<version>${project.version}</version>
+    	<scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.media</groupId>

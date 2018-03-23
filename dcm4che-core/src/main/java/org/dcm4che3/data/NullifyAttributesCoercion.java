@@ -60,6 +60,11 @@ public class NullifyAttributesCoercion implements AttributesCoercion {
     }
 
     @Override
+    public String remapUID(String uid) {
+        return next != null ? next.remapUID(uid) : uid;
+    }
+
+    @Override
     public void coerce(Attributes attrs, Attributes modified) {
         VR.Holder vr = new VR.Holder();
         for (int nullifyTag : nullifyTags) {

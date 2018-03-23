@@ -54,10 +54,7 @@ import org.dcm4che3.data.IOD.DataElementType;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.util.ByteUtils;
-import org.dcm4che3.util.DateUtils;
-import org.dcm4che3.util.StringUtils;
-import org.dcm4che3.util.TagUtils;
+import org.dcm4che3.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -2533,7 +2530,6 @@ public class Attributes implements Serializable {
         writeTo(out, cs, 0, size, 0);
     }
 
-
     private void checkInGroup(int i, int groupLengthTag) {
         int tag = tags[i];
         if (TagUtils.groupLengthTagOf(tag) != groupLengthTag)
@@ -3215,6 +3211,88 @@ public class Attributes implements Serializable {
                 size1 -= j - i;
             }
         }
+        int removed = size - size1;
+        if (removed > 0) {
+            Arrays.fill(tags, size1, size, 0);
+            Arrays.fill(vrs, size1, size, null);
+            Arrays.fill(values, size1, size, null);
+            size = size1;
+        }
+        return removed;
+    }
+
+    public void removeSelected(int... selection) {
+        for (int i = 0; i < size; i++) {
+            if (Arrays.binarySearch(selection, tags[i]) >= 0) {
+                int numMoved = size - i - 1;
+                if (numMoved > 0) {
+                    System.arraycopy(tags, i+1, tags, i, numMoved);
+                    System.arraycopy(vrs, i+1, vrs, i, numMoved);
+                    System.arraycopy(values, i+1, values, i, numMoved);
+                }
+                values[--size] = null;
+                --i;
+            }
+        }
+    }
+
+    public void replaceSelected(Attributes others, int... selection) {
+        for (int i = 0; i < size; i++) {
+            if (Arrays.binarySearch(selection, tags[i]) >= 0) {
+                values[i] = StringUtils.maskNull(others.getValue(tags[i]), Value.NULL);
+            }
+        }
+    }
+
+    public void replaceUIDSelected(int... selection) {
+        for (int i = 0; i < size; i++) {
+            if (Arrays.binarySearch(selection, tags[i]) >= 0
+                    && values[i] != Value.NULL) {
+                values[i] = replaceUIDs(decodeStringValue(i));
+            }
+        }
+    }
+
+    private Object replaceUIDs(Object val) {
+        if (val instanceof String) {
+            return UIDUtils.remapUID((String) val);
+        }
+        if (val instanceof String[]) {
+            String[] ss = (String[]) val;
+            for (int i = 0; i < ss.length; i++) {
+                ss[i] = UIDUtils.remapUID(ss[i]);
+            }
+        }
+        return val;
+    }
+
+    public int removeCurveData() {
+        return removeRepeatingGroup(0x50000000);
+    }
+
+    public int removeOverlayData() {
+        return removeRepeatingGroup(0x60000000);
+    }
+
+    private int removeRepeatingGroup(int ggxxxxxx) {
+        int size1 = size;
+        int i = indexForInsertOf(ggxxxxxx);
+        if (i < 0)
+            i = -i-1;
+        int j = i;
+        while (j < size1 && (tags[i] & 0xFF000000) == ggxxxxxx)
+            j++;
+
+        if (j > i) {
+            int len = size1 - j;
+            if (len > 0) {
+                System.arraycopy(tags, j, tags, i, len);
+                System.arraycopy(vrs, j, vrs, i, len);
+                System.arraycopy(values, j, values, i, len);
+            }
+            size1 -= j - i;
+        }
+
         int removed = size - size1;
         if (removed > 0) {
             Arrays.fill(tags, size1, size, 0);

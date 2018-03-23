@@ -39,7 +39,9 @@
 package org.dcm4che3.imageio.stream;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.Objects;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
@@ -48,6 +50,7 @@ import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.util.ByteUtils;
 
 /**
@@ -60,6 +63,7 @@ import org.dcm4che3.util.ByteUtils;
   */
 public class SegmentedInputImageStream extends ImageInputStreamImpl {
 
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
     private final ImageInputStream stream;
     private int curSegment=0;
     private int firstSegment=1, lastSegment=Integer.MAX_VALUE;
@@ -67,7 +71,7 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
     private long curSegmentEnd=-1;
     private final List<Object> fragments;
     private byte[] byteFrag;
-    
+    private ImageDescriptor imageDescriptor;
 
     /** Create a segmented input stream, that updates the bulk data entries as required, frameIndex
      * of -1 means the entire object/value.
@@ -96,7 +100,15 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         stream = iis;
         seek(0);
     }
-    
+
+    public ImageDescriptor getImageDescriptor() {
+        return imageDescriptor;
+    }
+
+    public void setImageDescriptor(ImageDescriptor imageDescriptor) {
+        this.imageDescriptor = imageDescriptor;
+    }
+
     /** Just read from the raw data segment - this gets converted to an in-memory fragments object,
      * which is then handled as a single fragment, with no basic offset table. Basically just an easy
      * way to get an image input stream on a byte array.
@@ -277,5 +289,26 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         updateBulkData(fragments.size()+1025);
         ret = getLastSegmentEnd();
         return ret+8;
+    }
+
+    /**
+     * Reads all bytes from this input stream and writes the bytes to the given output stream. This method
+     * does not close either stream.
+     *
+     * @param out the output stream, non-null
+     * @return the number of bytes transferred
+     * @throws IOException if an I/O error occurs when reading or writing
+     * @throws NullPointerException if out is {@code null}
+     */
+    public long transferTo(OutputStream out) throws IOException {
+        Objects.requireNonNull(out, "out");
+        long transferred = 0;
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        int read;
+        while ((read = this.read(buffer, 0, DEFAULT_BUFFER_SIZE)) > 0) {
+            out.write(buffer, 0, read);
+            transferred += read;
+        }
+        return transferred;
     }
 }

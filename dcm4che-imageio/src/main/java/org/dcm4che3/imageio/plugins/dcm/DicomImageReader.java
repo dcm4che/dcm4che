@@ -76,6 +76,7 @@ import org.dcm4che3.image.LookupTableFactory;
 import org.dcm4che3.image.Overlays;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.image.StoredValue;
+import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderParam;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
@@ -160,6 +161,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private int frameLength;
 
     private PhotometricInterpretation pmi;
+    private ImageDescriptor imageDescriptor;
 
     public DicomImageReader(ImageReaderSpi originatingProvider) {
         super(originatingProvider);
@@ -192,6 +194,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         VR.Holder holder = new VR.Holder();
         Object value = ds.getValue(Tag.PixelData, holder);
         if (value != null) {
+            imageDescriptor = new ImageDescriptor(ds);
             pixelDataVR = holder.vr;
             if (value instanceof BulkData) {
                 pixelData = (BulkData) value;
@@ -516,6 +519,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         } else {
             iisOfFrame = new SegmentedInputImageStream(
                     iis, pixelDataFragments, frameIndex);
+            ((SegmentedInputImageStream) iisOfFrame).setImageDescriptor(imageDescriptor);
         }
         return patchJpegLS != null
                 ? new PatchJPEGLSImageInputStream(iisOfFrame, patchJpegLS)
@@ -641,7 +645,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 for (Attributes refImg : refImgs) {
                     if (iuid.equals(refImg.getString(Tag.ReferencedSOPInstanceUID))) {
                         int[] refFrames = refImg.getInts(Tag.ReferencedFrameNumber);
-                        if (refFrames == null)
+                        if (refFrames == null  || refFrames.length == 0)
                             return voiLUT;
     
                         for (int refFrame : refFrames)
@@ -661,10 +665,11 @@ public class DicomImageReader extends ImageReader implements Closeable {
             Attributes fmi = dis.readFileMetaInformation();
             Attributes ds = dis.readDataset(-1, Tag.PixelData);
             if (dis.tag() == Tag.PixelData) {
+                imageDescriptor = new ImageDescriptor(ds);
                 pixelDataVR = dis.vr();
                 pixelDataLength = dis.length();
                 if (pixelDataLength == -1)
-                    epdiis = new EncapsulatedPixelDataImageInputStream(dis, ds.getInt(Tag.NumberOfFrames, 1));
+                    epdiis = new EncapsulatedPixelDataImageInputStream(dis, imageDescriptor);
             } else {
                 try {
                     dis.readAttributes(ds, -1, -1);
@@ -683,6 +688,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         Attributes fmi = dis.readFileMetaInformation();
         Attributes ds = dis.readDataset(-1, Tag.PixelData);
         if( dis.tag() == Tag.PixelData ) {
+            imageDescriptor = new ImageDescriptor(ds);
             pixelDataVR = dis.vr();
             pixelDataLength = dis.length();            
         } else {

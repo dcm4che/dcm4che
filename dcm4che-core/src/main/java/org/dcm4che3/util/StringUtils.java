@@ -42,6 +42,7 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -370,5 +371,30 @@ public class StringUtils {
             }
         }
         return true;
+    }
+
+    public static <T> boolean contains(T[] a, T o) {
+        for (T t : a)
+            if (Objects.equals(t, o))
+                return true;
+        return false;
+    }
+
+    public static <T> T[] requireNotEmpty(T[] a, String message) {
+        if (a.length == 0)
+            throw new IllegalArgumentException(message);
+        return a;
+    }
+
+    public static String requireNotEmpty(String s, String message) {
+        if (s.isEmpty())
+            throw new IllegalArgumentException(message);
+        return s;
+    }
+
+    public static String[] requireContainsNoEmpty(String[] ss, String message) {
+        for (String s : ss)
+            requireNotEmpty(s, message);
+        return ss;
     }
 }

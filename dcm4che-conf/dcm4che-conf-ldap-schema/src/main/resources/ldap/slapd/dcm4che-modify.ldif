@@ -285,6 +285,10 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.65 NAME 'dcmRetrieveTimeoutTotal'
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.66 NAME 'dcmPreferredTransferSyntax'
+  DESC 'Preferred Transfer Syntax for selection of Transfer Syntax within a Presentation Context, prioritized by zero-based ordinal prefix: {#}<uid>. If absent, the first acceptable Transfer Syntax in the offered Presentation Context will be selected.'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -496,6 +500,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
     dcmAcceptedCallingAETitle $
     dcmOtherAETitle $
     dcmMasqueradeCallingAETitle $
+    dcmPreferredTransferSyntax $
     hl7ApplicationName ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
   DESC 'Extended DICOM Network Connection information'
@@ -530,6 +535,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.8 NAME 'dcmTransferCapability'
   DESC 'Extended Transfer Capabilities for an Application Entity'
   SUP top AUXILIARY
   MAY (
+    dcmPreferredTransferSyntax $
     dcmRelationalQueries $
     dcmCombinedDateTimeMatching $
     dcmFuzzySemanticMatching $

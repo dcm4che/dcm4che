@@ -9,6 +9,15 @@
     "dcmTimezoneQueryAdjustment"
   ],
   "properties": {
+    "dcmPreferredTransferSyntax": {
+      "title": "PreferredTransferSyntax",
+      "description": "Preferred Transfer Syntax for selection of Transfer Syntax within a Presentation Context, ordered by priority. Overwrites values specified on AE level.",
+      "type": "array",
+      "format": "dcmTransferSyntax",
+      "items": {
+        "type": "string"
+      }
+    },
     "dcmRelationalQueries": {
       "title": "Relational Queries",
       "description": "Enable/disable relational queries.",

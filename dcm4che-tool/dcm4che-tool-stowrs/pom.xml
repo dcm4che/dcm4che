@@ -29,7 +29,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>5.12.0</version>
+    <version>5.13.0</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-tool-stowrs</artifactId>

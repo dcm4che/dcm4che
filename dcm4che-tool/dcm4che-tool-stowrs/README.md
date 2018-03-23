@@ -32,13 +32,14 @@
                                     encapsulate JPEG stream verbatim by default.
     -ph,--pixel-header <arg>        Specify value as true if metadata information is to be extracted from 
                                     header of pixel data for jpegs and mpegs.
-                                    If absent pixel header will not be read; ensure that 
+                                    If absent, pixel header will not be read; ensure that 
                                     pixel data related attributes should be present either in 
                                     metadata file or from command line to ensure seeing the images/videos correctly.
     -t,--type <arg>                 specify the value for Content-type header : xml or json. 
                                     The value of Content-type will then be sent in request header 
                                     as application/dicom+xml or application/dicom+json.
-    -u,--url <arg>                  specify the request URL.
+    -u,--user <user:password>       Specify the user name and password to use for server authentication.
+       --url <url>                  Specify the request URL.
     -V,--version                    output version information and exit
 
     -

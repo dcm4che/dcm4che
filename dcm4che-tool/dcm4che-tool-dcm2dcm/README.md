@@ -28,12 +28,18 @@
                                   1.2.840.10008.1.2.4.91
         --j2kr                    compress JPEG 2000 Lossless; equivalent to
                                   -t 1.2.840.10008.1.2.4.90
+        --jlsl                    compress JPEG LS Lossless; equivalent to -t
+                                  1.2.840.10008.1.2.4.80
+        --jlsn                    compress JPEG LS Lossy (Near-Lossless);
+                                  equivalent to -t 1.2.840.10008.1.2.4.81
         --jpeg                    compress JPEG Lossy; equivalent to -t
                                   1.2.840.10008.1.2.4.50 or .51
         --jpll                    compress JPEG Lossless; equivalent to -t
                                   1.2.840.10008.1.2.4.70
-        --jpls                    compress JPEG LS Lossless; equivalent to -t
-                                  1.2.840.10008.1.2.4.80
+        --legacy                  use legacy Compressor/Decompressor instead
+                                  Transcoder
+     -N <near-lossless>           Near-Lossless parameter of JPEG LS Lossy
+                                  compression
      -Q <encoding-rate>           encoding rate in bits per pixel of JPEG 2000
                                   Lossy compression
      -q <quality>                 compression quality (0.0-1.0) of JPEG Lossy

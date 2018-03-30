@@ -48,7 +48,7 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.17.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.2.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.3.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\javax.json-1.0.4.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

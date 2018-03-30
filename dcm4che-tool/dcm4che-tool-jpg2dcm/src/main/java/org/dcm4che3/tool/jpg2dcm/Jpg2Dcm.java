@@ -39,8 +39,9 @@
 package org.dcm4che3.tool.jpg2dcm;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.*;
 import org.dcm4che3.imageio.codec.jpeg.JPEG;
@@ -133,17 +134,17 @@ public class Jpg2Dcm {
     private static CommandLine parseComandLine(String[] args) throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("a")
                 .hasArgs()
-                .withArgName("[seq/]attr=value")
-                .withValueSeparator()
-                .withDescription(rb.getString("attr"))
-                .create("a"));
-        opts.addOption(OptionBuilder
+                .argName("[seq/]attr=value")
+                .valueSeparator()
+                .desc(rb.getString("attr"))
+                .build());
+        opts.addOption(Option.builder("f")
                 .hasArg()
-                .withArgName("xml-file")
-                .withDescription(rb.getString("file"))
-                .create("f"));
+                .argName("xml-file")
+                .desc(rb.getString("file"))
+                .build());
         opts.addOption(null, "no-app", false, rb.getString("no-app"));
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
         int numArgs = cl.getArgList().size();

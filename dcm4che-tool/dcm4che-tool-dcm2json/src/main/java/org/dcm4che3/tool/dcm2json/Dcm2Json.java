@@ -53,9 +53,10 @@ import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.io.BulkDataDescriptor;
@@ -123,41 +124,41 @@ public class Dcm2Json {
     @SuppressWarnings("static-access")
     private static void addBulkdataOptions(Options opts) {
         OptionGroup group = new OptionGroup();
-        group.addOption(OptionBuilder
-                .withLongOpt("no-bulkdata")
-                .withDescription(rb.getString("no-bulkdata"))
-                .create("B"));
-        group.addOption(OptionBuilder
-                .withLongOpt("with-bulkdata")
-                .withDescription(rb.getString("with-bulkdata"))
-                .create("b"));
+        group.addOption(Option.builder("B")
+                .longOpt("no-bulkdata")
+                .desc(rb.getString("no-bulkdata"))
+                .build());
+        group.addOption(Option.builder("b")
+                .longOpt("with-bulkdata")
+                .desc(rb.getString("with-bulkdata"))
+                .build());
         opts.addOptionGroup(group);
-        opts.addOption(OptionBuilder
-                .withLongOpt("blk-file-dir")
+        opts.addOption(Option.builder("d")
+                .longOpt("blk-file-dir")
                 .hasArg()
-                .withArgName("directory")
-                .withDescription(rb.getString("blk-file-dir"))
-                .create("d"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("blk-file-prefix")
+                .argName("directory")
+                .desc(rb.getString("blk-file-dir"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("blk-file-prefix")
                 .hasArg()
-                .withArgName("prefix")
-                .withDescription(rb.getString("blk-file-prefix"))
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("blk-file-suffix")
+                .argName("prefix")
+                .desc(rb.getString("blk-file-prefix"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("blk-file-suffix")
                 .hasArg()
-                .withArgName("suffix")
-                .withDescription(rb.getString("blk-file-dir"))
-                .create());
+                .argName("suffix")
+                .desc(rb.getString("blk-file-dir"))
+                .build());
         opts.addOption("c", "cat-blk-files", false,
                 rb.getString("cat-blk-files"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("blk-spec")
+        opts.addOption(Option.builder("J")
+                .longOpt("blk-spec")
                 .hasArg()
-                .withArgName("json-file")
-                .withDescription(rb.getString("blk-spec"))
-                .create("J"));
+                .argName("json-file")
+                .desc(rb.getString("blk-spec"))
+                .build());
     }
 
     @SuppressWarnings("unchecked")

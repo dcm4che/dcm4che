@@ -48,9 +48,10 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PatternOptionBuilder;
 import org.dcm4che3.data.Tag;
@@ -134,89 +135,81 @@ public class Dcm2Dcm {
         CLIUtils.addCommonOptions(opts);
         CLIUtils.addEncodingOptions(opts);
         OptionGroup tsGroup = new OptionGroup();
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("transfer-syntax")
+        tsGroup.addOption(Option.builder("t")
+                .longOpt("transfer-syntax")
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("transfer-syntax"))
-                .create("t"));
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jpeg")
-                .withDescription(rb.getString("jpeg"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jpll")
-                .withDescription(rb.getString("jpll"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jlsl")
-                .withDescription(rb.getString("jlsl"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jlsn")
-                .withDescription(rb.getString("jlsn"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("j2kr")
-                .withDescription(rb.getString("j2kr"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("j2ki")
-                .withDescription(rb.getString("j2ki"))
-                .create());
+                .argName("uid")
+                .desc(rb.getString("transfer-syntax"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jpeg")
+                .desc(rb.getString("jpeg"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jpll")
+                .desc(rb.getString("jpll"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jpls")
+                .desc(rb.getString("jpls"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("j2kr")
+                .desc(rb.getString("j2kr"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("j2ki")
+                .desc(rb.getString("j2ki"))
+                .build());
         opts.addOptionGroup(tsGroup);
         OptionGroup fmiGroup = new OptionGroup();
-        fmiGroup.addOption(OptionBuilder
-                .withLongOpt("no-fmi")
-                .withDescription(rb.getString("no-fmi"))
-                .create("F"));
-        fmiGroup.addOption(OptionBuilder
-                .withLongOpt("retain-fmi")
-                .withDescription(rb.getString("retain-fmi"))
-                .create("f"));
+        fmiGroup.addOption(Option.builder("F")
+                .longOpt("no-fmi")
+                .desc(rb.getString("no-fmi"))
+                .build());
+        fmiGroup.addOption(Option.builder("f")
+                .longOpt("retain-fmi")
+                .desc(rb.getString("retain-fmi"))
+                .build());
         opts.addOptionGroup(fmiGroup);
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("max-error")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("verify"))
-                .withLongOpt("verify")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("max-error")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("verify"))
+                .longOpt("verify")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("size")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("verify-block"))
-                .withLongOpt("verify-block")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("size")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("verify-block"))
+                .longOpt("verify-block")
+                .build());
+        opts.addOption(Option.builder("q")
                 .hasArg()
-                .withArgName("quality")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("quality"))
-                .create("q"));
-        opts.addOption(OptionBuilder
+                .argName("quality")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("quality"))
+                .build());
+        opts.addOption(Option.builder("Q")
                 .hasArg()
-                .withArgName("encoding-rate")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("encoding-rate"))
-                .create("Q"));
-        opts.addOption(OptionBuilder
+                .argName("encoding-rate")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("encoding-rate"))
+                .build());
+        opts.addOption(Option.builder("N")
                 .hasArg()
-                .withArgName("near-lossless")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("near-lossless"))
-                .create("N"));
-        opts.addOption(OptionBuilder
+                .argName("near-lossless")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("near-lossless"))
+                .build());
+        opts.addOption(Option.builder("C")
                 .hasArgs()
-                .withArgName("name=value")
-                .withValueSeparator()
-                .withDescription(rb.getString("compression-param"))
-                .create("C"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("legacy")
-                .withDescription(rb.getString("legacy"))
-                .create());
+                .argName("name=value")
+                .valueSeparator()
+                .desc(rb.getString("compression-param"))
+                .build());
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Dcm2Dcm.class);
         return cl;
     }

@@ -59,8 +59,9 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.hl7.HL7Charset;
 import org.dcm4che3.hl7.HL7Parser;
@@ -107,18 +108,18 @@ public class HL72Xml {
                 throws ParseException {
             Options opts = new Options();
             CLIUtils.addCommonOptions(opts);
-            opts.addOption(OptionBuilder
-                    .withLongOpt("xsl")
+            opts.addOption(Option.builder("x")
+                    .longOpt("xsl")
                     .hasArg()
-                    .withArgName("xsl-file")
-                    .withDescription(rb.getString("xsl"))
-                    .create("x"));
-            opts.addOption(OptionBuilder
-                    .withLongOpt("charset")
+                    .argName("xsl-file")
+                    .desc(rb.getString("xsl"))
+                    .build());
+            opts.addOption(Option.builder()
+                    .longOpt("charset")
                     .hasArg()
-                    .withArgName("name")
-                    .withDescription(rb.getString("charset"))
-                    .create(null));
+                    .argName("name")
+                    .desc(rb.getString("charset"))
+                    .build());
             opts.addOption("I", "indent", false, rb.getString("indent"));
             opts.addOption(null, "xmlns", false, rb.getString("xmlns"));
 

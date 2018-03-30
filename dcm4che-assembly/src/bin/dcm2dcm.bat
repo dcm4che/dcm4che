@@ -55,7 +55,7 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\clibwrapper_jiio-1.2-pre-dr-b04.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.17.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.2.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.3.jar
 
 rem Setup the native library path
 "%JAVA%" -d64 -version >nul 2>&1 && set OS=win-x86_64 || set OS=win-i686

@@ -60,7 +60,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.MissingOptionException;
@@ -139,14 +140,14 @@ public class StowRS {
     private static CommandLine parseCommandLine(String[] args)
             throws ParseException {
         opts = new Options();
-        opts.addOption(OptionBuilder.hasArgs(2).withArgName("[seq/]attr=value")
-                .withValueSeparator().withDescription(rb.getString("metadata"))
-                .create("m"));
+        opts.addOption(Option.builder("m").numberOfArgs(2).argName("[seq/]attr=value")
+                .valueSeparator().desc(rb.getString("metadata"))
+                .build());
         opts.addOption("f", "file", true, rb.getString("file"));
-        opts.addOption(OptionBuilder.hasArg().withArgName("url").withLongOpt("url")
-                .withDescription(rb.getString("url")).create());
-        opts.addOption(OptionBuilder.hasArg().withArgName("user:password").withLongOpt("user")
-                .withDescription(rb.getString("user")).create("u"));
+        opts.addOption(Option.builder().hasArg().argName("url").longOpt("url")
+                .desc(rb.getString("url")).build());
+        opts.addOption(Option.builder("u").hasArg().argName("user:password").longOpt("user")
+                .desc(rb.getString("user")).build());
         opts.addOption("t", "type", true, rb.getString("type"));
         opts.addOption("ph", "pixel-header", true, rb.getString("pixel-header"));
         opts.addOption("na","no-appn", true, rb.getString("no-appn"));

@@ -52,8 +52,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -323,33 +324,33 @@ public class StgCmtSCU {
     public static void addStgCmtOptions(Options opts) {
         opts.addOption(null, "ignore", false,
                 rb.getString("ignore"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("path")
-                .withDescription(rb.getString("directory"))
-                .withLongOpt("directory")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("path")
+                .desc(rb.getString("directory"))
+                .longOpt("directory")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("code")
-                .withDescription(rb.getString("status"))
-                .withLongOpt("status")
-                .create(null));
+                .argName("code")
+                .desc(rb.getString("status"))
+                .longOpt("status")
+                .build());
         opts.addOption(null, "keep-alive", false, rb.getString("keep-alive"));
         opts.addOption(null, "one-per-study", false, rb.getString("one-per-study"));
         opts.addOption(null, "one-per-series", false, rb.getString("one-per-series"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("s")
                 .hasArgs()
-                .withArgName("[seq/]attr=value")
-                .withValueSeparator('=')
-                .withDescription(rb.getString("set"))
-                .create("s"));
-        opts.addOption(OptionBuilder
+                .argName("[seq/]attr=value")
+                .valueSeparator('=')
+                .desc(rb.getString("set"))
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("suffix")
-                .withDescription(rb.getString("uid-suffix"))
-                .withLongOpt("uid-suffix")
-                .create(null));
+                .argName("suffix")
+                .desc(rb.getString("uid-suffix"))
+                .longOpt("uid-suffix")
+                .build());
     }
 
     public void open() throws IOException, InterruptedException,

@@ -120,7 +120,7 @@ public class UID {
     /** </xsl:text>
     <xsl:value-of select="text()" />
     <xsl:text>, </xsl:text>
-    <xsl:value-of select="@type" />
+    <xsl:value-of select="@impl" />
     <xsl:text> */
     public static final String </xsl:text>
     <xsl:value-of select="@keyword" />

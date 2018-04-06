@@ -75,6 +75,7 @@ import org.dcm4che3.net.Status;
 import org.dcm4che3.net.TransferCapability;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.PresentationContext;
+import org.dcm4che3.net.pdu.RoleSelection;
 import org.dcm4che3.net.service.AbstractDicomService;
 import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.DicomService;
@@ -189,10 +190,10 @@ public class StgCmtSCU {
             CLIUtils.configure(conn, cl);
             stgcmtscu.remote.setTlsProtocols(conn.getTlsProtocols());
             stgcmtscu.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
+            stgcmtscu.setKeepAlive(cl.hasOption("keep-alive"));
             stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             stgcmtscu.setStatus(CLIUtils.getIntOption(cl, "status", 0));
             stgcmtscu.setSplitTag(getSplitTag(cl));
-            stgcmtscu.setKeepAlive(cl.hasOption("keep-alive"));
             stgcmtscu.setStorageDirectory(getStorageDirectory(cl));
             stgcmtscu.setAttributes(new Attributes());
             CLIUtils.addAttributes(stgcmtscu.attrs, cl.getOptionValues("s"));
@@ -277,6 +278,12 @@ public class StgCmtSCU {
                 new PresentationContext(2,
                         UID.StorageCommitmentPushModelSOPClass,
                         tss));
+        if (keepAlive)
+            rq.addRoleSelection(
+                    new RoleSelection(
+                            UID.StorageCommitmentPushModelSOPClass,
+                            true,
+                            true));
         ae.addTransferCapability(
                 new TransferCapability(null,
                         UID.VerificationSOPClass,

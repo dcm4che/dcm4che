@@ -71,6 +71,16 @@
       "description": "Time Zone ID of the Device; matches Java TimeZone ID",
       "type": "string"
     },
+    "dcmWebApp": {
+      "title": "Web Applications",
+      "description": "Web Applications provided by the Device",
+      "type": "array",
+      "titleKey":"{dcmWebAppName}",
+      "order":27,
+      "items": {
+        "$ref": "webApplication.schema.json"
+      }
+    },
     "hl7Application": {
       "title": "HL7 Applications",
       "description": "HL7 Applications provided by the Device",

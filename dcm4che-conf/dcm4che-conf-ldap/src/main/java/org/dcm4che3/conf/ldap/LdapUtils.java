@@ -548,4 +548,13 @@ public class LdapUtils {
             'U' , 'V' , 'W' , 'X' , 'Y' , 'Z'
     };
 
+    public static String cutDeviceName(String name) {
+        int start = name.indexOf("dicomDeviceName=");
+        if (start < 0)
+            return null;
+
+        start += 16;
+        int end = name.indexOf(',', start);
+        return end < 0 ? name.substring(start) : name.substring(start, end);
+    }
 }

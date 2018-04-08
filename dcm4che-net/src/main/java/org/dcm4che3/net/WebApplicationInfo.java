@@ -1,4 +1,5 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ * **** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -15,8 +16,8 @@
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2018
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,47 +35,32 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * **** END LICENSE BLOCK *****
+ *
+ */
 
 package org.dcm4che3.net;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
- * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @since Aug 2016
+ * @since Apr 2018
  */
-public class ApplicationEntityInfo implements Serializable {
+public class WebApplicationInfo {
 
     private String deviceName;
+    private String applicationName;
     private String description;
-    private String aet;
+    private String servicePath;
+    private String aeTitle;
     private String[] applicationClusters = {};
-    private Boolean associationInitiator ;
-    private Boolean associationAcceptor;
     private Boolean installed;
-    private String[] otherAETitle;
-    private String hl7ApplicationName;
+    private EnumSet<WebApplication.ServiceClass> serviceClasses = EnumSet.noneOf(WebApplication.ServiceClass.class);
     private final List<Connection> conns = new ArrayList<>(1);
-
-    public Boolean getInstalled() {
-        return installed;
-    }
-
-    public void setInstalled(Boolean installed) {
-        this.installed = installed;
-    }
-
-    public String[] getOtherAETitle() {
-        return otherAETitle;
-    }
-
-    public void setOtherAETitle(String[] otherAETitle) {
-        this.otherAETitle = otherAETitle;
-    }
 
     public String getDeviceName() {
         return deviceName;
@@ -82,6 +68,14 @@ public class ApplicationEntityInfo implements Serializable {
 
     public void setDeviceName(String deviceName) {
         this.deviceName = deviceName;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public void setApplicationName(String name) {
+        this.applicationName = name;
     }
 
     public String getDescription() {
@@ -92,12 +86,20 @@ public class ApplicationEntityInfo implements Serializable {
         this.description = description;
     }
 
-    public String getAETitle() {
-        return aet;
+    public String getServicePath() {
+        return servicePath;
     }
 
-    public void setAETitle(String aet) {
-        this.aet = aet;
+    public void setServicePath(String servicePath) {
+        this.servicePath = servicePath;
+    }
+
+    public String getAETitle() {
+        return aeTitle;
+    }
+
+    public void setAETitle(String aeTitle) {
+        this.aeTitle = aeTitle;
     }
 
     public String[] getApplicationClusters() {
@@ -108,38 +110,33 @@ public class ApplicationEntityInfo implements Serializable {
         this.applicationClusters = applicationClusters;
     }
 
-    public Boolean getAssociationInitiator() {
-        return associationInitiator;
+    public Boolean getInstalled() {
+        return installed;
     }
 
-    public void setAssociationInitiator(Boolean associationInitiator) {
-        this.associationInitiator = associationInitiator;
-    }
-
-    public Boolean getAssociationAcceptor() {
-        return associationAcceptor;
-    }
-
-    public void setAssociationAcceptor(Boolean associationAcceptor) {
-        this.associationAcceptor = associationAcceptor;
+    public void setInstalled(Boolean installed) {
+        this.installed = installed;
     }
 
     public List<Connection> getConnections() {
         return conns;
     }
 
-    public void setHl7ApplicationName(String hl7ApplicationName) {
-        this.hl7ApplicationName = hl7ApplicationName;
+    public WebApplication.ServiceClass[] getServiceClasses() {
+        return serviceClasses.toArray(new WebApplication.ServiceClass[0]);
     }
 
-    public String getHl7ApplicationName() {
-        return hl7ApplicationName;
+    public void setServiceClasses(WebApplication.ServiceClass... serviceClasses) {
+        this.serviceClasses.clear();
+        this.serviceClasses.addAll(Arrays.asList(serviceClasses));
     }
 
     @Override
     public String toString() {
-        return "ApplicationEntityInfo[dicomAETitle=" + aet
-                + "]";
+        return "WebApplicationInfo[name=" + applicationName
+                + ",classes=" + serviceClasses
+                + ",path=" + servicePath
+                + ",aet=" + aeTitle
+                + ']';
     }
-
 }

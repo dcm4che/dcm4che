@@ -361,12 +361,17 @@ public class HL7Application implements Serializable {
     }
 
     protected void setHL7ApplicationAttributes(HL7Application src) {
-        setHL7DefaultCharacterSet(src.hl7DefaultCharacterSet);
-        setHL7SendingCharacterSet(src.hl7SendingCharacterSet);
-        setAcceptedSendingApplications(src.getAcceptedSendingApplications());
-        setOtherApplicationNames(src.getOtherApplicationNames());
-        setAcceptedMessageTypes(src.getAcceptedMessageTypes());
-        setInstalled(src.installed);
+        description = src.description;
+        applicationClusters = src.applicationClusters;
+        hl7DefaultCharacterSet = src.hl7DefaultCharacterSet;
+        hl7SendingCharacterSet = src.hl7SendingCharacterSet;
+        acceptedSendingApplications.clear();
+        acceptedSendingApplications.addAll(src.acceptedSendingApplications);
+        otherApplicationNames.clear();
+        otherApplicationNames.addAll(src.otherApplicationNames);
+        acceptedMessageTypes.clear();
+        acceptedMessageTypes.addAll(src.acceptedMessageTypes);
+        installed = src.installed;
     }
 
     public void addHL7ApplicationExtension(HL7ApplicationExtension ext) {

@@ -1,0 +1,69 @@
+{
+  "title": "Web Application",
+  "description": "Web Application information",
+  "type": "object",
+  "required": [
+    "dcmWebAppName",
+    "dcmWebServicePath",
+    "dcmWebServiceClass",
+    "dicomNetworkConnectionReference"
+  ],
+  "properties": {
+    "dcmWebAppName": {
+      "title": "Web Application name",
+      "description": "Name of the Web Application",
+      "type": "string"
+    },
+    "dicomNetworkConnectionReference": {
+      "title": "Web Application Network Connection(s)",
+      "description": "Network Connection(s) on which the services of the Web application are available",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomDescription": {
+      "title": "Web Application Description",
+      "description": "Unconstrained text description of the Web Application",
+      "type": "string"
+    },
+    "dcmWebServicePath": {
+      "title": "Web Service Path",
+      "description": "HTTP Path of the services of the Web application",
+      "type": "string"
+    },
+    "dcmWebServiceClass": {
+      "title": "Web Service Class",
+      "description": "Web Service Classes provided by the Web application",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "QIDO_RS",
+          "STOW_RS",
+          "WADO_RS",
+          "WADO_URI"
+        ]
+      }
+    },
+    "dicomAETitle": {
+      "title": "AE Title",
+      "description": "AE title of Network AE associated with this Web Application",
+      "type": "string",
+      "format": "dcmArchiveAETitle"
+    },
+    "dicomApplicationCluster": {
+      "title": "Application Cluster",
+      "description": "Locally defined names for a subset of related applications",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomInstalled": {
+      "title": "installed",
+      "description": "True if the Web Application is installed on network. If not present, information about the installed status of the Web Application is inherited from the device",
+      "type": "boolean"
+    }
+  }
+}

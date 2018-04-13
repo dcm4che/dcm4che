@@ -183,6 +183,11 @@
         <scope>test</scope>
         <version>4.12</version>
       </dependency>
+      <dependency>
+        <groupId>com.martiansoftware</groupId>
+        <artifactId>nailgun</artifactId>
+        <version>0.9.3</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 </project>

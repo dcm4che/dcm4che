@@ -133,6 +133,33 @@ enum BinaryValueType implements ValueType {
             return ByteUtils.intToBytes(i, b, off, bigEndian);
         }
     },
+    UINT(4, 4) {
+
+        @Override
+        public boolean isIntValue() {
+            return true;
+        }
+
+        @Override
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapInts(preserve ? b.clone() : b, 0, b.length);
+        }
+
+        @Override
+        protected int toInt(byte[] b, int off, boolean bigEndian) {
+            return ByteUtils.bytesToInt(b, off, bigEndian);
+        }
+
+        @Override
+        protected byte[] toBytes(int i, byte[] b, int off, boolean bigEndian) {
+            return ByteUtils.intToBytes(i, b, off, bigEndian);
+        }
+
+        @Override
+        protected String toString(byte[] b, int off, boolean bigEndian) {
+            return Long.toString(toInt(b, off, bigEndian) & 0xffffffffL);
+        }
+    },
     TAG(4, 2) {
 
         @Override

@@ -181,7 +181,7 @@ public enum VR {
     /**
      * Unsigned Long
      */
-    UL(0x554c, 8, 0, BinaryValueType.INT, false),
+    UL(0x554c, 8, 0, BinaryValueType.UINT, false),
 
     /**
      * Unknown

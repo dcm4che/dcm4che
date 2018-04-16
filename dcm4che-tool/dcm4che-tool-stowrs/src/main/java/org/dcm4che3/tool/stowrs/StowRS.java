@@ -391,7 +391,7 @@ public class StowRS {
             connection.setDoInput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type",
-                    "multipart/related; type=" + instance.contentType + "; boundary=" + boundary);
+                    "multipart/related; type=\"" + instance.contentType + "\"; boundary=" + boundary);
             connection.setRequestProperty("Accept", instance.accept);
             logOutgoing(connection);
             if (instance.user != null) {
@@ -482,7 +482,9 @@ public class StowRS {
                 SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
             else
                 try (JsonGenerator gen = Json.createGenerator(bOut)) {
+                    gen.writeStartArray();
                     new JSONWriter(gen).write(metadata);
+                    gen.writeEnd();
                 }
             LOG.debug("Metadata being sent is : " + bOut.toString());
             out.write(bOut.toByteArray());

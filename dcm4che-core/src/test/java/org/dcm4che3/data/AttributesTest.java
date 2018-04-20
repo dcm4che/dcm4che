@@ -353,4 +353,44 @@ public class AttributesTest {
         assertEquals(0, a.diff(b, selection, null));
         assertEquals(0, b.diff(a, selection, null));
     }
+
+    @Test
+    public void testContainsTagInRange_First() {
+        Attributes a = new Attributes(1);
+        a.setString(Tag.IssuerOfPatientID, VR.LO, "Issuer");
+
+        assertTrue(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
+
+    @Test
+    public void testContainsTagInRange_Last() {
+        Attributes a = new Attributes(1);
+        a.newSequence(Tag.SourcePatientGroupIdentificationSequence, 0);
+
+        assertTrue(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
+
+    @Test
+    public void testContainsTagInRange_Middle() {
+        Attributes a = new Attributes(1);
+        a.setString(Tag.TypeOfPatientID, VR.CS, "RFID");
+
+        assertTrue(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
+
+    @Test
+    public void testContainsTagInRange_Not() {
+        Attributes a = new Attributes(2);
+        a.setString(Tag.PatientID, VR.LO, "123");
+        a.newSequence(Tag.GroupOfPatientsIdentificationSequence, 0);
+
+        assertFalse(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
+
+    @Test
+    public void testContainsTagInRange_Not_Empty() {
+        Attributes a = new Attributes();
+
+        assertFalse(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
 }

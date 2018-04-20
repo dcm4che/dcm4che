@@ -162,6 +162,28 @@ public class AttributesTest {
     }
 
     @Test
+    public void testEqualValues() {
+        Attributes a = new Attributes();
+        a.setString(Tag.PatientName, VR.PN, "Simson^Homer");
+        a.setString(0x00090010, VR.LO, "CREATOR1");
+        a.setString(0x00091010, VR.LO, "VALUE1");
+
+        Attributes b = new Attributes();
+        b.setString(Tag.PatientName, VR.PN, "Simson^Homer^^^");
+        b.setString(0x00090020, VR.LO, "CREATOR1");
+        b.setString(0x00092010, VR.LO, "VALUE1");
+        b.setString(0x00090010, VR.LO, "CREATOR2");
+        b.setString(0x00091010, VR.LO, "VALUE2");
+
+        assertTrue(a.equalValues(b, Tag.PatientName));
+        assertTrue(b.equalValues(a, Tag.PatientName));
+        assertTrue(b.equalValues(a, "CREATOR1", 0x00090010));
+        assertTrue(a.equalValues(b, "CREATOR1", 0x00090010));
+
+        assertFalse(a.equalValues(b, "CREATOR2", 0x00090010));
+    }
+
+    @Test
     public void testEqualsIS() {
         Attributes a1 = new Attributes();
         a1.setString(Tag.ReferencedFrameNumber, VR.IS, "54");

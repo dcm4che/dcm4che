@@ -218,6 +218,26 @@ public class AttributesTest {
     }
 
     @Test
+    public void testReadWronglyEncodedDatasetByChangingDefaultCharacterSet() throws Exception {
+        Attributes a = new Attributes();
+
+        a.setString(Tag.SpecificCharacterSet, VR.CS, "ISO 2022 IR 6"); // ASCII
+        
+        String NAME = "\u00c4neas^R\u00fcdiger";
+        // simulate wrong encoding using "ISO-8859-1" (ISO_IR 100) instead of "ISO 2022 IR 6" (ASCII)
+        a.setBytes(Tag.PatientName, VR.PN, NAME.getBytes("ISO-8859-1"));
+        
+        // changing the default character set makes it possible to read such bad data
+        SpecificCharacterSet.setDefaultCharacterSet("ISO_IR 100");
+        try {
+            assertEquals(NAME, a.getString(Tag.PatientName));
+        } finally {
+            // reset the default character set, because other tests will run within the same JVM
+            SpecificCharacterSet.setDefaultCharacterSet(null);
+        }
+    }
+
+    @Test
     public void testSetTimezoneOffsetFromUTC() throws Exception {
         Attributes a = new Attributes();
         a.setDefaultTimeZone(DateUtils.timeZone("+0000"));

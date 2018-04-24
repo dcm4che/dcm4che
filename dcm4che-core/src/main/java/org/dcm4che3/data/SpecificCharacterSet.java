@@ -533,8 +533,14 @@ public class SpecificCharacterSet {
             return DEFAULT;
 
         Codec[] infos = new Codec[codes.length];
-        for (int i = 0; i < codes.length; i++)
-            infos[i] = Codec.forCode(codes[i]);
+        for (int i = 0; i < codes.length; i++) {
+            Codec codec = Codec.forCode(codes[i]);
+            if(DEFAULT != ASCII && codec == Codec.ISO_646) {
+                codec = DEFAULT.codecs[0];
+            }
+            infos[i] = codec;
+        }
+
         return codes.length > 1 ? new ISO2022(infos,codes)
                 : new SpecificCharacterSet(infos, codes);
     }

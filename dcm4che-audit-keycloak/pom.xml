@@ -48,9 +48,6 @@
     <version>5.13.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <properties>
-    <keycloak.version>3.4.3.Final</keycloak.version>
-  </properties>
   <artifactId>dcm4che-audit-keycloak</artifactId>
   <dependencies>
     <dependency>

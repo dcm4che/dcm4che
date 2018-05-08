@@ -52,6 +52,8 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.util.ByteUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
   * Treats a specified portion of an image input stream as it's own input stream.  Can handle open-ended
@@ -62,7 +64,8 @@ import org.dcm4che3.util.ByteUtils;
   * @author Bill Wallace <wayfarer3130@gmail.com>
   */
 public class SegmentedInputImageStream extends ImageInputStreamImpl {
-
+    private static final Logger LOG = LoggerFactory.getLogger(SegmentedInputImageStream.class);
+    
     private static final int DEFAULT_BUFFER_SIZE = 8192;
     private final ImageInputStream stream;
     private int curSegment=0;
@@ -147,12 +150,20 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
             }
             if( bulkOffset==-1 || bulkLength==-1 ) {
                 bulk = updateBulkData(i);
-                bulkOffset = bulk.offset();
-                bulkLength = bulk.length();
+                if( bulk==null ) {
+                    lastSegment = i;
+                    curSegment = -1;
+                    super.seek(beforePos);
+                    return;
+                } else {
+                    bulkOffset = bulk.offset();
+                    bulkLength = bulk.length();
+                }
             }
             // We are past end of input, but we didn't know soon enough
             if( i>=lastSegment ) {
                 curSegment = -1;
+                super.seek(beforePos);
                 return;
             }
             long deltaInEnd = pos-beforePos;
@@ -310,5 +321,22 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
             transferred += read;
         }
         return transferred;
+    }
+    
+    @Override
+    public long length() {
+        try {
+            long wasPos = this.getStreamPosition();
+            seek(Long.MAX_VALUE);
+            long ret = this.getStreamPosition();
+            seek(wasPos);
+            LOG.debug("wasPos {} end {}", wasPos,ret);
+            return ret;
+        }
+        catch(IOException e) {
+            LOG.warn("Caught error determining length:{}", e);
+            LOG.debug("Stack trace",e);
+            return -1;
+        }
     }
 }

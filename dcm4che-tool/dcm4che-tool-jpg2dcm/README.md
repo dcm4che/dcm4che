@@ -25,7 +25,7 @@
     => Encapulate JPEG Image verbatim with DICOM attributes specified in
     metadata.xml into DICOM Image Object.
     -
-    Example 2: jpg2dcm --no-app -a PatientName=Simson^Homer -a PatientSex=M
+    Example 2: jpg2dcm --no-app -a PatientName=Simson^Homer -a PatientSex=M --
     homer.jpg image.dcm
     => Encapulate JPEG Image without application segments with specified DICOM
     attributes into DICOM Image Object.

@@ -150,6 +150,8 @@ public class Connection implements Serializable {
     private transient volatile Listener listener;
     private transient boolean rebindNeeded;
 
+	private boolean honorCipherSuitesOrder;
+
     static {
         registerTCPProtocolHandler(Protocol.DICOM, DicomProtocolHandler.INSTANCE);
     }
@@ -574,6 +576,18 @@ public class Connection implements Serializable {
 
         this.tlsNeedClientAuth = tlsNeedClientAuth;
         needRebind();
+    }
+
+    public final void setHonorCipherSuitesOrder(boolean honorCipherSuitesOrder) {
+        if (this.honorCipherSuitesOrder == honorCipherSuitesOrder)
+            return;
+
+        this.honorCipherSuitesOrder = honorCipherSuitesOrder;
+        needRebind();
+    }
+
+    public final boolean getHonorCipherSuitesOrder() {
+        return honorCipherSuitesOrder;
     }
 
     /**

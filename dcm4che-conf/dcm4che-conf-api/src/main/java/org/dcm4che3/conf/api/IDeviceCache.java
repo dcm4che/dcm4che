@@ -54,7 +54,7 @@ public interface IDeviceCache {
 
     void clear();
 
-    Device get(String aet) throws ConfigurationException;
+    Device get(String deviceName) throws ConfigurationException;
 
     Device findDevice(String deviceName) throws ConfigurationException;
 }

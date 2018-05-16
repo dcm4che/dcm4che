@@ -42,7 +42,9 @@
           "QIDO_RS",
           "STOW_RS",
           "WADO_RS",
-          "WADO_URI"
+          "WADO_URI",
+          "UPS_RS",
+          "DCM4CHEE_ARC"
         ]
       }
     },

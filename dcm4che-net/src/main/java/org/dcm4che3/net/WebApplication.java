@@ -54,7 +54,7 @@ import java.util.List;
  */
 public class WebApplication {
 
-    public enum ServiceClass { WADO_URI, WADO_RS, STOW_RS, QIDO_RS, UPS_RS }
+    public enum ServiceClass { WADO_URI, WADO_RS, STOW_RS, QIDO_RS, UPS_RS, DCM4CHEE_ARC }
 
     private Device device;
     private String applicationName;

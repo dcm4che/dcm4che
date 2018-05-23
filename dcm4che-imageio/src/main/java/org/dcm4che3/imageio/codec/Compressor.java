@@ -410,7 +410,13 @@ public class Compressor implements Closeable {
         verifyParam.setDestination(decompressedImageForVerification);
         long start = System.currentTimeMillis();
         decompressedImageForVerification = verifier.read(0, verifyParam);
-        int maxDiff =  BufferedImageUtils.maxDiff(uncompressedImage.getRaster(), decompressedImageForVerification.getRaster(), avgPixelValueBlockSize);
+        int maxDiff = 0 ;
+        if(uncompressedImage.getRaster().getSampleModel() instanceof ComponentSampleModel
+                && decompressedImageForVerification.getRaster().getSampleModel() instanceof ComponentSampleModel) {
+            BufferedImageUtils.maxDiff(uncompressedImage.getRaster(), decompressedImageForVerification.getRaster(), avgPixelValueBlockSize);
+        }else {
+            maxDiff = BufferedImageUtils.maxDiffRGB(uncompressedImage, decompressedImageForVerification);
+        }
         long end = System.currentTimeMillis();
         if (LOG.isDebugEnabled())
             LOG.debug("Verified compressed frame #{} in {} ms - max pixel value error: {}",

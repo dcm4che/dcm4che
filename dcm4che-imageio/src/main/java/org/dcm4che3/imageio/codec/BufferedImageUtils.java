@@ -310,4 +310,55 @@ class BufferedImageUtils {
         }
         return maxDiff;
     }
+
+    /** Compute differences for RGB */
+    public static int maxDiffRGB(BufferedImage i1, BufferedImage i2) {
+
+        BufferedImage i3 = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        int maxDiff = 0;
+        int w = i1.getWidth();
+        int h = i1.getHeight();
+        int[] d1 = new int[w];
+        int[] d2 = new int[w];
+        int[] d3 = new int[w];
+        int delta;
+        for (int y = 0; y < h; y++) {
+            d1 = i1.getRGB(0, y, w, 1, d1, 0, 0);
+            d2 = i2.getRGB(0, y, w, 1, d2, 0, 0);
+            for (int x = 0; x < w; x++) {
+                delta = colourDiff(d1[x], d2[x]);
+                d3[x] = colourDiffPixel(d1[x], d2[x]);
+                if (delta > maxDiff) {
+                    maxDiff = delta;
+                }
+            }
+            if (i3 != null) {
+                i3.getRaster().setPixels(0, y, w, 1, d3);
+            }
+        }
+
+        return maxDiff;
+    }
+
+    /** Returns the difference in the colour component */
+    private static int colourDiff(int c1, int c2) {
+        c1 = 0xFFFFFF & c1;
+        c2 = 0xFFFFFF & c2;
+        int a = ((c1 >> 24) & 0xFF) - ((c2 >> 24) & 0xFF);
+        int r = ((c1 >> 16) & 0xFF) - ((c2 >> 16) & 0xFF);
+        int g = ((c1 >> 8) & 0xFF) -  ((c2 >> 8) & 0xFF);
+        int b = ((c1 & 0xFF)) - (c2 & 0xFF);
+        int ret = (int) Math.sqrt(a*a+r*r+g*g+b*b);
+        return ret;
+    }
+
+    /** Returns a pixel representing the difference in the colour component */
+    private static int colourDiffPixel(int c1, int c2) {
+        int a = (c1 >> 24) & 0xFF - ((c2 >> 24) & 0xFF);
+        int r = (c1 >> 16) & 0xFF - ((c2 >> 16) & 0xFF);
+        int g = (c1 >> 8) & 0xFF -  ((c2 >> 8) & 0xFF);
+        int b = c1 & 0xFF - (c2 & 0xFF);
+        int ret = ((a + 255)/2 << 24) | ((r + 255)/2 << 16) | ((g+255)/2 << 8) | (b+255/2);
+        return ret;
+    }
 }

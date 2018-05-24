@@ -63,11 +63,7 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferShort;
-import java.awt.image.DataBufferUShort;
+import java.awt.image.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -430,6 +426,7 @@ public class Compressor implements Closeable {
         for (int gg0000 : embeddedOverlays) {
             int ovlyRow = dataset.getInt(Tag.OverlayRows | gg0000, 0);
             int ovlyColumns = dataset.getInt(Tag.OverlayColumns | gg0000, 0);
+
             int ovlyBitPosition = dataset.getInt(Tag.OverlayBitPosition | gg0000, 0);
             int mask = 1 << ovlyBitPosition;
             int ovlyLength = ovlyRow * ovlyColumns;

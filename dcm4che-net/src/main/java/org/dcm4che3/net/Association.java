@@ -333,7 +333,9 @@ public class Association {
         LOG.info("{} << A-RELEASE-RQ", name);
         enterState(State.Sta7);
         stopTimeout();
-        encoder.writeAReleaseRQ();
+        synchronized (this) {
+            encoder.writeAReleaseRQ();
+        }
         startReleaseTimeout();
     }
 

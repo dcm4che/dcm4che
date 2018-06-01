@@ -139,7 +139,7 @@ public class SpecificCharacterSet {
 
         public static Codec forCode(String code) {
             if (code == null)
-                return ISO_646;
+                return SpecificCharacterSet.DEFAULT.codecs[0];
 
             switch(last2digits(code)) {
             case 0:
@@ -152,7 +152,7 @@ public class SpecificCharacterSet {
                 break;
             case 6:
                 if (code.equals("ISO 2022 IR 6"))
-                    return Codec.ISO_646;
+                    return SpecificCharacterSet.DEFAULT.codecs[0];
                 break;
             case 9:
                 if (code.equals("ISO_IR 109") || code.equals("ISO 2022 IR 109"))
@@ -219,7 +219,7 @@ public class SpecificCharacterSet {
                     return Codec.UTF_8;
                 break;
             }
-            return ISO_646;
+            return SpecificCharacterSet.DEFAULT.codecs[0];
         }
 
         private static int last2digits(String code) {
@@ -533,13 +533,8 @@ public class SpecificCharacterSet {
             return DEFAULT;
 
         Codec[] infos = new Codec[codes.length];
-        for (int i = 0; i < codes.length; i++) {
-            Codec codec = Codec.forCode(codes[i]);
-            if(DEFAULT != ASCII && codec == Codec.ISO_646) {
-                codec = DEFAULT.codecs[0];
-            }
-            infos[i] = codec;
-        }
+        for (int i = 0; i < codes.length; i++)
+            infos[i] = Codec.forCode(codes[i]);
 
         return codes.length > 1 ? new ISO2022(infos,codes)
                 : new SpecificCharacterSet(infos, codes);

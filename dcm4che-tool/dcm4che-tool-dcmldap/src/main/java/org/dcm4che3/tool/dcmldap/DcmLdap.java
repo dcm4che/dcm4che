@@ -176,67 +176,67 @@ public class DcmLdap implements Closeable {
     private static CommandLine parseComandLine(String[] args, OptionGroup cmdGroup) throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        cmdGroup.addOption(OptionBuilder
+        cmdGroup.addOption(Option.builder("c")
                 .hasArg()
-                .withArgName("aet@host:port")
-                .withDescription(rb.getString("create"))
-                .create("c"));
-        cmdGroup.addOption(OptionBuilder
+                .argName("aet@host:port")
+                .desc(rb.getString("create"))
+                .build());
+        cmdGroup.addOption(Option.builder("a")
                 .hasArg()
-                .withArgName("aet@host:port")
-                .withDescription(rb.getString("add"))
-                .create("a"));
-        cmdGroup.addOption(OptionBuilder
+                .argName("aet@host:port")
+                .desc(rb.getString("add"))
+                .build());
+        cmdGroup.addOption(Option.builder("d")
                 .hasArg()
-                .withArgName("aet")
-                .withDescription(rb.getString("delete"))
-                .create("d"));
+                .argName("aet")
+                .desc(rb.getString("delete"))
+                .build());
         opts.addOptionGroup(cmdGroup);
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("H")
                 .hasArg()
-                .withArgName("ldapuri")
-                .withDescription(rb.getString("ldapuri"))
-                .create("H"));
-        opts.addOption(OptionBuilder
+                .argName("ldapuri")
+                .desc(rb.getString("ldapuri"))
+                .build());
+        opts.addOption(Option.builder("D")
                 .hasArg()
-                .withArgName("binddn")
-                .withDescription(rb.getString("binddn"))
-                .create("D"));
-        opts.addOption(OptionBuilder
+                .argName("binddn")
+                .desc(rb.getString("binddn"))
+                .build());
+        opts.addOption(Option.builder("w")
                 .hasArg()
-                .withArgName("passwd")
-                .withDescription(rb.getString("passwd"))
-                .create("w"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("dev")
+                .argName("passwd")
+                .desc(rb.getString("passwd"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("dev")
                 .hasArg()
-                .withArgName("name")
-                .withDescription(rb.getString("dev"))
-                .create(null));
-        opts.addOption(OptionBuilder
-                .withLongOpt("dev-desc")
+                .argName("name")
+                .desc(rb.getString("dev"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("dev-desc")
                 .hasArg()
-                .withArgName("string")
-                .withDescription(rb.getString("dev-desc"))
-                .create(null));
-        opts.addOption(OptionBuilder
-                .withLongOpt("dev-type")
+                .argName("string")
+                .desc(rb.getString("dev-desc"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("dev-type")
                 .hasArg()
-                .withArgName("string")
-                .withDescription(rb.getString("dev-type"))
-                .create(null));
-        opts.addOption(OptionBuilder
-                .withLongOpt("ae-desc")
+                .argName("string")
+                .desc(rb.getString("dev-type"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("ae-desc")
                 .hasArg()
-                .withArgName("string")
-                .withDescription(rb.getString("ae-desc"))
-                .create(null));
-        opts.addOption(OptionBuilder
-                .withLongOpt("conn")
+                .argName("string")
+                .desc(rb.getString("ae-desc"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("conn")
                 .hasArg()
-                .withArgName("cn")
-                .withDescription(rb.getString("conn-cn"))
-                .create(null));
+                .argName("cn")
+                .desc(rb.getString("conn-cn"))
+                .build());
         CLIUtils.addTLSCipherOptions(opts);
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, DcmLdap.class);
         String selected = cmdGroup.getSelected();

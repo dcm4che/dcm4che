@@ -46,8 +46,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
@@ -190,32 +191,32 @@ public class Emf2sf {
             throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        opts.addOption(OptionBuilder
-                .withLongOpt("frame")
+        opts.addOption(Option.builder("f")
+                .longOpt("frame")
                 .hasArgs()
-                .withArgName("no[,..]")
-                .withValueSeparator(',')
-                .withDescription(rb.getString("frame"))
-                .create("f"));
+                .argName("no[,..]")
+                .valueSeparator(',')
+                .desc(rb.getString("frame"))
+                .build());
         opts.addOption(null, "not-chseries", false, rb.getString("not-chseries"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("inst-no")
+        opts.addOption(Option.builder()
+                .longOpt("inst-no")
                 .hasArg()
-                .withArgName("format")
-                .withDescription(rb.getString("inst-no"))
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("out-dir")
+                .argName("format")
+                .desc(rb.getString("inst-no"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("out-dir")
                 .hasArg()
-                .withArgName("directory")
-                .withDescription(rb.getString("out-dir"))
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("out-file")
+                .argName("directory")
+                .desc(rb.getString("out-dir"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("out-file")
                 .hasArg()
-                .withArgName("name")
-                .withDescription(rb.getString("out-file"))
-                .create());
+                .argName("name")
+                .desc(rb.getString("out-file"))
+                .build());
         return CLIUtils.parseComandLine(args, opts, rb, Emf2sf.class);
     }
 

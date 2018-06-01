@@ -58,8 +58,9 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PatternOptionBuilder;
 import org.dcm4che3.data.Attributes;
@@ -167,87 +168,87 @@ public class Dcm2Jpg {
             throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("F")
                 .hasArg()
-                .withArgName("format")
-                .withDescription(rb.getString("format"))
-                .create("F"));
-        opts.addOption(OptionBuilder
+                .argName("format")
+                .desc(rb.getString("format"))
+                .build());
+        opts.addOption(Option.builder("E")
                 .hasArg()
-                .withArgName("class")
-                .withDescription(rb.getString("encoder"))
-                .create("E"));
-        opts.addOption(OptionBuilder
+                .argName("class")
+                .desc(rb.getString("encoder"))
+                .build());
+        opts.addOption(Option.builder("C")
                 .hasArg()
-                .withArgName("type")
-                .withDescription(rb.getString("compression"))
-                .create("C"));
-        opts.addOption(OptionBuilder
+                .argName("type")
+                .desc(rb.getString("compression"))
+                .build());
+        opts.addOption(Option.builder("q")
                 .hasArg()
-                .withArgName("quality")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("quality"))
-                .create("q"));
-        opts.addOption(OptionBuilder
+                .argName("quality")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("quality"))
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("suffix")
-                .withDescription(rb.getString("suffix"))
-                .withLongOpt("suffix")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("suffix")
+                .desc(rb.getString("suffix"))
+                .longOpt("suffix")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("number")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("frame"))
-                .withLongOpt("frame")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("number")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("frame"))
+                .longOpt("frame")
+                .build());
+        opts.addOption(Option.builder("c")
                 .hasArg()
-                .withArgName("center")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("windowCenter"))
-                .withLongOpt("windowCenter")
-                .create("c"));
-        opts.addOption(OptionBuilder
+                .argName("center")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("windowCenter"))
+                .longOpt("windowCenter")
+                .build());
+        opts.addOption(Option.builder("w")
                 .hasArg()
-                .withArgName("width")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("windowWidth"))
-                .withLongOpt("windowWidth")
-                .create("w"));
-        opts.addOption(OptionBuilder
+                .argName("width")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("windowWidth"))
+                .longOpt("windowWidth")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("number")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("window"))
-                .withLongOpt("window")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("number")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("window"))
+                .longOpt("window")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("number")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("voilut"))
-                .withLongOpt("voilut")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("number")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("voilut"))
+                .longOpt("voilut")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file")
-                .withType(PatternOptionBuilder.EXISTING_FILE_VALUE)
-                .withDescription(rb.getString("ps"))
-                .withLongOpt("ps")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("file")
+                .type(PatternOptionBuilder.EXISTING_FILE_VALUE)
+                .desc(rb.getString("ps"))
+                .longOpt("ps")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("mask")
-                .withDescription(rb.getString("overlays"))
-                .withLongOpt("overlays")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("mask")
+                .desc(rb.getString("overlays"))
+                .longOpt("overlays")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("value")
-                .withDescription(rb.getString("ovlygray"))
-                .withLongOpt("ovlygray")
-                .create());
+                .argName("value")
+                .desc(rb.getString("ovlygray"))
+                .longOpt("ovlygray")
+                .build());
         opts.addOption(null, "uselut", false, rb.getString("uselut"));
         opts.addOption(null, "noauto", false, rb.getString("noauto"));
         opts.addOption(null, "lsE", false, rb.getString("lsencoders"));

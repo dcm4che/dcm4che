@@ -51,9 +51,10 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -143,83 +144,83 @@ public class Xml2Dcm {
 
      @SuppressWarnings("static-access")
      private static void addIOFileNameOptions(Options opts) {
-         opts.addOption(OptionBuilder
+         opts.addOption(Option.builder("x")
                  .hasArg()
-                 .withArgName("xml-file")
-                 .withDescription(rb.getString("x-file"))
-                 .create("x"));
-         opts.addOption(OptionBuilder
+                 .argName("xml-file")
+                 .desc(rb.getString("x-file"))
+                 .build());
+         opts.addOption(Option.builder("i")
                  .hasArg()
-                 .withArgName("dicom-file")
-                 .withDescription(rb.getString("i-file"))
-                 .create("i"));
-         opts.addOption(OptionBuilder
+                 .argName("dicom-file")
+                 .desc(rb.getString("i-file"))
+                 .build());
+         opts.addOption(Option.builder("o")
                  .hasArg()
-                 .withArgName("dicom-file")
-                 .withDescription(rb.getString("o-file"))
-                 .create("o"));
+                 .argName("dicom-file")
+                 .desc(rb.getString("o-file"))
+                 .build());
       }
 
 
      @SuppressWarnings("static-access")
      private static void addBulkdataOptions(Options opts) {
          OptionGroup blkGroup = new OptionGroup();
-         blkGroup.addOption(OptionBuilder
-                 .withLongOpt("no-bulkdata")
-                 .withDescription(rb.getString("no-bulkdata"))
-                 .create("B"));
-         blkGroup.addOption(OptionBuilder
-                 .withLongOpt("alloc-bulkdata")
-                 .withDescription(rb.getString("alloc-bulkdata"))
-                 .create("b"));
+         blkGroup.addOption(Option.builder("B")
+                 .longOpt("no-bulkdata")
+                 .desc(rb.getString("no-bulkdata"))
+                 .build());
+         blkGroup.addOption(Option.builder("b")
+                 .longOpt("alloc-bulkdata")
+                 .desc(rb.getString("alloc-bulkdata"))
+                 .build());
          opts.addOptionGroup(blkGroup);
-         opts.addOption(OptionBuilder
-                 .withLongOpt("blk-file-dir")
+         opts.addOption(Option.builder("d")
+                 .longOpt("blk-file-dir")
                  .hasArg()
-                 .withArgName("directory")
-                 .withDescription(rb.getString("blk-file-dir"))
-                 .create("d"));
-         opts.addOption(OptionBuilder
-                 .withLongOpt("blk-file-prefix")
+                 .argName("directory")
+                 .desc(rb.getString("blk-file-dir"))
+                 .build());
+         opts.addOption(Option.builder()
+                 .longOpt("blk-file-prefix")
                  .hasArg()
-                 .withArgName("prefix")
-                 .withDescription(rb.getString("blk-file-prefix"))
-                 .create());
-         opts.addOption(OptionBuilder
-                 .withLongOpt("blk-file-suffix")
+                 .argName("prefix")
+                 .desc(rb.getString("blk-file-prefix"))
+                 .build());
+         opts.addOption(Option.builder()
+                 .longOpt("blk-file-suffix")
                  .hasArg()
-                 .withArgName("suffix")
-                 .withDescription(rb.getString("blk-file-suffix"))
-                 .create());
+                 .argName("suffix")
+                 .desc(rb.getString("blk-file-suffix"))
+                 .build());
          opts.addOption("c", "cat-blk-files", false,
                   rb.getString("cat-blk-files"));
          opts.addOption(null, "keep-blk-files", false,
                  rb.getString("keep-blk-files"));
-         opts.addOption(OptionBuilder
-                 .withLongOpt("blk-spec")
+         opts.addOption(Option.builder("X")
+                 .longOpt("blk-spec")
                  .hasArg()
-                 .withArgName("xml-file")
-                 .withDescription(rb.getString("blk-spec"))
-                 .create("X"));
+                 .argName("xml-file")
+                 .desc(rb.getString("blk-spec"))
+                 .build());
      }
 
      @SuppressWarnings("static-access")
      private static void addFileEncodingOptions(Options opts) {
-        opts.addOption(OptionBuilder
-                .withLongOpt("transfer-syntax")
+        opts.addOption(Option.builder("t")
+                .longOpt("transfer-syntax")
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("transfer-syntax"))
-                .create("t"));
+                .argName("uid")
+                .desc(rb.getString("transfer-syntax"))
+                .build());
         OptionGroup fmiGroup = new OptionGroup();
-        fmiGroup.addOption(OptionBuilder
-                .withLongOpt("no-fmi")
-                .withDescription(rb.getString("no-fmi"))
-                .create("F"));
-        fmiGroup.addOption(OptionBuilder
-                .withLongOpt("fmi")
-                .withDescription(rb.getString("fmi"))
-                .create("f"));
+        fmiGroup.addOption(Option.builder("F")
+                .longOpt("no-fmi")
+                .desc(rb.getString("no-fmi"))
+                .build());
+        fmiGroup.addOption(Option.builder("f")
+                .longOpt("fmi")
+                .desc(rb.getString("fmi"))
+                .build());
         opts.addOptionGroup(fmiGroup);
         CLIUtils.addEncodingOptions(opts);
     }

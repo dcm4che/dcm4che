@@ -2184,7 +2184,15 @@ public class Attributes implements Serializable {
             }
         }
         return true;
-   }
+    }
+
+    public boolean equalValues(Attributes other, int tag) {
+        return equalValues(other, null, tag);
+    }
+
+    public boolean equalValues(Attributes other, String privateCreator, int tag) {
+        return equalValues(other, indexOf(privateCreator, tag), other.indexOf(privateCreator, tag));
+    }
 
     private boolean equalValues(Attributes other, int index, int otherIndex) {
         if (index < 0 && otherIndex < 0)

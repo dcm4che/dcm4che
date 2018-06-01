@@ -335,8 +335,6 @@ public class StoreSCP {
 
             context.addClientListener(reason -> {
                 synchronized (lock) {
-                    scheduledExecutorService.shutdown();
-                    executorService.shutdown();
                     shutdown.set(true);
                     lock.notifyAll();
                 }
@@ -346,6 +344,9 @@ public class StoreSCP {
                 while (!shutdown.get()) {
                     lock.wait(500);
                 }
+                executorService.shutdown();
+                scheduledExecutorService.shutdown();
+                main.device.waitForNoOpenConnections();
                 main.device.unbindConnections();
             }
         } catch (InterruptedException ignored) {

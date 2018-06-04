@@ -62,6 +62,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  * @since Jul 2017
  */
 public class Jpg2Dcm {

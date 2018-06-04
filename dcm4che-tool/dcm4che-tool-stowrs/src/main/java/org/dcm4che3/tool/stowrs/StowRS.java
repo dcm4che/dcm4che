@@ -149,8 +149,10 @@ public class StowRS {
         opts.addOption(Option.builder("u").hasArg().argName("user:password").longOpt("user")
                 .desc(rb.getString("user")).build());
         opts.addOption("t", "type", true, rb.getString("type"));
-        opts.addOption("ph", "pixel-header", true, rb.getString("pixel-header"));
-        opts.addOption("na","no-appn", true, rb.getString("no-appn"));
+        opts.addOption(Option.builder().hasArg().argName("pixel-header").longOpt("pixel-header")
+                .desc(rb.getString("pixel-header")).build());
+        opts.addOption(Option.builder().hasArg().argName("no-appn").longOpt("no-appn")
+                .desc(rb.getString("no-appn")).build());
         opts.addOption("a","accept", true, rb.getString("accept"));
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StowRS.class);

@@ -42,6 +42,10 @@
                                         segments APPn are to be excluded from
                                         JPEG stream; encapsulate JPEG stream
                                         verbatim by default.
+        --pdf                           generate sample metadata for
+                                        Encapsulated PDF from
+                                        etc/stowrs/encapsulatedPDFMetadata.xml
+                                        file.
         --pixel-header <pixel-header>   Specify value as true if metadata
                                         information is to be extracted from
                                         header of pixel data for jpegs and
@@ -51,6 +55,10 @@
                                         either in metadata file or from
                                         command line to ensure seeing the
                                         images/videos correctly.
+        --sc                            generate sample metadata for Secondary
+                                        Capture Image from
+                                        etc/stowrs/secondaryCaptureImageMetada
+                                        ta.xml file.
      -t,--type <arg>                    specify the value for Content-type
                                         header : xml or json. The value of
                                         Content-type will then be sent in
@@ -66,6 +74,10 @@
                                         use for server authentication.
         --url <url>                     Specify the request URL.
      -V,--version                       output version information and exit
+        --xc                            generate sample metadata for VL
+                                        Photographic Image from
+                                        etc/stowrs/vlPhotographicImageMetadata
+                                        .xml file.
     -
     Example: stowrs -m PatientName=John^Doe --url
     http://localhost/stow/studies img.jpeg

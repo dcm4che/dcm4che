@@ -58,12 +58,7 @@ import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.MissingArgumentException;
-import org.apache.commons.cli.MissingOptionException;
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
@@ -96,9 +91,7 @@ public class StowRS {
     private String user;
     private boolean noAppn;
     private boolean pixelHeader;
-    private boolean sc;
-    private boolean xc;
-    private boolean pdf;
+    private String sampleMetadataResourceURL;
     private JPEGHeader jpegHeader;
     private String accept;
     private String contentType;
@@ -156,9 +149,23 @@ public class StowRS {
         opts.addOption(Option.builder().hasArg().argName("no-appn").longOpt("no-appn")
                 .desc(rb.getString("no-appn")).build());
         opts.addOption("a","accept", true, rb.getString("accept"));
-        opts.addOption(null, "pdf", false, rb.getString("pdf"));
-        opts.addOption(null, "sc", false, rb.getString("sc"));
-        opts.addOption(null, "xc", false, rb.getString("xc"));
+        OptionGroup sampleMetadataOG = new OptionGroup();
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("sc")
+                .hasArg(false)
+                .desc(rb.getString("sc"))
+                .build());
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("xc")
+                .hasArg(false)
+                .desc(rb.getString("xc"))
+                .build());
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("pdf")
+                .hasArg(false)
+                .desc(rb.getString("pdf"))
+                .build());
+        opts.addOptionGroup(sampleMetadataOG);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StowRS.class);
     }
@@ -207,9 +214,12 @@ public class StowRS {
         setContentAndAcceptType(instance,  cl, files.get(0));
         instance.pixelHeader = Boolean.valueOf(cl.getOptionValue("pixel-header"));
         instance.noAppn = Boolean.valueOf(cl.getOptionValue("no-appn"));
-        instance.pdf = cl.hasOption("pdf");
-        instance.sc = cl.hasOption("sc");
-        instance.xc = cl.hasOption("xc");
+        instance.sampleMetadataResourceURL = cl.hasOption("sc")
+                                                ? "resource:secondaryCaptureImageMetadata.xml"
+                                                : cl.hasOption("xc")
+                                                    ? "resource:vlPhotographicImageMetadata.xml"
+                                                    : cl.hasOption("pdf")
+                                                        ? "resource:encapsulatedPDFMetadata.xml" : null;
     }
 
     enum Extension {
@@ -299,14 +309,8 @@ public class StowRS {
     }
 
     private static Attributes createSampleMetadata(StowRS instance, Extension ext) throws Exception {
-        String metadataResource = instance.sc
-                                    ? "resource:secondaryCaptureImageMetadata.xml"
-                                    : instance.xc
-                                        ? "resource:vlPhotographicImageMetadata.xml"
-                                        : instance.pdf
-                                            ? "resource:encapsulatedPDFMetadata.xml" : null;
-        return createSampleMetadata(ext) && metadataResource != null
-                    ? SAXReader.parse(StreamUtils.openFileOrURL(metadataResource))
+        return createSampleMetadata(ext) && instance.sampleMetadataResourceURL != null
+                    ? SAXReader.parse(StreamUtils.openFileOrURL(instance.sampleMetadataResourceURL))
                     : new Attributes();
     }
 

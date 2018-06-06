@@ -78,6 +78,7 @@ import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.IncompatibleConnectionException;
+import org.dcm4che3.util.ReverseDNS;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
@@ -382,7 +383,7 @@ public class AuditLogger {
                 AuditMessages.alternativeUserIDForAETitle(
                         aets.toArray(new String[aets.size()])),
                 applicationName(),
-                localHost().getHostName(),
+                ReverseDNS.hostNameOf(localHost()),
                 roleIDs);
     }
 

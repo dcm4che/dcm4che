@@ -286,6 +286,20 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.66 NAME 'dcmPreferredTransferSyntax'
   DESC 'Preferred Transfer Syntax for selection of Transfer Syntax within a Presentation Context, prioritized by zero-based ordinal prefix: {#}<uid>. If absent, the first acceptable Transfer Syntax in the offered Presentation Context will be selected.'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.67 NAME 'dcmWebAppName'
+  DESC 'Web Application Name'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.68 NAME 'dcmWebServiceClass'
+  DESC 'Web Service Class. Enumerated values: WADO_URI, WADO_RS, STOW_RS, QIDO_RS, UPS_RS'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.69 NAME 'dcmWebServicePath'
+  DESC 'Web Service Path'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -547,6 +561,19 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.9 NAME 'dcmAttributeCoercion'
   MAY (
     dcmAETitle $
     dcmSOPClass ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.10 NAME 'dcmWebApp'
+  DESC 'Web Application'
+  SUP top STRUCTURAL
+  MUST (
+    dcmWebAppName $
+    dcmWebServiceClass $
+    dcmWebServicePath $
+    dicomNetworkConnectionReference )
+  MAY (
+    dicomDescription $
+    dicomAETitle $
+    dicomApplicationCluster $
+    dicomInstalled ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL

@@ -49,7 +49,9 @@ import org.slf4j.LoggerFactory;
 import javax.json.stream.JsonLocation;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParsingException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.TimeZone;
 
 /**
@@ -113,6 +115,16 @@ public class JsonReader {
         expect(JsonParser.Event.END_ARRAY);
         return a.toArray(StringUtils.EMPTY_STRING);
     }
+
+    public <T extends Enum<T>> T[] enumArray(Class<T> enumType) {
+        next();
+        expect(JsonParser.Event.START_ARRAY);
+        EnumSet<T> a = EnumSet.noneOf(enumType);
+        while (next() == JsonParser.Event.VALUE_STRING)
+            a.add(T.valueOf(enumType, getString()));
+        expect(JsonParser.Event.END_ARRAY);
+        return a.toArray((T[]) Array.newInstance(enumType, a.size()));
+   }
 
     public int intValue() {
         next();

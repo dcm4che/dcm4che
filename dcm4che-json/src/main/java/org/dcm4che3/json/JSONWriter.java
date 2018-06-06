@@ -212,9 +212,11 @@ public class JSONWriter implements DicomInputHandler {
             break;
         case SL:
         case SS:
-        case UL:
         case US:
             writeIntValues(vr, val, bigEndian);
+            break;
+        case UL:
+            writeUIntValues(vr, val, bigEndian);
             break;
         case OB:
         case OD:
@@ -280,6 +282,15 @@ public class JSONWriter implements DicomInputHandler {
         int vm = vr.vmOf(val);
         for (int i = 0; i < vm; i++) {
             gen.write(vr.toInt(val, bigEndian, i, 0));
+        }
+        gen.writeEnd();
+    }
+
+    private void writeUIntValues(VR vr, Object val, boolean bigEndian) {
+        gen.writeStartArray("Value");
+        int vm = vr.vmOf(val);
+        for (int i = 0; i < vm; i++) {
+            gen.write(vr.toInt(val, bigEndian, i, 0) & 0xffffffffL);
         }
         gen.writeEnd();
     }

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>5.13.0</version>
+    <version>5.13.2</version>
   </parent>
   <artifactId>dcm4che-jboss-modules</artifactId>
   <packaging>pom</packaging>
@@ -183,6 +183,11 @@
       <version>${weasis.opencv.native.version}</version>
       <type>dll</type>
       <classifier>windows-x86-64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-admin-client</artifactId>
+      <version>${keycloak.version}</version>
     </dependency>
   </dependencies>
   <build>

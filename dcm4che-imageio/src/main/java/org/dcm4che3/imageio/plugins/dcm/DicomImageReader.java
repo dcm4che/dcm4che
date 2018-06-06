@@ -444,12 +444,13 @@ public class DicomImageReader extends ImageReader implements Closeable {
         if (decompressor != null) {
             openiis();
             try {
-                decompressor.setInput(iisOfFrame(frameIndex));
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Start decompressing frame #" + (frameIndex + 1));
+                ImageInputStream iisOfFrame = iisOfFrame(frameIndex);
+                // Reading this up front sets the required values so that opencv succeeds - it is less than optimal performance wise
+                iisOfFrame.length();
+                decompressor.setInput(iisOfFrame);
+                LOG.debug("Start decompressing frame #{}", (frameIndex + 1));
                 BufferedImage bi = decompressor.read(0, decompressParam(param));
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
+                LOG.debug("Finished decompressing frame #{}", (frameIndex + 1));
                 if (samples > 1)
                     return bi;
                 
@@ -518,7 +519,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
             return null;
         } else {
             iisOfFrame = new SegmentedInputImageStream(
-                    iis, pixelDataFragments, frameIndex);
+                    iis, pixelDataFragments, frames==1 ? -1 : frameIndex);
             ((SegmentedInputImageStream) iisOfFrame).setImageDescriptor(imageDescriptor);
         }
         return patchJpegLS != null

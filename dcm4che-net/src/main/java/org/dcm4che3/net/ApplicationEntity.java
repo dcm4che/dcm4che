@@ -623,10 +623,10 @@ public class ApplicationEntity implements Serializable {
 
     public Association connect(Connection remote, AAssociateRQ rq)
             throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
-        return connect(findCompatibelConnection(remote), remote, rq);
+        return connect(findCompatibleConnection(remote), remote, rq);
     }
 
-    public Connection findCompatibelConnection(Connection remoteConn)
+    public Connection findCompatibleConnection(Connection remoteConn)
             throws IncompatibleConnectionException {
         for (Connection conn : conns)
             if (conn.isInstalled() && conn.isCompatible(remoteConn))
@@ -635,7 +635,7 @@ public class ApplicationEntity implements Serializable {
                 "No compatible connection to " + remoteConn + " available on " + aet);
     }
 
-    public CompatibleConnection findCompatibelConnection(ApplicationEntity remote)
+    public CompatibleConnection findCompatibleConnection(ApplicationEntity remote)
             throws IncompatibleConnectionException {
         for (Connection remoteConn : remote.conns)
             if (remoteConn.isInstalled() && remoteConn.isServer())
@@ -648,7 +648,7 @@ public class ApplicationEntity implements Serializable {
 
     public Association connect(ApplicationEntity remote, AAssociateRQ rq)
         throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
-        CompatibleConnection cc = findCompatibelConnection(remote);
+        CompatibleConnection cc = findCompatibleConnection(remote);
         if (rq.getCalledAET() == null)
             rq.setCalledAET(remote.getAETitle());
         return connect(cc.getLocalConnection(), cc.getRemoteConnection(), rq);

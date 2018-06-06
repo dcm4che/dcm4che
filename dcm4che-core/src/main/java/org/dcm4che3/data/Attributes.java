@@ -538,6 +538,25 @@ public class Attributes implements Serializable {
                         : values[index]);
     }
 
+    /**
+     * Test whether at least one tag within the given range is contained.
+     * 
+     * @param firstTag
+     *            first tag (inclusive)
+     * @param lastTag
+     *            last tag (inclusive)
+     * @return whether at least one tag within the given range is contained
+     */
+    public boolean containsTagInRange(int firstTag, int lastTag) {
+        final int indexFirstTag = indexForInsertOf(firstTag);
+        if (indexFirstTag >= 0) {
+            return true;
+        }
+
+        int insertIndex = -indexFirstTag-1;
+        return insertIndex < size && tags[insertIndex] <= lastTag;
+    }
+
     public String privateCreatorOf(int tag) {
         if (!TagUtils.isPrivateTag(tag))
             return null;
@@ -2184,7 +2203,15 @@ public class Attributes implements Serializable {
             }
         }
         return true;
-   }
+    }
+
+    public boolean equalValues(Attributes other, int tag) {
+        return equalValues(other, null, tag);
+    }
+
+    public boolean equalValues(Attributes other, String privateCreator, int tag) {
+        return equalValues(other, indexOf(privateCreator, tag), other.indexOf(privateCreator, tag));
+    }
 
     private boolean equalValues(Attributes other, int index, int otherIndex) {
         if (index < 0 && otherIndex < 0)

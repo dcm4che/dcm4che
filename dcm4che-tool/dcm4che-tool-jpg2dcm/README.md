@@ -19,13 +19,20 @@
         --no-app             remove application segments APPn from
                              encapsulated JPEG stream; encapsulate JPEG stream
                              verbatim by default.
+        --sc                 generate sample metadata for Secondary Capture
+                             Image from
+                             etc/jpg2dcm/secondaryCaptureImageMetadata.xml
+                             file.
      -V,--version            output version information and exit
+        --xc                 generate sample metadata for VL Photographic
+                             Image from
+                             etc/jpg2dcm/vlPhotographicImageMetadata.xml file.
     -
     Example 1: jpg2dcm -f metadata.xml image.jpg image.dcm
     => Encapulate JPEG Image verbatim with DICOM attributes specified in
     metadata.xml into DICOM Image Object.
     -
-    Example 2: jpg2dcm --no-app -a PatientName=Simson^Homer -a PatientSex=M
+    Example 2: jpg2dcm --no-app -a PatientName=Simson^Homer -a PatientSex=M --
     homer.jpg image.dcm
     => Encapulate JPEG Image without application segments with specified DICOM
     attributes into DICOM Image Object.

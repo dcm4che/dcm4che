@@ -43,7 +43,7 @@
   <artifactId>dcm4che-parent</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>5.13.0</version>
+  <version>5.13.2</version>
   <description>dcm4che DICOM toolkit and utilities</description>
   <issueManagement>
     <system>JIRA</system>
@@ -62,6 +62,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <weasis.version>3.0.0-RC1</weasis.version>
     <weasis.opencv.native.version>3.4.0-dcmR3</weasis.opencv.native.version>
+    <keycloak.version>3.4.3.Final</keycloak.version>
   </properties>
   <build>
     <extensions>

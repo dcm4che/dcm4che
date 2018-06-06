@@ -53,7 +53,6 @@ import org.dcm4che3.util.StringUtils;
 import javax.naming.*;
 import javax.naming.directory.*;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -202,8 +201,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             while (ne.hasMore()) {
                 HL7ApplicationInfo hl7AppInfo = new HL7ApplicationInfo();
                 SearchResult ne1 = ne.next();
-                Enumeration<String> s1 = config.getStringEnumeration(ne1);
-                loadFrom(hl7AppInfo, ne1.getAttributes(), config.getDeviceName(s1));
+                loadFrom(hl7AppInfo, ne1.getAttributes(), LdapUtils.cutDeviceName(ne1.getName()));
                 results.add(hl7AppInfo);
             }
         } catch (NameNotFoundException e) {

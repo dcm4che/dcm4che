@@ -42,7 +42,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.dcm4che3.data.UID;
 
-import java.util.Collection;
 import java.util.Collections;
 
 /**

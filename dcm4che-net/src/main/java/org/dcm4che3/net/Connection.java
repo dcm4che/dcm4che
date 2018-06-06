@@ -86,7 +86,7 @@ public class Connection implements Serializable {
 
     private static final long serialVersionUID = -7814748788035232055L;
 
-    public enum Protocol { DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP;
+    public enum Protocol { DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP, HTTP;
         public boolean isTCP() { return this != SYSLOG_UDP; }
         public boolean isSyslog() { return this == SYSLOG_TLS || this == SYSLOG_UDP; }
     }
@@ -887,13 +887,17 @@ public class Connection implements Serializable {
             throw new IllegalStateException("Already listening - " + listener);
         if (protocol.isTCP()) {
             TCPProtocolHandler handler = tcpHandlers.get(protocol);
-            if (handler == null)
-                throw new IllegalStateException("No TCP Protocol Handler for protocol " + protocol);
+            if (handler == null) {
+                LOG.info("No TCP Protocol Handler for protocol {}", protocol);
+                return false;
+            }
             listener = new TCPListener(this, handler);
         } else {
             UDPProtocolHandler handler = udpHandlers.get(protocol);
-            if (handler == null)
-                throw new IllegalStateException("No UDP Protocol Handler for protocol " + protocol);
+            if (handler == null) {
+                LOG.info("No UDP Protocol Handler for protocol {}", protocol);
+                return false;
+            }
             listener = new UDPListener(this, handler);
         }
         rebindNeeded = false;

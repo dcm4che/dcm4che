@@ -135,11 +135,11 @@ public class Jpg2Dcm {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
         OptionGroup sampleMetadataOG = new OptionGroup();
-        opts.addOption(Option.builder("a")
+        opts.addOption(Option.builder("m")
                 .hasArgs()
                 .argName("[seq/]attr=value")
                 .valueSeparator()
-                .desc(rb.getString("attr"))
+                .desc(rb.getString("metadata"))
                 .build());
         opts.addOption(Option.builder("f")
                 .hasArg()

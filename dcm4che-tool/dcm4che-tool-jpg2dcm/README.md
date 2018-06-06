@@ -11,7 +11,10 @@
     the system.
     -
     Options:
-     -a <[seq/]attr=value>   specify included DICOM Attribute. attr can be
+     -f <xml-file>           specify included DICOM attributes by XML
+                             presentation in <xml-file>
+     -h,--help               display this help and exit
+     -m <[seq/]attr=value>   specify included DICOM Attribute. attr can be
                              specified by keyword or tag value (in hex), e.g.
                              PatientName or00100010. Attributes in nested
                              Datasets can be specified by including the
@@ -19,9 +22,6 @@
                              00400275/00400009 for Scheduled Procedure Step ID
                              in the Request Attributes Sequence. Overrides
                              DICOM attributesspecified by -f <xml-file>
-     -f <xml-file>           specify included DICOM attributes by XML
-                             presentation in <xml-file>
-     -h,--help               display this help and exit
         --no-app             remove application segments APPn from
                              encapsulated JPEG stream; encapsulate JPEG stream
                              verbatim by default.

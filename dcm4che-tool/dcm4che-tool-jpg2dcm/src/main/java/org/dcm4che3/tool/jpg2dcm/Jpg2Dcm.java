@@ -38,10 +38,7 @@
 
 package org.dcm4che3.tool.jpg2dcm;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.*;
 import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGHeader;
@@ -137,6 +134,7 @@ public class Jpg2Dcm {
     private static CommandLine parseComandLine(String[] args) throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
+        OptionGroup sampleMetadataOG = new OptionGroup();
         opts.addOption(Option.builder("a")
                 .hasArgs()
                 .argName("[seq/]attr=value")
@@ -149,8 +147,17 @@ public class Jpg2Dcm {
                 .desc(rb.getString("file"))
                 .build());
         opts.addOption(null, "no-app", false, rb.getString("no-app"));
-        opts.addOption(null, "sc", false, rb.getString("sc"));
-        opts.addOption(null, "xc", false, rb.getString("xc"));
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("sc")
+                .hasArg(false)
+                .desc(rb.getString("sc"))
+                .build());
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("xc")
+                .hasArg(false)
+                .desc(rb.getString("xc"))
+                .build());
+        opts.addOptionGroup(sampleMetadataOG);
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
         int numArgs = cl.getArgList().size();
         if (numArgs == 0)

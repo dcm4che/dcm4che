@@ -128,8 +128,6 @@ public class DicomInputStream extends FilterInputStream
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
     private List<ItemPointer> itemPointers = new ArrayList<ItemPointer>(4);
-    private boolean excludeBulkData;
-    private boolean includeBulkDataURI;
     private boolean addBulkDataReferences;
 
     private boolean catBlkFiles = true;
@@ -548,8 +546,6 @@ public class DicomInputStream extends FilterInputStream
                         vr = VR.SQ; // assumes UN with undefined length are SQ,
                                     // will fail on UN fragments!
                 }
-                excludeBulkData = includeBulkData == IncludeBulkData.NO && isBulkData(attrs);
-                includeBulkDataURI = includeBulkData == IncludeBulkData.URI && isBulkData(attrs);
                 handler.readValue(this, attrs);
             } else
                 skipAttribute(UNEXPECTED_ATTRIBUTE);

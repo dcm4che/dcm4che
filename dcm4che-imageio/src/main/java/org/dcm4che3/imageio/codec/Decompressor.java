@@ -200,8 +200,12 @@ public class Decompressor {
         if (pixels instanceof Fragments && ((Fragments) pixels).get(index+1) instanceof BulkData)
             iis = new SegmentedImageInputStream(iis, (Fragments) pixels, imageParams.getFrames()==1 ? -1 : index);
 
-        if (decompressedImage == null && tsType == TransferSyntaxType.RLE)
-            decompressedImage = BufferedImageUtils.createBufferedImage(imageParams, tsType);
+        if (decompressedImage == null) {
+            if (tsType == TransferSyntaxType.RLE || (tsType == TransferSyntaxType.JPEG_LOSSLESS && imageParams.isBanded())) {
+                // JPEG images compressed with the RGB bug don't expect to be banded so we need to force this
+                decompressedImage = BufferedImageUtils.createBufferedImage(imageParams, tsType);
+            }
+        }
 
         imageReader.setInput(patchJPEGLS != null
                 ? new PatchJPEGLSImageInputStream(iis, patchJPEGLS)

@@ -133,7 +133,7 @@ public class ImageParams {
     public void decompress(Attributes attrs, TransferSyntaxType tstype) {
         if (samples > 1) {
             pmi = pmi.decompress();
-            planarConfiguration = tstype.getPlanarConfiguration();
+            planarConfiguration = tstype.decompressPlanarConfiguration(planarConfiguration);
             attrs.setString(Tag.PhotometricInterpretation, VR.CS, pmi.toString());
             attrs.setInt(Tag.PlanarConfiguration, VR.US, planarConfiguration);
         }

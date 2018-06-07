@@ -77,7 +77,22 @@ public enum TransferSyntaxType {
                     : pmi;
         }
     },
-    JPEG_LOSSLESS,
+    JPEG_LOSSLESS {
+        @Override
+        public boolean canEncodeSigned() { return true; }
+
+        @Override
+        public PhotometricInterpretation compress(PhotometricInterpretation pmi) {
+            return pmi == PhotometricInterpretation.RGB
+                    ? PhotometricInterpretation.YBR_ICT
+                    : pmi;
+        }
+
+        @Override
+        public int decompressPlanarConfiguration(int planarConfiguration) {
+            return planarConfiguration;
+        }
+    },
     JPEG_2000 {
         @Override
         public boolean canEncodeSigned() { return true; }
@@ -125,6 +140,10 @@ public enum TransferSyntaxType {
 
     public int getPlanarConfiguration() {
         return 0;
+    }
+
+    public int decompressPlanarConfiguration(int planarConfiguration) {
+        return getPlanarConfiguration();
     }
 
     public int getMaxBitsStored() {

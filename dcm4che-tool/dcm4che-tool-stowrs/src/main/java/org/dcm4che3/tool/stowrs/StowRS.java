@@ -368,7 +368,7 @@ public class StowRS {
                 }
             }
             int off = 0;
-            if (instance.noAppn)
+            if (instance.noAppn && instance.jpegHeader != null)
                 off = instance.jpegHeader.offsetAfterAPP();
             instance.pixelData = Arrays.copyOfRange(btemp, off, fileLen);
         }

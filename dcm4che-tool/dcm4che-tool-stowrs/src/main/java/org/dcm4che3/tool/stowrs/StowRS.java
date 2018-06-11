@@ -144,10 +144,16 @@ public class StowRS {
         opts.addOption(Option.builder("u").hasArg().argName("user:password").longOpt("user")
                 .desc(rb.getString("user")).build());
         opts.addOption("t", "type", true, rb.getString("type"));
-        opts.addOption(Option.builder().hasArg().argName("pixel-header").longOpt("pixel-header")
-                .desc(rb.getString("pixel-header")).build());
-        opts.addOption(Option.builder().hasArg().argName("no-appn").longOpt("no-appn")
-                .desc(rb.getString("no-appn")).build());
+        opts.addOption(Option.builder()
+                .longOpt("pixel-header")
+                .hasArg(false)
+                .desc(rb.getString("pixel-header"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("no-appn")
+                .hasArg(false)
+                .desc(rb.getString("no-appn"))
+                .build());
         opts.addOption("a","accept", true, rb.getString("accept"));
         OptionGroup sampleMetadataOG = new OptionGroup();
         sampleMetadataOG.addOption(Option.builder()
@@ -208,8 +214,8 @@ public class StowRS {
         instance.user = cl.getOptionValue("u");
         instance.metadataFile = cl.getOptionValue("f");
         setContentAndAcceptType(instance, cl);
-        instance.pixelHeader = Boolean.valueOf(cl.getOptionValue("pixel-header"));
-        instance.noAppn = Boolean.valueOf(cl.getOptionValue("no-appn"));
+        instance.pixelHeader = cl.hasOption("pixel-header");
+        instance.noAppn = cl.hasOption("no-appn");
         instance.isSecondaryCapture = cl.hasOption("sc");
         instance.sampleMetadataResourceURL = cl.hasOption("sc")
                 ? "resource:secondaryCaptureImageMetadata.xml"

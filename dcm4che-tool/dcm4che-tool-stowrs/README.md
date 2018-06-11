@@ -17,73 +17,64 @@
     File names should not contain spaces.
     -
     Options:
-     -a,--accept <arg>                  Specify the value for Accept header :
-                                        xml or json. The value of Accept
-                                        header will then be sent in request
-                                        header as application/dicom+xml or
-                                        application/dicom+json. Note that for
-                                        DICOM objects application/dicom+xml
-                                        will always be used by default. If
-                                        this flag is absent, for bulkdata type
-                                        of objects the value specified in -t
-                                        option will be used to determine
-                                        application/dicom+xml or
-                                        application/dicom+json. If -t option
-                                        is absent as well then
-                                        application/dicom+xml will be used by
-                                        default.
-     -f,--file <arg>                    specify the file containing the
-                                        metadata (in XML format).
-     -h,--help                          display this help and exit
-     -m <[seq/]attr=value>              specify metadata attributes. attr can
-                                        be specified by keyword or tag value
-                                        (in hex), e.g. PatientName or
-                                        00100010. Attributes in nested
-                                        Datasets can be specified by including
-                                        the keyword/tag value of the sequence
-                                        attribute, e.g. 00400275/00400009 for
-                                        Scheduled Procedure Step ID in the
-                                        Request.
-        --no-appn <no-appn>             Specify value as true if application
-                                        segments APPn are to be excluded from
-                                        JPEG stream; encapsulate JPEG stream
-                                        verbatim by default.
-        --pdf                           generate sample metadata for
-                                        Encapsulated PDF from
-                                        etc/stowrs/encapsulatedPDFMetadata.xml
-                                        file.
-        --pixel-header <pixel-header>   Specify value as true if metadata
-                                        information is to be extracted from
-                                        header of pixel data for jpegs and
-                                        mpegs. If absent, pixel header will
-                                        not be read; ensure that pixel data
-                                        related attributes should be present
-                                        either in metadata file or from
-                                        command line to ensure seeing the
-                                        images/videos correctly.
-        --sc                            generate sample metadata for Secondary
-                                        Capture Image from
-                                        etc/stowrs/secondaryCaptureImageMetada
-                                        ta.xml file.
-     -t,--type <arg>                    specify the value for Content-type
-                                        header : xml or json. The value of
-                                        Content-type will then be sent in
-                                        request header as
-                                        application/dicom+xml or
-                                        application/dicom+json. If this flag
-                                        is absent, for bulkdata type of
-                                        objects application/dicom+xml will be
-                                        used by default. Note that for DICOM
-                                        objects, tool will always send
-                                        Content-type as application/dicom.
-     -u,--user <user:password>          Specify the user name and password to
-                                        use for server authentication.
-        --url <url>                     Specify the request URL.
-     -V,--version                       output version information and exit
-        --xc                            generate sample metadata for VL
-                                        Photographic Image from
-                                        etc/stowrs/vlPhotographicImageMetadata
-                                        .xml file.
+     -a,--accept <arg>           Specify the value for Accept header : xml or
+                                 json. The value of Accept header will then be
+                                 sent in request header as
+                                 application/dicom+xml or
+                                 application/dicom+json. Note that for DICOM
+                                 objects application/dicom+xml will always be
+                                 used by default. If this flag is absent, for
+                                 bulkdata type of objects the value specified
+                                 in -t option will be used to determine
+                                 application/dicom+xml or
+                                 application/dicom+json. If -t option is
+                                 absent as well then application/dicom+xml
+                                 will be used by default.
+     -f,--file <arg>             Specify the file containing the metadata (in
+                                 XML format).
+     -h,--help                   display this help and exit
+     -m <[seq/]attr=value>       Specify metadata attributes. attr can be
+                                 specified by keyword or tag value (in hex),
+                                 e.g. PatientName or 00100010. Attributes in
+                                 nested Datasets can be specified by including
+                                 the keyword/tag value of the sequence
+                                 attribute, e.g. 00400275/00400009 for
+                                 Scheduled Procedure Step ID in the Request.
+        --no-appn                Application segments APPn are to be excluded
+                                 from JPEG stream. If absent JPEG stream
+                                 verbatim encapsulated by default.
+        --pdf                    Generate sample metadata for Encapsulated PDF
+                                 from etc/stowrs/encapsulatedPDFMetadata.xml
+                                 file.
+        --pixel-header           Metadata information is to be extracted from
+                                 header of pixel data for jpegs and mpegs. If
+                                 absent, pixel header will not be read; ensure
+                                 that pixel data related attributes should be
+                                 present either in metadata file or from
+                                 command line to ensure seeing the
+                                 images/videos correctly.
+        --sc                     Generate sample metadata for Secondary
+                                 Capture Image from
+                                 etc/stowrs/secondaryCaptureImageMetadata.xml
+                                 file.
+     -t,--type <arg>             Specify the value for Content-type header :
+                                 xml or json. The value of Content-type will
+                                 then be sent in request header as
+                                 application/dicom+xml or
+                                 application/dicom+json. If this flag is
+                                 absent, for bulkdata type of objects
+                                 application/dicom+xml will be used by
+                                 default. Note that for DICOM objects, tool
+                                 will always send Content-type as
+                                 application/dicom.
+     -u,--user <user:password>   Specify the user name and password to use for
+                                 server authentication.
+        --url <url>              Specify the request URL.
+     -V,--version                output version information and exit
+        --xc                     Generate sample metadata for VL Photographic
+                                 Image from
+                                 etc/stowrs/vlPhotographicImageMetadata.xml
+                                 file.
     -
     Example: stowrs -m PatientName=John^Doe --url
     http://localhost/stow/studies img.jpeg
@@ -92,7 +83,7 @@
     -
     Example: stowrs --url http://localhost/stow/studies[/{StudyInstanceUID}]
     object1.dcm object2.dcm
-    => Send stow request to stowRS Receiver with the given dicom file.
+    => Send stow request to stowRS Receiver with the given dicom files.
     -
     Example: stowrs --pdf -m StudyInstanceUID=1.2.3.4.5.6.7.8.9.10 --url
     http://localhost/stow/studies file1.pdf file2.pdf file3.pdf

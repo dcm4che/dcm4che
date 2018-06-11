@@ -51,6 +51,19 @@ public class DicomInputStreamTest {
         assertEquals(((BulkData) pixelData).uri, item.getString(Tag.RetrieveURL));
     }
 
+    /**
+     * <p>Test DICOM file with a non-compliant sequence item containing explicit VR tags inside a sequence tag having VR of UN.</p>
+     * <br/>
+     * <p>More information about the defect is found <a href="https://github.com/dcm4che/dcm4che/issues/159">here</a></p>
+     * <br/>
+     * Without <a href="https://github.com/dcm4che/dcm4che/commit/642eef4ef2dbc3544f55e07909311e5a40b8d3d3"> this fix, </a> reading test
+     * file "explicitVRwithinUNsequence.dcm" would have thrown EOF exception.
+     */
+    @Test
+    public void testExplicitVRWithinUNSequence() throws Exception {
+        readFromResource("explicitVRwithinUNsequence.dcm", IncludeBulkData.YES);
+    }
+
     private static Attributes readFromResource(String name, 
             IncludeBulkData includeBulkData)
             throws Exception {

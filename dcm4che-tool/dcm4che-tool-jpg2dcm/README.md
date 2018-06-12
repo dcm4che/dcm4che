@@ -2,7 +2,7 @@
     
     Encapsulate JPEG image or MPEG2 video (with file extensions jpeg, jpg,
     jpe; mpeg, mpg, mpe) into DICOM files. DICOM attributes can be specified
-    via command line (using -a option) or a XML file (using -f option) or can
+    via command line (using -m option) or a XML file (using -f option) or can
     also be generated using sample metadata files by specifying (either --sc
     option or --xc option). If all the options are specified, system will
     generate metadata first from sample metadata file then from file specified
@@ -38,7 +38,7 @@
     => Encapulate JPEG Image verbatim with DICOM attributes specified in
     metadata.xml into DICOM Image Object.
     -
-    Example 2: jpg2dcm --no-app -a PatientName=Simson^Homer -a PatientSex=M --
+    Example 2: jpg2dcm --no-app -m PatientName=Simson^Homer -m PatientSex=M --
     homer.jpg image.dcm
     => Encapulate JPEG Image without application segments with specified DICOM
     attributes into DICOM Image Object.

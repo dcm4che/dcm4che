@@ -54,6 +54,7 @@
     <module>dcm4che-tool-common</module>
     <module>dcm4che-tool-dcm2dcm</module>
     <module>dcm4che-tool-dcm2jpg</module>
+    <module>dcm4che-tool-dcm2json</module>
     <module>dcm4che-tool-dcm2xml</module>
     <module>dcm4che-tool-dcmdump</module>
     <module>dcm4che-tool-dcmdir</module>
@@ -70,25 +71,25 @@
     <module>dcm4che-tool-hl7snd</module>
     <module>dcm4che-tool-ianscp</module>
     <module>dcm4che-tool-ianscu</module>
+    <module>dcm4che-tool-ihe</module>
+    <module>dcm4che-tool-jpg2dcm</module>
+    <module>dcm4che-tool-json2dcm</module>
+    <module>dcm4che-tool-json2index</module>
+    <module>dcm4che-tool-json2rst</module>
     <module>dcm4che-tool-mkkos</module>
     <module>dcm4che-tool-movescu</module>
     <module>dcm4che-tool-mppsscp</module>
     <module>dcm4che-tool-mppsscu</module>
+    <module>dcm4che-tool-pdf2dcm</module>
     <module>dcm4che-tool-stgcmtscu</module>
     <module>dcm4che-tool-storescp</module>
     <module>dcm4che-tool-storescu</module>
+    <module>dcm4che-tool-stowrs</module>
     <module>dcm4che-tool-swappxdata</module>
-    <module>dcm4che-tool-xml2dcm</module>
-    <module>dcm4che-tool-xml2hl7</module>
-    <module>dcm4che-tool-ihe</module>
     <module>dcm4che-tool-syslog</module>
     <module>dcm4che-tool-syslogd</module>
-    <module>dcm4che-tool-json2dcm</module>
-    <module>dcm4che-tool-jpg2dcm</module>
-    <module>dcm4che-tool-dcm2json</module>
-    <module>dcm4che-tool-stowrs</module>
-    <module>dcm4che-tool-json2rst</module>
-    <module>dcm4che-tool-json2index</module>
+    <module>dcm4che-tool-xml2dcm</module>
+    <module>dcm4che-tool-xml2hl7</module>
   </modules>
   <build>
     <plugins>

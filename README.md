@@ -73,6 +73,7 @@ Utilities
 - [movescu][]: Invoke DICOM C-MOVE Retrieve request
 - [mppsscp][]: DICOM Modality Performed Procedure Step Receiver
 - [mppsscu][]: Send DICOM Modality Performed Procedure Step
+- [pdf2dcm][]: Convert PDF file into DICOM file
 - [stgcmtscu][]: Invoke DICOM Storage Commitment Request
 - [storescp][]: DICOM Composite Object Receiver
 - [storescu][]: Send DICOM Composite Objects
@@ -104,6 +105,7 @@ Utilities
 [movescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-movescu/README.md
 [mppsscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscp/README.md
 [mppsscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscu/README.md
+[pdf2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-pdf2dcm/README.md
 [stgcmtscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stgcmtscu/README.md
 [storescp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescp/README.md
 [storescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescu/README.md

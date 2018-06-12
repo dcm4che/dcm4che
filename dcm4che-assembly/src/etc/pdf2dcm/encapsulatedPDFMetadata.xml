@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NativeDicomModel xml:space="preserve">
+    <DicomAttribute keyword="PatientID" tag="00100020" vr="LO"/>
+    <DicomAttribute keyword="PatientName" tag="00100010" vr="PN"/>
+    <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA"/>
+    <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS"/>
+    <DicomAttribute keyword="StudyDate" tag="00080020" vr="DA"/>
+    <DicomAttribute keyword="StudyTime" tag="00080030" vr="TM"/>
+    <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN"/>
+    <DicomAttribute keyword="StudyID" tag="00200010" vr="SH"/>
+    <DicomAttribute keyword="AccessionNumber" tag="00080050" vr="SH"/>
+    <DicomAttribute keyword="Manufacturer" tag="00080070" vr="LO"/>
+    <DicomAttribute keyword="ConversionType" tag="00080064" vr="CS">
+        <Value number="1">SD</Value>
+    </DicomAttribute>
+</NativeDicomModel>

@@ -337,6 +337,11 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-jpg2dcm</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-json2dcm</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -356,6 +361,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.dcm4che.tool.ihe</groupId>
+      <artifactId>dcm4che-tool-ihe-modality</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-movescu</artifactId>
       <version>${project.version}</version>
@@ -372,7 +382,7 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
-      <artifactId>dcm4che-tool-storescp</artifactId>
+      <artifactId>dcm4che-tool-pdf2dcm</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -382,7 +392,17 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-storescp</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-storescu</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-stowrs</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -408,21 +428,6 @@
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-xml2hl7</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che.tool.ihe</groupId>
-      <artifactId>dcm4che-tool-ihe-modality</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che.tool</groupId>
-      <artifactId>dcm4che-tool-stowrs</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che.tool</groupId>
-      <artifactId>dcm4che-tool-jpg2dcm</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

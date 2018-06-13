@@ -604,7 +604,9 @@ public class StowRS {
                 ? instance.contentType
                 : instance.fileType == FileType.IMAGE
                     ? instance.contentType + "; transfer-syntax=" + UID.JPEGBaseline1
-                    : instance.contentType + "; transfer-syntax=" + UID.ExplicitVRLittleEndian;
+                    : instance.fileType == FileType.VIDEO
+                        ? instance.contentType + "; transfer-syntax=" + UID.MPEG2
+                        : instance.contentType + "; transfer-syntax=" + UID.ExplicitVRLittleEndian;
     }
 
     private static void writeFile(File file, OutputStream out) throws Exception {

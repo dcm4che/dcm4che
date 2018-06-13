@@ -171,9 +171,8 @@ public class Json2Rst {
         JsonObject items = property.getJsonObject("items");
         JsonObject typeObj = items == null ? property : items;
         out.print("    \"");
-        String type;
-        if (typeObj.containsKey("$ref")) {
-            type = "object";
+        boolean isObj = typeObj.containsKey("$ref");
+        if (isObj) {
             String ref = typeObj.getString("$ref");
             out.print(":doc:`");
             out.print(ref.substring(0, ref.length()-12));
@@ -190,7 +189,6 @@ public class Json2Rst {
             out.println(':');
             out.println();
             out.print("    :ref:`");
-            type = typeObj.getString("type");
             out.print(property.getString("title"));
             if (items != null) out.print("(s)");
             out.print(" <");
@@ -198,7 +196,7 @@ public class Json2Rst {
             out.print(">`");
         }
         out.print("\",");
-        out.print(type);
+        out.print(isObj ? "object" : typeObj.getString("type"));
         out.print(",\"");
         out.print(property.getString("description").replace("\"","\"\""));
         JsonArray anEnum = typeObj.getJsonArray("enum");
@@ -212,10 +210,13 @@ public class Json2Rst {
             }
             out.print('.');
         }
-        out.println();
-        out.println();
-        out.print("    (");
-        out.print(name);
-        out.println(")\"");
+        if (!isObj) {
+            out.println();
+            out.println();
+            out.print("    (");
+            out.print(name);
+            out.print(')');
+        }
+        out.println('"');
     }
 }

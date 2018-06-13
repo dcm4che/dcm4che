@@ -129,7 +129,7 @@ public class Json2Rst {
             out.print(outFileName.substring(1, endIndex));
         }
         out.println(')');
-        out.println("    :header: Name (LDAP Attribute), Type, Description");
+        out.println("    :header: Name, Type, Description (LDAP Attribute)");
         out.println("    :widths: 23, 7, 70");
         out.println();
     }
@@ -182,9 +182,7 @@ public class Json2Rst {
             type = typeObj.getString("type");
             out.print(property.getString("title"));
             if (items != null) out.print("(s)");
-            out.print(" (");
-            out.print(name);
-            out.print(") <");
+            out.print(" <");
             out.print(name);
             out.print(">`");
         }
@@ -201,7 +199,12 @@ public class Json2Rst {
                     out.print(i < last ? ", " : " or ");
                 out.print(anEnum.get(i).toString().replace("\"",""));
             }
+            out.print('.');
         }
-        out.println('\"');
+        out.println();
+        out.println();
+        out.print("    (");
+        out.print(name);
+        out.println(")\"");
     }
 }

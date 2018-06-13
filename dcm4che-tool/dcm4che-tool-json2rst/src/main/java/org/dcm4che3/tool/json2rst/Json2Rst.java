@@ -124,7 +124,7 @@ public class Json2Rst {
             out.print("dcmID");
             out.print(outFileName.substring(2, endIndex));
         } else {
-            out.print("dcm");
+            out.print(isDefinedByDicom(outFileName) ? "dicom" : "dcm");
             out.print(Character.toUpperCase(outFileName.charAt(0)));
             out.print(outFileName.substring(1, endIndex));
         }
@@ -132,6 +132,17 @@ public class Json2Rst {
         out.println("    :header: Name, Type, Description (LDAP Attribute)");
         out.println("    :widths: 23, 7, 70");
         out.println();
+    }
+
+    private boolean isDefinedByDicom(String outFileName) {
+        switch (outFileName) {
+            case "device.rst":
+            case "networkAE.rst":
+            case "networkConnection.rst":
+            case "transferCapability.rst":
+                return true;
+        }
+        return false;
     }
 
     private void writeTocTree(ArrayList<String> refs, PrintStream out) {

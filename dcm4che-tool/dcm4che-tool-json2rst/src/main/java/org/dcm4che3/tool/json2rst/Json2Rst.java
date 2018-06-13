@@ -118,7 +118,7 @@ public class Json2Rst {
         out.print(title);
         out.print(" Attributes (LDAP Object: ");
         int endIndex = outFileName.length() - 4;
-        if (outFileName.startsWith("hl7"))
+        if (outFileName.startsWith("hl7") || outFileName.startsWith("dcm"))
             out.print(outFileName.substring(0, endIndex));
         else  if (outFileName.startsWith("id")) {
             out.print("dcmID");

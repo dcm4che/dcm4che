@@ -55,7 +55,7 @@ public class Json2Rst {
     private static final String UNDERLINE = "===============================================================";
     private final File indir;
     private final File outdir;
-    private String tabularColumns = "|p{4cm}|l|p{8cm}|l|";
+    private String tabularColumns = "|p{4cm}|l|p{8cm}|";
     private final LinkedList<File> inFiles = new LinkedList<>();
     private final HashSet<String> totRefs = new HashSet<>();
 
@@ -129,8 +129,8 @@ public class Json2Rst {
             out.print(outFileName.substring(1, endIndex));
         }
         out.println(')');
-        out.println("    :header: Name, Type, Description, LDAP Attribute");
-        out.println("    :widths: 20, 7, 60, 13");
+        out.println("    :header: Name (LDAP Attribute), Type, Description");
+        out.println("    :widths: 23, 7, 70");
         out.println();
     }
 
@@ -173,11 +173,21 @@ public class Json2Rst {
                 inFiles.add(new File(indir, ref));
             }
         } else {
+            out.println();
+            out.print("    .. _");
+            out.print(name);
+            out.println(':');
+            out.println();
+            out.print("    :ref:`");
             type = typeObj.getString("type");
             out.print(property.getString("title"));
             if (items != null) out.print("(s)");
+            out.print(" (");
+            out.print(name);
+            out.print(") <");
+            out.print(name);
+            out.print(">`");
         }
-
         out.print("\",");
         out.print(type);
         out.print(",\"");
@@ -192,13 +202,6 @@ public class Json2Rst {
                 out.print(anEnum.get(i).toString().replace("\"",""));
             }
         }
-        out.println("\",\"");
-        out.print("    .. _");
-        out.print(name);
-        out.println(':');
-        out.println();
-        out.print("    ");
-        out.print(name);
-        out.println("_\"");
+        out.println('\"');
     }
 }

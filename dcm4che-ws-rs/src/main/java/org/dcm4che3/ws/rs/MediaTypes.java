@@ -43,6 +43,7 @@ import javax.ws.rs.core.MediaType;
 import org.dcm4che3.data.UID;
 
 import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -248,6 +249,18 @@ public class MediaTypes {
      */
     public final static MediaType MULTIPART_RELATED_TYPE =
             new MediaType("multipart", "related");
+
+    /**
+     * "multipart/related;type=application/dicom"
+     */
+    public final static MediaType MULTIPART_RELATED_APPLICATION_DICOM_TYPE =
+            new MediaType("multipart", "related", Collections.singletonMap("type", APPLICATION_DICOM));
+
+    /**
+     * "multipart/related;type=application/dicom+xml"
+     */
+    public final static MediaType MULTIPART_RELATED_APPLICATION_DICOM_XML_TYPE =
+            new MediaType("multipart", "related", Collections.singletonMap("type", APPLICATION_DICOM_XML));
 
     public static MediaType forTransferSyntax(String ts) {
         MediaType type;

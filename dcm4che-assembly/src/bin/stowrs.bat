@@ -51,10 +51,7 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.17.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.3.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\httpclient-4.3.3.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\httpmime-4.3.3.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\httpcore-4.3.2.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\commons-logging-1.1.1.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\javax.json-1.0.4.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\javax.json-api-1.1.2.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\javax.json-1.1.2.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

@@ -38,7 +38,8 @@ fi
 
 # Setup the classpath
 CP="$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/javax.json-1.0.4.jar"
+CP="$CP:$DCM4CHE_HOME/lib/javax.json-api-1.1.2.jar"
+CP="$CP:$DCM4CHE_HOME/lib/javax.json-1.1.2.jar"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

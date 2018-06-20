@@ -62,7 +62,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <weasis.version>3.0.0-RC1</weasis.version>
     <weasis.opencv.native.version>3.4.0-dcmR3</weasis.opencv.native.version>
-    <keycloak.version>3.4.3.Final</keycloak.version>
+    <keycloak.version>4.0.0.Final</keycloak.version>
   </properties>
   <build>
     <extensions>
@@ -176,7 +176,7 @@
       <dependency>
         <groupId>org.glassfish</groupId>
         <artifactId>javax.json</artifactId>
-        <version>1.0.4</version>
+        <version>1.1.2</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>

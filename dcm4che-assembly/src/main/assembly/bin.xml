@@ -132,6 +132,8 @@
         <include>org.dcm4che:dcm4che-net-audit</include>
         <include>org.dcm4che:dcm4che-net-hl7</include>
         <include>org.dcm4che:dcm4che-soundex</include>
+        <include>org.dcm4che:dcm4che-ws-rs</include>
+        <include>org.dcm4che:dcm4che-xdsi</include>
         <include>org.dcm4che.tool:dcm4che-tool-common</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2dcm</include>

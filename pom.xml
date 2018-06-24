@@ -63,6 +63,9 @@
     <weasis.version>3.0.0-RC1</weasis.version>
     <weasis.opencv.native.version>3.4.0-dcmR3</weasis.opencv.native.version>
     <keycloak.version>4.0.0.Final</keycloak.version>
+    <jaxws-tools-maven-plugin.version>1.2.2.Final</jaxws-tools-maven-plugin.version>
+    <jbossws-cxf-client.version>5.2.1.Final</jbossws-cxf-client.version>
+    <apache-cxf.version>3.2.4-jbossorg-1</apache-cxf.version>
   </properties>
   <build>
     <extensions>
@@ -123,19 +126,20 @@
     <module>dcm4che-imageio</module>
     <module>dcm4che-imageio-opencv</module>
     <module>dcm4che-imageio-rle</module>
+    <module>dcm4che-json</module>
+    <module>dcm4che-js-dict</module>
     <module>dcm4che-mime</module>
     <module>dcm4che-net</module>
     <module>dcm4che-net-audit</module>
     <module>dcm4che-net-hl7</module>
     <module>dcm4che-net-imageio</module>
     <module>dcm4che-soundex</module>
+    <module>dcm4che-ws-rs</module>
+    <module>dcm4che-xdsi</module>
     <module>dcm4che-tool</module>
     <module>dcm4che-assembly</module>
     <module>dcm4che-jboss-modules</module>
     <module>dcm4che-camel</module>
-    <module>dcm4che-ws-rs</module>
-    <module>dcm4che-json</module>
-    <module>dcm4che-js-dict</module>
     <module>dcm4che-test-data</module>
   </modules>
   <distributionManagement>
@@ -177,6 +181,22 @@
         <groupId>org.glassfish</groupId>
         <artifactId>javax.json</artifactId>
         <version>1.0.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-rt-frontend-simple</artifactId>
+        <version>${apache-cxf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.ws.cxf</groupId>
+        <artifactId>jbossws-cxf-client</artifactId>
+        <version>${jbossws-cxf-client.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jboss.com.sun.httpserver</groupId>
+            <artifactId>httpserver</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>junit</groupId>

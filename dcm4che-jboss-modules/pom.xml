@@ -145,6 +145,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-xdsi</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.weasis.opencv</groupId>
       <artifactId>weasis-opencv-core</artifactId>
       <version>${weasis.version}</version>

@@ -1,0 +1,503 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<!-- $Header: /cvsroot/ebxmlrr/ebxmlrr-spec/misc/3.0/schema/query.xsd,v 1.13 
+	2005/03/29 08:52:10 farrukh_najmi Exp $ -->
+<schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+	targetNamespace="urn:oasis:names:tc:ebxml-regrep:xsd:query:3.0" xmlns="http://www.w3.org/2001/XMLSchema"
+	xmlns:rim="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0" xmlns:rs="urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0"
+	xmlns:tns="urn:oasis:names:tc:ebxml-regrep:xsd:query:3.0">
+	<!-- Import the rim.xsd file with XML schema mappaing from RIM -->
+	<import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0"
+		schemaLocation="rim.xsd" />
+	<import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0"
+		schemaLocation="rs.xsd" />
+	<complexType name="ResponseOptionType">
+		<attribute default="RegistryObject" name="returnType">
+			<simpleType>
+				<restriction base="NCName">
+					<enumeration value="ObjectRef" />
+					<enumeration value="RegistryObject" />
+					<enumeration value="LeafClass" />
+					<enumeration value="LeafClassWithRepositoryItem" />
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute default="false" name="returnComposedObjects"
+			type="boolean" />
+	</complexType>
+	<element name="ResponseOption" type="tns:ResponseOptionType" />
+	<element name="AdhocQueryRequest">
+		<annotation>
+			<documentation xml:lang="en">An Ad hoc query request
+				specifies an ad hoc query.</documentation>
+		</annotation>
+		<complexType>
+			<complexContent>
+				<extension base="rs:RegistryRequestType">
+					<sequence>
+						<element maxOccurs="1" minOccurs="1" ref="tns:ResponseOption" />
+						<element ref="rim:AdhocQuery" />
+					</sequence>
+					<attribute default="false" name="federated" type="boolean"
+						use="optional" />
+					<attribute name="federation" type="anyURI" use="optional" />
+					<attribute default="0" name="startIndex" type="integer" />
+					<attribute default="-1" name="maxResults" type="integer" />
+				</extension>
+			</complexContent>
+		</complexType>
+	</element>
+	<element name="AdhocQueryResponse">
+		<annotation>
+			<documentation xml:lang="en">
+				The response includes a RegistryObjectList which has zero or more
+				RegistryObjects that match the query specified in AdhocQueryRequest.
+			</documentation>
+		</annotation>
+		<complexType>
+			<complexContent>
+				<extension base="rs:RegistryResponseType">
+					<sequence>
+						<element ref="rim:RegistryObjectList" />
+					</sequence>
+					<attribute default="0" name="startIndex" type="integer" />
+					<attribute name="totalResultCount" type="integer" use="optional" />
+				</extension>
+			</complexContent>
+		</complexType>
+	</element>
+	<complexType name="FilterQueryType" abstract="true">
+		<sequence>
+			<element maxOccurs="1" minOccurs="0" name="PrimaryFilter"
+				type="tns:FilterType" />
+		</sequence>
+	</complexType>
+
+	<complexType name="BranchType" abstract="true">
+		<complexContent>
+			<extension base="tns:FilterQueryType">
+			</extension>
+		</complexContent>
+	</complexType>
+	<complexType name="InternationalStringBranchType">
+		<complexContent>
+			<extension base="tns:BranchType">
+				<sequence>
+					<element maxOccurs="unbounded" minOccurs="0"
+						name="LocalizedStringFilter" type="tns:FilterType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+
+	<complexType name="SlotBranchType">
+		<complexContent>
+			<extension base="tns:BranchType">
+				<sequence />
+			</extension>
+		</complexContent>
+	</complexType>
+
+	<complexType name="RegistryObjectQueryType">
+		<complexContent>
+			<extension base="tns:FilterQueryType">
+				<sequence>
+					<element maxOccurs="unbounded" minOccurs="0" name="SlotBranch"
+						type="tns:SlotBranchType" />
+					<element maxOccurs="1" minOccurs="0" name="NameBranch"
+						type="tns:InternationalStringBranchType" />
+					<element maxOccurs="1" minOccurs="0" name="DescriptionBranch"
+						type="tns:InternationalStringBranchType" />
+					<element maxOccurs="1" minOccurs="0" name="VersionInfoFilter"
+						type="tns:FilterType" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						ref="tns:ClassificationQuery" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						ref="tns:ExternalIdentifierQuery" />
+					<element maxOccurs="1" minOccurs="0" name="ObjectTypeQuery"
+						type="tns:ClassificationNodeQueryType" />
+					<element maxOccurs="1" minOccurs="0" name="StatusQuery"
+						type="tns:ClassificationNodeQueryType" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						name="SourceAssociationQuery" type="tns:AssociationQueryType" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						name="TargetAssociationQuery" type="tns:AssociationQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="RegistryObjectQuery" type="tns:RegistryObjectQueryType" />
+
+	<complexType name="AssociationQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" name="AssociationTypeQuery"
+						type="tns:ClassificationNodeQueryType" />
+					<element maxOccurs="1" minOccurs="0" name="SourceObjectQuery"
+						type="tns:RegistryObjectQueryType" />
+					<element maxOccurs="1" minOccurs="0" name="TargetObjectQuery"
+						type="tns:RegistryObjectQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="AssociationQuery" type="tns:AssociationQueryType" />
+
+	<complexType name="AuditableEventQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="unbounded" minOccurs="0"
+						name="AffectedObjectQuery" type="tns:RegistryObjectQueryType" />
+					<element maxOccurs="1" minOccurs="0" name="EventTypeQuery"
+						type="tns:ClassificationNodeQueryType" />
+					<element maxOccurs="1" minOccurs="0" name="UserQuery"
+						type="tns:UserQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="AuditableEventQuery" type="tns:AuditableEventQueryType" />
+
+	<complexType name="ClassificationQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0"
+						ref="tns:ClassificationSchemeQuery" />
+					<element maxOccurs="1" minOccurs="0" name="ClassifiedObjectQuery"
+						type="tns:RegistryObjectQueryType" />
+					<element maxOccurs="1" minOccurs="0"
+						ref="tns:ClassificationNodeQuery" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="ClassificationQuery" type="tns:ClassificationQueryType" />
+
+	<complexType name="ClassificationNodeQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" name="ParentQuery"
+						type="tns:RegistryObjectQueryType" />
+					<element maxOccurs="unbounded" minOccurs="0" name="ChildrenQuery"
+						type="tns:ClassificationNodeQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="ClassificationNodeQuery" type="tns:ClassificationNodeQueryType" />
+
+	<complexType name="ClassificationSchemeQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="unbounded" minOccurs="0" name="ChildrenQuery"
+						type="tns:ClassificationNodeQueryType" />
+					<element maxOccurs="1" minOccurs="0" name="NodeTypeQuery"
+						type="tns:ClassificationNodeQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="ClassificationSchemeQuery" type="tns:ClassificationSchemeQueryType" />
+
+	<complexType name="ExternalIdentifierQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" ref="tns:RegistryObjectQuery" />
+					<element maxOccurs="1" minOccurs="0"
+						name="IdentificationSchemeQuery" type="tns:ClassificationSchemeQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="ExternalIdentifierQuery" type="tns:ExternalIdentifierQueryType" />
+
+	<complexType name="ExternalLinkQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence />
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="ExternalLinkQuery" type="tns:ExternalLinkQueryType" />
+
+	<complexType name="ExtrinsicObjectQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" name="ContentVersionInfoFilter"
+						type="tns:FilterType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="ExtrinsicObjectQuery" type="tns:ExtrinsicObjectQueryType" />
+
+	<complexType name="OrganizationQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="unbounded" minOccurs="0" name="AddressFilter"
+						type="tns:FilterType" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						name="TelephoneNumberFilter" type="tns:FilterType" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						name="EmailAddressFilter" type="tns:FilterType" />
+					<element maxOccurs="1" minOccurs="0" name="ParentQuery"
+						type="tns:OrganizationQueryType" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						name="ChildOrganizationQuery" type="tns:OrganizationQueryType" />
+					<element maxOccurs="1" minOccurs="0" name="PrimaryContactQuery"
+						type="tns:PersonQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="OrganizationQuery" type="tns:OrganizationQueryType" />
+
+	<complexType name="RegistryPackageQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="RegistryPackageQuery" type="tns:RegistryPackageQueryType" />
+
+	<complexType name="ServiceQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="unbounded" minOccurs="0"
+						ref="tns:ServiceBindingQuery" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="ServiceQuery" type="tns:ServiceQueryType" />
+
+	<complexType name="ServiceBindingQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" ref="tns:ServiceQuery" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						ref="tns:SpecificationLinkQuery" />
+					<element maxOccurs="1" minOccurs="0" name="TargetBindingQuery"
+						type="tns:ServiceBindingQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="ServiceBindingQuery" type="tns:ServiceBindingQueryType" />
+
+	<complexType name="SpecificationLinkQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" name="UsageDescriptionBranch"
+						type="tns:InternationalStringBranchType" />
+					<element maxOccurs="1" minOccurs="0" ref="tns:ServiceBindingQuery" />
+					<element maxOccurs="1" minOccurs="0" name="SpecificationObjectQuery"
+						type="tns:RegistryObjectQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="SpecificationLinkQuery" type="tns:SpecificationLinkQueryType" />
+
+	<complexType name="PersonQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="unbounded" minOccurs="0" name="AddressFilter"
+						type="tns:FilterType" />
+					<element maxOccurs="1" minOccurs="0" name="PersonNameFilter"
+						type="tns:FilterType" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						name="TelephoneNumberFilter" type="tns:FilterType" />
+					<element maxOccurs="unbounded" minOccurs="0"
+						name="EmailAddressFilter" type="tns:FilterType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="PersonQuery" type="tns:PersonQueryType" />
+
+	<complexType name="UserQueryType">
+		<complexContent>
+			<extension base="tns:PersonQueryType">
+				<sequence />
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="UserQuery" type="tns:UserQueryType" />
+
+	<complexType name="RegistryQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" name="OperatorQuery"
+						type="tns:OrganizationQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="RegistryQuery" type="tns:RegistryQueryType" />
+
+	<complexType name="FederationQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence />
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="FederationQuery" type="tns:FederationQueryType" />
+
+	<complexType name="AdhocQueryQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" name="QueryExpressionBranch"
+						type="tns:QueryExpressionBranchType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="AdhocQueryQuery" type="tns:AdhocQueryQueryType" />
+
+	<complexType name="QueryExpressionBranchType">
+		<complexContent>
+			<extension base="tns:BranchType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" name="QueryLanguageQuery"
+						type="tns:ClassificationNodeQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+
+	<complexType name="NotificationQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" ref="tns:RegistryObjectQuery" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="NotificationQuery" type="tns:NotificationQueryType" />
+
+	<complexType name="SubscriptionQueryType">
+		<complexContent>
+			<extension base="tns:RegistryObjectQueryType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="0" name="SelectorQuery"
+						type="tns:AdhocQueryQueryType" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="SubscriptionQuery" type="tns:SubscriptionQueryType" />
+
+	<!-- The Filter type hierarchy -->
+	<complexType name="FilterType">
+		<attribute default="false" name="negate" type="boolean" />
+	</complexType>
+	<element abstract="true" name="Filter" type="tns:FilterType" />
+
+	<complexType name="CompoundFilterType">
+		<complexContent>
+			<extension base="tns:FilterType">
+				<sequence>
+					<element maxOccurs="1" minOccurs="1" name="LeftFilter"
+						type="tns:FilterType" />
+					<element maxOccurs="1" minOccurs="1" name="RightFilter"
+						type="tns:FilterType" />
+				</sequence>
+				<attribute name="logicalOperator" use="required">
+					<simpleType>
+						<restriction base="NCName">
+							<enumeration value="AND" />
+							<enumeration value="OR" />
+						</restriction>
+					</simpleType>
+				</attribute>
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="CompoundFilter" type="tns:CompoundFilterType" />
+
+
+	<complexType name="SimpleFilterType" abstract="true">
+		<complexContent>
+			<extension base="tns:FilterType">
+				<attribute name="domainAttribute" type="string" use="required" />
+				<attribute name="comparator" use="required">
+					<simpleType>
+						<restriction base="NCName">
+							<enumeration value="LE" />
+							<enumeration value="LT" />
+							<enumeration value="GE" />
+							<enumeration value="GT" />
+							<enumeration value="EQ" />
+							<enumeration value="NE" />
+							<enumeration value="Like" />
+							<enumeration value="NotLike" />
+						</restriction>
+					</simpleType>
+				</attribute>
+			</extension>
+		</complexContent>
+	</complexType>
+
+	<complexType name="BooleanFilterType">
+		<complexContent>
+			<extension base="tns:SimpleFilterType">
+				<attribute name="value" type="boolean" use="required" />
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="BooleanFilter" type="tns:BooleanFilterType" />
+
+
+	<complexType name="IntegerFilterType">
+		<complexContent>
+			<extension base="tns:SimpleFilterType">
+				<attribute name="value" type="integer" use="required" />
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="IntegerFilter" type="tns:IntegerFilterType" />
+
+	<complexType name="FloatFilterType">
+		<complexContent>
+			<extension base="tns:SimpleFilterType">
+				<attribute name="value" type="float" use="required" />
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="FloatFilter" type="tns:FloatFilterType" />
+
+	<complexType name="DateTimeFilterType">
+		<complexContent>
+			<extension base="tns:SimpleFilterType">
+				<attribute name="value" type="dateTime" use="required" />
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="DateTimeFilter" type="tns:DateTimeFilterType" />
+
+	<complexType name="StringFilterType">
+		<complexContent>
+			<extension base="tns:SimpleFilterType">
+				<attribute name="value" type="string" use="required" />
+			</extension>
+		</complexContent>
+	</complexType>
+	<element name="StringFilter" type="tns:StringFilterType" />
+
+</schema>

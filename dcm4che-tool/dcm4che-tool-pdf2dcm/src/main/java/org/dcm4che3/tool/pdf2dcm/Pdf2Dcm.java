@@ -38,10 +38,7 @@
 
 package org.dcm4che3.tool.pdf2dcm;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
@@ -56,7 +53,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @since June 2018
+ */
+
 public class Pdf2Dcm {
+    private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.pdf2dcm.messages");
     private static final long MAX_FILE_SIZE = 0x7FFFFFFE;
 
@@ -105,11 +108,18 @@ public class Pdf2Dcm {
                 .argName("xml-file")
                 .desc(rb.getString("file"))
                 .build());
-        opts.addOption(Option.builder()
+        OptionGroup group = new OptionGroup();
+        group.addOption(Option.builder()
                 .longOpt("pdf")
                 .hasArg(false)
                 .desc(rb.getString("pdf"))
                 .build());
+        group.addOption(Option.builder()
+                .longOpt("cda")
+                .hasArg(false)
+                .desc(rb.getString("cda"))
+                .build());
+        opts.addOptionGroup(group);
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Pdf2Dcm.class);
         int numArgs = cl.getArgList().size();
         if (numArgs == 0)
@@ -120,16 +130,25 @@ public class Pdf2Dcm {
     }
 
     private static Attributes createMetadata(CommandLine cl, File bulkDataFile) throws Exception {
+        String filePath = bulkDataFile.toPath().toString();
+        boolean pdf = filePath.endsWith("pdf");
+        boolean cda = filePath.endsWith("xml");
+        if (!pdf && !cda)
+           throw new IllegalArgumentException("File extension type not supported.");
+
         Attributes metadata = cl.hasOption("pdf")
                 ? SAXReader.parse(StreamUtils.openFileOrURL("resource:encapsulatedPDFMetadata.xml"))
-                : new Attributes();
-        setPDFAttributes(metadata);
+                : cl.hasOption("cda")
+                    ? SAXReader.parse(StreamUtils.openFileOrURL("resource:encapsulatedCDAMetadata.xml"))
+                    : new Attributes();
         if (cl.hasOption("f"))
             metadata = SAXReader.parse(cl.getOptionValue("f"), metadata);
         CLIUtils.addAttributes(metadata, cl.getOptionValues("m"));
         supplementMissingUIDs(metadata);
         supplementMissingDateTime(metadata, Tag.ContentDateAndTime, new Date());
         supplementMissingDateTime(metadata, Tag.AcquisitionDateTime, new Date(bulkDataFile.lastModified()));
+        supplementMissingValue(metadata, Tag.MIMETypeOfEncapsulatedDocument, pdf ? "application/pdf" : "text/XML");
+        supplementMissingValue(metadata, Tag.SOPClassUID, pdf ? UID.EncapsulatedPDFStorage : UID.EncapsulatedCDAStorage);
         return metadata;
     }
 
@@ -156,13 +175,8 @@ public class Pdf2Dcm {
             metadata.setDate(tag, date);
     }
 
-    private static void setPDFAttributes(Attributes metadata) {
-        metadata.setInt(Tag.SeriesNumber, VR.IS, 1);
-        metadata.setInt(Tag.InstanceNumber, VR.IS, 1);
-        metadata.setString(Tag.BurnedInAnnotation, VR.CS, "YES");
-        metadata.setNull(Tag.DocumentTitle, VR.ST);
-        metadata.setNull(Tag.ConceptNameCodeSequence, VR.SQ);
-        metadata.setString(Tag.MIMETypeOfEncapsulatedDocument, VR.LO, "application/pdf");
-        metadata.setString(Tag.SOPClassUID, VR.UI, UID.EncapsulatedPDFStorage);
+    private static void supplementMissingValue(Attributes metadata, int tag, String value) {
+        if (!metadata.containsValue(tag))
+            metadata.setString(tag, DICT.vrOf(tag), value);
     }
 }

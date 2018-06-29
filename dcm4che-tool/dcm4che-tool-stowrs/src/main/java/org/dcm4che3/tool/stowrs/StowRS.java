@@ -115,6 +115,11 @@ public class StowRS {
             Tag.SOPInstanceUID
     };
 
+    private static final long[] DA_TM_TAGS = {
+            Tag.ContentDateAndTime,
+            Tag.AcquisitionDateTime
+    };
+
     private static final int[] IMAGE_PIXEL_TAGS = {
             Tag.SamplesPerPixel,
             Tag.PhotometricInterpretation,
@@ -171,6 +176,11 @@ public class StowRS {
                 .hasArg(false)
                 .desc(rb.getString("pdf"))
                 .build());
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("cda")
+                .hasArg(false)
+                .desc(rb.getString("cda"))
+                .build());
         opts.addOptionGroup(sampleMetadataOG);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StowRS.class);
@@ -222,11 +232,14 @@ public class StowRS {
                 : cl.hasOption("xc")
                     ? "resource:vlPhotographicImageMetadata.xml"
                     : cl.hasOption("pdf")
-                        ? "resource:encapsulatedPDFMetadata.xml" : null;
+                        ? "resource:encapsulatedPDFMetadata.xml"
+                        : cl.hasOption("cda")
+                            ? "resource:encapsulatedCDAMetadata.xml" : null;
     }
 
     enum FileType {
         PDF("application/pdf"),
+        CDA("text/XML"),
         IMAGE("image/jpeg"),
         VIDEO("video/mpeg"),
         NOT_BULKDATA("");
@@ -240,6 +253,7 @@ public class StowRS {
 
     enum Extension {
         pdf(FileType.PDF),
+        xml(FileType.CDA),
         mpg(FileType.VIDEO),
         mpg2(FileType.VIDEO),
         mpeg(FileType.VIDEO),
@@ -269,7 +283,9 @@ public class StowRS {
                     ? UID.SecondaryCaptureImageStorage : UID.VLPhotographicImageStorage
                 : fileType == FileType.VIDEO
                     ? UID.VideoPhotographicImageStorage
-                    : UID.EncapsulatedPDFStorage;
+                    : fileType == FileType.PDF
+                        ? UID.EncapsulatedPDFStorage
+                        : UID.EncapsulatedCDAStorage;
     }
 
     private static Extension getExt(String file) {
@@ -310,6 +326,7 @@ public class StowRS {
         Attributes metadata = new Attributes(staticMetadata);
         switch (instance.fileType) {
             case PDF:
+            case CDA:
                 pdfMetadata(instance, metadata, bulkdataFile);
                 break;
             case IMAGE:
@@ -323,11 +340,11 @@ public class StowRS {
     }
 
     private static void pdfMetadata(StowRS instance, Attributes metadata, File bulkdataFile) {
-        setPDFAttributes(bulkdataFile, metadata);
         supplementBulkdata(metadata, Tag.EncapsulatedDocument, instance);
         instance.contentLocBulkData.put(instance.contentLoc, bulkdataFile);
-        supplementUIDs(metadata);
-        supplementDateTime(metadata, bulkdataFile);
+        supplementMissingUIDs(metadata);
+        supplementMissingDateTime(metadata, bulkdataFile);
+        supplementDefaultValue(metadata, Tag.MIMETypeOfEncapsulatedDocument, instance.fileType.bulkdataType);
     }
 
     private static Attributes createStaticMetadata(StowRS instance)
@@ -344,8 +361,8 @@ public class StowRS {
         }
 
         metadata.update(Attributes.UpdatePolicy.OVERWRITE, instance.keys, new Attributes());
-        supplementDefaultValue(metadata, Tag.PatientName, VR.PN, patName);
-        supplementDefaultValue(metadata, Tag.SOPClassUID, VR.UI, instance.sopCUID);
+        supplementDefaultValue(metadata, Tag.PatientName, patName);
+        supplementDefaultValue(metadata, Tag.SOPClassUID, instance.sopCUID);
         return metadata;
     }
 
@@ -356,21 +373,22 @@ public class StowRS {
                 : new Attributes();
     }
 
-    private static void supplementUIDs(Attributes metadata) {
+    private static void supplementMissingUIDs(Attributes metadata) {
         for (int tag : IUIDS_TAGS)
             if (!metadata.containsValue(tag))
                 metadata.setString(tag, VR.UI, UIDUtils.createUID());
     }
 
-    private static void supplementDefaultValue(Attributes metadata, int tag, VR vr, String value) {
+    private static void supplementDefaultValue(Attributes metadata, int tag, String value) {
         if (!metadata.containsValue(tag))
-            metadata.setString(tag, vr, value);
+            metadata.setString(tag, DICT.vrOf(tag), value);
     }
 
-    private static void supplementDateTime(Attributes metadata, File bulkdataFile) {
+    private static void supplementMissingDateTime(Attributes metadata, File bulkdataFile) {
         Date date = new Date(bulkdataFile.lastModified());
-        metadata.setString(Tag.ContentDate, VR.DA, DateUtils.formatDA(null, date));
-        metadata.setString(Tag.ContentTime, VR.TM, DateUtils.formatTM(null, date));
+        for (long tag : DA_TM_TAGS)
+            if (!metadata.containsValue((int) (tag >>> 32)))
+                metadata.setDate(tag, date);
     }
 
     private static void supplementBulkdata(Attributes metadata, int tag, StowRS instance) {
@@ -383,8 +401,8 @@ public class StowRS {
     private static void pixelMetadata(StowRS instance, Attributes metadata, File pixelDataFile)
             throws Exception {
         supplementBulkdata(metadata, Tag.PixelData, instance);
-        supplementUIDs(metadata);
-        supplementDateTime(metadata, pixelDataFile);
+        supplementMissingUIDs(metadata);
+        supplementMissingDateTime(metadata, pixelDataFile);
         CompressedPixelData compressedPixelData = CompressedPixelData.valueOf(instance);
         if (instance.pixelHeader)
             readFile(instance, metadata, compressedPixelData, pixelDataFile);
@@ -618,17 +636,5 @@ public class StowRS {
                 out.flush();
             }
         }
-    }
-
-    private static void setPDFAttributes(File bulkDataFile, Attributes metadata) {
-        metadata.setInt(Tag.SeriesNumber, VR.IS, 1);
-        metadata.setInt(Tag.InstanceNumber, VR.IS, 1);
-        metadata.setString(Tag.AcquisitionDateTime, VR.DT,
-                DateUtils.formatTM(null, new Date(bulkDataFile.lastModified())));
-        metadata.setString(Tag.BurnedInAnnotation, VR.CS, "YES");
-        metadata.setNull(Tag.DocumentTitle, VR.ST);
-        metadata.setNull(Tag.ConceptNameCodeSequence, VR.SQ);
-        metadata.setString(Tag.MIMETypeOfEncapsulatedDocument, VR.LO,
-                "application/pdf");
     }
 }

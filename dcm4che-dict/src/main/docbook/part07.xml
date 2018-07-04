@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2018b - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2018c - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -10,6 +10,9 @@
       <year>2018</year>
       <holder>NEMA</holder>
     </copyright>
+      <legalnotice>
+          <para>A DICOM® publication</para>
+      </legalnotice>
   </info>
   <chapter label="" status="1" xml:id="chapter_Notice">
     <title>Notice and Disclaimer</title>
@@ -135,8 +138,10 @@
   <para xml:id="para_f3267e80-cc98-4684-b622-1d68509ce1e8">RFC-1510 The Kerberos Network Authentication Service (V5)</para>
   <para xml:id="para_eaeae331-14ac-4e3e-8432-a3c58376cfdb">RFC-2289 A One-Time Password System</para>
   <para xml:id="para_948c9645-943f-44ec-990f-0e6c98b89f79">SAML Assertions and Protocols for the OASIS Security Assertion Markup Language (SAML) V2.0 OASIS Standard, 15 March 2005</para>
-  <para>RFC 6750 The OAuth 2.0 Authorization Framework: Bearer Token Usage <link xl:href="http://tools.ietf.org/html/rfc6750"/></para>
-  <para>RFC 7519 JSON Web Token (JWT) <link xl:href="http://tools.ietf.org/html/rfc7519"/></para>
+  <para xml:id="para_4d38779f-2207-4594-95a6-397a6f6be7aa">RFC 6750 The OAuth 2.0 Authorization Framework: Bearer Token Usage <link xl:href="http://tools.ietf.org/html/rfc6750"/>
+</para>
+  <para xml:id="para_2e6bad14-e960-44e4-a16a-fa3e8a4609ae">RFC 7519 JSON Web Token (JWT) <link xl:href="http://tools.ietf.org/html/rfc7519"/>
+</para>
 </chapter>
 <chapter label="3" status="1" xml:id="chapter_3">
     <title>Definitions</title>
@@ -12890,7 +12895,7 @@
         <para xml:id="para_25be324b-a5b9-4a62-8a61-9cfa8186b8e2">The option to include a passcode along with the user identity enables a variety of non-Kerberos secure interfaces. Sending passwords in the clear is insecure, but there are single use password systems such as RFC-2289 and the various smart tokens that do not require protection. The password might also be protected by TLS or other mechanisms.</para>
       </listitem>
       <listitem>
-        <para>For JSON Web Tokens (JWTs), RFC 7519 specifies minimal requirements for encryption, MAC and signature algorithms;
+        <para xml:id="para_e0a4881e-8cfa-43cb-81d8-c7ae30de7853">For JSON Web Tokens (JWTs), RFC 7519 specifies minimal requirements for encryption, MAC and signature algorithms;
           others may be supported as described in the DICOM Conformance Statement.
           The encoded format in the Primary-field of the A-ASSOCIATE-RQ is the same as what might be included in an HTTP Authorization: Bearer header field
           per RFC 6750 when accessing a Protected Resource on a Resource Server,
@@ -12993,7 +12998,7 @@
         <para xml:id="para_3f5dda40-8c82-4a32-8b37-43ecd740a261">2 - Username as a string in UTF-8 and passcode</para>
         <para xml:id="para_7279eb99-7d15-4c8c-9493-9d33ce1e16f7">3 - Kerberos Service ticket</para>
         <para xml:id="para_28d78e48-430a-434e-bad4-0bc80493c981">4 - SAML Assertion</para>
-        <para>5 - JSON Web Token (JWT)</para>
+        <para xml:id="para_c43bc73a-22b9-4a4f-848b-55ba68f10b10">5 - JSON Web Token (JWT)</para>
         <para xml:id="para_00a0a098-3fe2-457d-983a-86d07afa0b3e">Other values are reserved for future standardization.</para>
       </td>
     </tr>

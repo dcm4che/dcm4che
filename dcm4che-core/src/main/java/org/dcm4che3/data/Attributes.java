@@ -1813,12 +1813,19 @@ public class Attributes implements Serializable {
         return setDateRange(null, tag, vr, range);
     }
 
-    public Object setDateRange(String privateCreator, int tag, VR vr, DateRange range) {
-        return set(privateCreator, tag, vr, toString(range, vr, getTimeZone()));
+    public Object setDateRange(int tag, VR vr, DatePrecision precision, DateRange range) {
+        return setDateRange(null, tag, vr, precision, range);
     }
 
-    private static String toString(DateRange range, VR vr, TimeZone tz) {
-        DatePrecision precision = new DatePrecision();
+    public Object setDateRange(String privateCreator, int tag, VR vr, DateRange range) {
+        return setDateRange(privateCreator, tag, vr, new DatePrecision(), range);
+    }
+
+    public Object setDateRange(String privateCreator, int tag, VR vr, DatePrecision precision, DateRange range) {
+        return set(privateCreator, tag, vr, toString(range, vr, getTimeZone(), precision));
+    }
+
+    private static String toString(DateRange range, VR vr, TimeZone tz, DatePrecision precision) {
         String start = range.getStartDate() != null
                 ? (String) vr.toValue(new Date[]{range.getStartDate()}, tz,
                         precision)

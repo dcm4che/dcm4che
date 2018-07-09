@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>5.13.2</version>
+    <version>5.13.3</version>
   </parent>
   <artifactId>dcm4che-jboss-modules</artifactId>
   <packaging>pom</packaging>
@@ -142,6 +142,11 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-ws-rs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-xdsi</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

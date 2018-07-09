@@ -150,8 +150,12 @@ public class Dcm2Dcm {
                 .desc(rb.getString("jpll"))
                 .build());
         tsGroup.addOption(Option.builder()
-                .longOpt("jpls")
-                .desc(rb.getString("jpls"))
+                .longOpt("jlsl")
+                .desc(rb.getString("jlsl"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jlsn")
+                .desc(rb.getString("jlsn"))
                 .build());
         tsGroup.addOption(Option.builder()
                 .longOpt("j2kr")

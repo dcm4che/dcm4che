@@ -270,6 +270,8 @@ public class Transcoder implements Closeable {
                     "Unsupported Transfer Syntax: " + srcTransferSyntax);
 
         this.decompressor = ImageReaderFactory.getImageReader(decompressorParam);
+        LOG.debug("Decompressor: {}", decompressor.getClass().getName());
+
         this.decompressParam = decompressor.getDefaultReadParam();
     }
 

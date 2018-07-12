@@ -82,13 +82,6 @@ public enum TransferSyntaxType {
         public boolean canEncodeSigned() { return true; }
 
         @Override
-        public PhotometricInterpretation compress(PhotometricInterpretation pmi) {
-            return pmi == PhotometricInterpretation.RGB
-                    ? PhotometricInterpretation.YBR_ICT
-                    : pmi;
-        }
-
-        @Override
         public int decompressPlanarConfiguration(int planarConfiguration) {
             return planarConfiguration;
         }

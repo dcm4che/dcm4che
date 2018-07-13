@@ -782,6 +782,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
                     throw new UnsupportedOperationException("Unsupported Transfer Syntax: " + tsuid);
                 this.rle = tsuid.equals(UID.RLELossless);
                 this.decompressor = ImageReaderFactory.getImageReader(param);
+                LOG.debug("Decompressor: {}", decompressor.getClass().getName());
                 this.patchJpegLS = param.patchJPEGLS;
             }
         }

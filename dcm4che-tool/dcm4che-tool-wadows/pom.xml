@@ -5,7 +5,7 @@
     <parent>
         <artifactId>dcm4che-tool</artifactId>
         <groupId>org.dcm4che.tool</groupId>
-        <version>5.13.3</version>
+        <version>5.14.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,10 +28,6 @@
             <groupId>org.dcm4che</groupId>
             <artifactId>dcm4che-mime</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.dcm4che</groupId>

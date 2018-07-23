@@ -186,6 +186,10 @@ public class WadoRS {
 
     private void unpack(HttpURLConnection connection) throws Exception {
         String boundary = boundary(connection);
+        if (boundary == null) {
+            LOG.warn("Missing Boundary Parameter in response Content Type");
+            return;
+        }
 
         try (InputStream is = connection.getInputStream()) {
             if (input == Input.METADATA_JSON) {
@@ -231,9 +235,6 @@ public class WadoRS {
                 type = s.substring(s.indexOf("=")+1).replaceAll("\"", "");
         }
         setInput(mainType.endsWith("json") ? Input.METADATA_JSON : toInput(type));
-        if (boundary == null)
-            LOG.warn("Missing Boundary Parameter");
-
         return boundary;
     }
 

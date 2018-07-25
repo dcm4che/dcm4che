@@ -553,7 +553,7 @@ public class SpecificCharacterSet {
         for (String code : codes) {
             if (code != null && !code.startsWith("ISO 2022")) {
                 LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
-                        StringUtils.concat(codes, '\\'), codes[0]);
+                        StringUtils.concat(codes, '\\'), StringUtils.maskNull(codes[0], ""));
                 return new String[]{codes[0]};
             }
         }

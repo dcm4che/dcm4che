@@ -55,7 +55,7 @@ public class Json2Rst {
     private static final String UNDERLINE = "===============================================================";
     private final File indir;
     private final File outdir;
-    private String tabularColumns = "|p{4cm}|l|p{8cm}|l|";
+    private String tabularColumns = "|p{4cm}|l|p{8cm}|";
     private final LinkedList<File> inFiles = new LinkedList<>();
     private final HashSet<String> totRefs = new HashSet<>();
 
@@ -118,20 +118,31 @@ public class Json2Rst {
         out.print(title);
         out.print(" Attributes (LDAP Object: ");
         int endIndex = outFileName.length() - 4;
-        if (outFileName.startsWith("hl7"))
+        if (outFileName.startsWith("hl7") || outFileName.startsWith("dcm"))
             out.print(outFileName.substring(0, endIndex));
         else  if (outFileName.startsWith("id")) {
             out.print("dcmID");
             out.print(outFileName.substring(2, endIndex));
         } else {
-            out.print("dcm");
+            out.print(isDefinedByDicom(outFileName) ? "dicom" : "dcm");
             out.print(Character.toUpperCase(outFileName.charAt(0)));
             out.print(outFileName.substring(1, endIndex));
         }
         out.println(')');
-        out.println("    :header: Name, Type, Description, LDAP Attribute");
-        out.println("    :widths: 20, 7, 60, 13");
+        out.println("    :header: Name, Type, Description (LDAP Attribute)");
+        out.println("    :widths: 23, 7, 70");
         out.println();
+    }
+
+    private boolean isDefinedByDicom(String outFileName) {
+        switch (outFileName) {
+            case "device.rst":
+            case "networkAE.rst":
+            case "networkConnection.rst":
+            case "transferCapability.rst":
+                return true;
+        }
+        return false;
     }
 
     private void writeTocTree(ArrayList<String> refs, PrintStream out) {
@@ -160,9 +171,8 @@ public class Json2Rst {
         JsonObject items = property.getJsonObject("items");
         JsonObject typeObj = items == null ? property : items;
         out.print("    \"");
-        String type;
-        if (typeObj.containsKey("$ref")) {
-            type = "object";
+        boolean isObj = typeObj.containsKey("$ref");
+        if (isObj) {
             String ref = typeObj.getString("$ref");
             out.print(":doc:`");
             out.print(ref.substring(0, ref.length()-12));
@@ -173,13 +183,20 @@ public class Json2Rst {
                 inFiles.add(new File(indir, ref));
             }
         } else {
-            type = typeObj.getString("type");
+            out.println();
+            out.print("    .. _");
+            out.print(name);
+            out.println(':');
+            out.println();
+            out.print("    :ref:`");
             out.print(property.getString("title"));
             if (items != null) out.print("(s)");
+            out.print(" <");
+            out.print(name);
+            out.print(">`");
         }
-
         out.print("\",");
-        out.print(type);
+        out.print(isObj ? "object" : typeObj.getString("type"));
         out.print(",\"");
         out.print(property.getString("description").replace("\"","\"\""));
         JsonArray anEnum = typeObj.getJsonArray("enum");
@@ -191,14 +208,15 @@ public class Json2Rst {
                     out.print(i < last ? ", " : " or ");
                 out.print(anEnum.get(i).toString().replace("\"",""));
             }
+            out.print('.');
         }
-        out.println("\",\"");
-        out.print("    .. _");
-        out.print(name);
-        out.println(':');
-        out.println();
-        out.print("    ");
-        out.print(name);
-        out.println("_\"");
+        if (!isObj) {
+            out.println();
+            out.println();
+            out.print("    (");
+            out.print(name);
+            out.print(')');
+        }
+        out.println('"');
     }
 }

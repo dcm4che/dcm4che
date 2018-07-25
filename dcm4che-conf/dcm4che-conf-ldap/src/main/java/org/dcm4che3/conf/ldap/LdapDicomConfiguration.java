@@ -114,6 +114,18 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             "dicomNetworkConnectionReference"
     };
 
+    static final String[] WEBAPP_ATTRS = {
+            "dicomDeviceName",
+            "dcmWebAppName",
+            "dcmWebServicePath",
+            "dcmWebServiceClass",
+            "dicomAETitle",
+            "dicomDescription",
+            "dicomApplicationCluster",
+            "dicomInstalled",
+            "dicomNetworkConnectionReference"
+    };
+
     public LdapDicomConfiguration() throws ConfigurationException {
         this(ResourceManager.getInitialEnvironment());
     }
@@ -380,19 +392,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return sb.toString();
     }
 
-    private void appendFilter(String attrid, Boolean value, StringBuilder sb) {
-        if (value != null)
-            appendFilter(attrid, LdapUtils.toString(value), sb);
-    }
-
-    private void appendFilter(String attrid, String value, StringBuilder sb) {
+    private static <T> void appendFilter(String attrid, T value, StringBuilder sb) {
         if (value == null)
             return;
 
-        sb.append('(').append(attrid).append('=').append(value).append(')');
+        sb.append('(').append(attrid).append('=').append(LdapUtils.toString(value)).append(')');
     }
 
-    private void appendFilter(String attrid, String[] values, StringBuilder sb) {
+    private static <T> void appendFilter(String attrid, T[] values, StringBuilder sb) {
         if (values.length == 0)
             return;
 
@@ -402,7 +409,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
 
         sb.append("(|");
-        for (String value : values)
+        for (T value : values)
             appendFilter(attrid, value, sb);
         sb.append(")");
     }
@@ -433,7 +440,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs, String deviceName)
-            throws NamingException, ConfigurationException {
+            throws NamingException {
         aetInfo.setDeviceName(deviceName);
         aetInfo.setAETitle(
                 LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
@@ -447,12 +454,26 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 LdapUtils.booleanValue(attrs.get("dicomAssociationAcceptor"), true));
         aetInfo.setInstalled(
                 LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
-        aetInfo.setApplicationCluster(
+        aetInfo.setApplicationClusters(
                 LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         aetInfo.setHl7ApplicationName(
                 LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
             aetInfo.getConnections().add(findConnection(connDN));
+    }
+
+    private void loadFrom(WebApplicationInfo webappInfo, Attributes attrs, String deviceName)
+            throws NamingException {
+        webappInfo.setDeviceName(deviceName);
+        webappInfo.setApplicationName(LdapUtils.stringValue(attrs.get("dcmWebAppName"), null));
+        webappInfo.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        webappInfo.setServicePath(LdapUtils.stringValue(attrs.get("dcmWebServicePath"), null));
+        webappInfo.setServiceClasses(LdapUtils.enumArray(WebApplication.ServiceClass.class, attrs.get("dcmWebServiceClass")));
+        webappInfo.setAETitle(LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
+        webappInfo.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
+        webappInfo.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
+        for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
+            webappInfo.getConnections().add(findConnection(connDN));
     }
 
     @Override
@@ -586,10 +607,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                     ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
             createSubcontext(dn, storeTo(ldapObj, conn, new BasicAttributes(true)));
         }
-        for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeChilds(diffs, deviceDN, device);
         for (ApplicationEntity ae : device.getApplicationEntities())
             store(diffs, ae, deviceDN);
+        if (extended) {
+            for (WebApplication webapp : device.getWebApplications())
+                store(diffs, webapp, deviceDN);
+            for (LdapDicomConfigurationExtension ext : extensions)
+                ext.storeChilds(diffs, deviceDN, device);
+        }
     }
 
     private void store(ConfigurationChanges diffs, ApplicationEntity ae, String deviceDN) throws NamingException {
@@ -602,6 +627,15 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         storeChilds(ConfigurationChanges.nullifyIfNotVerbose(diffs, diffs), aeDN, ae);
     }
 
+    private void store(ConfigurationChanges diffs, WebApplication webapp, String deviceDN) throws NamingException {
+        String webappDN = webappDN(webapp.getApplicationName(), deviceDN);
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.addModifiedObject(diffs, webappDN, ConfigurationChanges.ChangeType.C);
+        createSubcontext(webappDN,
+                storeTo(ConfigurationChanges.nullifyIfNotVerbose(diffs, ldapObj),
+                        webapp, deviceDN, new BasicAttributes(true)));
+    }
+
     private void storeChilds(ConfigurationChanges diffs, String aeDN, ApplicationEntity ae)
             throws NamingException {
         for (TransferCapability tc : ae.getTransferCapabilities()) {
@@ -609,8 +643,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                     ConfigurationChanges.addModifiedObject(diffs, aeDN, ConfigurationChanges.ChangeType.C);
             createSubcontext(dnOf(tc, aeDN), storeTo(ldapObj, tc, new BasicAttributes(true)));
         }
-        for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeChilds(diffs, aeDN, ae);
+        if (extended)
+            for (LdapDicomConfigurationExtension ext : extensions)
+                ext.storeChilds(diffs, aeDN, ae);
     }
 
     @Override
@@ -695,6 +730,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             throws NamingException, ConfigurationException {
         mergeConnections(diffs, prev, device, deviceDN);
         mergeAEs(diffs, prev, device, deviceDN, preserveVendorData);
+        mergeWebApps(diffs, prev, device, deviceDN);
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.mergeChilds(diffs, prev, device, deviceDN);
     }
@@ -921,6 +957,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 conn.getResponseTimeout(), Connection.NO_TIMEOUT);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmRetrieveTimeout",
                 conn.getRetrieveTimeout(), Connection.NO_TIMEOUT);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmRetrieveTimeoutTotal",
+                conn.isRetrieveTimeoutTotal(), false);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPCloseDelay",
@@ -964,12 +1002,29 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return attrs;
 
         objectclass.add("dcmNetworkAE");
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmPreferredTransferSyntax",
+                LdapUtils.addOrdinalPrefix(ae.getPreferredTransferSyntaxes()));
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7ApplicationName", ae.getHl7ApplicationName(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmOtherAETitle", ae.getOtherAETitles());
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeTo(ldapObj, ae, attrs);
+        return attrs;
+    }
+
+    private Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj, WebApplication webapp, String deviceDN,
+                               Attributes attrs) {
+        BasicAttribute objectclass = new BasicAttribute("objectclass", "dcmWebApp");
+        attrs.put(objectclass);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmWebAppName", webapp.getApplicationName(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDescription", webapp.getDescription(), null);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmWebServicePath", webapp.getServicePath(), null);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmWebServiceClass", webapp.getServiceClasses());
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomAETitle", webapp.getAETitle(), null);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomApplicationCluster", webapp.getApplicationClusters());
+        LdapUtils.storeConnRefs(ldapObj, attrs, webapp.getConnections(), deviceDN);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomInstalled", webapp.getInstalled(), null);
         return attrs;
     }
 
@@ -984,6 +1039,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return attrs;
 
         objectclass.add("dcmTransferCapability");
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmPreferredTransferSyntax",
+                LdapUtils.addOrdinalPrefix(tc.getPreferredTransferSyntaxes()));
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
             LdapUtils.storeNotDef(ldapObj, attrs, "dcmRelationalQueries",
@@ -1173,6 +1230,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             throws NamingException, ConfigurationException {
         loadConnections(device, deviceDN);
         loadApplicationEntities(device, deviceDN);
+        loadWebApplications(device, deviceDN);
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.loadChilds(device, deviceDN);
     }
@@ -1186,6 +1244,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!LdapUtils.hasObjectClass(attrs, "dcmTransferCapability"))
             return;
 
+        tc.setPreferredTransferSyntaxes(LdapUtils.removeOrdinalPrefix(
+                LdapUtils.stringArray(attrs.get("dcmPreferredTransferSyntax"))));
         tc.setQueryOptions(toQueryOptions(attrs));
         tc.setStorageOptions(toStorageOptions(attrs));
     }
@@ -1343,6 +1403,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 Connection.NO_TIMEOUT));
         conn.setRetrieveTimeout(LdapUtils.intValue(attrs.get("dcmRetrieveTimeout"),
                 Connection.NO_TIMEOUT));
+        conn.setRetrieveTimeoutTotal(LdapUtils.booleanValue(attrs.get("dcmRetrieveTimeoutTotal"), false));
         conn.setIdleTimeout(LdapUtils.intValue(attrs.get("dcmIdleTimeout"),
                 Connection.NO_TIMEOUT));
         conn.setSocketCloseDelay(LdapUtils.intValue(attrs.get("dcmTCPCloseDelay"),
@@ -1406,6 +1467,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return;
 
         ae.setAcceptedCallingAETitles(LdapUtils.stringArray(attrs.get("dcmAcceptedCallingAETitle")));
+        ae.setPreferredTransferSyntaxes(LdapUtils.removeOrdinalPrefix(
+                LdapUtils.stringArray(attrs.get("dcmPreferredTransferSyntax"))));
         ae.setOtherAETitles(LdapUtils.stringArray(attrs.get("dcmOtherAETitle")));
         ae.setMasqueradeCallingAETitles(LdapUtils.stringArray(attrs.get("dcmMasqueradeCallingAETitle")));
         ae.setHl7ApplicationName(LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
@@ -1417,6 +1480,39 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         loadTransferCapabilities(ae, aeDN);
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.loadChilds(ae, aeDN);
+    }
+
+    private void loadWebApplications(Device device, String deviceDN)
+            throws NamingException, ConfigurationException {
+        NamingEnumeration<SearchResult> ne =
+                search(deviceDN, "(objectclass=dcmWebApp)");
+        try {
+            while (ne.hasMore()) {
+                device.addWebApplication(
+                        loadWebApplication(ne.next(), deviceDN, device));
+            }
+        } finally {
+            LdapUtils.safeClose(ne);
+        }
+    }
+
+    private WebApplication loadWebApplication(SearchResult sr, String deviceDN, Device device)
+            throws NamingException, ConfigurationException {
+        Attributes attrs = sr.getAttributes();
+        WebApplication webapp = new WebApplication(LdapUtils.stringValue(attrs.get("dcmWebAppName"), null));
+        loadFrom(webapp, attrs);
+        for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
+            webapp.addConnection(LdapUtils.findConnection(connDN, deviceDN, device));
+        return webapp ;
+    }
+
+    private void loadFrom(WebApplication webapp, Attributes attrs) throws NamingException {
+        webapp.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        webapp.setServicePath(LdapUtils.stringValue(attrs.get("dcmWebServicePath"), null));
+        webapp.setServiceClasses(LdapUtils.enumArray(WebApplication.ServiceClass.class, attrs.get("dcmWebServiceClass")));
+        webapp.setAETitle(LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
+        webapp.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
+        webapp.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
     }
 
     private void loadTransferCapabilities(ApplicationEntity ae, String aeDN)
@@ -1614,6 +1710,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 a.getRetrieveTimeout(),
                 b.getRetrieveTimeout(),
                 Connection.NO_TIMEOUT);
+        LdapUtils.storeDiff(ldapObj, mods, "dcmRetrieveTimeoutTotal",
+                a.isRetrieveTimeoutTotal(),
+                b.isRetrieveTimeoutTotal(),
+                false);
         LdapUtils.storeDiff(ldapObj, mods, "dcmIdleTimeout",
                 a.getIdleTimeout(),
                 b.getIdleTimeout(),
@@ -1708,6 +1808,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!extended)
             return mods;
 
+        LdapUtils.storeDiffWithOrdinalPrefix(ldapObj, mods, "dcmPreferredTransferSyntax",
+                a.getPreferredTransferSyntaxes(),
+                b.getPreferredTransferSyntaxes());
         LdapUtils.storeDiff(ldapObj, mods, "dcmAcceptedCallingAETitle",
                 a.getAcceptedCallingAETitles(),
                 b.getAcceptedCallingAETitles());
@@ -1739,6 +1842,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!extended)
             return mods;
 
+        LdapUtils.storeDiffWithOrdinalPrefix(ldapObj, mods, "dcmPreferredTransferSyntax",
+                a.getPreferredTransferSyntaxes(),
+                b.getPreferredTransferSyntaxes());
         storeDiffs(ldapObj, a.getQueryOptions(), b.getQueryOptions(), mods);
         storeDiffs(ldapObj, a.getStorageOptions(), b.getStorageOptions(), mods);
         return mods;
@@ -1784,6 +1890,33 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 prev != null ? prev.getElementCoercion().ordinal() : -1,
                 val != null ? val.getElementCoercion().ordinal() : -1,
                 -1);
+    }
+
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj, WebApplication a,
+                                              WebApplication b, String deviceDN, List<ModificationItem> mods) {
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomDescription",
+                a.getDescription(),
+                b.getDescription(), null);
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmWebServicePath",
+                a.getServicePath(),
+                b.getServicePath(), null);
+        LdapUtils.storeDiff(ldapObj, mods, "dcmWebServiceClass",
+                a.getServiceClasses(),
+                b.getServiceClasses());
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomAETitle",
+                a.getAETitle(),
+                b.getAETitle(), null);
+        LdapUtils.storeDiff(ldapObj, mods, "dicomApplicationCluster",
+                a.getApplicationClusters(),
+                b.getApplicationClusters());
+        LdapUtils.storeDiff(ldapObj, mods, "dicomNetworkConnectionReference",
+                a.getConnections(),
+                b.getConnections(),
+                deviceDN);
+        LdapUtils.storeDiffObject(ldapObj, mods, "dicomInstalled",
+                a.getInstalled(),
+                b.getInstalled(), null);
+        return mods;
     }
 
     private static byte[][] byteArrays(Attribute attr) throws NamingException {
@@ -1837,6 +1970,36 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         merge(diffs, prev.getTransferCapabilities(), ae.getTransferCapabilities(), aeDN);
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.mergeChilds(diffs, prev, ae, aeDN);
+    }
+
+    private void mergeWebApps(ConfigurationChanges diffs, Device prevDev, Device dev, String deviceDN)
+            throws NamingException {
+        Collection<String> names = dev.getWebApplicationNames();
+        for (String aet : prevDev.getWebApplicationNames()) {
+            if (!names.contains(aet)) {
+                String aetDN = aetDN(aet, deviceDN);
+                destroySubcontextWithChilds(aetDN);
+                ConfigurationChanges.addModifiedObject(diffs, aetDN, ConfigurationChanges.ChangeType.D);
+            }
+        }
+        Collection<String> prevNames = prevDev.getWebApplicationNames();
+        for (WebApplication webapp : dev.getWebApplications()) {
+            String name = webapp.getApplicationName();
+            if (!prevNames.contains(name)) {
+                store(diffs, webapp, deviceDN);
+            }
+            else
+                merge(diffs, prevDev.getWebApplication(name), webapp, deviceDN);
+        }
+    }
+
+    private void merge(ConfigurationChanges diffs, WebApplication prev, WebApplication webapp, String deviceDN)
+            throws NamingException {
+        String webappDN = webappDN(webapp.getApplicationName(), deviceDN);
+        ConfigurationChanges.ModifiedObject ldapObj =
+                ConfigurationChanges.addModifiedObject(diffs, webappDN, ConfigurationChanges.ChangeType.U);
+        modifyAttributes(webappDN, storeDiffs(ldapObj, prev, webapp, deviceDN, new ArrayList<ModificationItem>()));
+        ConfigurationChanges.removeLastIfEmpty(diffs, ldapObj);
     }
 
     public void modifyAttributes(String dn, List<ModificationItem> mods)
@@ -1951,6 +2114,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private static String aetDN(String aet, String parentDN) {
         return LdapUtils.dnOf("dicomAETitle" ,aet, parentDN);
+    }
+
+    private static String webappDN(String aet, String parentDN) {
+        return LdapUtils.dnOf("dcmWebAppName" ,aet, parentDN);
     }
 
     @Override
@@ -2086,8 +2253,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             while (ne.hasMore()) {
                 ApplicationEntityInfo aetInfo = new ApplicationEntityInfo();
                 SearchResult ne1 = ne.next();
-                Enumeration<String> s1 = getStringEnumeration(ne1);
-                loadFrom(aetInfo, ne1.getAttributes(), getDeviceName(s1));
+                loadFrom(aetInfo, ne1.getAttributes(), LdapUtils.cutDeviceName(ne1.getName()));
                 results.add(aetInfo);
             }
         } catch (NameNotFoundException e) {
@@ -2100,19 +2266,30 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return results.toArray(new ApplicationEntityInfo[results.size()]);
     }
 
-    public Enumeration<String> getStringEnumeration(SearchResult ne1) throws NamingException {
-        NameParser parser = ctx.getDirCtx().getNameParser(ne1.getNameInNamespace());
-        Name n = parser.parse(ne1.getNameInNamespace());
-        return n.getAll();
-    }
+    @Override
+    public synchronized WebApplicationInfo[] listWebApplicationInfos(WebApplicationInfo keys)
+            throws ConfigurationException {
+        if (!configurationExists())
+            return new WebApplicationInfo[0];
 
-    public String getDeviceName(Enumeration<String> s1) {
-        while (s1.hasMoreElements()) {
-            String s2 = s1.nextElement();
-            if (s2.startsWith("dicomDeviceName"))
-                return s2.substring(s2.indexOf("=")+1);
+        ArrayList<WebApplicationInfo> results = new ArrayList<WebApplicationInfo>();
+        NamingEnumeration<SearchResult> ne = null;
+        try {
+            ne = search(keys.getDeviceName(), WEBAPP_ATTRS, toFilter(keys));
+            while (ne.hasMore()) {
+                WebApplicationInfo webappInfo = new WebApplicationInfo();
+                SearchResult ne1 = ne.next();
+                loadFrom(webappInfo, ne1.getAttributes(), LdapUtils.cutDeviceName(ne1.getName()));
+                results.add(webappInfo);
+            }
+        } catch (NameNotFoundException e) {
+            return new WebApplicationInfo[0];
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } finally {
+            LdapUtils.safeClose(ne);
         }
-        return null;
+        return results.toArray(new WebApplicationInfo[results.size()]);
     }
 
     public NamingEnumeration<SearchResult> search(String deviceName, String[] attrsArray, String filter)
@@ -2122,7 +2299,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 : ctx.search(devicesDN, filter, searchControlSubtreeScope(0, attrsArray, true));
     }
 
-    private String toFilter(ApplicationEntityInfo keys) {
+    private static String toFilter(ApplicationEntityInfo keys) {
         if (keys == null)
             return "(objectclass=dicomNetworkAE)";
 
@@ -2137,7 +2314,23 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         appendFilter("dicomDescription", keys.getDescription(), sb);
         appendFilter("dicomAssociationInitiator", keys.getAssociationInitiator(), sb);
         appendFilter("dicomAssociationAcceptor", keys.getAssociationAcceptor(), sb);
-        appendFilter("dicomApplicationCluster", keys.getApplicationCluster(), sb);
+        appendFilter("dicomApplicationCluster", keys.getApplicationClusters(), sb);
+        sb.append(")");
+        return sb.toString();
+    }
+
+    private static String toFilter(WebApplicationInfo keys) {
+        if (keys == null)
+            return "(objectclass=dcmWebApp)";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("(&(objectclass=dcmWebApp)");
+        appendFilter("dcmWebAppName", keys.getApplicationName(), sb);
+        appendFilter("dicomDescription", keys.getDescription(), sb);
+        appendFilter("dcmWebServicePath", keys.getServicePath(), sb);
+        appendFilter("dcmWebServiceClass", keys.getServiceClasses(), sb);
+        appendFilter("dicomAETitle", keys.getAETitle(), sb);
+        appendFilter("dicomApplicationCluster", keys.getApplicationClusters(), sb);
         sb.append(")");
         return sb.toString();
     }

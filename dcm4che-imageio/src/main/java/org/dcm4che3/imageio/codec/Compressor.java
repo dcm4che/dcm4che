@@ -49,7 +49,9 @@ import java.io.Closeable;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageReadParam;
@@ -299,7 +301,7 @@ public class Compressor extends Decompressor implements Closeable {
                 Compressor.this.extractEmbeddedOverlays(frameIndex, bi);
                 if (bitsStored < bitsAllocated)
                     Compressor.this.nullifyUnusedBits(bitsStored, bi);
-                cache = new FlushlessMemoryCacheImageOutputStream(cacheout);                
+                cache = new FlushlessMemoryCacheImageOutputStream(cacheout, imageDescriptor);
                 compressor.setOutput(patchJPEGLS != null
                         ? new PatchJPEGLSImageOutputStream(cache, patchJPEGLS)
                         : cache);
@@ -333,16 +335,37 @@ public class Compressor extends Decompressor implements Closeable {
         }
     }
 
-    private static class FlushlessMemoryCacheImageOutputStream extends MemoryCacheImageOutputStream {
-        
-        public FlushlessMemoryCacheImageOutputStream(OutputStream stream) {
+    private static class FlushlessMemoryCacheImageOutputStream extends MemoryCacheImageOutputStream
+        implements BytesWithImageImageDescriptor {
+
+        private final ImageDescriptor imageDescriptor;
+
+        public FlushlessMemoryCacheImageOutputStream(OutputStream stream, ImageDescriptor imageDescriptor) {
             super(stream);
+            this.imageDescriptor = imageDescriptor;
         }
 
         @Override
         public void flush() throws IOException {
             // defer flush to writeTo()
             LOG.debug("Ignore invoke of MemoryCacheImageOutputStream.flush()");
+        }
+
+        @Override
+        public ByteBuffer getBytes() throws IOException {
+            byte[] array = new byte[8192];
+            int length = 0;
+            int read;
+            while ((read = this.read(array, length, array.length - length)) > 0) {
+                if ((length += read) == array.length)
+                    array = Arrays.copyOf(array, array.length << 1);
+            }
+            return ByteBuffer.wrap(array, 0, length);
+        }
+
+        @Override
+        public ImageDescriptor getImageDescriptor() {
+            return imageDescriptor;
         }
     }
 

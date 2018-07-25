@@ -44,25 +44,48 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jul 2015
  */
-final class ExtMemoryCacheImageOutputStream extends MemoryCacheImageOutputStream {
-    private final ExtFilterOutputStream stream;
+final class ExtMemoryCacheImageOutputStream extends MemoryCacheImageOutputStream
+        implements BytesWithImageImageDescriptor {
 
-    public ExtMemoryCacheImageOutputStream() {
-        this(new ExtFilterOutputStream());
+    private final ExtFilterOutputStream stream;
+    private final ImageDescriptor imageDescriptor;
+
+    public ExtMemoryCacheImageOutputStream(ImageDescriptor imageDescriptor) {
+        this(new ExtFilterOutputStream(), imageDescriptor);
     }
 
-    private ExtMemoryCacheImageOutputStream(ExtFilterOutputStream stream) {
+    private ExtMemoryCacheImageOutputStream(ExtFilterOutputStream stream, ImageDescriptor imageDescriptor) {
         super(stream);
         this.stream = stream;
+        this.imageDescriptor = imageDescriptor;
     }
 
     public void setOutputStream(OutputStream stream) {
         this.stream.setOutputStream(stream);
+    }
+
+    @Override
+    public ImageDescriptor getImageDescriptor() {
+        return imageDescriptor;
+    }
+
+    @Override
+    public ByteBuffer getBytes() throws IOException {
+        byte[] array = new byte[8192];
+        int length = 0;
+        int read;
+        while ((read = this.read(array, length, array.length - length)) > 0) {
+            if ((length += read) == array.length)
+                array = Arrays.copyOf(array, array.length << 1);
+        }
+        return ByteBuffer.wrap(array, 0, length);
     }
 
     @Override

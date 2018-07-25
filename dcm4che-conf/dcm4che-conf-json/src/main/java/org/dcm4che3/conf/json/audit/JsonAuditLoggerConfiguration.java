@@ -52,6 +52,8 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.dcm4che3.net.audit.AuditLoggerDeviceExtension;
 import org.dcm4che3.net.audit.AuditSuppressCriteria;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.json.stream.JsonParser;
 import java.util.Collections;
@@ -63,6 +65,9 @@ import java.util.List;
  * @since Jan 2016
  */
 public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JsonAuditLoggerConfiguration.class);
+
     @Override
     protected void storeTo(Device device, JsonWriter writer) {
         AuditLoggerDeviceExtension ext = device.getDeviceExtension(AuditLoggerDeviceExtension.class);
@@ -78,7 +83,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
         writer.writeStartObject();
         writer.writeNotNullOrDef("cn", auditLogger.getCommonName(), null);
         writer.writeNotNullOrDef("dcmAuditRecordRepositoryDeviceName",
-                auditLogger.getAuditRecordRepositoryDevice().getDeviceName(), null);
+                auditLogger.getAuditRecordRepositoryDeviceNameNotNull(), null);
         writer.writeConnRefs(device.listConnections(), auditLogger.getConnections());
         writer.writeNotNull("dicomInstalled", auditLogger.getInstalled());
         writer.writeNotNullOrDef("dcmAuditSourceID", auditLogger.getAuditSourceID(), null);
@@ -163,7 +168,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                     logger.setCommonName(reader.stringValue());
                     break;
                 case "dcmAuditRecordRepositoryDeviceName":
-                    logger.setAuditRecordRepositoryDevice(config.findDevice(reader.stringValue()));
+                    loadAuditRecordRepositoryDevice(logger, reader.stringValue(), config);
                     break;
                 case "dicomNetworkConnectionReference":
                     for (String connRef : reader.stringArray())
@@ -232,6 +237,16 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                 default:
                     reader.skipUnknownProperty();
             }
+        }
+    }
+
+    private static void loadAuditRecordRepositoryDevice(
+            AuditLogger auditLogger, String arrDeviceName, ConfigurationDelegate config) {
+        try {
+            auditLogger.setAuditRecordRepositoryDevice(config.findDevice(arrDeviceName));
+        } catch (ConfigurationException e) {
+            LOG.info("Failed to load Audit Record Repository {} referenced by Audit Logger", arrDeviceName, e);
+            auditLogger.setAuditRecordRepositoryDeviceName(arrDeviceName);
         }
     }
 

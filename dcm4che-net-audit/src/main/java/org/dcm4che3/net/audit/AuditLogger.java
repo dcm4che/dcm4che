@@ -56,12 +56,12 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.security.AccessController;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -78,11 +78,13 @@ import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.IncompatibleConnectionException;
+import org.dcm4che3.util.ReverseDNS;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.security.action.GetPropertyAction;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -188,6 +190,7 @@ public class AuditLogger {
 
     private String commonName;
     private Device arrDevice;
+    private String arrDeviceName;
     private Device device;
     private Facility facility = Facility.authpriv;
     private Severity successSeverity = Severity.notice;
@@ -255,16 +258,25 @@ public class AuditLogger {
         return arrDevice;
     }
 
-    public String getAuditRecordRepositoryDeviceName() {
-        if (arrDevice == null)
-            throw new IllegalStateException("AuditRecordRepositoryDevice not initialized");
-        return arrDevice.getDeviceName();
-    }
-
     public void setAuditRecordRepositoryDevice(Device arrDevice) {
         SafeClose.close(activeConnection);
         activeConnection = null;
         this.arrDevice = arrDevice;
+        this.arrDeviceName = arrDevice != null ? arrDevice.getDeviceName() : null;
+    }
+
+    public String getAuditRecordRepositoryDeviceName() {
+        return arrDeviceName;
+    }
+
+    public String getAuditRecordRepositoryDeviceNameNotNull() {
+        if (arrDeviceName == null)
+            throw new IllegalStateException("AuditRecordRepositoryDevice not initialized");
+        return arrDeviceName;
+    }
+
+    public void setAuditRecordRepositoryDeviceName(String arrDeviceName) {
+        this.arrDeviceName = arrDeviceName;
     }
 
     public final Facility getFacility() {
@@ -371,7 +383,7 @@ public class AuditLogger {
                 AuditMessages.alternativeUserIDForAETitle(
                         aets.toArray(new String[aets.size()])),
                 applicationName(),
-                localHost().getHostName(),
+                ReverseDNS.hostNameOf(localHost()),
                 roleIDs);
     }
 
@@ -507,7 +519,7 @@ public class AuditLogger {
      *          be used
      */
     public File getSpoolDirectory() {
-        return spoolDirectory;
+        return spoolDirectory();
     }
 
     /**
@@ -520,6 +532,7 @@ public class AuditLogger {
      */
     public void setSpoolDirectory(File directory) {
         this.spoolDirectory = directory;
+        this.spoolDirectoryURI = directory != null ? directory.toURI().toString() : null;
     }
 
     public String getSpoolDirectoryURI() {
@@ -657,7 +670,8 @@ public class AuditLogger {
         setSpoolFileNameSuffix(from.spoolFileNameSuffix);
         setRetryInterval(from.retryInterval);
         setInstalled(from.installed);
-        setAuditRecordRepositoryDevice(from.arrDevice);
+        arrDevice = from.arrDevice;
+        arrDeviceName = from.arrDeviceName;
         setAuditSuppressCriteriaList(from.suppressAuditMessageFilters);
         device.reconfigureConnections(conns, from.conns);
         closeActiveConnection();
@@ -727,6 +741,7 @@ public class AuditLogger {
             GeneralSecurityException, IOException {
         if (getNumberOfQueuedMessages() > 0) {
             spoolMessage(msg);
+            scheduleRetry();
         } else {
             try {
                 activeConnection().sendMessage(msg);
@@ -770,9 +785,7 @@ public class AuditLogger {
 
         File f = null;
         try {
-            f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, spoolDirectory);
-            if (spoolDirectory == null)
-                spoolDirectory = f.getParentFile();
+            f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, spoolDirectory());
 
             LOG.info("Spool audit message to {}", f);
             FileOutputStream out = new FileOutputStream(f);
@@ -791,10 +804,7 @@ public class AuditLogger {
     }
 
     public void sendQueuedMessages() {
-        File dir = spoolDirectory;
-        if (dir == null)
-            return;
-
+        File dir = spoolDirectory();
         try {
             File[] queuedMessages = dir.listFiles(FILENAME_FILTER);
             byte[] b = null;
@@ -846,19 +856,11 @@ public class AuditLogger {
     }
 
     public int getNumberOfQueuedMessages() {
-        try {
-            return spoolDirectory.list(FILENAME_FILTER).length;
-        } catch (NullPointerException e) {
-            return 0;
-        }
+        return getQueuedMessages().length;
     }
 
     public File[] getQueuedMessages() {
-        try {
-            return spoolDirectory.listFiles(FILENAME_FILTER);
-        } catch (NullPointerException e) {
-            return null;
-        }
+        return spoolDirectory().listFiles(FILENAME_FILTER);
     }
 
     public synchronized void waitForNoQueuedMessages(long timeout)
@@ -1243,5 +1245,14 @@ public class AuditLogger {
 
     public final Device getDevice() {
         return device;
+    }
+
+    private static class LazyHolder {
+        static final File tmpdir = new File(AccessController
+                .doPrivileged(new GetPropertyAction("java.io.tmpdir")));
+    }
+
+    private File spoolDirectory() {
+        return spoolDirectory != null ? spoolDirectory : LazyHolder.tmpdir;
     }
 }

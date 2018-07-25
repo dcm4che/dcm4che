@@ -54,10 +54,7 @@ import org.dcm4che3.data.IOD.DataElementType;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.util.ByteUtils;
-import org.dcm4che3.util.DateUtils;
-import org.dcm4che3.util.StringUtils;
-import org.dcm4che3.util.TagUtils;
+import org.dcm4che3.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +114,13 @@ public class Attributes implements Serializable {
     public Attributes(boolean bigEndian, int initialCapacity) {
         this.bigEndian = bigEndian;
         init(initialCapacity);
+    }
+
+    public void clear() {
+        size = 0;
+        Arrays.fill(tags, 0);
+        Arrays.fill(vrs, null);
+        Arrays.fill(values, null);
     }
 
     private void init(int initialCapacity) {
@@ -367,6 +371,19 @@ public class Attributes implements Serializable {
         return indexOf(tag);
     }
 
+    /**
+     * resolves to the actual private tag,
+     * given a private tag with placeholers (like 0011,xx13)
+     */
+    public int tagOf(String privateCreator, int tag) {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
+            if (creatorTag == -1)
+                return -1;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        return tag;
+    }
     private int creatorTagOf(String privateCreator, int tag, boolean reserve) {
         if (!TagUtils.isPrivateGroup(tag))
             throw new IllegalArgumentException(TagUtils.toString(tag)
@@ -519,6 +536,25 @@ public class Attributes implements Serializable {
                 && !isEmpty(vrs[index].isStringType()
                         ? decodeStringValue(index)
                         : values[index]);
+    }
+
+    /**
+     * Test whether at least one tag within the given range is contained.
+     * 
+     * @param firstTag
+     *            first tag (inclusive)
+     * @param lastTag
+     *            last tag (inclusive)
+     * @return whether at least one tag within the given range is contained
+     */
+    public boolean containsTagInRange(int firstTag, int lastTag) {
+        final int indexFirstTag = indexForInsertOf(firstTag);
+        if (indexFirstTag >= 0) {
+            return true;
+        }
+
+        int insertIndex = -indexFirstTag-1;
+        return insertIndex < size && tags[insertIndex] <= lastTag;
     }
 
     public String privateCreatorOf(int tag) {
@@ -768,10 +804,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.IS)
-            value = decodeISValue(index);
 
         try {
+            if (vr == VR.IS)
+                value = decodeISValue(index);
+
             return vr.toInt(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
@@ -803,10 +840,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.IS)
-            value = decodeISValue(index);
 
         try {
+            if (vr == VR.IS)
+                value = decodeISValue(index);
+
             return vr.toInts(value, bigEndian);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
@@ -850,10 +888,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.DS)
-            value = decodeDSValue(index);
 
         try {
+            if (vr == VR.DS)
+                value = decodeDSValue(index);
+
             return vr.toFloat(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as float", TagUtils.toString(tag), vr);
@@ -885,10 +924,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.DS)
-            value = decodeDSValue(index);
 
         try {
+            if (vr == VR.DS)
+                value = decodeDSValue(index);
+
             return vr.toFloats(value, bigEndian);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as float", TagUtils.toString(tag), vr);
@@ -932,10 +972,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.DS)
-            value = decodeDSValue(index);
 
         try {
+            if (vr == VR.DS)
+                value = decodeDSValue(index);
+
             return vr.toDouble(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as double", TagUtils.toString(tag), vr);
@@ -967,9 +1008,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr == VR.DS)
-            value = decodeDSValue(index);
+
         try {
+            if (vr == VR.DS)
+                value = decodeDSValue(index);
+
             return vr.toDoubles(value, bigEndian);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as double", TagUtils.toString(tag), vr);
@@ -1648,9 +1691,11 @@ public class Attributes implements Serializable {
             return null;
 
         Object value = values[index];
-//        if (value instanceof Sequence)
-//            ((Sequence) value).clear();
-
+        if (value instanceof Sequence) {
+            for (Attributes attrs : ((Sequence) value)) {
+                    attrs.setParent(null);
+            }
+        }
         int numMoved = size - index - 1;
         if (numMoved > 0) {
             System.arraycopy(tags, index+1, tags, index, numMoved);
@@ -1768,12 +1813,19 @@ public class Attributes implements Serializable {
         return setDateRange(null, tag, vr, range);
     }
 
-    public Object setDateRange(String privateCreator, int tag, VR vr, DateRange range) {
-        return set(privateCreator, tag, vr, toString(range, vr, getTimeZone()));
+    public Object setDateRange(int tag, VR vr, DatePrecision precision, DateRange range) {
+        return setDateRange(null, tag, vr, precision, range);
     }
 
-    private static String toString(DateRange range, VR vr, TimeZone tz) {
-        DatePrecision precision = new DatePrecision();
+    public Object setDateRange(String privateCreator, int tag, VR vr, DateRange range) {
+        return setDateRange(privateCreator, tag, vr, new DatePrecision(), range);
+    }
+
+    public Object setDateRange(String privateCreator, int tag, VR vr, DatePrecision precision, DateRange range) {
+        return set(privateCreator, tag, vr, toString(range, vr, getTimeZone(), precision));
+    }
+
+    private static String toString(DateRange range, VR vr, TimeZone tz, DatePrecision precision) {
         String start = range.getStartDate() != null
                 ? (String) vr.toValue(new Date[]{range.getStartDate()}, tz,
                         precision)
@@ -2158,7 +2210,15 @@ public class Attributes implements Serializable {
             }
         }
         return true;
-   }
+    }
+
+    public boolean equalValues(Attributes other, int tag) {
+        return equalValues(other, null, tag);
+    }
+
+    public boolean equalValues(Attributes other, String privateCreator, int tag) {
+        return equalValues(other, indexOf(privateCreator, tag), other.indexOf(privateCreator, tag));
+    }
 
     private boolean equalValues(Attributes other, int index, int otherIndex) {
         if (index < 0 && otherIndex < 0)
@@ -2448,7 +2508,7 @@ public class Attributes implements Serializable {
     }
 
     /**
-     * Invokes {@link Visitor.visit} for each attribute in this instance. The
+     * Invokes {@link Visitor#visit} for each attribute in this instance. The
      * operation will be aborted if <code>visitor.visit()</code> returns <code>false</code>.
      * 
      * @param visitor
@@ -2503,7 +2563,6 @@ public class Attributes implements Serializable {
                 calcLength(out.getEncodingOptions(), out.isExplicitVR(), cs, null));
         writeTo(out, cs, 0, size, 0);
     }
-
 
     private void checkInGroup(int i, int groupLengthTag) {
         int tag = tags[i];
@@ -3186,6 +3245,88 @@ public class Attributes implements Serializable {
                 size1 -= j - i;
             }
         }
+        int removed = size - size1;
+        if (removed > 0) {
+            Arrays.fill(tags, size1, size, 0);
+            Arrays.fill(vrs, size1, size, null);
+            Arrays.fill(values, size1, size, null);
+            size = size1;
+        }
+        return removed;
+    }
+
+    public void removeSelected(int... selection) {
+        for (int i = 0; i < size; i++) {
+            if (Arrays.binarySearch(selection, tags[i]) >= 0) {
+                int numMoved = size - i - 1;
+                if (numMoved > 0) {
+                    System.arraycopy(tags, i+1, tags, i, numMoved);
+                    System.arraycopy(vrs, i+1, vrs, i, numMoved);
+                    System.arraycopy(values, i+1, values, i, numMoved);
+                }
+                values[--size] = null;
+                --i;
+            }
+        }
+    }
+
+    public void replaceSelected(Attributes others, int... selection) {
+        for (int i = 0; i < size; i++) {
+            if (Arrays.binarySearch(selection, tags[i]) >= 0) {
+                values[i] = StringUtils.maskNull(others.getValue(tags[i]), Value.NULL);
+            }
+        }
+    }
+
+    public void replaceUIDSelected(int... selection) {
+        for (int i = 0; i < size; i++) {
+            if (Arrays.binarySearch(selection, tags[i]) >= 0
+                    && values[i] != Value.NULL) {
+                values[i] = replaceUIDs(decodeStringValue(i));
+            }
+        }
+    }
+
+    private Object replaceUIDs(Object val) {
+        if (val instanceof String) {
+            return UIDUtils.remapUID((String) val);
+        }
+        if (val instanceof String[]) {
+            String[] ss = (String[]) val;
+            for (int i = 0; i < ss.length; i++) {
+                ss[i] = UIDUtils.remapUID(ss[i]);
+            }
+        }
+        return val;
+    }
+
+    public int removeCurveData() {
+        return removeRepeatingGroup(0x50000000);
+    }
+
+    public int removeOverlayData() {
+        return removeRepeatingGroup(0x60000000);
+    }
+
+    private int removeRepeatingGroup(int ggxxxxxx) {
+        int size1 = size;
+        int i = indexForInsertOf(ggxxxxxx);
+        if (i < 0)
+            i = -i-1;
+        int j = i;
+        while (j < size1 && (tags[i] & 0xFF000000) == ggxxxxxx)
+            j++;
+
+        if (j > i) {
+            int len = size1 - j;
+            if (len > 0) {
+                System.arraycopy(tags, j, tags, i, len);
+                System.arraycopy(vrs, j, vrs, i, len);
+                System.arraycopy(values, j, values, i, len);
+            }
+            size1 -= j - i;
+        }
+
         int removed = size - size1;
         if (removed > 0) {
             Arrays.fill(tags, size1, size, 0);

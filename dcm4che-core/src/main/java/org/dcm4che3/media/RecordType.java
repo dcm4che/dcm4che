@@ -68,9 +68,15 @@ public enum RecordType {
     VALUE_MAP,
     STEREOMETRIC,
     PALETTE,
-    SURFACE,
-    MEASUREMENT,
+    IMPLANT,
+    IMPLANT_ASSY,
+    IMPLANT_GROUP,
     PLAN,
+    MEASUREMENT,
+    SURFACE,
+    SURFACE_SCAN,
+    TRACT,
+    ASSESSMENT,
     PRIVATE;
 
     public String code() {

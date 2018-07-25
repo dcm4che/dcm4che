@@ -99,43 +99,58 @@
         <Value number="9">1.2.840.10008.5.1.4.1.1.1.3.1</Value>
         <Value number="10">1.2.840.10008.5.1.4.1.1.2</Value>
         <Value number="11">1.2.840.10008.5.1.4.1.1.2.1</Value>
-        <Value number="12">1.2.840.10008.5.1.4.1.1.3</Value>
-        <Value number="13">1.2.840.10008.5.1.4.1.1.3.1</Value>
-        <Value number="14">1.2.840.10008.5.1.4.1.1.4</Value>
-        <Value number="15">1.2.840.10008.5.1.4.1.1.4.1</Value>
-        <Value number="16">1.2.840.10008.5.1.4.1.1.4.3</Value>
-        <Value number="17">1.2.840.10008.5.1.4.1.1.5</Value>
-        <Value number="18">1.2.840.10008.5.1.4.1.1.6</Value>
-        <Value number="19">1.2.840.10008.5.1.4.1.1.6.1</Value>
-        <Value number="20">1.2.840.10008.5.1.4.1.1.6.2</Value>
-        <Value number="21">1.2.840.10008.5.1.4.1.1.7</Value>
-        <Value number="22">1.2.840.10008.5.1.4.1.1.7.1</Value>
-        <Value number="23">1.2.840.10008.5.1.4.1.1.7.2</Value>
-        <Value number="24">1.2.840.10008.5.1.4.1.1.7.3</Value>
-        <Value number="25">1.2.840.10008.5.1.4.1.1.7.4</Value>
-        <Value number="26">1.2.840.10008.5.1.4.1.1.12.1</Value>
-        <Value number="27">1.2.840.10008.5.1.4.1.1.12.1.1</Value>
-        <Value number="28">1.2.840.10008.5.1.4.1.1.12.2</Value>
-        <Value number="29">1.2.840.10008.5.1.4.1.1.12.2.1</Value>
-        <Value number="30">1.2.840.10008.5.1.4.1.1.13.1.1</Value>
-        <Value number="31">1.2.840.10008.5.1.4.1.1.13.1.2</Value>
-        <Value number="32">1.2.840.10008.5.1.4.1.1.13.1.3</Value>
-        <Value number="33">1.2.840.10008.5.1.4.1.1.12.3</Value>
-        <Value number="34">1.2.840.10008.5.1.4.1.1.20</Value>
-        <Value number="35">1.2.840.10008.5.1.4.1.1.66.4</Value>
-        <Value number="36">1.2.840.10008.5.1.4.1.1.77.1.1</Value>
-        <Value number="37">1.2.840.10008.5.1.4.1.1.77.1.1.1</Value>
-        <Value number="38">1.2.840.10008.5.1.4.1.1.77.1.2</Value>
-        <Value number="39">1.2.840.10008.5.1.4.1.1.77.1.2.1</Value>
-        <Value number="40">1.2.840.10008.5.1.4.1.1.77.1.3</Value>
-        <Value number="41">1.2.840.10008.5.1.4.1.1.77.1.4</Value>
-        <Value number="42">1.2.840.10008.5.1.4.1.1.77.1.4.1</Value>
-        <Value number="43">1.2.840.10008.5.1.4.1.1.77.1.5.1</Value>
-        <Value number="44">1.2.840.10008.5.1.4.1.1.77.1.5.2</Value>
-        <Value number="45">1.2.840.10008.5.1.4.1.1.77.1.5.4</Value>
-        <Value number="46">1.2.840.10008.5.1.4.1.1.128</Value>
-        <Value number="47">1.2.840.10008.5.1.4.1.1.130</Value>
-        <Value number="49">1.2.840.10008.5.1.4.1.1.481.1</Value>
+        <Value number="12">1.2.840.10008.5.1.4.1.1.2.2</Value>
+        <Value number="13">1.2.840.10008.5.1.4.1.1.3</Value>
+        <Value number="14">1.2.840.10008.5.1.4.1.1.3.1</Value>
+        <Value number="15">1.2.840.10008.5.1.4.1.1.4</Value>
+        <Value number="16">1.2.840.10008.5.1.4.1.1.4.1</Value>
+        <Value number="17">1.2.840.10008.5.1.4.1.1.4.3</Value>
+        <Value number="18">1.2.840.10008.5.1.4.1.1.4.4</Value>
+        <Value number="19">1.2.840.10008.5.1.4.1.1.5</Value>
+        <Value number="20">1.2.840.10008.5.1.4.1.1.6</Value>
+        <Value number="21">1.2.840.10008.5.1.4.1.1.6.1</Value>
+        <Value number="22">1.2.840.10008.5.1.4.1.1.6.2</Value>
+        <Value number="23">1.2.840.10008.5.1.4.1.1.7</Value>
+        <Value number="24">1.2.840.10008.5.1.4.1.1.7.1</Value>
+        <Value number="25">1.2.840.10008.5.1.4.1.1.7.2</Value>
+        <Value number="26">1.2.840.10008.5.1.4.1.1.7.3</Value>
+        <Value number="27">1.2.840.10008.5.1.4.1.1.7.4</Value>
+        <Value number="28">1.2.840.10008.5.1.4.1.1.12.1</Value>
+        <Value number="29">1.2.840.10008.5.1.4.1.1.12.1.1</Value>
+        <Value number="30">1.2.840.10008.5.1.4.1.1.12.2</Value>
+        <Value number="31">1.2.840.10008.5.1.4.1.1.12.2.1</Value>
+        <Value number="32">1.2.840.10008.5.1.4.1.1.12.3</Value>
+        <Value number="33">1.2.840.10008.5.1.4.1.1.13.1.1</Value>
+        <Value number="34">1.2.840.10008.5.1.4.1.1.13.1.2</Value>
+        <Value number="35">1.2.840.10008.5.1.4.1.1.13.1.3</Value>
+        <Value number="36">1.2.840.10008.5.1.4.1.1.13.1.4</Value>
+        <Value number="37">1.2.840.10008.5.1.4.1.1.13.1.5</Value>
+        <Value number="38">1.2.840.10008.5.1.4.1.1.14.1</Value>
+        <Value number="39">1.2.840.10008.5.1.4.1.1.14.2</Value>
+        <Value number="40">1.2.840.10008.5.1.4.1.1.20</Value>
+        <Value number="41">1.2.840.10008.5.1.4.1.1.30</Value>
+        <Value number="42">1.2.840.10008.5.1.4.1.1.66.4</Value>
+        <Value number="43">1.2.840.10008.5.1.4.1.1.77.1.1</Value>
+        <Value number="44">1.2.840.10008.5.1.4.1.1.77.1.1.1</Value>
+        <Value number="45">1.2.840.10008.5.1.4.1.1.77.1.2</Value>
+        <Value number="46">1.2.840.10008.5.1.4.1.1.77.1.2.1</Value>
+        <Value number="47">1.2.840.10008.5.1.4.1.1.77.1.3</Value>
+        <Value number="48">1.2.840.10008.5.1.4.1.1.77.1.4</Value>
+        <Value number="49">1.2.840.10008.5.1.4.1.1.77.1.4.1</Value>
+        <Value number="50">1.2.840.10008.5.1.4.1.1.77.1.5.1</Value>
+        <Value number="51">1.2.840.10008.5.1.4.1.1.77.1.5.2</Value>
+        <Value number="52">1.2.840.10008.5.1.4.1.1.77.1.5.4</Value>
+        <Value number="53">1.2.840.10008.5.1.4.1.1.77.1.5.5</Value>
+        <Value number="54">1.2.840.10008.5.1.4.1.1.77.1.5.6</Value>
+        <Value number="55">1.2.840.10008.5.1.4.1.1.77.1.5.7</Value>
+        <Value number="56">1.2.840.10008.5.1.4.1.1.77.1.5.8</Value>
+        <Value number="57">1.2.840.10008.5.1.4.1.1.77.1.6</Value>
+        <Value number="58">1.2.840.10008.5.1.4.1.1.81.1</Value>
+        <Value number="59">1.2.840.10008.5.1.4.1.1.82.1</Value>
+        <Value number="60">1.2.840.10008.5.1.4.1.1.128</Value>
+        <Value number="61">1.2.840.10008.5.1.4.1.1.128.1</Value>
+        <Value number="62">1.2.840.10008.5.1.4.1.1.130</Value>
+        <Value number="63">1.2.840.10008.5.1.4.1.1.481.1</Value>
       </DicomAttribute>
       <DicomAttribute keyword="InstanceNumber" tag="00200013" vr="IS"/>
     </Item>
@@ -238,7 +253,13 @@
         <Value number="3">1.2.840.10008.5.1.4.1.1.11.3</Value>
         <Value number="4">1.2.840.10008.5.1.4.1.1.11.4</Value>
         <Value number="5">1.2.840.10008.5.1.4.1.1.11.5</Value>
-        <Value number="6">1.2.840.10008.5.1.4.1.1.131</Value>
+        <Value number="6">1.2.840.10008.5.1.4.1.1.11.6</Value>
+        <Value number="7">1.2.840.10008.5.1.4.1.1.11.7</Value>
+        <Value number="8">1.2.840.10008.5.1.4.1.1.11.8</Value>
+        <Value number="9">1.2.840.10008.5.1.4.1.1.11.9</Value>
+        <Value number="10">1.2.840.10008.5.1.4.1.1.11.10</Value>
+        <Value number="11">1.2.840.10008.5.1.4.1.1.11.11</Value>
+        <Value number="12">1.2.840.10008.5.1.4.1.1.131</Value>
       </DicomAttribute>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="ReferencedSeriesSequence" tag="00081115" vr="SQ"/>
@@ -290,6 +311,11 @@
         <Value number="13">1.2.840.10008.5.1.4.1.1.88.65</Value>
         <Value number="14">1.2.840.10008.5.1.4.1.1.88.67</Value>
         <Value number="15">1.2.840.10008.5.1.4.1.1.88.69</Value>
+        <Value number="16">1.2.840.10008.5.1.4.1.1.88.70</Value>
+        <Value number="17">1.2.840.10008.5.1.4.1.1.88.71</Value>
+        <Value number="18">1.2.840.10008.5.1.4.1.1.88.72</Value>
+        <Value number="19">1.2.840.10008.5.1.4.1.1.88.73</Value>
+        <Value number="20">1.2.840.10008.5.1.4.1.1.90.1</Value>
       </DicomAttribute>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="ContentDate" tag="00080023" vr="DA"/>
@@ -447,13 +473,79 @@
         <Value number="1">PALETTE</Value>
       </DicomAttribute>
       <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
-        <Value number="1"></Value>
+        <Value number="1">1.2.840.10008.5.1.4.39.1</Value>
       </DicomAttribute>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="ContentLabel" tag="00700080" vr="CS"/>
       <DicomAttribute keyword="ContentDescription" tag="00700081" vr="LO"/>
     </Item>
     <Item number="27">
+      <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
+        <Value number="1">IMPLANT</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
+        <Value number="1">1.2.840.10008.5.1.4.43.1</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="Manufacturer" tag="00080070" vr="LO"/>
+      <DicomAttribute keyword="ImplantName" tag="00221095" vr="LO"/>
+      <DicomAttribute keyword="ImplantPartNumber" tag="00221097" vr="LO"/>
+      <DicomAttribute keyword="ImplantSize" tag="00686210" vr="LO"/>
+    </Item>
+    <Item number="28">
+      <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
+        <Value number="1">IMPLANT ASSY</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
+        <Value number="1">1.2.840.10008.5.1.4.44.1</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="Manufacturer" tag="00080070" vr="LO"/>
+      <DicomAttribute keyword="ImplantAssemblyTemplateName" tag="00760001" vr="LO"/>
+      <DicomAttribute keyword="ProcedureTypeCodeSequence" tag="00760020" vr="SQ"/>
+    </Item>
+    <Item number="29">
+      <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
+        <Value number="1">IMPLANT GROUP</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
+        <Value number="1">1.2.840.10008.5.1.4.45.1</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="ImplantTemplateGroupName" tag="00780001" vr="LO"/>
+      <DicomAttribute keyword="ImplantTemplateGroupDescription" tag="00780010" vr="ST"/>
+      <DicomAttribute keyword="ImplantTemplateGroupIssuer" tag="00780020" vr="LO"/>
+    </Item>
+    <Item number="30">
+      <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
+        <Value number="1">PLAN</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
+        <Value number="1">1.2.840.10008.5.1.4.34.1</Value>
+        <Value number="2">1.2.840.10008.5.1.4.34.7</Value>
+        <Value number="3">1.2.840.10008.5.1.4.34.10</Value>
+      </DicomAttribute>
+    </Item>
+    <Item number="31">
+      <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
+        <Value number="1">MEASUREMENT</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
+        <Value number="1">1.2.840.10008.5.1.4.1.1.78.1</Value>
+        <Value number="2">1.2.840.10008.5.1.4.1.1.78.2</Value>
+        <Value number="3">1.2.840.10008.5.1.4.1.1.78.3</Value>
+        <Value number="4">1.2.840.10008.5.1.4.1.1.78.4</Value>
+        <Value number="5">1.2.840.10008.5.1.4.1.1.78.5</Value>
+        <Value number="6">1.2.840.10008.5.1.4.1.1.78.7</Value>
+        <Value number="7">1.2.840.10008.5.1.4.1.1.78.8</Value>
+        <Value number="8">1.2.840.10008.5.1.4.1.1.80.1</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
+      <DicomAttribute keyword="ContentDate" tag="00080023" vr="DA"/>
+      <DicomAttribute keyword="ContentTime" tag="00080033" vr="TM"/>
+      <DicomAttribute keyword="InstanceNumber" tag="00200013" vr="IS"/>
+      <DicomAttribute keyword="ContentLabel" tag="00700080" vr="CS"/>
+      <DicomAttribute keyword="ContentDescription" tag="00700081" vr="LO"/>
+      <DicomAttribute keyword="ContentCreatorName" tag="00700084" vr="PN"/>
+    </Item>
+    <Item number="32">
       <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
         <Value number="1">SURFACE</Value>
       </DicomAttribute>
@@ -468,16 +560,23 @@
       <DicomAttribute keyword="ContentDescription" tag="00700081" vr="LO"/>
       <DicomAttribute keyword="ContentCreatorName" tag="00700084" vr="PN"/>
     </Item>
-    <Item number="28">
+    <Item number="33">
       <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
-        <Value number="1">MEASUREMENT</Value>
+        <Value number="1">SURFACE SCAN</Value>
       </DicomAttribute>
       <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
-        <Value number="1">1.2.840.10008.5.1.4.1.1.78.1</Value>
-        <Value number="2">1.2.840.10008.5.1.4.1.1.78.2</Value>
-        <Value number="3">1.2.840.10008.5.1.4.1.1.78.3</Value>
-        <Value number="4">1.2.840.10008.5.1.4.1.1.78.4</Value>
-        <Value number="5">1.2.840.10008.5.1.4.1.1.78.5</Value>
+        <Value number="1">1.2.840.10008.5.1.4.1.1.68.1</Value>
+        <Value number="2">1.2.840.10008.5.1.4.1.1.68.2</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="ContentDate" tag="00080023" vr="DA"/>
+      <DicomAttribute keyword="ContentTime" tag="00080033" vr="TM"/>
+    </Item>
+    <Item number="34">
+      <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
+        <Value number="1">TRACT</Value>
+      </DicomAttribute>
+      <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
+        <Value number="1">1.2.840.10008.5.1.4.1.1.66.6</Value>
       </DicomAttribute>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="ContentDate" tag="00080023" vr="DA"/>
@@ -487,15 +586,18 @@
       <DicomAttribute keyword="ContentDescription" tag="00700081" vr="LO"/>
       <DicomAttribute keyword="ContentCreatorName" tag="00700084" vr="PN"/>
     </Item>
-    <Item number="29">
+    <Item number="35">
       <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
-        <Value number="1">PLAN</Value>
+        <Value number="1">ASSESSMENT</Value>
       </DicomAttribute>
       <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
-        <Value number="1">1.2.840.10008.5.1.4.34.1</Value>
+        <Value number="1">1.2.840.10008.5.1.4.1.1.90.1</Value>
       </DicomAttribute>
+      <DicomAttribute keyword="InstanceCreationDate" tag="00080012" vr="DA"/>
+      <DicomAttribute keyword="InstanceCreationTime" tag="00080013" vr="TM"/>
+      <DicomAttribute keyword="InstanceNumber" tag="00200013" vr="IS"/>
     </Item>
-    <Item number="30">
+    <Item number="36">
       <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
         <Value number="1">PRIVATE</Value>
       </DicomAttribute>

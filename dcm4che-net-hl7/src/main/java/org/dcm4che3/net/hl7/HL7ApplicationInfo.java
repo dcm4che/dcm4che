@@ -1,4 +1,4 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/dcm4che.
+ * Java(TM), hosted at https://github.com/gunterze/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * J4Care GmbH.
- * Portions created by the Initial Developer are Copyright (C) 2017
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2017
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,9 +34,11 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ */
 
-package org.dcm4che3.net;
+package org.dcm4che3.net.hl7;
+
+import org.dcm4che3.net.Connection;
 
 import java.io.Serializable;
 import java.util.ArrayList;

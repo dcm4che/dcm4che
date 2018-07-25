@@ -50,8 +50,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Connection.Protocol;
@@ -106,24 +107,24 @@ public class Syslogd {
     @SuppressWarnings("static-access")
     public static void addOptions(Options opts) {
         opts.addOption(null, "ignore", false, rb.getString("ignore"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("path")
-                .withDescription(rb.getString("directory"))
-                .withLongOpt("directory")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("path")
+                .desc(rb.getString("directory"))
+                .longOpt("directory")
+                .build());
+        opts.addOption(Option.builder("b")
                 .hasArg()
-                .withArgName("[ip:]port")
-                .withDescription(rb.getString("bind-server"))
-                .withLongOpt("bind")
-                .create("b"));
-        opts.addOption(OptionBuilder
+                .argName("[ip:]port")
+                .desc(rb.getString("bind-server"))
+                .longOpt("bind")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("idle-timeout"))
-                .withLongOpt("idle-timeout")
-                .create(null));
+                .argName("ms")
+                .desc(rb.getString("idle-timeout"))
+                .longOpt("idle-timeout")
+                .build());
         opts.addOption(null, "udp", false, rb.getString("udp"));
     }
 

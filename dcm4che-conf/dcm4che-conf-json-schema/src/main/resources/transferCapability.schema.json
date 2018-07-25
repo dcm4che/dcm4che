@@ -17,7 +17,6 @@
       "title": "SOP Class",
       "description": "SOP Class UID",
       "type": "string",
-      "pattern": "^[0-2]((\\.0)|(\\.[1-9][0-9]*))*$",
       "format": "dcmSOPClass"
     },
     "dicomTransferRole": {
@@ -33,10 +32,9 @@
       "title": "Transfer Syntax",
       "description": "Transfer syntax(es) that may be requested as an SCU or that are offered as an SCP.",
       "type": "array",
+      "format": "dcmTransferSyntax",
       "items": {
-        "type": "string",
-        "pattern": "^[0-2]((\\.0)|(\\.[1-9][0-9]*))*$",
-        "format": "dcmTransferSyntax"
+        "type": "string"
       }
     },
     "dcmTransferCapability": {

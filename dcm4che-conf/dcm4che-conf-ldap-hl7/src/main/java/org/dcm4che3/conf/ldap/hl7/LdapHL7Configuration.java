@@ -45,7 +45,7 @@ import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.net.Device;
-import org.dcm4che3.net.HL7ApplicationInfo;
+import org.dcm4che3.net.hl7.HL7ApplicationInfo;
 import org.dcm4che3.net.hl7.HL7Application;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.dcm4che3.util.StringUtils;
@@ -53,7 +53,6 @@ import org.dcm4che3.util.StringUtils;
 import javax.naming.*;
 import javax.naming.directory.*;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -202,8 +201,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             while (ne.hasMore()) {
                 HL7ApplicationInfo hl7AppInfo = new HL7ApplicationInfo();
                 SearchResult ne1 = ne.next();
-                Enumeration<String> s1 = config.getStringEnumeration(ne1);
-                loadFrom(hl7AppInfo, ne1.getAttributes(), config.getDeviceName(s1));
+                loadFrom(hl7AppInfo, ne1.getAttributes(), LdapUtils.cutDeviceName(ne1.getName()));
                 results.add(hl7AppInfo);
             }
         } catch (NameNotFoundException e) {

@@ -55,8 +55,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -106,9 +107,6 @@ import org.dcm4che3.util.TagUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -140,6 +138,7 @@ public class DcmQRSCP {
     private boolean sendPendingCGet;
     private int sendPendingCMoveInterval;
     private int delayCFind;
+    private int delayCStore;
     private boolean ignoreCaseOfPN;
     private boolean matchNoValue;
     private final FilesetInfo fsInfo = new FilesetInfo();
@@ -285,7 +284,7 @@ public class DcmQRSCP {
                 return null;
 
             RetrieveTaskImpl retrieveTask = new RetrieveTaskImpl(
-                    Dimse.C_GET_RQ, as, pc, rq, matches, as, withoutBulkData);
+                    Dimse.C_GET_RQ, as, pc, rq, matches, as, withoutBulkData, delayCStore);
             retrieveTask.setSendPendingRSP(isSendPendingCGet());
             return retrieveTask;
         }
@@ -325,8 +324,8 @@ public class DcmQRSCP {
 
             AAssociateRQ aarq = makeAAssociateRQ(as.getLocalAET(), moveDest, matches);
             Association storeas = openStoreAssociation(as, remote, aarq);
-            BasicRetrieveTask retrieveTask = new BasicRetrieveTask(
-                    Dimse.C_MOVE_RQ, as, pc, rq, matches, storeas);
+            BasicRetrieveTask retrieveTask = new RetrieveTaskImpl(
+                    Dimse.C_MOVE_RQ, as, pc, rq, matches, storeas, false, delayCStore);
             retrieveTask.setSendPendingRSPInterval(getSendPendingCMoveInterval());
             return retrieveTask;
         }
@@ -554,6 +553,14 @@ public class DcmQRSCP {
         this.delayCFind = delayCFind;
     }
 
+    public int getDelayCStore() {
+        return delayCStore;
+    }
+
+    public void setDelayCStore(int delayCStore) {
+        this.delayCStore = delayCStore;
+    }
+
     public final void setRecordFactory(RecordFactory recFact) {
         this.recFact = recFact;
     }
@@ -579,18 +586,19 @@ public class DcmQRSCP {
         addStgCmtOptions(opts);
         addSendingPendingOptions(opts);
         addDelayCFindOptions(opts);
+        addDelayCStoreOptions(opts);
         addRemoteConnectionsOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmQRSCP.class);
     }
 
     @SuppressWarnings("static-access")
     private static void addInstanceAvailabilityOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("code")
-                .withDescription(rb.getString("availability"))
-                .withLongOpt("availability")
-                .create());
+                .argName("code")
+                .desc(rb.getString("availability"))
+                .longOpt("availability")
+                .build());
     }
 
     private static void addMatchingOptions(Options opts) {
@@ -605,44 +613,54 @@ public class DcmQRSCP {
     @SuppressWarnings("static-access")
     private static void addSendingPendingOptions(Options opts) {
         opts.addOption(null, "pending-cget", false, rb.getString("pending-cget"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("s")
-                .withDescription(rb.getString("pending-cmove"))
-                .withLongOpt("pending-cmove")
-                .create());
+                .argName("s")
+                .desc(rb.getString("pending-cmove"))
+                .longOpt("pending-cmove")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addDelayCFindOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("delay-cfind"))
-                .withLongOpt("delay-cfind")
-                .create());
+                .argName("ms")
+                .desc(rb.getString("delay-cfind"))
+                .longOpt("delay-cfind")
+                .build());
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addDelayCStoreOptions(Options opts) {
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("ms")
+                .desc(rb.getString("delay-cstore"))
+                .longOpt("delay-cstore")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addDicomDirOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file")
-                .withDescription(rb.getString("dicomdir"))
-                .withLongOpt("dicomdir")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("file")
+                .desc(rb.getString("dicomdir"))
+                .longOpt("dicomdir")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("pattern")
-                .withDescription(rb.getString("filepath"))
-                .withLongOpt("filepath")
-                .create(null));
-        opts.addOption(OptionBuilder
-                .withLongOpt("record-config")
+                .argName("pattern")
+                .desc(rb.getString("filepath"))
+                .longOpt("filepath")
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("record-config")
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("record-config"))
-                .create());
+                .argName("file|url")
+                .desc(rb.getString("record-config"))
+                .build());
     }
 
     @SuppressWarnings("static-access")
@@ -652,34 +670,34 @@ public class DcmQRSCP {
         opts.addOption(null, "no-query", false, rb.getString("no-query"));
         opts.addOption(null, "no-retrieve", false, rb.getString("no-retrieve"));
         opts.addOption(null, "relational", false, rb.getString("relational"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("storage-sop-classes"))
-                .withLongOpt("storage-sop-classes")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("file|url")
+                .desc(rb.getString("storage-sop-classes"))
+                .longOpt("storage-sop-classes")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("query-sop-classes"))
-                .withLongOpt("query-sop-classes")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("file|url")
+                .desc(rb.getString("query-sop-classes"))
+                .longOpt("query-sop-classes")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("retrieve-sop-classes"))
-                .withLongOpt("retrieve-sop-classes")
-                .create());
+                .argName("file|url")
+                .desc(rb.getString("retrieve-sop-classes"))
+                .longOpt("retrieve-sop-classes")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addRemoteConnectionsOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("ae-config"))
-                .withLongOpt("ae-config")
-                .create());
+                .argName("file|url")
+                .desc(rb.getString("ae-config"))
+                .longOpt("ae-config")
+                .build());
      }
 
     public static void main(String[] args) {
@@ -696,6 +714,7 @@ public class DcmQRSCP {
             configureStgCmt(main, cl);
             configureSendPending(main, cl);
             configureDelayCFind(main, cl);
+            configureDelayCStore(main, cl);
             configureRemoteConnections(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
@@ -749,6 +768,11 @@ public class DcmQRSCP {
     private static void configureDelayCFind(DcmQRSCP main, CommandLine cl) {
         if (cl.hasOption("delay-cfind"))
                 main.setDelayCFind(Integer.parseInt(cl.getOptionValue("delay-cfind")));
+    }
+
+    private static void configureDelayCStore(DcmQRSCP main, CommandLine cl) {
+        if (cl.hasOption("delay-cstore"))
+                main.setDelayCStore(Integer.parseInt(cl.getOptionValue("delay-cstore")));
     }
 
     private static void configureTransferCapability(DcmQRSCP main, CommandLine cl)

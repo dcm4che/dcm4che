@@ -60,12 +60,14 @@ import org.dcm4che3.util.SafeClose;
 class RetrieveTaskImpl extends BasicRetrieveTask {
 
     private final boolean withoutBulkData;
+    private final int delayCStore;
 
     public RetrieveTaskImpl(Dimse rq, Association rqas, PresentationContext pc,
-            Attributes rqCmd, List<InstanceLocator> matches,
-            Association storeas, boolean withoutBulkData) {
+                            Attributes rqCmd, List<InstanceLocator> matches,
+                            Association storeas, boolean withoutBulkData, int delayCStore) {
         super(rq, rqas, pc, rqCmd, matches, storeas);
         this.withoutBulkData = withoutBulkData;
+        this.delayCStore = delayCStore;
     }
 
     @Override
@@ -84,6 +86,10 @@ class RetrieveTaskImpl extends BasicRetrieveTask {
         } finally {
             SafeClose.close(in);
         }
+        if (delayCStore > 0)
+            try {
+                Thread.sleep(delayCStore);
+            } catch (InterruptedException ignore) {}
         return new DataWriterAdapter(attrs);
     }
 

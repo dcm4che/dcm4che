@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.1" name="org.keycloak.admin-client">
+    <resources>
+        <resource-root path="keycloak-admin-client-${keycloak.version}.jar"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.keycloak.keycloak-core"/>
+        <module name="org.keycloak.keycloak-common"/>
+        <module name="javax.api"/>
+        <module name="javax.ws.rs.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+        <module name="org.slf4j"/>
+    </dependencies>
+</module>

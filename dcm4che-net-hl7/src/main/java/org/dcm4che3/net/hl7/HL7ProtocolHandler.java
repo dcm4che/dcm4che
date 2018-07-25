@@ -46,6 +46,8 @@ import org.dcm4che3.hl7.HL7Message;
 import org.dcm4che3.hl7.MLLPConnection;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.TCPProtocolHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -54,20 +56,44 @@ import org.dcm4che3.net.TCPProtocolHandler;
 enum HL7ProtocolHandler implements TCPProtocolHandler {
     INSTANCE;
 
+    private static Logger LOG = LoggerFactory.getLogger(HL7ProtocolHandler.class);
+
     @Override
     public void onAccept(Connection conn, Socket s) throws IOException {
-        s.setSoTimeout(conn.getIdleTimeout());
-        MLLPConnection mllp = new MLLPConnection(s);
-        byte[] data;
-        while ((data = mllp.readMessage()) != null) {
-            UnparsedHL7Message msg = new UnparsedHL7Message(data);
-            try {
-               data = conn.getDevice().getDeviceExtension(HL7DeviceExtension.class).onMessage(conn, s, msg);
-            } catch (HL7Exception e) {
-                data = HL7Message.makeACK(msg.msh(), e).getBytes(null);
-            }
-            mllp.writeMessage(data);
+        conn.getDevice().execute(new HL7Receiver(conn, s));
+    }
+
+    private static class HL7Receiver implements Runnable {
+
+        final Connection conn;
+        final Socket s;
+        final HL7DeviceExtension hl7dev;
+
+        HL7Receiver(Connection conn, Socket s) throws IOException {
+            this.conn = conn;
+            this.s = s;
+            this.hl7dev = conn.getDevice().getDeviceExtensionNotNull(HL7DeviceExtension.class);
         }
-        conn.close(s);
+
+        public void run() {
+            try {
+                s.setSoTimeout(conn.getIdleTimeout());
+                MLLPConnection mllp = new MLLPConnection(s);
+                byte[] data;
+                while ((data = mllp.readMessage()) != null) {
+                    UnparsedHL7Message msg = new UnparsedHL7Message(data);
+                    try {
+                        data = hl7dev.onMessage(conn, s, msg);
+                    } catch (HL7Exception e) {
+                        data = HL7Message.makeACK(msg.msh(), e).getBytes(null);
+                    }
+                    mllp.writeMessage(data);
+                }
+            } catch (IOException e) {
+                LOG.warn("Exception on accepted connection {}:", s, e);
+            } finally {
+                conn.close(s);
+            }
+        }
     }
 }

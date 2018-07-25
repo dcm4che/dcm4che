@@ -1,6 +1,6 @@
     usage: dcm2dcm [<options>] [-t <uid>] <infile> <outfile>
-                   or dcm2dcm [Options] [-t <uid>] <uid> <infile>... <outdir>
-                   or dcm2dcm [Options] [-t <uid>] <uid> <indir>... <outdir>
+    or dcm2dcm [Options] [-t <uid>] <infile>... <outdir>
+    or dcm2dcm [Options] [-t <uid>] <indir>... <outdir>
     
     Transcode one or several DICOM files according the specified Transfer
     Syntax.
@@ -13,13 +13,13 @@
         --expl-seq-len            encode sequences with explicit length; at
                                   default, non-empty sequences are encoded
                                   with undefined length
+     -F,--no-fmi                  transcode sources to Implicit VR Little
+                                  Endian and store it without File Meta
+                                  Information
      -f,--retain-fmi              retain File Meta Information from source
                                   files if available. At default the File Meta
                                   Information is replaced by one referencing
                                   dcm4che-3.x
-     -F,--no-fmi                  transcode sources to Implicit VR Little
-                                  Endian and store it without File Meta
-                                  Information
         --group-len               include (gggg,0000) Group Length attributes;
                                   at default, optional Group Length attributes
                                   are excluded
@@ -28,16 +28,20 @@
                                   1.2.840.10008.1.2.4.91
         --j2kr                    compress JPEG 2000 Lossless; equivalent to
                                   -t 1.2.840.10008.1.2.4.90
+        --jlsl                    compress JPEG LS Lossless; equivalent to -t
+                                  1.2.840.10008.1.2.4.80
+        --jlsn                    compress JPEG LS Lossy (Near-Lossless);
+                                  equivalent to -t 1.2.840.10008.1.2.4.81
         --jpeg                    compress JPEG Lossy; equivalent to -t
                                   1.2.840.10008.1.2.4.50 or .51
         --jpll                    compress JPEG Lossless; equivalent to -t
                                   1.2.840.10008.1.2.4.70
-        --jpls                    compress JPEG LS Lossless; equivalent to -t
-                                  1.2.840.10008.1.2.4.80
-     -Q <encoding-rate>           encoding rate in bits per pixel of JPEG 2000
-                                  Lossy compression
+     -N <near-lossless>           Near-Lossless parameter of JPEG LS Lossy
+                                  compression
      -q <quality>                 compression quality (0.0-1.0) of JPEG Lossy
                                   compression
+     -Q <encoding-rate>           encoding rate in bits per pixel of JPEG 2000
+                                  Lossy compression
      -t,--transfer-syntax <uid>   transcode sources to specified Transfer
                                   Syntax. At default use Explicit VR Little
                                   Endian

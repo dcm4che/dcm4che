@@ -51,6 +51,7 @@ import java.net.URL;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Bill Wallace <wayfarer3130@gmail.com>
  */
 public class BulkData implements Value {
 
@@ -226,5 +227,64 @@ public class BulkData implements Value {
             StringUtils.maskEmpty(ois.readUTF(), null),
             StringUtils.maskEmpty(ois.readUTF(), null),
             ois.readBoolean());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        BulkData other = (BulkData) obj;
+        if (bigEndian != other.bigEndian)
+            return false;
+        if (uri == null) {
+            if (other.uri != null)
+                return false;
+        } else if (!uri.equals(other.uri))
+            return false;
+        if (uuid == null) {
+            if (other.uuid != null)
+                return false;
+        } else if (!uuid.equals(other.uuid))
+            return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (bigEndian ? 1231 : 1237);
+        result = prime * result + ((uri == null) ? 0 : uri.hashCode());
+        result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
+        return result;
+    }
+
+    /** Returns the index after the segment ends */
+    public long getSegmentEnd() {
+        if( length==-1 ) return -1;
+        return offset() + longLength();
+    }
+
+    /** Gets the actual length as a long so it can represent the 2 gb to 4 gb range of lengths */
+    public long longLength() {
+        if( length==-1 ) return -1;
+        return length & 0xFFFFFFFFl;
+    }
+
+    public void setOffset(long offset) {
+        this.offset = offset;
+        this.uri = this.uri.substring(0, this.uriPathEnd)+"?offset="+offset+"&length="+this.length;
+    }
+
+    public void setLength(long longLength) {
+        if( longLength<-1 || longLength>0xFFFFFFF0l ) {
+            throw new IllegalArgumentException("BulkData length limited to -1..2^32-16 but was "+longLength);
+        }
+        this.length = (int) longLength;
+        this.uri = this.uri.substring(0, this.uriPathEnd)+"?offset="+this.offset+"&length="+this.length;
     }
 }

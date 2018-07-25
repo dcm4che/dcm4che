@@ -70,7 +70,7 @@ public class JPEGHeader {
         this.offsets = new int[n];
         for (int i = 0, offset = 0; i < n; i++) {
             offsets[i] = (offset = nextMarker(data, offset)) ;
-            if (!JPEG.isStandalone(offset++ & 255))
+            if (!JPEG.isStandalone(data[offset++] & 255))
                 offset += ByteUtils.bytesToUShortBE(data, offset);
         }
     }

@@ -111,7 +111,8 @@ public class JSONReader {
     }
 
     public Attributes readDataset(Attributes attrs) {
-        next();
+        boolean wrappedInArray = next() == Event.START_ARRAY;
+        if (wrappedInArray) next();
         expect(Event.START_OBJECT);
         if (attrs == null) {
             attrs = new Attributes();
@@ -119,6 +120,7 @@ public class JSONReader {
         fmi = null;
         next();
         doReadDataset(attrs);
+        if (wrappedInArray) next();
         return attrs;
     }
 

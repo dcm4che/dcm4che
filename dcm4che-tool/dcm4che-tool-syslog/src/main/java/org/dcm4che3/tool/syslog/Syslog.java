@@ -50,8 +50,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Connection.Protocol;
@@ -114,88 +115,88 @@ public class Syslog {
 
     @SuppressWarnings("static-access")
     private static void addConnectOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("c")
                 .hasArg()
-                .withArgName("host:port")
-                .withDescription(rb.getString("connect"))
-                .withLongOpt("connect")
-                .create("c"));
-        opts.addOption(OptionBuilder
+                .argName("host:port")
+                .desc(rb.getString("connect"))
+                .longOpt("connect")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("[user:password@]host:port")
-                .withDescription(rb.getString("proxy"))
-                .withLongOpt("proxy")
-                .create(null));
+                .argName("[user:password@]host:port")
+                .desc(rb.getString("proxy"))
+                .longOpt("proxy")
+                .build());
         opts.addOption(null, "udp", false, rb.getString("udp"));
         CLIUtils.addConnectTimeoutOption(opts);
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("idle-timeout"))
-                .withLongOpt("idle-timeout")
-                .create(null));
+                .argName("ms")
+                .desc(rb.getString("idle-timeout"))
+                .longOpt("idle-timeout")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addBindOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("b")
                 .hasArg()
-                .withArgName("ip")
-                .withDescription(rb.getString("bind"))
-                .withLongOpt("bind")
-                .create("b"));
+                .argName("ip")
+                .desc(rb.getString("bind"))
+                .longOpt("bind")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addAuditLogger(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("facility")
-                .withDescription(rb.getString("facility"))
-                .withLongOpt("facility")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("facility")
+                .desc(rb.getString("facility"))
+                .longOpt("facility")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("level")
-                .withDescription(rb.getString("level"))
-                .withLongOpt("level")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("level")
+                .desc(rb.getString("level"))
+                .longOpt("level")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("name")
-                .withDescription(rb.getString("app-name"))
-                .withLongOpt("app-name")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("name")
+                .desc(rb.getString("app-name"))
+                .longOpt("app-name")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("id")
-                .withDescription(rb.getString("msg-id"))
-                .withLongOpt("msg-id")
-                .create(null));
+                .argName("id")
+                .desc(rb.getString("msg-id"))
+                .longOpt("msg-id")
+                .build());
         opts.addOption(null, "utc", false, rb.getString("utc"));
         opts.addOption(null, "no-bom", false, rb.getString("no-bom"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("s")
-                .withDescription(rb.getString("retry"))
-                .withLongOpt("retry")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("s")
+                .desc(rb.getString("retry"))
+                .longOpt("retry")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("dir")
-                .withDescription(rb.getString("spool-dir"))
-                .withLongOpt("spool-dir")
-                .create(null));
+                .argName("dir")
+                .desc(rb.getString("spool-dir"))
+                .longOpt("spool-dir")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addSendOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("delay"))
-                .withLongOpt("delay")
-                .create(null));
+                .argName("ms")
+                .desc(rb.getString("delay"))
+                .longOpt("delay")
+                .build());
     }
 
     private static void configureConnect(Connection conn, CommandLine cl)

@@ -1,0 +1,3 @@
+org.dcm4che3.opencv.NativeJLSImageReaderSpi
+org.dcm4che3.opencv.NativeJPEGImageReaderSpi
+org.dcm4che3.opencv.NativeJ2kImageReaderSpi

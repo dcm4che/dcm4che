@@ -106,6 +106,7 @@ public class Decompressor {
     protected ImageReader decompressor;
     protected ImageReadParam readParam;
     protected PatchJPEGLS patchJpegLS;
+    protected ImageDescriptor imageDescriptor;
 
     public Decompressor(Attributes dataset, String tsuid) {
         if (tsuid == null)
@@ -132,6 +133,7 @@ public class Decompressor {
         this.frames = dataset.getInt(Tag.NumberOfFrames, 1);
         this.frameLength = rows * cols * samples * (bitsAllocated>>>3);
         this.length = frameLength * frames;
+        this.imageDescriptor = new ImageDescriptor(dataset);
         
         if (pixeldata instanceof Fragments) {
             if (!tstype.isPixeldataEncapsulated())
@@ -283,6 +285,7 @@ public class Decompressor {
             throws IOException {
         SegmentedInputImageStream siis =
                 new SegmentedInputImageStream(iis, pixeldataFragments, index);
+        siis.setImageDescriptor(imageDescriptor);
         decompressor.setInput(patchJpegLS != null
                 ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)
                 : siis);

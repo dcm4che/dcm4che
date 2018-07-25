@@ -45,12 +45,9 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>5.11.0</version>
+    <version>5.14.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <properties>
-    <keycloak.version>3.2.1.Final</keycloak.version>
-  </properties>
   <artifactId>dcm4che-audit-keycloak</artifactId>
   <dependencies>
     <dependency>

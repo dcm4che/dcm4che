@@ -40,8 +40,6 @@ package org.dcm4che3.data;
 
 import java.io.Serializable;
 
-import org.dcm4che3.data.Tag;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -68,7 +66,7 @@ public class Code implements Serializable {
             throw new NullPointerException("Missing Code Meaning");
         this.codeValue = codeValue;
         this.codingSchemeDesignator = codingSchemeDesignator;
-        this.codingSchemeVersion = codingSchemeVersion;
+        this.codingSchemeVersion = nullifyDCM01(codingSchemeVersion);
         this.codeMeaning = codeMeaning;
     }
 
@@ -90,8 +88,12 @@ public class Code implements Serializable {
             int endVersion = s.lastIndexOf(']', endScheme - 1);
             endScheme = s.lastIndexOf('[', endVersion - 1);
             this.codingSchemeDesignator = trimsubstring(s, endVal+1, endScheme);
-            this.codingSchemeVersion = trimsubstring(s, endScheme+1, endVersion);
+            this.codingSchemeVersion = nullifyDCM01(trimsubstring(s, endScheme+1, endVersion));
         }
+    }
+
+    private String nullifyDCM01(String codingSchemeVersion) {
+        return "01".equals(codingSchemeVersion) && "DCM".equals(codingSchemeDesignator) ? null : codingSchemeVersion;
     }
 
     private String trimsubstring(String s, int start, int end) {

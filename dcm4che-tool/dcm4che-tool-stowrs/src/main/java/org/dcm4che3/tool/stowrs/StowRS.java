@@ -45,12 +45,8 @@ import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -58,12 +54,7 @@ import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.MissingArgumentException;
-import org.apache.commons.cli.MissingOptionException;
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
@@ -79,11 +70,8 @@ import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.TagUtils;
-import org.dcm4che3.util.ByteUtils;
-import org.dcm4che3.util.DateUtils;
-import org.dcm4che3.util.StreamUtils;
-import org.dcm4che3.util.UIDUtils;
+import org.dcm4che3.util.*;
+import org.dcm4che3.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,20 +85,25 @@ public class StowRS {
     private Attributes keys;
     private static Options opts;
     private String URL;
+    private String user;
     private boolean noAppn;
     private boolean pixelHeader;
+    private String sampleMetadataResourceURL;
+    private boolean isSecondaryCapture;
     private JPEGHeader jpegHeader;
     private String accept;
     private String contentType;
     private String metadataFile;
-    private String bulkdataType;
     private String sopCUID;
+    private String contentLoc;
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
-    private BulkData defaultBulkdata = new BulkData(null, "bulk", false);
     private static final String boundary = "myboundary";
-    private byte[] pixelData;
-    private File pixelDataFile;
+    private static final String APPLN_DICOM = "application/dicom";
+    private static final String APPLN_DICOM_XML = "application/dicom+xml";
+    private FileType fileType;
+    private List<Attributes> metadataList = new ArrayList<>();
+    private Map<String, Object> contentLocBulkData = new HashMap<>();
 
     private static final int INIT_BUFFER_SIZE = 8192;
     private static final int MAX_BUFFER_SIZE = 10485768;
@@ -120,6 +113,11 @@ public class StowRS {
             Tag.StudyInstanceUID,
             Tag.SeriesInstanceUID,
             Tag.SOPInstanceUID
+    };
+
+    private static final long[] DA_TM_TAGS = {
+            Tag.ContentDateAndTime,
+            Tag.AcquisitionDateTime
     };
 
     private static final int[] IMAGE_PIXEL_TAGS = {
@@ -142,15 +140,48 @@ public class StowRS {
     private static CommandLine parseCommandLine(String[] args)
             throws ParseException {
         opts = new Options();
-        opts.addOption(OptionBuilder.hasArgs(2).withArgName("[seq/]attr=value")
-                .withValueSeparator().withDescription(rb.getString("metadata"))
-                .create("m"));
+        opts.addOption(Option.builder("m").numberOfArgs(2).argName("[seq/]attr=value")
+                .valueSeparator().desc(rb.getString("metadata"))
+                .build());
         opts.addOption("f", "file", true, rb.getString("file"));
-        opts.addOption("u", "url", true, rb.getString("url"));
+        opts.addOption(Option.builder().hasArg().argName("url").longOpt("url")
+                .desc(rb.getString("url")).build());
+        opts.addOption(Option.builder("u").hasArg().argName("user:password").longOpt("user")
+                .desc(rb.getString("user")).build());
         opts.addOption("t", "type", true, rb.getString("type"));
-        opts.addOption("ph", "pixel-header", true, rb.getString("pixel-header"));
-        opts.addOption("na","no-appn", true, rb.getString("no-appn"));
+        opts.addOption(Option.builder()
+                .longOpt("pixel-header")
+                .hasArg(false)
+                .desc(rb.getString("pixel-header"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("no-appn")
+                .hasArg(false)
+                .desc(rb.getString("no-appn"))
+                .build());
         opts.addOption("a","accept", true, rb.getString("accept"));
+        OptionGroup sampleMetadataOG = new OptionGroup();
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("sc")
+                .hasArg(false)
+                .desc(rb.getString("sc"))
+                .build());
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("xc")
+                .hasArg(false)
+                .desc(rb.getString("xc"))
+                .build());
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("pdf")
+                .hasArg(false)
+                .desc(rb.getString("pdf"))
+                .build());
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("cda")
+                .hasArg(false)
+                .desc(rb.getString("cda"))
+                .build());
+        opts.addOptionGroup(sampleMetadataOG);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StowRS.class);
     }
@@ -163,20 +194,15 @@ public class StowRS {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        CommandLine cl = null;
         try {
-            cl = parseCommandLine(args);
+            CommandLine cl = parseCommandLine(args);
             StowRS instance = new StowRS();
             instance.keys = configureKeys(cl);
             LOG.info("added keys for coercion: \n" + instance.keys.toString());
             List<String> files = cl.getArgList();
             doNecessaryChecks(cl, instance, files);
-            if (instance.contentType.equals("application/dicom")) {
-                LOG.info("Storing DICOM objects");
-                stow(instance, null, files);
-                return;
-            }
-            stowMetadataAndBulkdata(instance, files);
+            LOG.info("Storing objects.");
+            stow(instance, files);
         } catch (ParseException e) {
             System.err.println("stowrs: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -192,18 +218,74 @@ public class StowRS {
             throws Exception {
         if (files.isEmpty())
             throw new MissingArgumentException("No pixel data files or dicom files specified");
-        if ((instance.URL = cl.getOptionValue("u")) == null)
+        if ((instance.URL = cl.getOptionValue("url")) == null)
             throw new MissingOptionException("Missing url.");
-        LOG.info("Check extension of first file only to determine whether STOW is for dicom or non dicom type of objects.");
-        instance.contentType = getContentType(cl.getOptionValue("t"), files.get(0));
+        checkFileType(files, instance);
+        instance.user = cl.getOptionValue("u");
         instance.metadataFile = cl.getOptionValue("f");
-        instance.accept = getAccept(cl.getOptionValue("a"), instance.contentType);
-        instance.pixelHeader = Boolean.valueOf(cl.getOptionValue("pixel-header"));
-        instance.noAppn = Boolean.valueOf(cl.getOptionValue("no-appn"));
+        setContentAndAcceptType(instance, cl);
+        instance.pixelHeader = cl.hasOption("pixel-header");
+        instance.noAppn = cl.hasOption("no-appn");
+        instance.isSecondaryCapture = cl.hasOption("sc");
+        instance.sampleMetadataResourceURL = cl.hasOption("sc")
+                ? "resource:secondaryCaptureImageMetadata.xml"
+                : cl.hasOption("xc")
+                    ? "resource:vlPhotographicImageMetadata.xml"
+                    : cl.hasOption("pdf")
+                        ? "resource:encapsulatedPDFMetadata.xml"
+                        : cl.hasOption("cda")
+                            ? "resource:encapsulatedCDAMetadata.xml" : null;
+    }
+
+    enum FileType {
+        PDF("application/pdf"),
+        CDA("text/XML"),
+        IMAGE("image/jpeg"),
+        VIDEO("video/mpeg"),
+        NOT_BULKDATA("");
+
+        String bulkdataType;
+
+        FileType(String bulkdataType) {
+            this.bulkdataType = bulkdataType;
+        }
     }
 
     enum Extension {
-        pdf, mpg, mpg2, mpeg, jpeg, jpg, notBulkdata
+        pdf(FileType.PDF),
+        xml(FileType.CDA),
+        mpg(FileType.VIDEO),
+        mpg2(FileType.VIDEO),
+        mpeg(FileType.VIDEO),
+        jpeg(FileType.IMAGE),
+        jpg(FileType.IMAGE),
+        notBulkdata(FileType.NOT_BULKDATA);
+
+        final FileType fileType;
+
+        Extension(FileType fileType) {
+            this.fileType = fileType;
+        }
+    }
+
+    private static void checkFileType(List<String> files, StowRS instance) {
+        FileType fileType = getExt(files.get(0)).fileType;
+        for (int i = 1; i < files.size(); i++)
+            if (fileType != getExt(files.get(i)).fileType)
+                throw new IllegalArgumentException("Uploading multiple bulkdata files of different file types not supported.");
+
+        instance.fileType = fileType;
+        if (fileType == FileType.NOT_BULKDATA)
+            return;
+
+        instance.sopCUID = fileType == FileType.IMAGE
+                ? instance.isSecondaryCapture
+                    ? UID.SecondaryCaptureImageStorage : UID.VLPhotographicImageStorage
+                : fileType == FileType.VIDEO
+                    ? UID.VideoPhotographicImageStorage
+                    : fileType == FileType.PDF
+                        ? UID.EncapsulatedPDFStorage
+                        : UID.EncapsulatedCDAStorage;
     }
 
     private static Extension getExt(String file) {
@@ -214,102 +296,123 @@ public class StowRS {
         return Extension.notBulkdata;
     }
 
-    private static String getContentType(String value, String firstFile) {
-        if (value != null) {
-            value = value.toLowerCase();
-            if (!(value.equals("xml") || value.equals("json")))
-                throw new IllegalArgumentException("Unsupported content type. Read -t option in stowrs help");
-            else
-                return "application/dicom+"+value;
-        }
-        return getExt(firstFile) == Extension.notBulkdata ? "application/dicom" : "application/dicom+xml";
+    private static void setContentAndAcceptType(StowRS instance, CommandLine cl) {
+        String contentType = getOptionValue("t", cl);
+        instance.contentType = contentType == null
+                                ? instance.fileType == FileType.NOT_BULKDATA
+                                    ? APPLN_DICOM : APPLN_DICOM_XML
+                                : contentType;
+        String acceptType = getOptionValue("a", cl);
+        instance.accept = acceptType == null
+                            ? instance.contentType.equals(APPLN_DICOM)
+                                ? APPLN_DICOM_XML : contentType
+                            : acceptType;
     }
 
-    private static String getAccept(String value, String contentType) {
-        if (value != null) {
-            if (!(value.equals("xml") || value.equals("json")))
-                throw new IllegalArgumentException("Unsupported accept type. Read -a option in stowrs help");
-            else
-                return "application/dicom+"+value;
-        }
-        return contentType.equals("application/dicom") ? "application/dicom+xml" : contentType;
+    private static String getOptionValue(String option, CommandLine cl) {
+        String optionValue = cl.getOptionValue(option);
+        if (optionValue == null)
+            return null;
+
+        optionValue = optionValue.toLowerCase();
+        if (!(optionValue.equals("xml") || optionValue.equals("json")))
+            throw new IllegalArgumentException("Unsupported type. Read -" + option + " option in stowrs help");
+
+        return "application/dicom+" + optionValue;
     }
 
-    private static void stowMetadataAndBulkdata(StowRS instance, List<String> files) throws Exception {
-        LOG.info("Storing metadata and bulkdata.");
-        Attributes metadata = getMetadata(instance);
-        Path bulkdataFile = Paths.get(files.get(0));
-        Extension ext = getExt(files.get(0));
-        switch (ext) {
-            case pdf:
-                readPDF(instance, metadata, bulkdataFile);
+    private static Attributes createMetadata(StowRS instance, File bulkdataFile, Attributes staticMetadata) throws Exception {
+        LOG.info("Supplementing file specific metadata.");
+        Attributes metadata = new Attributes(staticMetadata);
+        switch (instance.fileType) {
+            case PDF:
+            case CDA:
+                pdfMetadata(instance, metadata, bulkdataFile);
                 break;
-            case mpg:
-            case mpg2:
-            case mpeg:
-            case jpeg:
-            case jpg:
-                readPixelHeader(instance, metadata, bulkdataFile, ext);
+            case IMAGE:
+            case VIDEO:
+                pixelMetadata(instance, metadata, bulkdataFile);
                 break;
-            case notBulkdata:
+            default:
                 throw new IllegalArgumentException("Unsupported bulkdata type. Read stowrs help.");
         }
-        stow(instance, metadata, files);
+        return metadata;
     }
 
-    private static void readPDF(StowRS instance, Attributes metadata, Path bulkdataFile) throws Exception {
-        instance.bulkdataType = "application/pdf";
-        instance.sopCUID = UID.EncapsulatedPDFStorage;
-        setPDFAttributes(bulkdataFile, metadata);
-        if (metadata.getValue(Tag.EncapsulatedDocument) == null)
-            metadata.setValue(Tag.EncapsulatedDocument, VR.OB, instance.defaultBulkdata);
-        supplementUIDs(metadata, instance);
-        readFile(instance, null, null, bulkdataFile.toFile());
+    private static void pdfMetadata(StowRS instance, Attributes metadata, File bulkdataFile) {
+        supplementBulkdata(metadata, Tag.EncapsulatedDocument, instance);
+        instance.contentLocBulkData.put(instance.contentLoc, bulkdataFile);
+        supplementMissingUIDs(metadata);
+        supplementMissingDateTime(metadata, bulkdataFile);
+        supplementDefaultValue(metadata, Tag.MIMETypeOfEncapsulatedDocument, instance.fileType.bulkdataType);
     }
 
-    private static Attributes getMetadata(StowRS instance)
+    private static Attributes createStaticMetadata(StowRS instance)
             throws Exception {
-        Attributes metadata = new Attributes();
+        LOG.info("Creating static metadata. Set defaults, if essential attributes are not present.");
+        Attributes metadata = createSampleMetadata(instance);
         String metadataFile = instance.metadataFile;
         if (metadataFile != null) {
             String metadataFileExt = metadataFile.substring(metadataFile.lastIndexOf(".")+1).toLowerCase();
             if (!metadataFileExt.equals("xml"))
                 throw new IllegalArgumentException("Metadata file extension not supported. Read -f option in stowrs help");
-            Path filePath = Paths.get(metadataFile);
-            metadata = SAXReader.parse(filePath.toString());
+
+            metadata = SAXReader.parse(Paths.get(metadataFile).toString(), metadata);
         }
+
         metadata.update(Attributes.UpdatePolicy.OVERWRITE, instance.keys, new Attributes());
+        supplementDefaultValue(metadata, Tag.PatientName, patName);
+        supplementDefaultValue(metadata, Tag.SOPClassUID, instance.sopCUID);
         return metadata;
     }
 
-    private static void supplementUIDs(Attributes metadata, StowRS instance) {
-        LOG.info("Set defaults, if required attributes are not present.");
-        supplementDefaultValue(metadata, Tag.PatientName, VR.PN, patName);
-        supplementDefaultValue(metadata, Tag.SOPClassUID, VR.UI, instance.sopCUID);
+    private static Attributes createSampleMetadata(StowRS instance) throws Exception {
+        return (instance.fileType == FileType.IMAGE || instance.fileType == FileType.PDF)
+                && instance.sampleMetadataResourceURL != null
+                ? SAXReader.parse(StreamUtils.openFileOrURL(instance.sampleMetadataResourceURL))
+                : new Attributes();
+    }
+
+    private static void supplementMissingUIDs(Attributes metadata) {
         for (int tag : IUIDS_TAGS)
             if (!metadata.containsValue(tag))
                 metadata.setString(tag, VR.UI, UIDUtils.createUID());
     }
 
-    private static void supplementDefaultValue(Attributes metadata, int tag, VR vr, String value) {
+    private static void supplementDefaultValue(Attributes metadata, int tag, String value) {
         if (!metadata.containsValue(tag))
-            metadata.setString(tag, vr, value);
+            metadata.setString(tag, DICT.vrOf(tag), value);
     }
 
-    private static void readPixelHeader(StowRS instance, Attributes metadata, Path pixelDataFile, Extension ext)
+    private static void supplementMissingDateTime(Attributes metadata, File bulkdataFile) {
+        Date date = new Date(bulkdataFile.lastModified());
+        for (long tag : DA_TM_TAGS)
+            if (!metadata.containsValue((int) (tag >>> 32)))
+                metadata.setDate(tag, date);
+    }
+
+    private static void supplementBulkdata(Attributes metadata, int tag, StowRS instance) {
+        if (!metadata.containsValue(tag)) {
+            instance.contentLoc = "bulk" + UIDUtils.createUID();
+            metadata.setValue(tag, VR.OB, new BulkData(null, instance.contentLoc, false));
+        }
+    }
+
+    private static void pixelMetadata(StowRS instance, Attributes metadata, File pixelDataFile)
             throws Exception {
-        CompressedPixelData compressedPixelData = CompressedPixelData.valueOf(instance, ext);
-        File file = pixelDataFile.toFile();
-        supplementUIDs(metadata, instance);
-        if (metadata.getValue(Tag.PixelData) == null)
-            metadata.setValue(Tag.PixelData, VR.OB, instance.defaultBulkdata);
-        readFile(instance, metadata, compressedPixelData, file);
+        supplementBulkdata(metadata, Tag.PixelData, instance);
+        supplementMissingUIDs(metadata);
+        supplementMissingDateTime(metadata, pixelDataFile);
+        CompressedPixelData compressedPixelData = CompressedPixelData.valueOf(instance);
+        if (instance.pixelHeader)
+            readFile(instance, metadata, compressedPixelData, pixelDataFile);
+        else
+            instance.contentLocBulkData.put(instance.contentLoc, pixelDataFile);
     }
 
     private static void readFile(StowRS instance, Attributes metadata, CompressedPixelData compressedPixelData, File file) throws IOException {
         boolean result = false;
         try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
-            instance.pixelDataFile = file;
             byte[] btemp = ByteUtils.EMPTY_BYTES;
             int rl = 0;
             int grow = INIT_BUFFER_SIZE;
@@ -324,15 +427,17 @@ public class StowRS {
                     if (compressedPixelData.parseHeader(instance, header, metadata, file)) {
                         result = true;
                         verifyImagePixelModule(metadata);
-                        if (instance.pixelDataFile.length() > MAX_BUFFER_SIZE)
+                        if (fileLen > MAX_BUFFER_SIZE) {
+                            instance.contentLocBulkData.put(instance.contentLoc, file);
                             return;
+                        }
                     }
                 }
             }
             int off = 0;
-            if (instance.noAppn)
+            if (instance.noAppn && instance.jpegHeader != null)
                 off = instance.jpegHeader.offsetAfterAPP();
-            instance.pixelData = Arrays.copyOfRange(btemp, off, fileLen);
+            instance.contentLocBulkData.put(instance.contentLoc, Arrays.copyOfRange(btemp, off, fileLen));
         }
     }
 
@@ -353,17 +458,8 @@ public class StowRS {
 
         abstract boolean parseHeader(StowRS instance, byte[] header, Attributes metadata, File file);
 
-        static CompressedPixelData valueOf(StowRS instance, Extension ext) {
-            if (ext == Extension.jpeg || ext == Extension.jpg) {
-                instance.bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline1;
-                instance.sopCUID = UID.SecondaryCaptureImageStorage;
-                return JPEG;
-            }
-            else {
-                instance.bulkdataType = "video/mpeg";
-                instance.sopCUID = UID.VideoPhotographicImageStorage;
-                return MPEG;
-            }
+        static CompressedPixelData valueOf(StowRS instance) {
+            return instance.fileType == FileType.IMAGE ? JPEG : MPEG;
         }
     }
 
@@ -380,24 +476,24 @@ public class StowRS {
                 "Missing " + DICT.keywordOf(tag) + " " + TagUtils.toString(tag));
     }
 
-    private static void stow(StowRS instance, Attributes metadata, List<String> files)
+    private static void stow(StowRS instance, List<String> files)
             throws Exception {
-        OutputStream out = null;
-        try {
-            URL newUrl = new URL(instance.URL);
-            final HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type",
-                    "multipart/related; type=" + instance.contentType + "; boundary=" + boundary);
-            connection.setRequestProperty("Accept", instance.accept);
-            out = connection.getOutputStream();
-            out.write(("\r\n--" + boundary + "\r\n").getBytes());
-            out.write(("Content-Type: " + instance.contentType + "\r\n").getBytes());
-            out.write("\r\n".getBytes());
-            logOutgoing(connection);
-            writeData(instance, metadata, files, out);
+        URL newUrl = new URL(instance.URL);
+        final HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type",
+                "multipart/related; type=\"" + instance.contentType + "\"; boundary=" + boundary);
+        connection.setRequestProperty("Accept", instance.accept);
+        logOutgoing(connection);
+        if (instance.user != null) {
+            String basicAuth = basicAuth(instance.user);
+            LOG.info("> Authorization: " + basicAuth);
+            connection.setRequestProperty("Authorization", basicAuth);
+        }
+        try (OutputStream out = connection.getOutputStream()) {
+            writeData(instance, files, out);
             out.write(("\r\n--" + boundary + "--\r\n").getBytes());
             out.flush();
             logIncoming(connection);
@@ -405,10 +501,15 @@ public class StowRS {
             LOG.info("STOW successful!");
         } catch (Exception e) {
             LOG.error("Exception : " + e.getMessage());
-        } finally {
-            if (out != null)
-                out.close();
         }
+    }
+
+    private static String basicAuth(String userPswd) {
+        byte[] userPswdBytes = userPswd.getBytes();
+        int len = (userPswdBytes.length * 4 / 3 + 3) & ~3;
+        char[] ch = new char[len];
+        Base64.encode(userPswdBytes, 0, userPswdBytes.length, ch, 0);
+        return "Basic " + new String(ch);
     }
 
     private static void logOutgoing(HttpURLConnection connection) {
@@ -445,83 +546,95 @@ public class StowRS {
         }
     }
 
-    private static void writeData(StowRS instance, Attributes metadata, List<String> files,
+    private static void writeData(StowRS instance, List<String> files,
                                   OutputStream out) throws Exception {
         if (!instance.contentType.equals("application/dicom")) {
-            writeMetadataAndBulkData(instance, metadata, out);
+            writeMetadataAndBulkData(instance, out, files);
             return;
         }
-        Files.copy(Paths.get(files.get(0)), out);
-        for (int i = 1; i < files.size(); i++) {
-            out.write(("\r\n--"+boundary+"\r\n").getBytes());
+        for (String file : files) {
+            out.write(("\r\n--" + boundary + "\r\n").getBytes());
             out.write(("Content-Type: " + instance.contentType + "\r\n").getBytes());
             out.write("\r\n".getBytes());
-            Files.copy(Paths.get(files.get(i)), out);
+            Files.copy(Paths.get(file), out);
         }
     }
 
-    private static void writeMetadataAndBulkData(StowRS instance,
-                                                Attributes metadata, OutputStream out)
+    private static void writeMetadataAndBulkData(StowRS instance, OutputStream out, List<String> files)
             throws Exception {
         try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
-            if (instance.contentType.equals("application/dicom+xml"))
-                SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
+            boolean isXmlContentType = instance.contentType.equals(APPLN_DICOM_XML);
+            Attributes staticMetadata = createStaticMetadata(instance);
+            for (String file : files) {
+                instance.metadataList.add(createMetadata(instance, Paths.get(file).toFile(), staticMetadata));
+                if (isXmlContentType)
+                    break;
+            }
+
+            if (isXmlContentType)
+                SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(instance.metadataList.get(0));
             else
                 try (JsonGenerator gen = Json.createGenerator(bOut)) {
-                    new JSONWriter(gen).write(metadata);
+                    gen.writeStartArray();
+                    for (Attributes metadata : instance.metadataList)
+                        new JSONWriter(gen).write(metadata);
+                    gen.writeEnd();
+                    gen.flush();
                 }
             LOG.debug("Metadata being sent is : " + bOut.toString());
-            out.write(bOut.toByteArray());
             out.write(("\r\n--" + boundary + "\r\n").getBytes());
-            out.write(("Content-Type: " + instance.bulkdataType + "\r\n").getBytes());
-            String contentLoc = instance.bulkdataType.equals("application/pdf")
-                    ? ((BulkData) metadata.getValue(Tag.EncapsulatedDocument)).getURI()
-                    : ((BulkData) metadata.getValue(Tag.PixelData)).getURI();
-            out.write(("Content-Location: " + contentLoc + "\r\n").getBytes());
+            out.write(("Content-Type: " + metadataContentType(instance, isXmlContentType) + "\r\n").getBytes());
             out.write("\r\n".getBytes());
-            if (instance.jpegHeader != null && instance.noAppn) {
-                out.write(-1);
-                out.write((byte) JPEG.SOI);
-                out.write(-1);
+            out.write(bOut.toByteArray());
+
+            for (Map.Entry<String, Object> entry : instance.contentLocBulkData.entrySet()) {
+                out.write(("\r\n--" + boundary + "\r\n").getBytes());
+                out.write(("Content-Type: " + instance.fileType.bulkdataType + "\r\n").getBytes());
+                String contentLoc = entry.getKey();
+                out.write(("Content-Location: " + contentLoc + "\r\n").getBytes());
+                out.write("\r\n".getBytes());
+                Object value = instance.contentLocBulkData.get(contentLoc);
+                if (instance.fileType == FileType.PDF || !instance.pixelHeader) {
+                    writeFile((File) value, out);
+                    continue;
+                }
+                if (instance.jpegHeader != null && instance.noAppn) {
+                    out.write(-1);
+                    out.write((byte) JPEG.SOI);
+                    out.write(-1);
+                }
+                if (value instanceof File) {
+                    writeFile((File) value, out);
+                    continue;
+                }
+                out.write((byte[]) value);
+
+                if (isXmlContentType)
+                    break;
             }
-            if (instance.pixelDataFile.length() > MAX_BUFFER_SIZE) {
-                writeLargeFile(instance, out);
-                return;
-            }
-            for (byte b : instance.pixelData)
-                out.write(b);
-            instance.pixelData = new byte[0];
+            instance.contentLocBulkData.clear();
+            instance.metadataList.clear();
         }
     }
 
-    private static void writeLargeFile(StowRS instance, OutputStream out) throws Exception {
-        InputStream is = null;
-        try {
-            byte[] buf = new byte[8192];
-            is = new FileInputStream(instance.pixelDataFile);
+    private static String metadataContentType(StowRS instance, boolean isXMLContentType) {
+        return isXMLContentType
+                ? instance.contentType
+                : instance.fileType == FileType.IMAGE
+                    ? instance.contentType + "; transfer-syntax=" + UID.JPEGBaseline1
+                    : instance.fileType == FileType.VIDEO
+                        ? instance.contentType + "; transfer-syntax=" + UID.MPEG2
+                        : instance.contentType + "; transfer-syntax=" + UID.ExplicitVRLittleEndian;
+    }
+
+    private static void writeFile(File file, OutputStream out) throws Exception {
+        byte[] buf = new byte[8192];
+        try (InputStream is = new FileInputStream(file)) {
             int c;
             while ((c = is.read(buf, 0, buf.length)) > 0) {
                 out.write(buf, 0, c);
                 out.flush();
             }
-        } finally {
-            if (is != null)
-                is.close();
         }
-    }
-
-    private static void setPDFAttributes(Path bulkDataFile, Attributes metadata) {
-        metadata.setInt(Tag.InstanceNumber, VR.IS, 1);
-        metadata.setString(Tag.ContentDate, VR.DA,
-                DateUtils.formatDA(null, new Date(bulkDataFile.toFile().lastModified())));
-        metadata.setString(Tag.ContentTime, VR.TM,
-                DateUtils.formatTM(null, new Date(bulkDataFile.toFile().lastModified())));
-        metadata.setString(Tag.AcquisitionDateTime, VR.DT,
-                DateUtils.formatTM(null, new Date(bulkDataFile.toFile().lastModified())));
-        metadata.setString(Tag.BurnedInAnnotation, VR.CS, "YES");
-        metadata.setNull(Tag.DocumentTitle, VR.ST);
-        metadata.setNull(Tag.ConceptNameCodeSequence, VR.SQ);
-        metadata.setString(Tag.MIMETypeOfEncapsulatedDocument, VR.LO,
-                "application/pdf");
     }
 }

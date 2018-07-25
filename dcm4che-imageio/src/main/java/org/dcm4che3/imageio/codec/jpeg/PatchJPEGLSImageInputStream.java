@@ -39,18 +39,24 @@
 package org.dcm4che3.imageio.codec.jpeg;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
+import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
+import org.dcm4che3.imageio.codec.ImageDescriptor;
+import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
+import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
+public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl
+        implements BytesWithImageImageDescriptor {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(PatchJPEGLSImageInputStream.class);
@@ -76,6 +82,15 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
             this.patchPos = streamPos + param.getOffset();
             this.patch = param.getBytes();
         }
+    }
+
+    @Override
+    public ImageDescriptor getImageDescriptor() {
+        return (iis instanceof EncapsulatedPixelDataImageInputStream)
+            ? ((EncapsulatedPixelDataImageInputStream) iis).getImageDescriptor()
+            : (iis instanceof SegmentedInputImageStream)
+                ? ((SegmentedInputImageStream) iis).getImageDescriptor()
+                : null;
     }
 
     private byte[] firstBytesOf(ImageInputStream iis) throws IOException {
@@ -190,4 +205,20 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
         iis.seek(adjustStreamPosition(pos));
     }
 
+    @Override
+    public ByteBuffer getBytes() throws IOException {
+        byte[] array = new byte[8192];
+        int length = 0;
+        int read;
+        while ((read = this.read(array, length, array.length - length)) > 0) {
+            if ((length += read) == array.length)
+                array = Arrays.copyOf(array, array.length << 1);
+        }
+        return ByteBuffer.wrap(array, 0, length);
+    }
+
+    @Override
+    protected void finalize() {
+        // disable finalizer of ImageInputStreamImpl
+    }
 }

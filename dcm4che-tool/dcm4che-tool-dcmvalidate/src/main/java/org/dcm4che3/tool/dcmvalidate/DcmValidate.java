@@ -46,8 +46,9 @@ import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.IOD;
@@ -132,12 +133,12 @@ public class DcmValidate {
             throws ParseException{
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        opts.addOption(OptionBuilder
-                .withLongOpt("iod")
+        opts.addOption(Option.builder()
+                .longOpt("iod")
                 .hasArg()
-                .withArgName("iod-file")
-                .withDescription(rb.getString("iod"))
-                .create(null));
+                .argName("iod-file")
+                .desc(rb.getString("iod"))
+                .build());
         return CLIUtils.parseComandLine(args, opts, rb, DcmValidate.class);
     }
 }

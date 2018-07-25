@@ -52,8 +52,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -258,61 +259,61 @@ public class GetSCU {
 
     @SuppressWarnings("static-access")
     private static void addRetrieveLevelOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("L")
                 .hasArg()
-                .withArgName("PATIENT|STUDY|SERIES|IMAGE|FRAME")
-                .withDescription(rb.getString("level"))
-                .create("L"));
+                .argName("PATIENT|STUDY|SERIES|IMAGE|FRAME")
+                .desc(rb.getString("level"))
+                .build());
    }
 
     @SuppressWarnings("static-access")
     private static void addStorageDirectoryOptions(Options opts) {
         opts.addOption(null, "ignore", false,
                 rb.getString("ignore"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("path")
-                .withDescription(rb.getString("directory"))
-                .withLongOpt("directory")
-                .create(null));
+                .argName("path")
+                .desc(rb.getString("directory"))
+                .longOpt("directory")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addKeyOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("m")
                 .hasArgs()
-                .withArgName("attr=value")
-                .withValueSeparator('=')
-                .withDescription(rb.getString("match"))
-                .create("m"));
-        opts.addOption(OptionBuilder
+                .argName("attr=value")
+                .valueSeparator('=')
+                .desc(rb.getString("match"))
+                .build());
+        opts.addOption(Option.builder("i")
                 .hasArgs()
-                .withArgName("attr")
-                .withDescription(rb.getString("in-attr"))
-                .create("i"));
+                .argName("attr")
+                .desc(rb.getString("in-attr"))
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addServiceClassOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("M")
                 .hasArg()
-                .withArgName("name")
-                .withDescription(rb.getString("model"))
-                .create("M"));
+                .argName("name")
+                .desc(rb.getString("model"))
+                .build());
         opts.addOption(null, "relational", false, rb.getString("relational"));
         CLIUtils.addTransferSyntaxOptions(opts);
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("cuid:tsuid[(,|;)...]")
-                .withDescription(rb.getString("store-tc"))
-                .withLongOpt("store-tc")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("cuid:tsuid[(,|;)...]")
+                .desc(rb.getString("store-tc"))
+                .longOpt("store-tc")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("store-tcs"))
-                .withLongOpt("store-tcs")
-                .create());
+                .argName("file|url")
+                .desc(rb.getString("store-tcs"))
+                .longOpt("store-tcs")
+                .build());
     }
 
 

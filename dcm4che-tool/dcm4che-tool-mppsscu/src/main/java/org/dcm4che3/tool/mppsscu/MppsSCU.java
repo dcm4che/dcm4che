@@ -53,8 +53,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.ElementDictionary;
@@ -476,67 +477,67 @@ public class MppsSCU {
     @SuppressWarnings("static-access")
     private static void addMPPSOptions(Options opts) {
         opts.addOption(null, "ppsid-new", false, rb.getString("ppsid-new"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("ppsuid"))
-                .withLongOpt("ppsuid")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("uid")
+                .desc(rb.getString("ppsuid"))
+                .longOpt("ppsuid")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("id")
-                .withDescription(rb.getString("ppsid"))
-                .withLongOpt("ppsid")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("id")
+                .desc(rb.getString("ppsid"))
+                .longOpt("ppsid")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("num")
-                .withDescription(rb.getString("ppsid-start"))
-                .withLongOpt("ppsid-start")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("num")
+                .desc(rb.getString("ppsid-start"))
+                .longOpt("ppsid-start")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("pattern")
-                .withDescription(rb.getString("ppsid-format"))
-                .withLongOpt("ppsid-format")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("pattern")
+                .desc(rb.getString("ppsid-format"))
+                .longOpt("ppsid-format")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("name")
-                .withDescription(rb.getString("protocol"))
-                .withLongOpt("protocol")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("name")
+                .desc(rb.getString("protocol"))
+                .longOpt("protocol")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("YES|NO")
-                .withDescription(rb.getString("archive"))
-                .withLongOpt("archive")
-                .create());
+                .argName("YES|NO")
+                .desc(rb.getString("archive"))
+                .longOpt("archive")
+                .build());
         opts.addOption(null, "dc", false, rb.getString("dc"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("code-value")
-                .withDescription(rb.getString("dc-reason"))
-                .withLongOpt("dc-reason")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("code-value")
+                .desc(rb.getString("dc-reason"))
+                .longOpt("dc-reason")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("code-config"))
-                .withLongOpt("code-config")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("file|url")
+                .desc(rb.getString("code-config"))
+                .longOpt("code-config")
+                .build());
+        opts.addOption(Option.builder("s")
                 .hasArgs()
-                .withArgName("[seq/]attr=value")
-                .withValueSeparator('=')
-                .withDescription(rb.getString("set"))
-                .create("s"));
-        opts.addOption(OptionBuilder
+                .argName("[seq/]attr=value")
+                .valueSeparator('=')
+                .desc(rb.getString("set"))
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("suffix")
-                .withDescription(rb.getString("uid-suffix"))
-                .withLongOpt("uid-suffix")
-                .create(null));
+                .argName("suffix")
+                .desc(rb.getString("uid-suffix"))
+                .longOpt("uid-suffix")
+                .build());
     }
 
     public void open() throws IOException, InterruptedException,

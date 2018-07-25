@@ -38,6 +38,7 @@
 package org.dcm4che3.conf.ldap;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TimeZone;
@@ -264,6 +265,16 @@ public class LdapUtils {
         return attrID + '=' + attrValue + ',' + parentDN;
     }
 
+    public static String cutAttrValueFromDN(String dn, String attrID) {
+        int beginIndex = dn.indexOf(attrID + '=');
+        if (beginIndex < 0)
+            return null;
+
+        beginIndex += attrID.length() + 1;
+        int endIndex = dn.indexOf(',', beginIndex);
+        return endIndex >= 0 ? dn.substring(beginIndex, endIndex) : dn.substring(beginIndex);
+    }
+
     public static String dnOf(String attrID1, String attrValue1,
             String attrID2, String attrValue2, String baseDN) {
         return attrID1 + '=' + attrValue1
@@ -327,6 +338,27 @@ public class LdapUtils {
                 for (T val : vals)
                     attribute.addValue(val);
                 for (T prev : prevs)
+                    attribute.removeValue(prev);
+                ldapObj.add(attribute);
+            }
+        }
+    }
+
+    public static void storeDiffWithOrdinalPrefix(ConfigurationChanges.ModifiedObject ldapObj,
+                                                  List<ModificationItem> mods,
+                                                  String attrId, String[] prevs, String[] vals) {
+        if (!Arrays.equals(prevs, vals)) {
+            String[] valsWithOrdinalPrefix = addOrdinalPrefix(vals);
+            mods.add((vals.length == 0)
+                    ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+                            new BasicAttribute(attrId))
+                    : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                            attr(attrId, valsWithOrdinalPrefix)));
+            if (ldapObj != null) {
+                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrId);
+                for (String val : valsWithOrdinalPrefix)
+                    attribute.addValue(val);
+                for (String prev : addOrdinalPrefix(prevs))
                     attribute.removeValue(prev);
                 ldapObj.add(attribute);
             }
@@ -482,5 +514,47 @@ public class LdapUtils {
         attrs.put("objectclass", objectclass);
         storeNotNullOrDef(attrs, attrID, attrVal, null);
         return attrs;
+    }
+
+    public static String[] addOrdinalPrefix(String[] vals) {
+        String[] result = new String[vals.length];
+        for (int i = 0; i < result.length; i++) {
+            String val = vals[i];
+            int vallen = val.length();
+            char[] cs = new char[3 + vallen];
+            cs[0] = '{';
+            cs[1] = DIGITS[i];
+            cs[2] = '}';
+            val.getChars(0, vallen, cs, 3);
+            result[i] = new String(cs);
+        }
+        return result;
+    }
+
+    public static String[] removeOrdinalPrefix(String[] vals) {
+        Arrays.sort(vals);
+        String[] result = new String[vals.length];
+        for (int i = 0; i < result.length; i++)
+            result[i] = vals[i].substring(3);
+        return result;
+    }
+
+    private final static char[] DIGITS = {
+            '0' , '1' , '2' , '3' , '4' , '5' ,
+            '6' , '7' , '8' , '9' , 'A' , 'B' ,
+            'C' , 'D' , 'E' , 'F' , 'G' , 'H' ,
+            'I' , 'J' , 'K' , 'L' , 'M' , 'N' ,
+            'O' , 'P' , 'Q' , 'R' , 'S' , 'T' ,
+            'U' , 'V' , 'W' , 'X' , 'Y' , 'Z'
+    };
+
+    public static String cutDeviceName(String name) {
+        int start = name.indexOf("dicomDeviceName=");
+        if (start < 0)
+            return null;
+
+        start += 16;
+        int end = name.indexOf(',', start);
+        return end < 0 ? name.substring(start) : name.substring(start, end);
     }
 }

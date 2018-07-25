@@ -44,6 +44,7 @@ import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.models.KeycloakSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,9 +58,11 @@ import java.util.Set;
 public class Dcm4cheEventListenerProvider implements EventListenerProvider {
     private static final Logger LOG = LoggerFactory.getLogger(Dcm4cheEventListenerProvider.class);
     private final Set<EventType> includedEvents;
+    private final KeycloakSession keycloakSession;
 
-    public Dcm4cheEventListenerProvider(Set<EventType> includedEvents) {
+    public Dcm4cheEventListenerProvider(Set<EventType> includedEvents, KeycloakSession keycloakSession) {
         this.includedEvents = includedEvents;
+        this.keycloakSession = keycloakSession;
     }
 
 
@@ -71,7 +74,7 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
                 if (loggers != null)
                     for (AuditLogger logger : loggers)
                         if (logger.isInstalled())
-                            AuditAuth.spoolAuditMsg(event, logger);
+                            AuditAuth.spoolAuditMsg(event, logger, keycloakSession);
             } catch (Exception e) {
                 LOG.warn("Failed to get audit logger", e);
             }

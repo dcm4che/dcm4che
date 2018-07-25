@@ -40,6 +40,9 @@ package org.dcm4che3.util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.MessageFormat;
@@ -57,6 +60,12 @@ import org.dcm4che3.data.Attributes;
 public class AttributesFormat extends Format {
 
     private static final long serialVersionUID = 1901510733531643054L;
+
+    private static final char[] CHARS = {'0', '1', '2', '3', '4', '5','6', '7',
+            '8', '9', 'a', 'b', 'c', 'd','e', 'f',
+            'g', 'h', 'i', 'j', 'k', 'l','m', 'n',
+            'o', 'p', 'q', 'r', 's', 't','u', 'v'};
+    private static final int LONG_BYTES = 8;
 
     private final String pattern;
     private final int[][] tagPaths;
@@ -142,7 +151,7 @@ public class AttributesFormat extends Format {
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException(pattern);
                 }
-                if (types[i] != Type.hash && types[i] != Type.urlencoded)
+                if (types[i] != Type.hash && types[i] != Type.md5 && types[i] != Type.urlencoded)
                     formatBuilder.append(
                             typeStart > 0 ? tagStr.substring(typeStart-1) : tagStr);
             } else {
@@ -234,6 +243,13 @@ public class AttributesFormat extends Format {
                 return s != null ? TagUtils.toHexString(s.hashCode()) : null;
             }
         },
+        md5 {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                String s = attrs.getString(tag, index);
+                return s != null ? getMD5String(s) : null;
+            }
+        },
         urlencoded {
             @Override
             Object toArg(Attributes attrs, int tag, int index) {
@@ -247,6 +263,44 @@ public class AttributesFormat extends Format {
         };
 
         abstract Object toArg(Attributes attrs, int tag, int index);
+
+        String getMD5String( String s ) {
+            try {
+                MessageDigest digest = MessageDigest.getInstance( "MD5" );
+                digest.update( s == null ? new byte[ 0 ] : s.getBytes( StandardCharsets.UTF_8 ) );
+                return toString32( digest.digest() );
+            } catch ( NoSuchAlgorithmException e ) {
+                return s;
+            }
+        }
+        
+        static String toString32( byte[] ba ) {
+            long l1 = toLong( ba, 0 );
+            long l2 = toLong( ba, LONG_BYTES );
+            char[] ca = new char[ 26 ];
+            for ( int i = 0; i < 12; i++ ) {
+                ca[ i ] = CHARS[ (int)l1 & 0x1f ];
+                l1 = l1 >>> 5;
+            }
+            l1 = l1 | (l2 & 1) << 4;
+            ca[ 12 ] = CHARS[ (int)l1 & 0x1f ];
+            l2 = l2 >>> 1;
+            for ( int i = 13; i < 26; i++ ) {
+                ca[ i ] = CHARS[ (int)l2 & 0x1f ];
+                l2 = l2 >>> 5;
+            }
+            
+            return new String( ca );
+        }
+        
+        static long toLong( byte[] ba, int offset ) {
+            long l = 0;
+            for ( int i = offset, len = offset + LONG_BYTES; i < len; i++ ) {
+                l |= ba[ i ] & 0xFF;
+                l <<= 8;
+            }
+            return l;
+        }
     }
 
 }

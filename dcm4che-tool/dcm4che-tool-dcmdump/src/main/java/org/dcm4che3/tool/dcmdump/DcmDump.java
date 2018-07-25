@@ -45,8 +45,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
@@ -271,12 +272,12 @@ public class DcmDump implements DicomInputHandler {
             throws ParseException{
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        opts.addOption(OptionBuilder
-                .withLongOpt("width")
+        opts.addOption(Option.builder("w")
+                .longOpt("width")
                 .hasArg()
-                .withArgName("col")
-                .withDescription(rb.getString("width"))
-                .create("w"));
+                .argName("col")
+                .desc(rb.getString("width"))
+                .build());
         return CLIUtils.parseComandLine(args, opts, rb, DcmDump.class);
     }
 

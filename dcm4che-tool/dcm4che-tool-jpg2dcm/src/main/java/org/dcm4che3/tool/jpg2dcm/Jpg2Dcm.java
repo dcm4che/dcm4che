@@ -38,10 +38,7 @@
 
 package org.dcm4che3.tool.jpg2dcm;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.*;
 import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGHeader;
@@ -62,6 +59,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  * @since Jul 2017
  */
 public class Jpg2Dcm {
@@ -102,12 +100,13 @@ public class Jpg2Dcm {
     private byte[] buffer = {};
     private int headerLength;
     private long fileLength;
+    private FileType inFileType;
 
-    public void setMetadata(Attributes metadata) {
+    private void setMetadata(Attributes metadata) {
         this.metadata = metadata;
     }
 
-    public void setNoAPPn(boolean noAPPn) {
+    private void setNoAPPn(boolean noAPPn) {
         this.noAPPn = noAPPn;
     }
 
@@ -116,9 +115,11 @@ public class Jpg2Dcm {
             CommandLine cl = parseComandLine(args);
             Jpg2Dcm main = new Jpg2Dcm();
             main.setNoAPPn(cl.hasOption("no-app"));
-            main.setMetadata(createMetadata(cl));
             @SuppressWarnings("unchecked") final List<String> argList = cl.getArgList();
-            main.convert(new File(argList.get(0)), new File(argList.get(1)));
+            File inFile = new File(argList.get(0));
+            main.toFileType(inFile);
+            main.setMetadata(createMetadata(cl, main.inFileType));
+            main.convert(inFile, new File(argList.get(1)));
         } catch (ParseException e) {
             System.err.println("jpg2dcm: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -133,18 +134,30 @@ public class Jpg2Dcm {
     private static CommandLine parseComandLine(String[] args) throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        opts.addOption(OptionBuilder
+        OptionGroup sampleMetadataOG = new OptionGroup();
+        opts.addOption(Option.builder("m")
                 .hasArgs()
-                .withArgName("[seq/]attr=value")
-                .withValueSeparator()
-                .withDescription(rb.getString("attr"))
-                .create("a"));
-        opts.addOption(OptionBuilder
+                .argName("[seq/]attr=value")
+                .valueSeparator()
+                .desc(rb.getString("metadata"))
+                .build());
+        opts.addOption(Option.builder("f")
                 .hasArg()
-                .withArgName("xml-file")
-                .withDescription(rb.getString("file"))
-                .create("f"));
+                .argName("xml-file")
+                .desc(rb.getString("file"))
+                .build());
         opts.addOption(null, "no-app", false, rb.getString("no-app"));
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("sc")
+                .hasArg(false)
+                .desc(rb.getString("sc"))
+                .build());
+        sampleMetadataOG.addOption(Option.builder()
+                .longOpt("xc")
+                .hasArg(false)
+                .desc(rb.getString("xc"))
+                .build());
+        opts.addOptionGroup(sampleMetadataOG);
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
         int numArgs = cl.getArgList().size();
         if (numArgs == 0)
@@ -154,9 +167,16 @@ public class Jpg2Dcm {
         return cl;
     }
 
-    private static Attributes createMetadata(CommandLine cl) throws Exception {
-        String f = cl.getOptionValue("f");
-        Attributes metadata = f != null ? SAXReader.parse(f) : new Attributes();
+    private static Attributes createMetadata(CommandLine cl, FileType inFileType) throws Exception {
+        String metadataResource =  cl.hasOption("sc") 
+                                ? "resource:secondaryCaptureImageMetadata.xml"
+                                : cl.hasOption("xc")
+                                    ? "resource:vlPhotographicImageMetadata.xml" : null;
+        Attributes metadata = inFileType == FileType.jpeg && metadataResource != null
+                                ? SAXReader.parse(StreamUtils.openFileOrURL(metadataResource))
+                                : new Attributes();
+        if (cl.hasOption("f"))
+            metadata = SAXReader.parse(cl.getOptionValue("f"), metadata);
         CLIUtils.addAttributes(metadata, cl.getOptionValues("m"));
         supplementMissingUIDs(metadata);
         supplementMissingValue(metadata, Tag.Modality, "XC");
@@ -167,25 +187,26 @@ public class Jpg2Dcm {
         return metadata;
     }
 
-    public void convert(File infile, File outfile) throws IOException {
-        FileType fileType = null;
+    private void toFileType(File infile) {
         try {
-            fileType = FileType.valueOf(infile);
+            inFileType = FileType.valueOf(infile);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(MessageFormat.format(rb.getString("invalid-file-ext"), infile));
         }
-
+    }
+    
+    private void convert(File infile, File outfile) throws IOException {
         fileLength = infile.length();
         if (fileLength > MAX_FILE_SIZE)
             throw new IllegalArgumentException(MessageFormat.format(rb.getString("file-too-large"), infile));
 
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(infile))) {
-            if (!parseHeader(fileType, bis))
-                throw new IOException(MessageFormat.format(rb.getString("failed-to-parse"), fileType, infile));
+            if (!parseHeader(inFileType, bis))
+                throw new IOException(MessageFormat.format(rb.getString("failed-to-parse"), inFileType, infile));
 
             int itemLen = (int) fileLength;
             try (DicomOutputStream dos = new DicomOutputStream(outfile)) {
-                dos.writeDataset(metadata.createFileMetaInformation(fileType.getTransferSyntaxUID()), metadata);
+                dos.writeDataset(metadata.createFileMetaInformation(inFileType.getTransferSyntaxUID()), metadata);
                 dos.writeHeader(Tag.PixelData, VR.OB, -1);
                 dos.writeHeader(Tag.Item, null, 0);
                 if (jpegHeader != null && noAPPn) {

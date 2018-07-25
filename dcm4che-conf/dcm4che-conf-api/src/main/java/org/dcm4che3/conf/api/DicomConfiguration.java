@@ -42,10 +42,7 @@ import java.io.Closeable;
 import java.security.cert.X509Certificate;
 import java.util.EnumSet;
 
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.ApplicationEntityInfo;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DeviceInfo;
+import org.dcm4che3.net.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -53,6 +50,9 @@ import org.dcm4che3.net.DeviceInfo;
  *
  */
 public interface DicomConfiguration extends Closeable {
+
+    WebApplicationInfo[] listWebApplicationInfos(WebApplicationInfo keys)
+            throws ConfigurationException;
 
     enum Option {
         REGISTER, PRESERVE_VENDOR_DATA, PRESERVE_CERTIFICATE, CONFIGURATION_CHANGES, CONFIGURATION_CHANGES_VERBOSE

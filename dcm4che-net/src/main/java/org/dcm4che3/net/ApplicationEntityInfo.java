@@ -52,7 +52,7 @@ public class ApplicationEntityInfo implements Serializable {
     private String deviceName;
     private String description;
     private String aet;
-    private String[] applicationCluster = {};
+    private String[] applicationClusters = {};
     private Boolean associationInitiator ;
     private Boolean associationAcceptor;
     private Boolean installed;
@@ -100,12 +100,12 @@ public class ApplicationEntityInfo implements Serializable {
         this.aet = aet;
     }
 
-    public String[] getApplicationCluster() {
-        return applicationCluster;
+    public String[] getApplicationClusters() {
+        return applicationClusters;
     }
 
-    public void setApplicationCluster(String[] applicationCluster) {
-        this.applicationCluster = applicationCluster;
+    public void setApplicationClusters(String[] applicationClusters) {
+        this.applicationClusters = applicationClusters;
     }
 
     public Boolean getAssociationInitiator() {

@@ -40,6 +40,7 @@ package org.dcm4che3.util;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
@@ -64,6 +65,8 @@ public class UIDUtils {
 
     private static final Pattern PATTERN =
             Pattern.compile("[012]((\\.0)|(\\.[1-9]\\d*))+");
+
+    private static final Charset ASCII = Charset.forName("US-ASCII");
 
     private static String root = UUID_ROOT;
 
@@ -95,7 +98,7 @@ public class UIDUtils {
         return nameBasedUID(name, root);
     }
 
-    public static String createNameUID(byte[] name, String root) {
+    public static String createNameBasedUID(byte[] name, String root) {
         checkRoot(root);
         return nameBasedUID(name, root);
     }
@@ -112,6 +115,15 @@ public class UIDUtils {
     public static String createUIDIfNull(String uid, String root) {
         checkRoot(root);
         return uid == null ? randomUID(root) : uid;
+    }
+
+    public static String remapUID(String uid) {
+        return nameBasedUID(uid.getBytes(ASCII), root);
+    }
+
+    public static String remapUID(String uid, String root) {
+        checkRoot(root);
+        return nameBasedUID(uid.getBytes(ASCII), root);
     }
 
     private static String randomUID(String root) {

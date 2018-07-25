@@ -39,16 +39,19 @@
 package org.dcm4che3.tool.dcm2dcm;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PatternOptionBuilder;
 import org.dcm4che3.data.Tag;
@@ -58,6 +61,7 @@ import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.codec.Compressor;
 import org.dcm4che3.imageio.codec.Decompressor;
+import org.dcm4che3.imageio.codec.Transcoder;
 import org.dcm4che3.imageio.codec.TransferSyntaxType;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
@@ -66,6 +70,8 @@ import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.SafeClose;
+
+import javax.xml.stream.Location;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -79,6 +85,7 @@ public class Dcm2Dcm {
     private TransferSyntaxType tstype;
     private boolean retainfmi;
     private boolean nofmi;
+    private boolean legacy;
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
     private final List<Property> params = new ArrayList<Property>();
 
@@ -97,6 +104,10 @@ public class Dcm2Dcm {
 
     public final void setWithoutFileMetaInformation(boolean nofmi) {
         this.nofmi = nofmi;
+    }
+
+    public void setLegacy(boolean legacy) {
+        this.legacy = legacy;
     }
 
     public final void setEncodingOptions(DicomEncodingOptions encOpts) {
@@ -124,75 +135,85 @@ public class Dcm2Dcm {
         CLIUtils.addCommonOptions(opts);
         CLIUtils.addEncodingOptions(opts);
         OptionGroup tsGroup = new OptionGroup();
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("transfer-syntax")
+        tsGroup.addOption(Option.builder("t")
+                .longOpt("transfer-syntax")
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("transfer-syntax"))
-                .create("t"));
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jpeg")
-                .withDescription(rb.getString("jpeg"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jpll")
-                .withDescription(rb.getString("jpll"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jpls")
-                .withDescription(rb.getString("jpls"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("j2kr")
-                .withDescription(rb.getString("j2kr"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("j2ki")
-                .withDescription(rb.getString("j2ki"))
-                .create());
+                .argName("uid")
+                .desc(rb.getString("transfer-syntax"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jpeg")
+                .desc(rb.getString("jpeg"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jpll")
+                .desc(rb.getString("jpll"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jlsl")
+                .desc(rb.getString("jlsl"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jlsn")
+                .desc(rb.getString("jlsn"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("j2kr")
+                .desc(rb.getString("j2kr"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("j2ki")
+                .desc(rb.getString("j2ki"))
+                .build());
         opts.addOptionGroup(tsGroup);
         OptionGroup fmiGroup = new OptionGroup();
-        fmiGroup.addOption(OptionBuilder
-                .withLongOpt("no-fmi")
-                .withDescription(rb.getString("no-fmi"))
-                .create("F"));
-        fmiGroup.addOption(OptionBuilder
-                .withLongOpt("retain-fmi")
-                .withDescription(rb.getString("retain-fmi"))
-                .create("f"));
+        fmiGroup.addOption(Option.builder("F")
+                .longOpt("no-fmi")
+                .desc(rb.getString("no-fmi"))
+                .build());
+        fmiGroup.addOption(Option.builder("f")
+                .longOpt("retain-fmi")
+                .desc(rb.getString("retain-fmi"))
+                .build());
         opts.addOptionGroup(fmiGroup);
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("max-error")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("verify"))
-                .withLongOpt("verify")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("max-error")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("verify"))
+                .longOpt("verify")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("size")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("verify-block"))
-                .withLongOpt("verify-block")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("size")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("verify-block"))
+                .longOpt("verify-block")
+                .build());
+        opts.addOption(Option.builder("q")
                 .hasArg()
-                .withArgName("quality")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("quality"))
-                .create("q"));
-        opts.addOption(OptionBuilder
+                .argName("quality")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("quality"))
+                .build());
+        opts.addOption(Option.builder("Q")
                 .hasArg()
-                .withArgName("encoding-rate")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("encoding-rate"))
-                .create("Q"));
-        opts.addOption(OptionBuilder
+                .argName("encoding-rate")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("encoding-rate"))
+                .build());
+        opts.addOption(Option.builder("N")
+                .hasArg()
+                .argName("near-lossless")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("near-lossless"))
+                .build());
+        opts.addOption(Option.builder("C")
                 .hasArgs()
-                .withArgName("name=value")
-                .withValueSeparator()
-                .withDescription(rb.getString("compression-param"))
-                .create("C"));
+                .argName("name=value")
+                .valueSeparator()
+                .desc(rb.getString("compression-param"))
+                .build());
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Dcm2Dcm.class);
         return cl;
     }
@@ -211,7 +232,7 @@ public class Dcm2Dcm {
                 main.setTransferSyntax(transferSyntaxOf(cl, UID.ExplicitVRLittleEndian));
                 main.setRetainFileMetaInformation(cl.hasOption("f"));
             }
-
+            main.setLegacy(cl.hasOption("legacy"));
             if (cl.hasOption("verify"))
                 main.addCompressionParam("maxPixelValueError",
                         cl.getParsedOptionValue("verify"));
@@ -227,6 +248,10 @@ public class Dcm2Dcm {
             if (cl.hasOption("Q"))
                 main.addCompressionParam("encodingRate",
                         cl.getParsedOptionValue("Q"));
+
+            if (cl.hasOption("N"))
+                main.addCompressionParam("nearLossless",
+                        cl.getParsedOptionValue("N"));
 
             String[] cparams = cl.getOptionValues("C");
             if (cparams != null)
@@ -262,7 +287,8 @@ public class Dcm2Dcm {
                 : cl.hasOption("defl") ? UID.DeflatedExplicitVRLittleEndian
                 : cl.hasOption("jpeg") ? UID.JPEGBaseline1
                 : cl.hasOption("jpll") ? UID.JPEGLossless
-                : cl.hasOption("jpls") ? UID.JPEGLSLossless
+                : cl.hasOption("jlsl") ? UID.JPEGLSLossless
+                : cl.hasOption("jlsn") ? UID.JPEGLSLossyNearLossless
                 : cl.hasOption("j2kr") ? UID.JPEG2000LosslessOnly
                 : cl.hasOption("j2ki") ? UID.JPEG2000
                 : cl.getOptionValue("t", def);
@@ -278,7 +304,11 @@ public class Dcm2Dcm {
          if (dest.isDirectory())
              dest = new File(dest, src.getName());
          try {
-             transcode(src, dest);
+             if (legacy)
+                 transcode(src, dest);
+             else
+                 transcodeWithTranscoder(src, dest);
+
              System.out.println(
                      MessageFormat.format(rb.getString("transcoded"),
                              src, dest));
@@ -311,8 +341,7 @@ public class Dcm2Dcm {
                     tsuid = adjustTransferSyntax(tsuid,
                             dataset.getInt(Tag.BitsStored, 8));
                     compressor = new Compressor(dataset, dis.getTransferSyntax());
-                    compressor.compress(tsuid,
-                            params.toArray(new Property[params.size()]));
+                    compressor.compress(tsuid, params.toArray(new Property[0]));
                 } else if (pixeldata instanceof Fragments)
                     Decompressor.decompress(dataset, dis.getTransferSyntax());
             }
@@ -330,6 +359,23 @@ public class Dcm2Dcm {
             SafeClose.close(dos);
         }
      }
+
+    public void transcodeWithTranscoder(File src, final File dest) throws IOException {
+        try (Transcoder transcoder = new Transcoder(src)) {
+            transcoder.setIncludeFileMetaInformation(!nofmi);
+            transcoder.setRetainFileMetaInformation(retainfmi);
+            transcoder.setEncodingOptions(encOpts);
+            transcoder.setDestinationTransferSyntax(tsuid);
+            if (tstype.isPixeldataEncapsulated())
+                transcoder.setCompressParams(params.toArray(new Property[0]));
+            transcoder.transcode(new Transcoder.Handler(){
+                @Override
+                public OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException {
+                    return new FileOutputStream(dest);
+                }
+            });
+        }
+    }
 
     private String adjustTransferSyntax(String tsuid, int bitsStored) {
         switch (tstype) {

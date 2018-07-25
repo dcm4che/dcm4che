@@ -42,8 +42,9 @@ import javax.ws.rs.core.MediaType;
 
 import org.dcm4che3.data.UID;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -83,6 +84,17 @@ public class MediaTypes {
      */
     public final static MediaType APPLICATION_DICOM_JSON_TYPE =
             new MediaType("application", "dicom+json");
+
+    /**
+     * "image/*"
+     */
+    public final static String IMAGE_WILDCARD = "image/*";
+
+    /**
+     * "image/*"
+     */
+    public final static MediaType IMAGE_WILDCARD_TYPE =
+            new MediaType("image", "*");
 
     /**
      * "image/gif"
@@ -163,6 +175,17 @@ public class MediaTypes {
             new MediaType("image", "x-dicom+rle");
 
     /**
+     * "video/*"
+     */
+    public final static String VIDEO_WILDCARD = "video/*";
+
+    /**
+     * "video/*"
+     */
+    public final static MediaType VIDEO_WILDCARD_TYPE =
+            new MediaType("video", "*");
+
+    /**
      * "video/mpeg"
      */
     public final static String VIDEO_MPEG = "video/mpeg";
@@ -207,6 +230,28 @@ public class MediaTypes {
             new MediaType("text", "rtf");
 
     /**
+     * "text/csv"
+     */
+    public final static String TEXT_CSV = "text/csv";
+
+    /**
+     * "text/csv"
+     */
+    public final static MediaType TEXT_CSV_TYPE =
+            new MediaType("text", "csv");
+
+    /**
+     * "text/csv;charset=utf-8"
+     */
+    public final static String TEXT_CSV_UTF8 = "text/csv;charset=utf-8";
+
+    /**
+     * "text/csv;charset=utf-8"
+     */
+    public final static MediaType TEXT_CSV_UTF8_TYPE =
+            new MediaType("text", "csv", "utf-8");
+
+    /**
      * "application/zip"
      */
     public final static String APPLICATION_ZIP = "application/zip";
@@ -227,6 +272,18 @@ public class MediaTypes {
      */
     public final static MediaType MULTIPART_RELATED_TYPE =
             new MediaType("multipart", "related");
+
+    /**
+     * "multipart/related;type=application/dicom"
+     */
+    public final static MediaType MULTIPART_RELATED_APPLICATION_DICOM_TYPE =
+            new MediaType("multipart", "related", Collections.singletonMap("type", APPLICATION_DICOM));
+
+    /**
+     * "multipart/related;type=application/dicom+xml"
+     */
+    public final static MediaType MULTIPART_RELATED_APPLICATION_DICOM_XML_TYPE =
+            new MediaType("multipart", "related", Collections.singletonMap("type", APPLICATION_DICOM_XML));
 
     public static MediaType forTransferSyntax(String ts) {
         MediaType type;
@@ -312,11 +369,24 @@ public class MediaTypes {
                 &&  type1.getSubtype().equalsIgnoreCase(type2.getSubtype());
     }
 
-
-    public static MediaType getMultiPartRelatedType(MediaType type) {
-        return equalsIgnoreParameters(MULTIPART_RELATED_TYPE, type)
-                ? MediaType.valueOf(type.getParameters().get("type"))
-                : null;
+    public static MediaType getMultiPartRelatedType(MediaType mediaType) {
+        if (mediaType.isWildcardType()) {
+            return MediaType.WILDCARD_TYPE;
+        }
+        if (!equalsIgnoreParameters(MULTIPART_RELATED_TYPE, mediaType)) {
+            return null;
+        }
+        String type = mediaType.getParameters().get("type");
+        if (type == null) {
+            return MediaType.WILDCARD_TYPE;
+        }
+        MediaType partType = MediaType.valueOf(type);
+        if (mediaType.getParameters().size() > 1) {
+            Map<String, String> params = new HashMap<>(mediaType.getParameters());
+            params.remove("type");
+            partType = new MediaType(mediaType.getType(), mediaType.getSubtype(), params);
+        }
+        return partType;
     }
 
     public static String getTransferSyntax(MediaType type) {

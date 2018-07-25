@@ -49,8 +49,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -223,60 +224,60 @@ public class IanSCU {
 
     @SuppressWarnings("static-access")
     private static void addIANOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("pps-iuid"))
-                .withLongOpt("pps-iuid")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("uid")
+                .desc(rb.getString("pps-iuid"))
+                .longOpt("pps-iuid")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("pps-cuid"))
-                .withLongOpt("pps-cuid")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("uid")
+                .desc(rb.getString("pps-cuid"))
+                .longOpt("pps-cuid")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("code-string")
-                .withDescription(rb.getString("availability"))
-                .withLongOpt("availability")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("code-string")
+                .desc(rb.getString("availability"))
+                .longOpt("availability")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("aet")
-                .withDescription(rb.getString("retrieve-aet"))
-                .withLongOpt("retrieve-aet")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("aet")
+                .desc(rb.getString("retrieve-aet"))
+                .longOpt("retrieve-aet")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("uri")
-                .withDescription(rb.getString("retrieve-url"))
-                .withLongOpt("retrieve-url")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("uri")
+                .desc(rb.getString("retrieve-url"))
+                .longOpt("retrieve-url")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("uri")
-                .withDescription(rb.getString("retrieve-uri"))
-                .withLongOpt("retrieve-uri")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("uri")
+                .desc(rb.getString("retrieve-uri"))
+                .longOpt("retrieve-uri")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("retrieve-uid"))
-                .withLongOpt("retrieve-uid")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("uid")
+                .desc(rb.getString("retrieve-uid"))
+                .longOpt("retrieve-uid")
+                .build());
+        opts.addOption(Option.builder("s")
                 .hasArgs()
-                .withArgName("[seq/]attr=value")
-                .withValueSeparator('=')
-                .withDescription(rb.getString("set"))
-                .create("s"));
-        opts.addOption(OptionBuilder
+                .argName("[seq/]attr=value")
+                .valueSeparator('=')
+                .desc(rb.getString("set"))
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("suffix")
-                .withDescription(rb.getString("uid-suffix"))
-                .withLongOpt("uid-suffix")
-                .create(null));
+                .argName("suffix")
+                .desc(rb.getString("uid-suffix"))
+                .longOpt("uid-suffix")
+                .build());
     }
 
     private static void configureIAN(IanSCU main, CommandLine cl)

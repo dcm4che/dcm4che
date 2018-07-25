@@ -43,8 +43,8 @@ set JAVA=%JAVA_HOME%\bin\java
 set CP=%DCM4CHE_HOME%\etc\swappxdata\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.5.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.5.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.25.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.17.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

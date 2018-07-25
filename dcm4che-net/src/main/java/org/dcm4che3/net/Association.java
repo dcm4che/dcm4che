@@ -419,7 +419,7 @@ public class Association {
         }
     }
 
-    private void startTimeout(final int msgID, int timeout) {
+    private void startTimeout(final int msgID, int timeout, boolean stopOnPending) {
         if (timeout > 0) {
             synchronized (rspHandlerForMsgId) {
                 DimseRSPHandler rspHandler = rspHandlerForMsgId.get(msgID);
@@ -428,7 +428,7 @@ public class Association {
                         "{}: start " + msgID + ":DIMSE-RSP timeout of {}ms",
                         "{}: " + msgID + ":DIMSE-RSP timeout expired",
                         "{}: stop " + msgID + ":DIMSE-RSP timeout",
-                        timeout));
+                        timeout), stopOnPending);
                 }
             }
         }
@@ -716,11 +716,13 @@ public class Association {
             throw new AAbort();
         }
         rspHandler.onDimseRSP(this, cmd, data);
-        if (pending)
-            startTimeout(msgId, dimse.isRetrieveRQ()
-                    ? conn.getRetrieveTimeout()
-                    : conn.getResponseTimeout());
-        else {
+        if (pending) {
+            if (rspHandler.isStopOnPending())
+                startTimeout(msgId, dimse.isRetrieveRQ()
+                                ? conn.getRetrieveTimeout()
+                                : conn.getResponseTimeout(),
+                        true);
+        } else {
             incReceivedCount(dimse);
             removeDimseRSPHandler(msgId);
             if (rspHandlerForMsgId.isEmpty() && performing == 0)
@@ -980,7 +982,7 @@ public class Association {
         Attributes cgetrq = Commands.mkCGetRQ(rspHandler.getMessageID(),
                 cuid, priority);
         invoke(pc, cgetrq, new DataWriterAdapter(data), rspHandler,
-                conn.getRetrieveTimeout());
+                conn.getRetrieveTimeout(), !conn.isRetrieveTimeoutTotal());
     }
 
     public DimseRSP cget(String cuid, int priority, Attributes data,
@@ -1012,7 +1014,7 @@ public class Association {
         Attributes cmoverq = Commands.mkCMoveRQ(rspHandler.getMessageID(),
                 cuid, priority, destination);
         invoke(pc, cmoverq, new DataWriterAdapter(data), rspHandler,
-                conn.getRetrieveTimeout());
+                conn.getRetrieveTimeout(), !conn.isRetrieveTimeoutTotal());
     }
 
     public DimseRSP cmove(String cuid, int priority, Attributes data,
@@ -1249,12 +1251,18 @@ public class Association {
     public void invoke(PresentationContext pc, Attributes cmd,
             DataWriter data, DimseRSPHandler rspHandler, int rspTimeout)
             throws IOException, InterruptedException {
+        invoke(pc, cmd, data, rspHandler, rspTimeout, true);
+    }
+
+    public void invoke(PresentationContext pc, Attributes cmd,
+                       DataWriter data, DimseRSPHandler rspHandler, int rspTimeout, boolean stopOnPending)
+            throws IOException, InterruptedException {
         stopTimeout();
+        startTimeout(rspHandler.getMessageID(), rspTimeout, stopOnPending);
         checkException();
         rspHandler.setPC(pc);
         addDimseRSPHandler(rspHandler);
         encoder.writeDIMSE(pc, cmd, data);
-        startTimeout(rspHandler.getMessageID(), rspTimeout);
     }
 
     static int minZeroAsMax(int i1, int i2) {

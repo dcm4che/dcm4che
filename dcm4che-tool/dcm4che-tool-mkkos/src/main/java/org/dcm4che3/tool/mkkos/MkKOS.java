@@ -50,9 +50,10 @@ import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -209,89 +210,89 @@ public class MkKOS {
 
     @SuppressWarnings("static-access")
     public static void addOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("code")
-                .withDescription(rb.getString("title"))
-                .withLongOpt("title")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("code")
+                .desc(rb.getString("title"))
+                .longOpt("title")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("code")
-                .withDescription(rb.getString("modifier"))
-                .withLongOpt("modifier")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("code")
+                .desc(rb.getString("modifier"))
+                .longOpt("modifier")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("code-config"))
-                .withLongOpt("code-config")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("file|url")
+                .desc(rb.getString("code-config"))
+                .longOpt("code-config")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("text")
-                .withDescription(rb.getString("desc"))
-                .withLongOpt("desc")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("text")
+                .desc(rb.getString("desc"))
+                .longOpt("desc")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("aet")
-                .withDescription(rb.getString("retrieve-aet"))
-                .withLongOpt("retrieve-aet")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("aet")
+                .desc(rb.getString("retrieve-aet"))
+                .longOpt("retrieve-aet")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("url")
-                .withDescription(rb.getString("retrieve-url"))
-                .withLongOpt("retrieve-url")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("url")
+                .desc(rb.getString("retrieve-url"))
+                .longOpt("retrieve-url")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("location-uid"))
-                .withLongOpt("location-uid")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("uid")
+                .desc(rb.getString("location-uid"))
+                .longOpt("location-uid")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("no")
-                .withDescription(rb.getString("series-no"))
-                .withLongOpt("series-no")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("no")
+                .desc(rb.getString("series-no"))
+                .longOpt("series-no")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("no")
-                .withDescription(rb.getString("inst-no"))
-                .withLongOpt("inst-no")
-                .create());
-       opts.addOption(OptionBuilder
+                .argName("no")
+                .desc(rb.getString("inst-no"))
+                .longOpt("inst-no")
+                .build());
+       opts.addOption(Option.builder("o")
                .hasArg()
-               .withArgName("file")
-               .withDescription(rb.getString("o-file"))
-               .create("o"));
+               .argName("file")
+               .desc(rb.getString("o-file"))
+               .build());
        OptionGroup group = new OptionGroup();
-       group.addOption(OptionBuilder
-               .withLongOpt("no-fmi")
-               .withDescription(rb.getString("no-fmi"))
-               .create("F"));
-       group.addOption(OptionBuilder
-               .withLongOpt("transfer-syntax")
+       group.addOption(Option.builder("F")
+               .longOpt("no-fmi")
+               .desc(rb.getString("no-fmi"))
+               .build());
+       group.addOption(Option.builder("t")
+               .longOpt("transfer-syntax")
                .hasArg()
-               .withArgName("uid")
-               .withDescription(rb.getString("transfer-syntax"))
-               .create("t"));
+               .argName("uid")
+               .desc(rb.getString("transfer-syntax"))
+               .build());
        opts.addOptionGroup(group);
-       opts.addOption(OptionBuilder
+       opts.addOption(Option.builder("s")
                .hasArgs()
-               .withArgName("[seq/]attr=value")
-               .withValueSeparator('=')
-               .withDescription(rb.getString("set"))
-               .create("s"));
-       opts.addOption(OptionBuilder
+               .argName("[seq/]attr=value")
+               .valueSeparator('=')
+               .desc(rb.getString("set"))
+               .build());
+       opts.addOption(Option.builder()
                .hasArg()
-               .withArgName("suffix")
-               .withDescription(rb.getString("uid-suffix"))
-               .withLongOpt("uid-suffix")
-               .create(null));
+               .argName("suffix")
+               .desc(rb.getString("uid-suffix"))
+               .longOpt("uid-suffix")
+               .build());
        CLIUtils.addEncodingOptions(opts);
    }
 

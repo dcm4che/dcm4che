@@ -38,15 +38,7 @@
 
 package org.dcm4che3.io;
 
-import java.io.BufferedInputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -118,13 +110,13 @@ public class DicomInputStream extends FilterInputStream
     private long markPos;
     private int tag;
     private VR vr;
+    private int encodedVR;
     private int length;
     private DicomInputHandler handler = this;
     private BulkDataCreator bulkDataCreator = this;
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
     private List<ItemPointer> itemPointers = new ArrayList<ItemPointer>(4);
-    private boolean decodeUNWithIVRLE = true;
     private boolean excludeBulkData;
     private boolean includeBulkDataURI;
 
@@ -148,7 +140,13 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public DicomInputStream(File file) throws IOException {
-        this(new FileInputStream(file));
+        super(new BufferedInputStream(new FileInputStream(file)));
+        try {
+            guessTransferSyntax();
+        } catch (IOException e) {
+            SafeClose.close(in);
+            throw e;
+        }
         uri = file.toURI().toString();
     }
 
@@ -265,14 +263,6 @@ public class DicomInputStream extends FilterInputStream
         if (bulkDataCreator == null)
             throw new NullPointerException("bulkDataCreator");
         this.bulkDataCreator = bulkDataCreator;
-    }
-
-    public boolean isDecodeUNWithIVRLE() {
-        return decodeUNWithIVRLE;
-    }
-
-    public void setDecodeUNWithIVRLE(boolean decodeUNWithIVRLE) {
-        this.decodeUNWithIVRLE = decodeUNWithIVRLE;
     }
 
     public final void setFileMetaInformationGroupLength(byte[] val) {
@@ -426,6 +416,7 @@ public class DicomInputStream extends FilterInputStream
         byte[] buf = buffer;
         tagPos = pos; 
         readFully(buf, 0, 8);
+        encodedVR = 0;
         switch(tag = ByteUtils.bytesToTag(buf, 0, bigEndian)) {
         case Tag.Item:
         case Tag.ItemDelimitationItem:
@@ -434,7 +425,7 @@ public class DicomInputStream extends FilterInputStream
            break;
         default:
             if (explicitVR) {
-                vr = VR.valueOf(ByteUtils.bytesToVR(buf, 4));
+                vr = VR.valueOf(encodedVR = ByteUtils.bytesToVR(buf, 4));
                 if (vr.headerLength() == 8) {
                     length = ByteUtils.bytesToUShort(buf, 6, bigEndian);
                     return;
@@ -530,27 +521,16 @@ public class DicomInputStream extends FilterInputStream
             if (hasStopTag && tag == stopTag)
                 break;
             if (vr != null) {
-                boolean prevBigEndian = bigEndian;
-                boolean prevExplicitVR = explicitVR;
-                try {
-                    if (vr == VR.UN) {
-                        if (decodeUNWithIVRLE) {
-                            bigEndian = false;
-                            explicitVR = false;
-                        }
-                        vr = ElementDictionary.vrOf(tag,
-                                attrs.getPrivateCreator(tag));
-                        if (vr == VR.UN && length == -1)
-                            vr = VR.SQ; // assumes UN with undefined length are SQ,
-                                        // will fail on UN fragments!
-                    }
-                    excludeBulkData = includeBulkData == IncludeBulkData.NO && isBulkData(attrs);
-                    includeBulkDataURI = includeBulkData == IncludeBulkData.URI && isBulkData(attrs);
-                    handler.readValue(this, attrs);
-                } finally {
-                    bigEndian = prevBigEndian;
-                    explicitVR = prevExplicitVR;
+                if (vr == VR.UN) {
+                    vr = ElementDictionary.vrOf(tag,
+                            attrs.getPrivateCreator(tag));
+                    if (vr == VR.UN && length == -1)
+                        vr = VR.SQ; // assumes UN with undefined length are SQ,
+                                    // will fail on UN fragments!
                 }
+                excludeBulkData = includeBulkData == IncludeBulkData.NO && isBulkData(attrs);
+                includeBulkDataURI = includeBulkData == IncludeBulkData.URI && isBulkData(attrs);
+                handler.readValue(this, attrs);
             } else
                 skipAttribute(UNEXPECTED_ATTRIBUTE);
         }
@@ -685,15 +665,73 @@ public class DicomInputStream extends FilterInputStream
         String privateCreator = attrs.getPrivateCreator(sqtag);
         boolean undefLen = len == -1;
         long endPos = pos + (len & 0xffffffffL);
+        boolean explicitVR0 = explicitVR;
+        boolean bigEndian0 = bigEndian;
+        if (encodedVR == 0x554e // UN
+                && !probeExplicitVR()) {
+            explicitVR = false;
+            bigEndian = false;
+        }
         for (int i = 0; (undefLen || pos < endPos) && readItemHeader(); ++i) {
             addItemPointer(sqtag, privateCreator, i);
             handler.readValue(this, seq);
             removeItemPointer();
         }
+        explicitVR = explicitVR0;
+        bigEndian = bigEndian0;
         if (seq.isEmpty())
             attrs.setNull(sqtag, VR.SQ);
         else
             seq.trimToSize();
+    }
+
+    private boolean probeExplicitVR() throws IOException {
+        byte[] buf = new byte[14];
+        if (in.markSupported()) {
+            in.mark(14);
+            in.read(buf);
+            in.reset();
+        } else {
+            if (!(in instanceof PushbackInputStream))
+                in = new PushbackInputStream(in, 14);
+            int len = in.read(buf);
+            ((PushbackInputStream) in).unread(buf, 0, len);
+        }
+        switch (ByteUtils.bytesToVR(buf, 12)) {
+            case 0x4145: // AE
+            case 0x4153: // AS
+            case 0x4154: // AT
+            case 0x4353: // CS
+            case 0x4441: // DA
+            case 0x4453: // DS
+            case 0x4454: // DT
+            case 0x4644: // FD
+            case 0x464c: // FL
+            case 0x4953: // IS
+            case 0x4c4f: // LO
+            case 0x4c54: // LT
+            case 0x4f42: // OB
+            case 0x4f44: // OD
+            case 0x4f46: // OF
+            case 0x4f4c: // OL
+            case 0x4f57: // OW
+            case 0x504e: // PN
+            case 0x5348: // SH
+            case 0x534c: // SL
+            case 0x5351: // SQ
+            case 0x5353: // SS
+            case 0x5354: // ST
+            case 0x544d: // TM
+            case 0x5543: // UC
+            case 0x5549: // UI
+            case 0x554c: // UL
+            case 0x554e: // UN
+            case 0x5552: // UR
+            case 0x5553: // US
+            case 0x5554: // UT
+                return true;
+        }
+        return false;
     }
 
     private void addItemPointer(int sqtag, String privateCreator, int itemIndex) {

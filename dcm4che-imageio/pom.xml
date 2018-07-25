@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>5.11.0</version>
+    <version>5.14.0</version>
   </parent>
   <artifactId>dcm4che-imageio</artifactId>
   <packaging>bundle</packaging>
@@ -84,6 +84,12 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+	<groupId>org.assertj</groupId>
+	<artifactId>assertj-core</artifactId>
+	<scope>test</scope>
+	<version>2.8.0</version>
     </dependency>
   </dependencies>
 </project>

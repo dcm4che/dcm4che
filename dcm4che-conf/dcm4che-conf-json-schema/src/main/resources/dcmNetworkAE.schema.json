@@ -27,6 +27,15 @@
         "type": "string"
       }
     },
+    "dcmPreferredTransferSyntax": {
+      "title": "PreferredTransferSyntax",
+      "description": "Preferred Transfer Syntax for selection of Transfer Syntax within a Presentation Context, ordered by priority. If absent, the first acceptable Transfer Syntax in the offered Presentation Context will be selected. May be overwritten by configured values for particular Transfer Capabilities of this AE.",
+      "type": "array",
+      "format": "dcmTransferSyntax",
+      "items": {
+        "type": "string"
+      }
+    },
     "hl7ApplicationName": {
       "title": "HL7 Application name",
       "description": "HL7 Application and Facility name (Application|Facility) associated with this AE",

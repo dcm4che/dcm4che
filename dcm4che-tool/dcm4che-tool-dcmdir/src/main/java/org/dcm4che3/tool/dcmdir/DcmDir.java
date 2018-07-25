@@ -50,8 +50,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
@@ -113,37 +114,37 @@ public class DcmDir {
         OptionGroup cmdGroup = new OptionGroup();
         addCommandOptions(cmdGroup);
         opts.addOptionGroup(cmdGroup);
-        opts.addOption(OptionBuilder
-                .withLongOpt("width")
+        opts.addOption(Option.builder("w")
+                .longOpt("width")
                 .hasArg()
-                .withArgName("col")
-                .withDescription(rb.getString("width"))
-                .create("w"));
+                .argName("col")
+                .desc(rb.getString("width"))
+                .build());
         opts.addOption(null, "in-use", false, rb.getString("in-use"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("csv")
+        opts.addOption(Option.builder()
+                .longOpt("csv")
                 .hasArg()
-                .withArgName("csv-file")
-                .withDescription(rb.getString("csv"))
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("csv-delim")
+                .argName("csv-file")
+                .desc(rb.getString("csv"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("csv-delim")
                 .hasArg()
-                .withArgName("csv-delim")
-                .withDescription(rb.getString("csv-delim"))
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("csv-quote")
+                .argName("csv-delim")
+                .desc(rb.getString("csv-delim"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("csv-quote")
                 .hasArg()
-                .withArgName("csv-quote")
-                .withDescription(rb.getString("csv-quote"))
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("record-config")
+                .argName("csv-quote")
+                .desc(rb.getString("csv-quote"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("record-config")
                 .hasArg()
-                .withArgName("record-config-file")
-                .withDescription(rb.getString("record-config"))
-                .create());
+                .argName("record-config-file")
+                .desc(rb.getString("record-config"))
+                .build());
         opts.addOption(null, "orig-seq-len", false,
                 rb.getString("orig-seq-len"));
         CLIUtils.addEncodingOptions(opts);
@@ -155,36 +156,36 @@ public class DcmDir {
 
     @SuppressWarnings("static-access")
     private static void addCommandOptions(OptionGroup cmdGroup) {
-        cmdGroup.addOption(OptionBuilder
+        cmdGroup.addOption(Option.builder("l")
                 .hasArg()
-                .withArgName("dicomdir")
-                .withDescription(rb.getString("list"))
-                .create("l"));
-        cmdGroup.addOption(OptionBuilder
+                .argName("dicomdir")
+                .desc(rb.getString("list"))
+                .build());
+        cmdGroup.addOption(Option.builder("c")
                 .hasArg()
-                .withArgName("dicomdir")
-                .withDescription(rb.getString("create"))
-                .create("c"));
-        cmdGroup.addOption(OptionBuilder
+                .argName("dicomdir")
+                .desc(rb.getString("create"))
+                .build());
+        cmdGroup.addOption(Option.builder("u")
                 .hasArg()
-                .withArgName("dicomdir")
-                .withDescription(rb.getString("update"))
-                .create("u"));
-        cmdGroup.addOption(OptionBuilder
+                .argName("dicomdir")
+                .desc(rb.getString("update"))
+                .build());
+        cmdGroup.addOption(Option.builder("d")
                 .hasArg()
-                .withArgName("dicomdir")
-                .withDescription(rb.getString("delete"))
-                .create("d"));
-        cmdGroup.addOption(OptionBuilder
+                .argName("dicomdir")
+                .desc(rb.getString("delete"))
+                .build());
+        cmdGroup.addOption(Option.builder("p")
                 .hasArg()
-                .withArgName("dicomdir")
-                .withDescription(rb.getString("purge"))
-                .create("p"));
-        cmdGroup.addOption(OptionBuilder
+                .argName("dicomdir")
+                .desc(rb.getString("purge"))
+                .build());
+        cmdGroup.addOption(Option.builder("z")
                 .hasArg()
-                .withArgName("dicomdir")
-                .withDescription(rb.getString("compact"))
-                .create("z"));
+                .argName("dicomdir")
+                .desc(rb.getString("compact"))
+                .build());
     }
 
     @SuppressWarnings("unchecked")

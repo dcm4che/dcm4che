@@ -162,6 +162,28 @@ public class AttributesTest {
     }
 
     @Test
+    public void testEqualValues() {
+        Attributes a = new Attributes();
+        a.setString(Tag.PatientName, VR.PN, "Simson^Homer");
+        a.setString(0x00090010, VR.LO, "CREATOR1");
+        a.setString(0x00091010, VR.LO, "VALUE1");
+
+        Attributes b = new Attributes();
+        b.setString(Tag.PatientName, VR.PN, "Simson^Homer^^^");
+        b.setString(0x00090020, VR.LO, "CREATOR1");
+        b.setString(0x00092010, VR.LO, "VALUE1");
+        b.setString(0x00090010, VR.LO, "CREATOR2");
+        b.setString(0x00091010, VR.LO, "VALUE2");
+
+        assertTrue(a.equalValues(b, Tag.PatientName));
+        assertTrue(b.equalValues(a, Tag.PatientName));
+        assertTrue(b.equalValues(a, "CREATOR1", 0x00090010));
+        assertTrue(a.equalValues(b, "CREATOR1", 0x00090010));
+
+        assertFalse(a.equalValues(b, "CREATOR2", 0x00090010));
+    }
+
+    @Test
     public void testEqualsIS() {
         Attributes a1 = new Attributes();
         a1.setString(Tag.ReferencedFrameNumber, VR.IS, "54");
@@ -215,6 +237,26 @@ public class AttributesTest {
         a.setBytes(Tag.PatientName, VR.PN, NAME.getBytes("ISO-8859-1"));
         a.setSpecificCharacterSet("ISO_IR 192");
         assertArrayEquals(NAME.getBytes("UTF-8"), a.getBytes(Tag.PatientName));
+    }
+
+    @Test
+    public void testReadWronglyEncodedDatasetByChangingDefaultCharacterSet() throws Exception {
+        Attributes a = new Attributes();
+
+        a.setString(Tag.SpecificCharacterSet, VR.CS, "ISO 2022 IR 6"); // ASCII
+        
+        String NAME = "\u00c4neas^R\u00fcdiger";
+        // simulate wrong encoding using "ISO-8859-1" (ISO_IR 100) instead of "ISO 2022 IR 6" (ASCII)
+        a.setBytes(Tag.PatientName, VR.PN, NAME.getBytes("ISO-8859-1"));
+        
+        // changing the default character set makes it possible to read such bad data
+        SpecificCharacterSet.setDefaultCharacterSet("ISO_IR 100");
+        try {
+            assertEquals(NAME, a.getString(Tag.PatientName));
+        } finally {
+            // reset the default character set, because other tests will run within the same JVM
+            SpecificCharacterSet.setDefaultCharacterSet(null);
+        }
     }
 
     @Test
@@ -352,5 +394,45 @@ public class AttributesTest {
                 Tag.RequestingPhysician};
         assertEquals(0, a.diff(b, selection, null));
         assertEquals(0, b.diff(a, selection, null));
+    }
+
+    @Test
+    public void testContainsTagInRange_First() {
+        Attributes a = new Attributes(1);
+        a.setString(Tag.IssuerOfPatientID, VR.LO, "Issuer");
+
+        assertTrue(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
+
+    @Test
+    public void testContainsTagInRange_Last() {
+        Attributes a = new Attributes(1);
+        a.newSequence(Tag.SourcePatientGroupIdentificationSequence, 0);
+
+        assertTrue(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
+
+    @Test
+    public void testContainsTagInRange_Middle() {
+        Attributes a = new Attributes(1);
+        a.setString(Tag.TypeOfPatientID, VR.CS, "RFID");
+
+        assertTrue(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
+
+    @Test
+    public void testContainsTagInRange_Not() {
+        Attributes a = new Attributes(2);
+        a.setString(Tag.PatientID, VR.LO, "123");
+        a.newSequence(Tag.GroupOfPatientsIdentificationSequence, 0);
+
+        assertFalse(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
+
+    @Test
+    public void testContainsTagInRange_Not_Empty() {
+        Attributes a = new Attributes();
+
+        assertFalse(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
     }
 }

@@ -47,8 +47,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -171,32 +172,32 @@ public class IanSCP extends Device {
     private static void addStorageDirectoryOptions(Options opts) {
         opts.addOption(null, "ignore", false,
                 rb.getString("ignore"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("path")
-                .withDescription(rb.getString("directory"))
-                .withLongOpt("directory")
-                .create(null));
+                .argName("path")
+                .desc(rb.getString("directory"))
+                .longOpt("directory")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addTransferCapabilityOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("sop-classes"))
-                .withLongOpt("sop-classes")
-                .create(null));
+                .argName("file|url")
+                .desc(rb.getString("sop-classes"))
+                .longOpt("sop-classes")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     private static void addStatusOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("code")
-                .withDescription(rb.getString("status"))
-                .withLongOpt("status")
-                .create(null));
+                .argName("code")
+                .desc(rb.getString("status"))
+                .longOpt("status")
+                .build());
     }
 
     private static File getStorageDirectory(CommandLine cl) {

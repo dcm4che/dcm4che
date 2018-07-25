@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:iherad="urn:ihe:rad:xdsi-b:2009"
+           xmlns:ihe="urn:ihe:iti:xds-b:2007"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:rim="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0"
+           xmlns:query="urn:oasis:names:tc:ebxml-regrep:xsd:query:3.0"
+           xmlns:lcm="urn:oasis:names:tc:ebxml-regrep:xsd:lcm:3.0"
+           xmlns:rs="urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0"
+           elementFormDefault="qualified"
+           targetNamespace="urn:ihe:rad:xdsi-b:2009">
+  <xs:import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0"
+             schemaLocation="../ebRS/rs.xsd"/>
+  <xs:import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0"
+             schemaLocation="../ebRS/rim.xsd"/>
+  <xs:import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:lcm:3.0"
+             schemaLocation="../ebRS/lcm.xsd"/>
+  <xs:import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:query:3.0"
+             schemaLocation="../ebRS/query.xsd"/>
+  <xs:import namespace="urn:ihe:iti:xds-b:2007" schemaLocation="./XDS.b_DocumentRepository.xsd"/>
+  <xs:complexType name="RetrieveImagingDocumentSetRequestType">
+    <xs:sequence>
+      <xs:element name="StudyRequest" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="SeriesRequest" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:complexContent>
+                  <xs:extension base="ihe:RetrieveDocumentSetRequestType">
+                    <xs:attribute name="seriesInstanceUID" type="rim:LongName" use="required"/>
+                  </xs:extension>
+                </xs:complexContent>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="studyInstanceUID" type="rim:LongName" use="required"/>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="TransferSyntaxUIDList">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="TransferSyntaxUID" type="rim:LongName" maxOccurs="unbounded">
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="RetrieveImagingDocumentSetRequest"
+              type="iherad:RetrieveImagingDocumentSetRequestType"/>
+</xs:schema>

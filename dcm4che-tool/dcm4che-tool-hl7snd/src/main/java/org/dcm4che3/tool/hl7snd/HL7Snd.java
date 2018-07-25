@@ -50,8 +50,9 @@ import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.hl7.MLLPConnection;
 import org.dcm4che3.net.Connection;
@@ -96,29 +97,29 @@ public class HL7Snd extends Device {
 
     @SuppressWarnings("static-access")
     private static void addConnectOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("c")
                 .hasArg()
-                .withArgName("host:port")
-                .withDescription(rb.getString("connect"))
-                .withLongOpt("connect")
-                .create("c"));
-        opts.addOption(OptionBuilder
+                .argName("host:port")
+                .desc(rb.getString("connect"))
+                .longOpt("connect")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("[user:password@]host:port")
-                .withDescription(rb.getString("proxy"))
-                .withLongOpt("proxy")
-                .create(null));
+                .argName("[user:password@]host:port")
+                .desc(rb.getString("proxy"))
+                .longOpt("proxy")
+                .build());
         CLIUtils.addConnectTimeoutOption(opts);
     }
 
     @SuppressWarnings("static-access")
     private static void addBindOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("b")
                 .hasArg()
-                .withArgName("ip")
-                .withDescription(rb.getString("bind"))
-                .withLongOpt("bind")
-                .create("b"));
+                .argName("ip")
+                .desc(rb.getString("bind"))
+                .longOpt("bind")
+                .build());
     }
 
     private static void configureConnect(Connection conn, CommandLine cl)

@@ -76,6 +76,7 @@
 
 package org.dcm4che3.data;
 
+import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -551,7 +552,8 @@ public class SpecificCharacterSet {
     private static String[] checkISO2022(String[] codes) {
         for (String code : codes) {
             if (code != null && !code.startsWith("ISO 2022")) {
-                LOG.info("Invalid Specific Character Set: {} - treat as [{}]", Arrays.toString(codes), codes[0]);
+                LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
+                        StringUtils.concat(codes, '\\'), codes[0]);
                 return new String[]{codes[0]};
             }
         }

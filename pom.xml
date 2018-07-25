@@ -66,6 +66,7 @@
     <jaxws-tools-maven-plugin.version>1.2.2.Final</jaxws-tools-maven-plugin.version>
     <jbossws-cxf-client.version>5.2.1.Final</jbossws-cxf-client.version>
     <apache-cxf.version>3.2.4-jbossorg-1</apache-cxf.version>
+    <commons-cli.version>1.4</commons-cli.version>
   </properties>
   <build>
     <extensions>

@@ -43,7 +43,7 @@
   <artifactId>dcm4che-parent</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>5.13.3</version>
+  <version>5.14.0</version>
   <description>dcm4che DICOM toolkit and utilities</description>
   <issueManagement>
     <system>JIRA</system>
@@ -66,6 +66,7 @@
     <jaxws-tools-maven-plugin.version>1.2.2.Final</jaxws-tools-maven-plugin.version>
     <jbossws-cxf-client.version>5.2.1.Final</jbossws-cxf-client.version>
     <apache-cxf.version>3.2.4-jbossorg-1</apache-cxf.version>
+    <commons-cli.version>1.4</commons-cli.version>
   </properties>
   <build>
     <extensions>

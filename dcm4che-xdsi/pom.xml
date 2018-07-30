@@ -79,6 +79,11 @@
       <artifactId>cxf-rt-frontend-simple</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>gnu.getopt</groupId>
+      <artifactId>java-getopt</artifactId>
+      <version>1.0.13</version>
+    </dependency>
   </dependencies>
 
   <build>

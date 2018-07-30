@@ -63,7 +63,7 @@
     <weasis.version>3.0.0-RC1</weasis.version>
     <weasis.opencv.native.version>3.4.0-dcmR3</weasis.opencv.native.version>
     <keycloak.version>4.0.0.Final</keycloak.version>
-    <jaxws-tools-maven-plugin.version>1.2.2.Final</jaxws-tools-maven-plugin.version>
+    <jaxws-tools-maven-plugin.version>1.2.1.Final</jaxws-tools-maven-plugin.version>
     <jbossws-cxf-client.version>5.2.1.Final</jbossws-cxf-client.version>
     <apache-cxf.version>3.2.4-jbossorg-1</apache-cxf.version>
     <commons-cli.version>1.4</commons-cli.version>

@@ -7,7 +7,8 @@
     (N-ACTION RQ) for the SOP Instances in the scanned files are sent to a
     Service Class Provider (SCP) of the Storage Commitment Push Model SOP
     Class. If no DICOM file is specified, it sends a DICOM C-ECHO message and
-    waits for a response.\n-
+    waits for a response.
+    -
     Options:
         --accept-timeout <ms>                 timeout in ms for receiving
                                               A-ASSOCIATE-AC, no timeout by

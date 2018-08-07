@@ -551,7 +551,7 @@ public class SpecificCharacterSet {
 
     private static String[] checkISO2022(String[] codes) {
         for (String code : codes) {
-            if (code != null && !code.startsWith("ISO 2022")) {
+            if (code != null && !code.isEmpty() && !code.startsWith("ISO 2022")) {
                 LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
                         StringUtils.concat(codes, '\\'), StringUtils.maskNull(codes[0], ""));
                 return new String[]{codes[0]};

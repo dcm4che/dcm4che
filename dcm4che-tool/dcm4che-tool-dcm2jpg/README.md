@@ -2,7 +2,7 @@
                    or dcm2jpg [Options] <dicom-file>... <outdir>
                    or dcm2jpg [Options] <indir>... <outdir>
     
-    Convert DICOM image(s) to JPEG(s) or other image formats
+    Convert DICOM image(s) to JPEG(s) or other image formats.
     -
     Options:
      -c,--windowCenter <center>   Window Center of linear VOI LUT function to

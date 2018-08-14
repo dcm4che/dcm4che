@@ -42,12 +42,16 @@ import java.io.IOException;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
+
+    static final Logger LOG = LoggerFactory.getLogger(FutureDimseRSP.class);
 
     private static class Entry {
         final Attributes command;
@@ -63,6 +67,7 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
     private Entry entry = new Entry(null, null);
     private boolean finished;
     private int autoCancel;
+    private int remainingCapacity = Integer.MAX_VALUE;
     private IOException ex;
 
     public FutureDimseRSP(int msgID) {
@@ -89,6 +94,14 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
             finished = true;
         }
         notifyAll();
+        --remainingCapacity;
+        try {
+            while (remainingCapacity == 0) {
+                wait();
+            }
+        } catch (InterruptedException e) {
+            LOG.warn("Failed to wait for queueSize > 0", e);
+        }
     }
 
     @Override
@@ -103,8 +116,14 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
         }
     }
 
-    public final void setAutoCancel(int autoCancel) {
+    public synchronized void setAutoCancel(int autoCancel) {
         this.autoCancel = autoCancel;
+    }
+
+    public void setCapacity(int capacity) {
+        if (capacity <= 0)
+            throw new IllegalArgumentException("capacity: " + capacity);
+        this.remainingCapacity = capacity;
     }
 
     @Override
@@ -135,6 +154,8 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
                 throw ex;
         }
         entry = entry.next;
+        if (remainingCapacity++ == 0)
+            notifyAll();
         return true;
     }
 }

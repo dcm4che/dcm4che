@@ -197,10 +197,12 @@ public class JSONReader {
             case AT:
             case CS:
             case DA:
+            case DS:
             case DT:
             case LO:
             case LT:
             case PN:
+            case IS:
             case SH:
             case ST:
             case TM:
@@ -210,12 +212,10 @@ public class JSONReader {
             case UT:
                 attrs.setString(tag, el.vr, el.toStrings());
                 break;
-            case DS:
             case FL:
             case FD:
                 attrs.setDouble(tag, el.vr, el.toDoubles());
                 break;
-            case IS:
             case SL:
             case SS:
             case UL:

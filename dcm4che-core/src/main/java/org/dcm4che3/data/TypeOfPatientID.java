@@ -45,6 +45,9 @@ package org.dcm4che3.data;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Aug 2018
  */
-public enum TypeOfPatientID {
-    TEXT, RFID, BARCODE
+public class TypeOfPatientID {
+    private TypeOfPatientID() {}
+    public static final String TEXT = "TEXT";
+    public static final String RFID = "RFID";
+    public static final String BARCODE = "BARCODE";
 }

@@ -121,6 +121,8 @@ public class IDWithIssuer {
     @Override
     public int hashCode() {
         int result = id.hashCode();
+        if (typeOfPatientID != null)
+            result += typeOfPatientID.hashCode() * 31;
         if (identifierTypeCode != null)
             result += identifierTypeCode.hashCode() * 31;
         if (issuer != null)
@@ -136,10 +138,13 @@ public class IDWithIssuer {
             return false;
         IDWithIssuer other = (IDWithIssuer) obj;
         return id.equals(other.id) &&
+                (typeOfPatientID == null
+                    ? other.typeOfPatientID == null
+                    : typeOfPatientID.equals(typeOfPatientID)) &&
                 (identifierTypeCode == null
                     ? other.identifierTypeCode == null
                     : identifierTypeCode.equals(identifierTypeCode)) &&
-                (issuer == null 
+                (issuer == null
                     ? other.issuer == null
                     : issuer.equals(other.issuer));
     }

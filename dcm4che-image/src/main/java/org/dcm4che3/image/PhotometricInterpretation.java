@@ -111,6 +111,11 @@ public enum PhotometricInterpretation {
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createYBRFullColorModel(bits, dataType, ds);
         }
+        
+        @Override
+        public PhotometricInterpretation decompress() {
+            return RGB;
+        }
     },
     YBR_FULL_422 {
         @Override

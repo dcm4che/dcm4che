@@ -41,43 +41,46 @@
 
 package org.dcm4che3.opencv;
 
-import java.io.IOException;
 import java.util.Locale;
 
-import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.ImageWriter;
-import javax.imageio.spi.ImageWriterSpi;
-import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.ImageWriteParam;
 
 /**
  * @author Nicolas Roduit
- * @since Mar 2018
+ * @since Aug 2018
  */
-public class NativeJLSImageWriterSpi extends ImageWriterSpi {
+public class J2kImageWriteParam extends ImageWriteParam {
+    /** JPEG2000 lossy quality (0..100, default: 90) */
+    private int quality;
+    /** JPEG2000 lossless, default true */
+    private boolean lossless;
 
-    public NativeJLSImageWriterSpi() {
-        this(NativeJLSImageWriter.class);
+    public J2kImageWriteParam(Locale locale) {
+        super(locale);
+        super.canWriteCompressed = true;
+        this.lossless = true;
+        this.quality = 90;
     }
 
-    public NativeJLSImageWriterSpi(Class<? extends NativeJLSImageWriter> writer) {
-        super("Weasis Team", "1.0", NativeJLSImageReaderSpi.NAMES, NativeJLSImageReaderSpi.SUFFIXES,
-            NativeJLSImageReaderSpi.MIMES, writer.getName(), new Class[] { ImageOutputStream.class },
-            new String[] { NativeJLSImageReaderSpi.class.getName() }, false, null, null, null, null, false, null, null,
-            null, null);
+    public int getQuality() {
+        return quality;
+    }
+
+    public void setQuality(int quality) {
+        this.quality = quality;
+    }
+
+
+    public boolean isLossless() {
+        return lossless;
+    }
+
+    public void setLossless(boolean lossless) {
+        this.lossless = lossless;
     }
 
     @Override
-    public boolean canEncodeImage(ImageTypeSpecifier type) {
-        return NativeJPEGImageWriterSpi.checkCommonJpgRequirement(type);
-    }
-
-    @Override
-    public String getDescription(Locale locale) {
-        return "Natively-accelerated JPEG-LS Image Writer (CharLS based)";
-    }
-
-    @Override
-    public ImageWriter createWriterInstance(Object extension) throws IOException {
-        return new NativeJLSImageWriter(this);
+    public boolean isCompressionLossless() {
+        return lossless;
     }
 }

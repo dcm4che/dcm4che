@@ -61,6 +61,14 @@ public enum TransferSyntaxType {
         @Override
         public int getMaxBitsStored() { return 12; }
     },
+    JPEG_SPECTRAL {
+        @Override
+        public int getMaxBitsStored() { return 12; }
+    },
+    JPEG_PROGRESSIVE {
+        @Override
+        public int getMaxBitsStored() { return 12; }
+    },
     JPEG_LOSSLESS,
     JPEG_2000 {
         @Override
@@ -106,6 +114,8 @@ public enum TransferSyntaxType {
         map.put(UID.ExplicitVRBigEndianRetired, NATIVE);
         map.put(UID.JPEGBaseline1, JPEG_BASELINE);
         map.put(UID.JPEGExtended24, JPEG_EXTENDED);
+        map.put(UID.JPEGSpectralSelectionNonHierarchical68Retired, JPEG_SPECTRAL);
+        map.put(UID.JPEGFullProgressionNonHierarchical1012Retired, JPEG_PROGRESSIVE);
         map.put(UID.JPEGLosslessNonHierarchical14, JPEG_LOSSLESS);
         map.put(UID.JPEGLossless, JPEG_LOSSLESS);
         map.put(UID.JPEGLSLossless, JPEG_LOSSLESS);

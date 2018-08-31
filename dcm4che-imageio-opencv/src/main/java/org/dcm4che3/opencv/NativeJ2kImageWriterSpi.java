@@ -53,16 +53,16 @@ import javax.imageio.stream.ImageOutputStream;
  * @author Nicolas Roduit
  * @since Mar 2018
  */
-public class NativeJLSImageWriterSpi extends ImageWriterSpi {
+public class NativeJ2kImageWriterSpi extends ImageWriterSpi {
 
-    public NativeJLSImageWriterSpi() {
+    public NativeJ2kImageWriterSpi() {
         this(NativeJLSImageWriter.class);
     }
 
-    public NativeJLSImageWriterSpi(Class<? extends NativeJLSImageWriter> writer) {
-        super("Weasis Team", "1.0", NativeJLSImageReaderSpi.NAMES, NativeJLSImageReaderSpi.SUFFIXES,
-            NativeJLSImageReaderSpi.MIMES, writer.getName(), new Class[] { ImageOutputStream.class },
-            new String[] { NativeJLSImageReaderSpi.class.getName() }, false, null, null, null, null, false, null, null,
+    public NativeJ2kImageWriterSpi(Class<? extends NativeJLSImageWriter> writer) {
+        super("Weasis Team", "1.0", NativeJ2kImageReaderSpi.NAMES, NativeJ2kImageReaderSpi.SUFFIXES,
+            NativeJ2kImageReaderSpi.MIMES, writer.getName(), new Class[] { ImageOutputStream.class },
+            new String[] { NativeJ2kImageReaderSpi.class.getName() }, false, null, null, null, null, false, null, null,
             null, null);
     }
 
@@ -73,11 +73,11 @@ public class NativeJLSImageWriterSpi extends ImageWriterSpi {
 
     @Override
     public String getDescription(Locale locale) {
-        return "Natively-accelerated JPEG-LS Image Writer (CharLS based)";
+        return "Natively-accelerated JPEG2000 Image Writer (OpenJPEG based)";
     }
 
     @Override
     public ImageWriter createWriterInstance(Object extension) throws IOException {
-        return new NativeJLSImageWriter(this);
+        return new NativeJ2kImageWriter(this);
     }
 }

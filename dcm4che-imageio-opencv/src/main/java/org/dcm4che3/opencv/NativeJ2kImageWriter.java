@@ -42,6 +42,8 @@
 package org.dcm4che3.opencv;
 
 import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
 
@@ -66,20 +68,20 @@ import org.weasis.opencv.op.ImageConversion;
 
 /**
  * @author Nicolas Roduit
- * @since Mar 2018
+ * @since Aug 2018
  */
-class NativeJLSImageWriter extends ImageWriter {
+class NativeJ2kImageWriter extends ImageWriter {
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 
-    NativeJLSImageWriter(ImageWriterSpi originatingProvider) throws IOException {
+    NativeJ2kImageWriter(ImageWriterSpi originatingProvider) throws IOException {
         super(originatingProvider);
     }
 
     @Override
     public ImageWriteParam getDefaultWriteParam() {
-        return new JPEGLSImageWriteParam(getLocale());
+        return new J2kImageWriteParam(getLocale());
     }
 
     @Override
@@ -93,6 +95,8 @@ class NativeJLSImageWriter extends ImageWriter {
         }
         ImageOutputStream stream = (ImageOutputStream) output;
         stream.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        
+        J2kImageWriteParam j2kParams = (J2kImageWriteParam) param;
         
         if (!(stream instanceof BytesWithImageImageDescriptor)) {
             throw new IllegalArgumentException("stream does not implement BytesWithImageImageDescriptor!");
@@ -123,26 +127,30 @@ class NativeJLSImageWriter extends ImageWriter {
             params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags
             params[Imgcodecs.DICOM_PARAM_WIDTH] = mat.width(); // Image width
             params[Imgcodecs.DICOM_PARAM_HEIGHT] = mat.height(); // Image height
-            params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_JPLS; // Type of compression
+            params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_J2K; // Type of compression
             params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
             params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsStored(); // Bits per sample
             params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
             params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
-            params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] =
-                // Allowed lossy error for jpeg-ls
-                param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0;
+            params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = j2kParams.isLossless() ? 0 : 1;
+            params[Imgcodecs.DICOM_PARAM_JPEG_QUALITY] = j2kParams.getQuality(); // JPEG lossy quality
             
             MatOfInt dicomParams = new MatOfInt(params);
             Mat buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");
             if (buf.empty()) {
-                throw new IIOException("Native JPEG-LS encoding error: null image");
+                throw new IIOException("Native JPEG2000 encoding error: null image");
             }
 
             byte[] bSrcData = new byte[buf.width() * buf.height() * (int) buf.elemSize()];
             buf.get(0, 0, bSrcData);
             stream.write(bSrcData);
+            
+            try (FileOutputStream out =
+                            new FileOutputStream(new File("/home/nicolas/Data/Pictures/out/dcm4chee-90.j2k"))) {
+                            out.write(bSrcData);
+                        }
         } catch (Throwable t) {
-            throw new IIOException("Native JPEG-LS encoding error", t);
+            throw new IIOException("Native JPEG2000 encoding error", t);
         }
     }
 

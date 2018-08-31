@@ -98,6 +98,8 @@ public enum PhotometricInterpretation {
             if (tsuid.length() == 22 && tsuid.startsWith("1.2.840.10008.1.2.4."))
                 if (tsuid.endsWith("50") || tsuid.endsWith("51"))
                     return YBR_FULL_422;
+                else if (tsuid.endsWith("53") || tsuid.endsWith("55"))
+                    return YBR_FULL;
                 else if (tsuid.endsWith("90") || tsuid.endsWith("92"))
                     return YBR_RCT;
                 else if (tsuid.endsWith("91") || tsuid.endsWith("93"))

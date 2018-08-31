@@ -244,7 +244,7 @@ public class HL7Application implements Serializable {
         return conns;
     }
 
-    byte[] onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
+    UnparsedHL7Message onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
         HL7Segment msh = msg.msh();
         if (!(isInstalled() && conns.contains(conn)))
             throw new HL7Exception(
@@ -302,6 +302,21 @@ public class HL7Application implements Serializable {
         Socket sock = local.connect(remote);
         sock.setSoTimeout(local.getResponseTimeout());
         return new MLLPConnection(sock);
+    }
+
+    public HL7Connection open(Connection remote)
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
+        return new HL7Connection(this, connect(remote));
+    }
+
+    public HL7Connection open(HL7Application remote)
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
+        return new HL7Connection(this, connect(remote));
+    }
+
+    public HL7Connection open(Connection local, Connection remote)
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
+        return new HL7Connection(this, connect(local, remote));
     }
 
     public CompatibleConnection findCompatibleConnection(HL7Application remote)

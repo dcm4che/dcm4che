@@ -90,7 +90,7 @@ public class HL7Rcv {
     private final HL7MessageListener handler = new HL7MessageListener() {
 
         @Override
-        public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
+        public UnparsedHL7Message onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
                 throws HL7Exception {
             try {
                 return HL7Rcv.this.onMessage(msg);
@@ -232,15 +232,15 @@ public class HL7Rcv {
             conn.setHostname(hostAndPort[0]);
     }
 
-    private byte[] onMessage(UnparsedHL7Message msg)
+    private UnparsedHL7Message onMessage(UnparsedHL7Message msg)
                 throws Exception {
             if (storageDir != null)
                 storeToFile(msg.data(), new File(
                             new File(storageDir, msg.msh().getMessageType()),
                                 msg.msh().getField(9, "_NULL_")));
-            return (tpls == null)
+            return new UnparsedHL7Message(tpls == null
                 ? HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null)
-                : xslt(msg);
+                : xslt(msg));
     }
 
     private void storeToFile(byte[] data, File f) throws IOException {

@@ -69,7 +69,7 @@ enum HL7ProtocolHandler implements TCPProtocolHandler {
         final Socket s;
         final HL7DeviceExtension hl7dev;
 
-        HL7Receiver(Connection conn, Socket s) throws IOException {
+        HL7Receiver(Connection conn, Socket s) {
             this.conn = conn;
             this.s = s;
             this.hl7dev = conn.getDevice().getDeviceExtensionNotNull(HL7DeviceExtension.class);
@@ -81,13 +81,22 @@ enum HL7ProtocolHandler implements TCPProtocolHandler {
                 MLLPConnection mllp = new MLLPConnection(s);
                 byte[] data;
                 while ((data = mllp.readMessage()) != null) {
+                    HL7ConnectionMonitor monitor = hl7dev.getHL7ConnectionMonitor();
                     UnparsedHL7Message msg = new UnparsedHL7Message(data);
+                    if (monitor != null)
+                        monitor.onMessageReceived(conn, s, msg);
+                    UnparsedHL7Message rsp;
                     try {
-                        data = hl7dev.onMessage(conn, s, msg);
+                        rsp = hl7dev.onMessage(conn, s, msg);
+                    if (monitor != null)
+                        monitor.onMessageProcessed(conn, s, msg, rsp, null);
                     } catch (HL7Exception e) {
-                        data = HL7Message.makeACK(msg.msh(), e).getBytes(null);
+                        rsp = new UnparsedHL7Message(
+                                HL7Message.makeACK(msg.msh(), e).getBytes(null));
+                        if (monitor != null)
+                            monitor.onMessageProcessed(conn, s, msg, rsp, e);
                     }
-                    mllp.writeMessage(data);
+                    mllp.writeMessage(rsp.data());
                 }
             } catch (IOException e) {
                 LOG.warn("Exception on accepted connection {}:", s, e);

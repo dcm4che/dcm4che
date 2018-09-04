@@ -129,6 +129,7 @@ public class Device implements Serializable {
     private transient AssociationHandler associationHandler = new AssociationHandler();
     private transient DimseRQHandler dimseRQHandler;
     private transient ConnectionMonitor connectionMonitor;
+    private transient AssociationMonitor associationMonitor;
 
     private transient final List<Association> associations = new ArrayList<>();
 
@@ -727,6 +728,14 @@ public class Device implements Serializable {
 
     public void setConnectionMonitor(ConnectionMonitor connectionMonitor) {
         this.connectionMonitor = connectionMonitor;
+    }
+
+    public AssociationMonitor getAssociationMonitor() {
+        return associationMonitor;
+    }
+
+    public void setAssociationMonitor(AssociationMonitor associationMonitor) {
+        this.associationMonitor = associationMonitor;
     }
 
     public void bindConnections() throws IOException, GeneralSecurityException {

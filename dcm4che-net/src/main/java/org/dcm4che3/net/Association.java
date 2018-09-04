@@ -80,6 +80,7 @@ public class Association {
     private String name;
     private ApplicationEntity ae;
     private final Device device;
+    private final AssociationMonitor monitor;
     private final Connection conn;
     private final Socket sock;
     private final InputStream in;
@@ -115,6 +116,7 @@ public class Association {
              + '(' + serialNo + ')';
         this.conn = local;
         this.device = local.getDevice();
+        this.monitor = device.getAssociationMonitor();
         this.sock = sock;
         this.in = sock.getInputStream();
         this.out = sock.getOutputStream();
@@ -569,8 +571,12 @@ public class Association {
             maxPDULength = Association.minZeroAsMax(
                     rq.getMaxPDULength(), conn.getSendPDULength());
             write(ac);
+            if (monitor != null)
+                monitor.onAssociationAccepted(this);
         } catch (AAssociateRJ e) {
             write(e);
+            if (monitor != null)
+                monitor.onAssociationRejected(this, e);
         }
     }
 

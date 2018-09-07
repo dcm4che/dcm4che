@@ -1440,8 +1440,10 @@ public class AuditLogger extends DeviceExtension {
         Disruptor<AuditMessageEvent> disruptorInstance = new Disruptor<AuditMessageEvent>(factory, bufferSize, executor);
 
         // Connect the handlers (each handler runs in a separate thread)
-        disruptorInstance.handleEventsWithWorkerPool(
-                new AuditMessageEventHandler(PARALLEL_LOGGERS[0]),new AuditMessageEventHandler(PARALLEL_LOGGERS[1]));
+        disruptorInstance.handleEventsWithWorkerPool( //
+                new AuditMessageEventHandler(PARALLEL_LOGGERS[0]),new AuditMessageEventHandler(PARALLEL_LOGGERS[1])) //
+                // clear payload of event in the ring buffer so the contained message, etc. can be GCed
+                .then(new ClearingObjectHandler());
 
         // Start the Disruptor, starts all threads running
         disruptorInstance.start();

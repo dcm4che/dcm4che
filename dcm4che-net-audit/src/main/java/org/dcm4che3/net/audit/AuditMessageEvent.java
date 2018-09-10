@@ -25,4 +25,10 @@ public class AuditMessageEvent {
     public void setMessage(AuditMessage message) {
         this.message = message;
     }
+
+    public void clear()
+    {
+        this.logger = null;
+        this.message = null;
+    }
 }

@@ -197,11 +197,13 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         ArrayList<HL7ApplicationInfo> results = new ArrayList<HL7ApplicationInfo>();
         NamingEnumeration<SearchResult> ne = null;
         try {
-            ne = config.search(keys.getDeviceName(), HL7_ATTRS, toFilter(keys));
+            String deviceName = keys.getDeviceName();
+            ne = config.search(deviceName, HL7_ATTRS, toFilter(keys));
             while (ne.hasMore()) {
                 HL7ApplicationInfo hl7AppInfo = new HL7ApplicationInfo();
                 SearchResult ne1 = ne.next();
-                loadFrom(hl7AppInfo, ne1.getAttributes(), LdapUtils.cutDeviceName(ne1.getName()));
+                loadFrom(hl7AppInfo, ne1.getAttributes(),
+                        deviceName != null ? deviceName : LdapUtils.cutDeviceName(ne1.getName()));
                 results.add(hl7AppInfo);
             }
         } catch (NameNotFoundException e) {

@@ -2249,11 +2249,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ArrayList<ApplicationEntityInfo> results = new ArrayList<ApplicationEntityInfo>();
         NamingEnumeration<SearchResult> ne = null;
         try {
-            ne = search(keys.getDeviceName(), AE_ATTRS, toFilter(keys));
+            String deviceName = keys.getDeviceName();
+            ne = search(deviceName, AE_ATTRS, toFilter(keys));
             while (ne.hasMore()) {
                 ApplicationEntityInfo aetInfo = new ApplicationEntityInfo();
                 SearchResult ne1 = ne.next();
-                loadFrom(aetInfo, ne1.getAttributes(), LdapUtils.cutDeviceName(ne1.getName()));
+                loadFrom(aetInfo, ne1.getAttributes(),
+                        deviceName != null ? deviceName : LdapUtils.cutDeviceName(ne1.getName()));
                 results.add(aetInfo);
             }
         } catch (NameNotFoundException e) {
@@ -2275,11 +2277,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ArrayList<WebApplicationInfo> results = new ArrayList<WebApplicationInfo>();
         NamingEnumeration<SearchResult> ne = null;
         try {
-            ne = search(keys.getDeviceName(), WEBAPP_ATTRS, toFilter(keys));
+            String deviceName = keys.getDeviceName();
+            ne = search(deviceName, WEBAPP_ATTRS, toFilter(keys));
             while (ne.hasMore()) {
                 WebApplicationInfo webappInfo = new WebApplicationInfo();
                 SearchResult ne1 = ne.next();
-                loadFrom(webappInfo, ne1.getAttributes(), LdapUtils.cutDeviceName(ne1.getName()));
+                loadFrom(webappInfo, ne1.getAttributes(),
+                        deviceName != null ? deviceName : LdapUtils.cutDeviceName(ne1.getName()));
                 results.add(webappInfo);
             }
         } catch (NameNotFoundException e) {

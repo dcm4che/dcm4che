@@ -108,10 +108,18 @@ public class Issuer implements Serializable {
     }
 
     public static Issuer valueOf(Attributes issuerItem) {
-        if (issuerItem == null || issuerItem.isEmpty())
+        if (issuerItem == null)
             return null;
 
-        return new Issuer(issuerItem);
+        String localNamespaceEntityID = issuerItem.getString(Tag.LocalNamespaceEntityID);
+        String universalEntityID = issuerItem.getString(Tag.UniversalEntityID);
+        String universalEntityIDType = issuerItem.getString(Tag.UniversalEntityIDType);
+
+        return (universalEntityID != null && universalEntityIDType != null)
+                ? new Issuer(localNamespaceEntityID, universalEntityID, universalEntityIDType)
+                : localNamespaceEntityID != null
+                ? new Issuer(localNamespaceEntityID, null, null)
+                : null;
     }
 
     private void validate() {

@@ -279,7 +279,6 @@ public class AuditLogger extends DeviceExtension {
             collectionOfReferences = true)
     private List<Connection> connections = new ArrayList<Connection>(1);
 
-    private transient Map<String,MessageBuilder> builder = new HashMap<String, MessageBuilder>();
     private transient Map<String,ActiveConnection> activeConnection = new HashMap<String, ActiveConnection>();
     private transient ScheduledFuture<?> retryTimer;
     private transient Exception lastException;
@@ -864,14 +863,7 @@ public class AuditLogger extends DeviceExtension {
      */
     private MessageBuilder builder(String clientName) {
 
-        if (builder.get(clientName) == null) {
-            MessageBuilder messageBuilder = new MessageBuilder();
-            builder.put(clientName, messageBuilder);
-            return messageBuilder;
-        }
-        else {
-            return builder.get(clientName);
-        }
+        return new MessageBuilder();
     }
 
     private SendStatus sendMessage(String clientName, DatagramPacket msg) throws IncompatibleConnectionException,
@@ -1148,9 +1140,9 @@ public class AuditLogger extends DeviceExtension {
                 reset();
                 writeHeader(severityOf(msg), timeStamp);
                 if (!supplement95) {
-                    AuditMessages.toXML(msg, builder(clientName), formatXML, encoding, schemaURI);
+                    AuditMessages.toXML(msg, this, formatXML, encoding, schemaURI);
                 } else {
-                    AuditMessages.toSupplement95XML(msg, builder(clientName), formatXML, encoding, schemaURI);
+                    AuditMessages.toSupplement95XML(msg, this, formatXML, encoding, schemaURI);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

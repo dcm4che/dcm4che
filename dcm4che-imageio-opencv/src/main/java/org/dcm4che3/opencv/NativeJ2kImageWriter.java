@@ -42,8 +42,6 @@
 package org.dcm4che3.opencv;
 
 import java.awt.image.RenderedImage;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
 
@@ -144,11 +142,6 @@ class NativeJ2kImageWriter extends ImageWriter {
             byte[] bSrcData = new byte[buf.width() * buf.height() * (int) buf.elemSize()];
             buf.get(0, 0, bSrcData);
             stream.write(bSrcData);
-            
-            try (FileOutputStream out =
-                            new FileOutputStream(new File("/home/nicolas/Data/Pictures/out/dcm4chee-90.j2k"))) {
-                            out.write(bSrcData);
-                        }
         } catch (Throwable t) {
             throw new IIOException("Native JPEG2000 encoding error", t);
         }

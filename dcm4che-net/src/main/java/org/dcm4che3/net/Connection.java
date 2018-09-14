@@ -1151,7 +1151,7 @@ public class Connection implements Serializable {
         setSendPDULength(from.sendPDULength);
         setReceivePDULength(from.receivePDULength);
         setMaxOpsPerformed(from.maxOpsPerformed);
-        setMaxOpsPerformed(from.maxOpsInvoked);
+        setMaxOpsInvoked(from.maxOpsInvoked);
         setPackPDV(from.packPDV);
         setTcpNoDelay(from.tcpNoDelay);
         setTlsNeedClientAuth(from.tlsNeedClientAuth);

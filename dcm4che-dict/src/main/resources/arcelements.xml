@@ -79,6 +79,10 @@
   <el tag="7777xx54" keyword="StorageObjectDigest" vr="LO" vm="1">Storage Object Digest</el>
   <el tag="7777xx55" keyword="OtherStorageSequence" vr="LO" vm="1">Other Storage Sequence</el>
   <el tag="7777xx56" keyword="StorageObjectStatus" vr="CS" vm="1">Storage Object Status</el>
+  <el tag="7777xx60" keyword="ScheduledStorageVerificationDateTimeOfSeries" vr="DT" vm="1">Scheduled Storage Verification Date Time of Series</el>
+  <el tag="7777xx61" keyword="FailuresOfLastStorageVerificationOfSeries" vr="US" vm="1">Failures of Last Storage Verification of Series</el>
+  <el tag="7777xx62" keyword="ScheduledCompressionDateTimeOfSeries" vr="DT" vm="1">Scheduled Compression Date Time of Series</el>
+  <el tag="7777xx63" keyword="FailuresOfLastCompressionOfSeries" vr="US" vm="1">Failures of Last Compression of Series</el>
   <el tag="7777xxE0" keyword="XRoadPersonStatus" vr="CS" vm="1">X-Road Person Status</el>
   <el tag="7777xxE1" keyword="XRoadDataStatus" vr="CS" vm="1">X-Road Data Status</el>
 </elements>

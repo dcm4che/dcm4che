@@ -233,7 +233,7 @@ public class LookupTableFactory {
                     : storedValue;
             if (w != 0) {
                 size = Math.max(2,Math.abs(Math.round(w/m)));
-                offset = Math.round(c/m-b) - size/2;
+                offset = Math.round((c-b)/m) - size/2;
             } else {
                 offset = inBits.minValue();
                 size = inBits.maxValue() - inBits.minValue() + 1;

@@ -607,16 +607,19 @@ public class ApplicationEntity implements Serializable {
         rq.setMaxOpsPerformed(local.getMaxOpsPerformed());
         rq.setMaxPDULength(local.getReceivePDULength());
         Socket sock = local.connect(remote);
+        AssociationMonitor monitor = device.getAssociationMonitor();
+        Association as = null;
         try {
-            Association as = new Association(this, local, sock);
+            as = new Association(this, local, sock);
             as.write(rq);
             as.waitForLeaving(State.Sta5);
+            if (monitor != null)
+                monitor.onAssociationEstablished(as);
             return as;
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             SafeClose.close(sock);
-            throw e;
-        } catch (IOException e) {
-            SafeClose.close(sock);
+            if (as != null && monitor != null)
+                monitor.onAssociationFailed(as, e);
             throw e;
         }
     }

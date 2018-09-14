@@ -1,4 +1,5 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ * **** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -15,8 +16,8 @@
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2018
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,57 +35,29 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * **** END LICENSE BLOCK *****
+ *
+ */
 
-package org.dcm4che3.net.hl7.service;
+package org.dcm4che3.net.hl7;
 
 import org.dcm4che3.hl7.HL7Exception;
 import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.hl7.DefaultHL7MessageListener;
-import org.dcm4che3.net.hl7.HL7Application;
-import org.dcm4che3.net.hl7.HL7MessageListener;
-import org.dcm4che3.net.hl7.UnparsedHL7Message;
 
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @since Aug 2018
  */
-public class HL7ServiceRegistry extends DefaultHL7MessageListener {
+public interface HL7ConnectionMonitor {
+    void onMessageReceived(Connection conn, Socket s, UnparsedHL7Message msg);
 
-    private final ArrayList<HL7Service> services = new ArrayList<HL7Service>();
-    private final HashMap<String,HL7MessageListener> listeners =
-            new HashMap<String,HL7MessageListener>();
+    void onMessageProcessed(Connection conn, Socket s, UnparsedHL7Message msg,
+                            UnparsedHL7Message rsp,  HL7Exception ex);
 
-    public synchronized void addHL7Service(HL7Service service) {
-        services.add(service);
-        for (String messageType : service.getMessageTypes())
-            listeners.put(messageType, service);
-    }
+    void onMessageSent(HL7Application hl7App, Socket s, UnparsedHL7Message msg, Exception ex);
 
-    public synchronized boolean removeHL7Service(HL7Service service) {
-        if (!services.remove(service))
-            return false;
-        
-        for (String messageType : service.getMessageTypes())
-            listeners.remove(messageType);
-
-        return true;
-    }
-
-    @Override
-    public UnparsedHL7Message onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
-            throws HL7Exception {
-        HL7MessageListener listener = listeners.get(msg.msh().getMessageType());
-        if (listener == null) {
-            listener = listeners.get("*");
-            if (listener == null)
-                return super.onMessage(hl7App, conn, s, msg);
-        }
-        return  listener.onMessage(hl7App, conn, s, msg);
-    }
- 
+    void onMessageResponse(HL7Application hl7App, Socket s, UnparsedHL7Message msg,
+                           UnparsedHL7Message rsp, Exception ex);
 }

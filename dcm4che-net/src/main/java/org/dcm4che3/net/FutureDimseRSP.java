@@ -42,12 +42,16 @@ import java.io.IOException;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
+
+    static final Logger LOG = LoggerFactory.getLogger(FutureDimseRSP.class);
 
     private static class Entry {
         final Attributes command;
@@ -63,6 +67,7 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
     private Entry entry = new Entry(null, null);
     private boolean finished;
     private int autoCancel;
+    private int remainingCapacity = Integer.MAX_VALUE;
     private IOException ex;
 
     public FutureDimseRSP(int msgID) {
@@ -89,6 +94,17 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
             finished = true;
         }
         notifyAll();
+        if (!finished && --remainingCapacity == 0) {
+            try {
+                LOG.debug("Wait for consuming DIMSE RSP");
+                while (ex != null && remainingCapacity == 0) {
+                    wait();
+                }
+                LOG.debug("Stop waiting for consuming DIMSE RSP");
+            } catch (InterruptedException e) {
+                LOG.warn("Failed to wait for consuming DIMSE RSP", e);
+            }
+        }
     }
 
     @Override
@@ -103,8 +119,14 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
         }
     }
 
-    public final void setAutoCancel(int autoCancel) {
+    public synchronized void setAutoCancel(int autoCancel) {
         this.autoCancel = autoCancel;
+    }
+
+    public void setCapacity(int capacity) {
+        if (capacity <= 0)
+            throw new IllegalArgumentException("capacity: " + capacity);
+        this.remainingCapacity = capacity;
     }
 
     @Override
@@ -128,13 +150,20 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
             if (finished)
                 return false;
 
-            while (entry.next == null && ex == null)
-                wait();
+            if (entry.next == null && ex == null) {
+                LOG.debug("Wait for next DIMSE RSP");
+                while (entry.next == null && ex == null) {
+                    wait();
+                }
+                LOG.debug("Stop waiting for next DIMSE RSP");
+            }
 
             if (ex != null)
                 throw ex;
         }
         entry = entry.next;
+        if (remainingCapacity++ == 0)
+            notifyAll();
         return true;
     }
 }

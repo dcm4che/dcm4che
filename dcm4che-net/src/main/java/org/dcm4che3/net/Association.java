@@ -80,6 +80,7 @@ public class Association {
     private String name;
     private ApplicationEntity ae;
     private final Device device;
+    private final AssociationMonitor monitor;
     private final Connection conn;
     private final Socket sock;
     private final InputStream in;
@@ -115,6 +116,7 @@ public class Association {
              + '(' + serialNo + ')';
         this.conn = local;
         this.device = local.getDevice();
+        this.monitor = device.getAssociationMonitor();
         this.sock = sock;
         this.in = sock.getInputStream();
         this.out = sock.getOutputStream();
@@ -569,8 +571,12 @@ public class Association {
             maxPDULength = Association.minZeroAsMax(
                     rq.getMaxPDULength(), conn.getSendPDULength());
             write(ac);
+            if (monitor != null)
+                monitor.onAssociationAccepted(this);
         } catch (AAssociateRJ e) {
             write(e);
+            if (monitor != null)
+                monitor.onAssociationRejected(this, e);
         }
     }
 
@@ -872,13 +878,7 @@ public class Association {
     public void cstore(String cuid, String iuid, int priority, DataWriter data,
             String tsuid, DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
-        cstore(cuid, cuid, iuid, priority, data, tsuid, rspHandler);
-    }
-
-    public void cstore(String asuid, String cuid, String iuid, int priority,
-            DataWriter data, String tsuid, DimseRSPHandler rspHandler)
-            throws IOException, InterruptedException {
-        PresentationContext pc = pcFor(asuid, tsuid);
+        PresentationContext pc = pcFor(cuid, tsuid);
         checkIsSCU(cuid);
         Attributes cstorerq = Commands.mkCStoreRQ(rspHandler.getMessageID(),
                 cuid, iuid, priority);
@@ -888,14 +888,8 @@ public class Association {
     public DimseRSP cstore(String cuid, String iuid, int priority,
             DataWriter data, String tsuid)
             throws IOException, InterruptedException {
-        return cstore(cuid, cuid, iuid, priority, data, tsuid);
-    }
-
-    public DimseRSP cstore(String asuid, String cuid, String iuid,
-            int priority, DataWriter data, String tsuid)
-            throws IOException, InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
-        cstore(asuid, cuid, iuid, priority, data, tsuid, rsp);
+        cstore(cuid, iuid, priority, data, tsuid, rsp);
         return rsp;
     }
 
@@ -903,15 +897,7 @@ public class Association {
             String moveOriginatorAET, int moveOriginatorMsgId,
             DataWriter data, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
-        cstore(cuid, cuid, iuid, priority, moveOriginatorAET,
-                moveOriginatorMsgId, data, tsuid, rspHandler);
-    }
-
-    public void cstore(String asuid, String cuid, String iuid, int priority,
-            String moveOriginatorAET, int moveOriginatorMsgId,
-            DataWriter data, String tsuid, DimseRSPHandler rspHandler)
-            throws IOException, InterruptedException {
-        PresentationContext pc = pcFor(asuid, tsuid);
+        PresentationContext pc = pcFor(cuid, tsuid);
         Attributes cstorerq = Commands.mkCStoreRQ(rspHandler.getMessageID(),
                 cuid, iuid, priority, moveOriginatorAET, moveOriginatorMsgId);
         invoke(pc, cstorerq, data, rspHandler, conn.getResponseTimeout());
@@ -921,16 +907,8 @@ public class Association {
             String moveOriginatorAET, int moveOriginatorMsgId,
             DataWriter data, String tsuid) throws IOException,
             InterruptedException {
-        return cstore(cuid, cuid, iuid, priority, moveOriginatorAET,
-                moveOriginatorMsgId, data, tsuid);
-    }
-
-    public DimseRSP cstore(String asuid, String cuid, String iuid,
-            int priority, String moveOriginatorAET, int moveOriginatorMsgId,
-            DataWriter data, String tsuid) throws IOException,
-            InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
-        cstore(asuid, cuid, iuid, priority, moveOriginatorAET,
+        cstore(cuid, iuid, priority, moveOriginatorAET,
                 moveOriginatorMsgId, data, tsuid, rsp);
         return rsp;
     }
@@ -938,13 +916,7 @@ public class Association {
     public void cfind(String cuid, int priority, Attributes data,
             String tsuid, DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
-        cfind(cuid, cuid, priority, data, tsuid, rspHandler);
-    }
-
-    public void cfind(String asuid, String cuid, int priority,
-            Attributes data, String tsuid, DimseRSPHandler rspHandler)
-            throws IOException, InterruptedException {
-        PresentationContext pc = pcFor(asuid, tsuid);
+        PresentationContext pc = pcFor(cuid, tsuid);
         checkIsSCU(cuid);
         Attributes cfindrq =
                 Commands.mkCFindRQ(rspHandler.getMessageID(), cuid, priority);
@@ -955,29 +927,42 @@ public class Association {
     public DimseRSP cfind(String cuid, int priority, Attributes data,
             String tsuid, int autoCancel) throws IOException,
             InterruptedException {
-        return cfind(cuid, cuid, priority, data, tsuid, autoCancel);
+        return cfind(cuid, priority, data, tsuid, autoCancel, Integer.MAX_VALUE);
     }
 
-    public DimseRSP cfind(String asuid, String cuid, int priority,
-            Attributes data, String tsuid, int autoCancel) throws IOException,
+    /**
+     * Send C-FIND-RQ returning a {@code DimseRSP} which {@link DimseRSP#next()} blocks until the next C-FIND-RSP is
+     * received.
+     *
+     * Reading C-FIND-RSPs from the association blocks, if the number of received C-FIND-RSP buffered
+     * in the returned {@code DimseRSP} reached the specified {@code capacity}, until a buffered C-FIND-RSP is
+     * removed by a call of {@link DimseRSP#next()}.
+     *
+     * @param cuid       SOP Class UID associated with the operation
+     * @param priority   priority of the C-FIND operation. 0 = MEDIUM, 1 = HIGH, 2 = LOW
+     * @param data       Data Set that encodes the Identifier to be matched
+     * @param tsuid      Transfer Syntax used to encode the Identifier
+     * @param autoCancel Number of pending C-FIND RSP after which a C-CANCEL-RQ will be sent
+     * @param capacity   Buffer size for received pending C-FIND-RSP
+     * @return a {@code DimseRSP} which {@link DimseRSP#next()} blocks until the next C-FIND-RSP is received
+     * @throws IOException          if there is an error sending the C-FIND-RQ
+     * @throws InterruptedException if any thread interrupted the current thread before or while the current
+     * thread was waiting for other invoked operations getting completed
+     */
+    public DimseRSP cfind(String cuid, int priority, Attributes data,
+                          String tsuid, int autoCancel, int capacity) throws IOException,
             InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
         rsp.setAutoCancel(autoCancel);
-        cfind(asuid, cuid, priority, data, tsuid, rsp);
+        rsp.setCapacity(capacity);
+        cfind(cuid, priority, data, tsuid, rsp);
         return rsp;
     }
 
     public void cget(String cuid, int priority, Attributes data,
             String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
-        cget(cuid, cuid, priority, data, tsuid, rspHandler);
-    }
-
-    public void cget(String asuid, String cuid, int priority,
-            Attributes data, String tsuid, DimseRSPHandler rspHandler)
-            throws IOException,
-            InterruptedException {
-        PresentationContext pc = pcFor(asuid, tsuid);
+        PresentationContext pc = pcFor(cuid, tsuid);
         checkIsSCU(cuid);
         Attributes cgetrq = Commands.mkCGetRQ(rspHandler.getMessageID(),
                 cuid, priority);
@@ -988,28 +973,15 @@ public class Association {
     public DimseRSP cget(String cuid, int priority, Attributes data,
             String tsuid) throws IOException,
             InterruptedException {
-        return cget(cuid, cuid, priority, data, tsuid);
-    }
-
-    public DimseRSP cget(String asuid, String cuid, int priority,
-            Attributes data, String tsuid)
-            throws IOException, InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
-        cget(asuid, cuid, priority, data, tsuid, rsp);
+        cget(cuid, priority, data, tsuid, rsp);
         return rsp;
     }
 
     public void cmove(String cuid, int priority, Attributes data,
             String tsuid, String destination, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
-        cmove(cuid, cuid, priority, data, tsuid, destination, rspHandler);
-    }
-
-    public void cmove(String asuid, String cuid, int priority,
-            Attributes data, String tsuid, String destination,
-            DimseRSPHandler rspHandler) throws IOException,
-            InterruptedException {
-        PresentationContext pc = pcFor(asuid, tsuid);
+        PresentationContext pc = pcFor(cuid, tsuid);
         checkIsSCU(cuid);
         Attributes cmoverq = Commands.mkCMoveRQ(rspHandler.getMessageID(),
                 cuid, priority, destination);
@@ -1020,14 +992,8 @@ public class Association {
     public DimseRSP cmove(String cuid, int priority, Attributes data,
             String tsuid, String destination) throws IOException,
             InterruptedException {
-        return cmove(cuid, cuid, priority, data, tsuid, destination);
-    }
-
-    public DimseRSP cmove(String asuid, String cuid, int priority,
-            Attributes data, String tsuid, String destination)
-            throws IOException, InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
-        cmove(asuid, cuid, priority, data, tsuid, destination, rsp);
+        cmove(cuid, priority, data, tsuid, destination, rsp);
         return rsp;
     }
 

@@ -1,4 +1,5 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ * **** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -15,8 +16,8 @@
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2018
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,26 +35,19 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * **** END LICENSE BLOCK *****
+ *
+ */
 
-package org.dcm4che3.net.hl7;
-
-import org.dcm4che3.hl7.HL7Exception;
-import org.dcm4che3.hl7.HL7Message;
-import org.dcm4che3.net.Connection;
-
-import java.net.Socket;
+package org.dcm4che3.data;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @since Aug 2018
  */
-public class DefaultHL7MessageListener implements HL7MessageListener {
-
-    @Override
-    public UnparsedHL7Message onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
-                    throws HL7Exception {
-        return new UnparsedHL7Message(
-                HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null));
-    }
+public class TypeOfPatientID {
+    private TypeOfPatientID() {}
+    public static final String TEXT = "TEXT";
+    public static final String RFID = "RFID";
+    public static final String BARCODE = "BARCODE";
 }

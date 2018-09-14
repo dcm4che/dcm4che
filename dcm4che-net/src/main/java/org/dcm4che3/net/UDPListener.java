@@ -75,11 +75,10 @@ class UDPListener implements Listener {
     private void listen() {
         SocketAddress sockAddr = ds.getLocalSocketAddress();
         Connection.LOG.info("Start UDP listener on {}", sockAddr);
-        byte[] data = new byte[MAX_PACKAGE_LEN];
         try {
             while (!ds.isClosed()) {
                 Connection.LOG.debug("Wait for UDP datagram package on {}", sockAddr);
-                DatagramPacket dp = new DatagramPacket(data, MAX_PACKAGE_LEN);
+                DatagramPacket dp = new DatagramPacket(new byte[MAX_PACKAGE_LEN], MAX_PACKAGE_LEN);
                 ds.receive(dp);
                 InetAddress senderAddr = dp.getAddress();
                 if (conn.isBlackListed(dp.getAddress())) {

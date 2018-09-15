@@ -60,8 +60,8 @@
   </organization>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <weasis.version>3.0.0-RC1</weasis.version>
-    <weasis.opencv.native.version>3.4.0-dcmR3</weasis.opencv.native.version>
+    <weasis.version>3.0.2-rc1</weasis.version>
+    <weasis.opencv.native.version>4.0.0-dcmR1</weasis.opencv.native.version>
     <keycloak.version>4.4.0.Final</keycloak.version>
     <jaxws-tools-maven-plugin.version>1.2.2.Final</jaxws-tools-maven-plugin.version>
     <jbossws-cxf-client.version>5.2.1.Final</jbossws-cxf-client.version>

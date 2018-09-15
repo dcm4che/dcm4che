@@ -54,6 +54,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.opencv.core.Core;
@@ -66,20 +67,20 @@ import org.weasis.opencv.op.ImageConversion;
 
 /**
  * @author Nicolas Roduit
- * @since Mar 2018
+ * @since Aug 2018
  */
-class NativeJLSImageWriter extends ImageWriter {
+class NativeJPEGImageWriter extends ImageWriter {
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 
-    NativeJLSImageWriter(ImageWriterSpi originatingProvider) throws IOException {
+    NativeJPEGImageWriter(ImageWriterSpi originatingProvider) throws IOException {
         super(originatingProvider);
     }
 
     @Override
     public ImageWriteParam getDefaultWriteParam() {
-        return new JPEGLSImageWriteParam(getLocale());
+        return new JPEGImageWriteParam(getLocale());
     }
 
     @Override
@@ -93,11 +94,22 @@ class NativeJLSImageWriter extends ImageWriter {
         }
         ImageOutputStream stream = (ImageOutputStream) output;
         stream.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        
+
+        JPEGImageWriteParam jpegParams = (JPEGImageWriteParam) param;
+
         if (!(stream instanceof BytesWithImageImageDescriptor)) {
             throw new IllegalArgumentException("stream does not implement BytesWithImageImageDescriptor!");
         }
         ImageDescriptor desc = ((BytesWithImageImageDescriptor) stream).getImageDescriptor();
+        PhotometricInterpretation pi = desc.getPhotometricInterpretation();
+
+        if (jpegParams.isCompressionLossless() && (PhotometricInterpretation.YBR_FULL_422 == pi
+            || PhotometricInterpretation.YBR_PARTIAL_422 == pi || PhotometricInterpretation.YBR_PARTIAL_420 == pi
+            || PhotometricInterpretation.YBR_ICT == pi || PhotometricInterpretation.YBR_RCT == pi)) {
+            throw new IllegalArgumentException(
+                "True lossless encoder: Photometric interpretation is not supported: " + pi);
+        }
+        int epi = getCodecColorSpace(pi);
 
         RenderedImage renderedImage = image.getRenderedImage();
 
@@ -117,32 +129,54 @@ class NativeJLSImageWriter extends ImageWriter {
             // TODO implement interleaved mode
             int dcmFlags =
                 CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
-
+            
             int[] params = new int[15];
             params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
             params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags
             params[Imgcodecs.DICOM_PARAM_WIDTH] = mat.width(); // Image width
             params[Imgcodecs.DICOM_PARAM_HEIGHT] = mat.height(); // Image height
-            params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_JPLS; // Type of compression
+            params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_JPG; // Type of compression
             params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
             params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsStored(); // Bits per sample
             params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
             params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
-            params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] =
-                // Allowed lossy error for jpeg-ls
-                param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0;
-            
+            params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = 0; // Allowed lossy error for jpeg-ls
+            params[Imgcodecs.DICOM_PARAM_COLOR_MODEL] = epi; // Photometric interpretation
+            params[Imgcodecs.DICOM_PARAM_JPEG_MODE] = jpegParams.getMode(); // JPEG Codec mode
+            params[Imgcodecs.DICOM_PARAM_JPEG_QUALITY] = jpegParams.getQuality(); // JPEG lossy quality
+            params[Imgcodecs.DICOM_PARAM_JPEG_PREDICTION] = jpegParams.getPrediction(); // JPEG lossless prediction
+            params[Imgcodecs.DICOM_PARAM_JPEG_PT_TRANSFORM] = jpegParams.getPointTransform(); // JPEG lossless
+                                                                                              // transformation point
+
             MatOfInt dicomParams = new MatOfInt(params);
             Mat buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");
             if (buf.empty()) {
-                throw new IIOException("Native JPEG-LS encoding error: null image");
+                throw new IIOException("Native JPEG encoding error: null image");
             }
 
             byte[] bSrcData = new byte[buf.width() * buf.height() * (int) buf.elemSize()];
             buf.get(0, 0, bSrcData);
             stream.write(bSrcData);
         } catch (Throwable t) {
-            throw new IIOException("Native JPEG-LS encoding error", t);
+            throw new IIOException("Native JPEG encoding error", t);
+        }
+    }
+
+    private static int getCodecColorSpace(PhotometricInterpretation pi) {
+        if (PhotometricInterpretation.MONOCHROME1 == pi) {
+            return Imgcodecs.EPI_Monochrome1;
+        } else if (PhotometricInterpretation.MONOCHROME2 == pi) {
+            return Imgcodecs.EPI_Monochrome2;
+        } else if (PhotometricInterpretation.RGB == pi) {
+            return Imgcodecs.EPI_RGB;
+        } else if (PhotometricInterpretation.YBR_FULL == pi) {
+            return Imgcodecs.EPI_YBR_Full;
+        } else if (PhotometricInterpretation.YBR_FULL_422 == pi) {
+            return Imgcodecs.EPI_YBR_Full_422;
+        } else if (PhotometricInterpretation.YBR_PARTIAL_422 == pi) {
+            return Imgcodecs.EPI_YBR_Partial_422;
+        } else { // Palette, HSV, ARGB, CMYK
+            return Imgcodecs.EPI_Unknown;
         }
     }
 

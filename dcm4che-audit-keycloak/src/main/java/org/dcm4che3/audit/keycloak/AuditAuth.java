@@ -81,25 +81,19 @@ public class AuditAuth {
                 sendAuditMessage(dir.resolve(event.getSessionId()), event, log, keycloakSession);
                 return;
             }
-            auditLogin(dir, log, event, keycloakSession);
+            spoolAndAudit(dir, log, event, keycloakSession);
         } catch (Exception e) {
             LOG.warn("Failed to write to Audit Spool File - {} ", e);
         }
     }
 
-    private static void auditLogin(Path dir, AuditLogger log, Event event, KeycloakSession keycloakSession) {
+    private static void spoolAndAudit(Path dir, AuditLogger log, Event event, KeycloakSession keycloakSession) {
         try {
-            Path file = event.getType() == EventType.LOGIN_ERROR
-                    ? Files.createTempFile(dir, event.getIpAddress(), null)
-                    : event.getType() == EventType.LOGIN && !Files.exists(dir.resolve(event.getSessionId()))
+            Path file = event.getSessionId() != null && !Files.exists(dir.resolve(event.getSessionId()))
                         ? Files.createFile(dir.resolve(event.getSessionId()))
-                        : null;
-
-            if (file == null)
-                return;
-
+                        : Files.createTempFile(dir, event.getIpAddress() + "-" + event.getUserId(), null);
             try (LineWriter writer = new LineWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
-                writer.writeLine(new AuthInfo(event));
+                writer.writeLine(new AuthInfo(event, keycloakSession));
             }
             sendAuditMessage(file, event, log, keycloakSession);
         } catch (Exception e) {
@@ -111,29 +105,8 @@ public class AuditAuth {
         return event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGOUT_ERROR;
     }
 
-    private static EventIdentificationBuilder userAuthenticateEventIDBuilder(AuditLogger log, Event event) {
-        String outcome = event.getError();
-        return new EventIdentificationBuilder.Builder(
-                AuditMessages.EventID.UserAuthentication,
-                AuditMessages.EventActionCode.Execute,
-                log.timeStamp(),
-                outcome != null ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success)
-                .outcomeDesc(outcome)
-                .eventTypeCode(isLogout(event) ? AuditMessages.EventTypeCode.Logout : AuditMessages.EventTypeCode.Login)
-                .build();
-    }
-
-    private static EventIdentificationBuilder securityAlertEventIDBuilder(AuditLogger log, Event event) {
-        String outcome = event.getError();
-        return new EventIdentificationBuilder.Builder(
-                AuditMessages.EventID.SecurityAlert,
-                AuditMessages.EventActionCode.Execute,
-                log.timeStamp(),
-                outcome != null ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success)
-                .outcomeDesc(outcome)
-                .eventTypeCode(isLogout(event)
-                        ? AuditMessages.EventTypeCode.EmergencyOverrideStopped : AuditMessages.EventTypeCode.EmergencyOverrideStarted)
-                .build();
+    private static boolean isUpdatePassword(Event event) {
+        return event.getType() == EventType.UPDATE_PASSWORD || event.getType() == EventType.UPDATE_PASSWORD_ERROR;
     }
 
     private static void sendAuditMessage(Path file, Event event, AuditLogger log, KeycloakSession keycloakSession)
@@ -153,18 +126,45 @@ public class AuditAuth {
                 .userIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName)
                 .altUserID(AuditLogger.processID()).build();
 
-        AuditMessage msgUserAuthenticate = AuditMessages.createMessage(userAuthenticateEventIDBuilder(log, event), activeParticipants);
-        msgUserAuthenticate.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
-        emitAudit(log, msgUserAuthenticate);
+        if (isUpdatePassword(event)) {
+            emitAudit(log,
+                    eventIDBuilder(log, event.getError(), AuditUtils.EventType.UPDT_PSWD),
+                    activeParticipants);
+        }
+        else {
+            emitAudit(log,
+                    eventIDBuilder(log, event.getError(), AuditUtils.EventType.forUserAuth(event)),
+                    activeParticipants);
 
-        if (userRoles(userName, keycloakSession).contains(System.getProperty("super-user-role"))) {
-            AuditMessage msgSecurityAlert = AuditMessages.createMessage(securityAlertEventIDBuilder(log, event), activeParticipants);
-            msgSecurityAlert.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
-            emitAudit(log, msgSecurityAlert);
+            if (event.getUserId() != null
+                    && userRoles(userName, keycloakSession).contains(System.getProperty("super-user-role")))
+                emitAudit(log,
+                        eventIDBuilder(log, event.getError(), AuditUtils.EventType.forSuperUserAuth(event)),
+                        activeParticipants);
         }
 
-        if (event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGIN_ERROR)
+        if (event.getType() != EventType.LOGIN)
             Files.delete(file);
+    }
+
+    private static void emitAudit(
+            AuditLogger log, EventIdentificationBuilder eventID, ActiveParticipantBuilder[] activeParticipants) {
+        AuditMessage msg = AuditMessages.createMessage(eventID, activeParticipants);
+        msg.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
+        try {
+            AuditLogger.SendStatus write = log.write(log.timeStamp(), msg);
+            System.out.println("log send status: " + write);
+        } catch (Exception e) {
+            LOG.warn("Failed to emit audit message", e);
+        }
+    }
+
+    private static EventIdentificationBuilder eventIDBuilder(
+            AuditLogger log, String outcome, AuditUtils.EventType eventType) {
+        return new EventIdentificationBuilder.Builder(
+                eventType.eventID, eventType.eventActionCode, log.timeStamp(), eventOutcomeIndicator(outcome))
+                .outcomeDesc(outcome)
+                .eventTypeCode(eventType.eventTypeCode).build();
     }
 
     private static List<String> userRoles(String userName, KeycloakSession keycloakSession) {
@@ -176,12 +176,46 @@ public class AuditAuth {
         return userRoles;
     }
 
-    private static void emitAudit(AuditLogger log, AuditMessage msg) {
-        try {
-            AuditLogger.SendStatus write = log.write(log.timeStamp(), msg);
-            System.out.println("log send status: " + write);
-        } catch (Exception e) {
-            LOG.warn("Failed to emit audit message", e);
+    private static String eventOutcomeIndicator(String outcomeDesc) {
+        return outcomeDesc != null ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success;
+    }
+
+    static class AuditUtils {
+        enum EventClass {
+            USER_AUTHENTICATE, SECURITY_ALERT
+        }
+
+        enum EventType {
+            LOGIN(EventClass.USER_AUTHENTICATE, AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
+                    AuditMessages.EventTypeCode.Login),
+            LOGOUT(EventClass.USER_AUTHENTICATE, AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
+                    AuditMessages.EventTypeCode.Logout),
+            SU_LOGIN(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Execute,
+                    AuditMessages.EventTypeCode.EmergencyOverrideStarted),
+            SU_LOGOUT(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Execute,
+                    AuditMessages.EventTypeCode.EmergencyOverrideStopped),
+            UPDT_PSWD(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Update,
+                    AuditMessages.EventTypeCode.UserSecurityAttributesChanged);
+
+            final EventClass eventClass;
+            final AuditMessages.EventID eventID;
+            final String eventActionCode;
+            final EventTypeCode eventTypeCode;
+
+            EventType(EventClass eventClass, AuditMessages.EventID eventID, String eventActionCode, EventTypeCode etc) {
+                this.eventClass = eventClass;
+                this.eventID = eventID;
+                this.eventActionCode = eventActionCode;
+                this.eventTypeCode = etc;
+            }
+            
+            static EventType forUserAuth(Event event) {
+                return isLogout(event) ? LOGOUT : LOGIN;
+            }
+
+            static EventType forSuperUserAuth(Event event) {
+                return isLogout(event) ? SU_LOGOUT : SU_LOGIN;
+            }
         }
     }
 
@@ -206,10 +240,9 @@ public class AuditAuth {
         private static final Logger LOG = LoggerFactory.getLogger(LineReader.class);
         private String mainInfo;
 
-        LineReader(Path p) throws IOException {
+        LineReader(Path p) {
             try (BufferedReader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
                 this.mainInfo = reader.readLine();
-                reader.close();
             } catch (Exception e) {
                 LOG.warn("Failed to read audit spool file", e);
             }
@@ -224,9 +257,12 @@ public class AuditAuth {
         private static final int IP_ADDR = 1;
         private  final String[] fields;
 
-        AuthInfo (Event event) {
+        AuthInfo (Event event, KeycloakSession keycloakSession) {
             fields = new String[] {
-                    event.getDetails().get("username"),
+                    event.getDetails() != null
+                        ? event.getDetails().get("username")
+                        : keycloakSession.users().getUserById(event.getUserId(), keycloakSession.getContext().getRealm())
+                            .getUsername(),
                     event.getIpAddress()
             };
         }

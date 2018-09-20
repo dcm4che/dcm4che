@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2018c - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2018d - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -11,7 +11,7 @@
       <holder>NEMA</holder>
     </copyright>
       <legalnotice>
-          <para>A DICOM® publication</para>
+          <para xml:id="para_0e39b077-b88b-4481-9131-2c29c229ecc3">A DICOM® publication</para>
       </legalnotice>
   </info>
   <chapter label="" status="1" xml:id="chapter_Notice">
@@ -1755,36 +1755,34 @@
   </section>
 <section label="9.1.2.1.5" status="5" xml:id="sect_9.1.2.1.5">
     <title>Identifier</title>
-  
   <para xml:id="para_1b750584-76b2-42be-b605-3358c5360858">In the request/indication, this is a list of Attributes to be matched against the values of the Attributes in the instances of the composite objects known to the performing DIMSE-service-user.</para>
   <para xml:id="para_ba93d3f7-6fa3-4590-9a54-ca0a527b01af">In the response/confirmation, this is the same list of Attributes with values of these Attributes in a particular composite SOP Instance that matched. It shall be sent only when that Status (0000,0900) is equal to Pending (not permitted for other statuses).</para>
   <para xml:id="para_f19650f6-32f5-4920-bb9f-d8eb394accb2">The list of Attributes and the rules for construction are specified in <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>.</para>
-
-  <section label="9.1.2.1.5" status="5" xml:id="sect_9.1.2.1.6">
-    <title>Status</title>
-    <para xml:id="para_60f1880e-1091-4e69-b7d0-d4a343e9a4ea">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
-  <orderedlist numeration="loweralpha">
-<listitem>
-  <para xml:id="para_d6ff579c-1753-44af-92cb-bc059ded21bb">Success (0000H) - This indicates that processing of the matches is complete. It shall not contain a matching Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_8850be41-96bd-42b7-8c55-990bc880b5a4">Pending (Status value is Service Class specific) - This indicates that processing of the matches is initiated or continuing. It shall contain a matching Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_a05b8cfe-0a23-4309-a58c-a5fb37a639f0">Refused: Out of Resources (Status value is Service Class specific) - Indicates that processing of the C-FIND has been terminated because it was out of resources. This may be the initial response to the C-FIND, or may be sent after a number of pending C-FIND responses. This response shall not contain a matching Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_1579ffc7-0ec3-4a73-abb2-ff1b6d2fe939">Refused: SOP Class Not Supported (0122H) - Indicates that processing of the C-FIND has been terminated because the SOP Class was not supported. This response shall not contain a matching Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_43499368-f3cb-44f1-b2bd-cd176d7b6266">Cancel (FE00H) - Indicates that the processing of the C-FIND has been terminated due to a C-FIND Cancel indication primitive. The response shall not contain an Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_9a20b99a-9bc1-4bda-84c9-79dd62b6cba5">Failed (Status value is Service Class specific) - Indicates that the C-FIND operation failed at the performing DIMSE-service-user.</para>
-</listitem>
-</orderedlist>
-  </section>
 </section>
+      <section label="9.1.2.1.6" status="5" xml:id="sect_9.1.2.1.6">
+          <title>Status</title>
+          <para xml:id="para_60f1880e-1091-4e69-b7d0-d4a343e9a4ea">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+          <orderedlist numeration="loweralpha">
+              <listitem>
+                  <para xml:id="para_d6ff579c-1753-44af-92cb-bc059ded21bb">Success (0000H) - This indicates that processing of the matches is complete. It shall not contain a matching Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_8850be41-96bd-42b7-8c55-990bc880b5a4">Pending (Status value is Service Class specific) - This indicates that processing of the matches is initiated or continuing. It shall contain a matching Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_a05b8cfe-0a23-4309-a58c-a5fb37a639f0">Refused: Out of Resources (Status value is Service Class specific) - Indicates that processing of the C-FIND has been terminated because it was out of resources. This may be the initial response to the C-FIND, or may be sent after a number of pending C-FIND responses. This response shall not contain a matching Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_1579ffc7-0ec3-4a73-abb2-ff1b6d2fe939">Refused: SOP Class Not Supported (0122H) - Indicates that processing of the C-FIND has been terminated because the SOP Class was not supported. This response shall not contain a matching Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_43499368-f3cb-44f1-b2bd-cd176d7b6266">Cancel (FE00H) - Indicates that the processing of the C-FIND has been terminated due to a C-FIND Cancel indication primitive. The response shall not contain an Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_9a20b99a-9bc1-4bda-84c9-79dd62b6cba5">Failed (Status value is Service Class specific) - Indicates that the C-FIND operation failed at the performing DIMSE-service-user.</para>
+              </listitem>
+          </orderedlist>
+      </section>
 </section>
 <section label="9.1.2.2" status="4" xml:id="sect_9.1.2.2">
     <title>C-FIND Service Procedures</title>
@@ -12009,7 +12007,9 @@
 <para xml:id="para_d55385a4-c5d9-4544-8c4b-ef4a3eb37ba5">when negotiating the SCP role for operations, the maximum number of outstanding operations it may invoke asynchronously; when negotiating the SCU role for operations, the maximum number of outstanding sub-operations it may perform asynchronously; when negotiating the SCU role for notifications, the maximum number of notifications it may perform asynchronously when negotiating the SCP role</para>
 </listitem>
 </itemizedlist>
-  <para xml:id="para_c8dbc17e-73af-4244-9052-79eb101e9c36">A value of zero indicates that the above parameters are unlimited. If the Asynchronous Operations Window is absent the default for the above parameters shall be equal to one.</para>
+  <para xml:id="para_c8dbc17e-73af-4244-9052-79eb101e9c36">A value of zero indicates that the above parameters are unlimited.
+      A value of one indicates that there is no Asynchronous Operations support.
+      If the Asynchronous Operations Window is absent the default for the above parameters shall be equal to one.</para>
   <para xml:id="para_a1bee3e4-adaf-45e9-912b-c94b3ba453f2">The Association-acceptor conveys in the A-ASSOCIATE response:</para>
 <itemizedlist>
   <listitem>

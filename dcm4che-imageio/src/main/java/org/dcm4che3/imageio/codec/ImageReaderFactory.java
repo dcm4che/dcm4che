@@ -38,7 +38,9 @@
 
 package org.dcm4che3.imageio.codec;
 
+import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che3.util.Property;
 import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
@@ -73,13 +75,33 @@ public class ImageReaderFactory implements Serializable {
         public final String formatName;
         public final String className;
         public final PatchJPEGLS patchJPEGLS;
+        public final Property[] imageReadParams;
 
         public ImageReaderParam(String formatName, String className,
-                String patchJPEGLS) {
+                                PatchJPEGLS patchJPEGLS, Property[] imageReadParams) {
             this.formatName = formatName;
             this.className = nullify(className);
-            this.patchJPEGLS = patchJPEGLS != null && !patchJPEGLS.isEmpty() ? PatchJPEGLS
-                    .valueOf(patchJPEGLS) : null;
+            this.patchJPEGLS = patchJPEGLS;
+            this.imageReadParams = imageReadParams;
+        }
+
+        public ImageReaderParam(String formatName, String className,
+                                String patchJPEGLS, String... imageWriteParams) {
+            this(formatName, className,
+                    patchJPEGLS != null  && !patchJPEGLS.isEmpty()
+                            ? PatchJPEGLS.valueOf(patchJPEGLS)
+                            : null,
+                    Property.valueOf(imageWriteParams));
+        }
+
+        public Property[] getImageReadParams() {
+            return imageReadParams;
+        }
+
+        public PhotometricInterpretation pmiAfterDecompression(PhotometricInterpretation pmi) {
+            return pmi.isYBR() && Property.getFrom(imageReadParams, "YBR2RGB", Boolean.FALSE)
+                    ? PhotometricInterpretation.RGB
+                    : pmi;
         }
 
         @Override
@@ -91,7 +113,8 @@ public class ImageReaderFactory implements Serializable {
 
             if (!formatName.equals(that.formatName)) return false;
             if (className != null ? !className.equals(that.className) : that.className != null) return false;
-            return patchJPEGLS == that.patchJPEGLS;
+            if (patchJPEGLS != that.patchJPEGLS) return false;
+            return Arrays.equals(imageReadParams, that.imageReadParams);
 
         }
 
@@ -100,15 +123,17 @@ public class ImageReaderFactory implements Serializable {
             int result = formatName.hashCode();
             result = 31 * result + (className != null ? className.hashCode() : 0);
             result = 31 * result + (patchJPEGLS != null ? patchJPEGLS.hashCode() : 0);
+            result = 31 * result + Arrays.hashCode(imageReadParams);
             return result;
         }
 
         @Override
         public String toString() {
-            return "ImageReaderParam{" +
+            return "ImageWriterParam{" +
                     "formatName='" + formatName + '\'' +
                     ", className='" + className + '\'' +
                     ", patchJPEGLS=" + patchJPEGLS +
+                    ", imageReadParams=" + Arrays.toString(imageReadParams) +
                     '}';
         }
     }
@@ -175,8 +200,8 @@ public class ImageReaderFactory implements Serializable {
         props.load(in);
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String[] ss = StringUtils.split((String) entry.getValue(), ':');
-            map.put((String) entry.getKey(), new ImageReaderParam(ss[0], ss[1],
-                    ss[2]));
+            map.put((String) entry.getKey(), new ImageReaderParam(ss[0], ss[1], ss[2],
+                    ss.length > 3 ? StringUtils.split(ss[3], ';') : StringUtils.EMPTY_STRING));
         }
     }
 

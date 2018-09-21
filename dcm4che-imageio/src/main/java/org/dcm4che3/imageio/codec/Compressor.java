@@ -185,8 +185,7 @@ public class Compressor extends Decompressor implements Closeable {
         }
         if (samples > 1) {
             dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
-                    (decompressor != null ? pmi.decompress() : pmi)
-                            .compress(tsuid).toString());
+                    pmiAfterDecompression.compress(tsuid).toString());
             dataset.setInt(Tag.PlanarConfiguration, VR.US, 
                     tstype.getPlanarConfiguration());
         }

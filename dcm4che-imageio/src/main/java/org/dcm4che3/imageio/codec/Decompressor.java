@@ -95,6 +95,7 @@ public class Decompressor {
     protected int cols;
     protected int samples;
     protected PhotometricInterpretation pmi;
+    protected PhotometricInterpretation pmiAfterDecompression;
     protected int bitsAllocated;
     protected int bitsStored;
     protected boolean banded;
@@ -126,6 +127,7 @@ public class Decompressor {
         this.samples = dataset.getInt(Tag.SamplesPerPixel, 0);
         this.pmi = PhotometricInterpretation.fromString(
                 dataset.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
+        this.pmiAfterDecompression = pmi;
         this.bitsAllocated = dataset.getInt(Tag.BitsAllocated, 8);
         this.bitsStored = dataset.getInt(Tag.BitsStored, bitsAllocated);
         this.banded = dataset.getInt(Tag.PlanarConfiguration, 0) != 0;
@@ -159,6 +161,7 @@ public class Decompressor {
             LOG.debug("Decompressor: {}", decompressor.getClass().getName());
             this.readParam = decompressor.getDefaultReadParam();
             this.patchJpegLS = param.patchJPEGLS;
+            this.pmiAfterDecompression = param.pmiAfterDecompression(pmi);
         } else {
             this.file = ((BulkData) pixeldata).getFile();
         }
@@ -209,7 +212,7 @@ public class Decompressor {
         });
         if (samples > 1) {
             dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
-                    pmi.decompress().toString());
+                    pmiAfterDecompression.toString());
 
             dataset.setInt(Tag.PlanarConfiguration, VR.US,
                     tstype.getPlanarConfiguration());

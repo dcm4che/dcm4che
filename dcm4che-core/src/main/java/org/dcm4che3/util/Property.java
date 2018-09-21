@@ -160,4 +160,11 @@ public class Property implements Serializable {
         }
         return properties;
     }
+
+    public static <T> T getFrom(Property[] props, String name, T defVal) {
+        for (Property prop : props)
+            if (prop.name.equals(name))
+                return (T) prop.value;
+        return defVal;
+    }
 }

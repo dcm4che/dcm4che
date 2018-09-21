@@ -161,6 +161,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private int frameLength;
 
     private PhotometricInterpretation pmi;
+    private PhotometricInterpretation pmiAfterDecompression;
     private ImageDescriptor imageDescriptor;
 
     public DicomImageReader(ImageReaderSpi originatingProvider) {
@@ -365,7 +366,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     
                 if (LOG.isDebugEnabled())
                     LOG.debug("Start decompressing frame #" + (frameIndex + 1));
-                Raster wr = pmi.decompress() == pmi && decompressor.canReadRaster()
+                Raster wr = pmiAfterDecompression == pmi && decompressor.canReadRaster()
                         ? decompressor.readRaster(0, decompressParam(param))
                         : decompressor.read(0, decompressParam(param)).getRaster();
                 if (LOG.isDebugEnabled())
@@ -769,6 +770,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
             pmi = PhotometricInterpretation.fromString(
                     ds.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
             if (pixelDataLength != -1) {
+                pmiAfterDecompression = pmi;
                 this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
             } else {
                 Attributes fmi = metadata.getFileMetaInformation();
@@ -780,6 +782,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
                         ImageReaderFactory.getImageReaderParam(tsuid);
                 if (param == null)
                     throw new UnsupportedOperationException("Unsupported Transfer Syntax: " + tsuid);
+                pmiAfterDecompression = param.pmiAfterDecompression(pmi);
                 this.rle = tsuid.equals(UID.RLELossless);
                 this.decompressor = ImageReaderFactory.getImageReader(param);
                 LOG.debug("Decompressor: {}", decompressor.getClass().getName());

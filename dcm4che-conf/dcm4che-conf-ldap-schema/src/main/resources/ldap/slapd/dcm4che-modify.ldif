@@ -487,6 +487,10 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.4.3.4 NAME 'dcmImageWriteParam'
   DESC 'Image Write parameter'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.4.3.5 NAME 'dcmImageReadParam'
+  DESC 'Image Read parameter'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 -
 delete: olcObjectClasses
 -
@@ -666,7 +670,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.2 NAME 'dcmImageReader'
     dcmIIOFormatName )
   MAY (
     dcmJavaClassName $
-    dcmPatchJPEGLS ) )
+    dcmPatchJPEGLS $
+    dcmImageReadParam ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.3 NAME 'dcmImageWriterFactory'
   DESC 'Image Reader Factory related information'
   SUP top STRUCTURAL

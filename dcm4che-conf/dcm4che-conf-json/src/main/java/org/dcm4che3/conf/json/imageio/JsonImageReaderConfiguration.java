@@ -71,6 +71,7 @@ public class JsonImageReaderConfiguration extends JsonConfigurationExtension {
             writer.writeNotNullOrDef("dcmIIOFormatName", param.formatName, null);
             writer.writeNotNullOrDef("dcmJavaClassName", param.className, null);
             writer.writeNotNullOrDef("dcmPatchJPEGLS", param.patchJPEGLS, null);
+            writer.writeNotEmpty("dcmImageReadParam", param.imageReadParams);
             writer.writeEnd();
         }
 
@@ -90,6 +91,7 @@ public class JsonImageReaderConfiguration extends JsonConfigurationExtension {
             String formatName = null;
             String className = null;
             String patchJPEGLS = null;
+            String[] imageReadParam = {};
             while (reader.next() == JsonParser.Event.KEY_NAME) {
                 switch (reader.getString()) {
                     case "dicomTransferSyntax":
@@ -104,12 +106,15 @@ public class JsonImageReaderConfiguration extends JsonConfigurationExtension {
                     case "dcmPatchJPEGLS":
                         patchJPEGLS = reader.stringValue();
                         break;
+                    case "dcmImageReadParam":
+                        imageReadParam = reader.stringArray();
+                        break;
                     default:
                         reader.skipUnknownProperty();
                 }
             }
             reader.expect(JsonParser.Event.END_OBJECT);
-            factory.put(tsuid, new ImageReaderFactory.ImageReaderParam(formatName, className, patchJPEGLS));
+            factory.put(tsuid, new ImageReaderFactory.ImageReaderParam(formatName, className, patchJPEGLS, imageReadParam));
         }
         device.addDeviceExtension(new ImageReaderExtension(factory));
         return true;

@@ -98,6 +98,7 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
         attrs.put("dcmIIOFormatName", param.formatName);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmJavaClassName", param.className, null);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmPatchJPEGLS", param.patchJPEGLS, null);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmImageReadParam", param.getImageReadParams());
         return attrs;
     }
 
@@ -126,7 +127,8 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
                                 LdapUtils.stringValue(
                                         attrs.get("dcmJavaClassName"), null),
                                 LdapUtils.stringValue(
-                                        attrs.get("dcmPatchJPEGLS"), null)));
+                                        attrs.get("dcmPatchJPEGLS"), null),
+                                LdapUtils.stringArray(attrs.get("dcmImageReadParam"))));
             }
         } finally {
            LdapUtils.safeClose(ne);
@@ -191,6 +193,8 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
                 prevParam.className, param.className, null);
         LdapUtils.storeDiffObject(ldapObj, mods, "dcmPatchJPEGLS",
                 prevParam.patchJPEGLS, param.patchJPEGLS, null);
+        LdapUtils.storeDiff(ldapObj, mods, "dcmImageReadParam",
+                prevParam.getImageReadParams(), param.getImageReadParams());
        return mods;
     }
 

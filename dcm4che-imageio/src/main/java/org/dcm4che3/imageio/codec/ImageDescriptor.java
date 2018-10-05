@@ -131,7 +131,7 @@ public final class ImageDescriptor {
     }
 
     public int getFrameLength() {
-        return rows * columns * samples * (bitsAllocated>>>3);
+        return rows * columns * samples * bitsAllocated / 8;
     }
 
     public int getLength() {

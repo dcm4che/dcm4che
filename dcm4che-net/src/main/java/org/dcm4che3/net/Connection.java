@@ -114,6 +114,9 @@ public class Connection implements Serializable {
     public static final String DEF_BUFFERSIZE_STR = "0";
     public static final int DEF_BUFFERSIZE = Integer.valueOf(DEF_BUFFERSIZE_STR);
 
+    public static final String DEF_UDP_RECEIVE_BUFFERSIZE_STR = "1048576"; // 1 MB default
+    public static final int DEF_UDP_RECEIVE_BUFFERSIZE = Integer.valueOf(DEF_UDP_RECEIVE_BUFFERSIZE_STR);
+
 
     public static final int DEF_MAX_PDU_LENGTH = 16378;
     // to fit into SunJSSE TLS Application Data Length 16408
@@ -188,6 +191,9 @@ public class Connection implements Serializable {
 
     @ConfigurableProperty(name = "dcmTCPReceiveBufferSize", defaultValue = DEF_BUFFERSIZE_STR)
     private int receiveBufferSize;
+
+    @ConfigurableProperty(name = "dcmUDPReceiveBufferSize", defaultValue = DEF_UDP_RECEIVE_BUFFERSIZE_STR)
+    private int udpReceiveBufferSize;
 
     @ConfigurableProperty(name = "dcmSendPDULength", defaultValue = "16378")
     private int sendPDULength = DEF_MAX_PDU_LENGTH;
@@ -779,6 +785,18 @@ public class Connection implements Serializable {
         this.receiveBufferSize = size;
     }
 
+    public int getUdpReceiveBufferSize()
+    {
+        return udpReceiveBufferSize;
+    }
+
+    public void setUdpReceiveBufferSize(int udpReceiveBufferSize)
+    {
+        if (udpReceiveBufferSize < 0)
+            throw new IllegalArgumentException("size: " + udpReceiveBufferSize);
+        this.udpReceiveBufferSize = udpReceiveBufferSize;
+    }
+
     /**
      * Get the SO_SNDBUF socket option value in KB,
      *
@@ -978,11 +996,9 @@ public class Connection implements Serializable {
 
     public void setReceiveBufferSize(DatagramSocket ds) throws SocketException {
         int size = ds.getReceiveBufferSize();
-        if (receiveBufferSize == 0) {
-            receiveBufferSize = size;
-        } else if (receiveBufferSize != size) {
-            ds.setReceiveBufferSize(receiveBufferSize);
-            receiveBufferSize = ds.getReceiveBufferSize();
+        if (udpReceiveBufferSize > 0 && udpReceiveBufferSize != size) {
+            ds.setReceiveBufferSize(udpReceiveBufferSize);
+            udpReceiveBufferSize = ds.getReceiveBufferSize();
         }
     }
 

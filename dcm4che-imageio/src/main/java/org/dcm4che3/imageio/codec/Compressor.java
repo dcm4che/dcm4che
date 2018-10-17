@@ -409,7 +409,7 @@ public class Compressor implements Closeable {
         int maxDiff = 0 ;
         if(uncompressedImage.getRaster().getSampleModel() instanceof ComponentSampleModel
                 && decompressedImageForVerification.getRaster().getSampleModel() instanceof ComponentSampleModel) {
-            BufferedImageUtils.maxDiff(uncompressedImage.getRaster(), decompressedImageForVerification.getRaster(), avgPixelValueBlockSize);
+            maxDiff = BufferedImageUtils.maxDiff(uncompressedImage.getRaster(), decompressedImageForVerification.getRaster(), avgPixelValueBlockSize);
         }else {
             maxDiff = BufferedImageUtils.maxDiffRGB(uncompressedImage, decompressedImageForVerification);
         }

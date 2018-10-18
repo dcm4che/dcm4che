@@ -180,6 +180,7 @@
         <include>commons-cli:commons-cli</include>
         <include>org.glassfish:javax.json</include>
         <include>org.jboss.resteasy:jaxrs-api</include>
+        <include>com.lmax:disruptor</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>

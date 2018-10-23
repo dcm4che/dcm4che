@@ -82,8 +82,7 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
     }
 
     public void onEvent(AdminEvent adminEvent, boolean b) {
-        LOG.warn(".....admin event type is..." + adminEvent);
-        LOG.warn(".....admin event operation type is..." + adminEvent.getOperationType());
+        //TODO
     }
 
     public void close() {

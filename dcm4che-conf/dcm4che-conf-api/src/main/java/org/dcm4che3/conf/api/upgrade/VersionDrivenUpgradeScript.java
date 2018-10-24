@@ -67,7 +67,9 @@ public class VersionDrivenUpgradeScript implements UpgradeScript {
 
                 NumericVersion numericVersion = NumericVersion.fromFixUpToAnno(annotation);
 
-                if ( numericVersion.compareTo(lastExVer) <= 0)
+                // Only run this fix-up if its version is greater than or equal to the last executed version
+                // If its version is less than the last executed version then it has already been run in the past
+                if ( numericVersion.compareTo(lastExVer) >= 0)
                     methods.put( numericVersion, method);
             }
         }

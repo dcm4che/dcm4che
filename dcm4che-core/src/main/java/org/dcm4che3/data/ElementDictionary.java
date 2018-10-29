@@ -40,8 +40,6 @@ package org.dcm4che3.data;
 
 import java.util.ServiceLoader;
 
-import org.dcm4che3.data.StandardElementDictionary;
-
 public abstract class ElementDictionary {
     private static final ServiceLoader<ElementDictionary> loader =
             ServiceLoader.load(ElementDictionary.class);

@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2015-2018
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -50,9 +50,6 @@ import org.keycloak.models.RoleModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -67,7 +64,7 @@ import java.util.List;
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  * @since Mar 2016
  */
-public class AuditAuth {
+class AuditAuth {
     private static final Logger LOG = LoggerFactory.getLogger(AuditAuth.class);
     private static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
 
@@ -83,22 +80,20 @@ public class AuditAuth {
             }
             spoolAndAudit(dir, log, event, keycloakSession);
         } catch (Exception e) {
-            LOG.warn("Failed to write to Audit Spool File - {} ", e);
+            LOG.warn("Failed to spool and audit user auth event{}: {}", event, e);
         }
     }
 
-    private static void spoolAndAudit(Path dir, AuditLogger log, Event event, KeycloakSession keycloakSession) {
-        try {
-            Path file = event.getSessionId() != null && !Files.exists(dir.resolve(event.getSessionId()))
-                        ? Files.createFile(dir.resolve(event.getSessionId()))
-                        : Files.createTempFile(dir, event.getIpAddress() + "-" + event.getUserId(), null);
-            try (LineWriter writer = new LineWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
-                writer.writeLine(new AuthInfo(event, keycloakSession));
-            }
-            sendAuditMessage(file, event, log, keycloakSession);
-        } catch (Exception e) {
-            LOG.warn("Audit Login Exception: {}" + e);
+    private static void spoolAndAudit(Path dir, AuditLogger log, Event event, KeycloakSession keycloakSession)
+            throws IOException {
+        Path file = event.getSessionId() != null && !Files.exists(dir.resolve(event.getSessionId()))
+                    ? Files.createFile(dir.resolve(event.getSessionId()))
+                    : Files.createTempFile(dir, event.getIpAddress() + "-" + event.getUserId(), null);
+        try (SpoolFileWriter writer = new SpoolFileWriter(
+                Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
+            writer.writeLine(new AuthInfo(event, keycloakSession));
         }
+        sendAuditMessage(file, event, log, keycloakSession);
     }
 
     private static boolean isLogout(Event event) {
@@ -111,7 +106,7 @@ public class AuditAuth {
 
     private static void sendAuditMessage(Path file, Event event, AuditLogger log, KeycloakSession keycloakSession)
             throws IOException{
-        AuthInfo info = new AuthInfo(new LineReader(file).getMainInfo());
+        AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
 
         ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
         String userName = info.getField(AuthInfo.USER_NAME);
@@ -128,18 +123,18 @@ public class AuditAuth {
 
         if (isUpdatePassword(event)) {
             emitAudit(log,
-                    eventIDBuilder(log, event.getError(), AuditUtils.EventType.UPDT_PSWD),
+                    eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.UPDT_USER),
                     activeParticipants);
         }
         else {
             emitAudit(log,
-                    eventIDBuilder(log, event.getError(), AuditUtils.EventType.forUserAuth(event)),
+                    eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.forUserAuth(event)),
                     activeParticipants);
 
             if (event.getUserId() != null
                     && userRoles(userName, keycloakSession).contains(System.getProperty("super-user-role")))
                 emitAudit(log,
-                        eventIDBuilder(log, event.getError(), AuditUtils.EventType.forSuperUserAuth(event)),
+                        eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.forSuperUserAuth(event)),
                         activeParticipants);
         }
 
@@ -160,7 +155,7 @@ public class AuditAuth {
     }
 
     private static EventIdentificationBuilder eventIDBuilder(
-            AuditLogger log, String outcome, AuditUtils.EventType eventType) {
+            AuditLogger log, String outcome, AuditUtils.AuditEventType eventType) {
         return new EventIdentificationBuilder.Builder(
                 eventType.eventID, eventType.eventActionCode, log.timeStamp(), eventOutcomeIndicator(outcome))
                 .outcomeDesc(outcome)
@@ -178,78 +173,6 @@ public class AuditAuth {
 
     private static String eventOutcomeIndicator(String outcomeDesc) {
         return outcomeDesc != null ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success;
-    }
-
-    static class AuditUtils {
-        enum EventClass {
-            USER_AUTHENTICATE, SECURITY_ALERT
-        }
-
-        enum EventType {
-            LOGIN(EventClass.USER_AUTHENTICATE, AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
-                    AuditMessages.EventTypeCode.Login),
-            LOGOUT(EventClass.USER_AUTHENTICATE, AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
-                    AuditMessages.EventTypeCode.Logout),
-            SU_LOGIN(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Execute,
-                    AuditMessages.EventTypeCode.EmergencyOverrideStarted),
-            SU_LOGOUT(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Execute,
-                    AuditMessages.EventTypeCode.EmergencyOverrideStopped),
-            UPDT_PSWD(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Update,
-                    AuditMessages.EventTypeCode.UserSecurityAttributesChanged);
-
-            final EventClass eventClass;
-            final AuditMessages.EventID eventID;
-            final String eventActionCode;
-            final EventTypeCode eventTypeCode;
-
-            EventType(EventClass eventClass, AuditMessages.EventID eventID, String eventActionCode, EventTypeCode etc) {
-                this.eventClass = eventClass;
-                this.eventID = eventID;
-                this.eventActionCode = eventActionCode;
-                this.eventTypeCode = etc;
-            }
-            
-            static EventType forUserAuth(Event event) {
-                return isLogout(event) ? LOGOUT : LOGIN;
-            }
-
-            static EventType forSuperUserAuth(Event event) {
-                return isLogout(event) ? SU_LOGOUT : SU_LOGIN;
-            }
-        }
-    }
-
-    static class LineWriter implements Closeable {
-        private final BufferedWriter writer;
-
-        LineWriter(BufferedWriter writer) {
-            this.writer = writer;
-        }
-
-        void writeLine(Object o) throws IOException {
-            writer.write(o.toString().replace('\r', '.').replace('\n', '.'));
-            writer.newLine();
-        }
-        @Override
-        public void close() throws IOException {
-            writer.close();
-        }
-    }
-
-    static class LineReader {
-        private static final Logger LOG = LoggerFactory.getLogger(LineReader.class);
-        private String mainInfo;
-
-        LineReader(Path p) {
-            try (BufferedReader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
-                this.mainInfo = reader.readLine();
-            } catch (Exception e) {
-                LOG.warn("Failed to read audit spool file", e);
-            }
-        }
-        String getMainInfo() {
-            return mainInfo;
-        }
     }
 
     static class AuthInfo {

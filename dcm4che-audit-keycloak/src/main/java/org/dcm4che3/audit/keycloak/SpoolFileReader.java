@@ -39,62 +39,30 @@
  */
 package org.dcm4che3.audit.keycloak;
 
-import org.dcm4che3.net.audit.AuditLogger;
-import org.keycloak.events.Event;
-import org.keycloak.events.EventListenerProvider;
-import org.keycloak.events.EventType;
-import org.keycloak.events.admin.AdminEvent;
-import org.keycloak.models.KeycloakSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Set;
+import java.io.BufferedReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
- * @since Mar 2016
+ * @since Oct 2018
  */
-public class Dcm4cheEventListenerProvider implements EventListenerProvider {
-    private static final Logger LOG = LoggerFactory.getLogger(Dcm4cheEventListenerProvider.class);
-    private final Set<EventType> includedEvents;
-    private final KeycloakSession keycloakSession;
+class SpoolFileReader {
+    private static final Logger LOG = LoggerFactory.getLogger(SpoolFileReader.class);
+    private String mainInfo;
 
-    public Dcm4cheEventListenerProvider(Set<EventType> includedEvents, KeycloakSession keycloakSession) {
-        this.includedEvents = includedEvents;
-        this.keycloakSession = keycloakSession;
-    }
-
-
-    @Override
-    public void onEvent(Event event) {
-        if (includedEvents != null && includedEvents.contains(event.getType())) {
-            try {
-                Collection<AuditLogger> loggers = new AuditLoggerFactory().getAuditLoggers();
-                if (loggers != null)
-                    for (AuditLogger logger : loggers)
-                        if (logger.isInstalled())
-                            AuditAuth.spoolAuditMsg(event, logger, keycloakSession);
-            } catch (Exception e) {
-                LOG.warn("Failed to get audit logger", e);
-            }
-        }
-    }
-
-    @Override
-    public void onEvent(AdminEvent adminEvent, boolean b) {
-        try {
-            Collection<AuditLogger> loggers = new AuditLoggerFactory().getAuditLoggers();
-            if (loggers != null)
-                for (AuditLogger logger : loggers)
-                    if (logger.isInstalled())
-                        AdminEventsAuditService.spoolAuditMsg(adminEvent, logger, keycloakSession);
+    SpoolFileReader(Path p) {
+        try (BufferedReader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
+            this.mainInfo = reader.readLine();
         } catch (Exception e) {
-            LOG.warn("Failed to get audit logger", e);
+            LOG.warn("Failed to read audit spool file", e);
         }
     }
-
-    public void close() {
-
+    String getMainInfo() {
+        return mainInfo;
     }
 }

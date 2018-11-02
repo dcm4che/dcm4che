@@ -76,6 +76,10 @@ public class IDWithIssuer {
         
     }
 
+    public IDWithIssuer withoutIssuer() {
+        return issuer == null ? this : new IDWithIssuer(id, (Issuer) null);
+    }
+
     public final String getID() {
         return id;
     }

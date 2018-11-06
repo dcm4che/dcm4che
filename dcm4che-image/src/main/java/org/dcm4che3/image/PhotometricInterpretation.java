@@ -185,7 +185,7 @@ public enum PhotometricInterpretation {
     }
 
     public int frameLength(int w, int h, int samples, int bitsAllocated) {
-        return w * h * samples * (bitsAllocated >> 3);
+        return w * h * samples * bitsAllocated / 8;
     }
 
     public boolean isMonochrome() {

@@ -36,6 +36,8 @@
                                   1.2.840.10008.1.2.4.50 or .51
         --jpll                    compress JPEG Lossless; equivalent to -t
                                   1.2.840.10008.1.2.4.70
+        --max-threads <N>         use up to <N> threads for
+                                  compression/decompression; the default is 1
      -N <near-lossless>           Near-Lossless parameter of JPEG LS Lossy
                                   compression
      -q <quality>                 compression quality (0.0-1.0) of JPEG Lossy

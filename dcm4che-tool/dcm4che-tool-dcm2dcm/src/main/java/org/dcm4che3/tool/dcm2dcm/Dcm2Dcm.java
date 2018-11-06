@@ -46,9 +46,11 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
@@ -71,8 +73,6 @@ import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.SafeClose;
 
-import javax.xml.stream.Location;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -88,6 +88,7 @@ public class Dcm2Dcm {
     private boolean legacy;
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
     private final List<Property> params = new ArrayList<Property>();
+    private int maxThreads = 1;
 
     public final void setTransferSyntax(String uid) {
         this.tsuid = uid;
@@ -116,6 +117,12 @@ public class Dcm2Dcm {
 
     public void addCompressionParam(String name, Object value) {
         params.add(new Property(name, value));
+    }
+
+    public void setMaxThreads(int maxThreads) {
+        if (maxThreads <= 0)
+            throw new IllegalArgumentException("max-threads: " + maxThreads);
+        this.maxThreads = maxThreads;
     }
 
     private static Object toValue(String s) {
@@ -178,6 +185,13 @@ public class Dcm2Dcm {
         opts.addOptionGroup(fmiGroup);
         opts.addOption(Option.builder()
                 .hasArg()
+                .argName("N")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("max-threads"))
+                .longOpt("max-threads")
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
                 .argName("max-error")
                 .type(PatternOptionBuilder.NUMBER_VALUE)
                 .desc(rb.getString("verify"))
@@ -233,6 +247,10 @@ public class Dcm2Dcm {
                 main.setRetainFileMetaInformation(cl.hasOption("f"));
             }
             main.setLegacy(cl.hasOption("legacy"));
+
+            if (cl.hasOption("max-threads"))
+                main.setMaxThreads(((Number) cl.getParsedOptionValue("max-threads")).intValue());
+
             if (cl.hasOption("verify"))
                 main.addCompressionParam("maxPixelValueError",
                         cl.getParsedOptionValue("verify"));
@@ -268,8 +286,7 @@ public class Dcm2Dcm {
                     && !dest.isDirectory())
                 throw new ParseException(
                         MessageFormat.format(rb.getString("nodestdir"), dest));
-            for (String src : argList.subList(0, argc-1))
-                main.mtranscode(new File(src), dest);
+            main.mtranscode(argList.subList(0, argc - 1), dest);
         } catch (ParseException e) {
             System.err.println("dcm2dcm: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -294,33 +311,55 @@ public class Dcm2Dcm {
                 : cl.getOptionValue("t", def);
     }
 
-    private void mtranscode(File src, File dest) {
+    private void mtranscode(List<String> srcList, File dest) throws InterruptedException {
+        ExecutorService executorService = maxThreads > 1 ? Executors.newFixedThreadPool(maxThreads) : null;
+        for (String src : srcList) {
+            mtranscode(new File(src), dest, executorService);
+        }
+        if (executorService != null) {
+            executorService.shutdown();
+        }
+    }
+
+    private void mtranscode(final File src, File dest, Executor executer) {
          if (src.isDirectory()) {
              dest.mkdir();
              for (File file : src.listFiles())
-                 mtranscode(file, new File(dest, file.getName()));
+                 mtranscode(file, new File(dest, file.getName()), executer);
              return;
          }
-         if (dest.isDirectory())
-             dest = new File(dest, src.getName());
-         try {
-             if (legacy)
-                 transcode(src, dest);
-             else
-                 transcodeWithTranscoder(src, dest);
-
-             System.out.println(
-                     MessageFormat.format(rb.getString("transcoded"),
-                             src, dest));
-         } catch (Exception e) {
-             System.out.println(
-                     MessageFormat.format(rb.getString("failed"),
-                             src, e.getMessage()));
-             e.printStackTrace(System.out);
+         final File finalDest = dest.isDirectory() ? new File(dest, src.getName()) : dest;
+         if (executer != null) {
+             executer.execute(new Runnable() {
+                 @Override
+                 public void run() {
+                     transcode(src, finalDest);
+                 }
+             });
+         } else {
+             transcode(src, finalDest);
          }
-     }
+    }
 
-     public void transcode(File src, File dest) throws IOException {
+    private void transcode(File src, File dest) {
+        try {
+            if (legacy)
+                transcodeLegacy(src, dest);
+            else
+                transcodeWithTranscoder(src, dest);
+
+            System.out.println(
+                    MessageFormat.format(rb.getString("transcoded"),
+                            src, dest));
+        } catch (Exception e) {
+            System.out.println(
+                    MessageFormat.format(rb.getString("failed"),
+                            src, e.getMessage()));
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void transcodeLegacy(File src, File dest) throws IOException {
         Attributes fmi;
         Attributes dataset;
         DicomInputStream dis = new DicomInputStream(src);

@@ -43,6 +43,8 @@ CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-mime-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.7.25.jar"
+CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.7.25.jar"
+CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.17.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-${commons-cli.version}.jar"
 
 # For Cygwin, switch paths to Windows format before running java

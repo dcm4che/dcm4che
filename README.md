@@ -85,6 +85,8 @@ Utilities
 - [storescp][]: DICOM Composite Object Receiver
 - [storescu][]: Send DICOM Composite Objects
 - [stowrs][]: Send DICOM Composite Objects or Bulkdata file over Web
+- [wadors][]: Wado RS Client Simulator 
+- [wadows][]: Wado WS Client Simulator 
 - [xml2dcm][]: Create/Update DICOM file from/with XML presentation
 - [xml2hl7][]: Create HL7 v2.x message from XML presentation
 - [xml2prefs][]: Import Java Preferences

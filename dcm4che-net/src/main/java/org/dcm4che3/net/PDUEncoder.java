@@ -404,10 +404,9 @@ class PDUEncoder extends PDVOutputStream {
                 as.incSentCount(dimse);
             if (Dimse.LOG.isInfoEnabled()) {
                 Dimse.LOG.info("{} << {}", as, dimse.toString(cmd, pcid, tsuid));
-                Dimse.LOG.debug("Command:\n{}", cmd);
-                if (dataWriter instanceof DataWriterAdapter)
-                    Dimse.LOG.debug("Dataset:\n{}",
-                            ((DataWriterAdapter) dataWriter).getDataset());
+                if (Dimse.LOG.isDebugEnabled()) {
+                    Dimse.LOG.debug("{} << {} Command:\n{}", as, dimse.toString(cmd), cmd);
+                }
             }
             this.th = Thread.currentThread();
             maxpdulen = as.getMaxPDULengthSend();
@@ -428,7 +427,16 @@ class PDUEncoder extends PDVOutputStream {
                     pos += 6;
                 }
                 pdvcmd = PDVType.DATA;
+                if (Dimse.LOG.isDebugEnabled()) {
+                    if (dataWriter instanceof DataWriterAdapter)
+                        Dimse.LOG.debug("{} << {} Dataset:\n{}", as, dimse.toString(cmd),
+                                ((DataWriterAdapter) dataWriter).getDataset());
+                    else
+                        Dimse.LOG.debug("{} << {} Dataset transferring...", as, dimse.toString(cmd));
+                }
                 dataWriter.writeTo(this, tsuid);
+                if (Dimse.LOG.isDebugEnabled() && !(dataWriter instanceof DataWriterAdapter))
+                    Dimse.LOG.debug("{} << {} Dataset transferred", as, dimse.toString(cmd));
                 close();
             }
             as.writePDataTF();

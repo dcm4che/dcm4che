@@ -53,7 +53,6 @@ public class IDWithIssuer {
     public static final IDWithIssuer[] EMPTY = {};
 
     private final String id;
-    private String typeOfPatientID;
     private String identifierTypeCode;
     private Issuer issuer;
 
@@ -79,14 +78,6 @@ public class IDWithIssuer {
 
     public final String getID() {
         return id;
-    }
-
-    public String getTypeOfPatientID() {
-        return typeOfPatientID;
-    }
-
-    public void setTypeOfPatientID(String typeOfPatientID) {
-        this.typeOfPatientID = typeOfPatientID;
     }
 
     public final String getIdentifierTypeCode() {
@@ -160,9 +151,11 @@ public class IDWithIssuer {
             attrs = new Attributes(3);
 
         attrs.setString(Tag.PatientID, VR.LO, id);
-        if (typeOfPatientID != null) {
-            attrs.setString(Tag.TypeOfPatientID, VR.CS, typeOfPatientID);
+        
+        if(attrs.getString(Tag.TypeOfPatientID) == null || attrs.getString(Tag.TypeOfPatientID).isEmpty()){
+        	attrs.setString(Tag.TypeOfPatientID,VR.CS,"TEXT");
         }
+                
         if (issuer == null && identifierTypeCode == null) {
             return attrs;
         }
@@ -200,7 +193,6 @@ public class IDWithIssuer {
 
         IDWithIssuer result = 
                 new IDWithIssuer(id, Issuer.fromIssuerOfPatientID(attrs));
-        result.setTypeOfPatientID(attrs.getString(Tag.TypeOfPatientID));
         result.setIdentifierTypeCode(identifierTypeCodeOf(attrs));
         return result;
     }

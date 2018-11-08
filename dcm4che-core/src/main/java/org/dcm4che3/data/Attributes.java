@@ -42,11 +42,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.dcm4che3.data.IOD.DataElement;
@@ -71,6 +67,19 @@ public class Attributes implements Serializable {
     public interface SequenceVisitor extends Visitor {
         void startItem(int sqTag, int itemIndex);
         void endItem();
+    }
+
+    public static abstract class ItemPointerVisitor implements SequenceVisitor {
+        protected final List<ItemPointer> itemPointers = new ArrayList<>(4);
+        @Override
+        public void startItem(int sqTag, int itemIndex) {
+            itemPointers.add(new ItemPointer(sqTag, itemIndex));
+        }
+
+        @Override
+        public void endItem() {
+            itemPointers.remove(itemPointers.size()-1);
+        }
     }
 
     public enum UpdatePolicy { SUPPLEMENT, MERGE, OVERWRITE, REPLACE }

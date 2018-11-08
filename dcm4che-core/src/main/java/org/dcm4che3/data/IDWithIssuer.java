@@ -71,9 +71,12 @@ public class IDWithIssuer {
     public IDWithIssuer(String cx) {
         String[] ss = StringUtils.split(cx, '^');
         this.id = ss[0];
-        this.setIdentifierTypeCode(ss.length > 4 ? ss[4] : null);
-        this.setIssuer(ss.length > 3 ? new Issuer(ss[3], '&') : null);
-        
+        if (ss.length > 3) {
+            if (!ss[3].isEmpty())
+                this.setIssuer(new Issuer(ss[3], '&'));
+            if (ss.length > 4 && !ss[4].isEmpty())
+                this.setIdentifierTypeCode(ss[4]);
+        }
     }
 
     public IDWithIssuer withoutIssuer() {

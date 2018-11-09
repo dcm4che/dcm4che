@@ -432,11 +432,11 @@ class PDUEncoder extends PDVOutputStream {
                         Dimse.LOG.debug("{} << {} Dataset:\n{}", as, dimse.toString(cmd),
                                 ((DataWriterAdapter) dataWriter).getDataset());
                     else
-                        Dimse.LOG.debug("{} << {} Dataset transferring...", as, dimse.toString(cmd));
+                        Dimse.LOG.debug("{} << {} Dataset sending...", as, dimse.toString(cmd));
                 }
                 dataWriter.writeTo(this, tsuid);
                 if (Dimse.LOG.isDebugEnabled() && !(dataWriter instanceof DataWriterAdapter))
-                    Dimse.LOG.debug("{} << {} Dataset transferred", as, dimse.toString(cmd));
+                    Dimse.LOG.debug("{} << {} Dataset sent", as, dimse.toString(cmd));
                 close();
             }
             as.writePDataTF();

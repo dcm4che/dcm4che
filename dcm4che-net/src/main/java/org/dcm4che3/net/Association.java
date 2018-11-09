@@ -724,10 +724,7 @@ public class Association {
         rspHandler.onDimseRSP(this, cmd, data);
         if (pending) {
             if (rspHandler.isStopOnPending())
-                startTimeout(msgId, dimse.isRetrieveRQ()
-                                ? conn.getRetrieveTimeout()
-                                : conn.getResponseTimeout(),
-                        true);
+                startTimeout(msgId, conn.getRetrieveTimeout(),true);
         } else {
             incReceivedCount(dimse);
             removeDimseRSPHandler(msgId);
@@ -1224,11 +1221,11 @@ public class Association {
                        DataWriter data, DimseRSPHandler rspHandler, int rspTimeout, boolean stopOnPending)
             throws IOException, InterruptedException {
         stopTimeout();
-        startTimeout(rspHandler.getMessageID(), rspTimeout, stopOnPending);
         checkException();
         rspHandler.setPC(pc);
         addDimseRSPHandler(rspHandler);
         encoder.writeDIMSE(pc, cmd, data);
+        startTimeout(rspHandler.getMessageID(), rspTimeout, stopOnPending);
     }
 
     static int minZeroAsMax(int i1, int i2) {

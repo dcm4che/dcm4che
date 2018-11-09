@@ -249,12 +249,20 @@ public class CLIUtils {
 
     @SuppressWarnings("static-access")
     public static void addRetrieveTimeoutOption(Options opts) {
-        opts.addOption(Option.builder()
+        OptionGroup group = new OptionGroup();
+        group.addOption(Option.builder()
             .hasArg()
             .argName("ms")
             .desc(rb.getString("retrieve-timeout"))
             .longOpt("retrieve-timeout")
             .build());
+        group.addOption(Option.builder()
+            .hasArg()
+            .argName("ms")
+            .desc(rb.getString("retrieve-timeout-total"))
+            .longOpt("retrieve-timeout-total")
+            .build());
+        opts.addOptionGroup(group);
     }
 
     @SuppressWarnings("static-access")
@@ -458,7 +466,7 @@ public class CLIUtils {
                 getIntOption(cl, "max-pdulen-rcv", Connection.DEF_MAX_PDU_LENGTH));
         conn.setSendPDULength(
                 getIntOption(cl, "max-pdulen-snd", Connection.DEF_MAX_PDU_LENGTH));
-        if(cl.hasOption("not-async")) {
+        if (cl.hasOption("not-async")) {
             conn.setMaxOpsInvoked(1);
             conn.setMaxOpsPerformed(1);
         } else {
@@ -471,7 +479,13 @@ public class CLIUtils {
         conn.setAcceptTimeout(getIntOption(cl, "accept-timeout", 0));
         conn.setReleaseTimeout(getIntOption(cl, "release-timeout", 0));
         conn.setResponseTimeout(getIntOption(cl, "response-timeout", 0));
-        conn.setRetrieveTimeout(getIntOption(cl, "retrieve-timeout", 0));
+        if (cl.hasOption("retrieve-timeout")) {
+            conn.setRetrieveTimeout(getIntOption(cl, "retrieve-timeout", 0));
+            conn.setRetrieveTimeoutTotal(false);
+        } else if (cl.hasOption("retrieve-timeout-total")) {
+            conn.setRetrieveTimeout(getIntOption(cl, "retrieve-timeout-total", 0));
+            conn.setRetrieveTimeoutTotal(true);
+        }
         conn.setIdleTimeout(getIntOption(cl, "idle-timeout", 0));
         conn.setSocketCloseDelay(getIntOption(cl, "soclose-delay", 
                 Connection.DEF_SOCKETDELAY));

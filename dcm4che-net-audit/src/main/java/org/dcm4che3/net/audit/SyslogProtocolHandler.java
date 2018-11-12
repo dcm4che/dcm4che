@@ -62,12 +62,16 @@ import java.util.concurrent.TimeUnit;
  */
 enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
-    INSTANCE ( );
+    INSTANCE;
 
     private static final int INIT_MSG_LEN = 8192;
     private static final int MAX_MSG_LEN = 1024*1024*20; //20mb
     private static final int MAX_MSG_PREFIX = 200;
     private static final int MSG_PROMPT_LEN = 8192;
+
+    private static final int MINIMUM_NUMBER_OF_THREADS = 4;
+    private static final long THREAD_KEEP_ALIVE_TIME_SEC = 60;
+    private static final int EXECUTOR_QUEUE_SIZE = 1000;
 
     private static Logger LOG = LoggerFactory.getLogger(SyslogProtocolHandler.class);
 
@@ -75,9 +79,9 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
     private SyslogProtocolHandler()
     {
-        // MIN and MAX POOL SIZE: 4
-        this.executor = new ThreadPoolExecutor(4, 4, 600L, TimeUnit.SECONDS, new LinkedBlockingQueue<>( 1000 ));
-        this.executor.allowCoreThreadTimeOut( true );
+        // thread pool core size equals number of processors, or at least 4 if less
+        int threadPoolCoreSize = Math.max( Runtime.getRuntime().availableProcessors(), MINIMUM_NUMBER_OF_THREADS );
+        this.executor = new ThreadPoolExecutor( threadPoolCoreSize, threadPoolCoreSize * 2, THREAD_KEEP_ALIVE_TIME_SEC, TimeUnit.SECONDS, new LinkedBlockingQueue<>( EXECUTOR_QUEUE_SIZE ));
     }
 
     @Override
@@ -238,8 +242,12 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
                                 s);
                         break;
                     }
-                    LOG.info("Received Syslog message of {} bytes from {}",
-                            length, s);
+
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug( "Received Syslog message of {} bytes from {}",
+                                length, s );
+                    }
+
                     onMessage(arr, data, 0, length, conn, s.getInetAddress());
                 }
             } catch (IOException e) {
@@ -263,8 +271,11 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
         @Override
         public void run() {
-            LOG.info("Received UDP Syslog message of {} bytes from {}",
-                    packet.getLength(), packet.getAddress());
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Received UDP Syslog message of {} bytes from {}",
+                        packet.getLength(), packet.getAddress());
+            }
+
             onMessage(arr, packet.getData(), packet.getOffset(), packet.getLength(),
                     conn, packet.getAddress());
 

@@ -40,7 +40,6 @@ package org.dcm4che3.net.audit;
 
 import com.lmax.disruptor.*;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.lmax.disruptor.dsl.ProducerType;
 import org.dcm4che3.audit.*;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.audit.AuditMessage;
@@ -68,6 +67,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -82,6 +83,8 @@ public class AuditLogger extends DeviceExtension {
     private static final String DEVICE_NAME_IN_FILENAME_SEPARATOR = "-._";
 
     private static final String[] PARALLEL_LOGGERS = {"AuditLogger1", "AuditLogger2"};
+
+    private static final long GRACEFUL_CLOSE_PERIOD_MS = 250;
 
     private static Disruptor<AuditMessageEvent> disruptor;
 
@@ -315,9 +318,8 @@ public class AuditLogger extends DeviceExtension {
     }
 
     public void setAuditRecordRepositoryDevices(List<Device> arrDevices) {
-    	for (ActiveConnection c : activeConnection.values())
-    		SafeClose.close(c);
-        activeConnection.clear();
+    	closeActiveConnection();
+
         if(arrDevices==null){
             this.auditRecordRepositoryDevices.clear();
         }else{
@@ -731,6 +733,8 @@ public class AuditLogger extends DeviceExtension {
     }
 
     private void reconfigure(AuditLogger from) {
+        clearActiveConnectionsAndAsyncClose();
+
         setFacility(from.facility);
         setSuccessSeverity(from.successSeverity);
         setMinorFailureSeverity(from.minorFailureSeverity);
@@ -755,8 +759,6 @@ public class AuditLogger extends DeviceExtension {
         setAuditRecordRepositoryDevices(from.auditRecordRepositoryDevices);
         setAuditSuppressCriteriaList(from.suppressAuditMessageFilters);
         device.reconfigureConnections(connections, from.connections);
-
-        closeActiveConnection();
     }
 
     public Calendar timeStamp() {
@@ -1050,15 +1052,34 @@ public class AuditLogger extends DeviceExtension {
     }
 
     public synchronized void closeActiveConnection() {
-        for (Map.Entry<String, ActiveConnection> entry : activeConnection.entrySet()) {
+        for (Map.Entry<String, ActiveConnection> activeConnectionEntry : activeConnection.entrySet()) {
             try {
-                entry.getValue().close();
-            } catch (IOException e) {
-            	LOG.error("Failed to close active connection to {}", entry.getKey(), e);
-                throw new AssertionError(e);
+                activeConnectionEntry.getValue().close();
+            } catch (Exception e) {
+            	LOG.error("Failed to close active connection to {}", activeConnectionEntry.getKey(), e);
             }
         }
         this.activeConnection.clear();
+    }
+
+    /**
+     * Clears the active connections map and triggers a close of the active connections asynchronously
+     */
+    private void clearActiveConnectionsAndAsyncClose() {
+        Map<String,ActiveConnection> activeConnectionsMapCopy;
+        synchronized(this) {
+            activeConnectionsMapCopy = new HashMap<>(activeConnection);
+            activeConnection.clear();
+        }
+        device.getExecutor().execute( () -> {
+            for (Map.Entry<String, ActiveConnection> activeConnectionEntry : activeConnectionsMapCopy.entrySet()) {
+                try {
+                    activeConnectionEntry.getValue().close(GRACEFUL_CLOSE_PERIOD_MS, TimeUnit.MILLISECONDS);
+                } catch (Exception e) {
+                    LOG.error("Failed to close active connection to {}", activeConnectionEntry.getKey(), e);
+                }
+            }
+        } );
     }
 
     private synchronized ActiveConnection activeConnection(String clientName, Device arrDev)
@@ -1279,6 +1300,17 @@ public class AuditLogger extends DeviceExtension {
         abstract void sendMessage(DatagramPacket msg) throws IOException,
                 IncompatibleConnectionException, GeneralSecurityException;
 
+        /**
+         * Closes the active connection, using force if necessary.
+         * <p>
+         * The method will try to gracefully close the connection within the given waiting time.
+         * If the waiting time elapses then the connection is closed with brute force. Closing the connection
+         * with brute force may lead to exceptions if another thread is still sending messages using the connection.
+         * @param timeout
+         * @param unit
+         */
+        abstract void close(long timeout, TimeUnit unit);
+
     }
 
     private class UDPConnection extends ActiveConnection {
@@ -1303,6 +1335,12 @@ public class AuditLogger extends DeviceExtension {
         }
 
         @Override
+        void close( long timeout, TimeUnit unit )
+        {
+            close();
+        }
+
+        @Override
         public void close() {
             if (ds != null) {
                 ds.close();
@@ -1317,6 +1355,8 @@ public class AuditLogger extends DeviceExtension {
         OutputStream out;
         ScheduledFuture<?> idleTimer;
 
+        final Lock lock = new ReentrantLock();
+
         TCPConnection(Connection conn, Connection remoteConn) {
             super(conn, remoteConn);
         }
@@ -1330,20 +1370,28 @@ public class AuditLogger extends DeviceExtension {
         }
 
         @Override
-        synchronized void sendMessage(DatagramPacket packet) throws IOException,
+        void sendMessage(DatagramPacket packet) throws IOException,
                 IncompatibleConnectionException, GeneralSecurityException {
-            stopIdleTimer();
-            connect();
+            lock.lock();
             try {
-                trySendMessage(packet);
-            } catch (IOException e) {
-                LOG.info("Failed to send audit message to {} - reconnect",
-                        sock, e);
-                close();
+                stopIdleTimer();
                 connect();
-                trySendMessage(packet);
+                try
+                {
+                    trySendMessage( packet );
+                }
+                catch ( IOException e )
+                {
+                    LOG.info( "Failed to send audit message to {} - reconnect",
+                            sock, e );
+                    close();
+                    connect();
+                    trySendMessage( packet );
+                }
+                startIdleTimer();
+            } finally {
+                lock.unlock();
             }
-            startIdleTimer();
         }
 
         void trySendMessage(DatagramPacket packet) throws IOException {
@@ -1385,9 +1433,45 @@ public class AuditLogger extends DeviceExtension {
         }
 
         @Override
-        public synchronized void close() {
-            stopIdleTimer();
-            closeSocket();
+        public void close() {
+            lock.lock();
+            try {
+                stopIdleTimer();
+                closeSocket();
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        @Override
+        void close( long timeout, TimeUnit unit )
+        {
+            boolean gracefullyClosed = false;
+
+            // first try to close the connection gracefully by trying to acquire the lock
+            try
+            {
+                if( lock.tryLock(timeout, unit) ) {
+                    try
+                    {
+                        stopIdleTimer();
+                        closeSocket();
+                    } finally {
+                        gracefullyClosed = true;
+                        lock.unlock();
+                    }
+                }
+            }
+            catch ( InterruptedException e ) {
+                Thread.currentThread().interrupt();
+            }
+
+            // if graceful close did not work use brute force
+            if( !gracefullyClosed ) {
+                LOG.info( "Could not close active AuditLogger TCP connection gracefully, will force close for {}", sock );
+                stopIdleTimer();
+                closeSocket();
+            }
         }
 
         private void closeSocket() {
@@ -1399,7 +1483,8 @@ public class AuditLogger extends DeviceExtension {
 
         private void onIdleTimerExpired() {
             ScheduledFuture<?> expiredIdleTimer = idleTimer;
-            synchronized (this) {
+            lock.lock();
+            try {
                 if (expiredIdleTimer != idleTimer) {
                     LOG.debug("Detect restart of Idle timer for {}", sock);
                 } else {
@@ -1407,6 +1492,8 @@ public class AuditLogger extends DeviceExtension {
                     idleTimer = null;
                     closeSocket();
                 }
+            } finally {
+                lock.unlock();
             }
         }
 

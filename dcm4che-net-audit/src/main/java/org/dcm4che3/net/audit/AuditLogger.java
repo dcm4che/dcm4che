@@ -733,7 +733,7 @@ public class AuditLogger extends DeviceExtension {
     }
 
     private void reconfigure(AuditLogger from) {
-        clearActiveConnectionsAndAsyncClose();
+        clearActiveConnectionsAndClose();
 
         setFacility(from.facility);
         setSuccessSeverity(from.successSeverity);
@@ -1065,21 +1065,48 @@ public class AuditLogger extends DeviceExtension {
     /**
      * Clears the active connections map and triggers a close of the active connections asynchronously
      */
-    private void clearActiveConnectionsAndAsyncClose() {
+    private void clearActiveConnectionsAndClose() {
         Map<String,ActiveConnection> activeConnectionsMapCopy;
         synchronized(this) {
-            activeConnectionsMapCopy = new HashMap<>(activeConnection);
+            activeConnectionsMapCopy = activeConnection.isEmpty() ? Collections.emptyMap() : new HashMap<>(activeConnection);
             activeConnection.clear();
         }
-        device.getExecutor().execute( () -> {
-            for (Map.Entry<String, ActiveConnection> activeConnectionEntry : activeConnectionsMapCopy.entrySet()) {
-                try {
-                    activeConnectionEntry.getValue().close(GRACEFUL_CLOSE_PERIOD_MS, TimeUnit.MILLISECONDS);
-                } catch (Exception e) {
-                    LOG.error("Failed to close active connection to {}", activeConnectionEntry.getKey(), e);
-                }
+        if(!activeConnectionsMapCopy.isEmpty())
+        {
+            Executor executor = getDevice().getExecutor();
+            /*
+             * if device executor exists close active connections asynchronously using a timeout limit.
+             * If the timeout happens then the connection will be closed with force.
+             */
+            if(executor != null) {
+                executor.execute( () -> {
+                   closeActiveConnections(activeConnectionsMapCopy, true);
+                } );
+             /*
+              * if no device executor exists close active connection synchronously without timeout limit. This guarantees a graceful close but can take some time if the
+              * connection is actively used for sending
+              */
+            } else {
+                closeActiveConnections(activeConnectionsMapCopy, false);
             }
-        } );
+        }
+
+    }
+
+    private static void closeActiveConnections(Map<String,ActiveConnection> activeConnectionsMap, boolean withTimeoutLimit)
+    {
+        for (Map.Entry<String, ActiveConnection> activeConnectionEntry : activeConnectionsMap.entrySet()) {
+            try {
+                if(withTimeoutLimit) {
+                    activeConnectionEntry.getValue().close(GRACEFUL_CLOSE_PERIOD_MS, TimeUnit.MILLISECONDS);
+                }
+                else {
+                    activeConnectionEntry.getValue().close();
+                }
+            } catch (Exception e) {
+                LOG.error("Failed to close active connection to {}", activeConnectionEntry.getKey(), e);
+            }
+        }
     }
 
     private synchronized ActiveConnection activeConnection(String clientName, Device arrDev)

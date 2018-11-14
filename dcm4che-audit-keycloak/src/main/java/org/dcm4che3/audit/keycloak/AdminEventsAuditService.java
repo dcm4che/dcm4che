@@ -59,7 +59,7 @@ import java.nio.file.StandardOpenOption;
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  * @since Oct 2018
  */
-public class AdminEventsAuditService {
+class AdminEventsAuditService {
     private static final Logger LOG = LoggerFactory.getLogger(AdminEventsAuditService.class);
     private static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
 
@@ -72,7 +72,8 @@ public class AdminEventsAuditService {
 
             spoolAndAudit(dir, auditLogger, adminEvent, keycloakSession);
         } catch (Exception e) {
-            LOG.warn("Failed to spool and audit admin event{}: {} ", adminEvent, e);
+            LOG.warn("Failed to spool and audit admin event {}: {} ",
+                    adminEvent.getOperationType().name() + " " + adminEvent.getResourceType().name(), e);
         }
     }
 
@@ -80,12 +81,23 @@ public class AdminEventsAuditService {
                                       KeycloakSession keycloakSession) throws IOException {
         AuthDetails authDetails = adminEvent.getAuthDetails();
         Path file = Files.createTempFile(dir, authDetails.getIpAddress() + "-" + authDetails.getUserId(), null);
-        try (SpoolFileWriter writer = new SpoolFileWriter(
-                Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
-            writer.writeLine(new AuthInfo(adminEvent, keycloakSession));
+        try {
+            try (SpoolFileWriter writer = new SpoolFileWriter(
+                    Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
+                writer.writeLine(new AuthInfo(adminEvent, keycloakSession));
+            }
+            emitAudit(auditLogger, createAuditMsg(file, adminEvent, auditLogger));
+            Files.delete(file);
+        } catch (Exception e) {
+            LOG.warn("Failed to process Audit Spool File {} of Audit Logger {} : {}",
+                    file, auditLogger.getCommonName(), e);
+            try {
+                Files.move(file, file.resolveSibling(file.getFileName().toString() + ".failed"));
+            } catch (IOException e1) {
+                LOG.warn("Failed to mark Audit Spool File {} of Audit Logger {} as failed : {}",
+                        file, auditLogger.getCommonName(), e);
+            }
         }
-        emitAudit(auditLogger, createAuditMsg(file, adminEvent, auditLogger));
-        Files.delete(file);
     }
 
     private static AuditMessage createAuditMsg(Path file, AdminEvent adminEvent, AuditLogger auditLogger) {

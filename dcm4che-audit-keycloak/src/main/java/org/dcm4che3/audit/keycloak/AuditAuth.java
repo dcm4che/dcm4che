@@ -80,7 +80,7 @@ class AuditAuth {
             }
             spoolAndAudit(dir, log, event, keycloakSession);
         } catch (Exception e) {
-            LOG.warn("Failed to spool and audit user auth event{}: {}", event, e);
+            LOG.warn("Failed to spool and audit user auth event {}: {}", event.getType().name(), e);
         }
     }
 
@@ -104,42 +104,51 @@ class AuditAuth {
         return event.getType() == EventType.UPDATE_PASSWORD || event.getType() == EventType.UPDATE_PASSWORD_ERROR;
     }
 
-    private static void sendAuditMessage(Path file, Event event, AuditLogger log, KeycloakSession keycloakSession)
-            throws IOException{
-        AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
+    private static void sendAuditMessage(Path file, Event event, AuditLogger log, KeycloakSession keycloakSession) {
+        try {
+            AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
 
-        ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
-        String userName = info.getField(AuthInfo.USER_NAME);
-        activeParticipants[0] = new ActiveParticipantBuilder.Builder(
-                userName,
-                info.getField(AuthInfo.IP_ADDR))
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
-                .isRequester().build();
-        activeParticipants[1] = new ActiveParticipantBuilder.Builder(
-                log.getDevice().getDeviceName(),
-                log.getConnections().get(0).getHostname())
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName)
-                .altUserID(AuditLogger.processID()).build();
+            ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
+            String userName = info.getField(AuthInfo.USER_NAME);
+            activeParticipants[0] = new ActiveParticipantBuilder.Builder(
+                    userName,
+                    info.getField(AuthInfo.IP_ADDR))
+                    .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
+                    .isRequester().build();
+            activeParticipants[1] = new ActiveParticipantBuilder.Builder(
+                    log.getDevice().getDeviceName(),
+                    log.getConnections().get(0).getHostname())
+                    .userIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName)
+                    .altUserID(AuditLogger.processID()).build();
 
-        if (isUpdatePassword(event)) {
-            emitAudit(log,
-                    eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.UPDT_USER),
-                    activeParticipants);
-        }
-        else {
-            emitAudit(log,
-                    eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.forUserAuth(event)),
-                    activeParticipants);
-
-            if (event.getUserId() != null
-                    && userRoles(userName, keycloakSession).contains(System.getProperty("super-user-role")))
+            if (isUpdatePassword(event)) {
                 emitAudit(log,
-                        eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.forSuperUserAuth(event)),
+                        eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.UPDT_USER),
                         activeParticipants);
-        }
+            } else {
+                emitAudit(log,
+                        eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.forUserAuth(event)),
+                        activeParticipants);
 
-        if (event.getType() != EventType.LOGIN)
-            Files.delete(file);
+                if (event.getUserId() != null
+                        && userRoles(userName, keycloakSession).contains(System.getProperty("super-user-role")))
+                    emitAudit(log,
+                            eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.forSuperUserAuth(event)),
+                            activeParticipants);
+            }
+
+            if (event.getType() != EventType.LOGIN)
+                Files.delete(file);
+        } catch (Exception e) {
+            LOG.warn("Failed to process Audit Spool File {} of Audit Logger {} : {}",
+                    file, log.getCommonName(), e);
+            try {
+                Files.move(file, file.resolveSibling(file.getFileName().toString() + ".failed"));
+            } catch (IOException e1) {
+                LOG.warn("Failed to mark Audit Spool File {} of Audit Logger {} as failed : {}",
+                        file, log.getCommonName(), e);
+            }
+        }
     }
 
     private static void emitAudit(

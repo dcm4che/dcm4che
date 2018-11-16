@@ -364,6 +364,8 @@ public class Association {
                 new Object[] { name, e, state });
         closeSocket();
     }
+    
+
 
     void write(AAbort aa) throws IOException  {
         LOG.info("{} << {}", name, aa);
@@ -513,15 +515,17 @@ public class Association {
 
             @Override
             public void run() {
-                decoder = new PDUDecoder(Association.this, in);
-                device.addAssociation(Association.this);
-                try {
+            	try {
+            		decoder = new PDUDecoder(Association.this, in);
+            		device.addAssociation(Association.this);
                     while (!(state == State.Sta1 || state == State.Sta13))
                         decoder.nextPDU();
                 } catch (AAbort aa) {
                     abort(aa);
                 } catch (IOException e) {
                     onIOException(e);
+                } catch (RuntimeException e) {
+                	onIOException(new IOException("Unexpected Error", e));
                 } finally {
                     device.removeAssociation(Association.this);
                     onClose();
@@ -835,7 +839,7 @@ public class Association {
                             .getAbstractSyntax())
                         .put(pc.getTransferSyntax(), pc);
     }
-
+    
     private HashMap<String, PresentationContext> initTSMap(String as) {
         HashMap<String, PresentationContext> tsMap = pcMap.get(as);
         if (tsMap == null)

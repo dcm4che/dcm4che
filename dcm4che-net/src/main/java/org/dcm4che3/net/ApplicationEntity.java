@@ -607,26 +607,29 @@ public class ApplicationEntity implements Serializable {
         rq.setMaxOpsPerformed(local.getMaxOpsPerformed());
         rq.setMaxPDULength(local.getReceivePDULength());
         Socket sock = local.connect(remote);
+        AssociationMonitor monitor = device.getAssociationMonitor();
+        Association as = null;
         try {
-            Association as = new Association(this, local, sock);
+            as = new Association(this, local, sock);
             as.write(rq);
             as.waitForLeaving(State.Sta5);
+            if (monitor != null)
+                monitor.onAssociationEstablished(as);
             return as;
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             SafeClose.close(sock);
-            throw e;
-        } catch (IOException e) {
-            SafeClose.close(sock);
+            if (as != null && monitor != null)
+                monitor.onAssociationFailed(as, e);
             throw e;
         }
     }
 
     public Association connect(Connection remote, AAssociateRQ rq)
             throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
-        return connect(findCompatibelConnection(remote), remote, rq);
+        return connect(findCompatibleConnection(remote), remote, rq);
     }
 
-    public Connection findCompatibelConnection(Connection remoteConn)
+    public Connection findCompatibleConnection(Connection remoteConn)
             throws IncompatibleConnectionException {
         for (Connection conn : conns)
             if (conn.isInstalled() && conn.isCompatible(remoteConn))
@@ -635,7 +638,7 @@ public class ApplicationEntity implements Serializable {
                 "No compatible connection to " + remoteConn + " available on " + aet);
     }
 
-    public CompatibleConnection findCompatibelConnection(ApplicationEntity remote)
+    public CompatibleConnection findCompatibleConnection(ApplicationEntity remote)
             throws IncompatibleConnectionException {
         for (Connection remoteConn : remote.conns)
             if (remoteConn.isInstalled() && remoteConn.isServer())
@@ -648,7 +651,7 @@ public class ApplicationEntity implements Serializable {
 
     public Association connect(ApplicationEntity remote, AAssociateRQ rq)
         throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
-        CompatibleConnection cc = findCompatibelConnection(remote);
+        CompatibleConnection cc = findCompatibleConnection(remote);
         if (rq.getCalledAET() == null)
             rq.setCalledAET(remote.getAETitle());
         return connect(cc.getLocalConnection(), cc.getRemoteConnection(), rq);

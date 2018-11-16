@@ -111,7 +111,8 @@ public class JSONReader {
     }
 
     public Attributes readDataset(Attributes attrs) {
-        next();
+        boolean wrappedInArray = next() == Event.START_ARRAY;
+        if (wrappedInArray) next();
         expect(Event.START_OBJECT);
         if (attrs == null) {
             attrs = new Attributes();
@@ -119,6 +120,7 @@ public class JSONReader {
         fmi = null;
         next();
         doReadDataset(attrs);
+        if (wrappedInArray) next();
         return attrs;
     }
 
@@ -195,10 +197,12 @@ public class JSONReader {
             case AT:
             case CS:
             case DA:
+            case DS:
             case DT:
             case LO:
             case LT:
             case PN:
+            case IS:
             case SH:
             case ST:
             case TM:
@@ -208,12 +212,10 @@ public class JSONReader {
             case UT:
                 attrs.setString(tag, el.vr, el.toStrings());
                 break;
-            case DS:
             case FL:
             case FD:
                 attrs.setDouble(tag, el.vr, el.toDoubles());
                 break;
-            case IS:
             case SL:
             case SS:
             case UL:

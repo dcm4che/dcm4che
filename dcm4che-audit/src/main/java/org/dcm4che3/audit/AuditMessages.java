@@ -275,6 +275,8 @@ public class AuditMessages {
                 new EventTypeCode("RESCHEDULE", "99DCM4CHEE", "Reschedule Task");
         public static final EventTypeCode DeleteTask =
                 new EventTypeCode("DELETE", "99DCM4CHEE", "Delete Task");
+        public static final EventTypeCode AssociationFailure =
+                new EventTypeCode("ASSOCIATION-FAILURE", "99DCM4CHEE", "Association Failure");
         public static final EventTypeCode x0110 =
                 new EventTypeCode("0110", "99DCM4CHEE", "Processing Failure");
         public static final EventTypeCode x0118 =

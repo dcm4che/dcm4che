@@ -50,9 +50,10 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -88,52 +89,52 @@ public class CLIUtils {
 
     @SuppressWarnings("static-access")
     public static void addBindOption(Options opts, String defAET) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("b")
                 .hasArg()
-                .withArgName("aet[@ip][:port]")
-                .withDescription(
+                .argName("aet[@ip][:port]")
+                .desc(
                         MessageFormat.format(rb.getString("bind"), defAET))
-                .withLongOpt("bind")
-                .create("b"));
+                .longOpt("bind")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     public static void addBindServerOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("b")
                 .hasArg()
-                .withArgName("[aet[@ip]:]port")
-                .withDescription(rb.getString("bind-server"))
-                .withLongOpt("bind")
-                .create("b"));
+                .argName("[aet[@ip]:]port")
+                .desc(rb.getString("bind-server"))
+                .longOpt("bind")
+                .build());
         addRequestTimeoutOption(opts);
     }
 
     @SuppressWarnings("static-access")
     public static void addConnectOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder("c")
                 .hasArg()
-                .withArgName("aet@host:port")
-                .withDescription(rb.getString("connect"))
-                .withLongOpt("connect")
-                .create("c"));
-        opts.addOption(OptionBuilder
+                .argName("aet@host:port")
+                .desc(rb.getString("connect"))
+                .longOpt("connect")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("[user:password@]host:port")
-                .withDescription(rb.getString("proxy"))
-                .withLongOpt("proxy")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("[user:password@]host:port")
+                .desc(rb.getString("proxy"))
+                .longOpt("proxy")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("name")
-                .withDescription(rb.getString("user"))
-                .withLongOpt("user")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("name")
+                .desc(rb.getString("user"))
+                .longOpt("user")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("password")
-                .withDescription(rb.getString("user-pass"))
-                .withLongOpt("user-pass")
-                .create(null));
+                .argName("password")
+                .desc(rb.getString("user-pass"))
+                .longOpt("user-pass")
+                .build());
         opts.addOption(null, "user-rsp", false, rb.getString("user-rsp"));
         addConnectTimeoutOption(opts);
         addAcceptTimeoutOption(opts);
@@ -141,187 +142,195 @@ public class CLIUtils {
 
     @SuppressWarnings("static-access")
     public static void addAEOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("length")
-                .withDescription(rb.getString("max-pdulen-rcv"))
-                .withLongOpt("max-pdulen-rcv")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("length")
+                .desc(rb.getString("max-pdulen-rcv"))
+                .longOpt("max-pdulen-rcv")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("length")
-                .withDescription(rb.getString("max-pdulen-snd"))
-                .withLongOpt("max-pdulen-snd")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("length")
+                .desc(rb.getString("max-pdulen-snd"))
+                .longOpt("max-pdulen-snd")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("no")
-                .withDescription(rb.getString("max-ops-invoked"))
-                .withLongOpt("max-ops-invoked")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("no")
+                .desc(rb.getString("max-ops-invoked"))
+                .longOpt("max-ops-invoked")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("no")
-                .withDescription(rb.getString("max-ops-performed"))
-                .withLongOpt("max-ops-performed")
-                .create(null));
+                .argName("no")
+                .desc(rb.getString("max-ops-performed"))
+                .longOpt("max-ops-performed")
+                .build());
         opts.addOption(null, "not-async", false, rb.getString("not-async"));
         opts.addOption(null, "not-pack-pdv", false, rb.getString("not-pack-pdv"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("idle-timeout"))
-                .withLongOpt("idle-timeout")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("ms")
+                .desc(rb.getString("idle-timeout"))
+                .longOpt("idle-timeout")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("release-timeout"))
-                .withLongOpt("release-timeout")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("ms")
+                .desc(rb.getString("release-timeout"))
+                .longOpt("release-timeout")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("soclose-delay"))
-                .withLongOpt("soclose-delay")
-                .create(null));
+                .argName("ms")
+                .desc(rb.getString("soclose-delay"))
+                .longOpt("soclose-delay")
+                .build());
         addSocketOptions(opts);
         addTLSOptions(opts);
     }
 
     @SuppressWarnings("static-access")
     public static void addRequestTimeoutOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
             .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("request-timeout"))
-            .withLongOpt("request-timeout")
-            .create(null));
+            .argName("ms")
+            .desc(rb.getString("request-timeout"))
+            .longOpt("request-timeout")
+            .build());
     }
 
     @SuppressWarnings("static-access")
     public static void addAcceptTimeoutOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("accept-timeout"))
-                .withLongOpt("accept-timeout")
-                .create(null));
+                .argName("ms")
+                .desc(rb.getString("accept-timeout"))
+                .longOpt("accept-timeout")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     public static void addSocketOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("length")
-                .withDescription(rb.getString("sosnd-buffer"))
-                .withLongOpt("sosnd-buffer")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("length")
+                .desc(rb.getString("sosnd-buffer"))
+                .longOpt("sosnd-buffer")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("length")
-                .withDescription(rb.getString("sorcv-buffer"))
-                .withLongOpt("sorcv-buffer")
-                .create(null));
+                .argName("length")
+                .desc(rb.getString("sorcv-buffer"))
+                .longOpt("sorcv-buffer")
+                .build());
         opts.addOption(null, "tcp-delay", false, rb.getString("tcp-delay"));
     }
 
     @SuppressWarnings("static-access")
     public static void addConnectTimeoutOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("connect-timeout"))
-                .withLongOpt("connect-timeout")
-                .create(null));
+                .argName("ms")
+                .desc(rb.getString("connect-timeout"))
+                .longOpt("connect-timeout")
+                .build());
     }
 
     @SuppressWarnings("static-access")
     public static void addResponseTimeoutOption(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
             .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("response-timeout"))
-            .withLongOpt("response-timeout")
-            .create(null));
+            .argName("ms")
+            .desc(rb.getString("response-timeout"))
+            .longOpt("response-timeout")
+            .build());
     }
 
     @SuppressWarnings("static-access")
     public static void addRetrieveTimeoutOption(Options opts) {
-        opts.addOption(OptionBuilder
+        OptionGroup group = new OptionGroup();
+        group.addOption(Option.builder()
             .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("retrieve-timeout"))
-            .withLongOpt("retrieve-timeout")
-            .create(null));
+            .argName("ms")
+            .desc(rb.getString("retrieve-timeout"))
+            .longOpt("retrieve-timeout")
+            .build());
+        group.addOption(Option.builder()
+            .hasArg()
+            .argName("ms")
+            .desc(rb.getString("retrieve-timeout-total"))
+            .longOpt("retrieve-timeout-total")
+            .build());
+        opts.addOptionGroup(group);
     }
 
     @SuppressWarnings("static-access")
     public static void addTLSOptions(Options opts) {
         addTLSCipherOptions(opts);
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("protocol")
-                .withDescription(rb.getString("tls-protocol"))
-                .withLongOpt("tls-protocol")
-                .create(null));
+                .argName("protocol")
+                .desc(rb.getString("tls-protocol"))
+                .longOpt("tls-protocol")
+                .build());
         opts.addOption(null, "tls1", false, rb.getString("tls1"));
         opts.addOption(null, "tls11", false, rb.getString("tls11"));
         opts.addOption(null, "tls12", false, rb.getString("tls12"));
         opts.addOption(null, "ssl3", false, rb.getString("ssl3"));
         opts.addOption(null, "ssl2Hello", false, rb.getString("ssl2Hello"));
         opts.addOption(null, "tls-noauth", false, rb.getString("tls-noauth"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("key-store"))
-                .withLongOpt("key-store")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("file|url")
+                .desc(rb.getString("key-store"))
+                .longOpt("key-store")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("storetype")
-                .withDescription(rb.getString("key-store-type"))
-                .withLongOpt("key-store-type")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("storetype")
+                .desc(rb.getString("key-store-type"))
+                .longOpt("key-store-type")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("password")
-                .withDescription(rb.getString("key-store-pass"))
-                .withLongOpt("key-store-pass")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("password")
+                .desc(rb.getString("key-store-pass"))
+                .longOpt("key-store-pass")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("password")
-                .withDescription(rb.getString("key-pass"))
-                .withLongOpt("key-pass")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("password")
+                .desc(rb.getString("key-pass"))
+                .longOpt("key-pass")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("trust-store"))
-                .withLongOpt("trust-store")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("file|url")
+                .desc(rb.getString("trust-store"))
+                .longOpt("trust-store")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("storetype")
-                .withDescription(rb.getString("trust-store-type"))
-                .withLongOpt("trust-store-type")
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("storetype")
+                .desc(rb.getString("trust-store-type"))
+                .longOpt("trust-store-type")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("password")
-                .withDescription(rb.getString("trust-store-pass"))
-                .withLongOpt("trust-store-pass")
-                .create(null));
+                .argName("password")
+                .desc(rb.getString("trust-store-pass"))
+                .longOpt("trust-store-pass")
+                .build());
     }
 
     public static void addTLSCipherOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("cipher")
-                .withDescription(rb.getString("tls-cipher"))
-                .withLongOpt("tls-cipher")
-                .create(null));
+                .argName("cipher")
+                .desc(rb.getString("tls-cipher"))
+                .longOpt("tls-cipher")
+                .build());
         opts.addOption(null, "tls", false, rb.getString("tls"));
         opts.addOption(null, "tls-null", false, rb.getString("tls-null"));
         opts.addOption(null, "tls-3des", false, rb.getString("tls-3des"));
@@ -331,14 +340,14 @@ public class CLIUtils {
     @SuppressWarnings("static-access")
     public static void addPriorityOption(Options opts) {
         OptionGroup group = new OptionGroup();
-        group.addOption(OptionBuilder
-                .withLongOpt("prior-high")
-                .withDescription(rb.getString("prior-high"))
-                .create());
-        group.addOption(OptionBuilder
-                .withLongOpt("prior-low")
-                .withDescription(rb.getString("prior-low"))
-                .create());
+        group.addOption(Option.builder()
+                .longOpt("prior-high")
+                .desc(rb.getString("prior-high"))
+                .build());
+        group.addOption(Option.builder()
+                .longOpt("prior-low")
+                .desc(rb.getString("prior-low"))
+                .build());
         opts.addOptionGroup(group);
     }
 
@@ -457,7 +466,7 @@ public class CLIUtils {
                 getIntOption(cl, "max-pdulen-rcv", Connection.DEF_MAX_PDU_LENGTH));
         conn.setSendPDULength(
                 getIntOption(cl, "max-pdulen-snd", Connection.DEF_MAX_PDU_LENGTH));
-        if(cl.hasOption("not-async")) {
+        if (cl.hasOption("not-async")) {
             conn.setMaxOpsInvoked(1);
             conn.setMaxOpsPerformed(1);
         } else {
@@ -470,7 +479,13 @@ public class CLIUtils {
         conn.setAcceptTimeout(getIntOption(cl, "accept-timeout", 0));
         conn.setReleaseTimeout(getIntOption(cl, "release-timeout", 0));
         conn.setResponseTimeout(getIntOption(cl, "response-timeout", 0));
-        conn.setRetrieveTimeout(getIntOption(cl, "retrieve-timeout", 0));
+        if (cl.hasOption("retrieve-timeout")) {
+            conn.setRetrieveTimeout(getIntOption(cl, "retrieve-timeout", 0));
+            conn.setRetrieveTimeoutTotal(false);
+        } else if (cl.hasOption("retrieve-timeout-total")) {
+            conn.setRetrieveTimeout(getIntOption(cl, "retrieve-timeout-total", 0));
+            conn.setRetrieveTimeoutTotal(true);
+        }
         conn.setIdleTimeout(getIntOption(cl, "idle-timeout", 0));
         conn.setSocketCloseDelay(getIntOption(cl, "soclose-delay", 
                 Connection.DEF_SOCKETDELAY));
@@ -556,24 +571,24 @@ public class CLIUtils {
     public static void addEncodingOptions(Options opts) {
         opts.addOption(null, "group-len", false, rb.getString("group-len"));
         OptionGroup sqlenGroup = new OptionGroup();
-        sqlenGroup.addOption(OptionBuilder
-                .withLongOpt("expl-seq-len")
-                .withDescription(rb.getString("expl-seq-len"))
-                .create(null));
-        sqlenGroup.addOption(OptionBuilder
-                .withLongOpt("undef-seq-len")
-                .withDescription(rb.getString("undef-seq-len"))
-                .create(null));
+        sqlenGroup.addOption(Option.builder()
+                .longOpt("expl-seq-len")
+                .desc(rb.getString("expl-seq-len"))
+                .build());
+        sqlenGroup.addOption(Option.builder()
+                .longOpt("undef-seq-len")
+                .desc(rb.getString("undef-seq-len"))
+                .build());
         opts.addOptionGroup(sqlenGroup);
         OptionGroup itemlenGroup = new OptionGroup();
-        itemlenGroup.addOption(OptionBuilder
-                .withLongOpt("expl-item-len")
-                .withDescription(rb.getString("expl-item-len"))
-                .create(null));
-        itemlenGroup.addOption(OptionBuilder
-                .withLongOpt("undef-item-len")
-                .withDescription(rb.getString("undef-item-len"))
-                .create(null));
+        itemlenGroup.addOption(Option.builder()
+                .longOpt("expl-item-len")
+                .desc(rb.getString("expl-item-len"))
+                .build());
+        itemlenGroup.addOption(Option.builder()
+                .longOpt("undef-item-len")
+                .desc(rb.getString("undef-item-len"))
+                .build());
         opts.addOptionGroup(itemlenGroup);
     }
 
@@ -611,30 +626,30 @@ public class CLIUtils {
 
     @SuppressWarnings("static-access")
     public static void addFilesetInfoOptions(Options opts) {
-        opts.addOption(OptionBuilder
-                .withLongOpt("fs-desc")
+        opts.addOption(Option.builder()
+                .longOpt("fs-desc")
                 .hasArg()
-                .withArgName("txtfile")
-                .withDescription(rb.getString("fs-desc"))
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("fs-desc-cs")
+                .argName("txtfile")
+                .desc(rb.getString("fs-desc"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("fs-desc-cs")
                 .hasArg()
-                .withArgName("code")
-                .withDescription(rb.getString("fs-desc-cs"))
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("fs-id")
+                .argName("code")
+                .desc(rb.getString("fs-desc-cs"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("fs-id")
                 .hasArg()
-                .withArgName("id")
-                .withDescription(rb.getString("fs-id"))
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("fs-uid")
+                .argName("id")
+                .desc(rb.getString("fs-id"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("fs-uid")
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("fs-uid"))
-                .create());
+                .argName("uid")
+                .desc(rb.getString("fs-uid"))
+                .build());
     }
 
     public static void configure(FilesetInfo fsInfo, CommandLine cl) {
@@ -648,18 +663,18 @@ public class CLIUtils {
     @SuppressWarnings("static-access")
     public static void addTransferSyntaxOptions(Options opts) {
         OptionGroup group = new OptionGroup();
-        group.addOption(OptionBuilder
-                .withLongOpt("explicit-vr")
-                .withDescription(rb.getString("explicit-vr"))
-                .create());
-        group.addOption(OptionBuilder
-                .withLongOpt("big-endian")
-                .withDescription(rb.getString("big-endian"))
-                .create());
-        group.addOption(OptionBuilder
-                .withLongOpt("implicit-vr")
-                .withDescription(rb.getString("implicit-vr"))
-                .create());
+        group.addOption(Option.builder()
+                .longOpt("explicit-vr")
+                .desc(rb.getString("explicit-vr"))
+                .build());
+        group.addOption(Option.builder()
+                .longOpt("big-endian")
+                .desc(rb.getString("big-endian"))
+                .build());
+        group.addOption(Option.builder()
+                .longOpt("implicit-vr")
+                .desc(rb.getString("implicit-vr"))
+                .build());
         opts.addOptionGroup(group);
     }
 

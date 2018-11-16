@@ -95,8 +95,8 @@ public class ActiveParticipantBuilder {
             return this;
         }
 
-        public Builder requester(boolean val) {
-          requester = val;
+        public Builder isRequester() {
+          requester = true;
           return this;
         }
 

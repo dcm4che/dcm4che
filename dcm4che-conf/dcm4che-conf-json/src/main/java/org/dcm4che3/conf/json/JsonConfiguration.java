@@ -106,10 +106,25 @@ public class JsonConfiguration {
         writer.writeNotNullOrDef("dicomDescription", aetInfo.getDescription(), null);
         gen.write("dicomAssociationInitiator", aetInfo.getAssociationInitiator());
         gen.write("dicomAssociationAcceptor", aetInfo.getAssociationAcceptor());
-        writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationCluster());
+        writer.writeNotEmpty("dicomApplicationCluster", aetInfo.getApplicationClusters());
         writer.writeNotNull("dicomInstalled", aetInfo.getInstalled());
         writer.writeNotNullOrDef("hl7ApplicationName", aetInfo.getHl7ApplicationName(), null);
         writeNotExtendedConns(aetInfo.getConnections(), writer);
+        gen.writeEnd();
+    }
+
+    public void writeTo(WebApplicationInfo webappInfo, JsonGenerator gen) {
+        JsonWriter writer = new JsonWriter(gen);
+        gen.writeStartObject();
+        writer.writeNotNullOrDef("dicomDeviceName", webappInfo.getDeviceName(), null);
+        writer.writeNotNullOrDef("dcmWebAppName", webappInfo.getApplicationName(), null);
+        writer.writeNotNullOrDef("dicomDescription", webappInfo.getDescription(), null);
+        writer.writeNotNullOrDef("dcmWebServicePath", webappInfo.getServicePath(), null);
+        writer.writeNotEmpty("dcmWebServiceClass", webappInfo.getServiceClasses());
+        writer.writeNotNullOrDef("dicomAETitle", webappInfo.getAETitle(), null);
+        writer.writeNotEmpty("dicomApplicationCluster", webappInfo.getApplicationClusters());
+        writer.writeNotNull("dicomInstalled", webappInfo.getInstalled());
+        writeNotExtendedConns(webappInfo.getConnections(), writer);
         gen.writeEnd();
     }
 
@@ -181,6 +196,7 @@ public class JsonConfiguration {
             writer.writeNotNullOrDef("dcmKeyStoreKeyPin", device.getKeyStoreKeyPin(), null);
             writer.writeNotNullOrDef("dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty(), null);
             writer.writeNotNullOrDef("dcmTimeZoneOfDevice", device.getTimeZoneOfDevice(), null);
+            writeWebApplicationsTo(device, writer);
             for (JsonConfigurationExtension ext : extensions)
                 ext.storeTo(device, writer);
             gen.writeEnd();
@@ -316,6 +332,9 @@ public class JsonConfiguration {
                                 break;
                             case "dcmTimeZoneOfDevice":
                                 device.setTimeZoneOfDevice(reader.timeZoneValue());
+                                break;
+                            case "dcmWebApp":
+                                loadWebApplications(device, reader);
                                 break;
                             default:
                                 if (!loadDeviceExtension(device, reader, config))
@@ -807,4 +826,77 @@ public class JsonConfiguration {
         reader.expect(JsonParser.Event.END_OBJECT);
     }
 
+    private void writeWebApplicationsTo(Device device, JsonWriter writer) {
+        Collection<WebApplication> webapps = device.getWebApplications();
+        if (webapps.isEmpty())
+            return;
+
+        List<Connection> conns = device.listConnections();
+        writer.writeStartArray("dcmWebApp");
+        for (WebApplication webapp : webapps)
+            writeTo(webapp, conns, writer);
+        writer.writeEnd();
+    }
+
+    private void writeTo(WebApplication webapp, List<Connection> conns, JsonWriter writer) {
+        writer.writeStartObject();
+        writer.writeNotNullOrDef("dcmWebAppName", webapp.getApplicationName(), null);
+        writer.writeNotNullOrDef("dicomDescription", webapp.getDescription(), null);
+        writer.writeNotNullOrDef("dcmWebServicePath", webapp.getServicePath(), null);
+        writer.writeNotEmpty("dcmWebServiceClass", webapp.getServiceClasses());
+        writer.writeNotNullOrDef("dicomAETitle", webapp.getAETitle(), null);
+        writer.writeNotEmpty("dicomApplicationCluster", webapp.getApplicationClusters());
+        writer.writeConnRefs(conns, webapp.getConnections());
+        writer.writeNotNull("dicomInstalled", webapp.getInstalled());
+        writer.writeEnd();
+    }
+
+    private void loadWebApplications(Device device, JsonReader reader) {
+        reader.next();
+        reader.expect(JsonParser.Event.START_ARRAY);
+        while (reader.next() == JsonParser.Event.START_OBJECT) {
+            WebApplication webapp = new WebApplication();
+            loadFrom(webapp, reader, device);
+            device.addWebApplication(webapp);
+        }
+        reader.expect(JsonParser.Event.END_ARRAY);
+    }
+
+    private void loadFrom(WebApplication webapp, JsonReader reader, Device device) {
+        List<Connection> conns = device.listConnections();
+        while (reader.next() == JsonParser.Event.KEY_NAME) {
+            switch (reader.getString()) {
+                case "dcmWebAppName":
+                    webapp.setApplicationName(reader.stringValue());
+                    break;
+                case "dicomDescription":
+                    webapp.setDescription(reader.stringValue());
+                    break;
+                case "dcmWebServicePath":
+                    webapp.setServicePath(reader.stringValue());
+                    break;
+                case "dcmWebServiceClass":
+                    webapp.setServiceClasses(reader.enumArray(WebApplication.ServiceClass.class));
+                    break;
+                case "dicomAETitle":
+                    webapp.setAETitle(reader.stringValue());
+                    break;
+                case "dicomApplicationCluster":
+                    webapp.setApplicationClusters(reader.stringArray());
+                    break;
+                case "dicomInstalled":
+                    webapp.setInstalled(reader.booleanValue());
+                    break;
+                case "dicomNetworkConnectionReference":
+                    for (String connRef : reader.stringArray())
+                        webapp.addConnection(conns.get(JsonReader.toConnectionIndex(connRef)));
+                    break;
+                default:
+                    reader.skipUnknownProperty();
+            }
+        }
+        reader.expect(JsonParser.Event.END_OBJECT);
+        if (webapp.getApplicationName() == null)
+            throw new JsonParsingException("Missing property: dcmWebAppName", reader.getLocation());
+    }
 }

@@ -76,6 +76,10 @@
 
 package org.dcm4che3.data;
 
+import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
@@ -88,7 +92,9 @@ import java.util.StringTokenizer;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class SpecificCharacterSet {
-    
+
+    private static final Logger LOG = LoggerFactory.getLogger(SpecificCharacterSet.class);
+
     public static final SpecificCharacterSet ASCII = new SpecificCharacterSet(new Codec[]{Codec.ISO_646});
 
     private static SpecificCharacterSet DEFAULT = ASCII;
@@ -139,7 +145,7 @@ public class SpecificCharacterSet {
 
         public static Codec forCode(String code) {
             if (code == null)
-                return ISO_646;
+                return SpecificCharacterSet.DEFAULT.codecs[0];
 
             switch(last2digits(code)) {
             case 0:
@@ -152,7 +158,7 @@ public class SpecificCharacterSet {
                 break;
             case 6:
                 if (code.equals("ISO 2022 IR 6"))
-                    return Codec.ISO_646;
+                    return SpecificCharacterSet.DEFAULT.codecs[0];
                 break;
             case 9:
                 if (code.equals("ISO_IR 109") || code.equals("ISO 2022 IR 109"))
@@ -219,7 +225,7 @@ public class SpecificCharacterSet {
                     return Codec.UTF_8;
                 break;
             }
-            return ISO_646;
+            return SpecificCharacterSet.DEFAULT.codecs[0];
         }
 
         private static int last2digits(String code) {
@@ -532,11 +538,26 @@ public class SpecificCharacterSet {
         if (codes == null || codes.length == 0)
             return DEFAULT;
 
+        if (codes.length > 1)
+            codes = checkISO2022(codes);
+
         Codec[] infos = new Codec[codes.length];
         for (int i = 0; i < codes.length; i++)
             infos[i] = Codec.forCode(codes[i]);
+
         return codes.length > 1 ? new ISO2022(infos,codes)
                 : new SpecificCharacterSet(infos, codes);
+    }
+
+    private static String[] checkISO2022(String[] codes) {
+        for (String code : codes) {
+            if (code != null && !code.isEmpty() && !code.startsWith("ISO 2022")) {
+                LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
+                        StringUtils.concat(codes, '\\'), StringUtils.maskNull(codes[0], ""));
+                return new String[]{codes[0]};
+            }
+        }
+        return codes;
     }
 
     public String[] toCodes () {

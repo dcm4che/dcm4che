@@ -50,34 +50,19 @@ import org.dcm4che3.data.Attributes;
  *
  */
 public enum PhotometricInterpretation {
-    MONOCHROME1 {
-        @Override
-        public boolean isMonochrome() {
-            return true;
-        }
-
-        @Override
-        public boolean isInvers() {
-            return true;
-        }
-
+    MONOCHROME1(true, true, false, false) {
         @Override
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createMonochromeColorModel(bits, dataType);
         }
     },
-    MONOCHROME2 {
-        @Override
-        public boolean isMonochrome() {
-            return true;
-        }
-
+    MONOCHROME2(true, false, false, false) {
         @Override
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createMonochromeColorModel(bits, dataType);
         }
     },
-    PALETTE_COLOR {
+    PALETTE_COLOR(false, false, false, false) {
         @Override
         public String toString() {
             return "PALETTE COLOR";
@@ -88,16 +73,19 @@ public enum PhotometricInterpretation {
             return ColorModelFactory.createPaletteColorModel(bits, dataType, ds);
         }
     },
-    RGB {
+    RGB(false, false, false, false) {
         @Override
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createRGBColorModel(bits, dataType, ds);
         }
+
         @Override
         public PhotometricInterpretation compress(String tsuid) {
             if (tsuid.length() == 22 && tsuid.startsWith("1.2.840.10008.1.2.4."))
                 if (tsuid.endsWith("50") || tsuid.endsWith("51"))
                     return YBR_FULL_422;
+                else if (tsuid.endsWith("53") || tsuid.endsWith("55"))
+                    return YBR_FULL;
                 else if (tsuid.endsWith("90") || tsuid.endsWith("92"))
                     return YBR_RCT;
                 else if (tsuid.endsWith("91") || tsuid.endsWith("93"))
@@ -106,13 +94,13 @@ public enum PhotometricInterpretation {
             return this;
         }
     },
-    YBR_FULL {
+    YBR_FULL(false, false, true, false) {
         @Override
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createYBRFullColorModel(bits, dataType, ds);
         }
     },
-    YBR_FULL_422 {
+    YBR_FULL_422(false, false, true, true) {
         @Override
         public int frameLength(int w, int h, int samples, int bitsAllocated) {
             return ColorSubsampling.YBR_XXX_422.frameLength(w, h);
@@ -126,49 +114,18 @@ public enum PhotometricInterpretation {
 
         @Override
         public SampleModel createSampleModel(int dataType, int w, int h,
-                int samples, boolean banded) {
+                                             int samples, boolean banded) {
             return new SampledComponentSampleModel(w, h, ColorSubsampling.YBR_XXX_422);
         }
-
-        @Override
-        public PhotometricInterpretation decompress() {
-            return RGB;
-        }
-
-        @Override
-        public boolean isSubSambled() {
-            return true;
-        }
     },
-    YBR_PARTIAL_422 {
-        @Override
-        public int frameLength(int w, int h, int samples, int bitsAllocated) {
-            return ColorSubsampling.YBR_XXX_422.frameLength(w, h);
-        }
-
+    YBR_ICT(false, false, true, false) {
         @Override
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
-            return ColorModelFactory.createYBRColorModel(bits, dataType, ds,
-                    YBR.PARTIAL, ColorSubsampling.YBR_XXX_422);
+            throw new UnsupportedOperationException();
         }
 
-        @Override
-        public SampleModel createSampleModel(int dataType, int w, int h, 
-                int samples, boolean banded) {
-            return new SampledComponentSampleModel(w, h, ColorSubsampling.YBR_XXX_422);
-        }
-
-        @Override
-        public PhotometricInterpretation decompress() {
-            return RGB;
-        }
-
-        @Override
-        public boolean isSubSambled() {
-            return true;
-        }
     },
-    YBR_PARTIAL_420 {
+    YBR_PARTIAL_420(false, false, true, true) {
         @Override
         public int frameLength(int w, int h, int samples, int bitsAllocated) {
             return ColorSubsampling.YBR_XXX_420.frameLength(w, h);
@@ -182,83 +139,85 @@ public enum PhotometricInterpretation {
 
         @Override
         public SampleModel createSampleModel(int dataType, int w, int h,
-                int samples, boolean banded) {
+                                             int samples, boolean banded) {
             return new SampledComponentSampleModel(w, h, ColorSubsampling.YBR_XXX_420);
         }
-
+    },
+    YBR_PARTIAL_422(false, false, true, true) {
         @Override
-        public PhotometricInterpretation decompress() {
-            return RGB;
+        public int frameLength(int w, int h, int samples, int bitsAllocated) {
+            return ColorSubsampling.YBR_XXX_422.frameLength(w, h);
         }
 
         @Override
-        public boolean isSubSambled() {
-            return true;
+        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
+            return ColorModelFactory.createYBRColorModel(bits, dataType, ds,
+                    YBR.PARTIAL, ColorSubsampling.YBR_XXX_422);
+        }
+
+        @Override
+        public SampleModel createSampleModel(int dataType, int w, int h,
+                                             int samples, boolean banded) {
+            return new SampledComponentSampleModel(w, h, ColorSubsampling.YBR_XXX_422);
         }
     },
-    YBR_ICT {
+    YBR_RCT(false, false, true, false) {
         @Override
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public PhotometricInterpretation decompress() {
-            return RGB;
-        }
-    },
-    YBR_RCT {
-        @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public PhotometricInterpretation decompress() {
-            return RGB;
         }
     };
+
+    private final boolean monochrome;
+    private final boolean inverse;
+    private final boolean ybr;
+    private final boolean subSampled;
+
+    PhotometricInterpretation(boolean monochrome, boolean inverse, boolean ybr, boolean subSampled) {
+        this.monochrome = monochrome;
+        this.inverse = inverse;
+        this.ybr = ybr;
+        this.subSampled = subSampled;
+    }
 
     public static PhotometricInterpretation fromString(String s) {
         return s.equals("PALETTE COLOR") ? PALETTE_COLOR : valueOf(s);
     }
 
     public int frameLength(int w, int h, int samples, int bitsAllocated) {
-        return w * h * samples * (bitsAllocated >> 3);
+        return w * h * samples * bitsAllocated / 8;
     }
 
     public boolean isMonochrome() {
-        return false;
+        return monochrome;
     }
 
-    public PhotometricInterpretation decompress() {
-        return this;
+    public boolean isYBR() {
+        return ybr;
     }
 
     public PhotometricInterpretation compress(String tsuid) {
         return this;
     }
 
-    public boolean isInvers() {
-        return false;
+    public boolean isInverse() {
+        return inverse;
     }
 
     public boolean isSubSambled() {
-        return false;
+        return subSampled;
     }
 
     public abstract ColorModel createColorModel(int bits, int dataType,
-            Attributes ds);
+                                                Attributes ds);
 
     public SampleModel createSampleModel(int dataType, int w, int h,
-            int samples, boolean banded) {
+                                         int samples, boolean banded) {
         int[] indicies = new int[samples];
         for (int i = 1; i < samples; i++)
             indicies[i] = i;
         return banded
-                ? new BandedSampleModel(dataType, w, h,
-                        w, indicies, new int[samples])
-                : new PixelInterleavedSampleModel(dataType, w, h,
-                        samples, w * samples, indicies);
+                ? new BandedSampleModel(dataType, w, h,  w, indicies, new int[samples])
+                : new PixelInterleavedSampleModel(dataType, w, h, samples, w * samples, indicies);
     }
 }

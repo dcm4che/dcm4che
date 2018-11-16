@@ -59,8 +59,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -205,37 +206,37 @@ public class StoreSCU {
 
     @SuppressWarnings("static-access")
     private static void addAttributesOption(Options opts) {
-        opts.addOption(OptionBuilder.hasArgs().withArgName("[seq/]attr=value")
-                .withValueSeparator('=').withDescription(rb.getString("set"))
-                .create("s"));
+        opts.addOption(Option.builder("s").hasArgs().argName("[seq/]attr=value")
+                .valueSeparator('=').desc(rb.getString("set"))
+                .build());
     }
 
     @SuppressWarnings("static-access")
     public static void addUIDSuffixOption(Options opts) {
-        opts.addOption(OptionBuilder.hasArg().withArgName("suffix")
-                .withDescription(rb.getString("uid-suffix"))
-                .withLongOpt("uid-suffix").create(null));
+        opts.addOption(Option.builder().hasArg().argName("suffix")
+                .desc(rb.getString("uid-suffix"))
+                .longOpt("uid-suffix").build());
     }
 
     @SuppressWarnings("static-access")
     public static void addTmpFileOptions(Options opts) {
-        opts.addOption(OptionBuilder.hasArg().withArgName("directory")
-                .withDescription(rb.getString("tmp-file-dir"))
-                .withLongOpt("tmp-file-dir").create(null));
-        opts.addOption(OptionBuilder.hasArg().withArgName("prefix")
-                .withDescription(rb.getString("tmp-file-prefix"))
-                .withLongOpt("tmp-file-prefix").create(null));
-        opts.addOption(OptionBuilder.hasArg().withArgName("suffix")
-                .withDescription(rb.getString("tmp-file-suffix"))
-                .withLongOpt("tmp-file-suffix").create(null));
+        opts.addOption(Option.builder().hasArg().argName("directory")
+                .desc(rb.getString("tmp-file-dir"))
+                .longOpt("tmp-file-dir").build());
+        opts.addOption(Option.builder().hasArg().argName("prefix")
+                .desc(rb.getString("tmp-file-prefix"))
+                .longOpt("tmp-file-prefix").build());
+        opts.addOption(Option.builder().hasArg().argName("suffix")
+                .desc(rb.getString("tmp-file-suffix"))
+                .longOpt("tmp-file-suffix").build());
     }
 
     @SuppressWarnings("static-access")
     private static void addRelatedSOPClassOptions(Options opts) {
         opts.addOption(null, "rel-ext-neg", false, rb.getString("rel-ext-neg"));
-        opts.addOption(OptionBuilder.hasArg().withArgName("file|url")
-                .withDescription(rb.getString("rel-sop-classes"))
-                .withLongOpt("rel-sop-classes").create(null));
+        opts.addOption(Option.builder().hasArg().argName("file|url")
+                .desc(rb.getString("rel-sop-classes"))
+                .longOpt("rel-sop-classes").build());
     }
 
     @SuppressWarnings("unchecked")

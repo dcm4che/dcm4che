@@ -244,7 +244,7 @@ public class HL7Application implements Serializable {
         return conns;
     }
 
-    byte[] onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
+    UnparsedHL7Message onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
         HL7Segment msh = msg.msh();
         if (!(isInstalled() && conns.contains(conn)))
             throw new HL7Exception(
@@ -286,12 +286,12 @@ public class HL7Application implements Serializable {
 
     public MLLPConnection connect(Connection remote)
             throws IOException, IncompatibleConnectionException, GeneralSecurityException {
-        return connect(findCompatibelConnection(remote), remote);
+        return connect(findCompatibleConnection(remote), remote);
     }
 
     public MLLPConnection connect(HL7Application remote)
             throws IOException, IncompatibleConnectionException, GeneralSecurityException {
-        CompatibleConnection cc = findCompatibelConnection(remote);
+        CompatibleConnection cc = findCompatibleConnection(remote);
         return connect(cc.getLocalConnection(), cc.getRemoteConnection());
     }
 
@@ -304,7 +304,22 @@ public class HL7Application implements Serializable {
         return new MLLPConnection(sock);
     }
 
-    public CompatibleConnection findCompatibelConnection(HL7Application remote)
+    public HL7Connection open(Connection remote)
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
+        return new HL7Connection(this, connect(remote));
+    }
+
+    public HL7Connection open(HL7Application remote)
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
+        return new HL7Connection(this, connect(remote));
+    }
+
+    public HL7Connection open(Connection local, Connection remote)
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
+        return new HL7Connection(this, connect(local, remote));
+    }
+
+    public CompatibleConnection findCompatibleConnection(HL7Application remote)
             throws IncompatibleConnectionException {
         for (Connection remoteConn : remote.conns)
             if (remoteConn.isInstalled() && remoteConn.isServer())
@@ -315,7 +330,7 @@ public class HL7Application implements Serializable {
                 "No compatible connection to " + remote.getApplicationName() + " available on " + name);
     }
 
-    public Connection findCompatibelConnection(Connection remoteConn)
+    public Connection findCompatibleConnection(Connection remoteConn)
             throws IncompatibleConnectionException {
         for (Connection conn : conns)
             if (conn.isInstalled() && conn.isCompatible(remoteConn))
@@ -361,12 +376,17 @@ public class HL7Application implements Serializable {
     }
 
     protected void setHL7ApplicationAttributes(HL7Application src) {
-        setHL7DefaultCharacterSet(src.hl7DefaultCharacterSet);
-        setHL7SendingCharacterSet(src.hl7SendingCharacterSet);
-        setAcceptedSendingApplications(src.getAcceptedSendingApplications());
-        setOtherApplicationNames(src.getOtherApplicationNames());
-        setAcceptedMessageTypes(src.getAcceptedMessageTypes());
-        setInstalled(src.installed);
+        description = src.description;
+        applicationClusters = src.applicationClusters;
+        hl7DefaultCharacterSet = src.hl7DefaultCharacterSet;
+        hl7SendingCharacterSet = src.hl7SendingCharacterSet;
+        acceptedSendingApplications.clear();
+        acceptedSendingApplications.addAll(src.acceptedSendingApplications);
+        otherApplicationNames.clear();
+        otherApplicationNames.addAll(src.otherApplicationNames);
+        acceptedMessageTypes.clear();
+        acceptedMessageTypes.addAll(src.acceptedMessageTypes);
+        installed = src.installed;
     }
 
     public void addHL7ApplicationExtension(HL7ApplicationExtension ext) {

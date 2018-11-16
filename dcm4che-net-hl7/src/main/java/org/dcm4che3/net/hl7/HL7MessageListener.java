@@ -7,6 +7,7 @@ import java.net.Socket;
 
 public interface HL7MessageListener {
 
-    byte[] onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)  throws HL7Exception;
+    UnparsedHL7Message onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
+            throws HL7Exception;
 
 }

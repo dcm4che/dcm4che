@@ -90,7 +90,7 @@ public class HL7Rcv {
     private final HL7MessageListener handler = new HL7MessageListener() {
 
         @Override
-        public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
+        public UnparsedHL7Message onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
                 throws HL7Exception {
             try {
                 return HL7Rcv.this.onMessage(msg);
@@ -142,43 +142,43 @@ public class HL7Rcv {
     @SuppressWarnings("static-access")
     public static void addOptions(Options opts) {
         opts.addOption(null, "ignore", false, rb.getString("ignore"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("path")
-                .withDescription(rb.getString("directory"))
-                .withLongOpt("directory")
-                .create(null));
-        opts.addOption(OptionBuilder
-                .withLongOpt("xsl")
+                .argName("path")
+                .desc(rb.getString("directory"))
+                .longOpt("directory")
+                .build());
+        opts.addOption(Option.builder("x")
+                .longOpt("xsl")
                 .hasArg()
-                .withArgName("xsl-file")
-                .withDescription(rb.getString("xsl"))
-                .create("x"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("xsl-param")
+                .argName("xsl-file")
+                .desc(rb.getString("xsl"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("xsl-param")
                 .hasArgs()
-                .withValueSeparator('=')
-                .withArgName("name=value")
-                .withDescription(rb.getString("xsl-param"))
-                .create(null));
-        opts.addOption(OptionBuilder
-                .withLongOpt("charset")
+                .valueSeparator('=')
+                .argName("name=value")
+                .desc(rb.getString("xsl-param"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("charset")
                 .hasArg()
-                .withArgName("name")
-                .withDescription(rb.getString("charset"))
-                .create(null));
-        opts.addOption(OptionBuilder
+                .argName("name")
+                .desc(rb.getString("charset"))
+                .build());
+        opts.addOption(Option.builder("b")
                 .hasArg()
-                .withArgName("[ip:]port")
-                .withDescription(rb.getString("bind-server"))
-                .withLongOpt("bind")
-                .create("b"));
-        opts.addOption(OptionBuilder
+                .argName("[ip:]port")
+                .desc(rb.getString("bind-server"))
+                .longOpt("bind")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("idle-timeout"))
-                .withLongOpt("idle-timeout")
-                .create(null));
+                .argName("ms")
+                .desc(rb.getString("idle-timeout"))
+                .longOpt("idle-timeout")
+                .build());
     }
 
     public static void main(String[] args) {
@@ -232,15 +232,15 @@ public class HL7Rcv {
             conn.setHostname(hostAndPort[0]);
     }
 
-    private byte[] onMessage(UnparsedHL7Message msg)
+    private UnparsedHL7Message onMessage(UnparsedHL7Message msg)
                 throws Exception {
             if (storageDir != null)
                 storeToFile(msg.data(), new File(
                             new File(storageDir, msg.msh().getMessageType()),
                                 msg.msh().getField(9, "_NULL_")));
-            return (tpls == null)
+            return new UnparsedHL7Message(tpls == null
                 ? HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null)
-                : xslt(msg);
+                : xslt(msg));
     }
 
     private void storeToFile(byte[] data, File f) throws IOException {

@@ -161,6 +161,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private int frameLength;
 
     private PhotometricInterpretation pmi;
+    private PhotometricInterpretation pmiAfterDecompression;
     private ImageDescriptor imageDescriptor;
 
     public DicomImageReader(ImageReaderSpi originatingProvider) {
@@ -365,7 +366,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     
                 if (LOG.isDebugEnabled())
                     LOG.debug("Start decompressing frame #" + (frameIndex + 1));
-                Raster wr = pmi.decompress() == pmi && decompressor.canReadRaster()
+                Raster wr = pmiAfterDecompression == pmi && decompressor.canReadRaster()
                         ? decompressor.readRaster(0, decompressParam(param))
                         : decompressor.read(0, decompressParam(param)).getRaster();
                 if (LOG.isDebugEnabled())
@@ -444,12 +445,13 @@ public class DicomImageReader extends ImageReader implements Closeable {
         if (decompressor != null) {
             openiis();
             try {
-                decompressor.setInput(iisOfFrame(frameIndex));
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Start decompressing frame #" + (frameIndex + 1));
+                ImageInputStream iisOfFrame = iisOfFrame(frameIndex);
+                // Reading this up front sets the required values so that opencv succeeds - it is less than optimal performance wise
+                iisOfFrame.length();
+                decompressor.setInput(iisOfFrame);
+                LOG.debug("Start decompressing frame #{}", (frameIndex + 1));
                 BufferedImage bi = decompressor.read(0, decompressParam(param));
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
+                LOG.debug("Finished decompressing frame #{}", (frameIndex + 1));
                 if (samples > 1)
                     return bi;
                 
@@ -518,7 +520,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
             return null;
         } else {
             iisOfFrame = new SegmentedInputImageStream(
-                    iis, pixelDataFragments, frameIndex);
+                    iis, pixelDataFragments, frames==1 ? -1 : frameIndex);
             ((SegmentedInputImageStream) iisOfFrame).setImageDescriptor(imageDescriptor);
         }
         return patchJpegLS != null
@@ -768,6 +770,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
             pmi = PhotometricInterpretation.fromString(
                     ds.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
             if (pixelDataLength != -1) {
+                pmiAfterDecompression = pmi;
                 this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
             } else {
                 Attributes fmi = metadata.getFileMetaInformation();
@@ -779,8 +782,10 @@ public class DicomImageReader extends ImageReader implements Closeable {
                         ImageReaderFactory.getImageReaderParam(tsuid);
                 if (param == null)
                     throw new UnsupportedOperationException("Unsupported Transfer Syntax: " + tsuid);
+                pmiAfterDecompression = param.pmiAfterDecompression(pmi);
                 this.rle = tsuid.equals(UID.RLELossless);
                 this.decompressor = ImageReaderFactory.getImageReader(param);
+                LOG.debug("Decompressor: {}", decompressor.getClass().getName());
                 this.patchJpegLS = param.patchJPEGLS;
             }
         }

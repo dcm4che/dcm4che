@@ -135,6 +135,11 @@
                                               outstanding C-GET-RSP or
                                               C-MOVE-RSP, no timeout by
                                               default
+        --retrieve-timeout-total <ms>         same as --retrieve-timeout but
+                                              without restarting the timer on
+                                              receive of pending C-GET-RSP or
+                                              C-MOVE-RSP, no timeout by
+                                              default
         --soclose-delay <ms>                  delay in ms after sending
                                               A-ASSOCATE-RJ, A-RELEASE-RQ or
                                               A-ABORT before the socket is

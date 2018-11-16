@@ -270,6 +270,8 @@ public class Transcoder implements Closeable {
                     "Unsupported Transfer Syntax: " + srcTransferSyntax);
 
         this.decompressor = ImageReaderFactory.getImageReader(decompressorParam);
+        LOG.debug("Decompressor: {}", decompressor.getClass().getName());
+
         this.decompressParam = decompressor.getDefaultReadParam();
     }
 
@@ -466,7 +468,7 @@ public class Transcoder implements Closeable {
             PhotometricInterpretation pmi = imageDescriptor.getPhotometricInterpretation();
             int planarConfiguration = imageDescriptor.getPlanarConfiguration();
             if (decompressor != null) {
-                pmi = pmi.decompress();
+                pmi = decompressorParam.pmiAfterDecompression(pmi);
                 planarConfiguration = srcTransferSyntaxType.getPlanarConfiguration();
             }
             if (compressor != null) {

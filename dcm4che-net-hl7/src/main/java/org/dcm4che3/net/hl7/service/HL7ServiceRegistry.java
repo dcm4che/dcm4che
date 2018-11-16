@@ -76,7 +76,7 @@ public class HL7ServiceRegistry extends DefaultHL7MessageListener {
     }
 
     @Override
-    public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
+    public UnparsedHL7Message onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
             throws HL7Exception {
         HL7MessageListener listener = listeners.get(msg.msh().getMessageType());
         if (listener == null) {

@@ -46,11 +46,14 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PatternOptionBuilder;
 import org.dcm4che3.data.Tag;
@@ -70,8 +73,6 @@ import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.SafeClose;
 
-import javax.xml.stream.Location;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -87,6 +88,7 @@ public class Dcm2Dcm {
     private boolean legacy;
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
     private final List<Property> params = new ArrayList<Property>();
+    private int maxThreads = 1;
 
     public final void setTransferSyntax(String uid) {
         this.tsuid = uid;
@@ -117,6 +119,12 @@ public class Dcm2Dcm {
         params.add(new Property(name, value));
     }
 
+    public void setMaxThreads(int maxThreads) {
+        if (maxThreads <= 0)
+            throw new IllegalArgumentException("max-threads: " + maxThreads);
+        this.maxThreads = maxThreads;
+    }
+
     private static Object toValue(String s) {
         try {
             return Double.valueOf(s);
@@ -134,89 +142,92 @@ public class Dcm2Dcm {
         CLIUtils.addCommonOptions(opts);
         CLIUtils.addEncodingOptions(opts);
         OptionGroup tsGroup = new OptionGroup();
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("transfer-syntax")
+        tsGroup.addOption(Option.builder("t")
+                .longOpt("transfer-syntax")
                 .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("transfer-syntax"))
-                .create("t"));
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jpeg")
-                .withDescription(rb.getString("jpeg"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jpll")
-                .withDescription(rb.getString("jpll"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jlsl")
-                .withDescription(rb.getString("jlsl"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("jlsn")
-                .withDescription(rb.getString("jlsn"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("j2kr")
-                .withDescription(rb.getString("j2kr"))
-                .create());
-        tsGroup.addOption(OptionBuilder
-                .withLongOpt("j2ki")
-                .withDescription(rb.getString("j2ki"))
-                .create());
+                .argName("uid")
+                .desc(rb.getString("transfer-syntax"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jpeg")
+                .desc(rb.getString("jpeg"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jpll")
+                .desc(rb.getString("jpll"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jlsl")
+                .desc(rb.getString("jlsl"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jlsn")
+                .desc(rb.getString("jlsn"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("j2kr")
+                .desc(rb.getString("j2kr"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("j2ki")
+                .desc(rb.getString("j2ki"))
+                .build());
         opts.addOptionGroup(tsGroup);
         OptionGroup fmiGroup = new OptionGroup();
-        fmiGroup.addOption(OptionBuilder
-                .withLongOpt("no-fmi")
-                .withDescription(rb.getString("no-fmi"))
-                .create("F"));
-        fmiGroup.addOption(OptionBuilder
-                .withLongOpt("retain-fmi")
-                .withDescription(rb.getString("retain-fmi"))
-                .create("f"));
+        fmiGroup.addOption(Option.builder("F")
+                .longOpt("no-fmi")
+                .desc(rb.getString("no-fmi"))
+                .build());
+        fmiGroup.addOption(Option.builder("f")
+                .longOpt("retain-fmi")
+                .desc(rb.getString("retain-fmi"))
+                .build());
         opts.addOptionGroup(fmiGroup);
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("max-error")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("verify"))
-                .withLongOpt("verify")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("N")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("max-threads"))
+                .longOpt("max-threads")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("size")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("verify-block"))
-                .withLongOpt("verify-block")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("max-error")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("verify"))
+                .longOpt("verify")
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("quality")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("quality"))
-                .create("q"));
-        opts.addOption(OptionBuilder
+                .argName("size")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("verify-block"))
+                .longOpt("verify-block")
+                .build());
+        opts.addOption(Option.builder("q")
                 .hasArg()
-                .withArgName("encoding-rate")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("encoding-rate"))
-                .create("Q"));
-        opts.addOption(OptionBuilder
+                .argName("quality")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("quality"))
+                .build());
+        opts.addOption(Option.builder("Q")
                 .hasArg()
-                .withArgName("near-lossless")
-                .withType(PatternOptionBuilder.NUMBER_VALUE)
-                .withDescription(rb.getString("near-lossless"))
-                .create("N"));
-        opts.addOption(OptionBuilder
+                .argName("encoding-rate")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("encoding-rate"))
+                .build());
+        opts.addOption(Option.builder("N")
+                .hasArg()
+                .argName("near-lossless")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("near-lossless"))
+                .build());
+        opts.addOption(Option.builder("C")
                 .hasArgs()
-                .withArgName("name=value")
-                .withValueSeparator()
-                .withDescription(rb.getString("compression-param"))
-                .create("C"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("legacy")
-                .withDescription(rb.getString("legacy"))
-                .create());
+                .argName("name=value")
+                .valueSeparator()
+                .desc(rb.getString("compression-param"))
+                .build());
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Dcm2Dcm.class);
         return cl;
     }
@@ -236,6 +247,10 @@ public class Dcm2Dcm {
                 main.setRetainFileMetaInformation(cl.hasOption("f"));
             }
             main.setLegacy(cl.hasOption("legacy"));
+
+            if (cl.hasOption("max-threads"))
+                main.setMaxThreads(((Number) cl.getParsedOptionValue("max-threads")).intValue());
+
             if (cl.hasOption("verify"))
                 main.addCompressionParam("maxPixelValueError",
                         cl.getParsedOptionValue("verify"));
@@ -271,8 +286,7 @@ public class Dcm2Dcm {
                     && !dest.isDirectory())
                 throw new ParseException(
                         MessageFormat.format(rb.getString("nodestdir"), dest));
-            for (String src : argList.subList(0, argc-1))
-                main.mtranscode(new File(src), dest);
+            main.mtranscode(argList.subList(0, argc - 1), dest);
         } catch (ParseException e) {
             System.err.println("dcm2dcm: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -297,33 +311,55 @@ public class Dcm2Dcm {
                 : cl.getOptionValue("t", def);
     }
 
-    private void mtranscode(File src, File dest) {
+    private void mtranscode(List<String> srcList, File dest) throws InterruptedException {
+        ExecutorService executorService = maxThreads > 1 ? Executors.newFixedThreadPool(maxThreads) : null;
+        for (String src : srcList) {
+            mtranscode(new File(src), dest, executorService);
+        }
+        if (executorService != null) {
+            executorService.shutdown();
+        }
+    }
+
+    private void mtranscode(final File src, File dest, Executor executer) {
          if (src.isDirectory()) {
              dest.mkdir();
              for (File file : src.listFiles())
-                 mtranscode(file, new File(dest, file.getName()));
+                 mtranscode(file, new File(dest, file.getName()), executer);
              return;
          }
-         if (dest.isDirectory())
-             dest = new File(dest, src.getName());
-         try {
-             if (legacy)
-                 transcode(src, dest);
-             else
-                 transcodeWithTranscoder(src, dest);
-
-             System.out.println(
-                     MessageFormat.format(rb.getString("transcoded"),
-                             src, dest));
-         } catch (Exception e) {
-             System.out.println(
-                     MessageFormat.format(rb.getString("failed"),
-                             src, e.getMessage()));
-             e.printStackTrace(System.out);
+         final File finalDest = dest.isDirectory() ? new File(dest, src.getName()) : dest;
+         if (executer != null) {
+             executer.execute(new Runnable() {
+                 @Override
+                 public void run() {
+                     transcode(src, finalDest);
+                 }
+             });
+         } else {
+             transcode(src, finalDest);
          }
-     }
+    }
 
-     public void transcode(File src, File dest) throws IOException {
+    private void transcode(File src, File dest) {
+        try {
+            if (legacy)
+                transcodeLegacy(src, dest);
+            else
+                transcodeWithTranscoder(src, dest);
+
+            System.out.println(
+                    MessageFormat.format(rb.getString("transcoded"),
+                            src, dest));
+        } catch (Exception e) {
+            System.out.println(
+                    MessageFormat.format(rb.getString("failed"),
+                            src, e.getMessage()));
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void transcodeLegacy(File src, File dest) throws IOException {
         Attributes fmi;
         Attributes dataset;
         DicomInputStream dis = new DicomInputStream(src);

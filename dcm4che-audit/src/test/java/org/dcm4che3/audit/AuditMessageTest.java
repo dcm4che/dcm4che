@@ -168,7 +168,7 @@ public class AuditMessageTest {
                 .roleIDCode(AuditMessages.RoleIDCode.Destination).build();
         activeParticipants[2] = new ActiveParticipantBuilder.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
                 .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
-                .requester(true)
+                .isRequester()
                 .altUserID("smith@nema")
                 .userName("Dr. Smith")
                 .roleIDCode(AuditMessages.RoleIDCode.Source).build();

@@ -41,9 +41,6 @@
 
 package org.dcm4che3.opencv;
 
-import java.awt.image.ColorModel;
-import java.awt.image.IndexColorModel;
-import java.awt.image.SampleModel;
 import java.io.IOException;
 import java.util.Locale;
 
@@ -71,47 +68,7 @@ public class NativeJLSImageWriterSpi extends ImageWriterSpi {
 
     @Override
     public boolean canEncodeImage(ImageTypeSpecifier type) {
-        ColorModel colorModel = type.getColorModel();
-
-        if (colorModel instanceof IndexColorModel) {
-            // No need to check further: writer converts to 8-8-8 RGB.
-            return true;
-        }
-
-        SampleModel sampleModel = type.getSampleModel();
-
-        // Ensure all channels have the same bit depth
-        int bitDepth;
-        if (colorModel != null) {
-            int[] componentSize = colorModel.getComponentSize();
-            bitDepth = componentSize[0];
-            for (int i = 1; i < componentSize.length; i++) {
-                if (componentSize[i] != bitDepth) {
-                    return false;
-                }
-            }
-        } else {
-            int[] sampleSize = sampleModel.getSampleSize();
-            bitDepth = sampleSize[0];
-            for (int i = 1; i < sampleSize.length; i++) {
-                if (sampleSize[i] != bitDepth) {
-                    return false;
-                }
-            }
-        }
-
-        // Ensure bitDepth is no more than 16
-        if (bitDepth > 16) {
-            return false;
-        }
-
-        // Check number of bands.
-        int numBands = sampleModel.getNumBands();
-        if (numBands < 1 || numBands > 4) {
-            return false;
-        }
-
-        return true;
+        return NativeJPEGImageWriterSpi.checkCommonJpgRequirement(type);
     }
 
     @Override

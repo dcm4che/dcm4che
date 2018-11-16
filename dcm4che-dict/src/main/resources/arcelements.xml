@@ -42,6 +42,9 @@
 <elements>
   <el tag="7777xx10" keyword="PatientCreateDateTime" vr="DT" vm="1">Patient Create Date Time</el>
   <el tag="7777xx11" keyword="PatientUpdateDateTime" vr="DT" vm="1">Patient Update Date Time</el>
+  <el tag="7777xx12" keyword="PatientVerificationDateTime" vr="DT" vm="1">Patient Verification Date Time</el>
+  <el tag="7777xx13" keyword="PatientVerificationStatus" vr="CS" vm="1">Patient Verification Status</el>
+  <el tag="7777xx14" keyword="FailedVerificationsOfPatient" vr="US" vm="1">Failed Verifications of Patient</el>
   <el tag="7777xx20" keyword="StudyReceiveDateTime" vr="DT" vm="1">Study Receive Date Time</el>
   <el tag="7777xx21" keyword="StudyUpdateDateTime" vr="DT" vm="1">Study Update Date Time</el>
   <el tag="7777xx22" keyword="StudyAccessDateTime" vr="DT" vm="1">Study Access Date Time</el>
@@ -67,6 +70,7 @@
   <el tag="7777xx3C" keyword="SeriesMetadataStoragePath" vr="LO" vm="1-n">Series Metadata Storage Path</el>
   <el tag="7777xx3D" keyword="SeriesMetadataStorageObjectSize" vr="UL" vm="1">Series Metadata Storage Object Size</el>
   <el tag="7777xx3E" keyword="SeriesMetadataStorageObjectDigest" vr="LO" vm="1">Series Metadata Storage Object Digest</el>
+  <el tag="7777xx3F" keyword="SeriesMetadataStorageObjectStatus" vr="CS" vm="1">Series Metadata Storage Object Status</el>
   <el tag="7777xx40" keyword="InstanceReceiveDateTime" vr="DT" vm="1">Instance Receive Date Time</el>
   <el tag="7777xx41" keyword="InstanceUpdateDateTime" vr="DT" vm="1">Instance Update Date Time</el>
   <el tag="7777xx42" keyword="RejectionCodeSequence" vr="SQ" vm="1">Rejection Code Sequence</el>
@@ -76,6 +80,12 @@
   <el tag="7777xx52" keyword="StorageTransferSyntaxUID" vr="UI" vm="1">Storage Transfer Syntax UID</el>
   <el tag="7777xx53" keyword="StorageObjectSize" vr="UL" vm="1">Storage Object Size</el>
   <el tag="7777xx54" keyword="StorageObjectDigest" vr="LO" vm="1">Storage Object Digest</el>
+  <el tag="7777xx55" keyword="OtherStorageSequence" vr="LO" vm="1">Other Storage Sequence</el>
+  <el tag="7777xx56" keyword="StorageObjectStatus" vr="CS" vm="1">Storage Object Status</el>
+  <el tag="7777xx60" keyword="ScheduledStorageVerificationDateTimeOfSeries" vr="DT" vm="1">Scheduled Storage Verification Date Time of Series</el>
+  <el tag="7777xx61" keyword="FailuresOfLastStorageVerificationOfSeries" vr="US" vm="1">Failures of Last Storage Verification of Series</el>
+  <el tag="7777xx62" keyword="ScheduledCompressionDateTimeOfSeries" vr="DT" vm="1">Scheduled Compression Date Time of Series</el>
+  <el tag="7777xx63" keyword="FailuresOfLastCompressionOfSeries" vr="US" vm="1">Failures of Last Compression of Series</el>
   <el tag="7777xxE0" keyword="XRoadPersonStatus" vr="CS" vm="1">X-Road Person Status</el>
   <el tag="7777xxE1" keyword="XRoadDataStatus" vr="CS" vm="1">X-Road Data Status</el>
 </elements>

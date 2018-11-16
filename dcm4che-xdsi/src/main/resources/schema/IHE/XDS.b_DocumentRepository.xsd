@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:rim="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0"
+           xmlns:query="urn:oasis:names:tc:ebxml-regrep:xsd:query:3.0"
+           xmlns:lcm="urn:oasis:names:tc:ebxml-regrep:xsd:lcm:3.0"
+           xmlns:rs="urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0"
+           xmlns:xmime="http://www.w3.org/2005/05/xmlmime"
+           xmlns="urn:ihe:iti:xds-b:2007"
+           targetNamespace="urn:ihe:iti:xds-b:2007"
+           elementFormDefault="qualified">
+  <xs:import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0"
+             schemaLocation="../ebRS/rs.xsd"/>
+  <xs:import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0"
+             schemaLocation="../ebRS/rim.xsd"/>
+  <xs:import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:lcm:3.0"
+             schemaLocation="../ebRS/lcm.xsd"/>
+  <xs:import namespace="urn:oasis:names:tc:ebxml-regrep:xsd:query:3.0"
+             schemaLocation="../ebRS/query.xsd"/>
+  <!-- Needed for WADO-WS specific services -->
+  <xs:element name="HomeCommunityId" type="rim:LongName"/>
+  <xs:element name="RepositoryUniqueId" type="rim:LongName"/>
+  <xs:element name="DocumentUniqueId" type="rim:LongName"/>
+  <xs:element name="mimeType" type="xs:string"/>
+  <xs:element name="Document" type="xs:base64Binary"
+              xmime:expectedContentTypes="application/dicom, image/jpeg, text/xml, text/html"/>
+  <xs:complexType name="RetrieveDocumentSetRequestType">
+    <xs:sequence>
+      <xs:element name="DocumentRequest" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="HomeCommunityId" minOccurs="0"/>
+            <xs:element ref="RepositoryUniqueId"/>
+            <xs:element ref="DocumentUniqueId"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RetrieveDocumentSetResponseType">
+    <xs:sequence>
+      <xs:element ref="rs:RegistryResponse"/>
+      <xs:sequence minOccurs="0">
+        <xs:element name="DocumentResponse" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="HomeCommunityId" minOccurs="0"/>
+              <xs:element ref="RepositoryUniqueId"/>
+              <xs:element ref="DocumentUniqueId"/>
+              <xs:element name="NewRepositoryUniqueId" type="rim:LongName" minOccurs="0"/>
+              <xs:element name="NewDocumentUniqueId" type="rim:LongName" minOccurs="0"/>
+              <xs:element ref="mimeType"/>
+              <xs:element ref="Document"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="RetrieveDocumentSetRequest" type="RetrieveDocumentSetRequestType"/>
+  <xs:element name="RetrieveDocumentSetResponse" type="RetrieveDocumentSetResponseType"/>
+  <xs:complexType name="ProvideAndRegisterDocumentSetRequestType">
+    <xs:sequence>
+      <xs:element ref="lcm:SubmitObjectsRequest"/>
+      <xs:sequence minOccurs="0">
+        <xs:element name="Document" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:base64Binary" xmime:expectedContentTypes="application/octet-stream">
+                <xs:attribute name="id" type="xs:anyURI" use="required"/>
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ProvideAndRegisterDocumentSetRequest"
+              type="ProvideAndRegisterDocumentSetRequestType"/>
+</xs:schema>

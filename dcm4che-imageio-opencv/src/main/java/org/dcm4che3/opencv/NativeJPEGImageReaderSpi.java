@@ -55,9 +55,9 @@ import javax.imageio.stream.ImageInputStream;
  */
 public class NativeJPEGImageReaderSpi extends ImageReaderSpi {
 
-    static final String[] NAMES = { "jpeg-cv", "jpeg", "JPEG", "jpg", "JPG", "jfif", "JFIF", "jpeg-lossless", "JPEG-LOSSLESS" };
-    static final String[] SUFFIXES = { "jpeg", "jpg", "jfif" };
-    static final String[] MIMES = { "image/jpeg" };
+    static final String[] NAMES = { "jpeg-cv" };
+    static final String[] SUFFIXES = null;
+    static final String[] MIMES = null;
 
     public NativeJPEGImageReaderSpi() {
         super("Weasis Team", "1.0", NAMES, SUFFIXES, MIMES, NativeImageReader.class.getName(),

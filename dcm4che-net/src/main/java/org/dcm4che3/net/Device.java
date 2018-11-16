@@ -115,19 +115,21 @@ public class Device implements Serializable {
     private boolean installed = true;
     private TimeZone timeZoneOfDevice;
 
-    private final LinkedHashMap<String, X509Certificate[]> authorizedNodeCertificates = 
+    private final LinkedHashMap<String, X509Certificate[]> authorizedNodeCertificates =
             new LinkedHashMap<String, X509Certificate[]>();
     private final LinkedHashMap<String, X509Certificate[]> thisNodeCertificates = 
             new LinkedHashMap<String, X509Certificate[]>();
     private final List<Connection> conns = new ArrayList<Connection>();
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
+    private final LinkedHashMap<String, WebApplication> webapps = new LinkedHashMap<>();
     private final Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
             new HashMap<Class<? extends DeviceExtension>,DeviceExtension>();
 
     private transient AssociationHandler associationHandler = new AssociationHandler();
     private transient DimseRQHandler dimseRQHandler;
     private transient ConnectionMonitor connectionMonitor;
+    private transient AssociationMonitor associationMonitor;
 
     private transient final List<Association> associations = new ArrayList<>();
 
@@ -728,6 +730,14 @@ public class Device implements Serializable {
         this.connectionMonitor = connectionMonitor;
     }
 
+    public AssociationMonitor getAssociationMonitor() {
+        return associationMonitor;
+    }
+
+    public void setAssociationMonitor(AssociationMonitor associationMonitor) {
+        this.associationMonitor = associationMonitor;
+    }
+
     public void bindConnections() throws IOException, GeneralSecurityException {
         for (Connection con : conns)
             con.bind();
@@ -822,6 +832,34 @@ public class Device implements Serializable {
         if (ae != null)
             ae.setDevice(null);
         return ae;
+    }
+
+    public Collection<String> getWebApplicationNames() {
+        return webapps.keySet();
+    }
+
+    public Collection<WebApplication> getWebApplications() {
+        return webapps.values();
+    }
+
+    public WebApplication getWebApplication(String name) {
+        return webapps.get(name);
+    }
+
+    public void addWebApplication(WebApplication webapp) {
+        webapp.setDevice(this);
+        webapps.put(webapp.getApplicationName(), webapp);
+    }
+
+    public WebApplication removeWebApplication(WebApplication webapp) {
+        return removeWebApplication(webapp.getApplicationName());
+    }
+
+    public WebApplication removeWebApplication(String name) {
+        WebApplication webapp = webapps.remove(name);
+        if (webapp != null)
+            webapp.setDevice(null);
+        return webapp;
     }
 
     public void addDeviceExtension(DeviceExtension ext) {
@@ -1093,6 +1131,7 @@ public class Device implements Serializable {
         setDeviceAttributes(from);
         reconfigureConnections(from);
         reconfigureApplicationEntities(from);
+        reconfigureWebApplications(from);
         reconfigureDeviceExtensions(from);
     }
 
@@ -1184,6 +1223,16 @@ public class Device implements Serializable {
              ae.reconfigure(src);
          }
      }
+
+    private void reconfigureWebApplications(Device from) {
+        webapps.keySet().retainAll(from.webapps.keySet());
+        for (WebApplication src : from.webapps.values()) {
+            WebApplication webapp = webapps.get(src.getApplicationName());
+            if (webapp == null)
+                addWebApplication(webapp = new WebApplication(src.getApplicationName()));
+            webapp.reconfigure(src);
+        }
+    }
 
     public void reconfigureConnections(List<Connection> conns,
             List<Connection> src) {

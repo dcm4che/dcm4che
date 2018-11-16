@@ -52,50 +52,50 @@ import org.slf4j.LoggerFactory;
  */
 public enum Dimse {
     C_STORE_RQ(0x0001, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageID, ":C-STORE-RQ[pcid="),
+            Tag.MessageID, ":C-STORE-RQ"),
     C_STORE_RSP(0x8001, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageIDBeingRespondedTo, ":C-STORE-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":C-STORE-RSP"),
     C_GET_RQ(0x0010, Tag.AffectedSOPClassUID, 0,
-            Tag.MessageID, ":C-GET-RQ[pcid="),
+            Tag.MessageID, ":C-GET-RQ"),
     C_GET_RSP(0x8010, Tag.AffectedSOPClassUID, 0,
-            Tag.MessageIDBeingRespondedTo, ":C-GET-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":C-GET-RSP"),
     C_FIND_RQ(0x0020, Tag.AffectedSOPClassUID, 0,
-            Tag.MessageID, ":C-FIND-RQ[pcid="),
+            Tag.MessageID, ":C-FIND-RQ"),
     C_FIND_RSP(0x8020, Tag.AffectedSOPClassUID, 0,
-            Tag.MessageIDBeingRespondedTo, ":C-FIND-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":C-FIND-RSP"),
     C_MOVE_RQ(0x0021, Tag.AffectedSOPClassUID, 0,
-            Tag.MessageID, ":C-MOVE-RQ[pcid="),
+            Tag.MessageID, ":C-MOVE-RQ"),
     C_MOVE_RSP(0x8021, Tag.AffectedSOPClassUID, 0,
-            Tag.MessageIDBeingRespondedTo, ":C-MOVE-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":C-MOVE-RSP"),
     C_ECHO_RQ(0x0030, Tag.AffectedSOPClassUID, 0,
-            Tag.MessageID, ":C-ECHO-RQ[pcid="),
+            Tag.MessageID, ":C-ECHO-RQ"),
     C_ECHO_RSP(0x8030, Tag.AffectedSOPClassUID, 0,
-            Tag.MessageIDBeingRespondedTo, ":C-ECHO-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":C-ECHO-RSP"),
     N_EVENT_REPORT_RQ(0x0100, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageID, ":N-EVENT-REPORT-RQ[pcid="),
+            Tag.MessageID, ":N-EVENT-REPORT-RQ"),
     N_EVENT_REPORT_RSP(0x8100, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageIDBeingRespondedTo, ":N-EVENT-REPORT-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":N-EVENT-REPORT-RSP"),
     N_GET_RQ(0x0110, Tag.RequestedSOPClassUID, Tag.RequestedSOPInstanceUID,
-            Tag.MessageID, ":N-GET-RQ[pcid="),
+            Tag.MessageID, ":N-GET-RQ"),
     N_GET_RSP(0x8110, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageIDBeingRespondedTo, ":N-GET-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":N-GET-RSP"),
     N_SET_RQ(0x0120, Tag.RequestedSOPClassUID, Tag.RequestedSOPInstanceUID,
-            Tag.MessageID, ":N-SET-RQ[pcid="),
+            Tag.MessageID, ":N-SET-RQ"),
     N_SET_RSP(0x8120, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageIDBeingRespondedTo, ":N-SET-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":N-SET-RSP"),
     N_ACTION_RQ(0x0130, Tag.RequestedSOPClassUID, Tag.RequestedSOPInstanceUID,
-            Tag.MessageID, ":N-ACTION-RQ[pcid="),
+            Tag.MessageID, ":N-ACTION-RQ"),
     N_ACTION_RSP(0x8130, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageIDBeingRespondedTo, ":N-ACTION-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":N-ACTION-RSP"),
     N_CREATE_RQ(0x0140, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageID, ":N-CREATE-RQ[pcid="),
+            Tag.MessageID, ":N-CREATE-RQ"),
     N_CREATE_RSP(0x8140, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageIDBeingRespondedTo, ":N-CREATE-RSP[pcid="),
+            Tag.MessageIDBeingRespondedTo, ":N-CREATE-RSP"),
     N_DELETE_RQ(0x0150, Tag.RequestedSOPClassUID, Tag.RequestedSOPInstanceUID,
-            Tag.MessageID, ":N-DELETE-RQ[pcid="),
+            Tag.MessageID, ":N-DELETE-RQ"),
     N_DELETE_RSP(0x8150, Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID,
-            Tag.MessageIDBeingRespondedTo, ":N-DELETE-RSP[pcid="),
-    C_CANCEL_RQ(0x0FFF, 0, 0, Tag.MessageIDBeingRespondedTo, ":C-CANCEL-RQ[pcid=");
+            Tag.MessageIDBeingRespondedTo, ":N-DELETE-RSP"),
+    C_CANCEL_RQ(0x0FFF, 0, 0, Tag.MessageIDBeingRespondedTo, ":C-CANCEL-RQ");
 
     public static final Logger LOG = LoggerFactory.getLogger(Dimse.class);
 
@@ -199,9 +199,13 @@ public enum Dimse {
         }
     }
 
+    public String toString(Attributes cmdAttrs) {
+        return cmdAttrs.getInt(tagOfMessageID, -1) + prompt;
+    }
+
     public String toString(Attributes cmdAttrs, int pcid, String tsuid) {
         StringBuilder sb = new StringBuilder();
-        sb.append(cmdAttrs.getInt(tagOfMessageID, -1)).append(prompt).append(pcid);
+        sb.append(cmdAttrs.getInt(tagOfMessageID, -1)).append(prompt).append("[pcid=").append(pcid);
         switch (this) {
         case C_STORE_RQ:
             promptIntTo(cmdAttrs, ", prior=", Tag.Priority, sb);
@@ -239,6 +243,7 @@ public enum Dimse {
         promptUIDTo(cmdAttrs, "  cuid=", tagOfSOPClassUID, sb);
         promptUIDTo(cmdAttrs, "  iuid=", tagOfSOPInstanceUID, sb);
         promptUIDTo("  tsuid=", tsuid, sb);
+        sb.append(']');
         return sb.toString();
     }
 

@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2015-2018
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -81,8 +81,17 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
         }
     }
 
+    @Override
     public void onEvent(AdminEvent adminEvent, boolean b) {
-
+        try {
+            Collection<AuditLogger> loggers = new AuditLoggerFactory().getAuditLoggers();
+            if (loggers != null)
+                for (AuditLogger logger : loggers)
+                    if (logger.isInstalled())
+                        AdminEventsAuditService.spoolAuditMsg(adminEvent, logger, keycloakSession);
+        } catch (Exception e) {
+            LOG.warn("Failed to get audit logger", e);
+        }
     }
 
     public void close() {

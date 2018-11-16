@@ -80,26 +80,26 @@ public class Deidentify {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
         CLIUtils.addEncodingOptions(opts);
-        opts.addOption(OptionBuilder
-                .withDescription(rb.getString("retain-date"))
-                .withLongOpt("retain-date")
-                .create());
-        opts.addOption(OptionBuilder
-                .withDescription(rb.getString("retain-org"))
-                .withLongOpt("retain-org")
-                .create());
-        opts.addOption(OptionBuilder
-                .withDescription(rb.getString("retain-dev"))
-                .withLongOpt("retain-dev")
-                .create());
-        opts.addOption(OptionBuilder
-                .withDescription(rb.getString("retain-uid"))
-                .withLongOpt("retain-uid")
-                .create());
-        opts.addOption(OptionBuilder
-                .hasArgs().withArgName("attr=value").withValueSeparator('=')
-                .withDescription(rb.getString("set"))
-                .create("s"));
+        opts.addOption(Option.builder()
+                .desc(rb.getString("retain-date"))
+                .longOpt("retain-date")
+                .build());
+        opts.addOption(Option.builder()
+                .desc(rb.getString("retain-org"))
+                .longOpt("retain-org")
+                .build());
+        opts.addOption(Option.builder()
+                .desc(rb.getString("retain-dev"))
+                .longOpt("retain-dev")
+                .build());
+        opts.addOption(Option.builder()
+                .desc(rb.getString("retain-uid"))
+                .longOpt("retain-uid")
+                .build());
+        opts.addOption(Option.builder("s")
+                .hasArgs().argName("attr=value").valueSeparator('=')
+                .desc(rb.getString("set"))
+                .build());
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Deidentify.class);
         return cl;
     }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2018a - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2018d - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -10,6 +10,9 @@
       <year>2018</year>
       <holder>NEMA</holder>
     </copyright>
+      <legalnotice>
+          <para xml:id="para_0e39b077-b88b-4481-9131-2c29c229ecc3">A DICOM® publication</para>
+      </legalnotice>
   </info>
   <chapter label="" status="1" xml:id="chapter_Notice">
     <title>Notice and Disclaimer</title>
@@ -135,7 +138,11 @@
   <para xml:id="para_f3267e80-cc98-4684-b622-1d68509ce1e8">RFC-1510 The Kerberos Network Authentication Service (V5)</para>
   <para xml:id="para_eaeae331-14ac-4e3e-8432-a3c58376cfdb">RFC-2289 A One-Time Password System</para>
   <para xml:id="para_948c9645-943f-44ec-990f-0e6c98b89f79">SAML Assertions and Protocols for the OASIS Security Assertion Markup Language (SAML) V2.0 OASIS Standard, 15 March 2005</para>
-  </chapter>
+  <para xml:id="para_4d38779f-2207-4594-95a6-397a6f6be7aa">RFC 6750 The OAuth 2.0 Authorization Framework: Bearer Token Usage <link xl:href="http://tools.ietf.org/html/rfc6750"/>
+</para>
+  <para xml:id="para_2e6bad14-e960-44e4-a16a-fa3e8a4609ae">RFC 7519 JSON Web Token (JWT) <link xl:href="http://tools.ietf.org/html/rfc7519"/>
+</para>
+</chapter>
 <chapter label="3" status="1" xml:id="chapter_3">
     <title>Definitions</title>
   
@@ -1748,36 +1755,34 @@
   </section>
 <section label="9.1.2.1.5" status="5" xml:id="sect_9.1.2.1.5">
     <title>Identifier</title>
-  
   <para xml:id="para_1b750584-76b2-42be-b605-3358c5360858">In the request/indication, this is a list of Attributes to be matched against the values of the Attributes in the instances of the composite objects known to the performing DIMSE-service-user.</para>
   <para xml:id="para_ba93d3f7-6fa3-4590-9a54-ca0a527b01af">In the response/confirmation, this is the same list of Attributes with values of these Attributes in a particular composite SOP Instance that matched. It shall be sent only when that Status (0000,0900) is equal to Pending (not permitted for other statuses).</para>
   <para xml:id="para_f19650f6-32f5-4920-bb9f-d8eb394accb2">The list of Attributes and the rules for construction are specified in <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>.</para>
-
-  <section label="9.1.2.1.5" status="5" xml:id="sect_9.1.2.1.6">
-    <title>Status</title>
-    <para xml:id="para_60f1880e-1091-4e69-b7d0-d4a343e9a4ea">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
-  <orderedlist numeration="loweralpha">
-<listitem>
-  <para xml:id="para_d6ff579c-1753-44af-92cb-bc059ded21bb">Success (0000H) - This indicates that processing of the matches is complete. It shall not contain a matching Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_8850be41-96bd-42b7-8c55-990bc880b5a4">Pending (Status value is Service Class specific) - This indicates that processing of the matches is initiated or continuing. It shall contain a matching Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_a05b8cfe-0a23-4309-a58c-a5fb37a639f0">Refused: Out of Resources (Status value is Service Class specific) - Indicates that processing of the C-FIND has been terminated because it was out of resources. This may be the initial response to the C-FIND, or may be sent after a number of pending C-FIND responses. This response shall not contain a matching Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_1579ffc7-0ec3-4a73-abb2-ff1b6d2fe939">Refused: SOP Class Not Supported (0122H) - Indicates that processing of the C-FIND has been terminated because the SOP Class was not supported. This response shall not contain a matching Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_43499368-f3cb-44f1-b2bd-cd176d7b6266">Cancel (FE00H) - Indicates that the processing of the C-FIND has been terminated due to a C-FIND Cancel indication primitive. The response shall not contain an Identifier.</para>
-</listitem>
-<listitem>
-  <para xml:id="para_9a20b99a-9bc1-4bda-84c9-79dd62b6cba5">Failed (Status value is Service Class specific) - Indicates that the C-FIND operation failed at the performing DIMSE-service-user.</para>
-</listitem>
-</orderedlist>
-  </section>
 </section>
+      <section label="9.1.2.1.6" status="5" xml:id="sect_9.1.2.1.6">
+          <title>Status</title>
+          <para xml:id="para_60f1880e-1091-4e69-b7d0-d4a343e9a4ea">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+          <orderedlist numeration="loweralpha">
+              <listitem>
+                  <para xml:id="para_d6ff579c-1753-44af-92cb-bc059ded21bb">Success (0000H) - This indicates that processing of the matches is complete. It shall not contain a matching Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_8850be41-96bd-42b7-8c55-990bc880b5a4">Pending (Status value is Service Class specific) - This indicates that processing of the matches is initiated or continuing. It shall contain a matching Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_a05b8cfe-0a23-4309-a58c-a5fb37a639f0">Refused: Out of Resources (Status value is Service Class specific) - Indicates that processing of the C-FIND has been terminated because it was out of resources. This may be the initial response to the C-FIND, or may be sent after a number of pending C-FIND responses. This response shall not contain a matching Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_1579ffc7-0ec3-4a73-abb2-ff1b6d2fe939">Refused: SOP Class Not Supported (0122H) - Indicates that processing of the C-FIND has been terminated because the SOP Class was not supported. This response shall not contain a matching Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_43499368-f3cb-44f1-b2bd-cd176d7b6266">Cancel (FE00H) - Indicates that the processing of the C-FIND has been terminated due to a C-FIND Cancel indication primitive. The response shall not contain an Identifier.</para>
+              </listitem>
+              <listitem>
+                  <para xml:id="para_9a20b99a-9bc1-4bda-84c9-79dd62b6cba5">Failed (Status value is Service Class specific) - Indicates that the C-FIND operation failed at the performing DIMSE-service-user.</para>
+              </listitem>
+          </orderedlist>
+      </section>
 </section>
 <section label="9.1.2.2" status="4" xml:id="sect_9.1.2.2">
     <title>C-FIND Service Procedures</title>
@@ -12002,7 +12007,9 @@
 <para xml:id="para_d55385a4-c5d9-4544-8c4b-ef4a3eb37ba5">when negotiating the SCP role for operations, the maximum number of outstanding operations it may invoke asynchronously; when negotiating the SCU role for operations, the maximum number of outstanding sub-operations it may perform asynchronously; when negotiating the SCU role for notifications, the maximum number of notifications it may perform asynchronously when negotiating the SCP role</para>
 </listitem>
 </itemizedlist>
-  <para xml:id="para_c8dbc17e-73af-4244-9052-79eb101e9c36">A value of zero indicates that the above parameters are unlimited. If the Asynchronous Operations Window is absent the default for the above parameters shall be equal to one.</para>
+  <para xml:id="para_c8dbc17e-73af-4244-9052-79eb101e9c36">A value of zero indicates that the above parameters are unlimited.
+      A value of one indicates that there is no Asynchronous Operations support.
+      If the Asynchronous Operations Window is absent the default for the above parameters shall be equal to one.</para>
   <para xml:id="para_a1bee3e4-adaf-45e9-912b-c94b3ba453f2">The Association-acceptor conveys in the A-ASSOCIATE response:</para>
 <itemizedlist>
   <listitem>
@@ -12870,7 +12877,7 @@
   <para xml:id="para_f091ab35-d0f1-4f10-8a5b-c4c1338240d7">The Association-requester conveys in the A-ASSOCIATE request:</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_df2b7b69-7b34-4e4a-a627-a88c6cd6f2dd">the form of user identity being provided, either a username, username and passcode, a Kerberos service ticket, or a SAML assertion.</para>
+    <para xml:id="para_df2b7b69-7b34-4e4a-a627-a88c6cd6f2dd">the form of user identity being provided, either a username, username and passcode, a Kerberos service ticket, a SAML assertion, or a JSON Web Token (JWT).</para>
 </listitem>
   <listitem>
 <para xml:id="para_b779f9d1-556e-4ba4-9978-e82730302c0b">an indication whether a positive server response is requested.</para>
@@ -12886,6 +12893,13 @@
       </listitem>
       <listitem>
         <para xml:id="para_25be324b-a5b9-4a62-8a61-9cfa8186b8e2">The option to include a passcode along with the user identity enables a variety of non-Kerberos secure interfaces. Sending passwords in the clear is insecure, but there are single use password systems such as RFC-2289 and the various smart tokens that do not require protection. The password might also be protected by TLS or other mechanisms.</para>
+      </listitem>
+      <listitem>
+        <para xml:id="para_e0a4881e-8cfa-43cb-81d8-c7ae30de7853">For JSON Web Tokens (JWTs), RFC 7519 specifies minimal requirements for encryption, MAC and signature algorithms;
+          others may be supported as described in the DICOM Conformance Statement.
+          The encoded format in the Primary-field of the A-ASSOCIATE-RQ is the same as what might be included in an HTTP Authorization: Bearer header field
+          per RFC 6750 when accessing a Protected Resource on a Resource Server,
+          to facilitate bridging between <olink targetdoc="PS3.18" targetptr="PS3.18" xrefstyle="select: labelnumber quotedtitle"/> and <olink targetdoc="PS3.7" targetptr="PS3.7" xrefstyle="select: labelnumber quotedtitle"/> implementations.</para>
       </listitem>
     </orderedlist>
   </note>
@@ -12984,6 +12998,7 @@
         <para xml:id="para_3f5dda40-8c82-4a32-8b37-43ecd740a261">2 - Username as a string in UTF-8 and passcode</para>
         <para xml:id="para_7279eb99-7d15-4c8c-9493-9d33ce1e16f7">3 - Kerberos Service ticket</para>
         <para xml:id="para_28d78e48-430a-434e-bad4-0bc80493c981">4 - SAML Assertion</para>
+        <para xml:id="para_c43bc73a-22b9-4a4f-848b-55ba68f10b10">5 - JSON Web Token (JWT)</para>
         <para xml:id="para_00a0a098-3fe2-457d-983a-86d07afa0b3e">Other values are reserved for future standardization.</para>
       </td>
     </tr>
@@ -13019,7 +13034,8 @@
         <para xml:id="para_357a710b-ee5f-444d-90dd-c228ec8fb24b">Primary-field</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_c9e1766b-5a4c-4c9c-aa6a-da3d65f7a7c9">This field shall convey the user identity, either the username as a series of characters, or the Kerberos Service ticket encoded in accordance with RFC-1510.</para>
+        <para xml:id="para_c9e1766b-5a4c-4c9c-aa6a-da3d65f7a7c9">This field shall convey the user identity, either the username as a series of characters, or the Kerberos Service ticket encoded in accordance with RFC-1510,
+          or the JWT encoded in accordance with RFC 7519 using base64url encoded parts.</para>
       </td>
     </tr>
     <tr valign="top">

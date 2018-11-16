@@ -33,6 +33,14 @@
           "ISO2JAI",
           "ISO2JAI_IF_APP_OR_COM"
       ]
+    },
+    "dcmImageReadParam": {
+      "title": "Image Read Param",
+      "description": "Image Read Parameter(s) (name=value)",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

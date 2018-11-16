@@ -51,8 +51,9 @@ import java.net.Socket;
 public class DefaultHL7MessageListener implements HL7MessageListener {
 
     @Override
-    public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
+    public UnparsedHL7Message onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
                     throws HL7Exception {
-        return HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null);
+        return new UnparsedHL7Message(
+                HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null));
     }
 }

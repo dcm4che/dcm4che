@@ -56,9 +56,10 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -326,50 +327,50 @@ public class Modality {
     
     @SuppressWarnings("static-access")
     private static void addOptions(Options opts) {
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("code-value")
-                .withDescription(rb.getString("kos-title"))
-                .withLongOpt("kos-title")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("code-value")
+                .desc(rb.getString("kos-title"))
+                .longOpt("kos-title")
+                .build());
+        opts.addOption(Option.builder("o")
                 .hasArg()
-                .withArgName("file")
-                .withDescription(rb.getString("o-file"))
-                .create("o"));
-        opts.addOption(OptionBuilder
+                .argName("file")
+                .desc(rb.getString("o-file"))
+                .build());
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("file")
-                .withDescription(rb.getString("code-config"))
-                .withLongOpt("code-config")
-                .create());
+                .argName("file")
+                .desc(rb.getString("code-config"))
+                .longOpt("code-config")
+                .build());
         OptionGroup mpps = new OptionGroup();
-        mpps.addOption(OptionBuilder
-                .withDescription(rb.getString("mpps-late"))
-                .withLongOpt("mpps-late")
-                .create());
-        mpps.addOption(OptionBuilder
-                .withDescription(rb.getString("mpps"))
-                .withLongOpt("mpps")
-                .create());
+        mpps.addOption(Option.builder()
+                .desc(rb.getString("mpps-late"))
+                .longOpt("mpps-late")
+                .build());
+        mpps.addOption(Option.builder()
+                .desc(rb.getString("mpps"))
+                .longOpt("mpps")
+                .build());
         opts.addOptionGroup(mpps);
-        opts.addOption(OptionBuilder
-                .withDescription(rb.getString("stgcmt"))
-                .withLongOpt("stgcmt")
-                .create());
+        opts.addOption(Option.builder()
+                .desc(rb.getString("stgcmt"))
+                .longOpt("stgcmt")
+                .build());
         opts.addOption(null, "dc", false, rb.getString("dc"));
-        opts.addOption(OptionBuilder
+        opts.addOption(Option.builder()
                 .hasArg()
-                .withArgName("code-value")
-                .withDescription(rb.getString("dc-reason"))
-                .withLongOpt("dc-reason")
-                .create());
-        opts.addOption(OptionBuilder
+                .argName("code-value")
+                .desc(rb.getString("dc-reason"))
+                .longOpt("dc-reason")
+                .build());
+        opts.addOption(Option.builder("s")
                 .hasArgs()
-                .withArgName("[seq/]attr=value")
-                .withValueSeparator('=')
-                .withDescription(rb.getString("set"))
-                .create("s"));
+                .argName("[seq/]attr=value")
+                .valueSeparator('=')
+                .desc(rb.getString("set"))
+                .build());
    }
     
     private static void scanFiles(List<String> fnames, String tmpPrefix, String tmpSuffix,

@@ -445,7 +445,9 @@ class PDUDecoder extends PDVInputStream {
         String tsuid = pc.getTransferSyntax();
         if (Dimse.LOG.isInfoEnabled()) {
             Dimse.LOG.info("{} >> {}", as, dimse.toString(cmd, pcid, tsuid));
-            Dimse.LOG.debug("Command:\n{}", cmd);
+            if (Dimse.LOG.isDebugEnabled()) {
+                Dimse.LOG.debug("{} >> {} Command:\n{}", as, dimse.toString(cmd), cmd);
+            }
         }
         if (dimse == Dimse.C_CANCEL_RQ) {
             as.onCancelRQ(cmd);
@@ -454,8 +456,14 @@ class PDUDecoder extends PDVInputStream {
             if (dimse.isRSP()) {
                 Attributes data = readDataset(tsuid);
                 Dimse.LOG.debug("Dataset:\n{}", data);
+                if (Dimse.LOG.isDebugEnabled()) {
+                    Dimse.LOG.debug("{} >> {} Dataset:\n{}", as, dimse.toString(cmd), data);
+                }
                 as.onDimseRSP(dimse, cmd, data);
             } else {
+                if (Dimse.LOG.isDebugEnabled()) {
+                    Dimse.LOG.debug("{} >> {} Dataset receiving...", as, dimse.toString(cmd));
+                }
                 as.onDimseRQ(pc, dimse, cmd, this);
                 long skipped = skipAll();
                 if (skipped > 0)
@@ -463,7 +471,6 @@ class PDUDecoder extends PDVInputStream {
                         "{}: Service User did not consume {} bytes of DIMSE data.",
                         as, skipped);
             }
-            skipAll();
         } else {
             if (dimse.isRSP()) {
                 as.onDimseRSP(dimse, cmd, null);

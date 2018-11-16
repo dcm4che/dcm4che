@@ -74,7 +74,7 @@ public enum VR {
     TM(0x544d, 8, ' ', StringValueType.TM, false),
     UC(0x5543, 12, ' ', StringValueType.STRING, false),
     UI(0x5549, 8, 0, StringValueType.ASCII, false),
-    UL(0x554c, 8, 0, BinaryValueType.INT, false),
+    UL(0x554c, 8, 0, BinaryValueType.UINT, false),
     UN(0x554e, 12, 0, BinaryValueType.BYTE, true),
     UR(0x5552, 12, ' ', StringValueType.UR, false),
     US(0x5553, 8, 0, BinaryValueType.USHORT, false),

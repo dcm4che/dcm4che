@@ -92,7 +92,7 @@ public class JsonImageWriterConfiguration extends JsonConfigurationExtension {
             String formatName = null;
             String className = null;
             String patchJPEGLS = null;
-            String[] imageWriteParam = new String[0];
+            String[] imageWriteParam = {};
             while (reader.next() == JsonParser.Event.KEY_NAME) {
                 switch (reader.getString()) {
                     case "dicomTransferSyntax":

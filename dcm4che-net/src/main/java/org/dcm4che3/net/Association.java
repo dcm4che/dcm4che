@@ -832,13 +832,17 @@ public class Association {
         }
     }
 
-    private void initPCMap() {
-        for (PresentationContext pc : ac.getPresentationContexts())
-            if (pc.isAccepted())
-                initTSMap(rq.getPresentationContext(pc.getPCID())
-                            .getAbstractSyntax())
-                        .put(pc.getTransferSyntax(), pc);
-    }
+	private void initPCMap() {
+		for (PresentationContext pc : ac.getPresentationContexts()) {
+			if (pc.isAccepted()) {
+				PresentationContext offeredPresentationContex = rq.getPresentationContext(pc.getPCID());
+				if (offeredPresentationContex != null) {
+					String abstractSyntax = offeredPresentationContex.getAbstractSyntax();
+					initTSMap(abstractSyntax).put(pc.getTransferSyntax(), pc);
+				}
+			}
+		}
+	}
     
     private HashMap<String, PresentationContext> initTSMap(String as) {
         HashMap<String, PresentationContext> tsMap = pcMap.get(as);

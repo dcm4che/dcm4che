@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2018d - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2018e - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -4793,7 +4793,10 @@
   <section label="9.3.5.1" status="4" xml:id="sect_9.3.5.1">
     <title>C-ECHO-RQ</title>
   
-  <para xml:id="para_b7f4a1a5-3c38-49c4-a807-2404aecd2ea1">The C-ECHO-RQ Message contains fields as defined in <xref linkend="table_9.3-12" xrefstyle="select: label"/> Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-ECHO service definition unless otherwise noted in <xref linkend="table_9.3-12" xrefstyle="select: label"/>. Fields not specified in the C-ECHO service definition but present in <xref linkend="table_9.3-13" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
+  <para xml:id="para_b7f4a1a5-3c38-49c4-a807-2404aecd2ea1">The C-ECHO-RQ Message contains fields as defined in <xref linkend="table_9.3-12" xrefstyle="select: label"/>.
+      Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>.
+      Fields are required as specified in the C-ECHO service definition unless otherwise noted in <xref linkend="table_9.3-12" xrefstyle="select: label"/>.
+      Fields not specified in the C-ECHO service definition but present in <xref linkend="table_9.3-12" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
     <table frame="box" label="9.3-12" rules="all" xml:id="table_9.3-12">
     <caption>C-ECHO-RQ Message Fields</caption>
     <thead>

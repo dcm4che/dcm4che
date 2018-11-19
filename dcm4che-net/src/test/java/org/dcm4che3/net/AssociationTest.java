@@ -54,7 +54,6 @@ public class AssociationTest {
 //			new TransferCapability(UID.MRImageStorage, UID.MRImageStorage, Role.SCU, UID.ImplicitVRLittleEndian),
 			new TransferCapability(UID.MRImageStorage, UID.CTImageStorage, Role.SCU, UID.ImplicitVRLittleEndian));
 
-		// expecting exception here
 		Association association = localAe.connect(remoteAe, associateRequest);
 		association.release();
 	}
@@ -106,6 +105,7 @@ public class AssociationTest {
 		private final ServerSocket serverSocket;
 		private byte[] associateAcceptWithAdditionalPresentationContext;
 		private Thread thread;
+		private boolean stopped = false;
 
 		public NaughtyScp() throws IOException {
 			serverSocket = new ServerSocket(PORT);
@@ -122,7 +122,7 @@ public class AssociationTest {
 				@Override
 				public void run() {
 					try {
-						while (true) {
+						while (!stopped) {
 							handleAssociateRequest();
 						}
 					} catch (InterruptedException exception) {
@@ -154,6 +154,7 @@ public class AssociationTest {
 		}
 
 		public void stop() {
+			stopped = true;
 			if (thread != null) {
 				thread.interrupt();
 			}

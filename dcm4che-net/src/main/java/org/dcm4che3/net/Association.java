@@ -364,8 +364,6 @@ public class Association {
                 new Object[] { name, e, state });
         closeSocket();
     }
-    
-
 
     void write(AAbort aa) throws IOException  {
         LOG.info("{} << {}", name, aa);
@@ -516,8 +514,8 @@ public class Association {
             @Override
             public void run() {
             	try {
-            		decoder = new PDUDecoder(Association.this, in);
-            		device.addAssociation(Association.this);
+                    decoder = new PDUDecoder(Association.this, in);
+                    device.addAssociation(Association.this);
                     while (!(state == State.Sta1 || state == State.Sta13))
                         decoder.nextPDU();
                 } catch (AAbort aa) {
@@ -525,7 +523,7 @@ public class Association {
                 } catch (IOException e) {
                     onIOException(e);
                 } catch (RuntimeException e) {
-                	onIOException(new IOException("Unexpected Error", e));
+                    onIOException(new IOException("Unexpected Error", e));
                 } finally {
                     device.removeAssociation(Association.this);
                     onClose();
@@ -833,16 +831,16 @@ public class Association {
     }
 
 	private void initPCMap() {
-		for (PresentationContext pc : ac.getPresentationContexts()) {
-			if (pc.isAccepted()) {
-				PresentationContext offeredPresentationContex = rq.getPresentationContext(pc.getPCID());
-				if (offeredPresentationContex != null) {
-					String abstractSyntax = offeredPresentationContex.getAbstractSyntax();
-					initTSMap(abstractSyntax).put(pc.getTransferSyntax(), pc);
-				}
-			}
-		}
-	}
+        for (PresentationContext pc : ac.getPresentationContexts()) {
+            if (pc.isAccepted()) {
+                PresentationContext offeredPresentationContex = rq.getPresentationContext(pc.getPCID());
+                if (offeredPresentationContex != null) {
+                    String abstractSyntax = offeredPresentationContex.getAbstractSyntax();
+                    initTSMap(abstractSyntax).put(pc.getTransferSyntax(), pc);
+                }
+            }
+        }
+    }
     
     private HashMap<String, PresentationContext> initTSMap(String as) {
         HashMap<String, PresentationContext> tsMap = pcMap.get(as);

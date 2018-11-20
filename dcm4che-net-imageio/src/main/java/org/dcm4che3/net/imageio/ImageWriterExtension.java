@@ -49,7 +49,7 @@ public class ImageWriterExtension extends DeviceExtension {
 
     private static final long serialVersionUID = -2216639006138378955L;
 
-    public final ImageWriterFactory factory;
+    public volatile ImageWriterFactory factory;
 
     public ImageWriterExtension(ImageWriterFactory factory) {
         if (factory == null)
@@ -59,5 +59,14 @@ public class ImageWriterExtension extends DeviceExtension {
 
     public final ImageWriterFactory getImageWriterFactory() {
         return factory;
+    }
+
+    @Override
+    public void reconfigure(DeviceExtension from) {
+        reconfigureImageWriter((ImageWriterExtension) from);
+    }
+
+    private void reconfigureImageWriter(ImageWriterExtension from) {
+        factory = from.factory;
     }
 }

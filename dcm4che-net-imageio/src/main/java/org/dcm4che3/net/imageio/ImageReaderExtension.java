@@ -49,7 +49,7 @@ public class ImageReaderExtension extends DeviceExtension {
 
     private static final long serialVersionUID = -1997698269051750796L;
 
-    public final ImageReaderFactory factory;
+    public volatile ImageReaderFactory factory;
 
     public ImageReaderExtension(ImageReaderFactory factory) {
         if (factory == null)
@@ -59,6 +59,15 @@ public class ImageReaderExtension extends DeviceExtension {
 
     public final ImageReaderFactory getImageReaderFactory() {
         return factory;
+    }
+
+    @Override
+    public void reconfigure(DeviceExtension from) {
+        reconfigureImageReader((ImageReaderExtension) from);
+    }
+
+    private void reconfigureImageReader(ImageReaderExtension from) {
+        factory = from.factory;
     }
 
 }

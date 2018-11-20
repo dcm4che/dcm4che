@@ -135,7 +135,7 @@ public class ImageWriterFactory implements Serializable {
         return s == null || s.isEmpty() || s.equals("*") ? null : s;
     }
 
-    private static ImageWriterFactory defaultFactory;
+    private static volatile ImageWriterFactory defaultFactory;
 
     private PatchJPEGLS patchJPEGLS;
     private final TreeMap<String, ImageWriterParam> map = new TreeMap<>();

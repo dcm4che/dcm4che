@@ -142,7 +142,7 @@ public class ImageReaderFactory implements Serializable {
         return s == null || s.isEmpty() || s.equals("*") ? null : s;
     }
 
-    private static ImageReaderFactory defaultFactory;
+    private static volatile ImageReaderFactory defaultFactory;
 
     private final TreeMap<String, ImageReaderParam> map = new TreeMap<>();
 

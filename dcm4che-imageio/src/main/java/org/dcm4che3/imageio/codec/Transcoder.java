@@ -581,7 +581,7 @@ public class Transcoder implements Closeable {
         for (byte[] b : bb) {
             dis.readFully(b);
         }
-        if (dis.bigEndian())
+        if (dis.bigEndian() && dis.vr() == VR.OW)
             ByteUtils.swapShorts(bb);
     }
 

@@ -384,7 +384,7 @@ public class MediaTypes {
         if (mediaType.getParameters().size() > 1) {
             Map<String, String> params = new HashMap<>(mediaType.getParameters());
             params.remove("type");
-            partType = new MediaType(mediaType.getType(), mediaType.getSubtype(), params);
+            partType = new MediaType(partType.getType(), partType.getSubtype(), params);
         }
         return partType;
     }

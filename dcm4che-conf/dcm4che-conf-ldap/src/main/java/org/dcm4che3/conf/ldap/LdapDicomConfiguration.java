@@ -912,6 +912,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
         objectclass.add("dcmDevice");
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmLimitAssociationsInitiatedBy",
+                device.getLimitAssociationsInitiatedBy());
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmTrustStoreURL", device.getTrustStoreURL(), null);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmTrustStoreType", device.getTrustStoreType(), null);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmTrustStorePin", device.getTrustStorePin(), null);
@@ -1329,6 +1331,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         
         device.setLimitOpenAssociations(
                 LdapUtils.intValue(attrs.get("dcmLimitOpenAssociations"), 0));
+        device.setLimitAssociationsInitiatedBy(
+                LdapUtils.stringArray(attrs.get("dcmLimitAssociationsInitiatedBy")));
         device.setTrustStoreURL(LdapUtils.stringValue(attrs.get("dcmTrustStoreURL"), null));
         device.setTrustStoreType(LdapUtils.stringValue(attrs.get("dcmTrustStoreType"), null));
         device.setTrustStorePin(LdapUtils.stringValue(attrs.get("dcmTrustStorePin"), null));
@@ -1619,6 +1623,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiffObject(ldapObj, mods, "dcmLimitOpenAssociations",
                 a.getLimitOpenAssociations(),
                 b.getLimitOpenAssociations(), null);
+        LdapUtils.storeDiff(ldapObj, mods, "dcmLimitAssociationsInitiatedBy",
+                a.getLimitAssociationsInitiatedBy(),
+                b.getLimitAssociationsInitiatedBy());
         LdapUtils.storeDiffObject(ldapObj, mods, "dcmTrustStoreURL",
                 a.getTrustStoreURL(),
                 b.getTrustStoreURL(), null);

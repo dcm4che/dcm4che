@@ -185,6 +185,7 @@ public class JsonConfiguration {
         if (extended) {
             gen.writeStartObject("dcmDevice");
             writer.writeNotDef("dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
+            writer.writeNotEmpty("dcmLimitAssociationsInitiatedBy", device.getLimitAssociationsInitiatedBy());
             writer.writeNotNullOrDef("dcmTrustStoreURL", device.getTrustStoreURL(), null);
             writer.writeNotNullOrDef("dcmTrustStoreType", device.getTrustStoreType(), null);
             writer.writeNotNullOrDef("dcmTrustStorePin", device.getTrustStorePin(), null);
@@ -299,6 +300,9 @@ public class JsonConfiguration {
                         switch (reader.getString()) {
                             case "dcmLimitOpenAssociations":
                                 device.setLimitOpenAssociations(reader.intValue());
+                                break;
+                            case "dcmLimitAssociationsInitiatedBy":
+                                device.setLimitAssociationsInitiatedBy(reader.stringArray());
                                 break;
                             case "dcmTrustStoreURL":
                                 device.setTrustStoreURL(reader.stringValue());

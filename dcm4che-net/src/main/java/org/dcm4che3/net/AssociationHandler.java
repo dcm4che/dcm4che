@@ -87,7 +87,7 @@ public class AssociationHandler {
         UserIdentityAC userIdentity = getUserIdNegotiator() != null
                 ? getUserIdNegotiator().negotiate(as, rq.getUserIdentityRQ())
                 : null;
-        if (ae.getDevice().isLimitOfOpenAssociationsExceeded())
+        if (ae.getDevice().isLimitOfAssociationsExceeded(rq))
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
                     AAssociateRJ.SOURCE_SERVICE_PROVIDER_PRES,
                     AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);

@@ -43,17 +43,8 @@ import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TimeZone;
 import java.util.concurrent.*;
 
 import javax.net.ssl.KeyManager;
@@ -62,6 +53,7 @@ import javax.net.ssl.TrustManager;
 
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
+import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.util.StringUtils;
 
 /**
@@ -115,6 +107,7 @@ public class Device implements Serializable {
     private boolean installed = true;
     private TimeZone timeZoneOfDevice;
 
+    private final LinkedHashMap<String, Integer> limitAssociationsInitiatedBy = new LinkedHashMap<>();
     private final LinkedHashMap<String, X509Certificate[]> authorizedNodeCertificates =
             new LinkedHashMap<String, X509Certificate[]>();
     private final LinkedHashMap<String, X509Certificate[]> thisNodeCertificates = 
@@ -891,6 +884,70 @@ public class Device implements Serializable {
         this.limitOpenAssociations = limit;
     }
 
+    /** Returns maximal number of open Associations which can be initiated by the specified remote AE.
+     * If the limit is exceeded, further Association requests from that AE will be rejected with
+     * Result = 2 - rejected-transient, Source = 1 - DICOM UL service-user, Reason = 2 - local-limit-exceeded.
+     *
+     * @param callingAET AE Title of remote AE.
+     * @return maximal number of open Associations or 0 for no limit.
+     * @throws NullPointerException if callingAET is null.
+     *
+     * @see #setLimitAssociationsInitiatedBy(String, int)
+     */
+    public int getLimitAssociationsInitiatedBy(String callingAET) {
+        Integer value = limitAssociationsInitiatedBy.get(Objects.requireNonNull(callingAET));
+        return value != null ? value.intValue() : 0;
+    }
+
+    /** Sets maximal number of open Associations which can be initiated by the specified remote AE.
+     * If the limit is exceeded, further Association requests from that AE will be rejected with
+     * Result = 2 - rejected-transient, Source = 1 - DICOM UL service-user, Reason = 2 - local-limit-exceeded.
+     *
+     * @param callingAET AE Title of remote AE.
+     * @param limit maximal number of open Associations or 0 for no limit.
+     * @throws NullPointerException if callingAET is null.
+     * @throws IllegalArgumentException if limit is lesser than zero.
+     *
+     * @see #getLimitAssociationsInitiatedBy(String)
+     */
+    public void setLimitAssociationsInitiatedBy(String callingAET, int limit) {
+        Objects.requireNonNull(callingAET);
+        if (limit < 0)
+            throw new IllegalArgumentException("limit: " + limit);
+
+        if (limit > 0)
+            limitAssociationsInitiatedBy.put(callingAET, limit);
+        else
+            limitAssociationsInitiatedBy.remove(callingAET);
+    }
+
+    public String[] getLimitAssociationsInitiatedBy() {
+        String[] ss = new String[limitAssociationsInitiatedBy.size()];
+        int i = 0;
+        for (Entry<String, Integer> entry : limitAssociationsInitiatedBy.entrySet()) {
+            ss[i++] = entry.getKey() + '=' + entry.getValue();
+        }
+        return ss;
+    }
+
+    public void setLimitAssociationsInitiatedBy(String[] values) {
+        Map<String, Integer> tmp = new HashMap<>();
+        for (String value : values) {
+            int endIndex = value.lastIndexOf('=');
+            try {
+                tmp.put(value.substring(0, endIndex), Integer.valueOf(value.substring(endIndex + 1)));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(value);
+            }
+        }
+        setLimitAssociationsInitiatedBy(tmp);
+    }
+
+    private void setLimitAssociationsInitiatedBy(Map<String, Integer> tmp) {
+        limitAssociationsInitiatedBy.clear();
+        limitAssociationsInitiatedBy.putAll(tmp);
+    }
+
     void addAssociation(Association as) {
         synchronized (associations) {
             associations.add(as);
@@ -914,6 +971,17 @@ public class Device implements Serializable {
         return associations.size();
     }
 
+    public int getNumberOfAssociationsInitiatedBy(String callingAET) {
+        synchronized (associations) {
+            int count = 0;
+            for (Association association : associations) {
+                if (callingAET.equals(association.getCallingAET()))
+                    count++;
+            }
+            return count;
+        }
+    }
+
     public void waitForNoOpenConnections() throws InterruptedException {
         synchronized (associations) {
             while (!associations.isEmpty())
@@ -921,8 +989,11 @@ public class Device implements Serializable {
         }
     }
 
-    public boolean isLimitOfOpenAssociationsExceeded() {
-        return limitOpenAssociations > 0 && associations.size() > limitOpenAssociations;
+    public boolean isLimitOfAssociationsExceeded(AAssociateRQ rq) {
+        Integer limit;
+        return limitOpenAssociations > 0 && associations.size() > limitOpenAssociations
+                || (limit = limitAssociationsInitiatedBy.get(rq.getCallingAET())) != null
+                && getNumberOfAssociationsInitiatedBy(rq.getCallingAET()) > limit;
     }
 
     public ApplicationEntity getApplicationEntity(String aet) {
@@ -1170,6 +1241,7 @@ public class Device implements Serializable {
         setVendorData(from.vendorData);
         setLimitOpenAssociations(from.limitOpenAssociations);
         setInstalled(from.installed);
+        setLimitAssociationsInitiatedBy(from.limitAssociationsInitiatedBy);
      }
 
      private void setAuthorizedNodeCertificates(Map<String, X509Certificate[]> from) {

@@ -73,7 +73,7 @@ public class WadoWS {
     private static final String DEFAULT_REPOSITORY_UNIQUE_ID = "1.3.6.1.4.1.21367.13.80.110"; //change this later by looking into what is used for XDS tools
     private static ImagingDocumentSource service;
     private static String url;
-    private static String requestType;
+    private static boolean rendered;
     private static String rows;
     private static String columns;
     private static String windowWidth;
@@ -97,6 +97,10 @@ public class WadoWS {
         } catch (ParseException e) {
             System.err.println("wadows: " + e.getMessage());
             System.err.println(rb.getString("try"));
+            System.exit(2);
+        } catch (StringIndexOutOfBoundsException e) {
+            System.err.println("wadows: " + e.getMessage());
+            System.err.println(rb.getString("study"));
             System.exit(2);
         } catch (Exception e) {
             System.err.println("wadows: " + e.getMessage());
@@ -127,49 +131,42 @@ public class WadoWS {
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
-                .argName("repository-unique-id")
+                .argName("uid")
                 .longOpt("repository-unique-id")
                 .desc(rb.getString("repository-unique-id"))
                 .build());
         opts.addOption(Option.builder()
-                .hasArg()
-                .argName("request-type")
-                .longOpt("request-type")
-                .desc(rb.getString("request-type"))
+                .longOpt("rendered")
+                .hasArg(false)
+                .desc(rb.getString("rendered"))
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
-                .argName("rows")
                 .longOpt("rows")
                 .desc(rb.getString("rows"))
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
-                .argName("columns")
                 .longOpt("columns")
                 .desc(rb.getString("columns"))
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
-                .argName("window-width")
                 .longOpt("window-width")
                 .desc(rb.getString("window-width"))
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
-                .argName("window-center")
                 .longOpt("window-center")
                 .desc(rb.getString("window-center"))
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
-                .argName("image-quality")
                 .longOpt("image-quality")
                 .desc(rb.getString("image-quality"))
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
-                .argName("frame-number")
                 .longOpt("frame-number")
                 .desc(rb.getString("frame-number"))
                 .build());
@@ -188,13 +185,12 @@ public class WadoWS {
         OptionGroup reqGroup = new OptionGroup();
         reqGroup.addOption(Option.builder("f")
                 .hasArg()
-                .argName("file")
                 .longOpt("file")
+                .argName("file")
                 .desc(rb.getString("file"))
                 .build());
         reqGroup.addOption(Option.builder()
                 .hasArg()
-                .argName("study")
                 .longOpt("study")
                 .desc(rb.getString("study"))
                 .build());
@@ -205,10 +201,9 @@ public class WadoWS {
     private static void init(CommandLine cl, WadoWS wadoWS) throws Exception {
         if ((url = cl.getOptionValue("url")) == null)
             throw new MissingOptionException("Missing url.");
-        if ((requestType = cl.getOptionValue("request-type")) == null)
-            throw new MissingOptionException("Missing request type.");
         if (!cl.hasOption("study") && !cl.hasOption("f"))
             throw new MissingOptionException("Specify either -f or --study option");
+        rendered = cl.hasOption("rendered");
         service = new ImagingDocumentSource();
         rows = cl.getOptionValue("rows");
         columns = cl.getOptionValue("columns");
@@ -231,10 +226,12 @@ public class WadoWS {
 
     private void wado() throws Exception {
         ImagingDocumentSourcePortType port = port();
-        if (requestType.equals("RetrieveRenderedImagingDocumentSetRequest")) {
+        if (rendered) {
             RetrieveRenderedImagingDocumentSetResponseType retrieveRenderedImagingDocumentSetResponseType
-                    = port.imagingDocumentSourceRetrieveRenderedImagingDocumentSet(createRetrieveRenderedImagingDocumentSetRequest());
-            List<RenderedDocumentResponse> renderedDocumentResponse = retrieveRenderedImagingDocumentSetResponseType.getRenderedDocumentResponse();
+                    = port.imagingDocumentSourceRetrieveRenderedImagingDocumentSet(
+                            createRetrieveRenderedImagingDocumentSetRequest());
+            List<RenderedDocumentResponse> renderedDocumentResponse = retrieveRenderedImagingDocumentSetResponseType
+                                                                        .getRenderedDocumentResponse();
             for (RenderedDocumentResponse rsp : renderedDocumentResponse)
                 write(rsp.getDocument().getInputStream());
             return;
@@ -362,8 +359,8 @@ public class WadoWS {
 
     private static Attributes toAttributes(String study) {
         String instanceSeparator = ",";
-        char beginReferencedObj = '(';
-        String seriesSplitterRegex = "(\\),)";
+        char beginReferencedObj = '[';
+        String seriesSplitterRegex = "(],)";
         
         Attributes attrs = new Attributes();
         Attributes refStudy = new Attributes();
@@ -375,7 +372,7 @@ public class WadoWS {
             int instanceListStart = series.indexOf(beginReferencedObj);
             Attributes refSeries = new Attributes();
             refSeries.setString(Tag.SeriesInstanceUID, VR.UI, series.substring(0, instanceListStart));
-            String[] instances = series.substring(instanceListStart + 1).replace(')', ' ').split(instanceSeparator);
+            String[] instances = series.substring(instanceListStart + 1).replace(']', ' ').split(instanceSeparator);
             Sequence refSopSequence = refSeries.newSequence(Tag.ReferencedSOPSequence, instances.length);
             for (String instance : instances) {
                 Attributes refSop = new Attributes();

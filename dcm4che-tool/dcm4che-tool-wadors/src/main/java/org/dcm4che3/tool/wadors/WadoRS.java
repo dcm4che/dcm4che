@@ -200,7 +200,7 @@ public class WadoRS {
                 @Override
                 public void bodyPart(int partNumber, MultipartInputStream multipartInputStream) throws IOException {
                     Map<String, List<String>> headerParams = multipartInputStream.readHeaderParams();
-                    LOG.info("Extract Part #{}{}" + partNumber + headerParams);
+                    LOG.info("Extract Part #{}{}", partNumber, headerParams);
                     try {
                         if (!input.writeBodyPart(multipartInputStream)) {
                             LOG.info("{}: Ignore Part with Content-Type={}"

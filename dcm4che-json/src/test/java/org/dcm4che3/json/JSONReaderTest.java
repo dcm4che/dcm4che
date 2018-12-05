@@ -58,7 +58,9 @@ public class JSONReaderTest {
 
     private static final String JSON = "{" +
             "\"00720064\":{\"vr\":\"IS\",\"Value\":[null,1]}," +
-            "\"00720072\":{\"vr\":\"DS\",\"Value\":[null,1.0]}}";
+            "\"00720072\":{\"vr\":\"DS\",\"Value\":[null,1.0]}," +
+            "\"00720074\":{\"vr\":\"FD\",\"Value\":[-1.7976931348623157E308,null,1.7976931348623157E308]}," +
+            "\"00720076\":{\"vr\":\"FL\",\"Value\":[-3.4028234663852886E38,null,3.4028234663852886E38]}}";
     private static final String[] IS = { null, "1" };
     private static final String[] DS = { null, "1.0" };
 
@@ -69,6 +71,22 @@ public class JSONReaderTest {
         Attributes dataset = new JSONReader(parser).readDataset(null);
         assertArrayEquals(IS, dataset.getStrings(Tag.SelectorISValue));
         assertArrayEquals(DS, dataset.getStrings(Tag.SelectorDSValue));
+        assertInfinityAndNaN(dataset.getDoubles(Tag.SelectorFDValue));
+        assertInfinityAndNaN(dataset.getFloats(Tag.SelectorFLValue));
+    }
+
+    private static void assertInfinityAndNaN(double[] doubles) {
+        assertEquals(3, doubles.length);
+        assertTrue(Double.NEGATIVE_INFINITY == doubles[0]);
+        assertTrue(Double.isNaN(doubles[1]));
+        assertTrue(Double.POSITIVE_INFINITY == doubles[2]);
+    }
+
+    private static void assertInfinityAndNaN(float[] floats) {
+        assertEquals(3, floats.length);
+        assertTrue(Float.NEGATIVE_INFINITY == floats[0]);
+        assertTrue(Float.isNaN(floats[1]));
+        assertTrue(Float.POSITIVE_INFINITY == floats[2]);
     }
 
 }

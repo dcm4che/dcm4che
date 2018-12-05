@@ -42,6 +42,8 @@ import org.dcm4che3.data.*;
 import org.dcm4che3.data.PersonName.Group;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;
@@ -57,6 +59,8 @@ import java.util.List;
  *
  */
 public class JSONReader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JSONReader.class);
 
     public interface Callback {
 
@@ -213,6 +217,8 @@ public class JSONReader {
                 attrs.setString(tag, el.vr, el.toStrings());
                 break;
             case FL:
+                attrs.setFloat(tag, el.vr, el.toFloats());
+                break;
             case FD:
                 attrs.setDouble(tag, el.vr, el.toDoubles());
                 break;
@@ -386,9 +392,47 @@ public class JSONReader {
         double[] toDoubles() {
             double[] ds = new double[values.size()];
             for (int i = 0; i < ds.length; i++) {
-                ds[i] = ((Number) values.get(i)).doubleValue();
+                Number number = (Number) values.get(i);
+                double d;
+                if (number == null) {
+                    LOG.info("decode {} null as NaN", vr);
+                    d = Double.NaN;
+                } else {
+                    d = number.doubleValue();
+                    if (d == -Double.MAX_VALUE) {
+                        LOG.info("decode {} {} as -Infinity", vr, d);
+                        d = Double.NEGATIVE_INFINITY;
+                    } else if (d == Double.MAX_VALUE) {
+                        LOG.info("decode {} {} as Infinity", vr, d);
+                        d = Double.POSITIVE_INFINITY;
+                    }
+                }
+                ds[i] = d;
             }
             return ds;
+        }
+
+        float[] toFloats() {
+            float[] fs = new float[values.size()];
+            for (int i = 0; i < fs.length; i++) {
+                Number number = (Number) values.get(i);
+                float f;
+                if (number == null) {
+                    LOG.info("decode {} null as NaN", vr);
+                    f = Float.NaN;
+                } else {
+                    f = number.floatValue();
+                    if (f == -Float.MAX_VALUE) {
+                        LOG.info("decode {} {} as -Infinity", vr, f);
+                        f = Float.NEGATIVE_INFINITY;
+                    } else if (f == Float.MAX_VALUE) {
+                        LOG.info("decode {} {} as Infinity", vr, f);
+                        f = Float.POSITIVE_INFINITY;
+                    }
+                }
+                fs[i] = f;
+            }
+            return fs;
         }
 
         int[] toInts() {

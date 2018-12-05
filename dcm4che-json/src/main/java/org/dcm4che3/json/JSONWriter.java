@@ -272,7 +272,20 @@ public class JSONWriter implements DicomInputHandler {
         gen.writeStartArray("Value");
         int vm = vr.vmOf(val);
         for (int i = 0; i < vm; i++) {
-            gen.write(vr.toDouble(val, bigEndian, i, 0));
+            double d = vr.toDouble(val, bigEndian, i, 0);
+            if (Double.isNaN(d)) {
+                LOG.info("encode {} NaN as null", vr);
+                gen.writeNull();
+            } else {
+                if (d == Double.POSITIVE_INFINITY) {
+                    d = vr == VR.FD ? Double.MAX_VALUE : Float.MAX_VALUE;
+                    LOG.info("encode {} Infinity as {}", vr, d);
+                } else if (d == Double.NEGATIVE_INFINITY) {
+                    d = vr == VR.FD ? -Double.MAX_VALUE : -Float.MAX_VALUE;
+                    LOG.info("encode {} -Infinity as {}", vr, d);
+                }
+                gen.write(d);
+            }
         }
         gen.writeEnd();
     }

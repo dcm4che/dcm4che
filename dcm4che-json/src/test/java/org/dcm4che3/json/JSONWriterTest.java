@@ -88,6 +88,10 @@ public class JSONWriterTest {
                 + "{\"BulkDataURI\":\"file:/PixelData\"}"
             + "]}}";
 
+    private String INFINITY_AND_NAN = "{" +
+            "\"00720074\":{\"vr\":\"FD\",\"Value\":[-1.7976931348623157E308,null,1.7976931348623157E308]}," +
+            "\"00720076\":{\"vr\":\"FL\",\"Value\":[-3.4028234663852886E38,null,3.4028234663852886E38]}}";
+
     @Test
     public void test() {
         Attributes dataset = new Attributes();
@@ -112,6 +116,17 @@ public class JSONWriterTest {
         new JSONWriter(gen).write(dataset);
         gen.flush();
         assertEquals(RESULT, writer.toString());
+    }
+    @Test
+    public void testInfinityAndNaN() {
+        Attributes dataset = new Attributes();
+        dataset.setDouble(Tag.SelectorFDValue, VR.FD, Double.NEGATIVE_INFINITY, Double.NaN, Double.POSITIVE_INFINITY);
+        dataset.setFloat(Tag.SelectorFLValue, VR.FL, Float.NEGATIVE_INFINITY, Float.NaN, Float.POSITIVE_INFINITY);
+        StringWriter writer = new StringWriter();
+        JsonGenerator gen = Json.createGenerator(writer);
+        new JSONWriter(gen).write(dataset);
+        gen.flush();
+        assertEquals(INFINITY_AND_NAN, writer.toString());
     }
 
 }

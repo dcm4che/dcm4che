@@ -73,9 +73,9 @@
 		</operation>
 		<operation name="ImagingDocumentSource_RetrieveRenderedImagingDocumentSet">
 			<input message="iherad:RetrieveRenderedImagingDocumentSetRequest_Message"
-				wsaw:Action="urn:dicom:ws:wado:2011:RetrieveRenderedImagingDocumentSet" />
+				wsaw:Action="urn:dicom:wado:ws:2011:RetrieveRenderedImagingDocumentSet" />
 			<output message="iherad:RetrieveRenderedImagingDocumentSetResponse_Message"
-				wsaw:Action="urn:dicom:ws:wado:2011:RetrieveRenderedImagingDocumentSetResponse" />
+				wsaw:Action="urn:dicom:wado:ws:2011:RetrieveRenderedImagingDocumentSetResponse" />
 		</operation>
 	</portType>
 	<binding name="ImagingDocumentSource_Binding" type="iherad:ImagingDocumentSource_PortType">
@@ -92,7 +92,7 @@
 			</output>
 		</operation>
 		<operation name="ImagingDocumentSource_RetrieveRenderedImagingDocumentSet">
-			<soap12:operation soapAction="urn:dicom:ws:wado:2011:RetrieveRenderedImagingDocumentSet" />
+			<soap12:operation soapAction="urn:dicom:wado:ws:2011:RetrieveRenderedImagingDocumentSet" />
 			<input>
 				<soap12:body use="literal" />
 			</input>

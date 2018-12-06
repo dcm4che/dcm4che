@@ -278,10 +278,10 @@ public class JSONWriter implements DicomInputHandler {
                 gen.writeNull();
             } else {
                 if (d == Double.POSITIVE_INFINITY) {
-                    d = vr == VR.FD ? Double.MAX_VALUE : Float.MAX_VALUE;
+                    d = Double.MAX_VALUE;
                     LOG.info("encode {} Infinity as {}", vr, d);
                 } else if (d == Double.NEGATIVE_INFINITY) {
-                    d = vr == VR.FD ? -Double.MAX_VALUE : -Float.MAX_VALUE;
+                    d = -Double.MAX_VALUE;
                     LOG.info("encode {} -Infinity as {}", vr, d);
                 }
                 gen.write(d);

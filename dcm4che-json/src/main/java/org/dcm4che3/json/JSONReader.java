@@ -217,8 +217,6 @@ public class JSONReader {
                 attrs.setString(tag, el.vr, el.toStrings());
                 break;
             case FL:
-                attrs.setFloat(tag, el.vr, el.toFloats());
-                break;
             case FD:
                 attrs.setDouble(tag, el.vr, el.toDoubles());
                 break;
@@ -410,29 +408,6 @@ public class JSONReader {
                 ds[i] = d;
             }
             return ds;
-        }
-
-        float[] toFloats() {
-            float[] fs = new float[values.size()];
-            for (int i = 0; i < fs.length; i++) {
-                Number number = (Number) values.get(i);
-                float f;
-                if (number == null) {
-                    LOG.info("decode {} null as NaN", vr);
-                    f = Float.NaN;
-                } else {
-                    f = number.floatValue();
-                    if (f == -Float.MAX_VALUE) {
-                        LOG.info("decode {} {} as -Infinity", vr, f);
-                        f = Float.NEGATIVE_INFINITY;
-                    } else if (f == Float.MAX_VALUE) {
-                        LOG.info("decode {} {} as Infinity", vr, f);
-                        f = Float.POSITIVE_INFINITY;
-                    }
-                }
-                fs[i] = f;
-            }
-            return fs;
         }
 
         int[] toInts() {

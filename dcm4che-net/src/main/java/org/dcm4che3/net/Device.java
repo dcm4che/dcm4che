@@ -1033,9 +1033,11 @@ public class Device implements Serializable {
         if (ret != null || keyStoreURL == null)
             return ret;
         String keyStorePin = keyStorePin();
-        km = ret = SSLManagerFactory.createKeyManager(keyStoreType(),
+        km = ret = SSLManagerFactory.createKeyManager(
+                        StringUtils.replaceSystemProperties(keyStoreType()),
                         StringUtils.replaceSystemProperties(keyStoreURL),
-                        keyStorePin(), keyPin(keyStorePin));
+                        StringUtils.replaceSystemProperties(keyStorePin()),
+                        StringUtils.replaceSystemProperties(keyPin(keyStorePin)));
         return ret;
     }
 
@@ -1093,9 +1095,10 @@ public class Device implements Serializable {
             return ret;
 
         tm = ret = trustStoreURL != null
-                ? SSLManagerFactory.createTrustManager(trustStoreType(),
+                ? SSLManagerFactory.createTrustManager(
+                        StringUtils.replaceSystemProperties(trustStoreType()),
                         StringUtils.replaceSystemProperties(trustStoreURL),
-                        trustStorePin())
+                        StringUtils.replaceSystemProperties(trustStorePin()))
                 : SSLManagerFactory.createTrustManager(
                         getAllAuthorizedNodeCertificates());
         return ret;

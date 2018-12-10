@@ -1,0 +1,355 @@
+version: 1
+
+dn: cn={4}dicom,cn=schema,cn=config
+changetype: modify
+delete: olcAttributeTypes
+-
+add: olcAttributeTypes
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.1
+   NAME 'dicomDeviceName'
+   DESC 'The unique name for the device'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.2
+   NAME 'dicomDescription'
+   DESC 'Textual description of the DICOM entity'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.3
+   NAME 'dicomManufacturer'
+   DESC 'The device Manufacturer name'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.4
+   NAME 'dicomManufacturerModelName'
+   DESC 'The device Manufacturer Model Name'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.5
+   NAME 'dicomSoftwareVersion'
+   DESC 'The device software version. Should be the same as the values of Software Versions (0018,1020) in SOP instances created by this device.'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.6
+   NAME 'dicomVendorData'
+   DESC 'Arbitrary vendor-specific configuration information (binary data)'
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.7
+   NAME 'dicomAETitle'
+   DESC 'Application Entity (AE) title'
+   EQUALITY caseExactIA5Match
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.8
+   NAME 'dicomNetworkConnectionReference'
+   DESC 'The DN of a dicomNetworkConnection object used by an Application Entity'
+   EQUALITY distinguishedNameMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.9
+   NAME 'dicomApplicationCluster'
+   DESC 'Application cluster name for an Application Entity (e.g. "Neuroradiology Research")'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.10
+   NAME 'dicomAssociationInitiator'
+   DESC 'Indicates if an Application Entity is capable of initiating network associations'
+   EQUALITY booleanMatch 
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.11
+   NAME 'dicomAssociationAcceptor'
+   DESC 'Indicates if an Application Entity is capable of accepting network associations'
+   EQUALITY booleanMatch 
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.12
+   NAME 'dicomHostname'
+   DESC 'DNS hostname'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.13
+   NAME 'dicomPort'
+   DESC 'TCP Port number'
+   EQUALITY  integerMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.14
+   NAME 'dicomSOPClass'
+   DESC 'A SOP Class UID'
+   EQUALITY  objectIdentifierMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.38
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.15
+   NAME 'dicomTransferRole'
+   DESC 'Transfer role (either "SCU" or "SCP")'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.16
+   NAME 'dicomTransferSyntax'
+   DESC 'A Transfer Syntax UID'
+   EQUALITY  objectIdentifierMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.17
+   NAME 'dicomPrimaryDeviceType'
+   DESC 'The device Primary Device type'
+   EQUALITY caseExactIA5Match
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.18
+   NAME 'dicomRelatedDeviceReference'
+   DESC 'The DN of a related device description outside the DICOM Configuration Hierachy'
+   EQUALITY distinguishedNameMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.19
+   NAME 'dicomPreferredCalledAETitle'
+   DESC 'AE Title(s) to which associations may be preferably initiated.'
+   EQUALITY caseExactIA5Match
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.20
+   NAME 'dicomTLSCipherSuite'
+   DESC 'The supported TLS CipherSuites'
+   EQUALITY caseExactIA5Match
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.21
+   NAME 'dicomAuthorizedNodeCertificateReference'
+   DESC 'The DN of a Certificate for a DICOM node that is authorized to connect to this node'
+   EQUALITY distinguishedNameMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.22
+   NAME 'dicomThisNodeCertificateReference'
+   DESC 'The DN of a related device description outside the DICOM Configuration Hierachy'
+   EQUALITY distinguishedNameMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.23
+   NAME 'dicomInstalled'
+   DESC 'Indicates if the DICOM object (device, Network AE, or Port) is presently installed'
+   EQUALITY booleanMatch 
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.24
+   NAME 'dicomStationName'
+   DESC 'Station Name of the device.  Should be the same as the value of Station Name (0008,1010) in SOP instances created by this device.'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+   SINGLE-VALUE)
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.25
+   NAME 'dicomDeviceSerialNumber'
+   DESC 'Serial number of the device. Should be the same as the value of Device Serial Number (0018,1000) in SOP instances created by this device.'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+   SINGLE-VALUE)
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.26
+   NAME 'dicomInstitutionName'
+   DESC 'Institution name of the device. Should be the same as the value of Institution Name (0008,0080) in SOP Instances created by this device.'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.27
+   NAME 'dicomInstitutionAddress'
+   DESC 'Institution address of the device.  Should be the same as the value of Institution Address (0008,0081) attribute in SOP Instances created by this device.'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.28
+   NAME 'dicomInstitutionDepartmentName'
+   DESC 'Institution department name of the device.  Should be the same as the value of Institutional Department Name (0008,1040) in SOP Instances created by this device.'
+   EQUALITY caseIgnoreMatch
+   SUBSTR caseIgnoreSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.29
+    NAME 'dicomIssuerOfPatientID'
+    DESC 'Default value for the Issuer of Patient ID (0010,0021), and optionally also default values for the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Patient ID Qualifiers Sequence (0010,0024), for SOP Instances created or queried by this device.  May be overridden by the values received in a worklist or other source.'
+    EQUALITY caseExactMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.30
+   NAME 'dicomPreferredCallingAETitle'
+   DESC 'AE Title(s) to which associations may be preferably accepted.'
+   EQUALITY caseExactIA5Match
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.31
+   NAME 'dicomSupportedCharacterSet'
+   DESC 'The Character Set(s) supported by the Network AE for data sets it receives.'
+   EQUALITY caseExactIA5Match
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.32
+    NAME 'dicomIssuerOfAccessionNumber'
+    DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Accession Number Sequence (0008,0051) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+    EQUALITY caseExactMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.33
+    NAME 'dicomOrderPlacerIdentifier'
+    DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Placer Identifier Sequence (0040,0026) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+    EQUALITY caseExactMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.34
+    NAME 'dicomOrderFillerIdentifier'
+    DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Filler Identifier Sequence (0040,0027) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+    EQUALITY caseExactMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.35
+    NAME 'dicomIssuerOfAdmissionID'
+    DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Admission ID Sequence (0038,0014) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+    EQUALITY caseExactMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.36
+    NAME 'dicomIssuerOfServiceEpisodeID'
+    DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Service Episode ID Sequence (0038,0064) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+    EQUALITY caseExactMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.37
+    NAME 'dicomIssuerOfContainerIdentifier'
+    DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Container Identifier Sequence (0040,0513) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+    EQUALITY caseExactMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.38
+    NAME 'dicomIssuerOfSpecimenIdentifier'
+    DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Specimen Identifier Sequence (0040,0562) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+    EQUALITY caseExactMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.39
+   NAME 'dicomInstitutionCode'
+   DESC 'Institution code of the device. Should be the same as the code specified by the Institution Code Sequence (0008,0082) in SOP Instances created by this device.'
+   EQUALITY caseExactMatch
+   SUBSTR caseExactSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.40
+   NAME 'dicomDeviceUID'
+   DESC 'Unique identifier of the device.'
+   EQUALITY  objectIdentifierMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.38
+   SINGLE-VALUE )
+-
+delete: olcObjectClasses
+-
+add: olcObjectClasses
+olcObjectClasses: ( 1.2.840.10008.15.0.4.1
+   NAME 'dicomConfigurationRoot'
+   DESC 'Root of the DICOM Configuration Hierarchy'
+   SUP top
+   STRUCTURAL
+   MUST ( cn ) 
+   MAY ( description ) )
+olcObjectClasses: ( 1.2.840.10008.15.0.4.2
+   NAME 'dicomDevicesRoot'
+   DESC 'Root of the DICOM Devices Hierarchy'
+   SUP top
+   STRUCTURAL
+   MUST ( cn ) 
+   MAY ( description ) )
+olcObjectClasses: ( 1.2.840.10008.15.0.4.3
+   NAME 'dicomUniqueAETitlesRegistryRoot'
+   DESC 'Root of the Unique DICOM AE-Title Registry Hierarchy'
+   SUP top
+   STRUCTURAL
+   MUST ( cn ) 
+   MAY ( description ) )
+olcObjectClasses: ( 1.2.840.10008.15.0.4.4
+   NAME 'dicomDevice'
+   DESC 'DICOM Device related information'
+   SUP top
+   STRUCTURAL
+   MUST ( 
+      dicomDeviceName $
+      dicomInstalled ) 
+   MAY  (
+      dicomDescription $
+      dicomDeviceUID $
+      dicomManufacturer $
+      dicomManufacturerModelName $
+      dicomSoftwareVersion $
+      dicomStationName $
+      dicomDeviceSerialNumber $
+      dicomInstitutionName $
+      dicomInstitutionAddress $
+      dicomInstitutionCode $
+      dicomInstitutionDepartmentName $
+      dicomIssuerOfPatientID $
+      dicomIssuerOfAccessionNumber $
+      dicomOrderPlacerIdentifier $
+      dicomOrderFillerIdentifier $
+      dicomIssuerOfAdmissionID $
+      dicomIssuerOfServiceEpisodeID $
+      dicomIssuerOfContainerIdentifier $
+      dicomIssuerOfSpecimenIdentifier $
+      dicomVendorData $
+      dicomPrimaryDeviceType $
+      dicomRelatedDeviceReference $
+      dicomAuthorizedNodeCertificateReference $
+      dicomThisNodeCertificateReference) )
+olcObjectClasses: ( 1.2.840.10008.15.0.4.5
+   NAME 'dicomNetworkAE'
+   DESC 'DICOM Network AE related information'
+   SUP top
+   STRUCTURAL
+   MUST (
+      dicomAETitle $ 
+      dicomNetworkConnectionReference $
+      dicomAssociationInitiator $
+      dicomAssociationAcceptor )
+   MAY ( 
+      dicomDescription $
+      dicomVendorData $
+      dicomApplicationCluster $
+      dicomPreferredCalledAETitle $
+      dicomPreferredCallingAETitle $
+      dicomSupportedCharacterSet $
+      dicomInstalled ) )
+olcObjectClasses: ( 1.2.840.10008.15.0.4.6
+   NAME 'dicomNetworkConnection'
+   DESC 'DICOM Network Connection information'
+   SUP top
+   STRUCTURAL
+   MUST ( dicomHostname )
+   MAY ( 
+      cn $
+      dicomPort $
+      dicomTLSCipherSuite $
+      dicomInstalled ) )
+olcObjectClasses: ( 1.2.840.10008.15.0.4.7
+   NAME 'dicomUniqueAETitle'
+   DESC 'A Unique DICOM Application Entity title'
+   SUP top
+   STRUCTURAL
+   MUST ( dicomAETitle ) )
+olcObjectClasses: ( 1.2.840.10008.15.0.4.8
+   NAME 'dicomTransferCapability'
+   DESC 'Transfer Capabilities for an Application Entity'
+   SUP top
+   STRUCTURAL
+   MUST (
+      dicomSOPClass $
+      dicomTransferRole $
+      dicomTransferSyntax)
+   MAY (
+      cn) )

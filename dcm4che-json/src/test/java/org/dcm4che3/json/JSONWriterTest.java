@@ -84,7 +84,7 @@ public class JSONWriterTest {
             + "\"00280009\":{\"vr\":\"AT\",\"Value\":[\"00181063\"]},"
             + "\"60003000\":{\"vr\":\"OW\",\"BulkDataURI\":\"file:/OverlayData\"},"
             + "\"7FE00010\":{\"vr\":\"OB\",\"DataFragment\":["
-                + "{},"
+                + "{\"InlineBinary\":\"\"},"
                 + "{\"BulkDataURI\":\"file:/PixelData\"}"
             + "]}}";
 

@@ -48,6 +48,7 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -155,9 +156,15 @@ public class BulkData implements Value {
     public InputStream openStream() throws IOException {
         if (uri == null)
             throw new IllegalStateException("uri: null");
- 
-        if (!uri.startsWith("file:"))
-            return new URL(uri).openStream();
+
+        if (!getURI().startsWith("file:")) {
+            URL url = new URL(getURI());
+            URLConnection connection = url.openConnection();
+            long end = offset() + length();
+            connection.setRequestProperty("Range", "bytes=" + offset() + "-" + end);
+
+            return connection.getInputStream();
+        }
 
         InputStream in = new FileInputStream(getFile());
         StreamUtils.skipFully(in, offset);

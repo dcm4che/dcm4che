@@ -195,6 +195,10 @@ public class JSONReader {
 
         if (el.isEmpty())
             attrs.setNull(tag, el.vr);
+        else if (el.bulkDataURI != null) {
+            if (!skipBulkDataURI)
+                attrs.setValue(tag, el.vr, new BulkData(null, el.bulkDataURI, false));
+        }
         else switch (el.vr) {
             case AE:
             case AS:
@@ -237,10 +241,7 @@ public class JSONReader {
             case UN:
                 if (el.bytes != null)
                     attrs.setBytes(tag, el.vr, el.bytes);
-                else if (el.bulkDataURI != null) {
-                    if (!skipBulkDataURI)
-                        attrs.setValue(tag, el.vr, new BulkData(null, el.bulkDataURI, false));
-                } else
+                else
                     el.toFragments(attrs.newFragments(tag, el.vr, el.values.size()));
         }
     }
@@ -348,7 +349,7 @@ public class JSONReader {
         next();
         byte[] bytes = null;
         String bulkDataURI = null;
-        while (next() != Event.KEY_NAME) {
+        while ( event == Event.KEY_NAME ) {
             switch (getString()) {
                 case "BulkDataURI":
                     bulkDataURI = valueString();
@@ -361,6 +362,7 @@ public class JSONReader {
                             + "\", expected \"InlineBinary\""
                             + " or \"BulkDataURI\"", parser.getLocation());
             }
+            if (next() == Event.KEY_NAME) break;
         }
         expect(Event.END_OBJECT);
         return bulkDataURI != null && !skipBulkDataURI

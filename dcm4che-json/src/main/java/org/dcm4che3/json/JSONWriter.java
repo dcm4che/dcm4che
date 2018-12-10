@@ -77,7 +77,7 @@ public class JSONWriter implements DicomInputHandler {
 
     private TagDict tagDict;
     
-    public JSONWriter(JsonGenerator gen, ElementDictionary dict) {
+    public JSONWriter(JsonGenerator gen, final ElementDictionary dict) {
         this(gen);        
         // branch in constructor once to save comparisons for each tag
         // used anonymous class instead of lambda for compat with older java  

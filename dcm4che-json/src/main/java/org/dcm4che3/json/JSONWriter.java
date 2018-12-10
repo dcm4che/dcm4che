@@ -46,6 +46,7 @@ import javax.json.stream.JsonGenerator;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.PersonName;
 import org.dcm4che3.data.Value;
@@ -71,11 +72,31 @@ public class JSONWriter implements DicomInputHandler {
     private static final Logger LOG = LoggerFactory.getLogger(JSONWriter.class);
 
     private final JsonGenerator gen;
-    private final Deque<Boolean> hasItems = new ArrayDeque<Boolean>();
+    private final Deque<Boolean> hasItems = new ArrayDeque<>();
     private String replaceBulkDataURI;
 
+    private TagDict tagDict;
+    
+    public JSONWriter(JsonGenerator gen, ElementDictionary dict) {
+        this(gen);        
+        // branch in constructor once to save comparisons for each tag
+        // used anonymous class instead of lambda for compat with older java  
+        this.tagDict = new TagDict() {
+          @Override
+          protected String toTagName(int tag) {
+            return dict.keywordOf(tag);
+          }
+        };     
+    }
+    
     public JSONWriter(JsonGenerator gen) {
         this.gen = gen;
+        this.tagDict = new TagDict() {
+          @Override
+          protected String toTagName(int tag) {
+            return TagUtils.toHexString(tag);
+          }
+        };        
     }
 
     public String getReplaceBulkDataURI() {
@@ -105,12 +126,12 @@ public class JSONWriter implements DicomInputHandler {
         gen.writeEnd();
     }
 
-    private void writeAttribute(int tag, VR vr, Object value,
-            SpecificCharacterSet cs, Attributes attrs) {
+    private void writeAttribute(int tag, VR vr, Object value, SpecificCharacterSet cs, Attributes attrs) {
+        
         if (TagUtils.isGroupLength(tag))
             return;
 
-        gen.writeStartObject(TagUtils.toHexString(tag));
+        gen.writeStartObject(tagDict.toTagName(tag));
         gen.write("vr", vr.name());
         if (value instanceof Value)
             writeValue((Value) value, attrs.bigEndian());
@@ -160,7 +181,7 @@ public class JSONWriter implements DicomInputHandler {
         } else if (dis.isExcludeBulkData()) {
             dis.readValue(dis, attrs);
         } else {
-            gen.writeStartObject(TagUtils.toHexString(tag));
+            gen.writeStartObject(tagDict.toTagName(tag));
             gen.write("vr", vr.name());
             if (vr == VR.SQ || len == -1) {
                 hasItems.addLast(false);
@@ -388,4 +409,9 @@ public class JSONWriter implements DicomInputHandler {
     public void endDataset(DicomInputStream dis) throws IOException {
         gen.writeEnd();
     }
+}
+
+abstract class TagDict {
+  //protected final ElementDictionary dict = ElementDictionary.getStandardElementDictionary();  
+  protected abstract String toTagName(int Tag);
 }

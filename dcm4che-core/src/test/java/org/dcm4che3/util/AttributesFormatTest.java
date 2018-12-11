@@ -43,8 +43,9 @@ import static org.junit.Assert.*;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.VR;
-import org.dcm4che3.util.AttributesFormat;
 import org.junit.Test;
+
+import java.util.regex.Pattern;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -56,6 +57,10 @@ public class AttributesFormatTest {
         "{00080020,date,yyyy/MM/dd}/{00080030,time,HH}/{0020000D,hash}/{0020000E,hash}/{00080008[1]}/{00080018}.dcm";
     private static final String TEST_PATTERN_MD5 = 
         "{00080020,date,yyyy/MM/dd}/{00080030,time,HH}/{0020000D,hash}/{0020000E,hash}/{00080018,md5}.dcm";
+    private static final String TEST_PATTERN_RND =
+        "{rnd}/{rnd,uuid}/{rnd,uid}";
+    private static final Pattern ASSERT_PATTERN_RND =
+            Pattern.compile("[0-9A-F]{8}+/[0-9a-f]{8}+(-[0-9a-f]{4}+){3}+-[0-9a-f]{12}+/2\\.25\\.\\d*");
 
     @Test
     public void testFormat() {
@@ -82,4 +87,9 @@ public class AttributesFormatTest {
                 new AttributesFormat(TEST_PATTERN_MD5).format(attrs));
     }
 
+    @Test
+    public void testFormatRND() {
+        assertTrue(ASSERT_PATTERN_RND.matcher(
+                new AttributesFormat(TEST_PATTERN_RND).format(new Attributes())).matches());
+    }
 }

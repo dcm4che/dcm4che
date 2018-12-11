@@ -50,6 +50,8 @@ import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.dcm4che3.data.Attributes;
 
@@ -127,13 +129,14 @@ public class AttributesFormat extends Format {
             formatBuilder.append(tokens.get(j++)).append('{').append(i);
             String tagStr = tokens.get(j++);
             int typeStart = tagStr.indexOf(',') + 1;
-            if (!tagStr.startsWith("now")) {
+            boolean rnd = tagStr.startsWith("rnd");
+            if (!rnd && !tagStr.startsWith("now")) {
                 int tagStrLen = typeStart != 0
                         ? typeStart - 1
                         : tagStr.length();
-                
+
                 int indexStart = tagStr.charAt(tagStrLen-1) == ']'
-                        ? tagStr.lastIndexOf('[', tagStrLen-3) + 1 
+                        ? tagStr.lastIndexOf('[', tagStrLen-3) + 1
                         : 0;
                 try {
                     tagPaths[i] = TagUtils.parseTagPath(tagStr.substring(0, indexStart != 0 ? indexStart - 1 : tagStrLen));
@@ -151,11 +154,27 @@ public class AttributesFormat extends Format {
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException(pattern);
                 }
-                if (types[i] != Type.hash && types[i] != Type.md5 && types[i] != Type.urlencoded)
-                    formatBuilder.append(
-                            typeStart > 0 ? tagStr.substring(typeStart-1) : tagStr);
+                switch (types[i]) {
+                    case number:
+                    case date:
+                    case time:
+                    case choice:
+                        formatBuilder.append(
+                                typeStart > 0 ? tagStr.substring(typeStart - 1) : tagStr);
+                }
             } else {
                 types[i] = Type.none;
+            }
+            if (rnd) {
+                switch (types[i]) {
+                    case none:
+                        types[i] = Type.rnd;
+                    case uuid:
+                    case uid:
+                        break;
+                    default:
+                        throw new IllegalArgumentException(pattern);
+                }
             }
             formatBuilder.append('}');
         }
@@ -205,7 +224,7 @@ public class AttributesFormat extends Format {
         return pattern;
     }
 
-    private static enum Type {
+    private enum Type {
         none {
             @Override
             Object toArg(Attributes attrs, int tag, int index) {
@@ -259,6 +278,24 @@ public class AttributesFormat extends Format {
                 } catch (UnsupportedEncodingException e) {
                     throw new AssertionError(e);
                 }
+            }
+        },
+        rnd {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                return TagUtils.toHexString(ThreadLocalRandom.current().nextInt());
+            }
+        },
+        uuid {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                return UUID.randomUUID();
+            }
+        },
+        uid {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                return UIDUtils.createUID();
             }
         };
 

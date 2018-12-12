@@ -41,6 +41,7 @@ package org.dcm4che3.data;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,8 +114,8 @@ public enum VR {
             if (vr != null)
                 return vr;
         } catch (IndexOutOfBoundsException e) {}
-        LOG.warn("Unrecogniced VR code: {0}H - treat as UN",
-                Integer.toHexString(code));
+        LOG.warn("Unrecognized VR code: {}H - treat as UN",
+                TagUtils.shortToHexString(code));
         return UN;
     }
 

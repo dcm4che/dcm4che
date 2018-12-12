@@ -57,31 +57,7 @@ public abstract class BulkDataDescriptor {
         @Override
         public boolean isBulkData(List<ItemPointer> itemPointer,
                 String privateCreator, int tag, VR vr, int length) {
-            switch (TagUtils.normalizeRepeatingGroup(tag)) {
-            case Tag.PixelDataProviderURL:
-            case Tag.AudioSampleData:
-            case Tag.CurveData:
-            case Tag.SpectroscopyData:
-            case Tag.OverlayData:
-            case Tag.EncapsulatedDocument:
-            case Tag.FloatPixelData:
-            case Tag.DoubleFloatPixelData:
-            case Tag.PixelData:
-                return itemPointer.isEmpty();
-            case Tag.WaveformData:
-                return itemPointer.size() == 1 
-                    && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
-            }
-            switch (vr) {
-                case OB:
-                case OD:
-                case OF:
-                case OL:
-                case OW:
-                case UN:
-                    return length > 64;
-            }
-            return false;
+            return isStandardBulkData(itemPointer, tag);
         }
     };
 
@@ -112,5 +88,25 @@ public abstract class BulkDataDescriptor {
 
     public abstract boolean isBulkData(List<ItemPointer> itemPointer,
             String privateCreator, int tag, VR vr, int length);
+
+
+    private static boolean isStandardBulkData(List<ItemPointer> itemPointer, int tag) {
+        switch (TagUtils.normalizeRepeatingGroup(tag)) {
+            case Tag.PixelDataProviderURL:
+            case Tag.AudioSampleData:
+            case Tag.CurveData:
+            case Tag.SpectroscopyData:
+            case Tag.OverlayData:
+            case Tag.EncapsulatedDocument:
+            case Tag.FloatPixelData:
+            case Tag.DoubleFloatPixelData:
+            case Tag.PixelData:
+                return itemPointer.isEmpty();
+            case Tag.WaveformData:
+                return itemPointer.size() == 1
+                        && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
+        }
+        return false;
+    }
 
 }

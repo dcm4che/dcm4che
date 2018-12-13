@@ -38,19 +38,21 @@
 
 package org.dcm4che3.data;
 
-import static org.junit.Assert.*;
-
-import java.util.Date;
-
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.DatePrecision;
-import org.dcm4che3.data.DateRange;
-import org.dcm4che3.data.VR;
+import org.dcm4che3.io.BasicBulkDataDescriptor;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StringUtils;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -434,5 +436,101 @@ public class AttributesTest {
         Attributes a = new Attributes();
 
         assertFalse(a.containsTagInRange(Tag.IssuerOfPatientID, Tag.SourcePatientGroupIdentificationSequence));
+    }
+
+    @Test
+    public void testBulkdata() throws IOException {
+        byte[] BYTES = { Byte.MIN_VALUE, 0, Byte.MAX_VALUE, 0 };
+        String[] STRINGS = { "VALUE1", "VALUE2" };
+        String[] AGES = { "018M", "018Y" };
+        String[] DATES = { "19560708", "20010203" };
+        String[] TIMES = { "1956", "2001" };
+        String[] UIDS = { "1.2.3.4", "5.6.7.8" };
+        int[] TAGS = { Tag.PatientName,  Tag.PatientID };
+        int[] INTS = { Short.MIN_VALUE,  Short.MAX_VALUE };
+        int[] UINTS = { 0xffff,  Short.MAX_VALUE };
+        float[] FLOATS = { -Float.MIN_VALUE,  0.1234f, Float.MAX_VALUE };
+        double[] DOUBLES = { -Double.MIN_VALUE,  0.1234, Double.MAX_VALUE };
+        String URI = "http://host/path";
+
+        Attributes a = new Attributes();
+        a.setString(Tag.SelectorAEValue, VR.AE, STRINGS);
+        a.setString(Tag.SelectorASValue, VR.AS, AGES);
+        a.setInt(Tag.SelectorATValue, VR.AT, TAGS);
+        a.setString(Tag.SelectorDAValue, VR.DA, DATES);
+        a.setString(Tag.SelectorCSValue, VR.CS, STRINGS);
+        a.setString(Tag.SelectorDTValue, VR.DT, DATES);
+        a.setInt(Tag.SelectorISValue, VR.IS, INTS);
+        a.setBytes(Tag.SelectorOBValue, VR.OB, BYTES);
+        a.setString(Tag.SelectorLOValue, VR.LO, STRINGS);
+        a.setFloat(Tag.SelectorOFValue, VR.OF, FLOATS);
+        a.setString(Tag.SelectorLTValue, VR.LT, URI);
+        a.setInt(Tag.SelectorOWValue, VR.OW, INTS);
+        a.setString(Tag.SelectorPNValue, VR.PN, STRINGS);
+        a.setString(Tag.SelectorTMValue, VR.TM, TIMES);
+        a.setString(Tag.SelectorSHValue, VR.SH, STRINGS);
+        a.setBytes(Tag.SelectorUNValue, VR.UN, BYTES);
+        a.setString(Tag.SelectorSTValue, VR.ST, URI);
+        a.setString(Tag.SelectorUCValue, VR.UC, STRINGS);
+        a.setString(Tag.SelectorUTValue, VR.UT, URI);
+        a.setString(Tag.SelectorURValue, VR.UR, URI);
+        a.setFloat(Tag.SelectorDSValue, VR.DS, FLOATS);
+        a.setDouble(Tag.SelectorODValue, VR.OD, DOUBLES);
+        a.setDouble(Tag.SelectorFDValue, VR.FD, DOUBLES);
+        a.setInt(Tag.SelectorOLValue, VR.OL, INTS);
+        a.setFloat(Tag.SelectorFLValue, VR.FL, FLOATS);
+        a.setInt(Tag.SelectorULValue, VR.UL, UINTS);
+        a.setInt(Tag.SelectorUSValue, VR.US, UINTS);
+        a.setInt(Tag.SelectorSLValue, VR.SL, INTS);
+        a.setInt(Tag.SelectorSSValue, VR.SS, INTS);
+        a.setString(Tag.SelectorUIValue, VR.UI, UIDS);
+        DicomInputStream in = asDicomInputStream(a);
+        try {
+            in.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
+            in.setBulkDataDescriptor(new BasicBulkDataDescriptor().excludeDefaults().addBulkDataAttributes(a));
+            Attributes b = in.readDataset(-1, -1);
+            assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorAEValue));
+            assertArrayEquals(AGES, b.getStrings(Tag.SelectorASValue));
+            assertArrayEquals(TAGS, b.getInts(Tag.SelectorATValue));
+            assertArrayEquals(DATES, b.getStrings(Tag.SelectorDAValue));
+            assertEquals(STRINGS[0], b.getString(Tag.SelectorCSValue));
+            assertArrayEquals(DATES, b.getStrings(Tag.SelectorDTValue));
+            assertArrayEquals(INTS, b.getInts(Tag.SelectorISValue));
+            assertArrayEquals(BYTES, b.getBytes(Tag.SelectorOBValue));
+            assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorLOValue));
+            assertArrayEquals(FLOATS, b.getFloats(Tag.SelectorOFValue), 0);
+            assertEquals(URI, b.getString(Tag.SelectorLTValue));
+            assertArrayEquals(INTS, b.getInts(Tag.SelectorOWValue));
+            assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorPNValue));
+            assertArrayEquals(TIMES, b.getStrings(Tag.SelectorTMValue));
+            assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorSHValue));
+            assertArrayEquals(BYTES, b.getBytes(Tag.SelectorUNValue));
+            assertEquals(URI, b.getString(Tag.SelectorSTValue));
+            assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorUCValue));
+            assertEquals(URI, b.getString(Tag.SelectorUTValue));
+            assertEquals(URI, b.getString(Tag.SelectorURValue));
+            assertArrayEquals(FLOATS, b.getFloats(Tag.SelectorDSValue), 0);
+            assertArrayEquals(DOUBLES, b.getDoubles(Tag.SelectorODValue), 0);
+            assertEquals(DOUBLES[0], b.getDouble(Tag.SelectorFDValue, 0), 0);
+            assertArrayEquals(INTS, b.getInts(Tag.SelectorOLValue));
+            assertEquals(FLOATS[0], b.getFloat(Tag.SelectorFLValue, 0), 0);
+            assertArrayEquals(UINTS, b.getInts(Tag.SelectorULValue));
+            assertEquals(UINTS[0], b.getInt(Tag.SelectorUSValue, 0));
+            assertArrayEquals(INTS, b.getInts(Tag.SelectorSLValue));
+            assertEquals(INTS[0], b.getInt(Tag.SelectorSSValue, 0));
+            assertArrayEquals(UIDS, b.getStrings(Tag.SelectorUIValue));
+        } finally {
+            for (File f : in.getBulkDataFiles()) {
+                f.delete();
+            }
+        }
+    }
+
+    private static DicomInputStream asDicomInputStream(Attributes a) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (DicomOutputStream out = new DicomOutputStream(baos, UID.ExplicitVRLittleEndian)) {
+            out.writeDataset(null, a);
+        }
+        return new DicomInputStream(new ByteArrayInputStream(baos.toByteArray()), UID.ExplicitVRLittleEndian);
     }
 }

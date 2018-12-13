@@ -41,27 +41,25 @@ package org.dcm4che3.io;
 import java.util.List;
 
 import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.ItemPointer;
 import org.dcm4che3.data.VR;
-import org.dcm4che3.util.TagUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public abstract class BulkDataDescriptor {
+public interface BulkDataDescriptor {
 
-    public final static BulkDataDescriptor DEFAULT = new BulkDataDescriptor() {
+    BulkDataDescriptor DEFAULT = new BulkDataDescriptor() {
 
         @Override
         public boolean isBulkData(List<ItemPointer> itemPointer,
                 String privateCreator, int tag, VR vr, int length) {
-            return isStandardBulkData(itemPointer, tag);
+            return BasicBulkDataDescriptor.isStandardBulkData(itemPointer, tag);
         }
     };
 
-    public final static BulkDataDescriptor PIXELDATA = new BulkDataDescriptor() {
+    BulkDataDescriptor PIXELDATA = new BulkDataDescriptor() {
 
         @Override
         public boolean isBulkData(List<ItemPointer> itemPointer,
@@ -70,43 +68,6 @@ public abstract class BulkDataDescriptor {
         }
     };
 
-    public static BulkDataDescriptor valueOf(final Attributes blkAttrs) {
-        return new BulkDataDescriptor() {
-
-            @Override
-            public boolean isBulkData(List<ItemPointer> itemPointer,
-                    String privateCreator, int tag, VR vr, int length) {
-                Attributes item = blkAttrs;
-                for (ItemPointer ip : itemPointer) {
-                    item = item.getNestedDataset(
-                            ip.privateCreator, ip.sequenceTag, ip.itemIndex);
-                }
-                return item.contains(privateCreator, tag);
-            }
-        };
-    }
-
-    public abstract boolean isBulkData(List<ItemPointer> itemPointer,
-            String privateCreator, int tag, VR vr, int length);
-
-
-    private static boolean isStandardBulkData(List<ItemPointer> itemPointer, int tag) {
-        switch (TagUtils.normalizeRepeatingGroup(tag)) {
-            case Tag.PixelDataProviderURL:
-            case Tag.AudioSampleData:
-            case Tag.CurveData:
-            case Tag.SpectroscopyData:
-            case Tag.OverlayData:
-            case Tag.EncapsulatedDocument:
-            case Tag.FloatPixelData:
-            case Tag.DoubleFloatPixelData:
-            case Tag.PixelData:
-                return itemPointer.isEmpty();
-            case Tag.WaveformData:
-                return itemPointer.size() == 1
-                        && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
-        }
-        return false;
-    }
+    boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length);
 
 }

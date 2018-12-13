@@ -47,13 +47,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.json.Json;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
@@ -61,11 +61,9 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
-import org.dcm4che3.io.BulkDataDescriptor;
-import org.dcm4che3.io.DicomEncodingOptions;
-import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.data.VR;
+import org.dcm4che3.io.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.json.JSONReader;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
@@ -83,7 +81,7 @@ public class Json2Dcm {
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
-    private Attributes blkAttrs;
+    private BasicBulkDataDescriptor bulkDataDescriptor = new BasicBulkDataDescriptor();
     private String tsuid;
     private boolean withfmi;
     private boolean nofmi;
@@ -112,8 +110,16 @@ public class Json2Dcm {
         this.blkDirectory = blkDirectory;
     }
 
-    public final void setBulkDataAttributes(Attributes blkAttrs) {
-        this.blkAttrs = blkAttrs;
+    public void setBulkDataNoDefaults(boolean excludeDefaults) {
+        bulkDataDescriptor.excludeDefaults(excludeDefaults);
+    }
+
+    public void setBulkDataAttributes(Attributes attrs) {
+        bulkDataDescriptor.addBulkDataAttributes(attrs);
+    }
+
+    public void addBulkDataLengthThresholds(EnumMap<VR, Integer> thresholds) {
+        bulkDataDescriptor.addLengthsThresholds(thresholds);
     }
 
     public final void setTransferSyntax(String uid) {
@@ -199,11 +205,20 @@ public class Json2Dcm {
                   rb.getString("cat-blk-files"));
          opts.addOption(null, "keep-blk-files", false,
                  rb.getString("keep-blk-files"));
-         opts.addOption(Option.builder("J")
-                 .longOpt("blk-spec")
-                 .hasArg()
-                 .argName("json-file")
-                 .desc(rb.getString("blk-spec"))
+         opts.addOption(null, "blk-nodefs", false,
+                 rb.getString("blk-nodefs"));
+         opts.addOption(Option.builder(null)
+                 .longOpt("blk")
+                 .hasArgs()
+                 .argName("[seq/]attr")
+                 .desc(rb.getString("blk"))
+                 .build());
+         opts.addOption(Option.builder(null)
+                 .longOpt("blk-vr")
+                 .hasArgs()
+                 .argName("vr[,...]:length")
+                 .valueSeparator(':')
+                 .desc(rb.getString("blk-vr"))
                  .build());
      }
 
@@ -302,9 +317,15 @@ public class Json2Dcm {
             json2dcm.setBulkDataDirectory(tempDir);
         }
         json2dcm.setConcatenateBulkDataFiles(cl.hasOption("c"));
-        if (cl.hasOption("J")) {
-            json2dcm.setBulkDataAttributes(
-                    parseJSON(cl.getOptionValue("J")));
+        json2dcm.setBulkDataNoDefaults(cl.hasOption("blk-nodefs"));
+        if (cl.hasOption("blk")) {
+            Attributes attrs = new Attributes();
+            CLIUtils.addEmptyAttributes(attrs, cl.getOptionValues("blk"));
+            json2dcm.setBulkDataAttributes(attrs);
+        }
+        if (cl.hasOption("blk-vr")) {
+            json2dcm.addBulkDataLengthThresholds(
+                    CLIUtils.toBulkDataLengthThresholds(cl.getOptionValues("blk-vr")));
         }
     }
 
@@ -339,8 +360,7 @@ public class Json2Dcm {
 
     public void parse(DicomInputStream dis) throws IOException {
         dis.setIncludeBulkData(includeBulkData);
-        if (blkAttrs != null)
-            dis.setBulkDataDescriptor(BulkDataDescriptor.valueOf(blkAttrs));
+        dis.setBulkDataDescriptor(bulkDataDescriptor);
         dis.setBulkDataDirectory(blkDirectory);
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);
@@ -357,12 +377,6 @@ public class Json2Dcm {
         Attributes fmi2 = reader.getFileMetaInformation();
         if (fmi2 != null)
             fmi = fmi2;
-    }
-
-    public static Attributes parseJSON(String fname) throws Exception {
-        Attributes attrs = new Attributes();
-        parseJSON(fname, attrs);
-        return attrs;
     }
 
     private static JSONReader parseJSON(String fname, Attributes attrs)

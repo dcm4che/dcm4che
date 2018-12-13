@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
+import java.util.EnumMap;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -61,6 +62,7 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
@@ -781,4 +783,14 @@ public class CLIUtils {
                 ? uid
                 : UID.forName(uid);
     }
+
+    public static EnumMap<VR,Integer> toBulkDataLengthThresholds(String[] optVals) {
+        EnumMap<VR, Integer> thresholds = new EnumMap<>(VR.class);
+        if (optVals != null)
+            for (int i = 1; i < optVals.length; i++, i++)
+                for (String vr : StringUtils.split(optVals[i-1], ','))
+                    thresholds.put(VR.valueOf(vr), Integer.valueOf(optVals[i]));
+        return thresholds;
+    }
+
 }

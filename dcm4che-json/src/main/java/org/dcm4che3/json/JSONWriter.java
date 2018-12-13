@@ -134,14 +134,17 @@ public class JSONWriter implements DicomInputHandler {
             gen.writeStartArray("DataFragment");
             Fragments frags = (Fragments) value;
             for (Object frag : frags) {
-                gen.writeStartObject();
-                if (!(frag instanceof Value && ((Value) frag).isEmpty())) 
+                if (frag instanceof Value && ((Value) frag).isEmpty())
+                    gen.writeNull();
+                else {
+                    gen.writeStartObject();
                     if (frag instanceof BulkData)
                         writeBulkData((BulkData) frag);
                     else {
                         writeInlineBinary(frags.vr(), (byte[]) frag, bigEndian, true);
                     }
-                gen.writeEnd();
+                    gen.writeEnd();
+                }
             }
             gen.writeEnd();
         } else if (value instanceof BulkData) {
@@ -366,17 +369,19 @@ public class JSONWriter implements DicomInputHandler {
             hasItems.removeLast();
             hasItems.add(true);
         }
-        
-        gen.writeStartObject();
-        if (len > 0) {
+
+        if (len == 0)
+            gen.writeNull();
+        else {
+            gen.writeStartObject();
             if (dis.isIncludeBulkDataURI()) {
                 writeBulkData(dis.createBulkData(dis));
             } else {
                 writeInlineBinary(frags.vr(), dis.readValue(), 
                         dis.bigEndian(), false);
             }
+            gen.writeEnd();
         }
-        gen.writeEnd();
     }
 
     @Override

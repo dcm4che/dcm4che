@@ -195,7 +195,10 @@ public class JSONReader {
 
         if (el.isEmpty())
             attrs.setNull(tag, el.vr);
-        else switch (el.vr) {
+        else if (el.bulkDataURI != null) {
+            if (!skipBulkDataURI)
+                attrs.setValue(tag, el.vr, new BulkData(null, el.bulkDataURI, false));
+        } else switch (el.vr) {
             case AE:
             case AS:
             case AT:
@@ -237,10 +240,7 @@ public class JSONReader {
             case UN:
                 if (el.bytes != null)
                     attrs.setBytes(tag, el.vr, el.bytes);
-                else if (el.bulkDataURI != null) {
-                    if (!skipBulkDataURI)
-                        attrs.setValue(tag, el.vr, new BulkData(null, el.bulkDataURI, false));
-                } else
+                else
                     el.toFragments(attrs.newFragments(tag, el.vr, el.values.size()));
         }
     }
@@ -345,10 +345,9 @@ public class JSONReader {
     }
 
     private Object readDataFragment() {
-        next();
         byte[] bytes = null;
         String bulkDataURI = null;
-        while (next() != Event.KEY_NAME) {
+        while (next() == Event.KEY_NAME) {
             switch (getString()) {
                 case "BulkDataURI":
                     bulkDataURI = valueString();

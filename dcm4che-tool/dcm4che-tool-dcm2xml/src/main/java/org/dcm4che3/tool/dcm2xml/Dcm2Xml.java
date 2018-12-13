@@ -42,11 +42,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -57,16 +56,13 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.io.BulkDataDescriptor;
-import org.dcm4che3.io.ContentHandlerAdapter;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.SAXWriter;
+import org.dcm4che3.data.VR;
+import org.dcm4che3.io.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.tool.common.CLIUtils;
 
@@ -90,7 +86,7 @@ public class Dcm2Xml {
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
-    private Attributes blkAttrs;
+    private BasicBulkDataDescriptor bulkDataDescriptor = new BasicBulkDataDescriptor();
     private String xmlVersion = XML_1_0;
 
     public final void setXSLTURL(String xsltURL) {
@@ -129,8 +125,16 @@ public class Dcm2Xml {
         this.blkDirectory = blkDirectory;
     }
 
-    public final void setBulkDataAttributes(Attributes blkAttrs) {
-        this.blkAttrs = blkAttrs;
+    public void setBulkDataNoDefaults(boolean excludeDefaults) {
+        bulkDataDescriptor.excludeDefaults(excludeDefaults);
+    }
+
+    public void setBulkDataAttributes(Attributes attrs) {
+        bulkDataDescriptor.addBulkDataAttributes(attrs);
+    }
+
+    public void addBulkDataLengthThresholds(EnumMap<VR, Integer> thresholds) {
+        bulkDataDescriptor.addLengthsThresholds(thresholds);
     }
 
     public final void setXMLVersion(String xmlVersion) {
@@ -189,11 +193,20 @@ public class Dcm2Xml {
                 .build());
         opts.addOption("c", "cat-blk-files", false,
                 rb.getString("cat-blk-files"));
-        opts.addOption(Option.builder("X")
-                .longOpt("blk-spec")
-                .hasArg()
-                .argName("xml-file")
-                .desc(rb.getString("blk-spec"))
+        opts.addOption(null, "blk-nodefs", false,
+                rb.getString("blk-nodefs"));
+        opts.addOption(Option.builder(null)
+                .longOpt("blk")
+                .hasArgs()
+                .argName("[seq/]attr")
+                .desc(rb.getString("blk"))
+                .build());
+        opts.addOption(Option.builder(null)
+                .longOpt("blk-vr")
+                .hasArgs()
+                .argName("vr[,...]:length")
+                .valueSeparator(':')
+                .desc(rb.getString("blk-vr"))
                 .build());
     }
 
@@ -262,19 +275,16 @@ public class Dcm2Xml {
             dcm2xml.setBulkDataDirectory(tempDir);
         }
         dcm2xml.setConcatenateBulkDataFiles(cl.hasOption("c"));
-        if (cl.hasOption("X")) {
-            dcm2xml.setBulkDataAttributes(
-                    parseXML(cl.getOptionValue("X")));
+        dcm2xml.setBulkDataNoDefaults(cl.hasOption("blk-nodefs"));
+        if (cl.hasOption("blk")) {
+            Attributes attrs = new Attributes();
+            CLIUtils.addEmptyAttributes(attrs, cl.getOptionValues("blk"));
+            dcm2xml.setBulkDataAttributes(attrs);
         }
-    }
-
-    private static Attributes parseXML(String fname) throws Exception {
-        Attributes attrs = new Attributes();
-        ContentHandlerAdapter ch = new ContentHandlerAdapter(attrs);
-        SAXParserFactory f = SAXParserFactory.newInstance();
-        SAXParser p = f.newSAXParser();
-        p.parse(new File(fname), ch);
-        return attrs;
+        if (cl.hasOption("blk-vr")) {
+            dcm2xml.addBulkDataLengthThresholds(
+                    CLIUtils.toBulkDataLengthThresholds(cl.getOptionValues("blk-vr")));
+        }
     }
 
     private static String fname(List<String> argList) throws ParseException {
@@ -289,8 +299,7 @@ public class Dcm2Xml {
     public void parse(DicomInputStream dis) throws IOException,
             TransformerConfigurationException {
         dis.setIncludeBulkData(includeBulkData);
-        if (blkAttrs != null)
-            dis.setBulkDataDescriptor(BulkDataDescriptor.valueOf(blkAttrs));
+        dis.setBulkDataDescriptor(bulkDataDescriptor);
         dis.setBulkDataDirectory(blkDirectory);
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);

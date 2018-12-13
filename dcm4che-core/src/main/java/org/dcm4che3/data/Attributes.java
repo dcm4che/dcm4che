@@ -345,6 +345,10 @@ public class Attributes implements Serializable {
     }
 
     public Attributes getNestedDataset(ItemPointer... itemPointers) {
+        return getNestedDataset(Arrays.asList(itemPointers));
+    }
+
+    public Attributes getNestedDataset(List<ItemPointer> itemPointers) {
         Attributes item = this;
         for (ItemPointer ip : itemPointers) {
             Object value = item.getValue(ip.privateCreator, ip.sequenceTag);
@@ -424,7 +428,7 @@ public class Attributes implements Serializable {
     }
 
     private Object decodeStringValue(int index) {
-        Object value = values[index];
+        Object value = loadBulkData(values[index]);
         if (value instanceof byte[]) {
             value = vrs[index].toStrings((byte[]) value, bigEndian,
                     getSpecificCharacterSet(vrs[index]));
@@ -433,6 +437,21 @@ public class Attributes implements Serializable {
             values[index] = value;
         }
         return value;
+    }
+
+    private Object loadBulkData(int index) {
+        return values[index] = loadBulkData(values[index]);
+    }
+
+    static Object loadBulkData(Object value) {
+        try {
+            return (value instanceof BulkData)
+                    ? ((BulkData) value).toBytes(null, ((BulkData) value).bigEndian())
+                    : value;
+        } catch (Exception e) {
+            LOG.info("Failed to load {}", value);
+            return Value.NULL;
+        }
     }
 
     public SpecificCharacterSet getSpecificCharacterSet(VR vr) {
@@ -815,6 +834,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
+            value = loadBulkData(index);
             if (vr == VR.IS)
                 value = decodeISValue(index);
 
@@ -851,6 +871,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
+            value = loadBulkData(index);
             if (vr == VR.IS)
                 value = decodeISValue(index);
 
@@ -899,6 +920,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
+            value = loadBulkData(index);
             if (vr == VR.DS)
                 value = decodeDSValue(index);
 
@@ -935,6 +957,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
+            value = loadBulkData(index);
             if (vr == VR.DS)
                 value = decodeDSValue(index);
 
@@ -983,6 +1006,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
+            value = loadBulkData(index);
             if (vr == VR.DS)
                 value = decodeDSValue(index);
 
@@ -1019,6 +1043,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
+            value = loadBulkData(index);
             if (vr == VR.DS)
                 value = decodeDSValue(index);
 

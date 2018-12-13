@@ -4,12 +4,19 @@
     presentation. Writes result to standard output.
     -
     Options:
-     -b,--with-bulkdata              include bulkdata directly in JSON output;
-                                     by default, only references to bulkdata
-                                     are included.
      -B,--no-bulkdata                do not include bulkdata in JSON output;
                                      by default, references to bulkdata are
                                      included.
+     -b,--with-bulkdata              include bulkdata directly in JSON output;
+                                     by default, only references to bulkdata
+                                     are included.
+        --blk <[seq/]attr>           specify attribute by keyword or tag value
+                                     (in hex) which shall be treated as
+                                     bulkdata, e.g.
+                                     --blk=IconImageSequence/PixelData or
+                                     --blk=00880200/7FE00010. Multiple
+                                     attributes can be specified by repeating
+                                     the option for each attribute.
         --blk-file-prefix <prefix>   prefix for generating file names for
                                      extracted bulkdata; 'blk' by default
         --blk-file-suffix <suffix>   directory were files with extracted
@@ -17,6 +24,20 @@
                                      is read from "standard input; if not
                                      specified, files are stored into the
                                      default temporary-file directory
+        --blk-nodefs                 do NOT treat attributes listed by DICOM
+                                     Composite Instance Retrieve Without Bulk
+                                     Data Service Class as bulkdata, but only
+                                     consider bulkdata attributes explicitly
+                                     specified by --blk <[seq/]attr> and
+                                     --blk-vr <vr[,...]:length>.
+        --blk-vr <vr[,...]:length>   specify threshold for the value length
+                                     for attributes with particular VRs which
+                                     shall be treated as bulkdata, e.g.:
+                                     --blk-vr LT,OB,OD,OF,OL,OW,UC,UN,UT:1024
+                                     - treat all attributes with VR = LT or OB
+                                     or OD or OF or OL or OW or UC or UN or UT
+                                     which value length exceeds 1024 bytes as
+                                     bulkdata.
      -c,--cat-blk-files              concatenate extracted bulkdata into one
                                      file
      -d,--blk-file-dir <directory>   directory were files with extracted
@@ -26,8 +47,6 @@
                                      default temporary-file directory
      -h,--help                       display this help and exit
      -I,--indent                     use additional whitespace in JSON output
-     -J,--blk-spec <json-file>       specify bulkdata attributes explicitly by
-                                     JSON presentation in <xml-file>
      -V,--version                    output version information and exit
     
     Examples:

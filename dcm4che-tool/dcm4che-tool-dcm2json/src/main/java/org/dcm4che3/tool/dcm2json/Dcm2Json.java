@@ -39,33 +39,25 @@
 package org.dcm4che3.tool.dcm2json;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.io.BulkDataDescriptor;
+import org.dcm4che3.data.VR;
+import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.json.JSONReader;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.SafeClose;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -81,7 +73,7 @@ public class Dcm2Json {
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
-    private Attributes blkAttrs;
+    private BasicBulkDataDescriptor bulkDataDescriptor = new BasicBulkDataDescriptor();
 
     public final void setIndent(boolean indent) {
         this.indent = indent;
@@ -107,8 +99,16 @@ public class Dcm2Json {
         this.blkDirectory = blkDirectory;
     }
 
-    public final void setBulkDataAttributes(Attributes blkAttrs) {
-        this.blkAttrs = blkAttrs;
+    public void setBulkDataNoDefaults(boolean excludeDefaults) {
+        bulkDataDescriptor.excludeDefaults(excludeDefaults);
+    }
+
+    public void setBulkDataAttributes(Attributes attrs) {
+        bulkDataDescriptor.addBulkDataAttributes(attrs);
+    }
+
+    public void addBulkDataLengthThresholds(EnumMap<VR, Integer> thresholds) {
+        bulkDataDescriptor.addLengthsThresholds(thresholds);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -153,11 +153,20 @@ public class Dcm2Json {
                 .build());
         opts.addOption("c", "cat-blk-files", false,
                 rb.getString("cat-blk-files"));
-        opts.addOption(Option.builder("J")
-                .longOpt("blk-spec")
-                .hasArg()
-                .argName("json-file")
-                .desc(rb.getString("blk-spec"))
+        opts.addOption(null, "blk-nodefs", false,
+                rb.getString("blk-nodefs"));
+        opts.addOption(Option.builder(null)
+                .longOpt("blk")
+                .hasArgs()
+                .argName("[seq/]attr")
+                .desc(rb.getString("blk"))
+                .build());
+        opts.addOption(Option.builder(null)
+                .longOpt("blk-vr")
+                .hasArgs()
+                .argName("vr[,...]:length")
+                .valueSeparator(':')
+                .desc(rb.getString("blk-vr"))
                 .build());
     }
 
@@ -212,23 +221,17 @@ public class Dcm2Json {
             dcm2json.setBulkDataDirectory(tempDir);
         }
         dcm2json.setConcatenateBulkDataFiles(cl.hasOption("c"));
-        if (cl.hasOption("J")) {
-            dcm2json.setBulkDataAttributes(
-                    parseJSON(cl.getOptionValue("J")));
+        dcm2json.setBulkDataNoDefaults(cl.hasOption("blk-nodefs"));
+        if (cl.hasOption("blk")) {
+            Attributes attrs = new Attributes();
+            CLIUtils.addEmptyAttributes(attrs, cl.getOptionValues("blk"));
+            dcm2json.setBulkDataAttributes(attrs);
+        }
+        if (cl.hasOption("blk-vr")) {
+            dcm2json.addBulkDataLengthThresholds(
+                    CLIUtils.toBulkDataLengthThresholds(cl.getOptionValues("blk-vr")));
         }
     }
-
-    private static Attributes parseJSON(String fname) throws Exception {
-        InputStream in = new FileInputStream(fname);
-        try {
-            JSONReader reader = new JSONReader(
-                    Json.createParser(new InputStreamReader(in, "UTF-8")));
-             return reader.readDataset(null);
-        } finally {
-            SafeClose.close(in);
-        }
-    }
-
 
     private static String fname(List<String> argList) throws ParseException {
         int numArgs = argList.size();
@@ -241,8 +244,7 @@ public class Dcm2Json {
 
     public void parse(DicomInputStream dis) throws IOException {
         dis.setIncludeBulkData(includeBulkData);
-        if (blkAttrs != null)
-            dis.setBulkDataDescriptor(BulkDataDescriptor.valueOf(blkAttrs));
+        dis.setBulkDataDescriptor(bulkDataDescriptor);
         dis.setBulkDataDirectory(blkDirectory);
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);

@@ -59,6 +59,7 @@ import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.data.Issuer;
+import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.Connection.Protocol;
 import org.dcm4che3.util.StringUtils;
@@ -810,7 +811,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return configurationDN;
     }
 
-   private void clearConfigurationDN() {
+    private void clearConfigurationDN() {
         this.configurationDN = null;
         this.devicesDN = null;
         this.aetsRegistryDN = null;
@@ -838,7 +839,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-   private boolean findConfiguration() throws ConfigurationException {
+    private boolean findConfiguration() throws ConfigurationException {
         NamingEnumeration<SearchResult> ne = null;
         try {
             SearchControls ctls = searchControlSubtreeScope(1, StringUtils.EMPTY_STRING, false);
@@ -2157,6 +2158,94 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         for (byte[] val : vals)
             attr.add(val);
         return attr;
+    }
+
+    public void store(ConfigurationChanges diffs, Map<String, BasicBulkDataDescriptor> descriptors, String parentDN)
+            throws NamingException {
+        for (BasicBulkDataDescriptor descriptor : descriptors.values()) {
+            String dn = LdapUtils.dnOf("dcmBulkDataDescriptorID",
+                    descriptor.getBulkDataDescriptorID(), parentDN);
+            ConfigurationChanges.ModifiedObject ldapObj =
+                    ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
+            createSubcontext(dn, storeTo(ldapObj, descriptor, new BasicAttributes(true)));
+        }
+    }
+
+    private static Attributes storeTo(ConfigurationChanges.ModifiedObject ldapObj,
+                                      BasicBulkDataDescriptor descriptor, BasicAttributes attrs) {
+        attrs.put("objectclass", "dcmBulkDataDescriptor");
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmBulkDataDescriptorID",
+                descriptor.getBulkDataDescriptorID(), null);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmBulkDataExcludeDefaults",
+                descriptor.isExcludeDefaults(), false);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAttributeSelector", descriptor.getAttributeSelectors());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmBulkDataVRLengthThreshold",
+                descriptor.getLengthsThresholdsAsStrings());
+        return attrs;
+    }
+
+    public void load(Map<String, BasicBulkDataDescriptor> descriptors, String parentDN) throws NamingException {
+        NamingEnumeration<SearchResult> ne =
+                search(parentDN, "(objectclass=dcmBulkDataDescriptor)");
+        try {
+            while (ne.hasMore()) {
+                BasicBulkDataDescriptor descriptor = loadBulkDataDescriptor(ne.next());
+                descriptors.put(descriptor.getBulkDataDescriptorID(), descriptor);
+            }
+        } finally {
+            LdapUtils.safeClose(ne);
+        }
+    }
+
+    private BasicBulkDataDescriptor loadBulkDataDescriptor(SearchResult sr) throws NamingException {
+        Attributes attrs = sr.getAttributes();
+        BasicBulkDataDescriptor descriptor = new BasicBulkDataDescriptor(
+                LdapUtils.stringValue(attrs.get("dcmBulkDataDescriptorID"), null));
+        descriptor.excludeDefaults(LdapUtils.booleanValue(attrs.get("dcmBulkDataExcludeDefaults"), false));
+        descriptor.setAttributeSelectorsFromStrings(LdapUtils.stringArray(attrs.get("dcmAttributeSelector")));
+        descriptor.setLengthsThresholdsFromStrings(LdapUtils.stringArray(attrs.get("dcmBulkDataVRLengthThreshold")));
+        return descriptor ;
+    }
+
+    public void merge(ConfigurationChanges diffs,
+                      Map<String,BasicBulkDataDescriptor> prevs,
+                      Map<String,BasicBulkDataDescriptor> descriptors,
+                      String parentDN)
+            throws NamingException {
+        for (String prevBulkDataDescriptorID : prevs.keySet()) {
+            if (!descriptors.containsKey(prevBulkDataDescriptorID)) {
+                String dn = LdapUtils.dnOf("dcmBulkDataDescriptorID", prevBulkDataDescriptorID, parentDN);
+                destroySubcontext(dn);
+                ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.D);
+            }
+        }
+        for (Map.Entry<String, BasicBulkDataDescriptor> entry : descriptors.entrySet()) {
+            String dn = LdapUtils.dnOf("dcmBulkDataDescriptorID", entry.getKey(), parentDN);
+            BasicBulkDataDescriptor prev = prevs.get(entry.getKey());
+            if (prev == null) {
+                ConfigurationChanges.ModifiedObject ldapObj =
+                        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
+                createSubcontext(dn, storeTo(ldapObj, prev, new BasicAttributes(true)));
+            } else {
+                ConfigurationChanges.ModifiedObject ldapObj =
+                        ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);
+                modifyAttributes(dn, storeDiffs(ldapObj, prev, entry.getValue(), new ArrayList<ModificationItem>()));
+                ConfigurationChanges.removeLastIfEmpty(diffs, ldapObj);
+            }
+        }
+    }
+
+    private List<ModificationItem> storeDiffs(ConfigurationChanges.ModifiedObject ldapObj,
+                                              BasicBulkDataDescriptor prev,
+                                              BasicBulkDataDescriptor descriptor,
+                                              ArrayList<ModificationItem> mods) {
+        LdapUtils.storeDiff(ldapObj, mods, "dcmBulkDataExcludeDefaults",
+                prev.isExcludeDefaults(), descriptor.isExcludeDefaults(), false);
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAttributeSelector",
+                prev.getAttributeSelectors(), descriptor.getAttributeSelectors());
+        LdapUtils.storeDiff(ldapObj, mods, "dcmBulkDataVRLengthThreshold",
+                prev.getLengthsThresholdsAsStrings(), descriptor.getLengthsThresholdsAsStrings());
+        return mods;
     }
 
     public void store(AttributeCoercions coercions, String parentDN)

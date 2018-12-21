@@ -49,6 +49,18 @@ import org.dcm4che3.net.Device;
  * @since Nov 2015
  */
 public class JsonConfigurationExtension {
+    protected JsonConfiguration config;
+
+    public JsonConfiguration getJsonConfiguration() {
+        return config;
+    }
+
+    public void setJsonConfiguration(JsonConfiguration config) {
+        if (config != null && this.config != null)
+            throw new IllegalStateException("already owned by other Json Configuration");
+        this.config = config;
+    }
+
     protected void storeTo(Device device, JsonWriter writer) {}
     protected void storeTo(ApplicationEntity ae, JsonWriter writer) {};
 

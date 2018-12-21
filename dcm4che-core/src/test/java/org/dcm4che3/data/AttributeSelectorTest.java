@@ -1,4 +1,5 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ * **** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -15,8 +16,8 @@
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2018
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,44 +35,41 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * **** END LICENSE BLOCK *****
+ *
+ */
 
 package org.dcm4che3.data;
 
-import static org.junit.Assert.*;
-
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.ItemPointer;
-import org.dcm4che3.data.ValueSelector;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @since Dec 2018
  */
-public class ValueSelectorTest {
-
+public class AttributeSelectorTest {
     private static final String XPATH =
-            "DicomAttribute[@tag=\"00400275\"]/Item[@number=\"1\"]/"
-          + "DicomAttribute[@tag=\"0020000D\"]/Value[@number=\"1\"]";
+            "DicomAttribute[@tag=\"00400275\"]/Item/DicomAttribute[@tag=\"0020000D\"]";
 
     @Test
     public void testToString() {
-        ItemPointer ip = new ItemPointer(Tag.RequestAttributesSequence, 0);
-        ValueSelector vs = new ValueSelector(Tag.StudyInstanceUID, null, 0, ip);
-        assertEquals(XPATH, vs.toString());
+        ItemPointer ip = new ItemPointer(Tag.RequestAttributesSequence);
+        AttributeSelector selector = new AttributeSelector(Tag.StudyInstanceUID, null, ip);
+        assertEquals(XPATH, selector.toString());
     }
 
-   @Test
+    @Test
     public void testValueOf() {
-        ValueSelector vs = ValueSelector.valueOf(XPATH);
-        assertEquals(Tag.StudyInstanceUID, vs.tag());
-        assertNull(vs.privateCreator());
-        assertEquals(0, vs.valueIndex());
-        assertEquals(1, vs.level());
-        ItemPointer ip = vs.itemPointer(0);
+        AttributeSelector selector = AttributeSelector.valueOf(XPATH);
+        assertEquals(Tag.StudyInstanceUID, selector.tag());
+        assertNull(selector.privateCreator());
+        assertEquals(1, selector.level());
+        ItemPointer ip = selector.itemPointer(0);
         assertEquals(Tag.RequestAttributesSequence, ip.sequenceTag);
         assertNull(ip.privateCreator);
-        assertEquals(0, ip.itemIndex);
+        assertEquals(-1, ip.itemIndex);
     }
-
 }

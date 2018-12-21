@@ -751,6 +751,12 @@ public class CLIUtils {
                         toTags(StringUtils.split(optVals[i], '/')));
     }
 
+    public static void addTagPaths(BasicBulkDataDescriptor desc, String[] optVals) {
+        if (optVals != null)
+            for (int i = 0; i < optVals.length; i++)
+                desc.addTagPath(toTags(StringUtils.split(optVals[i], '/')));
+    }
+
     public static boolean updateAttributes(Attributes data, Attributes attrs,
             String uidSuffix) {
         if (attrs.isEmpty() && uidSuffix == null)
@@ -782,15 +788,6 @@ public class CLIUtils {
         return (uid.equals("*") || Character.isDigit(uid.charAt(0)))
                 ? uid
                 : UID.forName(uid);
-    }
-
-    public static EnumMap<VR,Integer> toBulkDataLengthThresholds(String[] optVals) {
-        EnumMap<VR, Integer> thresholds = new EnumMap<>(VR.class);
-        if (optVals != null)
-            for (int i = 1; i < optVals.length; i++, i++)
-                for (String vr : StringUtils.split(optVals[i-1], ','))
-                    thresholds.put(VR.valueOf(vr), Integer.valueOf(optVals[i]));
-        return thresholds;
     }
 
 }

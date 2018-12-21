@@ -42,7 +42,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -60,8 +59,6 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.VR;
 import org.dcm4che3.io.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.tool.common.CLIUtils;
@@ -129,12 +126,8 @@ public class Dcm2Xml {
         bulkDataDescriptor.excludeDefaults(excludeDefaults);
     }
 
-    public void setBulkDataAttributes(Attributes attrs) {
-        bulkDataDescriptor.addBulkDataAttributes(attrs);
-    }
-
-    public void addBulkDataLengthThresholds(EnumMap<VR, Integer> thresholds) {
-        bulkDataDescriptor.addLengthsThresholds(thresholds);
+    public void setBulkDataLengthsThresholdsFromStrings(String[] thresholds) {
+        bulkDataDescriptor.setLengthsThresholdsFromStrings(thresholds);
     }
 
     public final void setXMLVersion(String xmlVersion) {
@@ -204,8 +197,7 @@ public class Dcm2Xml {
         opts.addOption(Option.builder(null)
                 .longOpt("blk-vr")
                 .hasArgs()
-                .argName("vr[,...]:length")
-                .valueSeparator(':')
+                .argName("vr[,...]=length")
                 .desc(rb.getString("blk-vr"))
                 .build());
     }
@@ -277,13 +269,10 @@ public class Dcm2Xml {
         dcm2xml.setConcatenateBulkDataFiles(cl.hasOption("c"));
         dcm2xml.setBulkDataNoDefaults(cl.hasOption("blk-nodefs"));
         if (cl.hasOption("blk")) {
-            Attributes attrs = new Attributes();
-            CLIUtils.addEmptyAttributes(attrs, cl.getOptionValues("blk"));
-            dcm2xml.setBulkDataAttributes(attrs);
+            CLIUtils.addTagPaths(dcm2xml.bulkDataDescriptor, cl.getOptionValues("blk"));
         }
         if (cl.hasOption("blk-vr")) {
-            dcm2xml.addBulkDataLengthThresholds(
-                    CLIUtils.toBulkDataLengthThresholds(cl.getOptionValues("blk-vr")));
+            dcm2xml.setBulkDataLengthsThresholdsFromStrings(cl.getOptionValues("blk-vr"));
         }
     }
 

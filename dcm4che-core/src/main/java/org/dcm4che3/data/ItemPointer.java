@@ -39,6 +39,7 @@
 package org.dcm4che3.data;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -52,7 +53,7 @@ public class ItemPointer implements Serializable {
     public final int itemIndex;
 
     public ItemPointer(int sequenceTag) {
-        this(sequenceTag, null, 0);
+        this(sequenceTag, null, -1);
     }
 
     public ItemPointer(int sequenceTag, int itemIndex) {
@@ -60,12 +61,32 @@ public class ItemPointer implements Serializable {
     }
 
     public ItemPointer(int sequenceTag, String privateCreator) {
-        this(sequenceTag, privateCreator, 0);
+        this(sequenceTag, privateCreator, -1);
     }
 
     public ItemPointer(int sequenceTag, String privateCreator, int itemIndex) {
         this.sequenceTag = sequenceTag;
         this.privateCreator = privateCreator;
         this.itemIndex = itemIndex;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemPointer that = (ItemPointer) o;
+        return sequenceTag == that.sequenceTag &&
+                itemIndex == that.itemIndex &&
+                Objects.equals(privateCreator, that.privateCreator);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sequenceTag, privateCreator, itemIndex);
+    }
+
+    public boolean equalsIgnoreItemIndex(ItemPointer that) {
+        return sequenceTag == that.sequenceTag &&
+                Objects.equals(privateCreator, that.privateCreator);
     }
 }

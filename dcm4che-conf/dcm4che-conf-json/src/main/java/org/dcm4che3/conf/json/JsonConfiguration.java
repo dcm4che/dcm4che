@@ -41,16 +41,14 @@
 package org.dcm4che3.conf.json;
 
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.hl7.HL7ApplicationInfo;
 
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParsingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -63,12 +61,14 @@ public class JsonConfiguration {
 
     public void addJsonConfigurationExtension(JsonConfigurationExtension ext) {
         extensions.add(ext);
+        ext.setJsonConfiguration(this);
     }
 
     public boolean removeJsonConfigurationExtension(JsonConfigurationExtension ext) {
         if (!extensions.remove(ext))
             return false;
 
+        ext.setJsonConfiguration(null);
         return true;
     }
 
@@ -902,5 +902,59 @@ public class JsonConfiguration {
         reader.expect(JsonParser.Event.END_OBJECT);
         if (webapp.getApplicationName() == null)
             throw new JsonParsingException("Missing property: dcmWebAppName", reader.getLocation());
+    }
+
+    public void writeBulkdataDescriptors(Map<String, BasicBulkDataDescriptor> descriptors, JsonWriter writer) {
+        if (descriptors.isEmpty())
+            return;
+
+        writer.writeStartArray("dcmBulkDataDescriptor");
+        for (BasicBulkDataDescriptor descriptor : descriptors.values())
+            writeTo(descriptor, writer);
+        writer.writeEnd();
+    }
+
+    private void writeTo(BasicBulkDataDescriptor descriptor, JsonWriter writer) {
+        writer.writeStartObject();
+        writer.writeNotNullOrDef("dcmBulkDataDescriptorID", descriptor.getBulkDataDescriptorID(), null);
+        writer.writeNotDef("dcmBulkDataExcludeDefaults", descriptor.isExcludeDefaults(), false);
+        writer.writeNotEmpty("dcmAttributeSelector", descriptor.getAttributeSelectors());
+        writer.writeNotEmpty("dcmBulkDataVRLengthThreshold", descriptor.getLengthsThresholdsAsStrings());
+        writer.writeEnd();
+    }
+
+    public void loadBulkdataDescriptors(Map<String, BasicBulkDataDescriptor> descriptors, JsonReader reader) {
+        reader.next();
+        reader.expect(JsonParser.Event.START_ARRAY);
+        while (reader.next() == JsonParser.Event.START_OBJECT) {
+            BasicBulkDataDescriptor descriptor = new BasicBulkDataDescriptor();
+            loadFrom(descriptor, reader);
+            descriptors.put(descriptor.getBulkDataDescriptorID(), descriptor);
+        }
+        reader.expect(JsonParser.Event.END_ARRAY);
+    }
+
+    private void loadFrom(BasicBulkDataDescriptor descriptor, JsonReader reader) {
+        while (reader.next() == JsonParser.Event.KEY_NAME) {
+            switch (reader.getString()) {
+                case "dcmBulkDataDescriptorID":
+                    descriptor.setBulkDataDescriptorID(reader.stringValue());
+                    break;
+                case "dcmBulkDataExcludeDefaults":
+                    descriptor.excludeDefaults(reader.booleanValue());
+                    break;
+                case "dcmAttributeSelector":
+                    descriptor.setAttributeSelectorsFromStrings(reader.stringArray());
+                    break;
+                case "dcmBulkDataVRLengthThreshold":
+                    descriptor.setLengthsThresholdsFromStrings(reader.stringArray());
+                    break;
+                default:
+                    reader.skipUnknownProperty();
+            }
+        }
+        reader.expect(JsonParser.Event.END_OBJECT);
+        if (descriptor.getBulkDataDescriptorID() == null)
+            throw new JsonParsingException("Missing property: dcmBulkDataDescriptorID", reader.getLocation());
     }
 }

@@ -445,8 +445,39 @@ public class AttributesTest {
         String[] AGES = { "018M", "018Y" };
         String[] DATES = { "19560708", "20010203" };
         String[] TIMES = { "1956", "2001" };
-        String[] UIDS = { "1.2.3.4", "5.6.7.8" };
-        int[] TAGS = { Tag.PatientName,  Tag.PatientID };
+        String[] UIDS = { UID.CTImageStorage, UID.MRImageStorage };
+        int[] TAGS = {
+                Tag.SelectorAEValue,
+                Tag.SelectorASValue,
+                Tag.SelectorATValue,
+                Tag.SelectorDAValue,
+                Tag.SelectorCSValue,
+                Tag.SelectorDTValue,
+                Tag.SelectorISValue,
+                Tag.SelectorOBValue,
+                Tag.SelectorLOValue,
+                Tag.SelectorOFValue,
+                Tag.SelectorLTValue,
+                Tag.SelectorOWValue,
+                Tag.SelectorPNValue,
+                Tag.SelectorTMValue,
+                Tag.SelectorSHValue,
+                Tag.SelectorUNValue,
+                Tag.SelectorSTValue,
+                Tag.SelectorUCValue,
+                Tag.SelectorUTValue,
+                Tag.SelectorURValue,
+                Tag.SelectorDSValue,
+                Tag.SelectorODValue,
+                Tag.SelectorFDValue,
+                Tag.SelectorOLValue,
+                Tag.SelectorFLValue,
+                Tag.SelectorULValue,
+                Tag.SelectorUSValue,
+                Tag.SelectorSLValue,
+                Tag.SelectorSSValue,
+                Tag.SelectorUIValue
+        };
         int[] INTS = { Short.MIN_VALUE,  Short.MAX_VALUE };
         int[] UINTS = { 0xffff,  Short.MAX_VALUE };
         float[] FLOATS = { -Float.MIN_VALUE,  0.1234f, Float.MAX_VALUE };
@@ -487,11 +518,15 @@ public class AttributesTest {
         DicomInputStream in = asDicomInputStream(a);
         try {
             in.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
-            in.setBulkDataDescriptor(new BasicBulkDataDescriptor().excludeDefaults().addBulkDataAttributes(a));
+            in.setBulkDataDescriptor(new BasicBulkDataDescriptor().excludeDefaults().addTag(TAGS));
+            in.setConcatenateBulkDataFiles(true);
             Attributes b = in.readDataset(-1, -1);
+            for (int tag : TAGS) {
+                assertTrue(b.getValue(tag) instanceof BulkData);
+            }
             assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorAEValue));
             assertArrayEquals(AGES, b.getStrings(Tag.SelectorASValue));
-            assertArrayEquals(TAGS, b.getInts(Tag.SelectorATValue));
+            assertEquals(TAGS[0], b.getInt(Tag.SelectorATValue, 0));
             assertArrayEquals(DATES, b.getStrings(Tag.SelectorDAValue));
             assertEquals(STRINGS[0], b.getString(Tag.SelectorCSValue));
             assertArrayEquals(DATES, b.getStrings(Tag.SelectorDTValue));

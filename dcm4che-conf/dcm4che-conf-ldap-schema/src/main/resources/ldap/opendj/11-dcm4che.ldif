@@ -305,6 +305,24 @@ attributeTypes: ( 1.2.40.0.13.1.15.0.3.70 NAME 'dcmLimitAssociationsInitiatedBy'
   DESC 'Maximal number of open DICOM connections initiated by a particular Application Entity (AE) in format <ae-title>=<number>; rejects Association requests from that AE if the limit is exceeded.'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.71 NAME 'dcmBulkDataDescriptorID'
+  DESC 'Bulk Data Descriptor ID'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.72 NAME 'dcmBulkDataExcludeDefaults'
+  DESC 'Indicates if Attributes specified by the "Composite Instance Retrieve Without Bulk Data Service Class" shall be implicitly treated as Bulk Data (=false or absent) or not (=true).'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.73 NAME 'dcmAttributeSelector'
+  DESC 'Specifies individual Attributes treated as Bulk Data by XPath (e.g. DicomAttribute[@tag="54000100"]/Item/DicomAttribute[@tag="54001010"]).'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.74 NAME 'dcmBulkDataVRLengthThreshold'
+  DESC 'Specifies to treat all Attributes with a particular Value Representation (VR) which value length exceeds the specified threshold as Bulk Data. Format: <VR>[,...]=<length-threshold>.'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 attributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -584,6 +602,15 @@ objectClasses: ( 1.2.40.0.13.1.15.0.4.10 NAME 'dcmWebApp'
     dicomAETitle $
     dicomApplicationCluster $
     dicomInstalled ) )
+objectClasses: ( 1.2.40.0.13.1.15.0.4.11 NAME 'dcmBulkDataDescriptor'
+  DESC 'Bulk Data Descriptor'
+  SUP top STRUCTURAL
+  MUST (
+    dcmBulkDataDescriptorID )
+  MAY (
+    dcmBulkDataExcludeDefaults $
+    dcmAttributeSelector $
+    dcmBulkDataVRLengthThreshold ) )
 objectClasses: ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL

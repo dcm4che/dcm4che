@@ -28,11 +28,11 @@
                                      Data Service Class as bulkdata, but only
                                      consider bulkdata attributes explicitly
                                      specified by --blk <[seq/]attr> and
-                                     --blk-vr <vr[,...]:length>.
-        --blk-vr <vr[,...]:length>   specify threshold for the value length
+                                     --blk-vr <vr[,...]=length>.
+        --blk-vr <vr[,...]=length>   specify threshold for the value length
                                      for attributes with particular VRs which
                                      shall be treated as bulkdata, e.g.:
-                                     --blk-vr LT,OB,OD,OF,OL,OW,UC,UN,UT:1024
+                                     --blk-vr LT,OB,OD,OF,OL,OW,UC,UN,UT=1024
                                      - treat all attributes with VR = LT or OB
                                      or OD or OF or OL or OW or UC or UN or UT
                                      which value length exceeds 1024 bytes as

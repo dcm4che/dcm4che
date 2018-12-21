@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -61,7 +60,6 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
-import org.dcm4che3.data.VR;
 import org.dcm4che3.io.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.json.JSONReader;
@@ -114,12 +112,8 @@ public class Json2Dcm {
         bulkDataDescriptor.excludeDefaults(excludeDefaults);
     }
 
-    public void setBulkDataAttributes(Attributes attrs) {
-        bulkDataDescriptor.addBulkDataAttributes(attrs);
-    }
-
-    public void addBulkDataLengthThresholds(EnumMap<VR, Integer> thresholds) {
-        bulkDataDescriptor.addLengthsThresholds(thresholds);
+    public void setBulkDataLengthsThresholdsFromStrings(String[] thresholds) {
+        bulkDataDescriptor.setLengthsThresholdsFromStrings(thresholds);
     }
 
     public final void setTransferSyntax(String uid) {
@@ -216,8 +210,7 @@ public class Json2Dcm {
          opts.addOption(Option.builder(null)
                  .longOpt("blk-vr")
                  .hasArgs()
-                 .argName("vr[,...]:length")
-                 .valueSeparator(':')
+                 .argName("vr[,...]=length")
                  .desc(rb.getString("blk-vr"))
                  .build());
      }
@@ -319,13 +312,10 @@ public class Json2Dcm {
         json2dcm.setConcatenateBulkDataFiles(cl.hasOption("c"));
         json2dcm.setBulkDataNoDefaults(cl.hasOption("blk-nodefs"));
         if (cl.hasOption("blk")) {
-            Attributes attrs = new Attributes();
-            CLIUtils.addEmptyAttributes(attrs, cl.getOptionValues("blk"));
-            json2dcm.setBulkDataAttributes(attrs);
+            CLIUtils.addTagPaths(json2dcm.bulkDataDescriptor, cl.getOptionValues("blk"));
         }
         if (cl.hasOption("blk-vr")) {
-            json2dcm.addBulkDataLengthThresholds(
-                    CLIUtils.toBulkDataLengthThresholds(cl.getOptionValues("blk-vr")));
+            json2dcm.setBulkDataLengthsThresholdsFromStrings(cl.getOptionValues("blk-vr"));
         }
     }
 

@@ -39,126 +39,71 @@
 package org.dcm4che3.data;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-
-import org.dcm4che3.util.TagUtils;
+import java.util.Objects;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class ValueSelector implements Serializable {
 
-    private static final long serialVersionUID = 8346808223314626639L;
+    private static final long serialVersionUID = 7043276856762009199L;
 
-    private static final ItemPointer[] NO_ITEMPOINTERS = {};
-    private static final int MIN_ITEM_POINTER_STR_LEN = 43;
+    private final AttributeSelector attributeSelector;
+    private final int valueIndex;
+    private String str;
 
-    public final int tag;
-    public final String privateCreator;
-    public final VR vr;
-    public final int valueIndex;
-    public final ItemPointer[] itemPointers;
-    public String str;
+    public ValueSelector(int tag, String privateCreator, int index, ItemPointer... itemPointers) {
+        this(new AttributeSelector(tag, privateCreator, itemPointers), index);
+    }
 
-    public ValueSelector(int tag, String privateCreator, VR vr, int index,
-            ItemPointer... itemPointers) {
-        this.tag = tag;
-        this.privateCreator = privateCreator;
-        this.vr = vr;
+    public ValueSelector(AttributeSelector attributeSelector, int index) {
+        this.attributeSelector = Objects.requireNonNull(attributeSelector);
         this.valueIndex = index;
-        this.itemPointers = itemPointers.clone();
+    }
+
+    public int tag() {
+        return attributeSelector.tag();
+    }
+
+    public String privateCreator() {
+        return attributeSelector.privateCreator();
+    }
+
+    public int level() {
+        return attributeSelector.level();
+    }
+
+    public ItemPointer itemPointer(int index) {
+        return attributeSelector.itemPointer(index);
+    }
+
+    public int valueIndex() {
+        return valueIndex;
     }
 
     public String selectStringValue(Attributes attrs, String defVal) {
-        Attributes item = attrs.getNestedDataset(itemPointers);
-        return item != null ? item.getString(privateCreator, tag, vr, valueIndex, defVal) : defVal;
+        return attributeSelector.selectStringValue(attrs, valueIndex, defVal);
     }
 
     @Override
     public String toString() {
         if (str == null)
-            str = buildString();
+            str = attributeSelector.toStringBuilder()
+                    .append("/Value[@number=\"")
+                    .append(valueIndex + 1)
+                    .append("\"]")
+                    .toString();
         return str;
-    }
-
-    private String buildString() {
-        StringBuilder sb = new StringBuilder(32);
-        for (ItemPointer ip : itemPointers)
-            appendTo(ip.sequenceTag, ip.privateCreator, ip.itemIndex,
-                    "\"]/Item[@number=\"", "\"]/", sb);
-        appendTo(tag, privateCreator, valueIndex,
-                "\"]/Value[@number=\"", "\"]", sb);
-        return sb.toString();
-    }
-
-    private void appendTo(int tag, String privateCreator, int index, String valueOrItem,
-            String suffix, StringBuilder sb) {
-        sb.append("DicomAttribute[@tag=\"").append(TagUtils.toHexString(tag));
-        if (privateCreator != null)
-            sb.append("\" and @privateCreator=\"").append(privateCreator);
-        if (vr != null)
-            sb.append("\" and @vr=\"").append(vr);
-        sb.append(valueOrItem).append(index + 1).append(suffix);
     }
 
     public static ValueSelector valueOf(String s) {
         int fromIndex = s.lastIndexOf("DicomAttribute");
         try {
-            return new ValueSelector(
-                    selectTag(s, fromIndex),
-                    selectPrivateCreator(s, fromIndex),
-                    selectVR(s, fromIndex),
-                    selectNumber(s, fromIndex) - 1,
-                    itemPointersOf(s, fromIndex));
+            return new ValueSelector(AttributeSelector.valueOf(s),
+                    AttributeSelector.selectNumber(s, fromIndex) - 1);
         } catch (Exception e) {
             throw new IllegalArgumentException(s);
         }
-    }
-
-    private static int selectTag(String s, int fromIndex) {
-        String tagStr = select("@tag=", s, fromIndex);
-        return Integer.parseInt(tagStr, 16);
-    }
-
-    private static String selectPrivateCreator(String s, int fromIndex) {
-        return select("@privateCreator=", s, fromIndex);
-    }
-
-    private static int selectNumber(String s, int fromIndex) {
-        String no = select("@number=", s, fromIndex);
-        return Integer.parseInt(no);
-    }
-
-    private static VR selectVR(String s, int fromIndex) {
-        String vrStr = select("@vr=", s, fromIndex);
-        return vrStr != null ? VR.valueOf(vrStr) : null;
-    }
-
-    private static ItemPointer[] itemPointersOf(String s, int endIndex) {
-        if (endIndex == 0)
-            return NO_ITEMPOINTERS;
-
-        ArrayList<ItemPointer> list = new ArrayList<ItemPointer>();
-        int fromIndex = 0;
-        while (fromIndex < endIndex) {
-            list.add(new ItemPointer(
-                    selectTag(s, fromIndex),
-                    selectPrivateCreator(s, fromIndex),
-                    selectNumber(s, fromIndex) - 1));
-            fromIndex = s.indexOf("DicomAttribute",
-                    fromIndex + MIN_ITEM_POINTER_STR_LEN);
-        }
-        return list.toArray(new ItemPointer[list.size()]);
-    }
-
-    private static String select(String key, String s, int fromIndex) {
-        int pos = s.indexOf(key, fromIndex);
-        if (pos < 0)
-            return null;
-        
-        int quotePos = pos + key.length();
-        int beginIndex = quotePos + 1;
-        return s.substring(beginIndex, s.indexOf(s.charAt(quotePos), beginIndex));
     }
 
     @Override

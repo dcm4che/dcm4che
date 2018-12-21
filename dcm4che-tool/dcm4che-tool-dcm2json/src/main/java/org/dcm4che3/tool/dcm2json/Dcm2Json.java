@@ -51,8 +51,6 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.VR;
 import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
@@ -103,12 +101,8 @@ public class Dcm2Json {
         bulkDataDescriptor.excludeDefaults(excludeDefaults);
     }
 
-    public void setBulkDataAttributes(Attributes attrs) {
-        bulkDataDescriptor.addBulkDataAttributes(attrs);
-    }
-
-    public void addBulkDataLengthThresholds(EnumMap<VR, Integer> thresholds) {
-        bulkDataDescriptor.addLengthsThresholds(thresholds);
+    public void setBulkDataLengthsThresholdsFromStrings(String[] thresholds) {
+        bulkDataDescriptor.setLengthsThresholdsFromStrings(thresholds);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -164,8 +158,7 @@ public class Dcm2Json {
         opts.addOption(Option.builder(null)
                 .longOpt("blk-vr")
                 .hasArgs()
-                .argName("vr[,...]:length")
-                .valueSeparator(':')
+                .argName("vr[,...]=length")
                 .desc(rb.getString("blk-vr"))
                 .build());
     }
@@ -223,13 +216,10 @@ public class Dcm2Json {
         dcm2json.setConcatenateBulkDataFiles(cl.hasOption("c"));
         dcm2json.setBulkDataNoDefaults(cl.hasOption("blk-nodefs"));
         if (cl.hasOption("blk")) {
-            Attributes attrs = new Attributes();
-            CLIUtils.addEmptyAttributes(attrs, cl.getOptionValues("blk"));
-            dcm2json.setBulkDataAttributes(attrs);
+            CLIUtils.addTagPaths(dcm2json.bulkDataDescriptor, cl.getOptionValues("blk"));
         }
         if (cl.hasOption("blk-vr")) {
-            dcm2json.addBulkDataLengthThresholds(
-                    CLIUtils.toBulkDataLengthThresholds(cl.getOptionValues("blk-vr")));
+            dcm2json.setBulkDataLengthsThresholdsFromStrings(cl.getOptionValues("blk-vr"));
         }
     }
 

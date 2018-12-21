@@ -42,20 +42,38 @@
 package org.dcm4che3.io;
 
 import org.dcm4che3.data.*;
+import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Dec 2018
  */
 public class BasicBulkDataDescriptor implements BulkDataDescriptor {
+    private String bulkDataDescriptorID;
     private boolean excludeDefaults;
-    private final Attributes bulkDataAttrs = new Attributes();
+    private final List<AttributeSelector> selectors = new ArrayList<>();
     private final EnumMap<VR,Integer> lengthsThresholdByVR = new EnumMap<>(VR.class);
+
+    public BasicBulkDataDescriptor() {}
+
+    public BasicBulkDataDescriptor(String bulkDataDescriptorID) {
+        this.bulkDataDescriptorID = bulkDataDescriptorID;
+    }
+
+    public String getBulkDataDescriptorID() {
+        return bulkDataDescriptorID;
+    }
+
+    public void setBulkDataDescriptorID(String bulkDataDescriptorID) {
+        this.bulkDataDescriptorID = bulkDataDescriptorID;
+    }
+
+    public boolean isExcludeDefaults() {
+        return excludeDefaults;
+    }
 
     public BasicBulkDataDescriptor excludeDefaults() {
         return excludeDefaults(true);
@@ -66,27 +84,120 @@ public class BasicBulkDataDescriptor implements BulkDataDescriptor {
         return this;
     }
 
-    public BasicBulkDataDescriptor addBulkDataAttributes(Attributes attrs) {
-        bulkDataAttrs.addAll(Objects.requireNonNull(attrs));
+    public BasicBulkDataDescriptor addAttributeSelector(AttributeSelector... selectors) {
+        for (AttributeSelector selector : selectors) {
+            this.selectors.add(Objects.requireNonNull(selector));
+        }
         return this;
     }
 
-    public BasicBulkDataDescriptor addLengthsThreshold(VR vr, int threshold) {
-        lengthsThresholdByVR.put(Objects.requireNonNull(vr), threshold);
+    public AttributeSelector[] getAttributeSelectors() {
+        return selectors.toArray(new AttributeSelector[0]);
+    }
+
+    public void setAttributeSelectorsFromStrings(String[] ss) {
+        List<AttributeSelector> tmp = new ArrayList<>(ss.length);
+        for (String s : ss) {
+            tmp.add(AttributeSelector.valueOf(s));
+        }
+        selectors.clear();
+        selectors.addAll(tmp);
+    }
+
+    public BasicBulkDataDescriptor addTag(int... tags) {
+        for (int tag : tags) {
+            this.selectors.add(new AttributeSelector(tag));
+        }
         return this;
     }
 
-    public BasicBulkDataDescriptor addLengthsThresholds(EnumMap<VR, Integer> thresholds) {
-        lengthsThresholdByVR.putAll(thresholds);
+    public BasicBulkDataDescriptor addTagPath(int... tagPaths) {
+        if (tagPaths.length == 0)
+            throw new IllegalArgumentException("tagPaths.length == 0");
+        this.selectors.add(
+                new AttributeSelector(tagPaths[tagPaths.length - 1], null, toItemPointers(tagPaths)));
         return this;
+    }
+
+    private static List<ItemPointer> toItemPointers(int[] tagPaths) {
+        int level = tagPaths.length - 1;
+        if (level == 0)
+            return Collections.emptyList();
+
+        List<ItemPointer> itemPointers = new ArrayList<>(level);
+        for (int i = 0; i < level; i++) {
+            itemPointers.add(new ItemPointer(tagPaths[i]));
+
+        }
+        return itemPointers;
+    }
+
+    public BasicBulkDataDescriptor addLengthsThreshold(int threshold, VR... vrs) {
+        if (vrs.length == 0)
+            throw new IllegalArgumentException("Missing VR");
+
+        for (VR vr : vrs) {
+            lengthsThresholdByVR.put(vr, threshold);
+        }
+        return this;
+    }
+
+    public String[] getLengthsThresholdsAsStrings() {
+        if (lengthsThresholdByVR.isEmpty())
+            return StringUtils.EMPTY_STRING;
+
+        Map<Integer,EnumSet<VR>> vrsByLength = new HashMap<>();
+        for (Map.Entry<VR, Integer> entry : lengthsThresholdByVR.entrySet()) {
+            EnumSet<VR> vrs = vrsByLength.get(entry.getValue());
+            if (vrs == null)
+                vrsByLength.put(entry.getValue(), vrs = EnumSet.noneOf(VR.class));
+            vrs.add(entry.getKey());
+        }
+        String[] ss = new String[vrsByLength.size()];
+        int i = 0;
+        for (Map.Entry<Integer, EnumSet<VR>> entry : vrsByLength.entrySet()) {
+            StringBuilder sb = new StringBuilder();
+            Iterator<VR> vr = entry.getValue().iterator();
+            sb.append(vr.next());
+            while (vr.hasNext())
+                sb.append(',').append(vr.next());
+            ss[i] = sb.append('=').append(entry.getKey()).toString();
+        }
+        return ss;
+    }
+
+    public void setLengthsThresholdsFromStrings(String... ss) {
+        EnumMap<VR,Integer> tmp = new EnumMap<>(VR.class);
+        for (String s : ss) {
+            String[] entry = StringUtils.split(s, '=');
+            if (entry.length != 2)
+                throw new IllegalArgumentException(s);
+            try {
+                Integer length = Integer.valueOf(entry[1]);
+                for (String vr : StringUtils.split(entry[0], ',')) {
+                    tmp.put(VR.valueOf(vr), length);
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(s);
+            }
+        }
+        lengthsThresholdByVR.clear();
+        lengthsThresholdByVR.putAll(tmp);
     }
 
     @Override
-    public boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length) {
-        return !excludeDefaults && isStandardBulkData(itemPointer, tag)
-                || !bulkDataAttrs.isEmpty()
-                    && contains(bulkDataAttrs.getNestedDataset(itemPointer), privateCreator, tag)
+    public boolean isBulkData(List<ItemPointer> itemPointers, String privateCreator, int tag, VR vr, int length) {
+        return !excludeDefaults && isStandardBulkData(itemPointers, tag)
+                || selected(itemPointers, privateCreator, tag)
                 || exeeds(length, lengthsThresholdByVR.get(vr));
+    }
+
+    private boolean selected(List<ItemPointer> itemPointers, String privateCreator, int tag) {
+        for (AttributeSelector selector : selectors) {
+            if (selector.matches(itemPointers, privateCreator, tag))
+                return true;
+        }
+        return false;
     }
 
     static boolean isStandardBulkData(List<ItemPointer> itemPointer, int tag) {
@@ -106,13 +217,6 @@ public class BasicBulkDataDescriptor implements BulkDataDescriptor {
                         && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
         }
         return false;
-    }
-
-    private static boolean contains(Attributes attrs, String privateCreator, int tag) {
-        Object value;
-        return attrs != null
-                && (value = attrs.getValue(privateCreator, tag)) != null
-                && !(value instanceof Sequence);
     }
 
     private static boolean exeeds(int length, Integer lengthThreshold) {

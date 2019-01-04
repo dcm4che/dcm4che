@@ -70,6 +70,7 @@
             <goals>
               <goal>xjc</goal>
             </goals>
+            <phase>generate-sources</phase>
           </execution>
         </executions>
         <configuration>

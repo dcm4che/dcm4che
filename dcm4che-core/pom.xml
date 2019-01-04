@@ -67,6 +67,7 @@
         <executions>
           <execution>
             <id>dictionary</id>
+            <phase>generate-sources</phase>
             <goals>
               <goal>process</goal>
             </goals>
@@ -97,11 +98,13 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>xml-maven-plugin</artifactId>
+        <version>1.0</version>
         <executions>
           <execution>
             <goals>
               <goal>transform</goal>
             </goals>
+            <phase>generate-sources</phase>
           </execution>
         </executions>
         <configuration>
@@ -177,11 +180,13 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.9.1</version>
         <executions>
           <execution>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>target/generated-java</source>

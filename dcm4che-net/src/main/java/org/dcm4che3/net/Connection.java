@@ -459,7 +459,7 @@ public class Connection implements Serializable {
         needRebind();
     }
 
-    boolean isRebindNeeded() {
+    public boolean isRebindNeeded() {
         return rebindNeeded;
     }
 
@@ -913,7 +913,7 @@ public class Connection implements Serializable {
             needRebind();
     }
 
-    synchronized void rebind() throws IOException, GeneralSecurityException {
+    public synchronized void rebind() throws IOException, GeneralSecurityException {
         unbind();
         bind();
     }

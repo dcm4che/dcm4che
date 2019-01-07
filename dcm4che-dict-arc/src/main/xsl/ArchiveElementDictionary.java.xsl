@@ -80,7 +80,6 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK *****
- * This file is generated from Part 6 and 7 of the Standard Text Edition 2011.
  */
  
 package org.dcm4che3.dict.archive;
@@ -93,7 +92,7 @@ import org.dcm4che3.data.VR;
  */
 public class ArchiveElementDictionary extends ElementDictionary {
 
-    private ArchiveElementDictionary() {
+    public ArchiveElementDictionary() {
         super(ArchiveTag.PrivateCreator, ArchiveTag.class);
     }
 

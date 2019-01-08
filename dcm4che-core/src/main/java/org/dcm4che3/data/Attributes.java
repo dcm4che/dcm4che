@@ -3267,7 +3267,7 @@ public class Attributes implements Serializable {
         int size1 = size;
         for (int i = 0; i < size1; i++) {
             int j = i;
-            while (TagUtils.isPrivateGroup(tags[j]) && j < size1)
+            while (j < size1 && TagUtils.isPrivateGroup(tags[j]))
                 j++;
             if (j > i) {
                 int len = size1 - j;

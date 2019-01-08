@@ -332,6 +332,15 @@ public class StandardElementDictionary extends ElementDictionary {
     <xsl:apply-templates select="//el[@keyword!='' and @vr='UT']"/>
 <xsl:text>
         }
+        switch (tag &amp; 0xFFFFFF0F) {
+            case Tag.CoefficientCodingPointers:
+                return VR.AT;
+            case Tag.CoefficientCoding:
+                return VR.LO;
+            case Tag.RowsForNthOrderCoefficients:
+            case Tag.ColumnsForNthOrderCoefficients:
+                return VR.US;
+        }
         return VR.UN;
     }
 }

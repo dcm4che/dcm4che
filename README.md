@@ -59,6 +59,7 @@ Utilities
 ---------
 - [dcm2dcm][]: Transcode DICOM file according the specified Transfer Syntax
 - [dcm2jpg][]: Convert DICOM image to JPEG or other image formats
+- [dcm2str][]: Apply Attributes Format Pattern to dicom file or command line parameters.
 - [dcm2xml][]: Convert DICOM file in XML presentation
 - [dcmdir][]: Dump, create or update DICOMDIR file
 - [dcmdump][]: Dump DICOM file in textual form
@@ -93,6 +94,7 @@ Utilities
 
 [dcm2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2dcm/README.md
 [dcm2jpg]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2jpg/README.md
+[dcm2str]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2str/README.md
 [dcm2xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2xml/README.md
 [dcmdir]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdir/README.md
 [dcmdump]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdump/README.md

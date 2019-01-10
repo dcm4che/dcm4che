@@ -66,9 +66,11 @@ import org.slf4j.LoggerFactory;
 public class WadoRS {
     private static final Logger LOG = LoggerFactory.getLogger(WadoRS.class);
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.wadors.messages");
+    private static final String wildcard = "wildcard";
     private Input input = Input.METADATA_JSON;
     private String user;
     private Accept accept;
+    private boolean header;
     private static Path outDir;
 
     public WadoRS() {}
@@ -91,19 +93,23 @@ public class WadoRS {
         }
     }
 
-    public final void setOutputDirectory(String dir) throws IOException {
+    private void setOutputDirectory(String dir) throws IOException {
         outDir = Files.createDirectories(Paths.get(dir));
     }
 
-    public final void setUser(String user) {
+    private void setUser(String user) {
         this.user = user;
     }
 
-    public final void setAcceptType(String accept) {
+    private void setAcceptType(String accept) {
         this.accept = Accept.valueOf(accept);
     }
 
-    public final void setInput(Input input) {
+    private void setHeader(boolean val) {
+        this.header = val;
+    }
+
+    private void setInput(Input input) {
         this.input = input;
     }
 
@@ -112,8 +118,13 @@ public class WadoRS {
         CLIUtils.addCommonOptions(opts);
         opts.addOption(Option.builder("a")
                 .longOpt("accept")
-                .hasArg(true)
+                .hasArg()
                 .desc(rb.getString("accept"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("header")
+                .hasArg(false)
+                .desc(rb.getString("header"))
                 .build());
         opts.addOption(Option.builder()
                 .longOpt("out-dir")
@@ -133,21 +144,24 @@ public class WadoRS {
     private static void init(CommandLine cl, WadoRS wadoRS) throws Exception {
         if (cl.getArgList().isEmpty())
             throw new MissingArgumentException("Specify at least one url as an argument");
-        if (!cl.hasOption("a"))
-            throw new MissingOptionException("Specify accept header");
-        wadoRS.setAcceptType(cl.getOptionValue("a"));
+        wadoRS.setAcceptType(cl.hasOption("a") ? cl.getOptionValue("a") : wildcard);
         wadoRS.setUser(cl.getOptionValue("u"));
         if (cl.hasOption("out-dir"))
             wadoRS.setOutputDirectory(cl.getOptionValue("out-dir"));
+        wadoRS.setHeader(cl.hasOption("header"));
     }
 
     private void wado(String url) throws Exception {
+        final String uid = uidFrom(url);
+        if (!header)
+            url = appendAcceptToURL(url);
         URL newUrl = new URL(url);
         final HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestMethod("GET");
-        connection.setRequestProperty("Accept", accept.headerVal);
+        if (header)
+            connection.setRequestProperty("Accept", accept.headerVal);
         logOutgoing(connection);
         if (user != null) {
             String basicAuth = basicAuth(user);
@@ -155,11 +169,27 @@ public class WadoRS {
             connection.setRequestProperty("Authorization", basicAuth);
         }
         logIncoming(connection);
-        unpack(connection);
+        unpack(connection, uid);
         connection.disconnect();
     }
 
+    private String appendAcceptToURL(String url) {
+        return url
+                + (url.indexOf('?') != -1 ? "&" : "?")
+                + "accept="
+                + accept.headerVal.replace("+", "%2B");
+    }
+
+    private String uidFrom(String url) {
+        return url.contains("metadata")
+                ? url.substring(url.substring(0, url.lastIndexOf('/')).lastIndexOf('/') + 1, url.lastIndexOf('/'))
+                : url.contains("?")
+                    ? url.substring(url.substring(0, url.indexOf('?')).lastIndexOf('/') + 1, url.indexOf('?'))
+                    : url.substring(url.lastIndexOf('/')+1);
+    }
+
     enum Accept {
+        wildcard("*"),
         dicom("multipart/related;type=application/dicom"),
         octetstream("multipart/related;type=application/octet-stream"),
         pdf("multipart/related;type=application/pdf"),
@@ -180,12 +210,12 @@ public class WadoRS {
         }
     }
 
-    private static void logOutgoing(HttpURLConnection connection) {
+    private void logOutgoing(HttpURLConnection connection) {
         LOG.info("> " + connection.getRequestMethod() + " " + connection.getURL());
-        LOG.info("> Accept: " + connection.getRequestProperty("Accept"));
+        LOG.info("> Accept: " + accept.headerVal);
     }
 
-    private static void logIncoming(HttpURLConnection connection) throws Exception {
+    private void logIncoming(HttpURLConnection connection) throws Exception {
         LOG.info("< Content-Length: " + connection.getContentLength());
         LOG.info("< HTTP/1.1 Response: " + String.valueOf(connection.getResponseCode()) + " " + connection.getResponseMessage());
         LOG.info("< Transfer-Encoding: " + connection.getContentEncoding());
@@ -195,14 +225,10 @@ public class WadoRS {
         LOG.info("< Date: " + connection.getHeaderField("Date"));
     }
 
-    private void unpack(HttpURLConnection connection) throws Exception {
-        String url = connection.getURL().toString();
-        final String uid = url.endsWith("metadata")
-                ? url.substring(url.substring(0, url.lastIndexOf("/")).lastIndexOf("/") + 1, url.lastIndexOf('/'))
-                : url.substring(url.lastIndexOf('/')+1);
-
+    private void unpack(HttpURLConnection connection, final String uid) throws Exception {
         try (InputStream is = connection.getInputStream()) {
-            if (accept == Accept.json) {
+            if (connection.getContentType().endsWith("json")) {
+                LOG.info("Extract metadata as json");
                 input.writeBodyPart(is, 1, uid);
                 return;
             }

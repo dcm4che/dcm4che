@@ -1,4 +1,4 @@
-    usage: dcm2str -p <pattern> [-s <[seq/]attr=value>]..
+    usage: dcm2str -p <pattern> [-s <[seq/]attr=value>].. --
                    [<file>..][<directory>..]
     
     Apply Attributes Format Pattern either to one or more DICOM files and/or
@@ -25,15 +25,16 @@
     Apply Attributes Format Pattern to the specified DICOM file.
     
     => dcm2str -p '{0020000D,hash}/{0020000E,hash}/{00080018,hash}/{rnd}'
-    image.dcm -sStudyInstanceUID=1.2.3 -sSeriesInstanceUID=1.2.3.4
-    -sSOPInstanceUID=1.2.3.4.5
+    -sStudyInstanceUID=1.2.3 -sSeriesInstanceUID=1.2.3.4
+    -sSOPInstanceUID=1.2.3.4.5 -- image.dcm
     Overwrite attributes of the specified DICOM file with specified DICOM
     attributes and then apply Attributes Format Pattern to the specified DICOM
     file.
     
     => dcm2str -p '{0020000D,hash}/{0020000E,hash}/{00080018,hash}/{rnd}'
-    image.dcm /path-to-other-DICOM-files-directory -sStudyInstanceUID=1.2.3
-    -sSeriesInstanceUID=1.2.3.4 -sSOPInstanceUID=1.2.3.4.5
+    -sStudyInstanceUID=1.2.3 -sSeriesInstanceUID=1.2.3.4
+    -sSOPInstanceUID=1.2.3.4.5 -- image.dcm
+    /path-to-other-DICOM-files-directory
     Overwrite attributes of the specified DICOM file and of other DICOM files
     in the directory with the specified DICOM attributes and only then apply
     Attributes Format Pattern to DICOM file and to other DICOM files in the

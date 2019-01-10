@@ -43,34 +43,44 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.AttributesFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jan 2019
  */
-public class Dcm2Str {
-    private static final Logger LOG = LoggerFactory.getLogger(Dcm2Str.class);
+public class Dcm2Str extends SimpleFileVisitor<Path> {
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.dcm2str.messages");
-    private static String pattern;
-    private static String[] uidOptVals;
-    private static List<String> pathNames;
+    private final AttributesFormat format;
+    private final Attributes cliAttrs;
+
+    public Dcm2Str(AttributesFormat format, Attributes cliAttrs) {
+        this.format = format;
+        this.cliAttrs = cliAttrs;
+    }
 
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            init(cl);
-            dcm2str();
+            AttributesFormat format = new AttributesFormat(cl.getOptionValue("p"));
+            Attributes cliAttrs = new Attributes();
+            CLIUtils.addAttributes(cliAttrs, cl.getOptionValues("s"));
+            List<String> pathNames = cl.getArgList();
+            if (pathNames.isEmpty())
+                System.out.println(format.format(cliAttrs));
+            else
+                for (String pathName : pathNames)
+                    Files.walkFileTree(Paths.get(pathName),
+                            EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+                            Integer.MAX_VALUE,
+                            new Dcm2Str(format, cliAttrs));
         } catch (ParseException e) {
             System.err.println("dcm2str: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -87,6 +97,7 @@ public class Dcm2Str {
         CLIUtils.addCommonOptions(opts);
         opts.addOption(Option.builder("p")
                 .hasArg()
+                .argName("pattern")
                 .desc(rb.getString("pattern"))
                 .build());
         opts.addOption(Option.builder("s")
@@ -95,52 +106,22 @@ public class Dcm2Str {
                 .valueSeparator('=')
                 .desc(rb.getString("str"))
                 .build());
-        return CLIUtils.parseComandLine(args, opts, rb, Dcm2Str.class);
+        CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Dcm2Str.class);
+        if (!cl.hasOption("p"))
+            throw new MissingOptionException(rb.getString("missing-pattern-opt"));
+        return cl;
     }
 
-    private static void init(CommandLine cl) throws Exception {
-        if ((pattern = cl.getOptionValue("p")) == null)
-            throw new MissingOptionException("Missing Attributes Format pattern");
-
-        uidOptVals = cl.getOptionValues("s");
-        pathNames = cl.getArgList();
-    }
-
-    private static void dcm2str() throws IOException {
-        for (String pathName : pathNames) {
-            Path path = Paths.get(pathName);
-            if (Files.isDirectory(path)) {
-                try {
-                    Files.walkFileTree(path, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                            new SimpleFileVisitor<Path>() {
-                                @Override
-                                public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs1) throws IOException {
-                                    convert(filePath);
-                                    return FileVisitResult.CONTINUE;
-                                }
-                            });
-                } catch (IOException e) {
-                    LOG.warn(e.getMessage());
-                }
-            } else
-                convert(path);
+    @Override
+    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
+        try (DicomInputStream dis = new DicomInputStream(path.toFile())) {
+            Attributes dataset = dis.readDataset(-1, -1);
+            dataset.addAll(cliAttrs);
+            System.out.println(format.format(dataset));
+        } catch (IOException e) {
+            System.err.println("Failed to parse DICOM file " + path);
+            e.printStackTrace();
         }
-        if (pathNames.isEmpty())
-            convert(null);
-    }
-
-    private static void convert(Path path) throws IOException {
-        Attributes attrs = toAttributes(path);
-        CLIUtils.addAttributes(attrs, uidOptVals);
-        System.out.println(MessageFormat.format(
-                rb.getString("converted"),
-                path != null ? path : "",
-                new AttributesFormat(pattern).format(attrs)));
-    }
-
-    private static Attributes toAttributes(Path path) throws IOException {
-        return path != null
-                ? new DicomInputStream(new FileInputStream(path.toFile())).readDataset(-1, -1)
-                : new Attributes();
+        return FileVisitResult.CONTINUE;
     }
 }

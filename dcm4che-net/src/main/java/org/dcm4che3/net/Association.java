@@ -343,15 +343,16 @@ public class Association {
     void doCloseSocketDelayed() {
         enterState(State.Sta13);
         int delay = conn.getSocketCloseDelay();
-        if (delay > 0)
+        if (delay > 0) {
             device.schedule(new Runnable() {
-    
+
                 @Override
                 public void run() {
                     closeSocket();
                 }
             }, delay, TimeUnit.MILLISECONDS);
-        else
+            LOG.debug("{}: closing {} in {} ms", name, sock, delay);
+        } else
             closeSocket();
     }
 

@@ -47,7 +47,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -93,30 +92,39 @@ public class StoreSCP {
     private File storageDir;
     private AttributesFormat filePathFormat;
     private int status;
+    private int responseDelay;
     private final BasicCStoreSCP cstoreSCP = new BasicCStoreSCP("*") {
 
         @Override
         protected void store(Association as, PresentationContext pc,
                 Attributes rq, PDVInputStream data, Attributes rsp)
                 throws IOException {
-            rsp.setInt(Tag.Status, VR.US, status);
-            if (storageDir == null)
-                return;
-
-            String cuid = rq.getString(Tag.AffectedSOPClassUID);
-            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-            String tsuid = pc.getTransferSyntax();
-            File file = new File(storageDir, iuid + PART_EXT);
             try {
-                storeTo(as, as.createFileMetaInformation(iuid, cuid, tsuid),
-                        data, file);
-                renameTo(as, file, new File(storageDir,
-                        filePathFormat == null
-                            ? iuid
-                            : filePathFormat.format(parse(file))));
-            } catch (Exception e) {
-                deleteFile(as, file);
-                throw new DicomServiceException(Status.ProcessingFailure, e);
+                rsp.setInt(Tag.Status, VR.US, status);
+                if (storageDir == null)
+                    return;
+
+                String cuid = rq.getString(Tag.AffectedSOPClassUID);
+                String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+                String tsuid = pc.getTransferSyntax();
+                File file = new File(storageDir, iuid + PART_EXT);
+                try {
+                    storeTo(as, as.createFileMetaInformation(iuid, cuid, tsuid),
+                            data, file);
+                    renameTo(as, file, new File(storageDir,
+                            filePathFormat == null
+                                    ? iuid
+                                    : filePathFormat.format(parse(file))));
+                } catch (Exception e) {
+                    deleteFile(as, file);
+                    throw new DicomServiceException(Status.ProcessingFailure, e);
+                }
+            } finally {
+                if (responseDelay > 0)
+                    try {
+                        Thread.sleep(responseDelay);
+                    } catch (InterruptedException ignore) {
+                    }
             }
         }
 
@@ -190,6 +198,10 @@ public class StoreSCP {
         this.status = status;
     }
 
+    public void setResponseDelay(int responseDelay) {
+        this.responseDelay = responseDelay;
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
@@ -197,6 +209,7 @@ public class StoreSCP {
         CLIUtils.addAEOptions(opts);
         CLIUtils.addCommonOptions(opts);
         addStatusOption(opts);
+        addResponseDelayOption(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StoreSCP.class);
@@ -209,6 +222,15 @@ public class StoreSCP {
                 .argName("code")
                 .desc(rb.getString("status"))
                 .longOpt("status")
+                .build());
+    }
+
+    private static void addResponseDelayOption(Options opts) {
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("ms")
+                .desc(rb.getString("response-delay"))
+                .longOpt("response-delay")
                 .build());
     }
 
@@ -249,6 +271,7 @@ public class StoreSCP {
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
             main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
+            main.setResponseDelay(CLIUtils.getIntOption(cl, "response-delay", 0));
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();

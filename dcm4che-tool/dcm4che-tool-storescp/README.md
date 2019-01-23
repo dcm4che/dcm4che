@@ -84,6 +84,8 @@
                                          A-RELEASE-RP, no timeout by default
         --request-timeout <ms>           timeout in ms for receiving
                                          A-ASSOCIATE-RQ, no timeout by default
+        --response-delay <ms>            delay in ms returning C-STORE-RSPs,
+                                         no delay by default
         --soclose-delay <ms>             delay in ms after sending
                                          A-ASSOCATE-RJ, A-RELEASE-RQ or
                                          A-ABORT before the socket is closed;
@@ -100,9 +102,8 @@
                                          encapsulated in a SSLv2 ClientHello
                                          packet; equivalent to --tls-protocol
                                          SSLv2Hello --tls-protocol SSLv3
-                                         --tls-protocol TLSv1
-                                         --tls-protocol TLSv1.1
-                                         --tls-protocol TLSv1.2
+                                         --tls-protocol TLSv1 --tls-protocol
+                                         TLSv1.1 --tls-protocol TLSv1.2
         --ssl3                           enable only TLS/SSL protocol SSLv3;
                                          equivalent to --tls-protocol SSLv3
         --status <code>                  specifies status code in returned
@@ -137,22 +138,18 @@
                                          encryption; equivalent to
                                          --tls-cipher SSL_RSA_WITH_NULL_SHA
         --tls-protocol <protocol>        TLS/SSL protocol to use. Multiple
-                                         TLS/SSL protocols may be enabled
-                                         by multiple --tls-protocol
-                                         options. Supported values by
-                                         SunJSSE 1.8: TLSv1.2, TLSv1.1,
-                                         TLSv1, SSLv3, SSLv2Hello. By
-                                         default, TLSv1.2, TLSv1.1, TLSv1
-                                         and SSLv3 are enabled.
-        --tls1                           enable only TLS/SSL protocol
-                                         TLSv1; equivalent to
-                                         --tls-protocol TLSv1
-        --tls11                          enable only TLS/SSL protocol
-                                         TLSv1.1; equivalent to
-                                         --tls-protocol TLSv1.1
-        --tls12                          enable only TLS/SSL protocol
-                                         TLSv1.2; equivalent to
-                                         --tls-protocol TLSv1.2
+                                         TLS/SSL protocols may be enabled by
+                                         multiple --tls-protocol options.
+                                         Supported values by SunJSSE 1.8:
+                                         TLSv1, TLSv1.1, TLSv1.2, SSLv3,
+                                         SSLv2Hello. By default, TLSv1,
+                                         TLSv1.1 and TLSv1.2 are enabled.
+        --tls1                           enable only TLS/SSL protocol TLSv1;
+                                         equivalent to --tls-protocol TLSv1
+        --tls11                          enable only TLS/SSL protocol TLSv1.1;
+                                         equivalent to --tls-protocol TLSv1.1
+        --tls12                          enable only TLS/SSL protocol TLSv1.2;
+                                         equivalent to --tls-protocol TLSv1.2
         --trust-store <file|url>         file path of key store containing
                                          trusted certificates,
                                          resource:cacerts.jks by default
@@ -162,7 +159,7 @@
                                          certificates, JKS by default
      -V,--version                        output version information and exit
     -
-    Example: storescp -b STORESCP:11115
-    => Starts server listening on port 11115, accepting association requests
+    Example: storescp -b STORESCP:11112
+    => Starts server listening on port 11112, accepting association requests
     with STORESCP as called AE title. Received objects are stored to the
     working directory.

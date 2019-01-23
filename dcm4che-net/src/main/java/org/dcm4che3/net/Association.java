@@ -366,7 +366,7 @@ public class Association {
     }
 
     void write(AAbort aa) throws IOException  {
-        LOG.info("{} << {}", name, aa);
+        LOG.info("{} << {}", name, aa.toString());
         encoder.write(aa);
         ex = aa;
         closeSocketDelayed();
@@ -468,9 +468,9 @@ public class Association {
         startIdleTimeout();
     }
 
-    private void write(AAssociateRJ e) throws IOException {
-        LOG.info("{} << {}", name, e);
-        encoder.write(e);
+    private void write(AAssociateRJ rj) throws IOException {
+        LOG.info("{} << {}", name, rj.toString());
+        encoder.write(rj);
         closeSocketDelayed();
     }
 

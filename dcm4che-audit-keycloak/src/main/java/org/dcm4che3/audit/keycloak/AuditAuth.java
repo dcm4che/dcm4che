@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2015-2018
+ * Portions created by the Initial Developer are Copyright (C) 2015-2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -136,7 +136,6 @@ class AuditAuth {
                             eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.forSuperUserAuth(event)),
                             activeParticipants);
             }
-
             if (event.getType() != EventType.LOGIN)
                 Files.delete(file);
         } catch (Exception e) {
@@ -166,9 +165,13 @@ class AuditAuth {
     private static EventIdentificationBuilder eventIDBuilder(
             AuditLogger log, String outcome, AuditUtils.AuditEventType eventType) {
         return new EventIdentificationBuilder.Builder(
-                eventType.eventID, eventType.eventActionCode, log.timeStamp(), eventOutcomeIndicator(outcome))
+                eventType.eventID,
+                AuditMessages.EventActionCode.Execute,
+                log.timeStamp(),
+                eventOutcomeIndicator(outcome))
                 .outcomeDesc(outcome)
-                .eventTypeCode(eventType.eventTypeCode).build();
+                .eventTypeCode(eventType.eventTypeCode)
+                .build();
     }
 
     private static List<String> userRoles(String userName, KeycloakSession keycloakSession) {
@@ -181,7 +184,9 @@ class AuditAuth {
     }
 
     private static String eventOutcomeIndicator(String outcomeDesc) {
-        return outcomeDesc != null ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success;
+        return outcomeDesc != null
+                ? AuditMessages.EventOutcomeIndicator.MinorFailure
+                : AuditMessages.EventOutcomeIndicator.Success;
     }
 
     static class AuthInfo {

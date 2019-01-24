@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2015-2018
+ * Portions created by the Initial Developer are Copyright (C) 2015-2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -52,41 +52,21 @@ import org.keycloak.events.admin.ResourceType;
  * @since Oct 2018
  */
 class AuditUtils {
-    enum EventClass {
-        USER_AUTHENTICATE, SECURITY_ALERT
-    }
-
     enum AuditEventType {
-        LOGIN(EventClass.USER_AUTHENTICATE, AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
-                AuditMessages.EventTypeCode.Login),
-        LOGOUT(EventClass.USER_AUTHENTICATE, AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
-                AuditMessages.EventTypeCode.Logout),
-        SU_LOGIN(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Execute,
-                AuditMessages.EventTypeCode.EmergencyOverrideStarted),
-        SU_LOGOUT(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Execute,
-                AuditMessages.EventTypeCode.EmergencyOverrideStopped),
-        UPDT_USER(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Update,
-                AuditMessages.EventTypeCode.UserSecurityAttributesChanged),
+        LOGIN(AuditMessages.EventID.UserAuthentication, AuditMessages.EventTypeCode.Login),
+        LOGOUT(AuditMessages.EventID.UserAuthentication, AuditMessages.EventTypeCode.Logout),
 
-        ADMIN_EVT_CREATE(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Create,
-                AuditMessages.EventTypeCode.SecurityConfiguration),
-        ADMIN_EVT_UPDATE(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Update,
-                AuditMessages.EventTypeCode.SecurityConfiguration),
-        ADMIN_EVT_DELETE(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Delete,
-                AuditMessages.EventTypeCode.SecurityConfiguration),
-
-        ROLE_MAPPING(EventClass.SECURITY_ALERT, AuditMessages.EventID.SecurityAlert, AuditMessages.EventActionCode.Create,
-                AuditMessages.EventTypeCode.SecurityRolesChanged);
-
-        final AuditUtils.EventClass eventClass;
+        SU_LOGIN(AuditMessages.EventID.SecurityAlert, AuditMessages.EventTypeCode.EmergencyOverrideStarted),
+        SU_LOGOUT(AuditMessages.EventID.SecurityAlert, AuditMessages.EventTypeCode.EmergencyOverrideStopped),
+        UPDT_USER(AuditMessages.EventID.SecurityAlert, AuditMessages.EventTypeCode.UserSecurityAttributesChanged),
+        ADMIN_EVT(AuditMessages.EventID.SecurityAlert, AuditMessages.EventTypeCode.SecurityConfiguration),
+        ROLE_MAPPING(AuditMessages.EventID.SecurityAlert, AuditMessages.EventTypeCode.SecurityRolesChanged);
+        
         final AuditMessages.EventID eventID;
-        final String eventActionCode;
         final EventTypeCode eventTypeCode;
 
-        AuditEventType(AuditUtils.EventClass eventClass, AuditMessages.EventID eventID, String eventActionCode, EventTypeCode etc) {
-            this.eventClass = eventClass;
+        AuditEventType(AuditMessages.EventID eventID, EventTypeCode etc) {
             this.eventID = eventID;
-            this.eventActionCode = eventActionCode;
             this.eventTypeCode = etc;
         }
 
@@ -103,12 +83,12 @@ class AuditUtils {
             ResourceType resourceType = adminEvent.getResourceType();
 
             return opType == OperationType.CREATE
-                    ? resourceType == ResourceType.REALM_ROLE_MAPPING || resourceType == ResourceType.CLIENT_ROLE_MAPPING
-                        ? ROLE_MAPPING : ADMIN_EVT_CREATE
-                    : opType == OperationType.UPDATE
-                        ? resourceType == ResourceType.USER
-                            ? UPDT_USER : ADMIN_EVT_UPDATE
-                        : ADMIN_EVT_DELETE;
+                    && (resourceType == ResourceType.REALM_ROLE_MAPPING
+                        || resourceType == ResourceType.CLIENT_ROLE_MAPPING)
+                        ? ROLE_MAPPING
+                        : opType == OperationType.UPDATE && resourceType == ResourceType.USER
+                            ? UPDT_USER
+                            : ADMIN_EVT;
         }
 
         private static boolean isLogout(Event event) {

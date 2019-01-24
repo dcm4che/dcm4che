@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2015-2018
+ * Portions created by the Initial Developer are Copyright (C) 2015-2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -102,13 +102,15 @@ class AdminEventsAuditService {
 
     private static AuditMessage createAuditMsg(Path file, AdminEvent adminEvent, AuditLogger auditLogger) {
         AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
-
         AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forAdminEvent(adminEvent);
         EventIdentificationBuilder eventIdentification = new EventIdentificationBuilder.Builder(
-                eventType.eventID, eventType.eventActionCode, auditLogger.timeStamp(),
-                AuditMessages.EventOutcomeIndicator.Success)
-                .outcomeDesc(info.getField(AuthInfo.RESOURCE_TYPE))
-                .eventTypeCode(eventType.eventTypeCode).build();
+                eventType.eventID,
+                AuditMessages.EventActionCode.Execute,
+                auditLogger.timeStamp(),
+                eventOutcomeIndicator(adminEvent.getError()))
+                .outcomeDesc(info.getField(AuthInfo.EVENT))
+                .eventTypeCode(eventType.eventTypeCode)
+                .build();
 
         ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
         String userName = info.getField(AuthInfo.USER_NAME);
@@ -136,6 +138,12 @@ class AdminEventsAuditService {
         return AuditMessages.createMessage(eventIdentification, activeParticipants, poi);
     }
 
+    private static String eventOutcomeIndicator(String outcomeDesc) {
+        return outcomeDesc != null
+                ? AuditMessages.EventOutcomeIndicator.MinorFailure
+                : AuditMessages.EventOutcomeIndicator.Success;
+    }
+
     private static void emitAudit(AuditLogger auditLogger, AuditMessage auditMsg) {
         auditMsg.getAuditSourceIdentification().add(auditLogger.createAuditSourceIdentification());
         try {
@@ -149,7 +157,7 @@ class AdminEventsAuditService {
     static class AuthInfo {
         private static final int USER_NAME = 0;
         private static final int IP_ADDR = 1;
-        private static final int RESOURCE_TYPE = 2;
+        private static final int EVENT = 2;
         private static final int RESOURCE_PATH = 3;
         private static final int REPRESENTATION = 4;
         private  final String[] fields;
@@ -160,7 +168,7 @@ class AdminEventsAuditService {
                     keycloakSession.users().getUserById(authDetails.getUserId(), keycloakSession.getContext().getRealm())
                             .getUsername(),
                     authDetails.getIpAddress(),
-                    adminEvent.getResourceType().name(),
+                    adminEvent.getOperationType().name() + " " + adminEvent.getResourceType().name(),
                     adminEvent.getResourcePath(),
                     adminEvent.getRepresentation()
             };

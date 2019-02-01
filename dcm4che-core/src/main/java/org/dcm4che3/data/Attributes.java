@@ -2289,7 +2289,7 @@ public class Attributes implements Serializable {
     }
 
     /**
-     * Append item to already existing or new added (0400,0550) Modified Attributes Sequence.
+     * Append item to already existing or new added (0400,0561) Original Attributes Sequence.
      *
      * @param sourceOfPreviousValues
      * @param modificationDateTime

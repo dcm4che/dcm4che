@@ -46,10 +46,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.data.Value;
+import org.dcm4che3.data.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -168,7 +165,20 @@ public class UIDUtils {
     }
 
     public static int remapUIDs(Attributes attrs, Map<String,String> uidMap) {
-        UIDUtils.Visitor visitor = new UIDUtils.Visitor(uidMap);
+        return remapUIDs(attrs, uidMap, null);
+    }
+
+    /**
+     * Replaces UIDs in <code>Attributes</code> according specified mapping.
+     *
+     * @param attrs Attributes object which UIDs will be replaced
+     * @param uidMap Specified mapping
+     * @param modified Attributes object to collect overwritten non-empty
+     *          attributes with original values or <tt>null</tt>
+     * @return number of replaced UIDs
+     */
+    public static int remapUIDs(Attributes attrs, Map<String,String> uidMap, Attributes modified) {
+        UIDUtils.Visitor visitor = new UIDUtils.Visitor(uidMap, modified);
         try {
             attrs.accept(visitor, true);
         } catch (Exception e) {
@@ -179,16 +189,22 @@ public class UIDUtils {
 
     private static class Visitor implements Attributes.Visitor {
         private final Map<String, String> uidMap;
+        private final Attributes modified;
         private int replaced;
+        private int rootSeqTag;
 
-        public Visitor(Map<String, String> uidMap) {
+        public Visitor(Map<String, String> uidMap, Attributes modified) {
             this.uidMap = uidMap;
+            this.modified = modified;
         }
 
         @Override
         public boolean visit(Attributes attrs, int tag, VR vr, Object val) {
-            if (vr != VR.UI || val == Value.NULL)
+            if (vr != VR.UI || val == Value.NULL) {
+                if (attrs.isRoot())
+                    rootSeqTag = vr == VR.SQ ? tag : 0;
                 return true;
+            }
 
             String[] ss;
             if (val instanceof byte[]) {
@@ -197,9 +213,11 @@ public class UIDUtils {
             }
             if (val instanceof String[]) {
                 ss = (String[]) val;
-                for (int i = 0; i < ss.length; i++) {
+                for (int i = 0, c = 0; i < ss.length; i++) {
                     String uid = uidMap.get(ss[i]);
                     if (uid != null) {
+                        if (c++ == 0)
+                            modified(attrs, tag, vr, ss.clone());
                         ss[i] = uid;
                         replaced++;
                     }
@@ -207,11 +225,27 @@ public class UIDUtils {
             } else {
                 String uid = uidMap.get(val);
                 if (uid != null) {
+                    modified(attrs, tag, vr, val);
                     attrs.setString(tag, VR.UI, uid);
                     replaced++;
                 }
             }
             return true;
+        }
+
+        private void modified(Attributes attrs, int tag, VR vr, Object val) {
+            if (modified == null)
+                return;
+
+            if (rootSeqTag == 0) {
+                modified.setValue(tag, vr, val);
+            } else if (!modified.contains(rootSeqTag)) {
+                Sequence src = attrs.getRoot().getSequence(rootSeqTag);
+                Sequence dst = modified.newSequence(rootSeqTag, src.size());
+                for (Attributes item : src) {
+                    dst.add(new Attributes(item));
+                }
+            }
         }
     }
 }

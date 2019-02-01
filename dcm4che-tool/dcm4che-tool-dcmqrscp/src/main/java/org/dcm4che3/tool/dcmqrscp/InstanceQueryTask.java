@@ -72,9 +72,9 @@ class InstanceQueryTask extends SeriesQueryTask {
                 + seriesRec.size()
                 + instRec.size());
         ret.addAll(patRec);
-        ret.addAll(studyRec);
-        ret.addAll(seriesRec);
-        ret.addAll(instRec);
+        ret.addAll(studyRec, true);
+        ret.addAll(seriesRec, true);
+        ret.addAll(instRec, true);
         wrappedFindNextInstance();
         return ret;
     }

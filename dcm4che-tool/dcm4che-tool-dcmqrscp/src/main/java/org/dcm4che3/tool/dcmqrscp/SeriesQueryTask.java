@@ -74,8 +74,8 @@ class SeriesQueryTask extends StudyQueryTask {
                 + studyRec.size()
                 + seriesRec.size());
         ret.addAll(patRec);
-        ret.addAll(studyRec);
-        ret.addAll(seriesRec);
+        ret.addAll(studyRec, true);
+        ret.addAll(seriesRec, true);
         wrappedFindNextSeries();
         return ret;
     }

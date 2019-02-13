@@ -415,4 +415,12 @@ public class HL7Application implements Serializable {
     public <T extends HL7ApplicationExtension> T getHL7ApplicationExtension(Class<T> clazz) {
         return (T) extensions.get(clazz);
     }
+
+    public <T extends HL7ApplicationExtension> T getHL7AppExtensionNotNull(Class<T> clazz) {
+        T hl7AppExt = getHL7ApplicationExtension(clazz);
+        if (hl7AppExt == null)
+            throw new IllegalStateException("No " + clazz.getName()
+                    + " configured for HL7 Application: " + name);
+        return hl7AppExt;
+    }
 }

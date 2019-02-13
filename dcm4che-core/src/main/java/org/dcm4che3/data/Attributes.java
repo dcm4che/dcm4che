@@ -3244,6 +3244,10 @@ public class Attributes implements Serializable {
     }
 
     public int diff(Attributes other, int[] selection, Attributes diff) {
+        return diff(other, selection, diff, false);
+    }
+
+    public int diff(Attributes other, int[] selection, Attributes diff, boolean onlyModified) {
         int count = 0;
         for (int tag : selection) {
             int index = indexOf(tag);
@@ -3251,10 +3255,12 @@ public class Attributes implements Serializable {
             if (!equalValues(other, index, otherIndex)) {
                 if (diff != null) {
                     Object value = index < 0 ? Value.NULL : values[index];
-                    if (value instanceof Sequence) {
-                        diff.set(null, tag, (Sequence) value, null);
-                    } else {
-                        diff.set(tag, index < 0 ? other.vrs[otherIndex] : vrs[index], value);
+                    if (!onlyModified || value != Value.NULL) {
+                        if (value instanceof Sequence) {
+                            diff.set(null, tag, (Sequence) value, null);
+                        } else {
+                            diff.set(tag, index < 0 ? other.vrs[otherIndex] : vrs[index], value);
+                        }
                     }
                 }
                 count++;

@@ -82,7 +82,7 @@ public class Attributes implements Serializable {
         }
     }
 
-    public enum UpdatePolicy { SUPPLEMENT, MERGE, OVERWRITE, REPLACE }
+    public enum UpdatePolicy { SUPPLEMENT, MERGE, OVERWRITE, REPLACE, PRESERVE }
     public static final String COERCE = "COERCE";
     public static final String CORRECT = "CORRECT";
 
@@ -2137,7 +2137,12 @@ public class Attributes implements Serializable {
                 if (updatePolicy != UpdatePolicy.OVERWRITE && isEmpty(value))
                     continue;
                 int j = indexOf(tag);
-                if (j >= 0) {
+                if (j < 0) {
+                    if (updatePolicy == UpdatePolicy.PRESERVE)
+                        value = Value.NULL;
+                } else {
+                    if (updatePolicy == UpdatePolicy.PRESERVE)
+                        continue;
                     Object origValue = vrs[j].isStringType() ? decodeStringValue(j) : values[j];
                     if (updatePolicy == UpdatePolicy.SUPPLEMENT ? !isEmpty(origValue) : equalValues(other, j, i))
                         continue;

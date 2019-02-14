@@ -741,7 +741,7 @@ public class CLIUtils {
                 addAttributes(attrs,
                         toTags(
                                 StringUtils.split(optVals[i-1], '/')),
-                                StringUtils.split(optVals[i], '/'));
+                                optVals[i]);
     }
 
     public static void addEmptyAttributes(Attributes attrs, String[] optVals) {

@@ -47,6 +47,7 @@ import java.awt.image.Raster;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 
 /**
@@ -132,11 +133,29 @@ public class LookupTableFactory {
                 return;
             }
         }
-        if (vLUT != null)
+        if (vLUT != null) {
+            adjustVOILUTDescriptor(vLUT);
             voiLUT = createLUT(modalityLUT != null
                           ? new StoredValue.Unsigned(modalityLUT.outBits)
                           : storedValue,
                       vLUT);
+        }
+    }
+
+    private void adjustVOILUTDescriptor(Attributes vLUT) {
+        int[] desc = vLUT.getInts(Tag.LUTDescriptor);
+        byte[] data;
+        if (desc != null && desc.length == 3 && desc[2] == 16
+                && (data = vLUT.getSafeBytes(Tag.LUTData)) != null) {
+            int hiByte = 0;
+            for (int i = vLUT.bigEndian() ? 0 : 1; i < data.length; i++, i++)
+                hiByte |= data[i];
+            int outBits = 40 - Integer.numberOfLeadingZeros(hiByte & 0xFF);
+            if (outBits < 16) {
+                desc[2] = outBits;
+                vLUT.setInt(Tag.LUTDescriptor, VR.SS, desc);
+            }
+        }
     }
 
     private LookupTable createLUT(StoredValue inBits, Attributes attrs) {

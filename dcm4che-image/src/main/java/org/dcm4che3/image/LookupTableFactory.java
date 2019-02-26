@@ -150,9 +150,8 @@ public class LookupTableFactory {
             int hiByte = 0;
             for (int i = vLUT.bigEndian() ? 0 : 1; i < data.length; i++, i++)
                 hiByte |= data[i];
-            int outBits = 40 - Integer.numberOfLeadingZeros(hiByte & 0xFF);
-            if (outBits < 16) {
-                desc[2] = outBits;
+            if ((hiByte & 0x80) == 0) {
+                desc[2] = 40 - Integer.numberOfLeadingZeros(hiByte & 0xFF);
                 vLUT.setInt(Tag.LUTDescriptor, VR.SS, desc);
             }
         }

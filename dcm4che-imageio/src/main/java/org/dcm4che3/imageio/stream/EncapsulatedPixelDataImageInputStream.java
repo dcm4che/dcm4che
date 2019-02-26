@@ -42,6 +42,7 @@ package org.dcm4che3.imageio.stream;
 
 import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
+import org.dcm4che3.imageio.codec.TransferSyntaxType;
 import org.dcm4che3.io.DicomInputStream;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
@@ -58,6 +59,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
 
     private final DicomInputStream dis;
     private final ImageDescriptor imageDescriptor;
+    private final TransferSyntaxType tsType;
     private final byte[] basicOffsetTable;
     private final int frameStartWord;
     private int fragmStartWord;
@@ -68,9 +70,15 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
 
     public EncapsulatedPixelDataImageInputStream(DicomInputStream dis, ImageDescriptor imageDescriptor)
             throws IOException {
+        this(dis, imageDescriptor, TransferSyntaxType.forUID(dis.getTransferSyntax()));
+    }
+
+    public EncapsulatedPixelDataImageInputStream(DicomInputStream dis, ImageDescriptor imageDescriptor,
+            TransferSyntaxType tsType) throws IOException {
         super(dis);
         this.dis = dis;
         this.imageDescriptor = imageDescriptor;
+        this.tsType = tsType;
         dis.readItemHeader();
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
@@ -155,7 +163,8 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         if (streamPos < fragmEndPos)
             return false;
 
-        if (readItemHeader() && !(imageDescriptor.isMultiframe() && fragmStartWord == frameStartWord))
+        if (readItemHeader() && (!imageDescriptor.isMultiframe()
+                || (tsType.mayFrameSpanMultipleFragments() && fragmStartWord != frameStartWord)))
             return false;
 
         frameEndPos = streamPos;

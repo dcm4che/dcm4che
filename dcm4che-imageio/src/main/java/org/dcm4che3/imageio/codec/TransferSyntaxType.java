@@ -47,62 +47,50 @@ import org.dcm4che3.data.UID;
  *
  */
 public enum TransferSyntaxType {
-    NATIVE {
-        @Override
-        public boolean isPixeldataEncapsulated() {
-            return false;
-        }
-    },
-    JPEG_BASELINE {
-        @Override
-        public int getMaxBitsStored() { return 8; }
-    },
-    JPEG_EXTENDED {
-        @Override
-        public int getMaxBitsStored() { return 12; }
-    },
-    JPEG_SPECTRAL {
-        @Override
-        public int getMaxBitsStored() { return 12; }
-    },
-    JPEG_PROGRESSIVE {
-        @Override
-        public int getMaxBitsStored() { return 12; }
-    },
-    JPEG_LOSSLESS,
-    JPEG_2000 {
-        @Override
-        public boolean canEncodeSigned() { return true; }
-    },
-    RLE {
-        @Override
-        public int getPlanarConfiguration() { return 1; }
-    },
-    JPIP {
-        @Override
-        public boolean isPixeldataEncapsulated() {
-            return false;
-        }
-    },
-    MPEG {
-        @Override
-        public int getMaxBitsStored() { return 8; }
-    };
+    NATIVE(false, false, true, 16, 0),
+    JPEG_BASELINE(true, true, false, 8, 0),
+    JPEG_EXTENDED(true, true, false, 12, 0),
+    JPEG_SPECTRAL(true, true, false, 12, 0),
+    JPEG_PROGRESSIVE(true, true, false, 12, 0),
+    JPEG_LOSSLESS(true, true, false, 16, 0),
+    JPEG_2000(true, true, true, 16, 0),
+    RLE(true, false, false, 16, 1),
+    JPIP(false, false, false, 16, 0),
+    MPEG(true, false, false, 8, 0);
+
+    private final boolean pixeldataEncapsulated;
+    private final boolean frameSpanMultipleFragments;
+    private final boolean encodeSigned;
+    private final int maxBitsStored;
+    private final int planarConfiguration;
+
+    TransferSyntaxType(boolean pixeldataEncapsulated, boolean frameSpanMultipleFragments, boolean encodeSigned,
+            int maxBitsStored, int planarConfiguration) {
+        this.pixeldataEncapsulated = pixeldataEncapsulated;
+        this.frameSpanMultipleFragments = frameSpanMultipleFragments;
+        this.encodeSigned = encodeSigned;
+        this.maxBitsStored = maxBitsStored;
+        this.planarConfiguration = planarConfiguration;
+    }
 
     public boolean isPixeldataEncapsulated() {
-        return true;
+        return pixeldataEncapsulated;
     }
 
     public boolean canEncodeSigned() {
-        return false;
+        return encodeSigned;
+    }
+
+    public boolean mayFrameSpanMultipleFragments() {
+        return frameSpanMultipleFragments;
     }
 
     public int getPlanarConfiguration() {
-        return 0;
+        return planarConfiguration;
     }
 
     public int getMaxBitsStored() {
-        return 16;
+        return maxBitsStored;
     }
 
     private static final HashMap<String, TransferSyntaxType> map =

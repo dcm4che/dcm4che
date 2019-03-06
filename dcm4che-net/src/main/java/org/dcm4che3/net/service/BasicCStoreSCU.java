@@ -304,6 +304,12 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
             rsp.setFailedUIDs(iuids);
             rsp.setLastError(lastError);
         }
+        if (!completed.isEmpty()) {
+            String[] iuids = new String[completed.size()];
+            for (int i = 0; i < iuids.length; i++)
+                iuids[i] = completed.get(i).iuid;
+            rsp.setCompletedUIDs(iuids);
+        }
         return rsp;
     }
 

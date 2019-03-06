@@ -54,6 +54,7 @@ public class BasicCStoreSCUResp {
     private int completed;
     private int failed;
     private int warning;
+    private String[] completedUIDs;
     private String[] failedUIDs;
 	private Throwable lastError;
    
@@ -81,6 +82,12 @@ public class BasicCStoreSCUResp {
     public void setWarning(int warning) {
         this.warning = warning;
     }
+    public String[] getCompletedUIDs() {
+        return completedUIDs;
+    }
+    public void setCompletedUIDs(String[] completedUIDs) {
+        this.completedUIDs = completedUIDs;
+    }
     public String[] getFailedUIDs() {
         return failedUIDs;
     }
@@ -104,6 +111,16 @@ public class BasicCStoreSCUResp {
         setFailed(getFailed() + addendumResponse.getFailed());
 		setLastError(addendumResponse.getLastError());
         setWarning(getWarning() + addendumResponse.getWarning());
+
+        String[] currentCompletedUIDs = getCompletedUIDs();
+        String[] newCompletedUIDs = addendumResponse.getCompletedUIDs();
+        if (currentCompletedUIDs == null) {
+            setCompletedUIDs(newCompletedUIDs);
+        } else if (newCompletedUIDs != null) {
+            String[] completedUIDs = Arrays.copyOf(currentCompletedUIDs, currentCompletedUIDs.length + newCompletedUIDs.length);
+            System.arraycopy(newCompletedUIDs, 0, completedUIDs, currentCompletedUIDs.length, newCompletedUIDs.length);
+            setCompletedUIDs(completedUIDs);
+        }
 		
         String[] currentFailedUIDs = getFailedUIDs();
         String[] newFailedUIDs = addendumResponse.getFailedUIDs();

@@ -103,6 +103,12 @@ public class TranscoderTest {
     public void testDecompressMF() throws Exception {
         test("US-PAL-8-10x-echo", "US-PAL-8-10x-echo.unc", UID.ExplicitVRLittleEndian, true);
     }
+    
+	@Test
+	public void testDecompressJpeglsPaletteMF() throws Exception {
+		if (Boolean.getBoolean("JIIO"))
+			test("jpeg-ls-Palette.dcm", "jpeg-ls-Palette-raw.dcm", UID.ExplicitVRLittleEndian, true);
+	}
 
     @Test
     public void testCompressMF() throws Exception {
@@ -124,6 +130,42 @@ public class TranscoderTest {
     public void testCompressPerPixelRGB() throws Exception {
         test("US-RGB-8-esopecho", "US-RGB-8-esopecho_jply", UID.JPEGBaseline1, true);
     }
+    
+	@Test
+	public void testCompressPerPixelRgb2JpegLossless() throws Exception {
+		if (Boolean.getBoolean("JIIO"))
+			test("US-RGB-8-esopecho", "US-RGB-8-esopecho-jpegLossless.dcm", UID.JPEGLossless, true);
+	}
+    
+	@Test
+	public void testTranscodePaletteRleMf2RgbJpegls() throws Exception {
+		if (Boolean.getBoolean("JIIO"))
+			test("US-PAL-8-10x-echo", "US-PAL-8-10x-echo-jpegls.dcm", UID.JPEGLSLossyNearLossless, true);
+	}
+	
+	@Test
+	public void testTranscodeJpeglsPaletteMf2RgbJ2k() throws Exception {
+		if (Boolean.getBoolean("JIIO"))
+			test("jpeg-ls-Palette.dcm", "jpeg-ls-Palette-j2k.dcm", UID.JPEG2000, true);
+	}
+	
+	@Test
+	public void testTranscodeYbrFullRle2RgbJ2k() throws Exception {
+		if (Boolean.getBoolean("JIIO"))
+			test("YBR_FULL-RLE.dcm", "YBR_FULL-RLE-j2k.dcm", UID.JPEG2000, true);
+	}
+	
+	@Test 
+	public void testTranscodeYbr422Raw2RgbJpegLossless() throws Exception {
+s		if (Boolean.getBoolean("JIIO"))
+			test("YBR_422.dcm", "YBR_422-jpegLossless.dcm", UID.JPEGLossless, true);
+	}
+	
+	@Test
+	public void testTranscodeYbr422Raw2RgbJ2k() throws Exception {
+		if (Boolean.getBoolean("JIIO"))
+			test("YBR_422.dcm", "YBR_422-j2k.dcm", UID.JPEG2000, true);
+	}
 
     private void test(String ifname, String ofname, final String outts, boolean fmi) throws IOException {
 

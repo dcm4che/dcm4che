@@ -104,7 +104,7 @@ public class ColorModelFactory {
     }
 
     private static ColorSpace createRGBColorSpace(byte[] iccProfile) {
-        if (iccProfile != null)
+        if (iccProfile != null && iccProfile.length > 0)
             return new ICC_ColorSpace(ICC_Profile.getInstance(iccProfile));
 
         return ColorSpace.getInstance(ColorSpace.CS_sRGB);

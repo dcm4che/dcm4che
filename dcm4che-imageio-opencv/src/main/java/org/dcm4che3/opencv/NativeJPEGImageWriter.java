@@ -113,23 +113,17 @@ class NativeJPEGImageWriter extends ImageWriter {
 
         RenderedImage renderedImage = image.getRenderedImage();
 
-        // Throws exception if the renderedImage cannot be encoded.
-        // ImageUtil.canEncodeImage(this, renderedImage.getColorModel(), renderedImage.getSampleModel());
-
-        // if (renderedImage.getColorModel() instanceof IndexColorModel) {
-        // renderedImage = convertTo3BandRGB(renderedImage);
-        // }
-
         try {
+            // Band interleaved mode (PlanarConfiguration = 1) is converted to pixel interleaved
+            // So the input image has always a pixel interleaved mode mode((PlanarConfiguration = 0)
             ImageCV mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
 
             int cvType = mat.type();
             int elemSize = (int) mat.elemSize1();
             int channels = CvType.channels(cvType);
-            // TODO implement interleaved mode
             int dcmFlags =
                 CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
-            
+
             int[] params = new int[15];
             params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
             params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags

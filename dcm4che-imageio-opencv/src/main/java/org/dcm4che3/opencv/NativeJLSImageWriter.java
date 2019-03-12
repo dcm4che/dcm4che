@@ -93,28 +93,22 @@ class NativeJLSImageWriter extends ImageWriter {
         }
         ImageOutputStream stream = (ImageOutputStream) output;
         stream.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        
+
         if (!(stream instanceof BytesWithImageImageDescriptor)) {
             throw new IllegalArgumentException("stream does not implement BytesWithImageImageDescriptor!");
         }
         ImageDescriptor desc = ((BytesWithImageImageDescriptor) stream).getImageDescriptor();
 
         RenderedImage renderedImage = image.getRenderedImage();
-
-        // Throws exception if the renderedImage cannot be encoded.
-        // ImageUtil.canEncodeImage(this, renderedImage.getColorModel(), renderedImage.getSampleModel());
-
-        // if (renderedImage.getColorModel() instanceof IndexColorModel) {
-        // renderedImage = convertTo3BandRGB(renderedImage);
-        // }
-
+        
         try {
+            // Band interleaved mode (PlanarConfiguration = 1) is converted to pixel interleaved
+            // So the input image has always a pixel interleaved mode mode((PlanarConfiguration = 0)
             ImageCV mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
 
             int cvType = mat.type();
             int elemSize = (int) mat.elemSize1();
             int channels = CvType.channels(cvType);
-            // TODO implement interleaved mode
             int dcmFlags =
                 CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
 
@@ -131,7 +125,7 @@ class NativeJLSImageWriter extends ImageWriter {
             params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] =
                 // Allowed lossy error for jpeg-ls
                 param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0;
-            
+
             MatOfInt dicomParams = new MatOfInt(params);
             Mat buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");
             if (buf.empty()) {
@@ -144,7 +138,7 @@ class NativeJLSImageWriter extends ImageWriter {
         } catch (Throwable t) {
             throw new IIOException("Native JPEG-LS encoding error", t);
         }
-    }
+    }   
 
     @Override
     public IIOMetadata getDefaultStreamMetadata(ImageWriteParam param) {

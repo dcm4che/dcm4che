@@ -106,11 +106,7 @@ public class NativeJ2kImageReaderSpi extends ImageReaderSpi {
             }
 
             // The signature content is 0x0D0A870A
-            if ((b[8] & 0xFF) != 0x0D || (b[9] & 0xFF) != 0x0A || (b[10] & 0xFF) != 0x87 || (b[11] & 0xFF) != 0x0A) {
-                return false;
-            }
-
-            return true;
+            return (b[8] & 0xFF) != 0x0D || (b[9] & 0xFF) != 0x0A || (b[10] & 0xFF) != 0x87 || (b[11] & 0xFF) != 0x0A;
         } finally {
             iis.reset();
         }

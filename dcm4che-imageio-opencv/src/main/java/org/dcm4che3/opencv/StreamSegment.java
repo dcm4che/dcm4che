@@ -42,16 +42,13 @@
 package org.dcm4che3.opencv;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.stream.FileCacheImageInputStream;
 import javax.imageio.stream.FileImageInputStream;
@@ -59,7 +56,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Fragments;
 import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
@@ -221,166 +217,5 @@ public abstract class StreamSegment {
             }
         }
         return null;
-    }
-
-    private static ExtendSegmentedInputImageStream buildSegmentedImageInputStream(File file, int frameIndex,
-        boolean jpeg2000, Fragments pixelDataFragments, ImageDescriptor imageDescriptor) throws IOException {
-        long[] offsets;
-        int[] length;
-        int frames = imageDescriptor.getFrames();
-        ArrayList<Integer> fragmentsPositions = new ArrayList<>();
-
-        int nbFragments = pixelDataFragments.size();
-
-        if (frames >= nbFragments - 1) {
-            // nbFrames > nbFragments should never happen
-            offsets = new long[1];
-            length = new int[offsets.length];
-            int index = frameIndex < nbFragments - 1 ? frameIndex + 1 : nbFragments - 1;
-            BulkData bulkData = (BulkData) pixelDataFragments.get(index);
-            offsets[0] = bulkData.offset();
-            length[0] = bulkData.length();
-        } else {
-            if (frames == 1) {
-                offsets = new long[nbFragments - 1];
-                length = new int[offsets.length];
-                for (int i = 0; i < length.length; i++) {
-                    BulkData bulkData = (BulkData) pixelDataFragments.get(i + frameIndex + 1);
-                    offsets[i] = bulkData.offset();
-                    length[i] = bulkData.length();
-                }
-            } else {
-                // Multi-frames where each frames can have multiple fragments.
-                if (fragmentsPositions.isEmpty()) {
-                    try (ImageInputStream srcStream = ImageIO.createImageInputStream(file)) {
-                        for (int i = 1; i < nbFragments; i++) {
-                            BulkData bulkData = (BulkData) pixelDataFragments.get(i);
-                            ImageInputStream stream = new org.dcm4che3.imageio.stream.SegmentedInputImageStream(
-                                srcStream, bulkData.offset(), bulkData.length(), frames <= 1);
-                            if (jpeg2000 ? decodeJpeg2000(stream) : decodeJpeg(stream)) {
-                                fragmentsPositions.add(i);
-                            }
-                        }
-                    }
-                }
-
-                if (fragmentsPositions.size() == frames) {
-                    int start = fragmentsPositions.get(frameIndex);
-                    int end = (frameIndex + 1) >= fragmentsPositions.size() ? nbFragments
-                        : fragmentsPositions.get(frameIndex + 1);
-
-                    offsets = new long[end - start];
-                    length = new int[offsets.length];
-                    for (int i = 0; i < offsets.length; i++) {
-                        BulkData bulkData = (BulkData) pixelDataFragments.get(start + i);
-                        offsets[i] = bulkData.offset();
-                        length[i] = bulkData.length();
-                    }
-                } else {
-                    throw new IOException("Cannot match all the fragments to all the frames!"); //$NON-NLS-1$
-                }
-            }
-        }
-
-        return new ExtendSegmentedInputImageStream(file, offsets, length, imageDescriptor);
-    }
-
-    private static boolean decodeJpeg2000(ImageInputStream iis) throws IOException {
-        iis.mark();
-        try {
-            int marker = (iis.read() << 8) | iis.read();
-
-            if (marker == 0xFF4F) {
-                return true;
-            }
-
-            iis.reset();
-            iis.mark();
-            byte[] b = new byte[12];
-            iis.readFully(b);
-
-            // Verify the signature box
-            // The length of the signature box is 12
-            if (b[0] != 0 || b[1] != 0 || b[2] != 0 || b[3] != 12) {
-                return false;
-            }
-
-            // The signature box type is "jP "
-            if ((b[4] & 0xff) != 0x6A || (b[5] & 0xFF) != 0x50 || (b[6] & 0xFF) != 0x20 || (b[7] & 0xFF) != 0x20) {
-                return false;
-            }
-
-            // The signature content is 0x0D0A870A
-            if ((b[8] & 0xFF) != 0x0D || (b[9] & 0xFF) != 0x0A || (b[10] & 0xFF) != 0x87 || (b[11] & 0xFF) != 0x0A) {
-                return false;
-            }
-
-            return true;
-        } finally {
-            iis.reset();
-        }
-    }
-
-    private static boolean decodeJpeg(ImageInputStream iis) throws IOException {
-        // jpeg and jpeg-ls
-        iis.mark();
-        try {
-            int byte1 = iis.read();
-            int byte2 = iis.read();
-            // Magic numbers for JPEG (general jpeg marker)
-            if ((byte1 != 0xFF) || (byte2 != 0xD8)) {
-                return false;
-            }
-            do {
-                byte1 = iis.read();
-                byte2 = iis.read();
-                // Something wrong, but try to read it anyway
-                if (byte1 != 0xFF) {
-                    break;
-                }
-                // Start of scan
-                if (byte2 == 0xDA) {
-                    break;
-                }
-                // Start of Frame, also known as SOF55, indicates a JPEG-LS file.
-                if (byte2 == 0xF7) {
-                    return true;
-                }
-                // 0xffc0: // SOF_0: JPEG baseline
-                // 0xffc1: // SOF_1: JPEG extended sequential DCT
-                // 0xffc2: // SOF_2: JPEG progressive DCT
-                // 0xffc3: // SOF_3: JPEG lossless sequential
-                if ((byte2 >= 0xC0) && (byte2 <= 0xC3)) {
-                    return true;
-                }
-                // 0xffc5: // SOF_5: differential (hierarchical) extended sequential, Huffman
-                // 0xffc6: // SOF_6: differential (hierarchical) progressive, Huffman
-                // 0xffc7: // SOF_7: differential (hierarchical) lossless, Huffman
-                if ((byte2 >= 0xC5) && (byte2 <= 0xC7)) {
-                    return true;
-                }
-                // 0xffc9: // SOF_9: extended sequential, arithmetic
-                // 0xffca: // SOF_10: progressive, arithmetic
-                // 0xffcb: // SOF_11: lossless, arithmetic
-                if ((byte2 >= 0xC9) && (byte2 <= 0xCB)) {
-                    return true;
-                }
-                // 0xffcd: // SOF_13: differential (hierarchical) extended sequential, arithmetic
-                // 0xffce: // SOF_14: differential (hierarchical) progressive, arithmetic
-                // 0xffcf: // SOF_15: differential (hierarchical) lossless, arithmetic
-                if ((byte2 >= 0xCD) && (byte2 <= 0xCF)) {
-                    return true;
-                }
-                int length = iis.read() << 8;
-                length += iis.read();
-                length -= 2;
-                while (length > 0) {
-                    length -= iis.skipBytes(length);
-                }
-            } while (true);
-            return true;
-        } finally {
-            iis.reset();
-        }
     }
 }

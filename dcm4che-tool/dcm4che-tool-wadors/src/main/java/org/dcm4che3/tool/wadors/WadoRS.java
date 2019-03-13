@@ -268,7 +268,7 @@ public class WadoRS {
         String boundary = null;
         for (String s : strings) {
             if (s.contains("boundary"))
-                boundary = s.substring(s.indexOf("=")+1);
+                boundary = s.substring(s.indexOf("=")+1).replaceAll("\"", "");
             if (s.contains("type"))
                 type = s.substring(s.indexOf("=")+1).replaceAll("\"", "");
         }

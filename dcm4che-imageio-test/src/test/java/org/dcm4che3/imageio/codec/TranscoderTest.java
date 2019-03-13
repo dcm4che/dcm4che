@@ -157,7 +157,7 @@ public class TranscoderTest {
 	
 	@Test 
 	public void testTranscodeYbr422Raw2RgbJpegLossless() throws Exception {
-s		if (Boolean.getBoolean("JIIO"))
+		if (Boolean.getBoolean("JIIO"))
 			test("YBR_422.dcm", "YBR_422-jpegLossless.dcm", UID.JPEGLossless, true);
 	}
 	

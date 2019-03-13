@@ -23,33 +23,6 @@
           </instructions>
         </configuration>
       </plugin>
-      <plugin>
-        <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>1.5</version>
-        <executions>
-          <execution>
-            <phase>generate-test-resources</phase>
-            <goals>
-              <goal>process</goal>
-            </goals>
-            <configuration>
-              <resourceBundles>
-                <resourceBundle>org.dcm4che:dcm4che-test-data:${project.version}</resourceBundle>
-              </resourceBundles>
-              <attachToMain>false</attachToMain>
-              <attachToTest>false</attachToTest>
-              <outputDirectory>${project.build.directory}/test-data</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-     <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-surefire-plugin</artifactId>
-      <configuration>
-        <argLine>-Djava.library.path=/home/gunter/dcm4che/lib/linux-x86_64</argLine>
-      </configuration>
-    </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -62,40 +35,6 @@
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-image</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-test-data</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-imageio-rle</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-imageio-opencv</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>com.sun.media</groupId>
-      <artifactId>jai_imageio</artifactId>
-      <version>1.2-pre-dr-b04</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-	<groupId>org.assertj</groupId>
-	<artifactId>assertj-core</artifactId>
-	<scope>test</scope>
-	<version>2.8.0</version>
     </dependency>
   </dependencies>
 </project>

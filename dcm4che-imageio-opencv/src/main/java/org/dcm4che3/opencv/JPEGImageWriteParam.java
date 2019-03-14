@@ -67,9 +67,6 @@ public class JPEGImageWriteParam extends ImageWriteParam {
      */
     private int mode;
 
-    /** JPEG lossy quality (0..100, default: 90) */
-    private int quality;
-
     /** JPEG lossless prediction (1..7, default: 6)*/
     private int prediction;
 
@@ -79,10 +76,11 @@ public class JPEGImageWriteParam extends ImageWriteParam {
     public JPEGImageWriteParam(Locale locale) {
         super(locale);
         super.canWriteCompressed = true;
+        super.compressionMode = MODE_EXPLICIT;
+        super.compressionQuality = 0.75F;
         this.mode = Imgcodecs.JPEG_lossless;
         this.prediction = 6;
         this.pointTransform = 0;
-        this.quality = 90;
     }
 
     public int getMode() {
@@ -91,14 +89,6 @@ public class JPEGImageWriteParam extends ImageWriteParam {
 
     public void setMode(int mode) {
         this.mode = mode;
-    }
-
-    public int getQuality() {
-        return quality;
-    }
-
-    public void setQuality(int quality) {
-        this.quality = quality;
     }
 
     public int getPrediction() {

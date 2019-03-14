@@ -137,7 +137,7 @@ class NativeJPEGImageWriter extends ImageWriter {
             params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = 0; // Allowed lossy error for jpeg-ls
             params[Imgcodecs.DICOM_PARAM_COLOR_MODEL] = epi; // Photometric interpretation
             params[Imgcodecs.DICOM_PARAM_JPEG_MODE] = jpegParams.getMode(); // JPEG Codec mode
-            params[Imgcodecs.DICOM_PARAM_JPEG_QUALITY] = jpegParams.getQuality(); // JPEG lossy quality
+            params[Imgcodecs.DICOM_PARAM_JPEG_QUALITY] = (int) (jpegParams.getCompressionQuality() * 100); // JPEG lossy quality
             params[Imgcodecs.DICOM_PARAM_JPEG_PREDICTION] = jpegParams.getPrediction(); // JPEG lossless prediction
             params[Imgcodecs.DICOM_PARAM_JPEG_PT_TRANSFORM] = jpegParams.getPointTransform(); // JPEG lossless
                                                                                               // transformation point

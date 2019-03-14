@@ -50,37 +50,20 @@ import javax.imageio.ImageWriteParam;
  * @since Aug 2018
  */
 public class J2kImageWriteParam extends ImageWriteParam {
-    /** JPEG2000 lossy quality (0..100, default: 90) */
-    private int quality;
-    /** JPEG2000 lossless, default true */
-    private boolean lossless;
+
+    private static final String[] COMPRESSION_TYPES = { "LOSSY", "LOSSLESS" };
 
     public J2kImageWriteParam(Locale locale) {
         super(locale);
         super.canWriteCompressed = true;
-        this.lossless = true;
-        this.quality = 90;
-    }
-
-    public int getQuality() {
-        return quality;
-    }
-
-    public void setQuality(int quality) {
-        this.quality = quality;
-    }
-
-
-    public boolean isLossless() {
-        return lossless;
-    }
-
-    public void setLossless(boolean lossless) {
-        this.lossless = lossless;
+        super.compressionMode = MODE_EXPLICIT;
+        super.compressionQuality = 0.75F;
+        super.compressionType = "LOSSY";
+        super.compressionTypes = COMPRESSION_TYPES;
     }
 
     @Override
     public boolean isCompressionLossless() {
-        return lossless;
+        return compressionType.equals("LOSSLESS");
     }
 }

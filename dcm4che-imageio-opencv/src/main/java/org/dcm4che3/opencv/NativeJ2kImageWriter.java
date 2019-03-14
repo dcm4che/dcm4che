@@ -124,8 +124,8 @@ class NativeJ2kImageWriter extends ImageWriter {
             params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsStored(); // Bits per sample
             params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
             params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
-            params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = j2kParams.isLossless() ? 0 : 1;
-            params[Imgcodecs.DICOM_PARAM_JPEG_QUALITY] = j2kParams.getQuality(); // JPEG lossy quality
+            params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = j2kParams.isCompressionLossless() ? 0 : 1;
+            params[Imgcodecs.DICOM_PARAM_JPEG_QUALITY] = (int) (j2kParams.getCompressionQuality() * 100); // JPEG lossy quality
 
             MatOfInt dicomParams = new MatOfInt(params);
             Mat buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");

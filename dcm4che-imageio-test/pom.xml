@@ -52,6 +52,12 @@
 
   <artifactId>dcm4che-imageio-test</artifactId>
 
+  <properties>
+    <skipTests>true</skipTests>
+    <os-name>linux</os-name>
+    <cpu-name>x86_64</cpu-name>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -75,21 +81,70 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>com.googlecode.maven-download-plugin</groupId>
-        <artifactId>download-maven-plugin</artifactId>
-        <version>1.4.0</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.1</version>
         <executions>
           <execution>
-            <id>wget</id>
-            <phase>generate-resources</phase>
+            <id>copy</id>
+            <phase>generate-test-resources</phase>
             <goals>
-              <goal>wget</goal>
+              <goal>copy</goal>
             </goals>
             <configuration>
-              <url>https://github.com/nroduit/mvn-repo/raw/master/org/weasis/thirdparty/org/opencv/libopencv_java/${weasis.opencv.native.version}/libopencv_java-${weasis.opencv.native.version}-linux-x86-64.so</url>
-              <outputFileName>libopencv_java.so</outputFileName>
-              <outputDirectory>${project.build.directory}/linux-x86_64</outputDirectory>
-            </configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.weasis.thirdparty.org.opencv</groupId>
+                  <artifactId>libopencv_java</artifactId>
+                  <version>${weasis.opencv.native.version}</version>
+                  <type>so</type>
+                  <classifier>linux-x86-64</classifier>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/lib/linux-x86_64</outputDirectory>
+                  <destFileName>libopencv_java.so</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.weasis.thirdparty.org.opencv</groupId>
+                  <artifactId>libopencv_java</artifactId>
+                  <version>${weasis.opencv.native.version}</version>
+                  <type>so</type>
+                  <classifier>linux-x86</classifier>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/lib/linux-x86</outputDirectory>
+                  <destFileName>libopencv_java.so</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.weasis.thirdparty.org.opencv</groupId>
+                  <artifactId>libopencv_java</artifactId>
+                  <version>${weasis.opencv.native.version}</version>
+                  <type>jnilib</type>
+                  <classifier>macosx-x86-64</classifier>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/lib/macosx-x86-64</outputDirectory>
+                  <destFileName>libopencv_java.so</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.weasis.thirdparty.org.opencv</groupId>
+                  <artifactId>opencv_java</artifactId>
+                  <version>${weasis.opencv.native.version}</version>
+                  <type>dll</type>
+                  <classifier>windows-x86</classifier>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/lib/win-x86</outputDirectory>
+                  <destFileName>opencv_java.dll</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.weasis.thirdparty.org.opencv</groupId>
+                  <artifactId>opencv_java</artifactId>
+                  <version>${weasis.opencv.native.version}</version>
+                  <type>dll</type>
+                  <classifier>windows-x86-64</classifier>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/lib/win-x86-64</outputDirectory>
+                  <destFileName>opencv_java.dll</destFileName>
+                </artifactItem>
+              </artifactItems>
+           </configuration>
           </execution>
         </executions>
       </plugin>
@@ -98,7 +153,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.18.1</version>
         <configuration>
-          <argLine>-Djava.library.path=${project.build.directory}/linux-x86_64</argLine>
+          <argLine>-Djava.library.path=${project.build.directory}/lib/${os-name}-${cpu-name}</argLine>
+          <skipTests>${skipTests}</skipTests>
         </configuration>
       </plugin>
     </plugins>

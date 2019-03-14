@@ -127,6 +127,7 @@
     <module>dcm4che-imageio</module>
     <module>dcm4che-imageio-opencv</module>
     <module>dcm4che-imageio-rle</module>
+    <module>dcm4che-imageio-test</module>
     <module>dcm4che-json</module>
     <module>dcm4che-js-dict</module>
     <module>dcm4che-mime</module>

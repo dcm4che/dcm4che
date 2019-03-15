@@ -2152,8 +2152,8 @@ public class Attributes implements Serializable {
                         } else if (origValue instanceof Fragments) {
                             modified.set(privateCreator, tag, (Fragments) origValue);
                         } else {
-                            modified.set(privateCreator, tag, vr,
-                                    toggleEndian(vr, origValue, modifiedToggleEndian));
+                            modified.set(privateCreator, tag, vrs[j],
+                                    toggleEndian(vrs[j], origValue, modifiedToggleEndian));
                         }
                     }
                 }

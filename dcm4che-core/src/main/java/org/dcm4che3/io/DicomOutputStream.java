@@ -170,6 +170,8 @@ public class DicomOutputStream extends FilterOutputStream {
         ByteUtils.tagToBytes(tag, b, 0, bigEndian);
         int headerLen;
         if (!TagUtils.isItem(tag) && explicitVR) {
+            if ((len & 0xffff0000) != 0 && vr.headerLength() == 8)
+                vr = VR.UN;
             ByteUtils.shortToBytesBE(vr.code(), b, 4);
             if ((headerLen = vr.headerLength()) == 8) {
                 ByteUtils.shortToBytes(len, b, 6, bigEndian);

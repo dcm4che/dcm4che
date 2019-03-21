@@ -129,6 +129,8 @@ public class Transcoder implements Closeable {
 
     private ImageDescriptor imageDescriptor;
 
+    private ImageDescriptor compressorImageDescriptor;
+
     private EncapsulatedPixelDataImageInputStream encapsulatedPixelData;
 
     private ImageReaderFactory.ImageReaderParam decompressorParam;
@@ -523,6 +525,8 @@ public class Transcoder implements Closeable {
                     }
                     break;
             }
+            dataset.setString(Tag.PhotometricInterpretation, VR.CS,  maskYBR2RGBForJPLL(pmi).toString());
+            compressorImageDescriptor = new ImageDescriptor(dataset);
             pmi = pmi.compress(destTransferSyntax);
             dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmi.toString());
             if (dataset.getInt(Tag.SamplesPerPixel, 1) > 1)
@@ -531,6 +535,12 @@ public class Transcoder implements Closeable {
                 dataset.setString(Tag.LossyImageCompression, VR.CS, "01");
             }
         }
+    }
+
+    private PhotometricInterpretation maskYBR2RGBForJPLL(PhotometricInterpretation pmi) {
+        return pmi.isYBR() && destTransferSyntaxType == TransferSyntaxType.JPEG_LOSSLESS
+                ? PhotometricInterpretation.RGB
+                : pmi;
     }
 
     private void extractEmbeddedOverlays() {
@@ -604,7 +614,7 @@ public class Transcoder implements Closeable {
     }
 
     private void compressFrame(int frameIndex) throws IOException {
-        ExtMemoryCacheImageOutputStream ios = new ExtMemoryCacheImageOutputStream(imageDescriptor);
+        ExtMemoryCacheImageOutputStream ios = new ExtMemoryCacheImageOutputStream(compressorImageDescriptor);
         compressor.setOutput(compressorParam.patchJPEGLS != null
                 ? new PatchJPEGLSImageOutputStream(ios, compressorParam.patchJPEGLS)
                 : ios);

@@ -74,7 +74,7 @@ public class BufferedImageUtils {
         return intRGB;
     }
     
-    public static BufferedImage convertYBRtoRGB(BufferedImage src) {
+    public static BufferedImage convertYBRtoRGB(BufferedImage src, BufferedImage dst) {
         if (src.getColorModel().getTransferType() != DataBuffer.TYPE_BYTE) {
             throw new UnsupportedOperationException(
                 "Cannot convert color model to RGB: unsupported transferType" + src.getColorModel().getTransferType());
@@ -83,14 +83,17 @@ public class BufferedImageUtils {
             throw new IllegalArgumentException("Unsupported colorModel: " + src.getColorModel());
         }
 
-        ColorModel cmodel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[] { 8, 8, 8 },
-            false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
         int width = src.getWidth();
         int height = src.getHeight();
-        SampleModel sampleModel = cmodel.createCompatibleSampleModel(width, height);
-        DataBuffer dataBuffer = sampleModel.createDataBuffer();
-        WritableRaster rasterDst = Raster.createWritableRaster(sampleModel, dataBuffer, null);
-
+        if (dst == null) {
+            ColorModel cmodel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[]{8, 8, 8},
+                    false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+            SampleModel sampleModel = cmodel.createCompatibleSampleModel(width, height);
+            DataBuffer dataBuffer = sampleModel.createDataBuffer();
+            WritableRaster rasterDst = Raster.createWritableRaster(sampleModel, dataBuffer, null);
+            dst = new BufferedImage(cmodel, rasterDst, false, null);
+        }
+        WritableRaster rasterDst = dst.getRaster();
         WritableRaster raster = src.getRaster();
         ColorSpace cs = src.getColorModel().getColorSpace();
         for (int i = 0; i < height; i++) {
@@ -104,33 +107,35 @@ public class BufferedImageUtils {
                 rasterDst.setDataElements(j, i, ba);
             }
         }
-        return new BufferedImage(cmodel, rasterDst, false, null);
+        return dst;
     }
 
-    public static BufferedImage convertPalettetoRGB(BufferedImage src, PaletteColorModel pcm) {
-        int dataType = src.getColorModel().getTransferType();
-        if (dataType != DataBuffer.TYPE_BYTE && dataType != DataBuffer.TYPE_USHORT) {
+    public static BufferedImage convertPalettetoRGB(BufferedImage src, BufferedImage dst) {
+        ColorModel pcm = src.getColorModel();
+        if (!(pcm instanceof PaletteColorModel)) {
             throw new UnsupportedOperationException(
-                "Cannot convert color model to RGB: unsupported transferType" + dataType);
+                "Cannot convert " + pcm.getClass().getName() + " to RGB");
         }
-        
-        ColorModel cmodel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[] { 8, 8, 8 },
-            false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+
         int width = src.getWidth();
         int height = src.getHeight();
-        SampleModel sampleModel = cmodel.createCompatibleSampleModel(width, height);
-        DataBuffer dataBuffer = sampleModel.createDataBuffer();
-        WritableRaster rasterDst = Raster.createWritableRaster(sampleModel, dataBuffer, null);
-
+        if (dst == null) {
+            ColorModel cmodel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[]{8, 8, 8},
+                    false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+            SampleModel sampleModel = cmodel.createCompatibleSampleModel(width, height);
+            DataBuffer dataBuffer = sampleModel.createDataBuffer();
+            WritableRaster rasterDst = Raster.createWritableRaster(sampleModel, dataBuffer, null);
+            dst = new BufferedImage(cmodel, rasterDst, false, null);
+        }
+        WritableRaster rasterDst = dst.getRaster();
         WritableRaster raster = src.getRaster();
-        ColorModel pm = pcm == null ? src.getColorModel(): pcm;
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                byte[] b = convertTo3Bytes(pm , raster.getDataElements(j, i, null));
+                byte[] b = convertTo3Bytes(pcm , raster.getDataElements(j, i, null));
                 rasterDst.setDataElements(j, i, b);
             }
         }
-        return new BufferedImage(cmodel, rasterDst, false, null);
+        return dst;
     }
 
     private static byte[] convertTo3Bytes(ColorModel pm, Object data) {

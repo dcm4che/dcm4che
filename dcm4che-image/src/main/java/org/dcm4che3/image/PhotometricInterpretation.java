@@ -44,6 +44,7 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.SampleModel;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.UID;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -81,16 +82,20 @@ public enum PhotometricInterpretation {
 
         @Override
         public PhotometricInterpretation compress(String tsuid) {
-            if (tsuid.length() == 22 && tsuid.startsWith("1.2.840.10008.1.2.4."))
-                if (tsuid.endsWith("50") || tsuid.endsWith("51"))
+            switch (tsuid) {
+                case UID.JPEGBaseline1:
+                case UID.JPEGExtended24:
                     return YBR_FULL_422;
-                else if (tsuid.endsWith("53") || tsuid.endsWith("55"))
+                case UID.JPEGSpectralSelectionNonHierarchical68Retired:
+                case UID.JPEGFullProgressionNonHierarchical1012Retired:
                     return YBR_FULL;
-                else if (tsuid.endsWith("90") || tsuid.endsWith("92"))
+                case UID.JPEG2000LosslessOnly:
+                case UID.JPEG2000Part2MultiComponentLosslessOnly:
                     return YBR_RCT;
-                else if (tsuid.endsWith("91") || tsuid.endsWith("93"))
+                case UID.JPEG2000:
+                case UID.JPEG2000Part2MultiComponent:
                     return YBR_ICT;
-
+            }
             return this;
         }
     },

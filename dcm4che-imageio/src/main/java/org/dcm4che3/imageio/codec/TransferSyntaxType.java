@@ -38,8 +38,6 @@
 
 package org.dcm4che3.imageio.codec;
 
-import java.util.HashMap;
-
 import org.dcm4che3.data.UID;
 
 /**
@@ -93,35 +91,78 @@ public enum TransferSyntaxType {
         return maxBitsStored;
     }
 
-    private static final HashMap<String, TransferSyntaxType> map =
-            new HashMap<String, TransferSyntaxType>();
-    static {
-        map.put(UID.ImplicitVRLittleEndian, NATIVE);
-        map.put(UID.ExplicitVRLittleEndian, NATIVE);
-        map.put(UID.DeflatedExplicitVRLittleEndian, NATIVE);
-        map.put(UID.ExplicitVRBigEndianRetired, NATIVE);
-        map.put(UID.JPEGBaseline1, JPEG_BASELINE);
-        map.put(UID.JPEGExtended24, JPEG_EXTENDED);
-        map.put(UID.JPEGSpectralSelectionNonHierarchical68Retired, JPEG_SPECTRAL);
-        map.put(UID.JPEGFullProgressionNonHierarchical1012Retired, JPEG_PROGRESSIVE);
-        map.put(UID.JPEGLosslessNonHierarchical14, JPEG_LOSSLESS);
-        map.put(UID.JPEGLossless, JPEG_LOSSLESS);
-        map.put(UID.JPEGLSLossless, JPEG_LOSSLESS);
-        map.put(UID.JPEGLSLossyNearLossless, JPEG_LOSSLESS);
-        map.put(UID.JPEG2000LosslessOnly, JPEG_2000);
-        map.put(UID.JPEG2000, JPEG_2000);
-        map.put(UID.JPEG2000Part2MultiComponentLosslessOnly, JPEG_2000);
-        map.put(UID.JPEG2000Part2MultiComponent, JPEG_2000);
-        map.put(UID.JPIPReferenced, JPIP);
-        map.put(UID.JPIPReferencedDeflate, JPIP);
-        map.put(UID.MPEG2, MPEG);
-        map.put(UID.MPEG2MainProfileHighLevel, MPEG);
-        map.put(UID.MPEG4AVCH264HighProfileLevel41, MPEG);
-        map.put(UID.MPEG4AVCH264BDCompatibleHighProfileLevel41, MPEG);
-        map.put(UID.RLELossless, RLE);
+    public static TransferSyntaxType forUID(String uid) {
+        switch(uid) {
+            case UID.JPEGBaseline1:
+                return JPEG_BASELINE;
+            case UID.JPEGExtended24:
+                return JPEG_EXTENDED;
+            case UID.JPEGSpectralSelectionNonHierarchical68Retired:
+                return JPEG_SPECTRAL;
+            case UID.JPEGFullProgressionNonHierarchical1012Retired:
+                return JPEG_PROGRESSIVE;
+            case UID.JPEGLosslessNonHierarchical14:
+            case UID.JPEGLossless:
+            case UID.JPEGLSLossless:
+            case UID.JPEGLSLossyNearLossless:
+                return JPEG_LOSSLESS;
+            case UID.JPEG2000LosslessOnly:
+            case UID.JPEG2000:
+            case UID.JPEG2000Part2MultiComponentLosslessOnly:
+            case UID.JPEG2000Part2MultiComponent:
+                return JPEG_2000;
+            case UID.JPIPReferenced:
+            case UID.JPIPReferencedDeflate:
+                return JPIP;
+            case UID.MPEG2:
+            case UID.MPEG2MainProfileHighLevel:
+            case UID.MPEG4AVCH264HighProfileLevel41:
+            case UID.MPEG4AVCH264BDCompatibleHighProfileLevel41:
+            case UID.MPEG4AVCH264HighProfileLevel42For2DVideo:
+            case UID.MPEG4AVCH264HighProfileLevel42For3DVideo:
+            case UID.MPEG4AVCH264StereoHighProfileLevel42:
+            case UID.HEVCH265MainProfileLevel51:
+            case UID.HEVCH265Main10ProfileLevel51:
+                return MPEG;
+            case UID.RLELossless:
+                return RLE;
+        }
+        return NATIVE;
     }
 
-    public static TransferSyntaxType forUID(String uid) {
-        return map.get(uid);
+    public static boolean isLossyCompression(String uid) {
+        switch(uid) {
+            case UID.JPEGBaseline1:
+            case UID.JPEGExtended24:
+            case UID.JPEGSpectralSelectionNonHierarchical68Retired:
+            case UID.JPEGFullProgressionNonHierarchical1012Retired:
+            case UID.JPEGLSLossyNearLossless:
+            case UID.JPEG2000:
+            case UID.JPEG2000Part2MultiComponent:
+            case UID.MPEG2:
+            case UID.MPEG2MainProfileHighLevel:
+            case UID.MPEG4AVCH264HighProfileLevel41:
+            case UID.MPEG4AVCH264BDCompatibleHighProfileLevel41:
+            case UID.MPEG4AVCH264HighProfileLevel42For2DVideo:
+            case UID.MPEG4AVCH264HighProfileLevel42For3DVideo:
+            case UID.MPEG4AVCH264StereoHighProfileLevel42:
+            case UID.HEVCH265MainProfileLevel51:
+            case UID.HEVCH265Main10ProfileLevel51:
+                return true;
+        }
+        return false;
+    }
+
+    public static boolean isYBRCompression(String uid) {
+        switch(uid) {
+            case UID.JPEGBaseline1:
+            case UID.JPEGExtended24:
+            case UID.JPEGSpectralSelectionNonHierarchical68Retired:
+            case UID.JPEGFullProgressionNonHierarchical1012Retired:
+            case UID.JPEG2000LosslessOnly:
+            case UID.JPEG2000:
+                return true;
+        }
+        return false;
     }
 }

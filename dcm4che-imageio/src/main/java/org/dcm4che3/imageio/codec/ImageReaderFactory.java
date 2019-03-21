@@ -98,12 +98,6 @@ public class ImageReaderFactory implements Serializable {
             return imageReadParams;
         }
 
-        public PhotometricInterpretation pmiAfterDecompression(PhotometricInterpretation pmi) {
-            return pmi.isYBR() && Property.getFrom(imageReadParams, "YBR2RGB", Boolean.FALSE)
-                    ? PhotometricInterpretation.RGB
-                    : pmi;
-        }
-
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;

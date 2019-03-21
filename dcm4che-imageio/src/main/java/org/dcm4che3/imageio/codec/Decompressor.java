@@ -161,7 +161,9 @@ public class Decompressor {
             LOG.debug("Decompressor: {}", decompressor.getClass().getName());
             this.readParam = decompressor.getDefaultReadParam();
             this.patchJpegLS = param.patchJPEGLS;
-            this.pmiAfterDecompression = param.pmiAfterDecompression(pmi);
+            this.pmiAfterDecompression = pmi.isYBR() && TransferSyntaxType.isYBRCompression(tsuid)
+                    ? PhotometricInterpretation.RGB
+                    : pmi;
         } else {
             this.file = ((BulkData) pixeldata).getFile();
         }

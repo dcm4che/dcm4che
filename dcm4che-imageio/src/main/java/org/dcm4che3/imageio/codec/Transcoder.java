@@ -76,13 +76,20 @@ public class Transcoder implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(Transcoder.class);
 
     private static final int BUFFER_SIZE = 8192;
-    
-	private static final int[] cmTags = { Tag.RedPaletteColorLookupTableDescriptor,
-			Tag.GreenPaletteColorLookupTableDescriptor, Tag.BluePaletteColorLookupTableDescriptor,
-			Tag.PaletteColorLookupTableUID, Tag.RedPaletteColorLookupTableData, Tag.GreenPaletteColorLookupTableData,
-			Tag.BluePaletteColorLookupTableData, Tag.SegmentedRedPaletteColorLookupTableData,
-			Tag.SegmentedGreenPaletteColorLookupTableData, Tag.SegmentedBluePaletteColorLookupTableData,
-			Tag.ICCProfile };
+
+    private static final int[] cmTags = {
+            Tag.RedPaletteColorLookupTableDescriptor,
+            Tag.GreenPaletteColorLookupTableDescriptor,
+            Tag.BluePaletteColorLookupTableDescriptor,
+            Tag.PaletteColorLookupTableUID,
+            Tag.RedPaletteColorLookupTableData,
+            Tag.GreenPaletteColorLookupTableData,
+            Tag.BluePaletteColorLookupTableData,
+            Tag.SegmentedRedPaletteColorLookupTableData,
+            Tag.SegmentedGreenPaletteColorLookupTableData,
+            Tag.SegmentedBluePaletteColorLookupTableData,
+            Tag.ICCProfile
+    };
 
     private final DicomInputStream dis;
 
@@ -108,6 +115,8 @@ public class Transcoder implements Closeable {
 
     private TransferSyntaxType destTransferSyntaxType;
 
+    private boolean lossyCompression;
+
     private int maxPixelValueError = -1;
 
     private int avgPixelValueBlockSize = 1;
@@ -116,8 +125,6 @@ public class Transcoder implements Closeable {
 
     private Attributes postPixelData;
     
-    private Attributes cmDataset;
-
     private Handler handler;
 
     private ImageDescriptor imageDescriptor;
@@ -139,6 +146,12 @@ public class Transcoder implements Closeable {
     private ImageReader verifier;
 
     private ImageReadParam verifyParam;
+
+    private boolean ybr2rgb;
+
+    private boolean palette2rgb;
+
+    private BufferedImage originalBi;
 
     private BufferedImage bi;
 
@@ -165,7 +178,6 @@ public class Transcoder implements Closeable {
         dis.readFileMetaInformation();
         dis.setDicomInputHandler(dicomInputHandler);
         dataset = new Attributes(dis.bigEndian(), 64);
-        cmDataset = new Attributes(dis.bigEndian(), 15);
         srcTransferSyntax = dis.getTransferSyntax();
         srcTransferSyntaxType = TransferSyntaxType.forUID(srcTransferSyntax);
         destTransferSyntax = srcTransferSyntax;
@@ -253,6 +265,7 @@ public class Transcoder implements Closeable {
             return;
 
         this.destTransferSyntaxType = TransferSyntaxType.forUID(tsuid);
+        this.lossyCompression = TransferSyntaxType.isLossyCompression(tsuid);
         this.destTransferSyntax = tsuid;
 
         if (srcTransferSyntaxType != TransferSyntaxType.NATIVE)
@@ -347,9 +360,11 @@ public class Transcoder implements Closeable {
         dis.readAttributes(dataset, -1, -1);
 
         if (dos == null) {
-			if (destTransferSyntax.startsWith("1.2.840.10008.1.2.4.")) {
-				destTransferSyntax = dis.getTransferSyntax();
-			}
+            if (compressor != null) { // Adjust destination Transfer Syntax if no pixeldata
+                destTransferSyntax = UID.ExplicitVRLittleEndian;
+                destTransferSyntaxType = TransferSyntaxType.NATIVE;
+                lossyCompression = false;
+            }
             initDicomOutputStream();
             writeDataset();
         } else if (postPixelData != null)
@@ -397,24 +412,24 @@ public class Transcoder implements Closeable {
         public void endDataset(DicomInputStream dis) throws IOException {
 
         }
-        
-        private void processPixelData() throws IOException {
-            if (decompressor != null)
-                initEncapsulatedPixelData();
-            VR vr;
-            if (compressor != null) {
-                vr = VR.OB;
-                compressPixelData();
-            } else if (decompressor != null) {
-                vr = VR.OW;
-                decompressPixelData();
-            } else {
-                vr = dis.vr();
-                copyPixelData();
-            }
-            setPixelDataBulkData(vr);
-        }
     };
+
+    private void processPixelData() throws IOException {
+        if (decompressor != null)
+            initEncapsulatedPixelData();
+        VR vr;
+        if (compressor != null) {
+            vr = VR.OB;
+            compressPixelData();
+        } else if (decompressor != null) {
+            vr = VR.OW;
+            decompressPixelData();
+        } else {
+            vr = dis.vr();
+            copyPixelData();
+        }
+        setPixelDataBulkData(vr);
+    }
 
     private void initEncapsulatedPixelData() throws IOException {
         encapsulatedPixelData = new EncapsulatedPixelDataImageInputStream(dis, imageDescriptor);
@@ -426,7 +441,6 @@ public class Transcoder implements Closeable {
         adjustDataset();
         writeDataset();
         dos.writeHeader(Tag.PixelData, VR.OW, length + padding);
-        cmDataset.addSelected(dataset, cmTags);
         for (int i = 0; i < imageDescriptor.getFrames(); i++) {
             decompressFrame(i);
             writeFrame();
@@ -451,37 +465,12 @@ public class Transcoder implements Closeable {
     }
 
     private void compressPixelData() throws IOException {
-    	BufferedImage originalBi = null;
-    	cmDataset.clear();
-        cmDataset.addSelected(dataset, cmTags);
         int padding = dis.length() - imageDescriptor.getLength();
         for (int i = 0; i < imageDescriptor.getFrames(); i++) {
-        	bi = originalBi;
             if (decompressor == null)
                 readFrame();
             else
-                bi = decompressFrame(i);
-            
-            originalBi = bi;
-			// Convert YBR or PALETTE model to RGB before compressing
-			if ((imageDescriptor.getSamples() == 3 && !originalBi.getColorModel().getColorSpace().isCS_sRGB())) {
-				bi = BufferedImageUtils.convertYBRtoRGB(originalBi);
-			} else if (PhotometricInterpretation.PALETTE_COLOR.equals(imageDescriptor.getPhotometricInterpretation())) {
-				PaletteColorModel cm = null;
-				if (!(originalBi.getColorModel() instanceof PaletteColorModel)) {
-					// Rebuild the Palette color model when the frame decompression doesn't provide it
-					int bitsStored = Math.min(imageDescriptor.getBitsStored(),
-							destTransferSyntaxType.getMaxBitsStored());
-					cm = (PaletteColorModel) PhotometricInterpretation.PALETTE_COLOR.createColorModel(bitsStored,
-							bi.getSampleModel().getDataType(), cmDataset);
-				}
-				bi = BufferedImageUtils.convertPalettetoRGB(originalBi, cm);
-				if (i == 0) {
-					dataset.removeSelected(cmTags);
-					dataset.setString(Tag.PhotometricInterpretation, VR.CS, PhotometricInterpretation.RGB.toString());
-					dataset.setInt(Tag.PlanarConfiguration, VR.US, 0);
-				}
-			}
+                decompressFrame(i);
 
             if (i == 0) {
                 extractEmbeddedOverlays();
@@ -491,6 +480,9 @@ public class Transcoder implements Closeable {
                 dos.writeHeader(Tag.Item, null, 0);
             }
             nullifyUnusedBits();
+            bi = palette2rgb ? BufferedImageUtils.convertPalettetoRGB(originalBi, bi)
+                    : ybr2rgb ? BufferedImageUtils.convertYBRtoRGB(originalBi, bi)
+                    : originalBi;
             compressFrame(i);
         }
         dis.skipFully(padding);
@@ -503,32 +495,42 @@ public class Transcoder implements Closeable {
     }
 
     private void adjustDataset() {
-        if (imageDescriptor.getSamples() == 3) {
-            PhotometricInterpretation pmi = imageDescriptor.getPhotometricInterpretation();
-            int planarConfiguration = imageDescriptor.getPlanarConfiguration();
-            if (decompressor != null) {
-                pmi = decompressorParam.pmiAfterDecompression(pmi);
-                planarConfiguration = srcTransferSyntaxType.getPlanarConfiguration();
+        PhotometricInterpretation pmi = imageDescriptor.getPhotometricInterpretation();
+        if (decompressor != null && imageDescriptor.getSamples() == 3) {
+            if (pmi.isYBR() && TransferSyntaxType.isYBRCompression(srcTransferSyntax)) {
+                pmi = PhotometricInterpretation.RGB;
+                dataset.setString(Tag.PhotometricInterpretation, VR.CS, pmi.toString());
             }
-            if (compressor != null) {
-                pmi = pmi.compress(destTransferSyntax);
-                planarConfiguration = destTransferSyntaxType.getPlanarConfiguration();
-            }
-            
-			if (bi.getColorModel().getColorSpace().isCS_sRGB() && !PhotometricInterpretation.RGB.equals(pmi)) {
-				pmi = PhotometricInterpretation.RGB;
-				planarConfiguration = 0;
-				dataset.removeSelected(Tag.ICCProfile);
-			}
-            dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmi.toString());
-            dataset.setInt(Tag.PlanarConfiguration, VR.US, planarConfiguration);
+            dataset.setInt(Tag.PlanarConfiguration, VR.US, srcTransferSyntaxType.getPlanarConfiguration());
         }
-		if (compressor != null) {
-			TransferSyntaxType tsuid = TransferSyntaxType.forUID(destTransferSyntax);
-			if (tsuid != null && tsuid.isPixeldataEncapsulated() && !tsuid.equals(TransferSyntaxType.JPEG_LOSSLESS)) {
-				dataset.setString(Tag.LossyImageCompression, VR.CS, "01");
-			}
-		}
+        if (compressor != null) {
+            switch (pmi) {
+                case PALETTE_COLOR:
+                    if (lossyCompression) {
+                        palette2rgb = true;
+                        dataset.removeSelected(cmTags);
+                        dataset.setInt(Tag.SamplesPerPixel, VR.US, 3);
+                        dataset.setInt(Tag.BitsAllocated, VR.US, 8);
+                        dataset.setInt(Tag.BitsStored, VR.US, 8);
+                        dataset.setInt(Tag.HighBit, VR.US, 7);
+                        pmi = PhotometricInterpretation.RGB;
+                    }
+                    break;
+                case YBR_FULL:
+                    if (TransferSyntaxType.isYBRCompression(destTransferSyntax)) {
+                        ybr2rgb = true;
+                        pmi = PhotometricInterpretation.RGB;
+                    }
+                    break;
+            }
+            pmi = pmi.compress(destTransferSyntax);
+            dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmi.toString());
+            if (dataset.getInt(Tag.SamplesPerPixel, 1) > 1)
+                dataset.setInt(Tag.PlanarConfiguration, VR.US, destTransferSyntaxType.getPlanarConfiguration());
+            if (lossyCompression) {
+                dataset.setString(Tag.LossyImageCompression, VR.CS, "01");
+            }
+        }
     }
 
     private void extractEmbeddedOverlays() {
@@ -539,7 +541,7 @@ public class Transcoder implements Closeable {
             int mask = 1 << ovlyBitPosition;
             int ovlyLength = ovlyRow * ovlyColumns;
             byte[] ovlyData = new byte[(((ovlyLength+7)>>>3)+1)&(~1)];
-            Overlays.extractFromPixeldata(bi.getRaster(), mask, ovlyData, 0, ovlyLength);
+            Overlays.extractFromPixeldata(originalBi.getRaster(), mask, ovlyData, 0, ovlyLength);
             dataset.setInt(Tag.OverlayBitsAllocated | gg0000, VR.US, 1);
             dataset.setInt(Tag.OverlayBitPosition | gg0000, VR.US, 0);
             dataset.setBytes(Tag.OverlayData | gg0000, VR.OB, ovlyData);
@@ -549,7 +551,7 @@ public class Transcoder implements Closeable {
 
     private void nullifyUnusedBits() {
         if (imageDescriptor.getBitsStored() < imageDescriptor.getBitsAllocated()) {
-            DataBuffer db = bi.getRaster().getDataBuffer();
+            DataBuffer db = originalBi.getRaster().getDataBuffer();
             switch (db.getDataType()) {
                 case DataBuffer.TYPE_USHORT:
                     nullifyUnusedBits(((DataBufferUShort) db).getData());
@@ -573,14 +575,31 @@ public class Transcoder implements Closeable {
                 : encapsulatedPixelData);
         if (srcTransferSyntaxType == TransferSyntaxType.RLE)
             initBufferedImage();
-        decompressParam.setDestination(bi);
+        decompressParam.setDestination(originalBi);
         long start = System.currentTimeMillis();
-        bi = decompressor.read(0, decompressParam);
+        originalBi = adjustColorModel(decompressor.read(0, decompressParam));
         long end = System.currentTimeMillis();
         if (LOG.isDebugEnabled())
             LOG.debug("Decompressed frame #{} 1:{} in {} ms",
-                    frameIndex + 1, (float) sizeOf(bi) / encapsulatedPixelData.getStreamPosition(), end - start);
+                    frameIndex + 1, (float) sizeOf(originalBi) / encapsulatedPixelData.getStreamPosition(), end - start);
         encapsulatedPixelData.seekNextFrame();
+        return originalBi;
+    }
+
+    private BufferedImage adjustColorModel(BufferedImage bi) {
+        PhotometricInterpretation pmi = imageDescriptor.getPhotometricInterpretation();
+        if (pmi == PhotometricInterpretation.PALETTE_COLOR
+            && !(bi.getColorModel() instanceof PaletteColorModel)) {
+            ColorModel cm;
+            if (originalBi != null) {
+                cm = originalBi.getColorModel();
+            } else {
+                int bitsStored = Math.min(imageDescriptor.getBitsStored(), destTransferSyntaxType.getMaxBitsStored());
+                int dataType = bi.getSampleModel().getDataType();
+                cm = pmi.createColorModel(bitsStored, dataType, dataset);
+            }
+            bi = new BufferedImage(cm, bi.getRaster(), false, null);
+        }
         return bi;
     }
 
@@ -613,7 +632,7 @@ public class Transcoder implements Closeable {
 
     private void readFrame() throws IOException {
         initBufferedImage();
-        WritableRaster raster = bi.getRaster();
+        WritableRaster raster = originalBi.getRaster();
         DataBuffer dataBuffer = raster.getDataBuffer();
         switch (dataBuffer.getDataType()) {
             case DataBuffer.TYPE_SHORT:
@@ -675,7 +694,7 @@ public class Transcoder implements Closeable {
     }
 
     private void writeFrame() throws IOException {
-        WritableRaster raster = bi.getRaster();
+        WritableRaster raster = originalBi.getRaster();
         SampleModel sm = raster.getSampleModel();
         DataBuffer db = raster.getDataBuffer();
         switch (db.getDataType()) {
@@ -779,7 +798,7 @@ public class Transcoder implements Closeable {
     }
 
     private void initBufferedImage() {
-        if (bi != null)
+        if (originalBi != null)
             return;
 
         int rows = imageDescriptor.getRows();
@@ -793,10 +812,10 @@ public class Transcoder implements Closeable {
         int dataType = bitsAllocated > 8
                 ? (signed ? DataBuffer.TYPE_SHORT : DataBuffer.TYPE_USHORT)
                 : DataBuffer.TYPE_BYTE;
-        ColorModel cm = pmi.createColorModel(bitsStored, dataType, cmDataset);        
+        ColorModel cm = pmi.createColorModel(bitsStored, dataType, dataset);
         SampleModel sm = pmi.createSampleModel(dataType, cols, rows, samples, banded);
         WritableRaster raster = Raster.createWritableRaster(sm, null);
-        bi = new BufferedImage(cm, raster, false, null);
+        originalBi = new BufferedImage(cm, raster, false, null);
     }
 
     private void verify(ImageOutputStream cache, int index)

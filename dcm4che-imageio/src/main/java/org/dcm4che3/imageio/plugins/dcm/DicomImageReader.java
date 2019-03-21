@@ -38,6 +38,7 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
@@ -79,6 +80,7 @@ import org.dcm4che3.image.StoredValue;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderParam;
+import org.dcm4che3.imageio.codec.TransferSyntaxType;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
@@ -452,7 +454,8 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 LOG.debug("Start decompressing frame #{}", (frameIndex + 1));
                 BufferedImage bi = decompressor.read(0, decompressParam(param));
                 LOG.debug("Finished decompressing frame #{}", (frameIndex + 1));
-                if (samples > 1)
+                if (samples > 1 && bi.getColorModel().getColorSpace().getType() ==
+                        (pmiAfterDecompression.isYBR() ? ColorSpace.TYPE_YCbCr : ColorSpace.TYPE_RGB))
                     return bi;
                 
                 raster = bi.getRaster();
@@ -782,7 +785,9 @@ public class DicomImageReader extends ImageReader implements Closeable {
                         ImageReaderFactory.getImageReaderParam(tsuid);
                 if (param == null)
                     throw new UnsupportedOperationException("Unsupported Transfer Syntax: " + tsuid);
-                pmiAfterDecompression = param.pmiAfterDecompression(pmi);
+                pmiAfterDecompression = pmi.isYBR() && TransferSyntaxType.isYBRCompression(tsuid)
+                        ? PhotometricInterpretation.RGB
+                        : pmi;
                 this.rle = tsuid.equals(UID.RLELossless);
                 this.decompressor = ImageReaderFactory.getImageReader(param);
                 LOG.debug("Decompressor: {}", decompressor.getClass().getName());
@@ -802,7 +807,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     }
 
     private ColorModel createColorModel(int bits, int dataType) {
-        return pmi.createColorModel(bits, dataType, metadata.getAttributes());
+        return pmiAfterDecompression.createColorModel(bits, dataType, metadata.getAttributes());
     }
 
     private void resetInternalState() {

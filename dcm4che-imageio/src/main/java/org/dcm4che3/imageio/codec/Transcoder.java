@@ -525,7 +525,7 @@ public class Transcoder implements Closeable {
                     }
                     break;
             }
-            dataset.setString(Tag.PhotometricInterpretation, VR.CS,  maskYBR2RGBForJPLL(pmi).toString());
+            dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmiForCompression(pmi).toString());
             compressorImageDescriptor = new ImageDescriptor(dataset);
             pmi = pmi.compress(destTransferSyntax);
             dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmi.toString());
@@ -537,7 +537,8 @@ public class Transcoder implements Closeable {
         }
     }
 
-    private PhotometricInterpretation maskYBR2RGBForJPLL(PhotometricInterpretation pmi) {
+    private PhotometricInterpretation pmiForCompression(PhotometricInterpretation pmi) {
+        // org.dcm4che3.opencv.NativeJPEGImageWriter requires RGB for correct JPEG Lossless compression of banded YBR
         return pmi.isYBR() && destTransferSyntaxType == TransferSyntaxType.JPEG_LOSSLESS
                 ? PhotometricInterpretation.RGB
                 : pmi;

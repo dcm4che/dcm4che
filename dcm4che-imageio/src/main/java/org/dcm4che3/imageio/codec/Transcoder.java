@@ -538,7 +538,7 @@ public class Transcoder implements Closeable {
     }
 
     private PhotometricInterpretation pmiForCompression(PhotometricInterpretation pmi) {
-        // org.dcm4che3.opencv.NativeJPEGImageWriter requires RGB for correct JPEG Lossless compression of banded YBR
+        // org.dcm4che3.opencv.NativeJPEGImageWriter requires RGB for correct JPEG Lossless compression of YBR_FULL
         return pmi.isYBR() && destTransferSyntaxType == TransferSyntaxType.JPEG_LOSSLESS
                 ? PhotometricInterpretation.RGB
                 : pmi;

@@ -51,7 +51,16 @@
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
-      <version>2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>javax.activation-api</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -61,20 +70,26 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jaxb2-maven-plugin</artifactId>
-        <version>1.5</version>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-xjc-plugin</artifactId>
+        <version>3.3.0</version>
         <executions>
           <execution>
             <id>xjc</id>
+            <phase>generate-sources</phase>
             <goals>
-              <goal>xjc</goal>
+              <goal>xsdtojava</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
-          <packageName>org.dcm4che3.audit</packageName>
-          <bindingFiles>bindings.xml</bindingFiles>
+          <xsdOptions>
+            <xsdOption>
+              <xsd>${project.basedir}/src/main/xsd/audit-message.xsd</xsd>
+              <bindingFile>${project.basedir}/src/main/xjb/bindings.xml</bindingFile>
+              <packagename>org.dcm4che3.audit</packagename>
+            </xsdOption>
+          </xsdOptions>
         </configuration>
       </plugin>
       <plugin>

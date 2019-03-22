@@ -62,7 +62,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>1.5</version>
         <executions>
           <execution>
             <phase>generate-test-resources</phase>
@@ -81,9 +80,7 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.1.1</version>
         <executions>
           <execution>
             <id>copy</id>
@@ -149,9 +146,7 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.18.1</version>
         <configuration>
           <argLine>-Djava.library.path=${project.build.directory}/lib/${os-name}-${cpu-name}</argLine>
           <skipTests>${skipTests}</skipTests>
@@ -193,6 +188,10 @@
       <artifactId>jai_imageio</artifactId>
       <version>1.2-pre-dr-b04</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

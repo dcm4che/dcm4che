@@ -1,0 +1,240 @@
+<!--
+  ~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+  -->
+
+<component>
+  <fileSets>
+    <fileSet>
+      <directory>..</directory>
+      <includes>
+        <include>README.md</include>
+        <include>LICENSE.txt</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>./src</directory>
+      <includes>
+        <include>bin/*</include>
+      </includes>
+      <excludes>
+        <exclude>**/*.bat</exclude>
+      </excludes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+      <filtered>true</filtered>
+    </fileSet>
+    <fileSet>
+      <directory>./src</directory>
+      <includes>
+        <include>etc/*/*.jks</include>
+        <include>etc/*/*.jpg</include>
+        <include>etc/*/*.mpeg</include>
+        <include>etc/testdata/**</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>keep</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>./src</directory>
+      <includes>
+        <include>bin/*.bat</include>
+        <include>etc/*/*</include>
+      </includes>
+      <excludes>
+        <exclude>etc/*/*.jks</exclude>
+        <exclude>etc/*/*.jpg</exclude>
+        <exclude>etc/*/*.mpeg</exclude>
+        <exclude>etc/testdata/**</exclude>
+      </excludes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+      <filtered>true</filtered>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <includes>
+        <include>etc/*/*</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+  </fileSets>
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-audit</include>
+        <include>org.dcm4che:dcm4che-conf-api</include>
+        <include>org.dcm4che:dcm4che-conf-api-hl7</include>
+        <include>org.dcm4che:dcm4che-conf-ldap</include>
+        <include>org.dcm4che:dcm4che-conf-ldap-audit</include>
+        <include>org.dcm4che:dcm4che-conf-ldap-hl7</include>
+        <include>org.dcm4che:dcm4che-conf-ldap-imageio</include>
+        <include>org.dcm4che:dcm4che-core</include>
+        <include>org.dcm4che:dcm4che-dcmr</include>
+        <include>org.dcm4che:dcm4che-deident</include>
+        <include>org.dcm4che:dcm4che-emf</include>
+        <include>org.dcm4che:dcm4che-hl7</include>
+        <include>org.dcm4che:dcm4che-image</include>
+        <include>org.dcm4che:dcm4che-imageio</include>
+        <include>org.dcm4che:dcm4che-imageio-opencv</include>
+        <include>org.dcm4che:dcm4che-imageio-rle</include>
+        <include>org.dcm4che:dcm4che-json</include>
+        <include>org.dcm4che:dcm4che-mime</include>
+        <include>org.dcm4che:dcm4che-net</include>
+        <include>org.dcm4che:dcm4che-net-audit</include>
+        <include>org.dcm4che:dcm4che-net-hl7</include>
+        <include>org.dcm4che:dcm4che-soundex</include>
+        <include>org.dcm4che:dcm4che-ws-rs</include>
+        <include>org.dcm4che:dcm4che-xdsi</include>
+        <include>org.dcm4che.tool:dcm4che-tool-common</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcm2dcm</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcm2jpg</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcm2json</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcm2str</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmldap</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmvalidate</include>
+        <include>org.dcm4che.tool:dcm4che-tool-deidentify</include>
+        <include>org.dcm4che.tool:dcm4che-tool-emf2sf</include>
+        <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-getscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-hl72xml</include>
+        <include>org.dcm4che.tool:dcm4che-tool-hl7pix</include>
+        <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
+        <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
+        <include>org.dcm4che.tool:dcm4che-tool-stowrs</include>
+        <include>org.dcm4che.tool:dcm4che-tool-ianscp</include>
+        <include>org.dcm4che.tool:dcm4che-tool-ianscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-json2dcm</include>
+        <include>org.dcm4che.tool:dcm4che-tool-json2index</include>
+        <include>org.dcm4che.tool:dcm4che-tool-json2rst</include>
+        <include>org.dcm4che.tool:dcm4che-tool-jpg2dcm</include>
+        <include>org.dcm4che.tool:dcm4che-tool-mkkos</include>
+        <include>org.dcm4che.tool:dcm4che-tool-movescu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-mppsscp</include>
+        <include>org.dcm4che.tool:dcm4che-tool-mppsscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-pdf2dcm</include>
+        <include>org.dcm4che.tool:dcm4che-tool-storescp</include>
+        <include>org.dcm4che.tool:dcm4che-tool-storescu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-stgcmtscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-swappxdata</include>
+        <include>org.dcm4che.tool:dcm4che-tool-syslog</include>
+        <include>org.dcm4che.tool:dcm4che-tool-syslogd</include>
+        <include>org.dcm4che.tool:dcm4che-tool-wadors</include>
+        <include>org.dcm4che.tool:dcm4che-tool-wadows</include>
+        <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
+        <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
+        <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
+        <include>org.weasis.opencv:weasis-opencv-core</include>
+        <include>com.sun.media:jai_imageio</include>
+        <include>com.sun.media:clibwrapper_jiio</include>
+        <include>org.slf4j:slf4j-api</include>
+        <include>org.slf4j:slf4j-log4j12</include>
+        <include>log4j:log4j</include>
+        <include>commons-cli:commons-cli</include>
+        <include>org.glassfish:javax.json</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>js</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-js-dict</include>
+      </includes>
+      <unpack>true</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>com.sun.media:clib_jiio</include>
+      </includes>
+      <unpack>true</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/linux-i686</outputDirectory>
+      <includes>
+        <include>*:*:so:linux-x86:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/linux-x86_64</outputDirectory>
+      <includes>
+        <include>*:*:so:linux-x86-64:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/macosx-x86_64</outputDirectory>
+      <includes>
+        <include>*:*:jnilib:macosx-x86-64:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/win-i686</outputDirectory>
+      <includes>
+        <include>*:*:dll:windows-x86:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/win-x86_64</outputDirectory>
+      <includes>
+        <include>*:*:dll:windows-x86-64:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+  </dependencySets>
+</component>

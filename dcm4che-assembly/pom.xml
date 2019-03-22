@@ -54,7 +54,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>1.5</version>
         <executions>
           <execution>
             <goals>
@@ -101,18 +100,31 @@
             </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.3</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/main/assembly/bin.xml</descriptor>
-          </descriptors>
-        </configuration>
         <executions>
           <execution>
+            <id>zip</id>
             <phase>package</phase>
             <goals>
               <goal>single</goal>
             </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bin.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+          <execution>
+            <id>dir</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bin-dir.xml</descriptor>
+              </descriptors>
+              <attach>false</attach>
+            </configuration>
           </execution>
         </executions>
       </plugin>

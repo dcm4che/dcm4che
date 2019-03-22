@@ -65,6 +65,7 @@ public class DataWriterAdapter implements DataWriter {
     public void writeTo(PDVOutputStream out, String tsuid) throws IOException {
         DicomOutputStream dos = new DicomOutputStream(out, tsuid);
         dos.writeDataset(null, data);
+        dos.finish();           
     }
 
     public final Attributes getDataset() {

@@ -74,11 +74,15 @@ public class StreamUtils {
             throw new EOFException();
     }
     
-    public static  void skipFully(InputStream in, long n) throws IOException {
+    public static void skipFully(InputStream in, long n) throws IOException {
         while (n > 0) {
             long count = in.skip(n);
-            if (count <= 0)
-                throw new EOFException();
+            if (count == 0) {
+                if (in.read() == -1) {
+                    throw new EOFException();
+                }
+                count = 1;
+            }
             n -= count;
         }
     }

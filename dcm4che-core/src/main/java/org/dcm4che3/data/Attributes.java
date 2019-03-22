@@ -3307,7 +3307,7 @@ public class Attributes implements Serializable {
         int removed = 0;
         for (int i = 0; i < size; i++) {
             Object value = values[i];
-            if (value instanceof BulkData) {
+            if (isBulkData(value)) {
                 int srcPos = i + 1;
                 int len = size - srcPos;
                 System.arraycopy(tags, srcPos, tags, i, len);
@@ -3323,6 +3323,12 @@ public class Attributes implements Serializable {
             }
         }
         return removed;
+    }
+
+    private static boolean isBulkData(Object value) {
+        return value instanceof BulkData || (value instanceof Fragments
+                && ((Fragments) value).size() > 1
+                && ((Fragments) value).get(1) instanceof BulkData);
     }
 
     private int creatorIndexOf(String privateCreator, int groupNumber) {

@@ -3320,6 +3320,18 @@ public class Attributes implements Serializable {
                 for (Attributes item : (Sequence) value) {
                     removed += item.removeAllBulkData();
                 }
+            } else if (value instanceof Fragments){
+                Fragments fragment = (Fragments)value;
+                if (fragment.size()>1 && fragment.get( 1 ) instanceof BulkData){                
+                    int srcPos = i + 1;
+                    int len = size - srcPos;
+                    System.arraycopy(tags, srcPos, tags, i, len);
+                    System.arraycopy(vrs, srcPos, vrs, i, len);
+                    System.arraycopy(values, srcPos, values, i, len);
+                    i--;
+                    size--;
+                    removed++;   
+                }                               
             }
         }
         return removed;

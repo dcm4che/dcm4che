@@ -110,7 +110,7 @@ public class Compressor extends Decompressor implements Closeable {
 
         if (pixeldata instanceof BulkData) {
             this.pixeldata = (BulkData) pixeldata;
-            if (pmi.isSubSambled())
+            if (pmi.isSubSampled())
                 throw new UnsupportedOperationException(
                         "Unsupported Photometric Interpretation: " + pmi);
             if (this.pixeldata.length() < length)

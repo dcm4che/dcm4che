@@ -506,25 +506,20 @@ public class Transcoder implements Closeable {
             dataset.setInt(Tag.PlanarConfiguration, VR.US, srcTransferSyntaxType.getPlanarConfiguration());
         }
         if (compressor != null) {
-            switch (pmi) {
-                case PALETTE_COLOR:
-                    if (lossyCompression) {
-                        palette2rgb = true;
-                        dataset.removeSelected(cmTags);
-                        dataset.setInt(Tag.SamplesPerPixel, VR.US, 3);
-                        dataset.setInt(Tag.BitsAllocated, VR.US, 8);
-                        dataset.setInt(Tag.BitsStored, VR.US, 8);
-                        dataset.setInt(Tag.HighBit, VR.US, 7);
-                        pmi = PhotometricInterpretation.RGB;
-                    }
-                    break;
-                case YBR_FULL:
-                    if (TransferSyntaxType.isYBRCompression(destTransferSyntax)) {
-                        ybr2rgb = true;
-                        pmi = PhotometricInterpretation.RGB;
-                    }
-                    break;
-            }
+			if (pmi == PhotometricInterpretation.PALETTE_COLOR && lossyCompression) {
+				palette2rgb = true;
+				dataset.removeSelected(cmTags);
+				dataset.setInt(Tag.SamplesPerPixel, VR.US, 3);
+				dataset.setInt(Tag.BitsAllocated, VR.US, 8);
+				dataset.setInt(Tag.BitsStored, VR.US, 8);
+				dataset.setInt(Tag.HighBit, VR.US, 7);
+				pmi = PhotometricInterpretation.RGB;
+			} else if ((pmi.isSubSampled() && srcTransferSyntaxType == TransferSyntaxType.NATIVE)
+					|| (pmi == PhotometricInterpretation.YBR_FULL
+							&& TransferSyntaxType.isYBRCompression(destTransferSyntax))) {
+				ybr2rgb = true;
+				pmi = PhotometricInterpretation.RGB;
+			}
             dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmiForCompression(pmi).toString());
             compressorImageDescriptor = new ImageDescriptor(dataset);
             pmi = pmi.compress(destTransferSyntax);

@@ -514,11 +514,13 @@ public class Transcoder implements Closeable {
 				dataset.setInt(Tag.BitsStored, VR.US, 8);
 				dataset.setInt(Tag.HighBit, VR.US, 7);
 				pmi = PhotometricInterpretation.RGB;
+				LOG.warn("Converting PALETTE_COLOR model into a lossy format is not recommended, prefer a lossless format");
 			} else if ((pmi.isSubSampled() && srcTransferSyntaxType == TransferSyntaxType.NATIVE)
 					|| (pmi == PhotometricInterpretation.YBR_FULL
 							&& TransferSyntaxType.isYBRCompression(destTransferSyntax))) {
 				ybr2rgb = true;
 				pmi = PhotometricInterpretation.RGB;
+				LOG.debug("Conversion to an RGB color model is required before compression.");
 			}
             dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmiForCompression(pmi).toString());
             compressorImageDescriptor = new ImageDescriptor(dataset);

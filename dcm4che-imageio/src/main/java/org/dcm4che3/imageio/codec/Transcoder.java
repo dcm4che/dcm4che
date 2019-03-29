@@ -584,12 +584,12 @@ public class Transcoder implements Closeable {
         decompressParam.setDestination(originalBi);
         long start = System.currentTimeMillis();
         originalBi = adjustColorModel(decompressor.read(0, decompressParam));
-        long end = System.currentTimeMillis();
-        if (LOG.isDebugEnabled())
-            LOG.debug("Decompressed frame #{} 1:{} in {} ms",
-                    frameIndex + 1, (float) sizeOf(originalBi) / encapsulatedPixelData.getStreamPosition(), end - start);
-        encapsulatedPixelData.seekNextFrame();
-        return originalBi;
+		long end = System.currentTimeMillis();
+		if (LOG.isDebugEnabled())
+			LOG.debug("Decompressed frame #{} in {} ms, ratio 1:{}", frameIndex + 1, end - start,
+					(float) imageDescriptor.getFrameLength() / encapsulatedPixelData.getStreamPosition());
+		encapsulatedPixelData.seekNextFrame();
+		return originalBi;
     }
 
     private BufferedImage adjustColorModel(BufferedImage bi) {
@@ -618,10 +618,10 @@ public class Transcoder implements Closeable {
         compressor.write(null, new IIOImage(bi, null, null), compressParam);
         long end = System.currentTimeMillis();
         int length = (int) ios.getStreamPosition();
-        if (LOG.isDebugEnabled())
-            LOG.debug("Compressed frame #{} {}:1 in {} ms",
-                   frameIndex + 1, (float) sizeOf(bi) / length, end - start);
-        verify(ios, frameIndex);
+		if (LOG.isDebugEnabled())
+			LOG.debug("Compressed frame #{} in {} ms, ratio {}:1", frameIndex + 1, end - start,
+					(float) imageDescriptor.getFrameLength() / length);
+		verify(ios, frameIndex);
         if ((length & 1) != 0) {
             ios.write(0);
             length++;
@@ -629,11 +629,6 @@ public class Transcoder implements Closeable {
         dos.writeHeader(Tag.Item, null, length);
         ios.setOutputStream(dos);
         ios.flush();
-    }
-
-    static int sizeOf(BufferedImage bi) {
-        DataBuffer db = bi.getData().getDataBuffer();
-        return db.getSize() * db.getNumBanks() * (DataBuffer.getDataTypeSize(db.getDataType()) / 8);
     }
 
     private void readFrame() throws IOException {

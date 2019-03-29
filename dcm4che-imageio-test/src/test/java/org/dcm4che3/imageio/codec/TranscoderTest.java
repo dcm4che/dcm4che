@@ -40,19 +40,16 @@
 
 package org.dcm4che3.imageio.codec;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.io.DicomInputStream;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static org.junit.Assert.*;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.UID;
+import org.dcm4che3.io.DicomInputStream;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -95,20 +92,18 @@ public class TranscoderTest {
 
     @Test
     public void testDecompressJPEG12bit() throws Exception {
-        if (Boolean.getBoolean("JIIO"))
-            test("NM1_JPLY", "NM1_JPLY.unc", UID.ExplicitVRLittleEndian, true);
+        test("NM1_JPLY", "NM1_JPLY.unc", UID.ExplicitVRLittleEndian, true);
     }
 
     @Test
     public void testDecompressMF() throws Exception {
         test("US-PAL-8-10x-echo", "US-PAL-8-10x-echo.unc", UID.ExplicitVRLittleEndian, true);
     }
-    
-	@Test
-	public void testDecompressJpeglsPaletteMF() throws Exception {
-		if (Boolean.getBoolean("JIIO"))
-			test("jpeg-ls-Palette.dcm", "jpeg-ls-Palette-raw.dcm", UID.ExplicitVRLittleEndian, true);
-	}
+
+    @Test
+    public void testDecompressJpeglsPaletteMF() throws Exception {
+        test("jpeg-ls-Palette.dcm", "jpeg-ls-Palette-raw.dcm", UID.ExplicitVRLittleEndian, true);
+    }
 
     @Test
     public void testCompressMF() throws Exception {
@@ -117,8 +112,7 @@ public class TranscoderTest {
 
     @Test
     public void testCompressEmbeddedOverlays() throws Exception {
-        if (Boolean.getBoolean("JIIO"))
-            test("ovly_p01.dcm", "ovly_p01_jply.dcm", UID.JPEGExtended24, true);
+        test("ovly_p01.dcm", "ovly_p01_jply.dcm", UID.JPEGExtended24, true);
     }
 
     @Test
@@ -130,42 +124,36 @@ public class TranscoderTest {
     public void testCompressPerPixelRGB() throws Exception {
         test("US-RGB-8-esopecho", "US-RGB-8-esopecho_jply", UID.JPEGBaseline1, true);
     }
-    
-	@Test
-	public void testCompressPerPixelRgb2JpegLossless() throws Exception {
-		if (Boolean.getBoolean("JIIO"))
-			test("US-RGB-8-esopecho", "US-RGB-8-esopecho-jpegLossless.dcm", UID.JPEGLossless, true);
-	}
-    
-	@Test
-	public void testTranscodePaletteRleMf2RgbJpegls() throws Exception {
-		if (Boolean.getBoolean("JIIO"))
-			test("US-PAL-8-10x-echo", "US-PAL-8-10x-echo-jpegls.dcm", UID.JPEGLSLossyNearLossless, true);
-	}
+
+    @Test
+    public void testCompressPerPixelRgb2JpegLossless() throws Exception {
+        test("US-RGB-8-esopecho", "US-RGB-8-esopecho-jpegLossless.dcm", UID.JPEGLossless, true);
+    }
+
+    @Test
+    public void testTranscodePaletteRleMf2RgbJpegls() throws Exception {
+        test("US-PAL-8-10x-echo", "US-PAL-8-10x-echo-jpegls.dcm", UID.JPEGLSLossyNearLossless, true);
+    }
 	
-	@Test
-	public void testTranscodeJpeglsPaletteMf2RgbJ2k() throws Exception {
-		if (Boolean.getBoolean("JIIO"))
-			test("jpeg-ls-Palette.dcm", "jpeg-ls-Palette-j2k.dcm", UID.JPEG2000, true);
-	}
-	
-	@Test
-	public void testTranscodeYbrFullRle2RgbJ2k() throws Exception {
-		if (Boolean.getBoolean("JIIO"))
-			test("YBR_FULL-RLE.dcm", "YBR_FULL-RLE-j2k.dcm", UID.JPEG2000, true);
-	}
-	
-	@Test 
-	public void testTranscodeYbr422Raw2RgbJpegLossless() throws Exception {
-		if (Boolean.getBoolean("JIIO"))
-			test("YBR_422.dcm", "YBR_422-jpegLossless.dcm", UID.JPEGLossless, true);
-	}
-	
-	@Test
-	public void testTranscodeYbr422Raw2RgbJ2k() throws Exception {
-		if (Boolean.getBoolean("JIIO"))
-			test("YBR_422.dcm", "YBR_422-j2k.dcm", UID.JPEG2000, true);
-	}
+    @Test
+    public void testTranscodeJpeglsPaletteMf2RgbJ2k() throws Exception {
+        test("jpeg-ls-Palette.dcm", "jpeg-ls-Palette-j2k.dcm", UID.JPEG2000, true);
+    }
+
+    @Test
+    public void testTranscodeYbrFullRle2RgbJ2k() throws Exception {
+        test("YBR_FULL-RLE.dcm", "YBR_FULL-RLE-j2k.dcm", UID.JPEG2000, true);
+    }
+
+    @Test
+    public void testTranscodeYbr422Raw2RgbJpegLossless() throws Exception {
+        test("YBR_422.dcm", "YBR_422-jpegLossless.dcm", UID.JPEGLossless, true);
+    }
+
+    @Test
+    public void testTranscodeYbr422Raw2RgbJ2k() throws Exception {
+        test("YBR_422.dcm", "YBR_422-j2k.dcm", UID.JPEG2000, true);
+    }
 
     private void test(String ifname, String ofname, final String outts, boolean fmi) throws IOException {
 

@@ -46,6 +46,7 @@
     <remoteResources>
         <remoteResource>cplx_p02.dcm</remoteResource>
         <remoteResource>DICOMDIR</remoteResource>
+        <remoteResource>jpeg-ls-Palette.dcm</remoteResource>
         <remoteResource>NM-MONO2-16-13x-heart</remoteResource>
         <remoteResource>NM1_JPLY</remoteResource>
         <remoteResource>OT-PAL-8-face</remoteResource>
@@ -54,6 +55,8 @@
         <remoteResource>US-PAL-8-10x-echo</remoteResource>
         <remoteResource>US-RGB-8-epicard</remoteResource>
         <remoteResource>US-RGB-8-esopecho</remoteResource>
+        <remoteResource>YBR_422.dcm</remoteResource>
+        <remoteResource>YBR_FULL-RLE.dcm</remoteResource>
     </remoteResources>
     <sourceEncoding>UTF-8</sourceEncoding>
 </remoteResourcesBundle>

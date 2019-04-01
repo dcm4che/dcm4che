@@ -61,7 +61,7 @@ rem Setup the native library path
 "%JAVA%" -d64 -version >nul 2>&1 && set OS=win-x86_64 || set OS=win-i686
 set JAVA_LIBRARY_PATH=%DCM4CHE_HOME%\lib\%OS%
 
-set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path=%JAVA_LIBRARY_PATH%
+set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path="%JAVA_LIBRARY_PATH%"
 
 if not "%IMAGE_READER_FACTORY%" == "" ^
  set JAVA_OPTS=%JAVA_OPTS% -Dorg.dcm4che3.imageio.codec.ImageReaderFactory=%IMAGE_READER_FACTORY%

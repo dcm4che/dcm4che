@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -413,6 +414,9 @@ public class Dcm2Dcm {
                     return new FileOutputStream(dest);
                 }
             });
+        } catch (Exception e) {
+            Files.delete(dest.toPath());
+            throw e;
         }
     }
 

@@ -209,7 +209,7 @@ public enum PhotometricInterpretation {
         return inverse;
     }
 
-    public boolean isSubSambled() {
+    public boolean isSubSampled() {
         return subSampled;
     }
 

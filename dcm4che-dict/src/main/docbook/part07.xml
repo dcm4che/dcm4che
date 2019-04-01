@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2019a - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2019b - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -418,38 +418,44 @@
                 <glossentry xml:id="glossentry_Attribute" xreflabel="Attribute">
                     <glossterm>Attribute</glossterm>
                     <glossdef>
-                        <para xml:id="para_cf1c950d-06cd-4d93-bb87-08c5681125ee"><olink targetdoc="PS3.1" targetptr="glossentry_Attribute"/>.</para>
+                        <para xml:id="para_cf1c950d-06cd-4d93-bb87-08c5681125ee">
+<olink targetdoc="PS3.1" targetptr="glossentry_Attribute"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_Command" xreflabel="Command">
                     <glossterm>Command</glossterm>
                     <glossdef>
-                        <para xml:id="para_9c77bff1-6371-4397-9e6b-042b7ad6277e"><olink targetdoc="PS3.1" targetptr="glossentry_Command"/>.</para>
+                        <para xml:id="para_9c77bff1-6371-4397-9e6b-042b7ad6277e">
+<olink targetdoc="PS3.1" targetptr="glossentry_Command"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_CommandStream" xreflabel="Command Stream">
                     <glossterm>Command Stream</glossterm>
                     <glossdef>
-                        <para xml:id="para_d4e06e32-9ad2-42ee-b332-391260946139"><olink targetdoc="PS3.1" targetptr="glossentry_CommandStream"/>.</para>
+                        <para xml:id="para_d4e06e32-9ad2-42ee-b332-391260946139">
+<olink targetdoc="PS3.1" targetptr="glossentry_CommandStream"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_DataStream" xreflabel="Data Stream">
                     <glossterm>Data Stream</glossterm>
                     <glossdef>
-                        <para xml:id="para_e5fb897a-5aba-4911-997d-88a634a48dd5"><olink targetdoc="PS3.1" targetptr="glossentry_DataStream"/>.</para>
+                        <para xml:id="para_e5fb897a-5aba-4911-997d-88a634a48dd5">
+<olink targetdoc="PS3.1" targetptr="glossentry_DataStream"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_Message" xreflabel="Message">
                     <glossterm>Message</glossterm>
                     <glossdef>
-                        <para xml:id="para_3f8985fa-4622-4005-bb67-05cb04ac49fb"><olink targetdoc="PS3.1" targetptr="glossentry_Message"/>.</para>
+                        <para xml:id="para_3f8985fa-4622-4005-bb67-05cb04ac49fb">
+<olink targetdoc="PS3.1" targetptr="glossentry_Message"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceObjectPairClass" xreflabel="Service-Object Pair Class (SOP Class)">
                     <glossterm>Service-Object Pair Class</glossterm>
                     <acronym>SOP Class</acronym>
                     <glossdef>
-                        <para xml:id="para_d817266c-7b16-4f0d-b445-1cc5ac471535"><olink targetdoc="PS3.1" targetptr="glossentry_ServiceObjectPairClass"/>.</para>
+                        <para xml:id="para_d817266c-7b16-4f0d-b445-1cc5ac471535">
+<olink targetdoc="PS3.1" targetptr="glossentry_ServiceObjectPairClass"/>.</para>
                     </glossdef>
                 </glossentry>
 
@@ -460,7 +466,8 @@
                 <glossentry xml:id="glossentry_DICOMUpperLayerService" xreflabel="DICOM Upper Layer Service">
                     <glossterm>DICOM Upper Layer Service</glossterm>
                     <glossdef>
-                        <para xml:id="para_cbe60261-1d0b-4e56-9976-7a46e9d64e64"><olink targetdoc="PS3.8" targetptr="glossentry_DICOMUpperLayerService"/>.</para>
+                        <para xml:id="para_cbe60261-1d0b-4e56-9976-7a46e9d64e64">
+<olink targetdoc="PS3.8" targetptr="glossentry_DICOMUpperLayerService"/>.</para>
                     </glossdef>
                 </glossentry>
             </glossdiv>
@@ -471,34 +478,39 @@
                 <glossentry xml:id="glossentry_ServiceClass" xreflabel="Service Class">
                     <glossterm>Service Class</glossterm>
                     <glossdef>
-                        <para xml:id="para_8eaf6120-8fa9-462b-83ea-17ca2a1ae13f"><olink targetdoc="PS3.4" targetptr="glossentry_ServiceClass"/>.</para>
+                        <para xml:id="para_8eaf6120-8fa9-462b-83ea-17ca2a1ae13f">
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClass"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceClassUser" xreflabel="Service Class User (SCU)">
                     <glossterm>Service Class User</glossterm>
                     <acronym>SCU</acronym>
                     <glossdef>
-                        <para xml:id="para_64e262c0-ca44-4150-8964-65be3bb7602c"><olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassUser"/>.</para>
+                        <para xml:id="para_64e262c0-ca44-4150-8964-65be3bb7602c">
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassUser"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceClassProvider" xreflabel="Service Class Provider (SCP)">
                     <glossterm>Service Class Provider</glossterm>
                     <acronym>SCP</acronym>
                     <glossdef>
-                        <para xml:id="para_d9b29f4d-7253-4a1c-be92-acbc14a9c36a"><olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassProvider"/>.</para>
+                        <para xml:id="para_d9b29f4d-7253-4a1c-be92-acbc14a9c36a">
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassProvider"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceObjectPairInstance" xreflabel="Service-Object Pair Instance (SOP Instance)">
                     <glossterm>Service-Object Pair Instance</glossterm>
                     <acronym>SOP Instance</acronym>
                     <glossdef>
-                        <para xml:id="para_2e7e6955-0206-4cc4-94c7-88f02c7fe363"><olink targetdoc="PS3.4" targetptr="glossentry_ServiceObjectPairInstance"/>.</para>
+                        <para xml:id="para_2e7e6955-0206-4cc4-94c7-88f02c7fe363">
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceObjectPairInstance"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_RelatedGeneralSOPClass" xreflabel="Related General SOP Class">
                     <glossterm>Related General SOP Class</glossterm>
                     <glossdef>
-                        <para xml:id="para_f3a04b8a-0ff4-4fea-9dd2-a7df569f63b3"><olink targetdoc="PS3.4" targetptr="glossentry_RelatedGeneralSOPClass"/>.</para>
+                        <para xml:id="para_f3a04b8a-0ff4-4fea-9dd2-a7df569f63b3">
+<olink targetdoc="PS3.4" targetptr="glossentry_RelatedGeneralSOPClass"/>.</para>
                     </glossdef>
                 </glossentry>
             </glossdiv>
@@ -509,20 +521,23 @@
                 <glossentry xml:id="glossentry_DataElement" xreflabel="Data Element">
                     <glossterm>Data Element</glossterm>
                     <glossdef>
-                        <para xml:id="para_df12b47e-bab1-4176-a433-2b31e9f92a91"><olink targetdoc="PS3.5" targetptr="glossentry_DataElement"/>.</para>
+                        <para xml:id="para_df12b47e-bab1-4176-a433-2b31e9f92a91">
+<olink targetdoc="PS3.5" targetptr="glossentry_DataElement"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_DataSet" xreflabel="Data Set">
                     <glossterm>Data Set</glossterm>
                     <glossdef>
-                        <para xml:id="para_25abcf40-abfa-48dc-a604-66c17e1642a5"><olink targetdoc="PS3.5" targetptr="glossentry_DataSet"/>.</para>
+                        <para xml:id="para_25abcf40-abfa-48dc-a604-66c17e1642a5">
+<olink targetdoc="PS3.5" targetptr="glossentry_DataSet"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_UniqueIdentifier" xreflabel="Unique Identifier (UID)">
                     <glossterm>Unique Identifier</glossterm>
                     <acronym>UID</acronym>
                     <glossdef>
-                        <para xml:id="para_1093a8dd-2fe3-4fbc-aae7-763f86229b9a"><olink targetdoc="PS3.8" targetptr="glossentry_UniqueIdentifier"/>.</para>
+                        <para xml:id="para_1093a8dd-2fe3-4fbc-aae7-763f86229b9a">
+<olink targetdoc="PS3.8" targetptr="glossentry_UniqueIdentifier"/>.</para>
                     </glossdef>
                 </glossentry>
 
@@ -553,7 +568,7 @@
                     <glossterm>DIMSE Service Group</glossterm>
                     <acronym>DSG</acronym>
                     <glossdef>
-                        <para>A specific set of one or more DIMSE Services that define the operations and/or notifications that can be performed on a data structure.</para>
+                        <para xml:id="para_f5e3f25b-4276-41b3-9091-f62872551702">A specific set of one or more DIMSE Services that define the operations and/or notifications that can be performed on a data structure.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_DIMSEServiceProvider" xreflabel="DIMSE Service Provider">
@@ -571,13 +586,13 @@
                 <glossentry xml:id="glossentry_ExtendedNegotiation" xreflabel="Extended Negotiation">
                     <glossterm>Extended Negotiation</glossterm>
                     <glossdef>
-                        <para>Exchange of application information by peer DICOM AEs at Association establishment, defined by specific Service Class specifications.</para>
+                        <para xml:id="para_6d33b411-dcc6-4fcc-957c-743aee5a1408">Exchange of application information by peer DICOM AEs at Association establishment, defined by specific Service Class specifications.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ImplementationClassUID" xreflabel="Implementation Class UID">
                     <glossterm>Implementation Class UID</glossterm>
                     <glossdef>
-                        <para>The unique identifier of a specific class of implementation.</para>
+                        <para xml:id="para_12058e87-df96-4465-b739-06752418a0bc">The unique identifier of a specific class of implementation.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_InvokingDIMSEServiceUser" xreflabel="Invoking DIMSE Service User">
@@ -813,17 +828,18 @@
   <para xml:id="para_dcf0885f-d38a-4be6-8f62-8f493e2b5b19">This section defines the DICOM Message Service Element and Protocol within the context of the DICOM Application Entity. Specifically, this section provides a model to clarify a number of concepts for digital imaging and communications and introduces key terms used throughout the Standard. This model has been used to partition the Application Layer of the DICOM Standard into separate parts.</para>
   <section label="6.1" status="2" xml:id="sect_6.1">
       <title>DICOM Communication Model for Message Exchange</title>
-      <para><olink targetdoc="PS3.1" targetptr="figure_5-1" xrefstyle="select: docname label"/> presents the general communication model of the DICOM Standard, which spans both network (on-line) and storage media interchange (off-line) communications.
+      <para xml:id="para_5c35538f-2812-452c-a224-9e65ff5b1805">
+<olink targetdoc="PS3.1" targetptr="figure_5-1" xrefstyle="select: docname label"/> presents the general communication model of the DICOM Standard, which spans both network (on-line) and storage media interchange (off-line) communications.
           Application Entities may utilize any of the following transport mechanisms:</para>
       <itemizedlist>
           <listitem>
-              <para>the DICOM Message Service and Upper Layer Service, which provides independence from specific physical networking communication support and protocols such as TCP/IP,</para>
+              <para xml:id="para_168e81ad-b03c-47db-9fd4-9260b97a465c">the DICOM Message Service and Upper Layer Service, which provides independence from specific physical networking communication support and protocols such as TCP/IP,</para>
           </listitem>
           <listitem>
-              <para>the DICOM Web Service API and HTTP Service, which allows use of common hypertext and associated protocols for transport of DICOM services, or</para>
+              <para xml:id="para_67456292-d103-484c-a998-8444e64544ec">the DICOM Web Service API and HTTP Service, which allows use of common hypertext and associated protocols for transport of DICOM services, or</para>
           </listitem>
           <listitem>
-              <para>the Basic DICOM File Service, which provides access to Storage Media independently from specific physical media storage formats and file structures.</para>
+              <para xml:id="para_f3864a75-5bc3-47fd-a2a7-ed2d35ec99b5">the Basic DICOM File Service, which provides access to Storage Media independently from specific physical media storage formats and file structures.</para>
           </listitem>
       </itemizedlist>
       <para xml:id="para_b6116be0-8f53-48fe-a1e0-55564662e507">PS3.7 focuses on the DICOM Message Service and here the OSI Basic Reference Model is used to model the interconnection of medical imaging equipment.

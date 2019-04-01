@@ -134,7 +134,7 @@ public class TranscoderTest {
     public void testTranscodePaletteRleMf2RgbJpegls() throws Exception {
         test("US-PAL-8-10x-echo", "US-PAL-8-10x-echo-jpegls.dcm", UID.JPEGLSLossyNearLossless, true);
     }
-	
+
     @Test
     public void testTranscodeJpeglsPaletteMf2RgbJ2k() throws Exception {
         test("jpeg-ls-Palette.dcm", "jpeg-ls-Palette-j2k.dcm", UID.JPEG2000, true);

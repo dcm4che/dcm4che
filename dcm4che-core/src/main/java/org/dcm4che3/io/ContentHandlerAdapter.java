@@ -175,6 +175,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private void startInlineBinary() {
         processCharacters = true;
         inlineBinary = true;
+        carryLen = 0;
         bout.reset();
     }
 
@@ -232,11 +233,14 @@ public class ContentHandlerAdapter extends DefaultHandler {
             if (inlineBinary)
                 try {
                     if (carryLen != 0) {
-                        int copy = 4 - carryLen;
+                        int copy = Math.min(4 - carryLen, len);
                         System.arraycopy(ch, offset, carry, carryLen, copy);
-                        Base64.decode(carry, 0, 4, bout);
+                        carryLen += copy;
                         offset += copy;
                         len -= copy;
+                        if (carryLen == 4)
+                          Base64.decode(carry, 0, 4, bout);
+                        else return;
                     }
                     if ((carryLen = len & 3) != 0) {
                         len -= carryLen;

@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.util.Property;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -162,13 +163,17 @@ public class TranscoderTest {
         Transcoder.Handler handler = new Transcoder.Handler() {
             @Override
             public OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException {
-                transcoder.setDestinationTransferSyntax(outts);
                 return new FileOutputStream(ofile);
             }
         };
         try (Transcoder transcoder = new Transcoder(ifile)) {
             transcoder.setIncludeFileMetaInformation(fmi);
             transcoder.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
+            boolean transcodeNotRequired = transcoder.getDestinationTransferSyntax().equals(outts);
+            transcoder.setDestinationTransferSyntax(outts);
+            if (!transcodeNotRequired && TransferSyntaxType.forUID(outts).isPixeldataEncapsulated()) {
+                transcoder.setCompressParams(new Property[] {});
+            }
             transcoder.transcode(handler);
         }
     }

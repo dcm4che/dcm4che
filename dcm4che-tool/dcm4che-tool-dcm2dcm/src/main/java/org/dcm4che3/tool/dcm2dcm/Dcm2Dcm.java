@@ -381,7 +381,7 @@ public class Dcm2Dcm {
                     tsuid = adjustTransferSyntax(tsuid,
                             dataset.getInt(Tag.BitsStored, 8));
                     compressor = new Compressor(dataset, dis.getTransferSyntax());
-                    compressor.compress(tsuid, params.toArray(new Property[0]));
+                    compressor.compress(tsuid, params.toArray(new Property[params.size()]));
                 } else if (pixeldata instanceof Fragments)
                     Decompressor.decompress(dataset, dis.getTransferSyntax());
             }
@@ -407,7 +407,7 @@ public class Dcm2Dcm {
             transcoder.setEncodingOptions(encOpts);
             transcoder.setDestinationTransferSyntax(tsuid);
             if (tstype.isPixeldataEncapsulated())
-                transcoder.setCompressParams(params.toArray(new Property[0]));
+                transcoder.setCompressParams(params.toArray(new Property[params.size()]));
             transcoder.transcode(new Transcoder.Handler(){
                 @Override
                 public OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException {

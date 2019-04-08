@@ -50,6 +50,7 @@ import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.validation.ValidationException;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -197,6 +198,9 @@ public class DefaultConfigTypeAdapters {
                 return (T) Integer.valueOf((String) configNode);
             } else if (configNode.getClass().equals(Integer.class)) {
                 return (T) configNode;
+            } else if (configNode.getClass().equals(BigDecimal.class)) {
+                Integer intValueExact = ((BigDecimal)configNode).intValueExact();
+                return (T) intValueExact;
             } else {
                 throw new ClassCastException(format("Cannot convert config node type %s to primitive integer", configNode.getClass().getName()));
             }
@@ -229,8 +233,12 @@ public class DefaultConfigTypeAdapters {
             if (configNode.getClass().equals(String.class)) {
                 return (T) Double.valueOf((String) configNode);
             } else if (configNode.getClass().equals(Double.class) ||
-                    configNode.getClass().equals(Float.class)) {
+                    configNode.getClass().equals(Float.class) ||
+                    configNode.getClass().equals(Integer.class)) {
                 return (T) configNode;
+            } else if (configNode.getClass().equals(BigDecimal.class)) {
+                Double doubleValue = ((BigDecimal)configNode).doubleValue();
+                return (T) doubleValue;
             } else {
                 throw new ClassCastException(format("Cannot convert config node type %s to number", configNode.getClass().getName()));
             }

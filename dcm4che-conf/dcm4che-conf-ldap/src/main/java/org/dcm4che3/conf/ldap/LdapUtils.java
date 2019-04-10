@@ -428,6 +428,10 @@ public class LdapUtils {
         return attr != null ? (String) attr.get() : defVal;
     }
 
+    public static String stringValue1(Attribute attr, String defVal) throws NamingException {
+        return attr != null ? new String((byte[]) attr.get()) : defVal;
+    }
+
     public static TimeZone timeZoneValue(Attribute attr, TimeZone defVal) throws NamingException {
         return attr != null ? TimeZone.getTimeZone((String) attr.get()) : defVal;
     }

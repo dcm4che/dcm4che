@@ -38,6 +38,7 @@
 package org.dcm4che3.conf.ldap;
 
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -425,11 +426,11 @@ public class LdapUtils {
     }
 
     public static String stringValue(Attribute attr, String defVal) throws NamingException {
-        return attr != null ? (String) attr.get() : defVal;
+        return attr != null ? stringValue(attr.get()) : defVal;
     }
 
-    public static String stringValue1(Attribute attr, String defVal) throws NamingException {
-        return attr != null ? new String((byte[]) attr.get()) : defVal;
+    private static String stringValue(Object o) {
+        return o instanceof byte[] ? new String((byte[]) o, StandardCharsets.UTF_8) : (String) o;
     }
 
     public static TimeZone timeZoneValue(Attribute attr, TimeZone defVal) throws NamingException {

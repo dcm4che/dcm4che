@@ -836,6 +836,15 @@ public class Device implements Serializable {
         return webapps.values();
     }
 
+    public Collection<WebApplication> getWebApplicationsWithServiceClass(WebApplication.ServiceClass serviceClass) {
+        Collection<WebApplication> result = new ArrayList<>(webapps.size());
+        for (WebApplication webapp : webapps.values()) {
+            if (webapp.containsServiceClass(serviceClass))
+                result.add(webapp);
+        }
+        return result;
+    }
+
     public WebApplication getWebApplication(String name) {
         return webapps.get(name);
     }

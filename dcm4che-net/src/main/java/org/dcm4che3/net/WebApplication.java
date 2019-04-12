@@ -214,6 +214,9 @@ public class WebApplication {
         this.serviceClasses.addAll(Arrays.asList(serviceClasses));
     }
 
+    public boolean containsServiceClass(ServiceClass serviceClass) {
+        return serviceClasses.contains(serviceClass);
+    }
 
     void reconfigure(WebApplication src) {
         description = src.description;

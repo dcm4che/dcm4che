@@ -118,7 +118,7 @@ public class WebApplication {
     }
 
     public void setServicePath(String servicePath) {
-        this.servicePath = servicePath;
+        this.servicePath = servicePath.startsWith("/") ? servicePath : '/' + servicePath;
     }
 
     public String getAETitle() {
@@ -174,6 +174,27 @@ public class WebApplication {
             throw new IllegalStateException(conn + " not contained by " +
                     device.getDeviceName());
         conns.add(conn);
+    }
+
+    public StringBuilder getServiceURL() {
+        return getServiceURL(firstInstalledConnection());
+    }
+
+    private Connection firstInstalledConnection() {
+        for (Connection conn : conns) {
+            if (conn.isInstalled())
+                return conn;
+        }
+        throw new IllegalStateException("No installed Network Connection");
+    }
+
+    public StringBuilder getServiceURL(Connection conn) {
+        return new StringBuilder(64)
+                .append(conn.isTls() ? "https://" : "http://")
+                .append(conn.getHostname())
+                .append(':')
+                .append(conn.getPort())
+                .append(servicePath);
     }
 
     public boolean removeConnection(Connection conn) {

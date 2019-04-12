@@ -1,4 +1,5 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ * **** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -15,8 +16,8 @@
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,38 +35,36 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * **** END LICENSE BLOCK *****
+ *
+ */
 
 package org.dcm4che3.conf.api;
 
-import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.WebApplication;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class ApplicationEntityCache
-        extends ConfigurationCache<DicomConfiguration,ApplicationEntity> implements IApplicationEntityCache {
+public class WebApplicationCache
+        extends ConfigurationCache<DicomConfiguration, WebApplication> implements IWebApplicationCache {
 
-    public ApplicationEntityCache(DicomConfiguration conf) {
+    public WebApplicationCache(DicomConfiguration conf) {
         super(conf);
     }
 
     @Override
-    protected ApplicationEntity find(DicomConfiguration conf, String key)
-            throws ConfigurationException {
-        return conf.findApplicationEntity(key);
+    protected WebApplication find(DicomConfiguration conf, String key) throws ConfigurationException {
+        return conf.findWebApplication(key);
     }
 
     @Override
-    public ApplicationEntity findApplicationEntity(String aet)
-            throws ConfigurationException {
-        ApplicationEntity ae = get(aet);
-        if (ae == null)
-            throw new ConfigurationNotFoundException(
-                    "Unknown AE: " + aet);
-        if (!ae.isInstalled())
-            throw new ConfigurationNotFoundException(
-                    "AE: " + aet + " not installed");
-        return ae;
+    public WebApplication findWebApplication(String name) throws ConfigurationException {
+        WebApplication webApp = get(name);
+        if (webApp == null)
+            throw new ConfigurationNotFoundException("Unknown WebApplication: " + name);
+        if (!webApp.isInstalled())
+            throw new ConfigurationNotFoundException("WebApplication: " + name + " not installed");
+        return webApp;
     }
 }

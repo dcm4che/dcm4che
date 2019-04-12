@@ -58,6 +58,7 @@ public class WebApplicationInfo {
     private String servicePath;
     private String aeTitle;
     private String[] applicationClusters = {};
+    private String keycloakClientID;
     private Boolean installed;
     private EnumSet<WebApplication.ServiceClass> serviceClasses = EnumSet.noneOf(WebApplication.ServiceClass.class);
     private final List<Connection> conns = new ArrayList<>(1);
@@ -108,6 +109,14 @@ public class WebApplicationInfo {
 
     public void setApplicationClusters(String[] applicationClusters) {
         this.applicationClusters = applicationClusters;
+    }
+
+    public String getKeycloakClientID() {
+        return keycloakClientID;
+    }
+
+    public void setKeycloakClientID(String keycloakClientID) {
+        this.keycloakClientID = keycloakClientID;
     }
 
     public Boolean getInstalled() {

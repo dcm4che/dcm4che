@@ -46,6 +46,12 @@
           "UPS_RS",
           "DCM4CHEE_ARC"
         ]
+      },
+      "dcmKeycloakClientID": {
+        "title": "Keycloak Client ID",
+        "description": "Keycloak Client ID of that Web application",
+        "type": "string",
+        "format": "dcmKeycloakClientID"
       }
     },
     "dicomAETitle": {

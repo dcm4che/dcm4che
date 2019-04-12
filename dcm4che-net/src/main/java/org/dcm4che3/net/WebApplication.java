@@ -62,18 +62,19 @@ public class WebApplication {
     private String servicePath;
     private String aeTitle;
     private String[] applicationClusters = {};
+    private String keycloakClientID;
     private Boolean installed;
     private EnumSet<ServiceClass> serviceClasses = EnumSet.noneOf(ServiceClass.class);
     private final List<Connection> conns = new ArrayList<>(1);
-
-    public final Device getDevice() {
-        return device;
-    }
 
     public WebApplication() {}
 
     public WebApplication(String applicationName) {
         this.applicationName = applicationName;
+    }
+
+    public Device getDevice() {
+        return device;
     }
 
     void setDevice(Device device) {
@@ -137,6 +138,14 @@ public class WebApplication {
         this.applicationClusters = applicationClusters;
     }
 
+    public String getKeycloakClientID() {
+        return keycloakClientID;
+    }
+
+    public void setKeycloakClientID(String keycloakClientID) {
+        this.keycloakClientID = keycloakClientID;
+    }
+
     public boolean isInstalled() {
         return device != null && device.isInstalled()
                 && (installed == null || installed.booleanValue());
@@ -186,6 +195,8 @@ public class WebApplication {
         servicePath = src.servicePath;
         aeTitle = src.aeTitle;
         applicationClusters = src.applicationClusters;
+        keycloakClientID = src.keycloakClientID;
+        installed = src.installed;
         serviceClasses.clear();
         serviceClasses.addAll(src.serviceClasses);
         device.reconfigureConnections(conns, src.conns);

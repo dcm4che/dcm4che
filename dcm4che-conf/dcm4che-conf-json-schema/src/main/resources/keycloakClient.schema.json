@@ -1,0 +1,67 @@
+{
+  "title": "Keycloak Client",
+  "description": "Keycloak Client",
+  "type": "object",
+  "required": [
+    "dcmKeycloakClientID",
+    "dcmURI",
+    "dcmKeycloakRealm",
+    "dcmKeycloakGrantType",
+    "dcmTLSAllowAnyHostname",
+    "dcmTLSDisableTrustManager"
+  ],
+  "properties": {
+    "dcmKeycloakClientID": {
+      "title": "Keycloak Client ID",
+      "description": "Client ID used in token requests.",
+      "type": "string"
+    },
+    "dcmURI": {
+      "title": "Server URL",
+      "description": "The base URL of the Keycloak server.",
+      "type": "string"
+    },
+    "dcmKeycloakRealm": {
+      "title": "Keycloak Realm",
+      "description": "Name of the realm in token requests.",
+      "type": "string"
+    },
+    "dcmKeycloakGrantType": {
+      "title": "Keycloak grant type",
+      "description": "Keycloak grant type used in token requests.",
+      "type": "string",
+      "enum": [
+        "client_credentials",
+        "password"
+      ],
+      "default": "client_credentials"
+    },
+    "dcmKeycloakClientSecret": {
+      "title": "Keycloak Client secret",
+      "description": "Keycloak client secret. Required if grant type = client_credentials.",
+      "type": "string"
+    },
+    "dcmTLSAllowAnyHostname": {
+      "title": "TLS Allow Any Hostname",
+      "description": "If the other server requires HTTPS and this config option is set to true the other server’s certificate is validated via the truststore, but host name validation is not done.",
+      "type": "boolean",
+      "default": false
+    },
+    "dcmTLSDisableTrustManager": {
+      "title": "TLS Disable Trust Manager",
+      "description": "If the other server requires HTTPS and this config option is set to true you do not have to specify a truststore",
+      "type": "boolean",
+      "default": false
+    },
+    "uid":  {
+      "title": "User ID",
+      "description": "User ID. Required if grant type = password.",
+      "type": "string"
+    },
+    "userPassword":  {
+      "title": "User Password",
+      "description": "User Password. Required if grant type = password.",
+      "type": "string"
+    }
+  }
+}

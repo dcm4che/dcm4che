@@ -120,6 +120,7 @@ public class JsonConfiguration {
         writer.writeNotNullOrDef("dcmWebAppName", webappInfo.getApplicationName(), null);
         writer.writeNotNullOrDef("dicomDescription", webappInfo.getDescription(), null);
         writer.writeNotNullOrDef("dcmWebServicePath", webappInfo.getServicePath(), null);
+        writer.writeNotNullOrDef("dcmKeycloakClientID", webappInfo.getKeycloakClientID(), null);
         writer.writeNotEmpty("dcmWebServiceClass", webappInfo.getServiceClasses());
         writer.writeNotNullOrDef("dicomAETitle", webappInfo.getAETitle(), null);
         writer.writeNotEmpty("dicomApplicationCluster", webappInfo.getApplicationClusters());
@@ -198,6 +199,7 @@ public class JsonConfiguration {
             writer.writeNotNullOrDef("dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty(), null);
             writer.writeNotNullOrDef("dcmTimeZoneOfDevice", device.getTimeZoneOfDevice(), null);
             writeWebApplicationsTo(device, writer);
+            writeKeycloackClientsTo(device, writer);
             for (JsonConfigurationExtension ext : extensions)
                 ext.storeTo(device, writer);
             gen.writeEnd();
@@ -339,6 +341,9 @@ public class JsonConfiguration {
                                 break;
                             case "dcmWebApp":
                                 loadWebApplications(device, reader);
+                                break;
+                            case "dcmKeycloakClient":
+                                loadKeycloakClients(device, reader);
                                 break;
                             default:
                                 if (!loadDeviceExtension(device, reader, config))
@@ -847,6 +852,7 @@ public class JsonConfiguration {
         writer.writeNotNullOrDef("dcmWebAppName", webapp.getApplicationName(), null);
         writer.writeNotNullOrDef("dicomDescription", webapp.getDescription(), null);
         writer.writeNotNullOrDef("dcmWebServicePath", webapp.getServicePath(), null);
+        writer.writeNotNullOrDef("dcmKeycloakClientID", webapp.getKeycloakClientID(), null);
         writer.writeNotEmpty("dcmWebServiceClass", webapp.getServiceClasses());
         writer.writeNotNullOrDef("dicomAETitle", webapp.getAETitle(), null);
         writer.writeNotEmpty("dicomApplicationCluster", webapp.getApplicationClusters());
@@ -879,6 +885,9 @@ public class JsonConfiguration {
                 case "dcmWebServicePath":
                     webapp.setServicePath(reader.stringValue());
                     break;
+                case "dcmKeycloakClientID":
+                    webapp.setKeycloakClientID(reader.stringValue());
+                    break;
                 case "dcmWebServiceClass":
                     webapp.setServiceClasses(reader.enumArray(WebApplication.ServiceClass.class));
                     break;
@@ -902,6 +911,78 @@ public class JsonConfiguration {
         reader.expect(JsonParser.Event.END_OBJECT);
         if (webapp.getApplicationName() == null)
             throw new JsonParsingException("Missing property: dcmWebAppName", reader.getLocation());
+    }
+
+    private void writeKeycloackClientsTo(Device device, JsonWriter writer) {
+        Collection<KeycloakClient> clients = device.getKeycloakClients();
+        if (clients.isEmpty())
+            return;
+
+        writer.writeStartArray("dcmKeycloakClient");
+        for (KeycloakClient client : clients) {
+            writer.writeStartObject();
+            writer.writeNotNullOrDef("dcmKeycloakClientID", client.getKeycloakClientID(), null);
+            writer.writeNotNullOrDef("dcmURI", client.getKeycloakServerURL(), null);
+            writer.writeNotNullOrDef("dcmKeycloakRealm", client.getKeycloakRealm(), null);
+            writer.writeNotNullOrDef("dcmKeycloakGrantType", client.getKeycloakGrantType(), null);
+            writer.writeNotNullOrDef("dcmKeycloakClientSecret", client.getKeycloakClientSecret(), null);
+            writer.writeNotDef("dcmTLSAllowAnyHostname", client.isTLSAllowAnyHostname(), false);
+            writer.writeNotDef("dcmTLSDisableTrustManager", client.isTLSDisableTrustManager(), false);
+            writer.writeNotNullOrDef("uid", client.getUserID(), null);
+            writer.writeNotNullOrDef("userPassword", client.getPassword(), null);
+            writer.writeEnd();
+        }
+        writer.writeEnd();
+    }
+
+    private void loadKeycloakClients(Device device, JsonReader reader) {
+        reader.next();
+        reader.expect(JsonParser.Event.START_ARRAY);
+        while (reader.next() == JsonParser.Event.START_OBJECT) {
+            KeycloakClient client = new KeycloakClient();
+            loadFrom(client, reader);
+            device.addKeycloakClient(client);
+        }
+        reader.expect(JsonParser.Event.END_ARRAY);
+    }
+
+    private void loadFrom(KeycloakClient client, JsonReader reader) {
+        while (reader.next() == JsonParser.Event.KEY_NAME) {
+            switch (reader.getString()) {
+                case "dcmKeycloakClientID":
+                    client.setKeycloakClientID(reader.stringValue());
+                    break;
+                case "dcmURI":
+                    client.setKeycloakServerURL(reader.stringValue());
+                    break;
+                case "dcmKeycloakRealm":
+                    client.setKeycloakRealm(reader.stringValue());
+                    break;
+                case "dcmKeycloakGrantType":
+                    client.setKeycloakGrantType(KeycloakClient.GrantType.valueOf(reader.stringValue()));
+                    break;
+                case "dcmKeycloakClientSecret":
+                    client.setKeycloakClientSecret(reader.stringValue());
+                    break;
+                case "dcmTLSAllowAnyHostname":
+                    client.setTLSAllowAnyHostname(reader.booleanValue());
+                    break;
+                case "dcmTLSDisableTrustManager":
+                    client.setTLSDisableTrustManager(reader.booleanValue());
+                    break;
+                case "uid":
+                    client.setUserID(reader.stringValue());
+                    break;
+                case "userPassword":
+                    client.setPassword(reader.stringValue());
+                    break;
+                default:
+                    reader.skipUnknownProperty();
+            }
+        }
+        reader.expect(JsonParser.Event.END_OBJECT);
+        if (client.getKeycloakClientID() == null)
+            throw new JsonParsingException("Missing property: dcmKeycloakClientID", reader.getLocation());
     }
 
     public void writeBulkdataDescriptors(Map<String, BasicBulkDataDescriptor> descriptors, JsonWriter writer) {

@@ -83,9 +83,19 @@
       "description": "Web Applications provided by the Device",
       "type": "array",
       "titleKey":"{dcmWebAppName}",
-      "order":27,
+      "order":26,
       "items": {
         "$ref": "webApplication.schema.json"
+      }
+    },
+    "dcmKeycloakClient": {
+      "title": "Keycloak Clients",
+      "description": "Keycloak Clients provided by the Device",
+      "type": "array",
+      "titleKey":"{dcmKeycloakClientID}",
+      "order":27,
+      "items": {
+        "$ref": "keycloakClient.schema.json"
       }
     },
     "hl7Application": {

@@ -116,6 +116,7 @@ public class Device implements Serializable {
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
     private final LinkedHashMap<String, WebApplication> webapps = new LinkedHashMap<>();
+    private final LinkedHashMap<String, KeycloakClient> keycloakClients = new LinkedHashMap<>();
     private final Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
             new HashMap<Class<? extends DeviceExtension>,DeviceExtension>();
 
@@ -249,7 +250,7 @@ public class Device implements Serializable {
      * This should be the same as the values of Software Versions (0018,1020) in
      * SOP instances created by this device.
      * 
-     * @param softwareVersion
+     * @param softwareVersions
      *                A String array containing the software versions.
      */
     public final void setSoftwareVersions(String... softwareVersions) {
@@ -369,7 +370,7 @@ public class Device implements Serializable {
      * Should be the same as the value of Institution Address (0008,0081)
      * attribute in SOP Instances created by this device.
      * 
-     * @param addr
+     * @param addresses
      *                A String array containing the institution address values.
      */
     public void setInstitutionAddresses(String... addresses) {
@@ -391,7 +392,7 @@ public class Device implements Serializable {
      * Should be the same as the value of Institutional Department Name
      * (0008,1040) in SOP Instances created by this device.
      * 
-     * @param name
+     * @param names
      *                A String array containing the dept. name values.
      */
     public void setInstitutionalDepartmentNames(String... names) {
@@ -855,6 +856,34 @@ public class Device implements Serializable {
         return webapp;
     }
 
+    public Collection<String> getKeycloakClientIDs() {
+        return keycloakClients.keySet();
+    }
+
+    public Collection<KeycloakClient> getKeycloakClients() {
+        return keycloakClients.values();
+    }
+
+    public KeycloakClient getKeycloakClient(String clientID) {
+        return keycloakClients.get(clientID);
+    }
+
+    public void addKeycloakClient(KeycloakClient client) {
+        client.setDevice(this);
+        keycloakClients.put(client.getKeycloakClientID(), client);
+    }
+
+    public KeycloakClient removeKeycloakClient(KeycloakClient client) {
+        return removeKeycloakClient(client.getKeycloakClientID());
+    }
+
+    public KeycloakClient removeKeycloakClient(String name) {
+        KeycloakClient client = keycloakClients.remove(name);
+        if (client != null)
+            client.setDevice(null);
+        return client;
+    }
+
     public void addDeviceExtension(DeviceExtension ext) {
         Class<? extends DeviceExtension> clazz = ext.getClass();
         if (extensions.containsKey(clazz))
@@ -1206,6 +1235,7 @@ public class Device implements Serializable {
         reconfigureConnections(from);
         reconfigureApplicationEntities(from);
         reconfigureWebApplications(from);
+        reconfigureKeycloakClients(from);
         reconfigureDeviceExtensions(from);
     }
 
@@ -1306,6 +1336,16 @@ public class Device implements Serializable {
             if (webapp == null)
                 addWebApplication(webapp = new WebApplication(src.getApplicationName()));
             webapp.reconfigure(src);
+        }
+    }
+
+    private void reconfigureKeycloakClients(Device from) {
+        keycloakClients.keySet().retainAll(from.keycloakClients.keySet());
+        for (KeycloakClient src : from.keycloakClients.values()) {
+            KeycloakClient client = keycloakClients.get(src.getKeycloakClientID());
+            if (client == null)
+                addKeycloakClient(client = new KeycloakClient(src.getKeycloakClientID()));
+            client.reconfigure(src);
         }
     }
 

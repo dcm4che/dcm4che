@@ -385,6 +385,42 @@ attributetype ( 1.2.40.0.13.1.15.0.3.74 NAME 'dcmBulkDataVRLengthThreshold'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 
+attributetype ( 1.2.40.0.13.1.15.0.3.75 NAME 'dcmKeycloakRealm'
+  DESC 'Name of the realm in token requests to Keycloak.'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.76 NAME 'dcmKeycloakClientID'
+  DESC 'Client ID used in token requests to Keycloak.'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.77 NAME 'dcmKeycloakGrantType'
+  DESC 'OAuth 2.0 grant type used in token requests to Keycloak. Enumerated values: "client_credentials", "password". "client_credentials" if absent.'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.78 NAME 'dcmKeycloakClientSecret'
+  DESC 'Client ID used in token requests to Keycloak.'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.79 NAME 'dcmTLSAllowAnyHostname'
+  DESC 'If the other server requires HTTPS and this config option is set to true the other server’s certificate is validated via the truststore, but host name validation is not done. Default is false.'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.80 NAME 'dcmTLSDisableTrustManager'
+  DESC 'If the other server requires HTTPS and this config option is set to true you do not have to specify a truststore. Default is false.'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+
 attributetype ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -707,6 +743,7 @@ objectclass ( 1.2.40.0.13.1.15.0.4.10 NAME 'dcmWebApp'
     dicomDescription $
     dicomAETitle $
     dicomApplicationCluster $
+    dcmKeycloakClientID $
     dicomInstalled ) )
 
 objectclass ( 1.2.40.0.13.1.15.0.4.11 NAME 'dcmBulkDataDescriptor'
@@ -718,6 +755,21 @@ objectclass ( 1.2.40.0.13.1.15.0.4.11 NAME 'dcmBulkDataDescriptor'
     dcmBulkDataExcludeDefaults $
     dcmAttributeSelector $
     dcmBulkDataVRLengthThreshold ) )
+
+objectclass ( 1.2.40.0.13.1.15.0.4.12 NAME 'dcmKeycloakClient'
+  DESC 'Specifies Keycloak Client for token request'
+  SUP top STRUCTURAL
+  MUST (
+    dcmKeycloakClientID $
+    dcmKeycloakRealm $
+    dcmURI )
+  MAY (
+    dcmKeycloakGrantType $
+    dcmKeycloakClientSecret $
+    dcmTLSAllowAnyHostname $
+    dcmTLSDisableTrustManager $
+    uid $
+    userPassword ) )
 
 objectclass ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'

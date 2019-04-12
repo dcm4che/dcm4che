@@ -293,6 +293,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             .getApplicationEntity(aet);
     }
 
+    @Override
+    public synchronized WebApplication findWebApplication(String name) throws ConfigurationException {
+        return findDevice("(&(objectclass=dcmWebApp)(dcmWebAppName=" + name + "))", name)
+            .getWebApplication(name);
+    }
+
     public synchronized Device findDevice(String filter, String childName)
             throws ConfigurationException {
         if (!configurationExists())

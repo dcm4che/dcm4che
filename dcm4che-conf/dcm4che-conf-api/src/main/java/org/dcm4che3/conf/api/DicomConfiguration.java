@@ -68,6 +68,8 @@ public interface DicomConfiguration extends Closeable {
 
     ApplicationEntity findApplicationEntity(String aet) throws ConfigurationException;
 
+    WebApplication findWebApplication(String name) throws ConfigurationException;
+
     Device findDevice(String name) throws ConfigurationException;
 
     /**

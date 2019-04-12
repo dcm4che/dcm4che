@@ -162,6 +162,10 @@ public class WebApplication {
         this.installed = installed;
     }
 
+    public KeycloakClient getKeycloakClient() {
+        return keycloakClientID != null ? device.getKeycloakClient(keycloakClientID) : null;
+    }
+
     public void addConnection(Connection conn) {
         if (conn.getProtocol() != Connection.Protocol.HTTP)
             throw new IllegalArgumentException(

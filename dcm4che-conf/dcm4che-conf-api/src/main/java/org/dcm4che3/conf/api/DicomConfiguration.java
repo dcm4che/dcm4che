@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2011-2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -64,6 +64,8 @@ public interface DicomConfiguration extends Closeable {
 
     boolean registerAETitle(String aet) throws ConfigurationException;
 
+    boolean registerWebAppName(String webAppName) throws ConfigurationException;
+
     void unregisterAETitle(String aet) throws ConfigurationException;
 
     void unregisterWebAppName(String webAppName) throws ConfigurationException;
@@ -101,6 +103,8 @@ public interface DicomConfiguration extends Closeable {
     String[] listDeviceNames() throws ConfigurationException;
 
     String[] listRegisteredAETitles() throws ConfigurationException;
+
+    String[] listRegisteredWebAppNames() throws ConfigurationException;
 
     ConfigurationChanges persist(Device device, EnumSet<Option> options) throws ConfigurationException;
 

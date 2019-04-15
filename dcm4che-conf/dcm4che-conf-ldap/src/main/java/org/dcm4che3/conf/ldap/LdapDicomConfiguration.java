@@ -264,6 +264,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
+    @Override
+    public synchronized boolean registerWebAppName(String webAppName) throws ConfigurationException {
+        ensureConfigurationExists();
+        try {
+            registerWebApp(webAppName);
+            return true;
+        } catch (WebAppAlreadyExistsException e) {
+            return false;
+        }
+    }
+
     private String registerAET(String aet) throws ConfigurationException {
         try {
             String dn = aetDN(aet, aetsRegistryDN);
@@ -524,6 +535,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return StringUtils.EMPTY_STRING;
 
         return list(aetsRegistryDN, "(objectclass=dicomUniqueAETitle)", "dicomAETitle");
+    }
+
+    @Override
+    public synchronized String[] listRegisteredWebAppNames() throws ConfigurationException {
+        if (!configurationExists())
+            return StringUtils.EMPTY_STRING;
+
+        return list(webAppsRegistryDN, "(objectclass=dcmUniqueWebAppName)", "dcmWebAppName");
     }
 
     public synchronized String[] list(String dn, String filter, String attrID)

@@ -306,7 +306,7 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.67 NAME 'dcmWebAppName'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.68 NAME 'dcmWebServiceClass'
-  DESC 'Web Service Class. Enumerated values: WADO_URI, WADO_RS, STOW_RS, QIDO_RS, UPS_RS'
+  DESC 'Web Service Class. Enumerated values: WADO_URI, WADO_RS, STOW_RS, QIDO_RS, UPS_RS, DCM4CHEE_ARC, DCM4CHEE_ARC_AET'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.69 NAME 'dcmWebServicePath'
@@ -671,6 +671,15 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.12 NAME 'dcmKeycloakClient'
     dcmTLSDisableTrustManager $
     uid $
     userPassword ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.13 NAME 'dcmUniqueWebAppNamesRegistryRoot'
+  DESC 'Root of the Unique Web Application Name Registry Hierarchy'
+  SUP top STRUCTURAL
+  MUST ( cn )
+  MAY ( description ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.14 NAME 'dcmUniqueWebAppName'
+  DESC 'A Unique Web Application name'
+  SUP top STRUCTURAL
+  MUST ( dcmWebAppName ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL

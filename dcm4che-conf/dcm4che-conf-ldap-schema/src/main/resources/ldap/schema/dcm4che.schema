@@ -771,6 +771,17 @@ objectclass ( 1.2.40.0.13.1.15.0.4.12 NAME 'dcmKeycloakClient'
     uid $
     userPassword ) )
 
+objectclass ( 1.2.40.0.13.1.15.0.4.13 NAME 'dcmUniqueWebAppNamesRegistryRoot'
+  DESC 'Root of the Unique Web Application Name Registry Hierarchy'
+  SUP top STRUCTURAL
+  MUST ( cn )
+  MAY ( description ) )
+
+objectclass ( 1.2.40.0.13.1.15.0.4.14 NAME 'dcmUniqueWebAppName'
+  DESC 'A Unique Web Application name'
+  SUP top STRUCTURAL
+  MUST ( dcmWebAppName ) )
+
 objectclass ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL

@@ -1554,6 +1554,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private void loadFrom(WebApplication webapp, Attributes attrs) throws NamingException {
         webapp.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
         webapp.setServicePath(LdapUtils.stringValue(attrs.get("dcmWebServicePath"), null));
+        webapp.setKeycloakClientID(LdapUtils.stringValue(attrs.get("dcmKeycloakClientID"), null));
         webapp.setServiceClasses(LdapUtils.enumArray(WebApplication.ServiceClass.class, attrs.get("dcmWebServiceClass")));
         webapp.setAETitle(LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
         webapp.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));

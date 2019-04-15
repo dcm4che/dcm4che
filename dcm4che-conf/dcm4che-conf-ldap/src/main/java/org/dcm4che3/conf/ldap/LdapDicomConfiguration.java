@@ -75,6 +75,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(LdapDicomConfiguration.class);
 
     private static final String CN_UNIQUE_AE_TITLES_REGISTRY = "cn=Unique AE Titles Registry,";
+    private static final String CN_UNIQUE_WEB_APP_NAMES_REGISTRY = "cn=Unique Web Application Names Registry,";
     private static final String CN_DEVICES = "cn=Devices,";
     private static final String DICOM_CONFIGURATION = "DICOM Configuration";
     private static final String DICOM_CONFIGURATION_ROOT = "dicomConfigurationRoot";
@@ -87,7 +88,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private String configurationDN;
     private String devicesDN;
     private String aetsRegistryDN;
-    private String configurationCN = DICOM_CONFIGURATION; 
+    private String webAppsRegistryDN;
+    private String configurationCN = DICOM_CONFIGURATION;
     private String configurationRoot = DICOM_CONFIGURATION_ROOT;
     private String pkiUser = PKI_USER;
     private String userCertificate = USER_CERTIFICATE_BINARY;
@@ -271,7 +273,19 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             throw new AETitleAlreadyExistsException("AE Title '" + aet + "' already exists");
         } catch (NamingException e) {
             throw new ConfigurationException(e);
-       }
+        }
+    }
+
+    private String registerWebApp(String webAppName) throws ConfigurationException {
+        try {
+            String dn = webAppDN(webAppName, webAppsRegistryDN);
+            createSubcontext(dn, LdapUtils.attrs("dcmUniqueWebAppName", "dcmWebAppName", webAppName));
+            return dn;
+        } catch (NameAlreadyBoundException e) {
+            throw new WebAppAlreadyExistsException("Web Application '" + webAppName + "' already exists");
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
     }
 
     @Override
@@ -279,6 +293,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (configurationExists())
             try {
                 ctx.destroySubcontext(aetDN(aet, aetsRegistryDN));
+            } catch (NameNotFoundException e) {
+            } catch (NamingException e) {
+                throw new ConfigurationException(e);
+            }
+    }
+
+    @Override
+    public synchronized void unregisterWebAppName(String webAppName) throws ConfigurationException {
+        if (configurationExists())
+            try {
+                ctx.destroySubcontext(webAppDN(webAppName, webAppsRegistryDN));
             } catch (NameNotFoundException e) {
             } catch (NamingException e) {
                 throw new ConfigurationException(e);
@@ -583,10 +608,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private void register(Device device, List<String> dns) throws ConfigurationException {
-        for (String aet : device.getApplicationAETitles()) {
+        for (String aet : device.getApplicationAETitles())
             if (!aet.equals("*"))
                 dns.add(registerAET(aet));
-        }
+        for (String webAppName : device.getWebApplicationNames())
+            if (!webAppName.equals("*"))
+                dns.add(registerWebApp(webAppName));
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.register(device, dns);
     }
@@ -713,19 +740,23 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private void registerDiff(Device prev, Device device, List<String> dns) throws ConfigurationException {
-        for (String aet : device.getApplicationAETitles()) {
+        for (String aet : device.getApplicationAETitles())
             if (!aet.equals("*") && prev.getApplicationEntity(aet) == null)
                 dns.add(registerAET(aet));
-        }
+        for (String webAppName : device.getWebApplicationNames())
+            if (!webAppName.equals("*") && prev.getWebApplication(webAppName) == null)
+                dns.add(registerWebApp(webAppName));
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.registerDiff(prev, device, dns);
     }
 
     private void markForUnregister(Device prev, Device device, List<String> dns) {
-        for (String aet : prev.getApplicationAETitles()) {
+        for (String aet : prev.getApplicationAETitles())
             if (!aet.equals("*") && device.getApplicationEntity(aet) == null)
                 dns.add(aetDN(aet, aetsRegistryDN));
-        }
+        for (String webAppName : prev.getWebApplicationNames())
+            if (!webAppName.equals("*") && device.getWebApplication(webAppName) == null)
+                dns.add(webAppDN(webAppName, webAppsRegistryDN));
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.markForUnregister(prev, device, dns);
     }
@@ -778,6 +809,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 String rdn = ne.next().getName();
                 if (!rdn.equals("dicomAETitle=*"))
                     dns.add(rdn + ',' + aetsRegistryDN);
+                if (!rdn.equals("dcmWebAppName=*"))
+                    dns.add(rdn + ',' + webAppsRegistryDN);
             }
         } finally {
             LdapUtils.safeClose(ne);
@@ -825,6 +858,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         this.configurationDN = configurationDN;
         this.devicesDN = CN_DEVICES + configurationDN;
         this.aetsRegistryDN = CN_UNIQUE_AE_TITLES_REGISTRY + configurationDN;
+        this.webAppsRegistryDN = CN_UNIQUE_WEB_APP_NAMES_REGISTRY + configurationDN;
     }
 
     public String getConfigurationDN() {
@@ -835,6 +869,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         this.configurationDN = null;
         this.devicesDN = null;
         this.aetsRegistryDN = null;
+        this.webAppsRegistryDN = null;
     }
 
     public void ensureConfigurationExists() throws ConfigurationException {
@@ -852,6 +887,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             createSubcontext(aetsRegistryDN,
                     LdapUtils.attrs("dicomUniqueAETitlesRegistryRoot", 
                             "cn", "Unique AE Titles Registry"));
+            createSubcontext(webAppsRegistryDN,
+                    LdapUtils.attrs("dcmUniqueWebAppNamesRegistryRoot",
+                            "cn", "Unique Web Application Names Registry"));
             LOG.info("Create DICOM Configuration at {}", configurationDN);
         } catch (NamingException e) {
             clearConfigurationDN();
@@ -2241,15 +2279,15 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private static String aetDN(String aet, String parentDN) {
-        return LdapUtils.dnOf("dicomAETitle" ,aet, parentDN);
+        return LdapUtils.dnOf("dicomAETitle" , aet, parentDN);
     }
 
-    private static String webAppDN(String aet, String parentDN) {
-        return LdapUtils.dnOf("dcmWebAppName" ,aet, parentDN);
+    private static String webAppDN(String webAppName, String parentDN) {
+        return LdapUtils.dnOf("dcmWebAppName" , webAppName, parentDN);
     }
 
-    private static String keycloakClientDN(String aet, String parentDN) {
-        return LdapUtils.dnOf("dcmKeycloakClientID" ,aet, parentDN);
+    private static String keycloakClientDN(String keycloakClientID, String parentDN) {
+        return LdapUtils.dnOf("dcmKeycloakClientID" , keycloakClientID, parentDN);
     }
 
     @Override

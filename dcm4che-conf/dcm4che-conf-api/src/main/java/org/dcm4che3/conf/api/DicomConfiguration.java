@@ -66,6 +66,8 @@ public interface DicomConfiguration extends Closeable {
 
     void unregisterAETitle(String aet) throws ConfigurationException;
 
+    void unregisterWebAppName(String webAppName) throws ConfigurationException;
+
     ApplicationEntity findApplicationEntity(String aet) throws ConfigurationException;
 
     WebApplication findWebApplication(String name) throws ConfigurationException;

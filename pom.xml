@@ -64,7 +64,7 @@
     <maven.compiler.target>1.7</maven.compiler.target>
     <weasis.version>3.0.4</weasis.version>
     <weasis.opencv.native.version>4.0.0-dcmR3</weasis.opencv.native.version>
-    <keycloak.version>5.0.0</keycloak.version>
+    <keycloak.version>6.0.0</keycloak.version>
     <jaxws-tools-maven-plugin.version>1.2.1.Final</jaxws-tools-maven-plugin.version>
     <jbossws-cxf-client.version>5.2.4.Final</jbossws-cxf-client.version>
     <apache-cxf.version>3.2.7</apache-cxf.version>

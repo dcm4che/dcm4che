@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2015-2018
+ * Portions created by the Initial Developer are Copyright (C) 2015-2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -68,6 +68,11 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(Event event) {
+        if (keycloakSession.getContext().getClient() == null) {
+            LOG.warn("Invalid Client configured in Keycloak!");
+            return;
+        }
+
         if (includedEvents != null && includedEvents.contains(event.getType())) {
             try {
                 Collection<AuditLogger> loggers = new AuditLoggerFactory().getAuditLoggers();

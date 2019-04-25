@@ -248,7 +248,12 @@ public class NativeImageReader extends ImageReader implements Closeable {
 
     @Override
     public BufferedImage read(int imageIndex, ImageReadParam param) throws IOException {
-        return ImageConversion.toBufferedImage(getNativeImage(param));
+        PlanarImage img = getNativeImage(param);
+        BufferedImage bufferedImage = ImageConversion.toBufferedImage(img);
+        if (img != null) {
+            img.release();
+        }
+        return bufferedImage;
     }
 
     private PlanarImage getNativeImage(ImageReadParam param) throws IOException {
@@ -266,18 +271,35 @@ public class NativeImageReader extends ImageReader implements Closeable {
         }
 
         if (seg instanceof FileStreamSegment) {
-            MatOfDouble positions =
-                new MatOfDouble(ExtendSegmentedInputImageStream.getDoubleArray(seg.getSegPosition()));
-            MatOfDouble lengths = new MatOfDouble(ExtendSegmentedInputImageStream.getDoubleArray(seg.getSegLength()));
+            MatOfDouble positions = null;
+            MatOfDouble lengths = null;
+            try {
+            positions = new MatOfDouble(ExtendSegmentedInputImageStream.getDoubleArray(seg.getSegPosition()));
+            lengths = new MatOfDouble(ExtendSegmentedInputImageStream.getDoubleArray(seg.getSegLength()));
             return ImageCV.toImageCV(Imgcodecs.dicomJpgFileRead(((FileStreamSegment) seg).getFilePath(), positions,
                 lengths, dcmFlags, Imgcodecs.IMREAD_UNCHANGED));
+            } finally {
+                closeMat(positions);
+                closeMat(lengths);
+            }
         } else if (seg instanceof MemoryStreamSegment) {
-            ByteBuffer b = ((MemoryStreamSegment) seg).getCache();
-            Mat buf = new Mat(1, b.limit(), CvType.CV_8UC1);
-            buf.put(0, 0, b.array());
-            return ImageCV.toImageCV(Imgcodecs.dicomJpgMatRead(buf, dcmFlags, Imgcodecs.IMREAD_UNCHANGED));
+            Mat buf = null;
+            try {
+                ByteBuffer b = ((MemoryStreamSegment) seg).getCache();
+                buf = new Mat(1, b.limit(), CvType.CV_8UC1);
+                buf.put(0, 0, b.array());
+                return ImageCV.toImageCV(Imgcodecs.dicomJpgMatRead(buf, dcmFlags, Imgcodecs.IMREAD_UNCHANGED));
+            } finally {
+                closeMat(buf);
+            }
         }
         return null;
+    }
+    
+    public static void closeMat(Mat mat) {
+        if (mat != null) {
+            mat.release();
+        }
     }
 
     public static SOFSegment getSOFSegment(ImageInputStream iis) throws IOException {
@@ -384,5 +406,4 @@ public class NativeImageReader extends ImageReader implements Closeable {
         }
         return (ch1 << 8) + ch2;
     }
-
 }

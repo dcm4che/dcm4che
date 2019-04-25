@@ -112,40 +112,47 @@ class NativeJPEGImageWriter extends ImageWriter {
         int epi = getCodecColorSpace(pi);
 
         RenderedImage renderedImage = image.getRenderedImage();
-
+        Mat buf = null;
+        MatOfInt dicomParams = null;
         try {
-            // Band interleaved mode (PlanarConfiguration = 1) is converted to pixel interleaved
-            // So the input image has always a pixel interleaved mode mode((PlanarConfiguration = 0)
-            ImageCV mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
+            ImageCV mat = null;
+            try {
+                // Band interleaved mode (PlanarConfiguration = 1) is converted to pixel interleaved
+                // So the input image has always a pixel interleaved mode mode((PlanarConfiguration = 0)
+                mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
 
-            int cvType = mat.type();
-            int elemSize = (int) mat.elemSize1();
-            int channels = CvType.channels(cvType);
-            int dcmFlags =
-                CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
+                int cvType = mat.type();
+                int elemSize = (int) mat.elemSize1();
+                int channels = CvType.channels(cvType);
+                int dcmFlags = CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED
+                    : Imgcodecs.DICOM_IMREAD_UNSIGNED;
 
-            int[] params = new int[15];
-            params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
-            params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags
-            params[Imgcodecs.DICOM_PARAM_WIDTH] = mat.width(); // Image width
-            params[Imgcodecs.DICOM_PARAM_HEIGHT] = mat.height(); // Image height
-            params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_JPG; // Type of compression
-            params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
-            params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsStored(); // Bits per sample
-            params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
-            params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
-            params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = 0; // Allowed lossy error for jpeg-ls
-            params[Imgcodecs.DICOM_PARAM_COLOR_MODEL] = epi; // Photometric interpretation
-            params[Imgcodecs.DICOM_PARAM_JPEG_MODE] = jpegParams.getMode(); // JPEG Codec mode
-            params[Imgcodecs.DICOM_PARAM_JPEG_QUALITY] = (int) (jpegParams.getCompressionQuality() * 100); // JPEG lossy quality
-            params[Imgcodecs.DICOM_PARAM_JPEG_PREDICTION] = jpegParams.getPrediction(); // JPEG lossless prediction
-            params[Imgcodecs.DICOM_PARAM_JPEG_PT_TRANSFORM] = jpegParams.getPointTransform(); // JPEG lossless
-                                                                                              // transformation point
+                int[] params = new int[15];
+                params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
+                params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags
+                params[Imgcodecs.DICOM_PARAM_WIDTH] = mat.width(); // Image width
+                params[Imgcodecs.DICOM_PARAM_HEIGHT] = mat.height(); // Image height
+                params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_JPG; // Type of compression
+                params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
+                params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsStored(); // Bits per sample
+                params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
+                params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
+                params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = 0; // Allowed lossy error for jpeg-ls
+                params[Imgcodecs.DICOM_PARAM_COLOR_MODEL] = epi; // Photometric interpretation
+                params[Imgcodecs.DICOM_PARAM_JPEG_MODE] = jpegParams.getMode(); // JPEG Codec mode
+                params[Imgcodecs.DICOM_PARAM_JPEG_QUALITY] = (int) (jpegParams.getCompressionQuality() * 100); // JPEG lossy quality
+                params[Imgcodecs.DICOM_PARAM_JPEG_PREDICTION] = jpegParams.getPrediction(); // JPEG lossless prediction
+                params[Imgcodecs.DICOM_PARAM_JPEG_PT_TRANSFORM] = jpegParams.getPointTransform(); // JPEG lossless transformation point
 
-            MatOfInt dicomParams = new MatOfInt(params);
-            Mat buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");
-            if (buf.empty()) {
-                throw new IIOException("Native JPEG encoding error: null image");
+                dicomParams = new MatOfInt(params);
+                buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");
+                if (buf.empty()) {
+                    throw new IIOException("Native JPEG encoding error: null image");
+                }
+            } finally {
+                if (mat != null) {
+                    mat.release();
+                }
             }
 
             byte[] bSrcData = new byte[buf.width() * buf.height() * (int) buf.elemSize()];
@@ -153,6 +160,9 @@ class NativeJPEGImageWriter extends ImageWriter {
             stream.write(bSrcData);
         } catch (Throwable t) {
             throw new IIOException("Native JPEG encoding error", t);
+        } finally {
+            NativeImageReader.closeMat(dicomParams);
+            NativeImageReader.closeMat(buf);
         }
     }
 

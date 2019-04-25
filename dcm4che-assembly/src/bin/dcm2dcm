@@ -57,12 +57,12 @@ CP="$CP:$DCM4CHE_HOME/lib/commons-cli-${commons-cli.version}.jar"
 # Setup the native library path
 if [ "x$JAVA_LIBRARY_PATH" = "x" ]; then
     if [ "x$PLATFORM" = "x" ]; then
-    	"$JAVA" -d64 -version > /dev/null 2>&1
-    	if [ $? -eq 0 ]; then
-    		PLATFORM=linux-x86_64
-		else
-    		PLATFORM=linux-i686
-		fi
+        "$JAVA" -version 2>&1 | grep -q 64-Bit
+        if [ $? -eq 0 ]; then
+            PLATFORM=linux-x86_64
+        else
+            PLATFORM=linux-i686
+        fi
     fi
     JAVA_LIBRARY_PATH=$DCM4CHE_HOME/lib/${PLATFORM}
 fi

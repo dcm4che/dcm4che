@@ -69,7 +69,7 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
     @Override
     public void onEvent(Event event) {
         if (keycloakSession.getContext().getClient() == null) {
-            LOG.warn("Invalid Client configured in Keycloak!");
+            LOG.warn("Client not found.");
             return;
         }
 

@@ -50,5 +50,19 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.17.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-${commons-cli.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jakarta.activation-${jakarta.activation.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jakarta.xml.bind-api-${jakarta.xml.bind.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jaxb-runtime-${jakarta.xml.bind.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jakarta.xml.ws-api-${jakarta.xml.ws.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\rt-${jakarta.xml.ws.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jakarta.xml.soap-api-${jakarta.xml.soap-api.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jakarta.jws-api-${jakarta.jws-api.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\istack-commons-runtime-${com.sun.istack.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\saaj-impl-${com.sun.xml.messaging.saaj.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\streambuffer-${com.sun.xml.stream.buffer.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\policy-${com.sun.xml.ws.policy.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\gmbal-${org.glassfish.gmbal.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\mimepull-${org.jvnet.mimepull.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\stax-ex-${org.jvnet.staxex.version}.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

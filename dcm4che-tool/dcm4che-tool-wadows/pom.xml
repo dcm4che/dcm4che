@@ -39,8 +39,8 @@
             <artifactId>jakarta.activation-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.xml.ws</groupId>
-            <artifactId>jakarta.xml.ws-api</artifactId>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>rt</artifactId>
         </dependency>
     </dependencies>
 

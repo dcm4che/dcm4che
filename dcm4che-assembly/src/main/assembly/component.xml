@@ -177,6 +177,7 @@
         <include>log4j:log4j</include>
         <include>commons-cli:commons-cli</include>
         <include>org.glassfish:javax.json</include>
+        <include>com.sun.activation:jakarta.activation</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>

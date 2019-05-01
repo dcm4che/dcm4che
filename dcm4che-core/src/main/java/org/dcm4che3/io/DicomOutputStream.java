@@ -125,17 +125,17 @@ public class DicomOutputStream extends FilterOutputStream {
         if (!explicitVR || bigEndian)
             throw new IllegalStateException("explicitVR=" + explicitVR
                     + ", bigEndian=" + bigEndian);
-        String tsuid = fmi.getString(Tag.TransferSyntaxUID, null);
         write(preamble);
         write(DICM);
         fmi.writeGroupTo(this, Tag.FileMetaInformationGroupLength);
-        switchTransferSyntax(tsuid);
     }
 
     public void writeDataset(Attributes fmi, Attributes dataset)
             throws IOException {
-        if (fmi != null)
+        if (fmi != null) {
             writeFileMetaInformation(fmi);
+            switchTransferSyntax(fmi.getString(Tag.TransferSyntaxUID, null));
+        }
         if (dataset.bigEndian() != bigEndian
                 || encOpts.groupLength
                 || !encOpts.undefSequenceLength

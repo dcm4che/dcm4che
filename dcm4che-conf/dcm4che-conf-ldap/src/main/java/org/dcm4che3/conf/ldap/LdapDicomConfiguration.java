@@ -2042,6 +2042,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiffObject(ldapObj, mods, "dicomAETitle",
                 a.getAETitle(),
                 b.getAETitle(), null);
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmKeycloakClientID",
+                a.getKeycloakClientID(),
+                b.getKeycloakClientID(), null);
         LdapUtils.storeDiff(ldapObj, mods, "dicomApplicationCluster",
                 a.getApplicationClusters(),
                 b.getApplicationClusters());

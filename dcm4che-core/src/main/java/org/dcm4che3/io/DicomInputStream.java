@@ -315,12 +315,6 @@ public class DicomInputStream extends FilterInputStream
         return length;
     }
 
-    public final long lengthLong(){
-        if( length==-1 ) return -1;
-
-        return length & 0xFFFFFFFFL;
-    }
-    
     public final long getPosition() {
         return pos;
     }
@@ -746,17 +740,10 @@ public class DicomInputStream extends FilterInputStream
 
         String privateCreator = attrs.getPrivateCreator(fragsTag);
         Fragments frags = new Fragments(privateCreator, fragsTag, vr, attrs.bigEndian(), 10);
-        int partSize = 0x7FFFFFF0; // 2GB - 16
         for (int i = 0; true; ++i) {
             readHeader();
             if (tag == Tag.Item) {
-                long lengthLong = lengthLong();
-                //break pixel data in to 2GB - 16 chunk fragments
-                while( lengthLong > 0 ) {
-                    length = lengthLong > partSize ? partSize : (int)lengthLong;
-                    lengthLong = lengthLong-length;
-                    handler.readValue(this, frags);
-                }
+                handler.readValue(this, frags);
             } else if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
                     skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);

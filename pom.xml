@@ -45,9 +45,26 @@
   <name>dcm4che DICOM toolkit and utilities</name>
   <version>5.17.0</version>
   <description>dcm4che DICOM toolkit and utilities</description>
+  <licenses>
+    <license>
+      <name>Mozilla Public License Version 1.1 or later</name>
+      <url>https://www.mozilla.org/en-US/MPL/1.1/</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>GNU General Public License v2 or later</name>
+      <url>https://www.gnu.org/licenses/old-licenses/gpl-2.0.html</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>GNU Lesser General Public License v2.1 or later</name>
+      <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <issueManagement>
-    <system>JIRA</system>
-    <url>http://dcm4che.org/jira</url>
+    <system>GitHub</system>
+    <url>https://github.com/dcm4che/dcm4che/issues</url>
   </issueManagement>
   <scm>
     <connection>scm:git:git://github.com/dcm4che.git</connection>

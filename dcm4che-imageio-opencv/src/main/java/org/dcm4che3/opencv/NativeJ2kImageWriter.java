@@ -56,11 +56,11 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.osgi.OpenCVNativeLoader;
 import org.weasis.opencv.data.ImageCV;
 import org.weasis.opencv.op.ImageConversion;
 
@@ -70,7 +70,9 @@ import org.weasis.opencv.op.ImageConversion;
  */
 class NativeJ2kImageWriter extends ImageWriter {
     static {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        // Load the native OpenCV library
+        OpenCVNativeLoader loader = new OpenCVNativeLoader();
+        loader.init();
     }
 
     NativeJ2kImageWriter(ImageWriterSpi originatingProvider) throws IOException {

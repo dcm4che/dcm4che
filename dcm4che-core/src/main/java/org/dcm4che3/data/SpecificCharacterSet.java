@@ -424,29 +424,39 @@ public class SpecificCharacterSet {
             int cur = 0;
             StringBuilder sb = new StringBuilder(b.length);
             while (cur < b.length) {
-                if (b[cur] == 0x1b) { // ESC
+                if ( b[ cur ] == 0x1b && cur + 2 < b.length ) { // ESC
                     if (off < cur) {
                         sb.append(codec[g].decode(b, off, cur - off));
                     }
                     cur += 3;
                     switch (((b[cur - 2] & 255) << 8) + (b[cur - 1] & 255)) {
                         case 0x2428:
-                            if (b[cur++] == 0x44) {
-                                codec[0] = Codec.JIS_X_212;
-                            } else { // decode invalid ESC sequence as chars
-                                sb.append(codec[0].decode(b, cur - 4, 4));
+                            if (cur < b.length ) {
+                                if (b[cur++] == 0x44) {
+                                    codec[0] = Codec.JIS_X_212;
+                                } else { // decode invalid ESC sequence as chars
+                                    sb.append(codec[0].decode(b, cur - 4, 4));
+                                }
+                            }
+                            else { // decode invalid ESC sequence as chars
+                                sb.append(codec[0].decode(b, cur - 3, 3));
                             }
                             break;
                         case 0x2429:
-                            switch (b[cur++]) {
-                                case 0x41:
-                                    switchCodec(codec, 1, Codec.GB2312);
-                                    break;
-                                case 0x43:
-                                    switchCodec(codec, 1, Codec.KS_X_1001);
-                                    break;
-                                default: // decode invalid ESC sequence as chars
-                                    sb.append(codec[0].decode(b, cur - 4, 4));
+                            if (cur < b.length ) {
+                                switch (b[cur++]) {
+                                    case 0x41:
+                                        switchCodec(codec, 1, Codec.GB2312);
+                                        break;
+                                    case 0x43:
+                                        switchCodec(codec, 1, Codec.KS_X_1001);
+                                        break;
+                                    default: // decode invalid ESC sequence as chars
+                                        sb.append(codec[0].decode(b, cur - 4, 4));
+                                }
+                            }
+                            else { // decode invalid ESC sequence as chars
+                                sb.append(codec[0].decode(b, cur - 3, 3));
                             }
                             break;
                         case 0x2442:
@@ -510,7 +520,7 @@ public class SpecificCharacterSet {
                 }
             }
             if (off < cur) {
-                sb.append(codec[g].decode(b, off, cur - off));
+                sb.append(codec[g].decode(b, off, Math.min( cur, b.length) - off ));
             }
             return sb.toString();
         }

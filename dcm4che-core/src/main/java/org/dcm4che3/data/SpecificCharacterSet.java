@@ -428,35 +428,27 @@ public class SpecificCharacterSet {
                     if (off < cur) {
                         sb.append(codec[g].decode(b, off, cur - off));
                     }
-                    cur += 3;
-                    switch (((b[cur - 2] & 255) << 8) + (b[cur - 1] & 255)) {
+                    int esc0 = cur++;
+                    int esc1 = cur++;
+                    int esc2 = cur++;
+                    switch (((b[esc1] & 255) << 8) + (b[esc2] & 255)) {
                         case 0x2428:
-                            if (cur < b.length ) {
-                                if (b[cur++] == 0x44) {
-                                    codec[0] = Codec.JIS_X_212;
-                                } else { // decode invalid ESC sequence as chars
-                                    sb.append(codec[0].decode(b, cur - 4, 4));
-                                }
-                            }
-                            else { // decode invalid ESC sequence as chars
-                                sb.append(codec[0].decode(b, cur - 3, 3));
+                            if (cur < b.length && b[cur++] == 0x44) {
+                                codec[0] = Codec.JIS_X_212;
+                            } else { // decode invalid ESC sequence as chars
+                                sb.append(codec[0].decode(b, esc0, cur - esc0));
                             }
                             break;
                         case 0x2429:
-                            if (cur < b.length ) {
-                                switch (b[cur++]) {
-                                    case 0x41:
-                                        switchCodec(codec, 1, Codec.GB2312);
-                                        break;
-                                    case 0x43:
-                                        switchCodec(codec, 1, Codec.KS_X_1001);
-                                        break;
-                                    default: // decode invalid ESC sequence as chars
-                                        sb.append(codec[0].decode(b, cur - 4, 4));
-                                }
-                            }
-                            else { // decode invalid ESC sequence as chars
-                                sb.append(codec[0].decode(b, cur - 3, 3));
+                            switch (cur < b.length ? b[cur++] : -1) {
+                                case 0x41:
+                                    switchCodec(codec, 1, Codec.GB2312);
+                                    break;
+                                case 0x43:
+                                    switchCodec(codec, 1, Codec.KS_X_1001);
+                                    break;
+                                default: // decode invalid ESC sequence as chars
+                                    sb.append(codec[0].decode(b, esc0, cur - esc0));
                             }
                             break;
                         case 0x2442:
@@ -504,7 +496,7 @@ public class SpecificCharacterSet {
                             switchCodec(codec, 1, Codec.TIS_620);
                             break;
                         default: // decode invalid ESC sequence as chars
-                            sb.append(codec[0].decode(b, cur - 3, 3));
+                            sb.append(codec[0].decode(b, esc0, cur - esc0));
                     }
                     off = cur;
                 } else {

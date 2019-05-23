@@ -432,5 +432,52 @@ public class SpecificCharacterSetTest {
         assertEquals(CHINESE_PERSON_NAME_GB18030,
                 gbk().decode(CHINESE_PERSON_NAME_GB18030_BYTES));
     }
-
+    
+    @Test
+    public void testDecodeJISX0201EdgeCases() {
+        // Cover some illegal/undefined cases to verify that they do not result in exceptions. 
+        // Some of the resulting strings are not meaningful.
+        byte[][] edgeCases = new byte[][] {
+                {},
+                { 0x33, 0x43 },
+                { 0x33, 0x1b },
+                { 0x1b, 0x24, 0x28 },
+                { 0x1b, 0x24, 0x28, 0x55 },
+                { 0x1b, 0x24, 0x28, 0x44 },
+                { 0x1b, 0x24, 0x28, 0x44, 0x55 },
+                { 0x1b, 0x24, 0x29 },
+                { 0x1b, 0x24, 0x29, 0x41 },
+                { 0x1b, 0x24, 0x29, 0x41, 0x55 },
+                { 0x1b, 0x24, 0x29, 0x43 },
+                { 0x1b, 0x24, 0x29, 0x43, 0x55 },
+                { 0x1b, 0x24, 0x29, 0x55 },
+                { 0x1b, 0x24, 0x42 },
+                { 0x1b, 0x24, 0x42, 0x31 },
+                { 0x1b, 0x33 },
+                { 0x1b, 0x33, 0x43 } };
+        final String[] expectedStrings = new String[] {
+                "",
+                "3C",
+                "3\u001b",
+                "\u001b$(",
+                "\u001b$(U",
+                "",
+                "\ufffd",
+                "\u001b$)",
+                "",
+                "U",
+                "",
+                "U",
+                "\u001b$)U",
+                "",
+                "\ufffd",
+                "\u001b3",
+                "\u001b3C" };
+        assertEquals( "There must be the same number of expected results and edge cases.", edgeCases.length,
+                      expectedStrings.length );
+        for ( int i = 0; i < edgeCases.length; ++i ) {
+            assertEquals( "Unexpected value for the sequence with the index " + i, expectedStrings[ i ],
+                          jisX0201().decode( edgeCases[ i ] ) );
+        }
+    }
 }

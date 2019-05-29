@@ -1,13 +1,13 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem xml2prefs  Launcher
+rem fixlo2un  Launcher
 rem -------------------------------------------------------------------------
 
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che3.tool.xml2prefs.Xml2Prefs
-set MAIN_JAR=dcm4che-tool-xml2prefs-${project.version}.jar
+set MAIN_CLASS=org.dcm4che3.tool.fixlo2un.FixLO2UN
+set MAIN_JAR=dcm4che-tool-fixlo2un-${project.version}.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%

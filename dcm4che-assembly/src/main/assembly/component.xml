@@ -141,6 +141,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-deidentify</include>
         <include>org.dcm4che.tool:dcm4che-tool-emf2sf</include>
         <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-fixlo2un</include>
         <include>org.dcm4che.tool:dcm4che-tool-getscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl72xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7pix</include>

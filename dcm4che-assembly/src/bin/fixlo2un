@@ -1,10 +1,10 @@
 #!/bin/sh
 # -------------------------------------------------------------------------
-# xml2prefs  Launcher
+# fixlo2un  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che3.tool.xml2prefs.Xml2Prefs
-MAIN_JAR=dcm4che-tool-xml2prefs-${project.version}.jar
+MAIN_CLASS=org.dcm4che3.tool.fixlo2un.FixLO2UN
+MAIN_JAR=dcm4che-tool-fixlo2un-${project.version}.jar
 
 DIRNAME="`dirname "$0"`"
 

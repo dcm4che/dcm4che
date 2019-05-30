@@ -177,7 +177,7 @@
         <include>org.slf4j:slf4j-log4j12</include>
         <include>log4j:log4j</include>
         <include>commons-cli:commons-cli</include>
-        <include>org.glassfish:javax.json</include>
+        <include>org.glassfish:jakarta.json</include>
         <include>com.sun.activation:jakarta.activation</include>
         <include>jakarta.xml.bind:jakarta.xml.bind-api</include>
         <include>org.glassfish.jaxb:jaxb-runtime</include>

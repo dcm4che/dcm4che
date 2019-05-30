@@ -41,6 +41,6 @@ set JAVA=%JAVA_HOME%\bin\java
 :SKIP_SET_JAVA_HOME
 
 set CP=%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\javax.json-1.0.4.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jakarta.json-${jakarta.json.version}.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

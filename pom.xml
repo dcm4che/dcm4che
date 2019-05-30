@@ -89,6 +89,7 @@
     <jakarta.xml.bind.version>2.3.2</jakarta.xml.bind.version>
     <jakarta.xml.ws.version>2.3.2</jakarta.xml.ws.version>
     <jakarta.xml.soap-api.version>1.4.1</jakarta.xml.soap-api.version>
+    <jakarta.json.version>1.1.5</jakarta.json.version>
     <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
     <com.sun.istack.version>3.0.8</com.sun.istack.version>
     <com.sun.xml.messaging.saaj.version>1.5.1</com.sun.xml.messaging.saaj.version>
@@ -231,8 +232,8 @@
       </dependency>
       <dependency>
         <groupId>org.glassfish</groupId>
-        <artifactId>javax.json</artifactId>
-        <version>1.0.4</version>
+        <artifactId>jakarta.json</artifactId>
+        <version>${jakarta.json.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>

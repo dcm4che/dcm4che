@@ -386,7 +386,7 @@ public class GetSCU {
     private static void configureStorageSOPClass(GetSCU main, String cuid, String tsuids0) {
         String[] tsuids1 = StringUtils.split(tsuids0, ';');
         for (String tsuids2 : tsuids1) {
-            main.addOfferedStorageSOPClass(CLIUtils.toUID(cuid), CLIUtils.toUID(tsuids2));
+            main.addOfferedStorageSOPClass(CLIUtils.toUID(cuid), CLIUtils.toUIDs(tsuids2));
         }
     }
 

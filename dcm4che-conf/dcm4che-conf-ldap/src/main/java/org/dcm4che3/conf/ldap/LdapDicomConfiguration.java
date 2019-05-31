@@ -2042,6 +2042,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiffObject(ldapObj, mods, "dicomAETitle",
                 a.getAETitle(),
                 b.getAETitle(), null);
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmKeycloakClientID",
+                a.getKeycloakClientID(),
+                b.getKeycloakClientID(), null);
         LdapUtils.storeDiff(ldapObj, mods, "dicomApplicationCluster",
                 a.getApplicationClusters(),
                 b.getApplicationClusters());
@@ -2162,9 +2165,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         Collection<String> clientIDs = dev.getKeycloakClientIDs();
         for (String clientID : prevDev.getKeycloakClientIDs()) {
             if (!clientIDs.contains(clientID)) {
-                String aetDN = aetDN(clientID, deviceDN);
-                destroySubcontextWithChilds(aetDN);
-                ConfigurationChanges.addModifiedObject(diffs, aetDN, ConfigurationChanges.ChangeType.D);
+                String keycloakClientDN = keycloakClientDN(clientID, deviceDN);
+                destroySubcontextWithChilds(keycloakClientDN);
+                ConfigurationChanges.addModifiedObject(diffs, keycloakClientDN, ConfigurationChanges.ChangeType.D);
             }
         }
         Collection<String> prevClientIDs = prevDev.getKeycloakClientIDs();

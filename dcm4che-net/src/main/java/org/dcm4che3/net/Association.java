@@ -514,15 +514,17 @@ public class Association {
 
             @Override
             public void run() {
-                decoder = new PDUDecoder(Association.this, in);
-                device.addAssociation(Association.this);
                 try {
+                    decoder = new PDUDecoder(Association.this, in);
+                    device.addAssociation(Association.this);
                     while (!(state == State.Sta1 || state == State.Sta13))
                         decoder.nextPDU();
                 } catch (AAbort aa) {
                     abort(aa);
                 } catch (IOException e) {
                     onIOException(e);
+                } catch (Exception e) {
+                    onIOException(new IOException("Unexpected Error", e));
                 } finally {
                     device.removeAssociation(Association.this);
                     onClose();
@@ -831,10 +833,13 @@ public class Association {
 
     private void initPCMap() {
         for (PresentationContext pc : ac.getPresentationContexts())
-            if (pc.isAccepted())
-                initTSMap(rq.getPresentationContext(pc.getPCID())
-                            .getAbstractSyntax())
-                        .put(pc.getTransferSyntax(), pc);
+            if (pc.isAccepted()) {
+                PresentationContext rqpc = rq.getPresentationContext(pc.getPCID());
+                if (rqpc != null)
+                    initTSMap(rqpc.getAbstractSyntax()).put(pc.getTransferSyntax(), pc);
+                else
+                    LOG.info("{}: Ignore unexpected {} in A-ASSOCIATE-AC", name, pc);
+            }
     }
 
     private HashMap<String, PresentationContext> initTSMap(String as) {

@@ -43,11 +43,28 @@
   <artifactId>dcm4che-parent</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>5.16.2</version>
+  <version>5.17.0</version>
   <description>dcm4che DICOM toolkit and utilities</description>
+  <licenses>
+    <license>
+      <name>Mozilla Public License Version 1.1 or later</name>
+      <url>https://www.mozilla.org/en-US/MPL/1.1/</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>GNU General Public License v2 or later</name>
+      <url>https://www.gnu.org/licenses/old-licenses/gpl-2.0.html</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>GNU Lesser General Public License v2.1 or later</name>
+      <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <issueManagement>
-    <system>JIRA</system>
-    <url>http://dcm4che.org/jira</url>
+    <system>GitHub</system>
+    <url>https://github.com/dcm4che/dcm4che/issues</url>
   </issueManagement>
   <scm>
     <connection>scm:git:git://github.com/dcm4che.git</connection>
@@ -64,10 +81,23 @@
     <maven.compiler.target>1.7</maven.compiler.target>
     <weasis.version>3.0.4</weasis.version>
     <weasis.opencv.native.version>4.0.0-dcmR3</weasis.opencv.native.version>
-    <keycloak.version>6.0.0</keycloak.version>
+    <keycloak.version>6.0.1</keycloak.version>
     <jaxws-tools-maven-plugin.version>1.2.1.Final</jaxws-tools-maven-plugin.version>
     <jbossws-cxf-client.version>5.2.4.Final</jbossws-cxf-client.version>
     <apache-cxf.version>3.2.7</apache-cxf.version>
+    <jakarta.activation.version>1.2.1</jakarta.activation.version>
+    <jakarta.xml.bind.version>2.3.2</jakarta.xml.bind.version>
+    <jakarta.xml.ws.version>2.3.2</jakarta.xml.ws.version>
+    <jakarta.xml.soap-api.version>1.4.1</jakarta.xml.soap-api.version>
+    <jakarta.json.version>1.1.5</jakarta.json.version>
+    <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
+    <com.sun.istack.version>3.0.8</com.sun.istack.version>
+    <com.sun.xml.messaging.saaj.version>1.5.1</com.sun.xml.messaging.saaj.version>
+    <com.sun.xml.stream.buffer.version>1.5.7</com.sun.xml.stream.buffer.version>
+    <com.sun.xml.ws.policy.version>2.7.6</com.sun.xml.ws.policy.version>
+    <org.glassfish.gmbal.version>4.0.0</org.glassfish.gmbal.version>
+    <org.jvnet.mimepull.version>1.9.11</org.jvnet.mimepull.version>
+    <org.jvnet.staxex.version>1.8.1</org.jvnet.staxex.version>
     <commons-cli.version>1.4</commons-cli.version>
   </properties>
   <build>
@@ -202,8 +232,8 @@
       </dependency>
       <dependency>
         <groupId>org.glassfish</groupId>
-        <artifactId>javax.json</artifactId>
-        <version>1.0.4</version>
+        <artifactId>jakarta.json</artifactId>
+        <version>${jakarta.json.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
@@ -228,24 +258,34 @@
         <version>4.12</version>
       </dependency>
       <dependency>
-        <groupId>javax.xml.bind</groupId>
-        <artifactId>jaxb-api</artifactId>
-        <version>2.3.0</version>
+        <groupId>jakarta.activation</groupId>
+        <artifactId>jakarta.activation-api</artifactId>
+        <version>${jakarta.activation.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.activation</groupId>
+        <artifactId>jakarta.activation</artifactId>
+        <version>${jakarta.activation.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>${jakarta.xml.bind.version}</version>
       </dependency>
       <dependency>
         <groupId>org.glassfish.jaxb</groupId>
         <artifactId>jaxb-runtime</artifactId>
-        <version>2.3.0</version>
+        <version>${jakarta.xml.bind.version}</version>
       </dependency>
       <dependency>
-        <groupId>javax.activation</groupId>
-        <artifactId>javax.activation-api</artifactId>
-        <version>1.2.0</version>
+        <groupId>jakarta.xml.ws</groupId>
+        <artifactId>jakarta.xml.ws-api</artifactId>
+        <version>${jakarta.xml.ws.version}</version>
       </dependency>
       <dependency>
-        <groupId>javax.xml.ws</groupId>
-        <artifactId>jaxws-api</artifactId>
-        <version>2.3.0</version>
+        <groupId>com.sun.xml.ws</groupId>
+        <artifactId>rt</artifactId>
+        <version>${jakarta.xml.ws.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

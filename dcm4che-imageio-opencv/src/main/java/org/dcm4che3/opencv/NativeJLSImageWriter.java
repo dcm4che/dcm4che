@@ -56,11 +56,11 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.osgi.OpenCVNativeLoader;
 import org.weasis.opencv.data.ImageCV;
 import org.weasis.opencv.op.ImageConversion;
 
@@ -70,7 +70,9 @@ import org.weasis.opencv.op.ImageConversion;
  */
 class NativeJLSImageWriter extends ImageWriter {
     static {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        // Load the native OpenCV library
+        OpenCVNativeLoader loader = new OpenCVNativeLoader();
+        loader.init();
     }
 
     NativeJLSImageWriter(ImageWriterSpi originatingProvider) throws IOException {
@@ -100,45 +102,55 @@ class NativeJLSImageWriter extends ImageWriter {
         ImageDescriptor desc = ((BytesWithImageImageDescriptor) stream).getImageDescriptor();
 
         RenderedImage renderedImage = image.getRenderedImage();
-        
+        Mat buf = null;
+        MatOfInt dicomParams = null;
         try {
-            // Band interleaved mode (PlanarConfiguration = 1) is converted to pixel interleaved
-            // So the input image has always a pixel interleaved mode mode((PlanarConfiguration = 0)
-            ImageCV mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
+            ImageCV mat = null;
+            try {
+                // Band interleaved mode (PlanarConfiguration = 1) is converted to pixel interleaved
+                // So the input image has always a pixel interleaved mode mode((PlanarConfiguration = 0)
+                mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
 
-            int cvType = mat.type();
-            int elemSize = (int) mat.elemSize1();
-            int channels = CvType.channels(cvType);
-            int dcmFlags =
-                CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
+                int cvType = mat.type();
+                int elemSize = (int) mat.elemSize1();
+                int channels = CvType.channels(cvType);
+                int dcmFlags = CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED
+                    : Imgcodecs.DICOM_IMREAD_UNSIGNED;
 
-            int[] params = new int[15];
-            params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
-            params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags
-            params[Imgcodecs.DICOM_PARAM_WIDTH] = mat.width(); // Image width
-            params[Imgcodecs.DICOM_PARAM_HEIGHT] = mat.height(); // Image height
-            params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_JPLS; // Type of compression
-            params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
-            params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsStored(); // Bits per sample
-            params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
-            params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
-            params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] =
-                // Allowed lossy error for jpeg-ls
-                param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0;
+                int[] params = new int[15];
+                params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
+                params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags
+                params[Imgcodecs.DICOM_PARAM_WIDTH] = mat.width(); // Image width
+                params[Imgcodecs.DICOM_PARAM_HEIGHT] = mat.height(); // Image height
+                params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_JPLS; // Type of compression
+                params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
+                params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsStored(); // Bits per sample
+                params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
+                params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
+                params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] =
+                    // Allowed lossy error for jpeg-ls
+                    param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0;
 
-            MatOfInt dicomParams = new MatOfInt(params);
-            Mat buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");
-            if (buf.empty()) {
-                throw new IIOException("Native JPEG-LS encoding error: null image");
+                dicomParams = new MatOfInt(params);
+                buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");
+                if (buf.empty()) {
+                    throw new IIOException("Native JPEG-LS encoding error: null image");
+                }
+            } finally {
+                if (mat != null) {
+                    mat.release();
+                }
             }
-
             byte[] bSrcData = new byte[buf.width() * buf.height() * (int) buf.elemSize()];
             buf.get(0, 0, bSrcData);
             stream.write(bSrcData);
         } catch (Throwable t) {
             throw new IIOException("Native JPEG-LS encoding error", t);
+        } finally {
+            NativeImageReader.closeMat(dicomParams);
+            NativeImageReader.closeMat(buf);
         }
-    }   
+    }
 
     @Override
     public IIOMetadata getDefaultStreamMetadata(ImageWriteParam param) {

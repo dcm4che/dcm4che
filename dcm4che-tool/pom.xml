@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>5.16.2</version>
+    <version>5.17.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4che.tool</groupId>
@@ -65,6 +65,7 @@
     <module>dcm4che-tool-deidentify</module>
     <module>dcm4che-tool-emf2sf</module>
     <module>dcm4che-tool-findscu</module>
+    <module>dcm4che-tool-fixlo2un</module>
     <module>dcm4che-tool-getscu</module>
     <module>dcm4che-tool-hl72xml</module>
     <module>dcm4che-tool-hl7pix</module>

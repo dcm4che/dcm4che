@@ -3,7 +3,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>5.16.2</version>
+    <version>5.17.0</version>
   </parent>
   <artifactId>dcm4che-tool-jpg2dcm</artifactId>
   <name>dcm4che-tool-jpg2dcm</name>
@@ -25,8 +25,8 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>javax.activation</groupId>
-      <artifactId>javax.activation-api</artifactId>
+      <groupId>com.sun.activation</groupId>
+      <artifactId>jakarta.activation</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

@@ -141,6 +141,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-deidentify</include>
         <include>org.dcm4che.tool:dcm4che-tool-emf2sf</include>
         <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-fixlo2un</include>
         <include>org.dcm4che.tool:dcm4che-tool-getscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl72xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7pix</include>
@@ -176,7 +177,21 @@
         <include>org.slf4j:slf4j-log4j12</include>
         <include>log4j:log4j</include>
         <include>commons-cli:commons-cli</include>
-        <include>org.glassfish:javax.json</include>
+        <include>org.glassfish:jakarta.json</include>
+        <include>com.sun.activation:jakarta.activation</include>
+        <include>jakarta.xml.bind:jakarta.xml.bind-api</include>
+        <include>org.glassfish.jaxb:jaxb-runtime</include>
+        <include>com.sun.istack:istack-commons-runtime</include>
+        <include>jakarta.xml.ws:jakarta.xml.ws-api</include>
+        <include>com.sun.xml.ws:rt</include>
+        <include>com.sun.xml.stream.buffer:streambuffer</include>
+        <include>com.sun.xml.ws:policy</include>
+        <include>org.jvnet.staxex:stax-ex</include>
+        <include>jakarta.jws:jakarta.jws-api</include>
+        <include>jakarta.xml.soap:jakarta.xml.soap-api</include>
+        <include>com.sun.xml.messaging.saaj:saaj-impl</include>
+        <include>org.glassfish.gmbal:gmbal</include>
+        <include>org.jvnet.mimepull:mimepull</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>

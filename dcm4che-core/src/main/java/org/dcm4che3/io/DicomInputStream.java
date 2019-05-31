@@ -120,7 +120,7 @@ public class DicomInputStream extends FilterInputStream
     private boolean excludeBulkData;
     private boolean includeBulkDataURI;
 
-    private boolean catBlkFiles;
+    private boolean catBlkFiles = true;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;

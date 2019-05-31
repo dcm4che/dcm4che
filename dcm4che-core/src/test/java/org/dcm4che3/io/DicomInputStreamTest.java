@@ -50,6 +50,7 @@ public class DicomInputStreamTest {
         try (DicomInputStream in = new DicomInputStream(new File("target/test-data/US-PAL-8-10x-echo"))) {
             in.setIncludeBulkData(IncludeBulkData.URI);
             in.setURI(null); // force spooling
+            in.setConcatenateBulkDataFiles(false);
             pixeldata = in.readDataset(-1, -1).getValue(Tag.PixelData);
             bulkDataFiles = in.getBulkDataFiles();
         }

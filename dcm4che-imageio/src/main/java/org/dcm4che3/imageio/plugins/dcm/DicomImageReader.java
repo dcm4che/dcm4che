@@ -215,12 +215,21 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private void initPixelDataFile() {
         if (pixelData != null)
             pixelDataFile = pixelData.getFile();
-        else if (pixelDataFragments != null && pixelDataFragments.size() > 1) {
-            Object frag = pixelDataFragments.get(1);
-            if( frag instanceof BulkData ) {
-                pixelDataFile = ((BulkData) frag).getFile();
-            }
+        else if (pixelDataFragments != null)
+            pixelDataFile = pixelDataFragmentsFile(pixelDataFragments);
+    }
+
+    private File pixelDataFragmentsFile(Fragments pixelDataFragments) {
+        File f = null;
+        for (Object frag : pixelDataFragments) {
+            if (frag instanceof BulkData)
+                if (f == null)
+                    f = ((BulkData) frag).getFile();
+                else if (!f.equals(((BulkData) frag).getFile()))
+                    throw new UnsupportedOperationException(
+                            "data fragments in individual bulk data files not supported");
         }
+        return f;
     }
 
     @Override

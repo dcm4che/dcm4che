@@ -44,13 +44,14 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -131,7 +132,7 @@ public class HL7Snd extends Device {
         String[] hostPort = StringUtils.split(cl.getOptionValue("c"), ':');
         if (hostPort.length != 2)
             throw new ParseException(CLIUtils.rb.getString("invalid-connect-opt"));
-        
+
         conn.setHostname(hostPort[0]);
         conn.setPort(Integer.parseInt(hostPort[1]));
         conn.setHttpProxy(cl.getOptionValue("proxy"));
@@ -180,28 +181,52 @@ public class HL7Snd extends Device {
     }
 
     public void sendFiles(List<String> pathnames) throws IOException {
-        for (String pathname : pathnames) {
-            mllp.writeMessage(readFile(pathname));
-            if (mllp.readMessage() == null)
-                throw new IOException("Connection closed by receiver");
+        for (String pathname : pathnames)
+            if (pathname.equals("-"))
+                send(readFromStdIn());
+            else {
+                Path path = Paths.get(pathname);
+                if (Files.isDirectory(path)) {
+                    Files.walkFileTree(path, new HL7Send());
+                } else
+                    send(readFromFile(path));
+            }
+    }
+
+    class HL7Send extends SimpleFileVisitor<Path> {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            send(readFromFile(file));
+            return FileVisitResult.CONTINUE;
         }
     }
 
-    private byte[] readFile(String pathname) throws IOException {
+    private void send(byte[] data) throws IOException {
+        mllp.writeMessage(data);
+        if (mllp.readMessage() == null)
+            throw new IOException("Connection closed by receiver");
+    }
+
+    private byte[] readFromStdIn() throws IOException {
         FileInputStream in = null;
         try {
-            if (pathname.equals("-")) {
-                in = new FileInputStream(FileDescriptor.in);
-                ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                StreamUtils.copy(in, buf);
-                return buf.toByteArray();
-            } else {
-                File f = new File(pathname);
-                in = new FileInputStream(f);
-                byte[] b = new byte[(int) f.length()];
-                StreamUtils.readFully(in, b, 0, b.length);
-                return b;
-            }
+            in = new FileInputStream(FileDescriptor.in);
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            StreamUtils.copy(in, buf);
+            return buf.toByteArray();
+        } finally {
+            SafeClose.close(in);
+        }
+    }
+
+    private byte[] readFromFile(Path path) throws IOException {
+        FileInputStream in = null;
+        try {
+            File f = path.toFile();
+            in = new FileInputStream(f);
+            byte[] b = new byte[(int) f.length()];
+            StreamUtils.readFully(in, b, 0, b.length);
+            return b;
         } finally {
             SafeClose.close(in);
         }

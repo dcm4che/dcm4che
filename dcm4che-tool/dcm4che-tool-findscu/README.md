@@ -1,4 +1,5 @@
-    usage: findscu [options] -c <aet>@<host>:<port> [dcmfile_in...]
+    usage: findscu [options] -c <aet>@<host>:<port> [--]
+                   [<dicom-file>|<xml-file>...]
     
     The findscu application implements a Service Class User (SCU) for the
     Query/Retrieve, the Modality Worklist Management, the Unified Worklist and
@@ -6,9 +7,11 @@
     Query/Retrieve Service Class. findscu only supports query functionality
     using the C-FIND message. It sends query keys to an Service Class Provider
     (SCP) and waits for responses. Query keys can be specified in DICOM binary
-    file(s) dcmfile_in or xml file(s) dcmfile_in.xml or by options -m and -r.
-    For reference, sample files (patient.xml, study.xml, series.xml, instance.xml, mwl.xml)
-    with query keys on PATIENT, STUDY, SERIES, IMAGE and MWL levels are provided in etc/findscu folder.
+    file(s) or DICOM XML file(s) -- <dicom-file>|<xml-file>... or by options
+    -m and -r. For reference, sample files (patient.xml, study.xml,
+    series.xml, instance.xml, pr.xml, mwl.xml) with query keys on PATIENT,
+    STUDY, SERIES, IMAGE, PR and MWL levels are provided in etc/findscu
+    folder.
     -
     Options:
         --accept-timeout <ms>                 timeout in ms for receiving
@@ -45,8 +48,6 @@
         --fuzzy                               negotiate fuzzy semantic person
                                               name attribute matching
      -h,--help                                display this help and exit
-     -I,--indent                              use additional whitespace in XML
-                                              output
      -i <attr>                                specifies which attribute(s) of
                                               given DICOM file(s) dcmfile_in
                                               will be included in the C-FIND
@@ -56,6 +57,8 @@
                                               00100020. By default, all
                                               attributes from the DICOM
                                               file(s) will be included.
+     -I,--indent                              use additional whitespace in XML
+                                              output
         --idle-timeout <ms>                   timeout in ms for receiving
                                               DIMSE-RQ, no timeout by default
         --implicit-vr                         propose only implicit VR little
@@ -142,7 +145,7 @@
                                               the directory specified by
                                               out-dir. Zeros will be replaced
                                               by the sequential number of the
-                                              match (default: 000.dcm)
+                                              match (default: 000'.dcm')
         --prior-high                          set HIGH priority in invoked
                                               DIMSE-C operation, MEDIUM by
                                               default
@@ -218,14 +221,14 @@
                                               encryption; equivalent to
                                               --tls-cipher
                                               SSL_RSA_WITH_NULL_SHA
-        --tls-protocol <protocol>             TLS/SSL protocol to use. Multiple
-                                              TLS/SSL protocols may be enabled
-                                              by multiple --tls-protocol
-                                              options. Supported values by
-                                              SunJSSE 1.8: TLSv1.2, TLSv1.1,
-                                              TLSv1, SSLv3, SSLv2Hello. By
-                                              default, TLSv1.2, TLSv1.1, TLSv1
-                                              and SSLv3 are enabled.
+        --tls-protocol <protocol>             TLS/SSL protocol to use.
+                                              Multiple TLS/SSL protocols may
+                                              be enabled by multiple
+                                              --tls-protocol options.
+                                              Supported values by SunJSSE 1.8:
+                                              TLSv1, TLSv1.1, TLSv1.2, SSLv3,
+                                              SSLv2Hello. By default, TLSv1,
+                                              TLSv1.1 and TLSv1.2 are enabled.
         --tls1                                enable only TLS/SSL protocol
                                               TLSv1; equivalent to
                                               --tls-protocol TLSv1
@@ -262,13 +265,20 @@
                                               .19/models/NativeDICOM'
                                               attribute in root element
     -
-    Example 1:
-    $ findscu -c DCMQRSCP@localhost:11112 -m PatientName=Doe^John -m
+    Example 1: findscu -c DCMQRSCP@localhost:11112 -m PatientName=Doe^John -m
     StudyDate=20110510- -m ModalitiesInStudy=CT
-    Query Query/Retrieve Service Class Provider DCMQRSCP listening on local
+    => Query Query/Retrieve Service Class Provider DCMQRSCP listening on local
     port 11112 for CT Studies for Patient John Doe since 2011-05-10
     -
-    Example 2:
-    $ findscu -c DCMQRSCP@localhost:11112 /etc/findscu/study.xml
-    Query Query/Retrieve Service Class Provider DCMQRSCP listening on local
+    Example 2: findscu -c DCMQRSCP@localhost:11112 -- /etc/findscu/study.xml
+    => Query Query/Retrieve Service Class Provider DCMQRSCP listening on local
     port 11112 with query keys provided in /etc/findscu/study.xml file
+    -
+    Example 3: findscu -c DCMQRSCP@localhost:11112 --relational -L IMAGE -m
+    Modality=PR -x ~/dcm4che/etc/findscu/pr.csv.xsl --out-cat --out-file
+    test.csv --out-dir ~/work/ -- ~/dcm4che/etc/findscu/pr.xml
+    => Perform relational query on Image level on Query/Retrieve Service Class
+    Provider DCMQRSCP listening on local port 11112 by applying the
+    presentation state stylesheet with query keys provided in
+    /etc/findscu/pr.xml file and Modality as PR; concatenate the results to a
+    csv file in a specific directory.

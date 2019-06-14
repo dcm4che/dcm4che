@@ -142,7 +142,8 @@ public class JPEGHeader {
         int nf = data[offsetSOF+3 + 5] & 0xff;
         attrs.setInt(Tag.SamplesPerPixel, VR.US, nf);
         if (nf == 3) {
-            attrs.setString(Tag.PhotometricInterpretation, VR.CS, sof == JPEG.SOF0 ? "YBR_FULL_422" : "RGB");
+            attrs.setString(Tag.PhotometricInterpretation, VR.CS,
+                    (sof == JPEG.SOF3 || sof == JPEG.SOF55) ? "RGB" : "YBR_FULL_422");
             attrs.setInt(Tag.PlanarConfiguration, VR.US, 0);
         } else {
             attrs.setString(Tag.PhotometricInterpretation, VR.CS, "MONOCHROME2");
@@ -168,6 +169,8 @@ public class JPEGHeader {
                 return UID.JPEGBaseline1;
             case JPEG.SOF1:
                 return UID.JPEGExtended24;
+            case JPEG.SOF2:
+                return UID.JPEGFullProgressionNonHierarchical1012Retired;
             case JPEG.SOF3:
                 return ss() == 1 ? UID.JPEGLossless : UID.JPEGLosslessNonHierarchical14;
             case JPEG.SOF55:

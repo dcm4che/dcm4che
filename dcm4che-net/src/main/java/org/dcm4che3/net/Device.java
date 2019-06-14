@@ -105,6 +105,7 @@ public class Device implements Serializable {
     private byte[][] vendorData = {};
     private int limitOpenAssociations;
     private boolean installed = true;
+    private boolean roleSelectionNegotiationLenient;
     private TimeZone timeZoneOfDevice;
 
     private final LinkedHashMap<String, Integer> limitAssociationsInitiatedBy = new LinkedHashMap<>();
@@ -688,7 +689,15 @@ public class Device implements Serializable {
         this.installed = installed;
         needRebindConnections();
     }
-    
+
+    public boolean isRoleSelectionNegotiationLenient() {
+        return roleSelectionNegotiationLenient;
+    }
+
+    public void setRoleSelectionNegotiationLenient(boolean roleSelectionNegotiationLenient) {
+        this.roleSelectionNegotiationLenient = roleSelectionNegotiationLenient;
+    }
+
     public void setTimeZoneOfDevice(TimeZone timeZoneOfDevice) {
         this.timeZoneOfDevice = timeZoneOfDevice;
     }
@@ -1284,6 +1293,7 @@ public class Device implements Serializable {
         setLimitOpenAssociations(from.limitOpenAssociations);
         setInstalled(from.installed);
         setLimitAssociationsInitiatedBy(from.limitAssociationsInitiatedBy);
+        setRoleSelectionNegotiationLenient(from.roleSelectionNegotiationLenient);
      }
 
      private void setAuthorizedNodeCertificates(Map<String, X509Certificate[]> from) {

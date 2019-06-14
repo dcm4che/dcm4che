@@ -145,6 +145,11 @@
                                             accepted Retrieve SOP Classes,
                                             resource:retrieve-sop-classes.prop
                                             erties by default
+        --role-select-lenient               disable check for required SCP/SCU
+                                            role selection negotiation on
+                                            sending C-STORE-RQs to C-GET SCUs
+                                            or N-EVENT-REPORT-RQs to Storage
+                                            Commitment SCUs
         --soclose-delay <ms>                delay in ms after sending
                                             A-ASSOCATE-RJ, A-RELEASE-RQ or
                                             A-ABORT before the socket is

@@ -989,6 +989,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return attrs;
 
         objectclass.add("dcmDevice");
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmRoleSelectionNegotiationLenient",
+                device.isRoleSelectionNegotiationLenient(), false);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmLimitAssociationsInitiatedBy",
                 device.getLimitAssociationsInitiatedBy());
@@ -1082,6 +1084,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return attrs;
 
         objectclass.add("dcmNetworkAE");
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmRoleSelectionNegotiationLenient",
+                ae.getRoleSelectionNegotiationLenient(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmPreferredTransferSyntax",
                 LdapUtils.addOrdinalPrefix(ae.getPreferredTransferSyntaxes()));
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7ApplicationName", ae.getHl7ApplicationName(), null);
@@ -1427,6 +1431,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!LdapUtils.hasObjectClass(attrs, "dcmDevice"))
             return;
         
+        device.setRoleSelectionNegotiationLenient(
+                LdapUtils.booleanValue(attrs.get("dcmRoleSelectionNegotiationLenient"), false));
         device.setLimitOpenAssociations(
                 LdapUtils.intValue(attrs.get("dcmLimitOpenAssociations"), 0));
         device.setLimitAssociationsInitiatedBy(
@@ -1568,6 +1574,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!LdapUtils.hasObjectClass(attrs, "dcmNetworkAE"))
             return;
 
+        ae.setRoleSelectionNegotiationLenient(
+                LdapUtils.booleanValue(attrs.get("dcmRoleSelectionNegotiationLenient"), null));
         ae.setAcceptedCallingAETitles(LdapUtils.stringArray(attrs.get("dcmAcceptedCallingAETitle")));
         ae.setPreferredTransferSyntaxes(LdapUtils.removeOrdinalPrefix(
                 LdapUtils.stringArray(attrs.get("dcmPreferredTransferSyntax"))));
@@ -1749,6 +1757,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!extended)
             return mods;
 
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmRoleSelectionNegotiationLenient",
+                a.isRoleSelectionNegotiationLenient(),
+                b.isRoleSelectionNegotiationLenient(), false);
         LdapUtils.storeDiffObject(ldapObj, mods, "dcmLimitOpenAssociations",
                 a.getLimitOpenAssociations(),
                 b.getLimitOpenAssociations(), null);
@@ -1944,6 +1955,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!extended)
             return mods;
 
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmRoleSelectionNegotiationLenient",
+                a.isRoleSelectionNegotiationLenient(),
+                b.isRoleSelectionNegotiationLenient(), null);
         LdapUtils.storeDiffWithOrdinalPrefix(ldapObj, mods, "dcmPreferredTransferSyntax",
                 a.getPreferredTransferSyntaxes(),
                 b.getPreferredTransferSyntaxes());

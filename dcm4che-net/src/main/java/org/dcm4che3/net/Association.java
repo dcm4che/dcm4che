@@ -244,9 +244,13 @@ public class Association {
     }
 
     private void checkIsSCP(String cuid) throws NoRoleSelectionException {
-        if (!isSCPFor(cuid))
-            throw new NoRoleSelectionException(cuid,
-                    TransferCapability.Role.SCP);
+        if (!isSCPFor(cuid)) {
+            NoRoleSelectionException ex = new NoRoleSelectionException(cuid, TransferCapability.Role.SCP);
+            if (ae.isRoleSelectionNegotiationLenient() && ac.getRoleSelectionFor(cuid) == null)
+                LOG.info("{}: {}", this, ex.getMessage());
+            else
+                throw ex;
+        }
     }
 
     public boolean isSCPFor(String cuid) {
@@ -257,9 +261,13 @@ public class Association {
     }
 
     private void checkIsSCU(String cuid) throws NoRoleSelectionException {
-        if (!isSCUFor(cuid))
-            throw new NoRoleSelectionException(cuid,
-                    TransferCapability.Role.SCU);
+        if (!isSCUFor(cuid)) {
+            NoRoleSelectionException ex = new NoRoleSelectionException(cuid, TransferCapability.Role.SCU);
+            if (ae.isRoleSelectionNegotiationLenient() && ac.getRoleSelectionFor(cuid) == null)
+                LOG.info("{}: {}", this, ex.getMessage());
+            else
+                throw ex;
+        }
     }
 
     public boolean isSCUFor(String cuid) {

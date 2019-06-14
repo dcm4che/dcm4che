@@ -185,6 +185,7 @@ public class JsonConfiguration {
 
         if (extended) {
             gen.writeStartObject("dcmDevice");
+            writer.writeNotDef("dcmRoleSelectionNegotiationLenient", device.isRoleSelectionNegotiationLenient(), false);
             writer.writeNotDef("dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
             writer.writeNotEmpty("dcmLimitAssociationsInitiatedBy", device.getLimitAssociationsInitiatedBy());
             writer.writeNotNullOrDef("dcmTrustStoreURL", device.getTrustStoreURL(), null);
@@ -300,6 +301,9 @@ public class JsonConfiguration {
                     reader.expect(JsonParser.Event.START_OBJECT);
                     while (reader.next() == JsonParser.Event.KEY_NAME) {
                         switch (reader.getString()) {
+                            case "dcmRoleSelectionNegotiationLenient":
+                                device.setRoleSelectionNegotiationLenient(reader.booleanValue());
+                                break;
                             case "dcmLimitOpenAssociations":
                                 device.setLimitOpenAssociations(reader.intValue());
                                 break;
@@ -590,6 +594,7 @@ public class JsonConfiguration {
         writeTransferCapabilitiesTo(ae, writer, extended);
         if (extended) {
             writer.writeStartObject("dcmNetworkAE");
+            writer.writeNotNull("dcmRoleSelectionNegotiationLenient", ae.getRoleSelectionNegotiationLenient());
             writer.writeNotEmpty("dcmPreferredTransferSyntax", ae.getPreferredTransferSyntaxes());
             writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
             writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
@@ -655,6 +660,9 @@ public class JsonConfiguration {
                     reader.expect(JsonParser.Event.START_OBJECT);
                     while (reader.next() == JsonParser.Event.KEY_NAME) {
                         switch (reader.getString()) {
+                            case "dcmRoleSelectionNegotiationLenient":
+                                ae.setRoleSelectionNegotiationLenient(reader.booleanValue());
+                                break;
                             case "dcmPreferredTransferSyntax":
                                 ae.setPreferredTransferSyntaxes(reader.stringArray());
                                 break;

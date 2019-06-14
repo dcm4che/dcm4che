@@ -55,7 +55,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -588,7 +587,12 @@ public class DcmQRSCP {
         addDelayCFindOptions(opts);
         addDelayCStoreOptions(opts);
         addRemoteConnectionsOption(opts);
+        addRoleSelectLenientOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmQRSCP.class);
+    }
+
+    private static Options addRoleSelectLenientOption(Options opts) {
+        return opts.addOption(null, "role-select-lenient", false, rb.getString("role-select-lenient"));
     }
 
     @SuppressWarnings("static-access")
@@ -716,6 +720,7 @@ public class DcmQRSCP {
             configureDelayCFind(main, cl);
             configureDelayCStore(main, cl);
             configureRemoteConnections(main, cl);
+            configureRoleSelectLenient(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
@@ -731,6 +736,10 @@ public class DcmQRSCP {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    private static void configureRoleSelectLenient(DcmQRSCP main, CommandLine cl) {
+        main.device.setRoleSelectionNegotiationLenient(cl.hasOption("role-select-lenient"));
     }
 
     private static void configureDicomFileSet(DcmQRSCP main, CommandLine cl) throws Exception {

@@ -135,7 +135,7 @@ public class MP4Parser {
                             return UID.MPEG4AVCH264StereoHighProfileLevel42;
                         break;
                 }
-                throw avcProfileLevelNotSupported();
+                throw profileLevelNotSupported("AVC profile_idc/level_idc: %d/%d not supported");
             case VisualSampleEntryTypeHVC1:
                 if (level_idc <= 51) {
                     switch (profile_idc) {
@@ -145,17 +145,13 @@ public class MP4Parser {
                             return UID.HEVCH265Main10ProfileLevel51;
                     }
                 }
-                throw hevcProfileLevelNotSupported();
+                throw profileLevelNotSupported("HEVC profile_idc/level_idc: %d/%d not supported");
         }
         throw new AssertionError("visualSampleEntryType:" + visualSampleEntryType);
     }
 
-    private MP4ParserException avcProfileLevelNotSupported() {
-        return new MP4ParserException("AVC profile_idc/level_idc: " + profile_idc + '/' + level_idc + " not supported");
-    }
-
-    private MP4ParserException hevcProfileLevelNotSupported() {
-        return new MP4ParserException("HEVC profile_idc/level_idc: " + profile_idc + '/' + level_idc + " not supported");
+    private MP4ParserException profileLevelNotSupported(String format) {
+        return new MP4ParserException(String.format(format, profile_idc, level_idc));
     }
 
     private boolean isBDCompatible() {

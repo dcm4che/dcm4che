@@ -163,13 +163,13 @@ public class MP4Parser {
     }
 
     private Box nextBox(SeekableByteChannel channel, long remaining) throws IOException {
-        int size = readInt(channel);
-        int type = readInt(channel);
+        long type = readLong(channel);
+        int size = (int) (type >> 32);
         return size == 0
-                ? new Box(type, remaining - 8)
+                ? new Box((int) type, remaining - 8)
                 : size == 1
-                ? new Box(type, readLong(channel) - 16)
-                : new Box(type, size - 8);
+                ? new Box((int) type, readLong(channel) - 16)
+                : new Box((int) type, size - 8);
     }
 
     private Box findBox(SeekableByteChannel channel, long end, int... types)

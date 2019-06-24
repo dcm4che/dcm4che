@@ -198,6 +198,20 @@ public class MP4Parser {
                 type & 0xff);
     }
 
+    private byte readByte(SeekableByteChannel channel) throws IOException {
+        buf.clear().limit(1);
+        channel.read(buf);
+        buf.rewind();
+        return buf.get();
+    }
+
+    private short readShort(SeekableByteChannel channel) throws IOException {
+        buf.clear().limit(2);
+        channel.read(buf);
+        buf.rewind();
+        return buf.getShort();
+    }
+
     private int readInt(SeekableByteChannel channel) throws IOException {
         buf.clear().limit(4);
         channel.read(buf);
@@ -251,10 +265,7 @@ public class MP4Parser {
 
     private void parseMediaHeaderBox(SeekableByteChannel channel, Box box) throws IOException {
         long end = channel.position() + box.contentSize;
-        buf.clear().limit(4);
-        channel.read(buf);
-        buf.rewind();
-        if (buf.get() == 1) {
+        if ((readInt(channel) >>> 24) == 1) {
             creationTime = toDate(readLong(channel));
             modificationTime = toDate(readLong(channel));
             timescale = readInt(channel);
@@ -296,11 +307,9 @@ public class MP4Parser {
         long end = channel.position() + box.contentSize;
         visualSampleEntryType = box.type;
         skip(channel, 24);
-        buf.clear().limit(4);
-        channel.read(buf);
-        buf.rewind();
-        columns = buf.getShort();
-        rows = buf.getShort();
+        int val = readInt(channel);
+        columns = val >>> 16;
+        rows = val & 0xffff;
         skip(channel, 50);
         switch (box.type) {
             case VisualSampleEntryTypeAVC1:
@@ -317,38 +326,27 @@ public class MP4Parser {
 
     private void parseAvcConfigurationBox(SeekableByteChannel channel, Box box) throws IOException {
         long end = channel.position() + box.contentSize;
-        buf.clear().limit(4);
-        channel.read(buf);
-        buf.rewind();
-        configurationVersion = buf.get() & 0xff;
-        profile_idc = buf.get() & 0xff;
-        buf.get();
-        level_idc = buf.get() & 0xff;
+        int val = readInt(channel);
+        configurationVersion = val >>> 24;
+        profile_idc = (val >> 16) & 0xff;
+        level_idc = val & 0xff;
         channel.position(end);
     }
 
     private void parseHevcConfigurationBox(SeekableByteChannel channel, Box box) throws IOException {
         long end = channel.position() + box.contentSize;
-        buf.clear().limit(2);
-        channel.read(buf);
-        buf.rewind();
-        configurationVersion = buf.get() & 0xff;
-        profile_idc = (buf.get() & 0x1F);
+        int val = readShort(channel);
+        configurationVersion = val >>> 8;
+        profile_idc = val & 0x1F;
         skip(channel, 10);
-        buf.clear().limit(1);
-        channel.read(buf);
-        buf.rewind();
-        level_idc = buf.get() & 0xff;
+        level_idc = readByte(channel) & 0xff;
         channel.position(end);
     }
 
     private void parseSampleSizeBox(SeekableByteChannel channel, Box box) throws IOException {
         long end = channel.position() + box.contentSize;
         skip(channel, 8);
-        buf.clear().limit(4);
-        channel.read(buf);
-        buf.rewind();
-        numFrames = buf.getInt();
+        numFrames = readInt(channel);
         fp1000s = (int) ((numFrames * 1000L * timescale + (duration >> 1)) / duration);
         channel.position(end);
     }

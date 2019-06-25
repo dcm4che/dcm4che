@@ -285,6 +285,18 @@ public class MediaTypes {
     public final static MediaType MULTIPART_RELATED_APPLICATION_DICOM_XML_TYPE =
             new MediaType("multipart", "related", Collections.singletonMap("type", APPLICATION_DICOM_XML));
 
+    /**
+     * "model/stl"
+     */
+    public final static String MODEL_STL = "model/stl";
+
+    /**
+     * "model/stl"
+     */
+    public final static MediaType MODEL_STL_TYPE =
+            new MediaType("model", "stl");
+
+
     public static MediaType forTransferSyntax(String ts) {
         MediaType type;
         switch (ts) {

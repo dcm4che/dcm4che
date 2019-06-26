@@ -69,7 +69,7 @@ public class MP4Parser {
     private static final int HevcConfigurationBoxType = 0x68766343; // hvcC
     private static final int SampleSizeBoxType = 0x7374737a; // stsz
 
-    private ByteBuffer buf = ByteBuffer.allocate(8);
+    private final ByteBuffer buf = ByteBuffer.allocate(8);
     private Date creationTime;
     private Date modificationTime;
     private int timescale;

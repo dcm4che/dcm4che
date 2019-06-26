@@ -58,7 +58,7 @@ public class JPEGParser {
 
     private static final int MAX_BYTES_BEFORE_SOI = 256;
 
-    private ByteBuffer buf = ByteBuffer.allocate(4);
+    private final ByteBuffer buf = ByteBuffer.allocate(4);
     private long positionAfterAPP;
     private int sof;
     private int precision;

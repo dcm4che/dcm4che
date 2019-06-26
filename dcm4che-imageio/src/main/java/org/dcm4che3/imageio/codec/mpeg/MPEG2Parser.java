@@ -106,19 +106,19 @@ public class MPEG2Parser {
         if (attrs == null)
             attrs = new Attributes(15);
 
-        int numFrames = 9999;
+        long numFrames = size / 4000;
         if (frameRate > 0 && frameRate < 9) {
             int frameRate2 = (frameRate - 1) << 1;
             attrs.setInt(Tag.CineRate, VR.IS, FPS[frameRate2]);
             attrs.setFloat(Tag.FrameTime, VR.DS, ((float) FPS[frameRate2 + 1]) / FPS[frameRate2]);
             if (bitRate > 0)
-                numFrames = (int) (20 * size * FPS[frameRate2] / FPS[frameRate2 + 1] / bitRate);
+                numFrames = 2 * size * FPS[frameRate2] / FPS[frameRate2 + 1] / bitRate;
         }
         attrs.setInt(Tag.SamplesPerPixel, VR.US, 3);
         attrs.setString(Tag.PhotometricInterpretation, VR.CS, "YBR_PARTIAL_420");
         attrs.setInt(Tag.PlanarConfiguration, VR.US, 0);
         attrs.setInt(Tag.FrameIncrementPointer, VR.AT, Tag.FrameTime);
-        attrs.setInt(Tag.NumberOfFrames, VR.IS, numFrames);
+        attrs.setInt(Tag.NumberOfFrames, VR.IS, (int) numFrames);
         attrs.setInt(Tag.Rows, VR.US, rows);
         attrs.setInt(Tag.Columns, VR.US, columns);
         if (aspectRatio > 0 && aspectRatio < 5)

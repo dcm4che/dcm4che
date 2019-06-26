@@ -45,7 +45,10 @@ import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.UIDUtils;
+import org.xml.sax.helpers.DefaultHandler;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.text.MessageFormat;
@@ -59,7 +62,6 @@ import java.util.ResourceBundle;
  */
 
 public class Pdf2Dcm {
-    private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.pdf2dcm.messages");
     private static final long MAX_FILE_SIZE = 0x7FFFFFFE;
 
@@ -108,18 +110,6 @@ public class Pdf2Dcm {
                 .argName("xml-file")
                 .desc(rb.getString("file"))
                 .build());
-        OptionGroup group = new OptionGroup();
-        group.addOption(Option.builder()
-                .longOpt("pdf")
-                .hasArg(false)
-                .desc(rb.getString("pdf"))
-                .build());
-        group.addOption(Option.builder()
-                .longOpt("cda")
-                .hasArg(false)
-                .desc(rb.getString("cda"))
-                .build());
-        opts.addOptionGroup(group);
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Pdf2Dcm.class);
         int numArgs = cl.getArgList().size();
         if (numArgs == 0)
@@ -129,27 +119,52 @@ public class Pdf2Dcm {
         return cl;
     }
 
-    private static Attributes createMetadata(CommandLine cl, File bulkDataFile) throws Exception {
-        String filePath = bulkDataFile.toPath().toString();
-        boolean pdf = filePath.endsWith("pdf");
-        boolean cda = filePath.endsWith("xml");
-        if (!pdf && !cda)
-           throw new IllegalArgumentException("File extension type not supported.");
+    enum FileType {
+        PDF("resource:encapsulatedPDFMetadata.xml"),
+        CDA("resource:encapsulatedCDAMetadata.xml");
 
-        Attributes metadata = cl.hasOption("pdf")
-                ? SAXReader.parse(StreamUtils.openFileOrURL("resource:encapsulatedPDFMetadata.xml"))
-                : cl.hasOption("cda")
-                    ? SAXReader.parse(StreamUtils.openFileOrURL("resource:encapsulatedCDAMetadata.xml"))
-                    : new Attributes();
+        String sampleMetadataURL;
+
+        FileType(String sampleMetadataURL) {
+            this.sampleMetadataURL = sampleMetadataURL;
+        }
+    }
+
+    private static Attributes createMetadata(CommandLine cl, File bulkDataFile) throws Exception {
+        Attributes metadata = SAXReader.parse(StreamUtils.openFileOrURL(getFileType(bulkDataFile).sampleMetadataURL));
         if (cl.hasOption("f"))
-            metadata = SAXReader.parse(cl.getOptionValue("f"), metadata);
+            metadata.addAll(SAXReader.parse(cl.getOptionValue("f")));
         CLIUtils.addAttributes(metadata, cl.getOptionValues("m"));
         supplementMissingUIDs(metadata);
         supplementMissingDateTime(metadata, Tag.ContentDateAndTime, new Date());
         supplementMissingDateTime(metadata, Tag.AcquisitionDateTime, new Date(bulkDataFile.lastModified()));
-        supplementMissingValue(metadata, Tag.MIMETypeOfEncapsulatedDocument, pdf ? "application/pdf" : "text/XML");
-        supplementMissingValue(metadata, Tag.SOPClassUID, pdf ? UID.EncapsulatedPDFStorage : UID.EncapsulatedCDAStorage);
         return metadata;
+    }
+
+    private static FileType getFileType(File bulkDataFile) throws IOException {
+        String bulkDataFileName = bulkDataFile.getPath();
+        FileType fileType;
+        byte[] buffer = new byte[5];
+        InputStream is = new FileInputStream(bulkDataFileName);
+        StreamUtils.readAvailable(is, buffer, 0, 5);
+        is.close();
+        if (buffer[0] == 0x25 && // %
+                buffer[1] == 0x50 && // P
+                buffer[2] == 0x44 && // D
+                buffer[3] == 0x46 && // F
+                buffer[4] == 0x2D) {
+            fileType = FileType.PDF;
+        } else {
+            try {
+                SAXParserFactory f = SAXParserFactory.newInstance();
+                SAXParser p = f.newSAXParser();
+                p.parse(bulkDataFileName, new DefaultHandler());
+                fileType = FileType.CDA;
+            } catch (Exception e) {
+                throw new IllegalArgumentException("File type not supported.");
+            }
+        }
+        return fileType;
     }
 
     private void convert(File infile, File outfile) throws IOException {
@@ -173,10 +188,5 @@ public class Pdf2Dcm {
     private static void supplementMissingDateTime(Attributes metadata, long tag, Date date) {
         if (!metadata.containsValue((int) (tag >>> 32)))
             metadata.setDate(tag, date);
-    }
-
-    private static void supplementMissingValue(Attributes metadata, int tag, String value) {
-        if (!metadata.containsValue(tag))
-            metadata.setString(tag, DICT.vrOf(tag), value);
     }
 }

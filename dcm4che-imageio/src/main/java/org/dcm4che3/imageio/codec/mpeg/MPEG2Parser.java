@@ -55,7 +55,9 @@ import java.nio.channels.SeekableByteChannel;
  */
 public class MPEG2Parser {
 
-    private static final int SEQUENCE_HEADER_STREAM_ID = 0xb3;
+    private static final int BUFFER_SIZE = 8162;
+    private static final int SEQUENCE_HEADER_STREAM_ID = (byte) 0xb3;
+    private static final int GOP_HEADER_STREAM_ID = (byte) 0xb8;
     private static final String[] ASPECT_RATIO_1_1 = { "1", "1" };
     private static final String[] ASPECT_RATIO_4_3 = { "4", "3" };
     private static final String[] ASPECT_RATIO_16_9 = { "16", "9" };
@@ -77,14 +79,13 @@ public class MPEG2Parser {
             60, 1000
     };
 
-    private final byte[] data = new byte[7];
+    private final byte[] data = new byte[BUFFER_SIZE];
     private final ByteBuffer buf = ByteBuffer.wrap(data);
     private final int columns;
     private final int rows;
     private final int aspectRatio;
     private final int frameRate;
-    private final int bitRate;
-    private final long size;
+    private final int duration;
 
     public MPEG2Parser(SeekableByteChannel channel) throws IOException {
         Packet packet;
@@ -92,33 +93,32 @@ public class MPEG2Parser {
             skip(channel, packet.length);
         }
         findSequenceHeader(channel, packet.length);
-        buf.clear();
+        buf.clear().limit(7);
         channel.read(buf);
         columns = ((data[0] & 0xff) << 4) | ((data[1] & 0xf0) >> 4);
-        rows = ((data[1] & 0x0f) << 8) | (data[2] & 0xFF);
+        rows = ((data[1] & 0x0f) << 8) | (data[2] & 0xff);
         aspectRatio = (data[3] >> 4) & 0x0f;
-        frameRate = data[3] & 0x0f;
-        bitRate = (((data[4] & 0xff) << 24) | ((data[5] & 0xff) << 16) | ((data[6] & 0xff) << 8)) >> 14;
-        size = channel.size();
+        frameRate = Math.max(1, Math.min(data[3] & 0x0f, 8));
+        int lastGOP = findLastGOP(channel);
+        int hh = (data[lastGOP] & 0x7c) >> 2;
+        int mm = ((data[lastGOP] & 0x03) << 4) | ((data[lastGOP + 1] & 0xf0) >> 4);
+        int ss = ((data[lastGOP + 1] & 0x07) << 3) | ((data[lastGOP + 2] & 0xe0) >> 5);
+        duration = hh * 3600 + mm * 60 + ss;
     }
 
     public Attributes getAttributes(Attributes attrs) {
         if (attrs == null)
             attrs = new Attributes(15);
 
-        long numFrames = size / 4000;
-        if (frameRate > 0 && frameRate < 9) {
-            int frameRate2 = (frameRate - 1) << 1;
-            attrs.setInt(Tag.CineRate, VR.IS, FPS[frameRate2]);
-            attrs.setFloat(Tag.FrameTime, VR.DS, ((float) FPS[frameRate2 + 1]) / FPS[frameRate2]);
-            if (bitRate > 0)
-                numFrames = 2 * size * FPS[frameRate2] / FPS[frameRate2 + 1] / bitRate;
-        }
+        int frameRate2 = (frameRate - 1) << 1;
+        int fps = FPS[frameRate2];
+        attrs.setInt(Tag.CineRate, VR.IS, fps);
+        attrs.setFloat(Tag.FrameTime, VR.DS, ((float) FPS[frameRate2 + 1]) / fps);
         attrs.setInt(Tag.SamplesPerPixel, VR.US, 3);
         attrs.setString(Tag.PhotometricInterpretation, VR.CS, "YBR_PARTIAL_420");
         attrs.setInt(Tag.PlanarConfiguration, VR.US, 0);
         attrs.setInt(Tag.FrameIncrementPointer, VR.AT, Tag.FrameTime);
-        attrs.setInt(Tag.NumberOfFrames, VR.IS, (int) numFrames);
+        attrs.setInt(Tag.NumberOfFrames, VR.IS, duration * fps);
         attrs.setInt(Tag.Rows, VR.US, rows);
         attrs.setInt(Tag.Columns, VR.US, columns);
         if (aspectRatio > 0 && aspectRatio < 5)
@@ -133,28 +133,48 @@ public class MPEG2Parser {
 
     private void findSequenceHeader(SeekableByteChannel channel, int length) throws IOException {
         int remaining = length;
-        int startPrefix;
         buf.clear().limit(3);
         while ((remaining -= buf.remaining()) > 1) {
             channel.read(buf);
             buf.rewind();
-            if ((startPrefix = (data[0] << 16) | (data[1] << 8) | data[2]) == 1) {
+            if (((data[0] << 16) | (data[1] << 8) | data[2]) == 1) {
                 buf.clear().limit(1);
                 remaining--;
                 channel.read(buf);
                 buf.rewind();
-                if ((buf.get() & 0xff) == SEQUENCE_HEADER_STREAM_ID)
+                if (buf.get() == SEQUENCE_HEADER_STREAM_ID)
                     return;
                 buf.limit(3);
             }
-            buf.position(Math.min(2, Integer.numberOfTrailingZeros(startPrefix)));
-            data[0] = data[1] = 0;
+            buf.position(data[2] == 0 ? data[1] == 0 ? 2 : 1 : 0);
+            data[0] = 0;
         }
         throw new MPEG2ParserException("sequence header not found");
     }
 
     private void skip(SeekableByteChannel channel, long n) throws IOException {
         channel.position(channel.position() + n);
+    }
+
+    private int findLastGOP(SeekableByteChannel channel) throws IOException {
+        long size = channel.size();
+        long startPos = size - BUFFER_SIZE;
+        long minStartPos = size - 0x20000;
+        while (startPos > minStartPos) {
+            channel.position(startPos);
+            buf.clear();
+            channel.read(buf);
+            int i = 0;
+            while (i + 8 < BUFFER_SIZE) {
+                if (((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]) == 1) {
+                    if (data[i + 3] == GOP_HEADER_STREAM_ID)
+                        return i + 4;
+                }
+                i += data[i + 2] == 0 ? data[i + 1] == 0 ? 1 : 2 : 3;
+            }
+            startPos -= BUFFER_SIZE - 8;
+        }
+        throw new MPEG2ParserException("last GoP not found");
     }
 
     private static class Packet {
@@ -176,7 +196,11 @@ public class MPEG2Parser {
             throw new MPEG2ParserException(
                     String.format("Invalid start code %4XH on position %d", startCode, channel.position() - 6));
         }
-        return new Packet(startCode, isPackHeader(startCode) ? 8 : buf.getShort() & 0xffff);
+        return new Packet(startCode, packetLength(startCode));
+    }
+
+    private int packetLength(int startCode) {
+        return isPackHeader(startCode) ? ((data[4] & 0xc0) != 0) ? 8 : 6 : buf.getShort() & 0xffff;
     }
 
     private static boolean isPackHeader(int startCode) {

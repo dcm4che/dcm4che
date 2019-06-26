@@ -68,7 +68,8 @@ public class Pdf2Dcm {
     private static final int[] IUID_TAGS = {
             Tag.StudyInstanceUID,
             Tag.SeriesInstanceUID,
-            Tag.SOPInstanceUID
+            Tag.SOPInstanceUID,
+            Tag.FrameOfReferenceUID
     };
 
     private Attributes metadata;
@@ -121,7 +122,8 @@ public class Pdf2Dcm {
 
     enum FileType {
         PDF("resource:encapsulatedPDFMetadata.xml"),
-        CDA("resource:encapsulatedCDAMetadata.xml");
+        CDA("resource:encapsulatedCDAMetadata.xml"),
+        STL("resource:encapsulatedSTLMetadata.xml");
 
         String sampleMetadataURL;
 
@@ -142,29 +144,35 @@ public class Pdf2Dcm {
     }
 
     private static FileType getFileType(File bulkDataFile) throws IOException {
-        String bulkDataFileName = bulkDataFile.getPath();
+        String bulkDataFilePath = bulkDataFile.getPath();
         FileType fileType;
-        byte[] buffer = new byte[5];
-        InputStream is = new FileInputStream(bulkDataFileName);
-        StreamUtils.readAvailable(is, buffer, 0, 5);
-        is.close();
-        if (buffer[0] == 0x25 && // %
-                buffer[1] == 0x50 && // P
-                buffer[2] == 0x44 && // D
-                buffer[3] == 0x46 && // F
-                buffer[4] == 0x2D) {
+        if (bulkDataFilePath.endsWith(".stl"))
+            fileType = FileType.STL;
+        else if (isPDF(bulkDataFilePath))
             fileType = FileType.PDF;
-        } else {
+        else {
             try {
                 SAXParserFactory f = SAXParserFactory.newInstance();
                 SAXParser p = f.newSAXParser();
-                p.parse(bulkDataFileName, new DefaultHandler());
+                p.parse(bulkDataFilePath, new DefaultHandler());
                 fileType = FileType.CDA;
             } catch (Exception e) {
                 throw new IllegalArgumentException("File type not supported.");
             }
         }
         return fileType;
+    }
+
+    private static boolean isPDF(String bulkDataFilePath) throws IOException {
+        byte[] buffer = new byte[5];
+        InputStream is = new FileInputStream(bulkDataFilePath);
+        StreamUtils.readAvailable(is, buffer, 0, 5);
+        is.close();
+        return buffer[0] == 0x25 && // %
+                buffer[1] == 0x50 && // P
+                buffer[2] == 0x44 && // D
+                buffer[3] == 0x46 && // F
+                buffer[4] == 0x2D;
     }
 
     private void convert(File infile, File outfile) throws IOException {

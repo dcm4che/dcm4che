@@ -135,7 +135,7 @@ public class Pdf2Dcm {
     private static Attributes createMetadata(CommandLine cl, File bulkDataFile) throws Exception {
         Attributes metadata = SAXReader.parse(StreamUtils.openFileOrURL(getFileType(bulkDataFile).sampleMetadataURL));
         if (cl.hasOption("f"))
-            metadata.addAll(SAXReader.parse(cl.getOptionValue("f")));
+            metadata.addAll(SAXReader.parse(cl.getOptionValue("f"), metadata));
         CLIUtils.addAttributes(metadata, cl.getOptionValues("m"));
         supplementMissingUIDs(metadata);
         supplementMissingDateTime(metadata, Tag.ContentDateAndTime, new Date());

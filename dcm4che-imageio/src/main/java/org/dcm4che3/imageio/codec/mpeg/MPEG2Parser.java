@@ -122,7 +122,7 @@ public class MPEG2Parser implements XPEGParser {
         attrs.setString(Tag.PhotometricInterpretation, VR.CS, "YBR_PARTIAL_420");
         attrs.setInt(Tag.PlanarConfiguration, VR.US, 0);
         attrs.setInt(Tag.FrameIncrementPointer, VR.AT, Tag.FrameTime);
-        attrs.setInt(Tag.NumberOfFrames, VR.IS, duration * fps);
+        attrs.setInt(Tag.NumberOfFrames, VR.IS, (int) (duration * fps * 1000L / FPS[frameRate2 + 1]));
         attrs.setInt(Tag.Rows, VR.US, rows);
         attrs.setInt(Tag.Columns, VR.US, columns);
         if (aspectRatio > 0 && aspectRatio < 5)

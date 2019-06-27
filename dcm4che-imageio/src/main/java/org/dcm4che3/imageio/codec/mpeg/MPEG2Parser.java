@@ -43,7 +43,10 @@ package org.dcm4che3.imageio.codec.mpeg;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.imageio.codec.XPEGParser;
+import org.dcm4che3.imageio.codec.XPEGParserException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -53,7 +56,7 @@ import java.nio.channels.SeekableByteChannel;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jun 2019
  */
-public class MPEG2Parser {
+public class MPEG2Parser implements XPEGParser {
 
     private static final int BUFFER_SIZE = 8162;
     private static final int SEQUENCE_HEADER_STREAM_ID = (byte) 0xb3;
@@ -106,6 +109,7 @@ public class MPEG2Parser {
         duration = hh * 3600 + mm * 60 + ss;
     }
 
+    @Override
     public Attributes getAttributes(Attributes attrs) {
         if (attrs == null)
             attrs = new Attributes(15);
@@ -131,6 +135,11 @@ public class MPEG2Parser {
         return attrs;
     }
 
+    @Override
+    public String getTransferSyntaxUID() {
+        return frameRate <= 4 && columns <= 720 ? UID.MPEG2 : UID.MPEG2MainProfileHighLevel;
+    }
+
     private void findSequenceHeader(SeekableByteChannel channel, int length) throws IOException {
         int remaining = length;
         buf.clear().limit(3);
@@ -149,7 +158,7 @@ public class MPEG2Parser {
             buf.position(data[2] == 0 ? data[1] == 0 ? 2 : 1 : 0);
             data[0] = 0;
         }
-        throw new MPEG2ParserException("sequence header not found");
+        throw new XPEGParserException("MPEG2 sequence header not found");
     }
 
     private void skip(SeekableByteChannel channel, long n) throws IOException {
@@ -174,7 +183,7 @@ public class MPEG2Parser {
             }
             startPos -= BUFFER_SIZE - 8;
         }
-        throw new MPEG2ParserException("last GoP not found");
+        throw new XPEGParserException("last MPEG2 Group of Pictures not found");
     }
 
     private static class Packet {
@@ -193,8 +202,8 @@ public class MPEG2Parser {
         buf.rewind();
         int startCode = buf.getInt();
         if ((startCode & 0xfffffe00) != 0) {
-            throw new MPEG2ParserException(
-                    String.format("Invalid start code %4XH on position %d", startCode, channel.position() - 6));
+            throw new XPEGParserException(
+                    String.format("Invalid MPEG2 start code %4XH on position %d", startCode, channel.position() - 6));
         }
         return new Packet(startCode, packetLength(startCode));
     }

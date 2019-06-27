@@ -39,7 +39,7 @@
  *
  */
 
-package org.dcm4che3.imageio.codec.jpeg;
+package org.dcm4che3.imageio.codec;
 
 import java.io.IOException;
 
@@ -47,8 +47,8 @@ import java.io.IOException;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jun 2019
  */
-public class JPEGParserException extends IOException {
-    public JPEGParserException(String message) {
+public class XPEGParserException extends IOException {
+    public XPEGParserException(String message) {
         super(message);
     }
 }

@@ -39,16 +39,16 @@
  *
  */
 
-package org.dcm4che3.imageio.codec.mpeg;
+package org.dcm4che3.imageio.codec;
 
-import java.io.IOException;
+import org.dcm4che3.data.Attributes;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jun 2019
  */
-public class MPEG2ParserException extends IOException {
-    public MPEG2ParserException(String message) {
-        super(message);
-    }
+public interface XPEGParser {
+    Attributes getAttributes(Attributes attrs);
+
+    String getTransferSyntaxUID() throws XPEGParserException;
 }

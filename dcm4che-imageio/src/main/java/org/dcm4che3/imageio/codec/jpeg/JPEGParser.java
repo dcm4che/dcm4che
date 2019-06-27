@@ -45,6 +45,8 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.imageio.codec.XPEGParser;
+import org.dcm4che3.imageio.codec.XPEGParserException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -54,7 +56,7 @@ import java.nio.channels.SeekableByteChannel;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jun 2019
  */
-public class JPEGParser {
+public class JPEGParser implements XPEGParser {
 
     private static final int MAX_BYTES_BEFORE_SOI = 256;
 
@@ -95,6 +97,7 @@ public class JPEGParser {
         return positionAfterAPP;
     }
 
+    @Override
     public Attributes getAttributes(Attributes attrs) {
         if (attrs == null)
             attrs = new Attributes(10);
@@ -118,7 +121,8 @@ public class JPEGParser {
         return attrs;
     }
 
-    public String getTransferSyntaxUID() throws JPEGParserException {
+    @Override
+    public String getTransferSyntaxUID() throws XPEGParserException {
         switch(sof) {
             case JPEG.SOF0:
                 return UID.JPEGBaseline1;
@@ -131,7 +135,7 @@ public class JPEGParser {
             case JPEG.SOF55:
                 return ss == 0 ? UID.JPEGLSLossless : UID.JPEGLSLossyNearLossless;
         }
-        throw new JPEGParserException(String.format("SOF%d not supported", sof & 0xf));
+        throw new XPEGParserException(String.format("JPEG SOF%d not supported", sof & 0xf));
     }
 
     private void findSOI(SeekableByteChannel channel) throws IOException {
@@ -145,7 +149,7 @@ public class JPEGParser {
             if (b1 == 0xff && (b2 = readUByte(channel)) == JPEG.SOI)
                 return;
         } while (--remaining > 0);
-        throw new JPEGParserException("SOI marker not found");
+        throw new XPEGParserException("JPEG SOI marker not found");
 
     }
 
@@ -198,7 +202,7 @@ public class JPEGParser {
 
     private void requiresFF(SeekableByteChannel channel, int v) throws IOException {
         if (v != 0xff)
-            throw new JPEGParserException(
-                    String.format("Unexpected %2XH on position %d", v, channel.position() - 4));
+            throw new XPEGParserException(
+                    String.format("unexpected %2XH on position %d", v, channel.position() - 4));
     }
 }

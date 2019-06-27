@@ -45,6 +45,8 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.imageio.codec.XPEGParser;
+import org.dcm4che3.imageio.codec.XPEGParserException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -55,7 +57,7 @@ import java.util.Date;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jun 2019
  */
-public class MP4Parser {
+public class MP4Parser implements XPEGParser {
     private static final int MovieBoxType = 0x6d6f6f76; // moov;
     private static final int TrackBoxType = 0x7472616b; // trak
     private static final int MediaBoxType = 0x6d646961; // mdia
@@ -95,6 +97,7 @@ public class MP4Parser {
         return modificationTime;
     }
 
+    @Override
     public Attributes getAttributes(Attributes attrs) {
         if (attrs == null)
             attrs = new Attributes(14);
@@ -116,7 +119,8 @@ public class MP4Parser {
         return attrs;
     }
 
-    public String getTransferSyntaxUID() throws MP4ParserException {
+    @Override
+    public String getTransferSyntaxUID() throws XPEGParserException {
         switch (visualSampleEntryType) {
             case VisualSampleEntryTypeAVC1:
                 switch (profile_idc) {
@@ -135,7 +139,7 @@ public class MP4Parser {
                             return UID.MPEG4AVCH264StereoHighProfileLevel42;
                         break;
                 }
-                throw profileLevelNotSupported("AVC profile_idc/level_idc: %d/%d not supported");
+                throw profileLevelNotSupported("MPEG-4 AVC profile_idc/level_idc: %d/%d not supported");
             case VisualSampleEntryTypeHVC1:
                 if (level_idc <= 51) {
                     switch (profile_idc) {
@@ -145,13 +149,13 @@ public class MP4Parser {
                             return UID.HEVCH265Main10ProfileLevel51;
                     }
                 }
-                throw profileLevelNotSupported("HEVC profile_idc/level_idc: %d/%d not supported");
+                throw profileLevelNotSupported("MPEG-4 HEVC profile_idc/level_idc: %d/%d not supported");
         }
         throw new AssertionError("visualSampleEntryType:" + visualSampleEntryType);
     }
 
-    private MP4ParserException profileLevelNotSupported(String format) {
-        return new MP4ParserException(String.format(format, profile_idc, level_idc));
+    private XPEGParserException profileLevelNotSupported(String format) {
+        return new XPEGParserException(String.format(format, profile_idc, level_idc));
     }
 
     private boolean isBDCompatible() {
@@ -183,7 +187,7 @@ public class MP4Parser {
             }
             skip(channel, box.contentSize);
         }
-        throw new MP4ParserException(boxNotFound(types[0]));
+        throw new XPEGParserException(boxNotFound(types[0]));
     }
 
     private static String boxNotFound(int type) {

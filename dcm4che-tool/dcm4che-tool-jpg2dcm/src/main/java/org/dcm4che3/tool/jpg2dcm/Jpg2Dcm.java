@@ -251,10 +251,8 @@ public class Jpg2Dcm {
             String contentType = Files.probeContentType(path);
             String contentTypeSubType = contentType.substring(contentType.indexOf("/")+1);
             switch (contentTypeSubType) {
-                case "jpg":
                 case "jpeg":
                     return JPEG;
-                case "mpg":
                 case "mpeg":
                     return MPEG2;
                 case "mp4":

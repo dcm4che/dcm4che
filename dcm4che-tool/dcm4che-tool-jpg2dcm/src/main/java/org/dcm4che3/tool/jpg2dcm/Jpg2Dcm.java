@@ -199,7 +199,7 @@ public class Jpg2Dcm {
                 return jpegParser.getAttributes(attrs);
             }
         },
-        MPEG2(UID.VideoPhotographicImageStorage, "resource:vlPhotographicImageMetadata.xml") {
+        MPEG(UID.VideoPhotographicImageStorage, "resource:vlPhotographicImageMetadata.xml") {
             @Override
             Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
                 setTsuid(UID.MPEG2);
@@ -249,16 +249,12 @@ public class Jpg2Dcm {
 
         static FileType valueOf(Path path) throws IOException {
             String contentType = Files.probeContentType(path);
-            String contentTypeSubType = contentType.substring(contentType.indexOf("/")+1);
-            switch (contentTypeSubType) {
-                case "jpeg":
-                    return JPEG;
-                case "mpeg":
-                    return MPEG2;
-                case "mp4":
-                    return MP4;
+            try {
+                return valueOf(contentType.substring(contentType.indexOf("/") + 1).toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(
+                        MessageFormat.format(rb.getString("invalid-file-ext"), contentType, path));
             }
-            throw new IllegalArgumentException(MessageFormat.format(rb.getString("invalid-file-ext"), path));
         }
     }
 }

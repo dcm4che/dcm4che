@@ -93,7 +93,7 @@ public class StowRS {
     private boolean isVLPhotographicImage;
     private String requestAccept;
     private String requestContentType;
-    private String metadataFile;
+    private static String metadataFile;
     private static CompressedPixelData compressedPixelData;
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
@@ -181,11 +181,13 @@ public class StowRS {
             throw new MissingArgumentException("No pixel data files or dicom files specified");
         if ((instance.URL = cl.getOptionValue("url")) == null)
             throw new MissingOptionException("Missing url.");
+        if (cl.hasOption("f")
+            && !Files.probeContentType(Paths.get((metadataFile = cl.getOptionValue("f")))).endsWith("xml"))
+                throw new IllegalArgumentException("Metadata file extension not supported. Read -f option in stowrs help");
 
         checkFileType(files, instance);
         instance.keys = cl.getOptionValues("m");
         instance.user = cl.getOptionValue("u");
-        instance.metadataFile = cl.getOptionValue("f");
         setContentAndAcceptType(instance, cl);
         pixelHeader = cl.hasOption("pixel-header");
         noAppn = cl.hasOption("no-appn");
@@ -195,6 +197,7 @@ public class StowRS {
     enum FileType {
         PDF(UID.EncapsulatedPDFStorage, "encapsulatedPDFMetadata.xml"),
         XML(UID.EncapsulatedCDAStorage, "encapsulatedCDAMetadata.xml"),
+        SLA(UID.EncapsulatedSTLStorage, "encapsulatedSTLMetadata.xml"),
         JPEG(UID.SecondaryCaptureImageStorage, "secondaryCaptureImageMetadata.xml"),
         VLJPEG(UID.VLPhotographicImageStorage, "vlPhotographicImageMetadata.xml"),
         MPEG(UID.VideoPhotographicImageStorage, "vlPhotographicImageMetadata.xml"),
@@ -272,7 +275,8 @@ public class StowRS {
         switch (fileType) {
             case PDF:
             case XML:
-                encapsulatedDocMetadata(metadata, bulkdataFile);
+            case SLA:
+                supplementBulkdata(metadata, Tag.EncapsulatedDocument, bulkdataFile);
                 break;
             case JPEG:
             case VLJPEG:
@@ -282,11 +286,6 @@ public class StowRS {
                 break;
         }
         return metadata;
-    }
-
-    private static void encapsulatedDocMetadata(Attributes metadata, File bulkdataFile) {
-        supplementBulkdata(metadata, Tag.EncapsulatedDocument, bulkdataFile);
-        supplementDefaultValue(metadata, Tag.MIMETypeOfEncapsulatedDocument, bulkdataContentType);
     }
 
     private static void pixelMetadata(Attributes metadata, File pixelDataFile)
@@ -302,16 +301,17 @@ public class StowRS {
         LOG.info("Creating static metadata. Set defaults, if essential attributes are not present.");
         Attributes metadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataResourceURL()));
         supplementDefaultValue(metadata, Tag.PatientName, patName);
-        String metadataFile = instance.metadataFile;
-        if (metadataFile != null) {
-            if (!metadataFile.endsWith(".xml"))
-                throw new IllegalArgumentException("Metadata file extension not supported. Read -f option in stowrs help");
-
-            metadata.addAll(SAXReader.parse(Paths.get(metadataFile).toString(), metadata));
-        }
+        addAttributesFromFile(metadata);
         CLIUtils.addAttributes(metadata, instance.keys);
         supplementDefaultValue(metadata, Tag.SOPClassUID, fileType.getSOPClassUID());
         return metadata;
+    }
+
+    private static void addAttributesFromFile(Attributes metadata) throws Exception {
+        if (metadataFile == null)
+            return;
+
+        metadata.addAll(SAXReader.parse(Paths.get(metadataFile).toString(), metadata));
     }
 
     private static void supplementMissingUIDs(Attributes metadata) {

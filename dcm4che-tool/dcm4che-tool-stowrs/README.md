@@ -2,9 +2,7 @@
     
     For DICOM files : Send multiple dicom files to STOW-RS receiver at a time.
     For metadata+bulkdata : DICOM attributes can be specified via command line
-    (using -m option) or a XML file (using -f option) or can also be generated
-    using sample metadata files by specifying (either --sc option or --xc
-    option for images or --pdf option or --cda option). If all the options are
+    (using -m option) or a XML file (using -f option) If both the options are
     specified, system will generate metadata first from sample metadata file
     then from file specified by user and lastly add the attributes specified
     individually on command line. The Type 1 and Type 2 attributes, if
@@ -13,9 +11,9 @@
     bulkdata files (limited to file types of same type) at a time in one
     request to STOW-RS receiver. i.e for eg. one can send multiple pdfs in one
     request, but can not send combination of files like pdfs and images in one
-    request. Supported extension types for bulkdata are pdf, xml (for CDA
-    files), jpg, jpeg, mpg, mpeg, mpg2.
-    File names should not contain spaces.
+    request. Supported content types for bulkdata are application/pdf,
+    text/xml (for CDA files), image/jpeg, video/mpeg and video/mp4.
+    File names shall not contain spaces.
     -
     Options:
      -a,--accept <arg>           Specify the value for Accept header : xml or
@@ -31,9 +29,6 @@
                                  application/dicom+json. If -t option is
                                  absent as well then application/dicom+xml
                                  will be used by default.
-        --cda                    Generate sample metadata for Encapsulated CDA
-                                 from etc/stowrs/encapsulatedCDAMetadata.xml
-                                 file.
      -f,--file <arg>             Specify the file containing the metadata (in
                                  XML format).
      -h,--help                   display this help and exit
@@ -47,20 +42,13 @@
         --no-appn                Application segments APPn are to be excluded
                                  from JPEG stream. If absent JPEG stream
                                  verbatim encapsulated by default.
-        --pdf                    Generate sample metadata for Encapsulated PDF
-                                 from etc/stowrs/encapsulatedPDFMetadata.xml
-                                 file.
-        --pixel-header           Metadata information is to be extracted from
-                                 header of pixel data for jpegs and mpegs. If
-                                 absent, pixel header will not be read; ensure
-                                 that pixel data related attributes should be
-                                 present either in metadata file or from
-                                 command line to ensure seeing the
-                                 images/videos correctly.
-        --sc                     Generate sample metadata for Secondary
-                                 Capture Image from
-                                 etc/stowrs/secondaryCaptureImageMetadata.xml
-                                 file.
+        --pixel-header           Metadata information shall be extracted from
+                                 header of pixel data for jpeg images, mpeg
+                                 and mp4 videos. in addition to the metadata
+                                 generation as explained above in description.
+                                 If this option is not specified and mp4
+                                 videos are stored, transfer syntax will not
+                                 be sent in the multipart request.
      -t,--type <arg>             Specify the value for Content-type header :
                                  xml or json. The value of Content-type will
                                  then be sent in request header as
@@ -75,10 +63,8 @@
                                  server authentication.
         --url <url>              Specify the request URL.
      -V,--version                output version information and exit
-        --xc                     Generate sample metadata for VL Photographic
-                                 Image from
-                                 etc/stowrs/vlPhotographicImageMetadata.xml
-                                 file.
+        --xc                     Specify this option, if vlPhotographicImage
+                                 images are to be stored to the server.
     -
     Example: stowrs -m PatientName=John^Doe --url
     http://localhost/stow/studies img.jpeg
@@ -89,8 +75,8 @@
     object1.dcm object2.dcm
     => Send stow request to stowRS Receiver with the given dicom files.
     -
-    Example: stowrs -t json --pdf -m StudyInstanceUID=1.2.3.4.5.6.7.8.9.10
-    --url http://localhost/stow/studies file1.pdf file2.pdf file3.pdf
+    Example: stowrs -t json -m StudyInstanceUID=1.2.3.4.5.6.7.8.9.10 --url
+    http://localhost/stow/studies file1.pdf file2.pdf file3.pdf
     => Send stow request to stowRS Receiver first generating metadata from
     etc/stowrs/encapsulatedPDFMetadata.xml and then adding
     given StudyInstanceUID for the 3 pdf files.

@@ -498,7 +498,7 @@ public class StowRS {
     private static void write(OutputStream out, ByteArrayOutputStream bOut)
             throws IOException {
         String bulkdataContentType = requestContentType;
-        if (pixelHeader || compressedPixelData != CompressedPixelData.MP4)
+        if (compressedPixelData != null && (pixelHeader || compressedPixelData != CompressedPixelData.MP4))
             bulkdataContentType = requestContentType + "; transfer-syntax=" + compressedPixelData.getTransferSyntaxUID();
 
         LOG.debug("Metadata being sent is : " + bOut.toString());

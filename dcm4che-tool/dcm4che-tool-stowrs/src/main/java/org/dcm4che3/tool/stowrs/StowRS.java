@@ -54,6 +54,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
+import javax.ws.rs.core.MediaType;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.cli.*;
@@ -73,6 +74,7 @@ import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.*;
 import org.dcm4che3.util.Base64;
+import org.dcm4che3.ws.rs.MediaTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +85,7 @@ import org.slf4j.LoggerFactory;
  */
 public class StowRS {
     private static final Logger LOG = LoggerFactory.getLogger(StowRS.class);
-    private static String bulkdataContentType;
+    private static String fileContentType;
     private static String[] keys;
     private static String url;
     private static String user;
@@ -216,17 +218,25 @@ public class StowRS {
     }
 
     enum FileType {
-        PDF(UID.EncapsulatedPDFStorage, Tag.EncapsulatedDocument, "encapsulatedPDFMetadata.xml"),
-        XML(UID.EncapsulatedCDAStorage, Tag.EncapsulatedDocument, "encapsulatedCDAMetadata.xml"),
-        SLA(UID.EncapsulatedSTLStorage, Tag.EncapsulatedDocument, "encapsulatedSTLMetadata.xml"),
-        JPEG(UID.SecondaryCaptureImageStorage, Tag.PixelData, "secondaryCaptureImageMetadata.xml"),
-        VLJPEG(UID.VLPhotographicImageStorage, Tag.PixelData, "vlPhotographicImageMetadata.xml"),
-        MPEG(UID.VideoPhotographicImageStorage, Tag.PixelData, "vlPhotographicImageMetadata.xml"),
-        MP4(UID.VideoPhotographicImageStorage, Tag.PixelData, "vlPhotographicImageMetadata.xml");
+        PDF(UID.EncapsulatedPDFStorage, Tag.EncapsulatedDocument, MediaTypes.APPLICATION_PDF,
+                "encapsulatedPDFMetadata.xml"),
+        XML(UID.EncapsulatedCDAStorage, Tag.EncapsulatedDocument, MediaType.TEXT_XML,
+                "encapsulatedCDAMetadata.xml"),
+        SLA(UID.EncapsulatedSTLStorage, Tag.EncapsulatedDocument, MediaTypes.MODEL_STL,
+                "encapsulatedSTLMetadata.xml"),
+        JPEG(UID.SecondaryCaptureImageStorage, Tag.PixelData, MediaTypes.IMAGE_JPEG,
+                "secondaryCaptureImageMetadata.xml"),
+        VLJPEG(UID.VLPhotographicImageStorage, Tag.PixelData, MediaTypes.IMAGE_JPEG,
+                "vlPhotographicImageMetadata.xml"),
+        MPEG(UID.VideoPhotographicImageStorage, Tag.PixelData, MediaTypes.VIDEO_MPEG,
+                "vlPhotographicImageMetadata.xml"),
+        MP4(UID.VideoPhotographicImageStorage, Tag.PixelData, MediaTypes.VIDEO_MP4,
+                "vlPhotographicImageMetadata.xml");
 
         private String cuid;
         private int bulkdataTypeTag;
         private String sampleMetadataFile;
+        private String mediaType;
 
         public String getSOPClassUID() {
             return cuid;
@@ -240,36 +250,41 @@ public class StowRS {
             return bulkdataTypeTag;
         }
 
-        FileType(String cuid, int bulkdataTypeTag, String sampleMetadataFile) {
+        public String getMediaType() {
+            return mediaType;
+        }
+
+        FileType(String cuid, int bulkdataTypeTag, String mediaType, String sampleMetadataFile) {
             this.cuid = cuid;
             this.bulkdataTypeTag = bulkdataTypeTag;
             this.sampleMetadataFile = sampleMetadataFile;
+            this.mediaType = mediaType;
         }
     }
 
     private static void checkFileType(List<String> files) throws IOException {
         Path path = Paths.get(files.get(0));
-        bulkdataContentType = Files.probeContentType(path);
+        fileContentType = Files.probeContentType(path);
         for (int i = 1; i < files.size(); i++)
-            if (!bulkdataContentType.equals(Files.probeContentType(Paths.get(files.get(i)))))
+            if (!fileContentType.equals(Files.probeContentType(Paths.get(files.get(i)))))
                 throw new IllegalArgumentException("Uploading multiple files of different content types not supported.");
 
-        if (bulkdataContentType.equals(APPLN_DICOM))
+        if (fileContentType.equals(APPLN_DICOM))
             return;
 
         try {
-            fileType = FileType.valueOf(bulkdataContentType.substring(bulkdataContentType.indexOf("/") + 1).toUpperCase());
+            fileType = FileType.valueOf(fileContentType.substring(fileContentType.indexOf("/") + 1).toUpperCase());
             if (isVLPhotographicImage && fileType == FileType.JPEG)
                 fileType = FileType.VLJPEG;
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    MessageFormat.format(rb.getString("bulkdata-file-not-supported"), bulkdataContentType, path));
+                    MessageFormat.format(rb.getString("bulkdata-file-not-supported"), fileContentType, path));
         }
 
     }
 
     private static void setContentAndAcceptType(CommandLine cl) {
-        if (bulkdataContentType.equals(APPLN_DICOM)) {
+        if (fileContentType.equals(APPLN_DICOM)) {
             requestContentType = APPLN_DICOM;
             requestAccept = APPLN_DICOM_XML;
             return;
@@ -509,7 +524,7 @@ public class StowRS {
 
             for (Map.Entry<String, File> entry : contentLocBulkData.entrySet()) {
                 out.write(("\r\n--" + boundary + "\r\n").getBytes());
-                out.write(("Content-Type: " + bulkdataContentType + "\r\n").getBytes());
+                out.write(("Content-Type: " + fileType.getMediaType() + "\r\n").getBytes());
                 out.write(("Content-Location: " + entry.getKey() + "\r\n").getBytes());
                 out.write("\r\n".getBytes());
                 if (compressedPixelData == CompressedPixelData.JPEG && noAppn) {
@@ -549,7 +564,7 @@ public class StowRS {
                 write(out, bOut);
 
                 out.write(("\r\n--" + boundary + "\r\n").getBytes());
-                out.write(("Content-Type: " + bulkdataContentType + "\r\n").getBytes());
+                out.write(("Content-Type: " + fileType.getMediaType() + "\r\n").getBytes());
                 out.write(("Content-Location: "
                         + ((BulkData) metadata.getValue(fileType.getBulkdataTypeTag())).getURI()
                         + "\r\n")

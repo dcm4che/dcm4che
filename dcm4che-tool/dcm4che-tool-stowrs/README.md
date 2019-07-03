@@ -28,7 +28,7 @@
                                  application/dicom+json. If -t option is
                                  absent as well then application/dicom+xml
                                  will be used by default.
-     -f,--file <arg>             Specify the file containing the metadata (in
+     -f,--file <file>            Specify the file containing the metadata (in
                                  XML format).
      -h,--help                   display this help and exit
      -m <[seq/]attr=value>       Specify metadata attributes. attr can be
@@ -48,7 +48,7 @@
                                  If this option is not specified and mp4
                                  videos are stored, transfer syntax will not
                                  be sent in the multipart request.
-     -t,--type <arg>             Specify the value for Content-type header :
+     -t,--type <type>            Specify the value for Content-type header :
                                  xml or json. The value of Content-type will
                                  then be sent in request header as
                                  application/dicom+xml or
@@ -58,6 +58,9 @@
                                  default. Note that for DICOM objects, tool
                                  will always send Content-type as
                                  application/dicom.
+        --tsuid <tsuid>          Specify the Transfer Syntax UID to be sent in
+                                 multipart request for content types
+                                 image/jpeg or video/mpeg.
      -u,--user <user:password>   Specify the user name and password to use for
                                  server authentication.
         --url <url>              Specify the request URL.

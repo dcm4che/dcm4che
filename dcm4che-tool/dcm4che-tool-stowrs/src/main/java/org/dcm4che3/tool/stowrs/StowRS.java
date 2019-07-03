@@ -93,6 +93,7 @@ public class StowRS {
     private static String requestAccept;
     private static String requestContentType;
     private static String metadataFile;
+    private static String tsuid;
     private static CompressedPixelData compressedPixelData;
     private static ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.stowrs.messages");
     private static final String boundary = "myboundary";
@@ -120,15 +121,41 @@ public class StowRS {
     private static CommandLine parseCommandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
-        opts.addOption(Option.builder("m").numberOfArgs(2).argName("[seq/]attr=value")
-                .valueSeparator().desc(rb.getString("metadata"))
+        opts.addOption(Option.builder("m")
+                .numberOfArgs(2).argName("[seq/]attr=value")
+                .valueSeparator()
+                .desc(rb.getString("metadata"))
                 .build());
-        opts.addOption("f", "file", true, rb.getString("file"));
-        opts.addOption(Option.builder().hasArg().argName("url").longOpt("url")
-                .desc(rb.getString("url")).build());
-        opts.addOption(Option.builder("u").hasArg().argName("user:password").longOpt("user")
-                .desc(rb.getString("user")).build());
-        opts.addOption("t", "type", true, rb.getString("type"));
+        opts.addOption(Option.builder("f")
+                .hasArg()
+                .argName("file")
+                .longOpt("file")
+                .desc(rb.getString("file"))
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("url")
+                .longOpt("url")
+                .desc(rb.getString("url"))
+                .build());
+        opts.addOption(Option.builder("u")
+                .hasArg()
+                .argName("user:password")
+                .longOpt("user")
+                .desc(rb.getString("user"))
+                .build());
+        opts.addOption(Option.builder("t")
+                .hasArg()
+                .argName("type")
+                .longOpt("type")
+                .desc(rb.getString("type"))
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("tsuid")
+                .longOpt("tsuid")
+                .desc(rb.getString("tsuid"))
+                .build());
         opts.addOption(Option.builder()
                 .longOpt("pixel-header")
                 .hasArg(false)
@@ -181,6 +208,7 @@ public class StowRS {
         checkFileType(files);
         keys = cl.getOptionValues("m");
         user = cl.getOptionValue("u");
+        tsuid = cl.getOptionValue("tsuid");
         setContentAndAcceptType(cl);
         pixelHeader = cl.hasOption("pixel-header");
         noAppn = cl.hasOption("no-appn");
@@ -497,14 +525,17 @@ public class StowRS {
 
     private static void write(OutputStream out, ByteArrayOutputStream bOut)
             throws IOException {
-        String bulkdataContentType = requestContentType;
+        String metadataContentType = requestContentType;
         if (compressedPixelData != null && (pixelHeader || compressedPixelData != CompressedPixelData.MP4))
-            bulkdataContentType = requestContentType + "; transfer-syntax=" + compressedPixelData.getTransferSyntaxUID();
+            metadataContentType = requestContentType
+                                    + "; transfer-syntax="
+                                    + (tsuid != null ? tsuid : compressedPixelData.getTransferSyntaxUID());
 
-        LOG.debug("Metadata being sent is : " + bOut.toString());
         out.write(("\r\n--" + boundary + "\r\n").getBytes());
-        out.write(("Content-Type: " + bulkdataContentType + "\r\n").getBytes());
+        LOG.info("> Metadata Content Type: " + metadataContentType);
+        out.write(("Content-Type: " + metadataContentType + "\r\n").getBytes());
         out.write("\r\n".getBytes());
+        LOG.debug("Metadata being sent is : " + bOut.toString());
         out.write(bOut.toByteArray());
     }
 

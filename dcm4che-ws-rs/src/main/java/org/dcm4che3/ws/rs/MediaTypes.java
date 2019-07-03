@@ -373,6 +373,7 @@ public class MediaTypes {
         return type.equals("image") ? UID.SecondaryCaptureImageStorage
                 : type.equals("video") ? UID.VideoPhotographicImageStorage
                 : equalsIgnoreParameters(bulkdataMediaType, APPLICATION_PDF_TYPE) ? UID.EncapsulatedPDFStorage
+                : equalsIgnoreParameters(bulkdataMediaType, MediaType.APPLICATION_XML_TYPE) ? UID.EncapsulatedCDAStorage
                 : null;
     }
 

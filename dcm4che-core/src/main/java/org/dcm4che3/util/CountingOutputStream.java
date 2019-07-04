@@ -41,24 +41,22 @@
 
 package org.dcm4che3.util;
 
-import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 
 /**
- * An {@link InputStream} that counts the number of bytes read.
+ * An {@link OutputStream} that counts the number of bytes wrote.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jul 2019
  */
-public class CountingInputStream extends FilterInputStream {
-
+public class CountingOutputStream extends FilterOutputStream {
     private volatile long count;
-    private volatile long mark;
 
-    public CountingInputStream(InputStream in) {
-        super(Objects.requireNonNull(in));
+    public CountingOutputStream(OutputStream out) {
+        super(Objects.requireNonNull(out));
     }
 
     public long getCount() {
@@ -66,45 +64,14 @@ public class CountingInputStream extends FilterInputStream {
     }
 
     @Override
-    public int read() throws IOException {
-        return incCount(in.read());
+    public void write(int b) throws IOException {
+        out.write(b);
+        count++;
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        return addCount(in.read(b, off, len));
+    public void write(byte[] b, int off, int len) throws IOException {
+        out.write(b, off, len);
+        count += len;
     }
-
-    @Override
-    public long skip(long n) throws IOException {
-        return addCount(in.skip(n));
-    }
-
-    @Override
-    public synchronized void mark(int readlimit) {
-        in.mark(readlimit);
-        mark = count;
-    }
-
-    @Override
-    public synchronized void reset() throws IOException {
-        in.reset();
-        count = mark;
-    }
-
-    private int incCount(int read) {
-        if (read >= 0) count++;
-        return read;
-    }
-
-    private int addCount(int read) {
-        if (read > 0) count += read;
-        return read;
-    }
-
-    private long addCount(long skip) {
-        if (skip > 0) count += skip;
-        return skip;
-    }
-
 }

@@ -16,16 +16,16 @@
         <Value number="1">M3D</Value>
     </DicomAttribute>
     <DicomAttribute keyword="Manufacturer" tag="00080070" vr="LO">
-        <Value number="1">Manufacturer</Value>
+        <Value number="1">UNKNOWN</Value>
     </DicomAttribute>
     <DicomAttribute keyword="ManufacturerModelName" tag="00081090" vr="LO">
-        <Value number="1">ManufacturerModelName</Value>
+        <Value number="1">UNKNOWN</Value>
     </DicomAttribute>
     <DicomAttribute keyword="DeviceSerialNumber" tag="00181000" vr="LO">
-        <Value number="1">DeviceSerialNumber</Value>
+        <Value number="1">UNKNOWN</Value>
     </DicomAttribute>
     <DicomAttribute keyword="SoftwareVersions" tag="00181020" vr="LO">
-        <Value number="1">1</Value>
+        <Value number="1">UNKNOWN</Value>
     </DicomAttribute>
     <DicomAttribute keyword="InstanceNumber" tag="00200013" vr="IS">
         <Value number="1">1</Value>

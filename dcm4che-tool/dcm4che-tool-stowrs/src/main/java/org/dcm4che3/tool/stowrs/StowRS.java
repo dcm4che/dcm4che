@@ -351,6 +351,9 @@ public class StowRS {
         for (int tag : IUIDS_TAGS)
             if (!metadata.containsValue(tag))
                 metadata.setString(tag, VR.UI, UIDUtils.createUID());
+
+        if (fileType == FileType.SLA && !metadata.containsValue(Tag.FrameOfReferenceUID))
+            metadata.setString(Tag.FrameOfReferenceUID, VR.UI, UIDUtils.createUID());
     }
 
     private static void supplementDefaultValue(Attributes metadata, int tag, String value) {

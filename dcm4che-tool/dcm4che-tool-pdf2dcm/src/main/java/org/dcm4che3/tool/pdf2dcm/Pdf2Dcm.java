@@ -45,10 +45,6 @@ import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.UIDUtils;
-import org.xml.sax.helpers.DefaultHandler;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.text.MessageFormat;
@@ -68,8 +64,7 @@ public class Pdf2Dcm {
     private static final int[] IUID_TAGS = {
             Tag.StudyInstanceUID,
             Tag.SeriesInstanceUID,
-            Tag.SOPInstanceUID,
-            Tag.FrameOfReferenceUID
+            Tag.SOPInstanceUID
     };
 
     private Attributes metadata;
@@ -122,10 +117,14 @@ public class Pdf2Dcm {
 
     enum FileType {
         PDF("resource:encapsulatedPDFMetadata.xml"),
-        CDA("resource:encapsulatedCDAMetadata.xml"),
-        STL("resource:encapsulatedSTLMetadata.xml");
+        XML("resource:encapsulatedCDAMetadata.xml"),
+        SLA("resource:encapsulatedSTLMetadata.xml");
 
-        String sampleMetadataURL;
+        private String sampleMetadataURL;
+
+        public String getSampleMetadataURL() {
+            return sampleMetadataURL;
+        }
 
         FileType(String sampleMetadataURL) {
             this.sampleMetadataURL = sampleMetadataURL;
@@ -133,46 +132,22 @@ public class Pdf2Dcm {
     }
 
     private static Attributes createMetadata(CommandLine cl, File bulkDataFile) throws Exception {
-        Attributes metadata = SAXReader.parse(StreamUtils.openFileOrURL(getFileType(bulkDataFile).sampleMetadataURL));
+        FileType fileType = getFileType(bulkDataFile);
+        Attributes metadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataURL()));
         if (cl.hasOption("f"))
             metadata.addAll(SAXReader.parse(cl.getOptionValue("f"), metadata));
         CLIUtils.addAttributes(metadata, cl.getOptionValues("m"));
         supplementMissingUIDs(metadata);
         supplementMissingDateTime(metadata, Tag.ContentDateAndTime, new Date());
         supplementMissingDateTime(metadata, Tag.AcquisitionDateTime, new Date(bulkDataFile.lastModified()));
+        if (fileType == FileType.SLA && !metadata.containsValue(Tag.FrameOfReferenceUID))
+            metadata.setString(Tag.FrameOfReferenceUID, VR.UI, UIDUtils.createUID());
         return metadata;
     }
 
     private static FileType getFileType(File bulkDataFile) throws IOException {
-        String bulkDataFilePath = bulkDataFile.getPath();
-        FileType fileType;
-        if (bulkDataFilePath.endsWith(".stl"))
-            fileType = FileType.STL;
-        else if (isPDF(bulkDataFilePath))
-            fileType = FileType.PDF;
-        else {
-            try {
-                SAXParserFactory f = SAXParserFactory.newInstance();
-                SAXParser p = f.newSAXParser();
-                p.parse(bulkDataFilePath, new DefaultHandler());
-                fileType = FileType.CDA;
-            } catch (Exception e) {
-                throw new IllegalArgumentException("File type not supported.");
-            }
-        }
-        return fileType;
-    }
-
-    private static boolean isPDF(String bulkDataFilePath) throws IOException {
-        byte[] buffer = new byte[5];
-        InputStream is = new FileInputStream(bulkDataFilePath);
-        StreamUtils.readAvailable(is, buffer, 0, 5);
-        is.close();
-        return buffer[0] == 0x25 && // %
-                buffer[1] == 0x50 && // P
-                buffer[2] == 0x44 && // D
-                buffer[3] == 0x46 && // F
-                buffer[4] == 0x2D;
+        String fileContentType = Files.probeContentType(bulkDataFile.toPath());
+        return FileType.valueOf(fileContentType.substring(fileContentType.indexOf("/") + 1).toUpperCase());
     }
 
     private void convert(File infile, File outfile) throws IOException {

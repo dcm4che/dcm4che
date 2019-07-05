@@ -193,8 +193,8 @@ public class Jpg2Dcm {
         JPEG(UID.SecondaryCaptureImageStorage, "resource:secondaryCaptureImageMetadata.xml") {
             @Override
             Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
-                setTsuid(UID.JPEGBaseline1);
                 JPEGParser jpegParser = new JPEGParser(channel);
+                setTransferSyntaxUID(jpegParser.getTransferSyntaxUID());
                 setPositionAfterAPPSegments(jpegParser.getPositionAfterAPPSegments());
                 return jpegParser.getAttributes(attrs);
             }
@@ -202,15 +202,16 @@ public class Jpg2Dcm {
         MPEG(UID.VideoPhotographicImageStorage, "resource:vlPhotographicImageMetadata.xml") {
             @Override
             Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
-                setTsuid(UID.MPEG2);
-                return new MPEG2Parser(channel).getAttributes(attrs);
+                MPEG2Parser mpeg2Parser = new MPEG2Parser(channel);
+                setTransferSyntaxUID(mpeg2Parser.getTransferSyntaxUID());
+                return mpeg2Parser.getAttributes(attrs);
             }
         },
         MP4(UID.VideoPhotographicImageStorage, "resource:vlPhotographicImageMetadata.xml") {
             @Override
             Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
                 MP4Parser mp4Parser = new MP4Parser(channel);
-                setTsuid(mp4Parser.getTransferSyntaxUID());
+                setTransferSyntaxUID(mp4Parser.getTransferSyntaxUID());
                 return mp4Parser.getAttributes(attrs);
             }
         };
@@ -235,7 +236,7 @@ public class Jpg2Dcm {
             return tsuid;
         }
 
-        public void setTsuid(String tsuid) {
+        void setTransferSyntaxUID(String tsuid) {
             this.tsuid = tsuid;
         }
 
@@ -243,7 +244,7 @@ public class Jpg2Dcm {
             return positionAfterAPPSegments;
         }
 
-        public void setPositionAfterAPPSegments(long positionAfterAPPSegments) {
+        void setPositionAfterAPPSegments(long positionAfterAPPSegments) {
             this.positionAfterAPPSegments = positionAfterAPPSegments;
         }
 

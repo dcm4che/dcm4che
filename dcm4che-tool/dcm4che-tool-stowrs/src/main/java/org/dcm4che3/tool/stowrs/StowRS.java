@@ -381,23 +381,16 @@ public class StowRS {
             @Override
             Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
                 JPEGParser jpegParser = new JPEGParser(channel);
+                setTransferSyntaxUID(jpegParser.getTransferSyntaxUID());
                 return jpegParser.getAttributes(attrs);
-            }
-
-            @Override
-            public String getTransferSyntaxUID() {
-                return UID.JPEGBaseline1;
             }
         },
         MPEG {
             @Override
             Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
-                return new MPEG2Parser(channel).getAttributes(attrs);
-            }
-
-            @Override
-            public String getTransferSyntaxUID() {
-                return UID.MPEG2;
+                MPEG2Parser mpeg2Parser = new MPEG2Parser(channel);
+                setTransferSyntaxUID(mpeg2Parser.getTransferSyntaxUID());
+                return mpeg2Parser.getAttributes(attrs);
             }
         },
         MP4 {
@@ -417,7 +410,7 @@ public class StowRS {
             return tsuid;
         }
 
-        public void setTransferSyntaxUID(String tsuid) {
+        void setTransferSyntaxUID(String tsuid) {
             this.tsuid = tsuid;
         }
 
@@ -544,10 +537,10 @@ public class StowRS {
     private static void write(OutputStream out, ByteArrayOutputStream bOut)
             throws IOException {
         String metadataContentType = requestContentType;
-        if (compressedPixelData != null && (pixelHeader || compressedPixelData != CompressedPixelData.MP4))
+        if (compressedPixelData != null && (pixelHeader || tsuid != null))
             metadataContentType = requestContentType
                                     + "; transfer-syntax="
-                                    + (tsuid != null ? tsuid : compressedPixelData.getTransferSyntaxUID());
+                                    + (pixelHeader ? compressedPixelData.getTransferSyntaxUID() : tsuid);
 
         out.write(("\r\n--" + boundary + "\r\n").getBytes());
         LOG.info("> Metadata Content Type: " + metadataContentType);

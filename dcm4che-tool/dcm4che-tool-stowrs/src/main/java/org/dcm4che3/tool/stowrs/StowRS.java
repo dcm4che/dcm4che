@@ -269,6 +269,9 @@ public class StowRS {
             if (!fileContentType.equals(Files.probeContentType(Paths.get(files.get(i)))))
                 throw new IllegalArgumentException("Uploading multiple files of different content types not supported.");
 
+        if (fileContentType == null)
+            throw new IllegalArgumentException("Unrecognized file content type.");
+        
         if (fileContentType.equals(APPLN_DICOM))
             return;
 
@@ -326,7 +329,9 @@ public class StowRS {
     private static void pixelMetadata(File bulkdataFile, Attributes metadata) throws Exception {
         compressedPixelData = CompressedPixelData.valueOf();
         if (pixelHeader)
-            compressedPixelData.getAttributes(new FileInputStream(bulkdataFile).getChannel(), metadata);
+            try(FileInputStream fis = new FileInputStream(bulkdataFile)) {
+                compressedPixelData.getAttributes(fis.getChannel(), metadata);
+            }
     }
 
     private static Attributes createStaticMetadata()

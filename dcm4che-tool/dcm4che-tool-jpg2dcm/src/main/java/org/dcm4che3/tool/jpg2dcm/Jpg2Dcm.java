@@ -144,7 +144,9 @@ public class Jpg2Dcm {
         supplementMissingValue(metadata, Tag.InstanceNumber, "1");
         supplementMissingValue(metadata, Tag.SOPClassUID, inFileType.getSOPClassUID());
         supplementMissingDateTime(metadata);
-        metadata = inFileType.getAttributes(new FileInputStream(inFile).getChannel(), metadata);
+        try(FileInputStream fis = new FileInputStream(inFile)) {
+            metadata = inFileType.getAttributes(fis.getChannel(), metadata);
+        }
     }
 
     private void convert(File infile, File outfile) throws IOException {

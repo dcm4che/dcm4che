@@ -520,7 +520,13 @@ public class StowRS {
 
             for (Map.Entry<String, File> entry : contentLocBulkData.entrySet()) {
                 out.write(("\r\n--" + boundary + "\r\n").getBytes());
-                out.write(("Content-Type: " + fileType.getMediaType() + "\r\n").getBytes());
+                String bulkdataContentType = fileType.getMediaType();
+                if (compressedPixelData != null && (pixelHeader || tsuid != null))
+                    bulkdataContentType = fileType.getMediaType()
+                            + "; transfer-syntax="
+                            + (pixelHeader ? compressedPixelData.getTransferSyntaxUID() : tsuid);
+                LOG.info("> Bulkdata Content Type: " + bulkdataContentType);
+                out.write(("Content-Type: " + bulkdataContentType + "\r\n").getBytes());
                 out.write(("Content-Location: " + entry.getKey() + "\r\n").getBytes());
                 out.write("\r\n".getBytes());
                 if (compressedPixelData == CompressedPixelData.JPEG && noAppn) {
@@ -536,15 +542,9 @@ public class StowRS {
 
     private static void write(OutputStream out, ByteArrayOutputStream bOut)
             throws IOException {
-        String metadataContentType = requestContentType;
-        if (compressedPixelData != null && (pixelHeader || tsuid != null))
-            metadataContentType = requestContentType
-                                    + "; transfer-syntax="
-                                    + (pixelHeader ? compressedPixelData.getTransferSyntaxUID() : tsuid);
-
         out.write(("\r\n--" + boundary + "\r\n").getBytes());
-        LOG.info("> Metadata Content Type: " + metadataContentType);
-        out.write(("Content-Type: " + metadataContentType + "\r\n").getBytes());
+        LOG.info("> Metadata Content Type: " + requestContentType);
+        out.write(("Content-Type: " + requestContentType + "\r\n").getBytes());
         out.write("\r\n".getBytes());
         LOG.debug("Metadata being sent is : " + bOut.toString());
         out.write(bOut.toByteArray());
@@ -560,7 +560,13 @@ public class StowRS {
                 write(out, bOut);
 
                 out.write(("\r\n--" + boundary + "\r\n").getBytes());
-                out.write(("Content-Type: " + fileType.getMediaType() + "\r\n").getBytes());
+                String bulkdataContentType = fileType.getMediaType();
+                if (compressedPixelData != null && (pixelHeader || tsuid != null))
+                    bulkdataContentType = fileType.getMediaType()
+                            + "; transfer-syntax="
+                            + (pixelHeader ? compressedPixelData.getTransferSyntaxUID() : tsuid);
+                LOG.info("> Bulkdata Content Type: " + bulkdataContentType);
+                out.write(("Content-Type: " + bulkdataContentType + "\r\n").getBytes());
                 out.write(("Content-Location: "
                         + ((BulkData) metadata.getValue(fileType.getBulkdataTypeTag())).getURI()
                         + "\r\n")

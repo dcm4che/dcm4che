@@ -68,6 +68,7 @@ import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGParser;
 import org.dcm4che3.imageio.codec.mp4.MP4Parser;
 import org.dcm4che3.imageio.codec.mpeg.MPEG2Parser;
+import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXTransformer;
 import org.dcm4che3.json.JSONWriter;
@@ -265,12 +266,17 @@ public class StowRS {
     private static void checkFileType(List<String> files) throws IOException {
         Path path = Paths.get(files.get(0));
         fileContentType = Files.probeContentType(path);
+        if (fileContentType == null) {
+            try {
+                new DicomInputStream(path.toFile());
+                fileContentType = APPLN_DICOM;
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Unrecognized file content type.");
+            }
+        }
         for (int i = 1; i < files.size(); i++)
             if (!fileContentType.equals(Files.probeContentType(Paths.get(files.get(i)))))
                 throw new IllegalArgumentException("Uploading multiple files of different content types not supported.");
-
-        if (fileContentType == null)
-            throw new IllegalArgumentException("Unrecognized file content type.");
         
         if (fileContentType.equals(APPLN_DICOM))
             return;
@@ -281,7 +287,7 @@ public class StowRS {
                 fileType = FileType.VLJPEG;
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    MessageFormat.format(rb.getString("bulkdata-file-not-supported"), fileContentType, path));
+                    MessageFormat.format(rb.getString("bulkdata-file-not-supported"), fileContentType));
         }
 
     }

@@ -3471,7 +3471,7 @@ public class Attributes implements Serializable {
         return removeRepeatingGroup(0x60000000);
     }
 
-    private int removeRepeatingGroup(int ggxxxxxx) {
+    int removeRepeatingGroup(int ggxxxxxx) {
         int size1 = size;
         int i = indexForInsertOf(ggxxxxxx);
         if (i < 0)

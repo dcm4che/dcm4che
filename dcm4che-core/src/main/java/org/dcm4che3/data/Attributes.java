@@ -3472,31 +3472,26 @@ public class Attributes implements Serializable {
     }
 
     int removeRepeatingGroup(int ggxxxxxx) {
-        int size1 = size;
-        int i = indexForInsertOf(ggxxxxxx);
-        if (i < 0)
-            i = -i-1;
-        int j = i;
-        while (j < size1 && (tags[i] & 0xFF000000) == ggxxxxxx)
-            j++;
+        int removed;
+        int startTagIndex = indexForInsertOf(ggxxxxxx);
+        if (startTagIndex < 0) startTagIndex = -startTagIndex - 1;
 
-        if (j > i) {
-            int len = size1 - j;
-            if (len > 0) {
-                System.arraycopy(tags, j, tags, i, len);
-                System.arraycopy(vrs, j, vrs, i, len);
-                System.arraycopy(values, j, values, i, len);
-            }
-            size1 -= j - i;
-        }
+        int currentTagIndex = startTagIndex;
+        while (currentTagIndex < size && (tags[currentTagIndex] & 0xFF000000) == ggxxxxxx)
+            currentTagIndex++;
 
-        int removed = size - size1;
-        if (removed > 0) {
-            Arrays.fill(tags, size1, size, 0);
-            Arrays.fill(vrs, size1, size, null);
-            Arrays.fill(values, size1, size, null);
-            size = size1;
+        int len = size - currentTagIndex;
+        if (len > 0) {
+            System.arraycopy(tags, currentTagIndex, tags, startTagIndex, len);
+            System.arraycopy(vrs, currentTagIndex, vrs, startTagIndex, len);
+            System.arraycopy(values, currentTagIndex, values, startTagIndex, len);
         }
+        removed = currentTagIndex - startTagIndex;
+
+        Arrays.fill(tags, size - removed, size, 0);
+        Arrays.fill(vrs, size - removed, size, null);
+        Arrays.fill(values, size - removed, size, null);
+        size = size - removed;
         return removed;
     }
 }

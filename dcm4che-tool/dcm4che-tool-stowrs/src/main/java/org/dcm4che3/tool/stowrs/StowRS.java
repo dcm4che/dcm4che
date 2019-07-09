@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2017
+ * Portions created by the Initial Developer are Copyright (C) 2017-2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -45,13 +45,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 import javax.ws.rs.core.MediaType;
@@ -208,7 +207,7 @@ public class StowRS {
                 && !Files.probeContentType(Paths.get((metadataFile = cl.getOptionValue("f")))).endsWith("xml"))
             throw new IllegalArgumentException("Metadata file extension not supported. Read -f option in stowrs help");
 
-        checkFileType(files);
+        processFileType(files);
         keys = cl.getOptionValues("m");
         user = cl.getOptionValue("u");
         tsuid = cl.getOptionValue("tsuid");
@@ -263,21 +262,15 @@ public class StowRS {
         }
     }
 
-    private static void checkFileType(List<String> files) throws IOException {
-        Path path = Paths.get(files.get(0));
-        fileContentType = Files.probeContentType(path);
-        if (fileContentType == null) {
-            try {
-                new DicomInputStream(path.toFile());
-                fileContentType = APPLN_DICOM;
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Unrecognized file content type.");
-            }
-        }
-        for (int i = 1; i < files.size(); i++)
-            if (!fileContentType.equals(Files.probeContentType(Paths.get(files.get(i)))))
-                throw new IllegalArgumentException("Uploading multiple files of different content types not supported.");
-        
+    private static void processFileType(List<String> files) throws IOException {
+        for (String file : files) 
+            applyFunctionToFile(file, new StowRSFileFunction<Path>() {
+                @Override
+                public void apply(Path path) throws IOException {
+                    checkFileContentType(path);
+                }
+            });
+
         if (fileContentType.equals(APPLN_DICOM))
             return;
 
@@ -290,6 +283,33 @@ public class StowRS {
                     MessageFormat.format(rb.getString("bulkdata-file-not-supported"), fileContentType));
         }
 
+    }
+
+    private static void checkFileContentType(Path path) throws IOException {
+        String contentType = Files.probeContentType(path);
+        if (fileContentType == null) {
+            if ((fileContentType = contentType) == null)
+                if (isDICOM(path))
+                    fileContentType = APPLN_DICOM;
+        }
+        else {
+            if (contentType == null)
+                isDICOM(path);
+            else if (!fileContentType.equals(contentType))
+                throw new IllegalArgumentException("Uploading multiple files of different content types not supported.");
+        }
+    }
+
+    private static boolean isDICOM(Path path) {
+        DicomInputStream dis = null;
+        try {
+            dis = new DicomInputStream(path.toFile());
+            return true;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unrecognized file content type.");
+        } finally {
+            SafeClose.close(dis);
+        }
     }
 
     private static void setContentAndAcceptType(CommandLine cl) {
@@ -311,7 +331,7 @@ public class StowRS {
         throw new IllegalArgumentException("Unsupported type. Read -" + option + " option in stowrs help");
     }
 
-    private static Attributes createMetadata(File bulkdataFile, Attributes staticMetadata) throws Exception {
+    private static Attributes createMetadata(File bulkdataFile, Attributes staticMetadata) throws IOException {
         LOG.info("Supplementing file specific metadata.");
         Attributes metadata = new Attributes(staticMetadata);
         supplementMissingUIDs(metadata);
@@ -332,7 +352,7 @@ public class StowRS {
         return metadata;
     }
 
-    private static void pixelMetadata(File bulkdataFile, Attributes metadata) throws Exception {
+    private static void pixelMetadata(File bulkdataFile, Attributes metadata) throws IOException {
         compressedPixelData = CompressedPixelData.valueOf();
         if (pixelHeader)
             try(FileInputStream fis = new FileInputStream(bulkdataFile)) {
@@ -499,20 +519,28 @@ public class StowRS {
         }
     }
 
-    private static void writeData(List<String> files, OutputStream out) throws Exception {
-        if (!requestContentType.equals("application/dicom")) {
+    private static void writeData(List<String> files, final OutputStream out) throws Exception {
+        if (!requestContentType.equals(APPLN_DICOM)) {
             writeMetadataAndBulkData(out, files, createStaticMetadata());
             return;
         }
-        for (String file : files) {
-            out.write(("\r\n--" + boundary + "\r\n").getBytes());
-            out.write(("Content-Type: " + requestContentType + "\r\n").getBytes());
-            out.write("\r\n".getBytes());
-            Files.copy(Paths.get(file), out);
-        }
+        for (String file : files) 
+            applyFunctionToFile(file, new StowRSFileFunction<Path>() {
+                @Override
+                public void apply(Path path) throws IOException {
+                    writeDicomFile(out, path);
+                }
+            });
     }
 
-    private static void writeMetadataAndBulkData(OutputStream out, List<String> files, Attributes staticMetadata)
+    private static void writeDicomFile(OutputStream out, Path path) throws IOException {
+        out.write(("\r\n--" + boundary + "\r\n").getBytes());
+        out.write(("Content-Type: " + requestContentType + "\r\n").getBytes());
+        out.write("\r\n".getBytes());
+        Files.copy(path, out);
+    }
+
+    private static void writeMetadataAndBulkData(OutputStream out, List<String> files, final Attributes staticMetadata)
             throws Exception {
         if (requestContentType.equals(APPLN_DICOM_XML)) {
             writeXMLMetadataAndBulkdata(out, files, staticMetadata);
@@ -522,36 +550,51 @@ public class StowRS {
         try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
             try (JsonGenerator gen = Json.createGenerator(bOut)) {
                 gen.writeStartArray();
-                for (String file : files)
-                    new JSONWriter(gen).write(createMetadata(Paths.get(file).toFile(), staticMetadata));
+                for (String file : files) 
+                    applyFunctionToFile(file, new StowRSFileFunction<Path>() {
+                        @Override
+                        public void apply(Path path) throws IOException {
+                            new JSONWriter(gen).write(createMetadata(path.toFile(), staticMetadata));
+                        }
+                    });
                 gen.writeEnd();
                 gen.flush();
             }
-            write(out, bOut);
+            writeMetadata(out, bOut);
 
-            for (Map.Entry<String, File> entry : contentLocBulkData.entrySet()) {
-                out.write(("\r\n--" + boundary + "\r\n").getBytes());
-                String bulkdataContentType = fileType.getMediaType();
-                if (compressedPixelData != null && (pixelHeader || tsuid != null))
-                    bulkdataContentType = fileType.getMediaType()
-                            + "; transfer-syntax="
-                            + (pixelHeader ? compressedPixelData.getTransferSyntaxUID() : tsuid);
-                LOG.info("> Bulkdata Content Type: " + bulkdataContentType);
-                out.write(("Content-Type: " + bulkdataContentType + "\r\n").getBytes());
-                out.write(("Content-Location: " + entry.getKey() + "\r\n").getBytes());
-                out.write("\r\n".getBytes());
-                if (compressedPixelData == CompressedPixelData.JPEG && noAppn) {
-                    out.write(-1);
-                    out.write((byte) JPEG.SOI);
-                    out.write(-1);
-                }
-                writeFile(contentLocBulkData.get(entry.getKey()), out);
-            }
+            for (Map.Entry<String, File> entry : contentLocBulkData.entrySet())
+                writeFile(entry.getKey(), out, contentLocBulkData.get(entry.getKey()));
+
             contentLocBulkData.clear();
         }
     }
 
-    private static void write(OutputStream out, ByteArrayOutputStream bOut)
+    private static void writeXMLMetadataAndBulkdata(final OutputStream out, List<String> files, final Attributes staticMetadata)
+            throws Exception {
+        for (String file : files) 
+            applyFunctionToFile(file, new StowRSFileFunction<Path>() {
+                @Override
+                public void apply(Path path) {
+                    writeXMLMetadataAndBulkdataForEach(out, staticMetadata, path);
+                }
+            });
+    }
+
+    private static void writeXMLMetadataAndBulkdataForEach(OutputStream out, Attributes staticMetadata, Path path) {
+        File bulkdataFile = path.toFile();
+        try {
+            Attributes metadata = createMetadata(bulkdataFile, staticMetadata);
+            try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
+                SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
+                writeMetadata(out, bOut);
+            }
+            writeFile(((BulkData) metadata.getValue(fileType.getBulkdataTypeTag())).getURI(), out, bulkdataFile);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void writeMetadata(OutputStream out, ByteArrayOutputStream bOut)
             throws IOException {
         out.write(("\r\n--" + boundary + "\r\n").getBytes());
         LOG.info("> Metadata Content Type: " + requestContentType);
@@ -561,46 +604,60 @@ public class StowRS {
         out.write(bOut.toByteArray());
     }
 
-    private static void writeXMLMetadataAndBulkdata(OutputStream out, List<String> files, Attributes staticMetadata)
-            throws Exception {
-        for (String file : files) {
-            try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
-                File bulkdataFile = Paths.get(file).toFile();
-                Attributes metadata = createMetadata(bulkdataFile, staticMetadata);
-                SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
-                write(out, bOut);
+    private static void writeFile(String contentLoc, OutputStream out, File bulkdataFile) throws Exception {
+        out.write(("\r\n--" + boundary + "\r\n").getBytes());
+        String bulkdataContentType = fileType.getMediaType();
+        if (compressedPixelData != null && (pixelHeader || tsuid != null))
+            bulkdataContentType = fileType.getMediaType()
+                    + "; transfer-syntax="
+                    + (pixelHeader ? compressedPixelData.getTransferSyntaxUID() : tsuid);
+        LOG.info("> Bulkdata Content Type: " + bulkdataContentType);
+        out.write(("Content-Type: " + bulkdataContentType + "\r\n").getBytes());
+        out.write(("Content-Location: "
+                + contentLoc
+                + "\r\n")
+                .getBytes());
+        out.write("\r\n".getBytes());
+        if (compressedPixelData == CompressedPixelData.JPEG && noAppn) {
+            out.write(-1);
+            out.write((byte) JPEG.SOI);
+            out.write(-1);
+        }
+        Files.copy(bulkdataFile.toPath(), out);
+    }
 
-                out.write(("\r\n--" + boundary + "\r\n").getBytes());
-                String bulkdataContentType = fileType.getMediaType();
-                if (compressedPixelData != null && (pixelHeader || tsuid != null))
-                    bulkdataContentType = fileType.getMediaType()
-                            + "; transfer-syntax="
-                            + (pixelHeader ? compressedPixelData.getTransferSyntaxUID() : tsuid);
-                LOG.info("> Bulkdata Content Type: " + bulkdataContentType);
-                out.write(("Content-Type: " + bulkdataContentType + "\r\n").getBytes());
-                out.write(("Content-Location: "
-                        + ((BulkData) metadata.getValue(fileType.getBulkdataTypeTag())).getURI()
-                        + "\r\n")
-                        .getBytes());
-                out.write("\r\n".getBytes());
-                if (compressedPixelData == CompressedPixelData.JPEG && noAppn) {
-                    out.write(-1);
-                    out.write((byte) JPEG.SOI);
-                    out.write(-1);
+    private static void applyFunctionToFile(String file, final StowRSFileFunction<Path> function) throws IOException {
+        Path path = Paths.get(file);
+        if (Files.isDirectory(path)) {
+            Files.walkFileTree(path, new StowRSFileVisitor(new StowRSFileConsumer<Path>() {
+                @Override
+                public void accept(Path path) throws IOException {
+                    function.apply(path);
                 }
-                writeFile(bulkdataFile, out);
-            }
+            }));
+        } else
+            function.apply(path);
+    }
+
+    static class StowRSFileVisitor extends SimpleFileVisitor<Path> {
+        private StowRSFileConsumer<Path> consumer;
+
+        StowRSFileVisitor(StowRSFileConsumer<Path> consumer){
+            this.consumer = consumer;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+            consumer.accept(path);
+            return FileVisitResult.CONTINUE;
         }
     }
 
-    private static void writeFile(File file, OutputStream out) throws Exception {
-        byte[] buf = new byte[8192];
-        try (InputStream is = new FileInputStream(file)) {
-            int c;
-            while ((c = is.read(buf, 0, buf.length)) > 0) {
-                out.write(buf, 0, c);
-                out.flush();
-            }
-        }
+    interface StowRSFileConsumer<Path> {
+        void accept(Path path) throws IOException;
+    }
+
+    interface StowRSFileFunction<T> {
+        void apply(T t) throws IOException;
     }
 }

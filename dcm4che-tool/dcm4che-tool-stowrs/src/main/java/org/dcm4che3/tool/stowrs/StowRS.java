@@ -657,7 +657,7 @@ public class StowRS {
         void accept(Path path) throws IOException;
     }
 
-    interface StowRSFileFunction<T> {
-        void apply(T t) throws IOException;
+    interface StowRSFileFunction<Path> {
+        void apply(Path path) throws IOException;
     }
 }

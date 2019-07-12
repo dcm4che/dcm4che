@@ -1197,7 +1197,7 @@ public class Device implements Serializable {
 
     public void execute(Runnable command) {
         if (executor == null)
-            throw new IllegalStateException("executer not initalized");
+            throw new IllegalStateException("executor not initialized");
 
         executor.execute(command);
     }
@@ -1206,7 +1206,7 @@ public class Device implements Serializable {
             TimeUnit unit) {
         if (scheduledExecutor == null)
             throw new IllegalStateException(
-                    "scheduled executor service not initalized");
+                    "scheduled executor service not initialized");
 
         return scheduledExecutor.schedule(command, delay, unit);
     }
@@ -1215,7 +1215,7 @@ public class Device implements Serializable {
             long initialDelay, long period, TimeUnit unit) {
         if (scheduledExecutor == null)
             throw new IllegalStateException(
-                    "scheduled executor service not initalized");
+                    "scheduled executor service not initialized");
 
         return scheduledExecutor.scheduleAtFixedRate(command,
                 initialDelay, period, unit);
@@ -1225,7 +1225,7 @@ public class Device implements Serializable {
             long initialDelay, long delay, TimeUnit unit) {
         if (scheduledExecutor == null)
             throw new IllegalStateException(
-                    "scheduled executor service not initalized");
+                    "scheduled executor service not initialized");
 
         return scheduledExecutor.scheduleWithFixedDelay(command,
                 initialDelay, delay, unit);

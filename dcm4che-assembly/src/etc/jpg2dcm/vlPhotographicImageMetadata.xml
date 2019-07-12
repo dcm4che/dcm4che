@@ -16,7 +16,7 @@
     <DicomAttribute keyword="AcquisitionContextSequence" tag="00400555" vr="SQ"/>
     <DicomAttribute keyword="ImageType" tag="00080008" vr="CS">
         <Value number="1">ORIGINAL</Value>
-        <Value number="1">PRIMARY</Value>
+        <Value number="2">PRIMARY</Value>
     </DicomAttribute>
     <DicomAttribute keyword="LossyImageCompression" tag="00282110" vr="CS"/>
 </NativeDicomModel>

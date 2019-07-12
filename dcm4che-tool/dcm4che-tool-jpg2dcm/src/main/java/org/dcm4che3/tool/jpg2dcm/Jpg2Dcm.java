@@ -82,6 +82,7 @@ public class Jpg2Dcm {
     
     private static Attributes metadata;
     private boolean noAPPn;
+    private static boolean vlPhotographicImage;
     private static FileType inFileType;
 
 
@@ -94,6 +95,7 @@ public class Jpg2Dcm {
             CommandLine cl = parseComandLine(args);
             Jpg2Dcm main = new Jpg2Dcm();
             main.setNoAPPn(cl.hasOption("no-app"));
+            vlPhotographicImage = cl.hasOption("xc");
             @SuppressWarnings("unchecked") final List<String> argList = cl.getArgList();
             File inFile = new File(argList.get(0));
             createMetadata(cl, inFile);
@@ -123,7 +125,16 @@ public class Jpg2Dcm {
                 .argName("xml-file")
                 .desc(rb.getString("file"))
                 .build());
-        opts.addOption(null, "no-app", false, rb.getString("no-app"));
+        opts.addOption(Option.builder()
+                .longOpt("xc")
+                .hasArg(false)
+                .desc(rb.getString("xc"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("no-app")
+                .hasArg(false)
+                .desc(rb.getString("no-app"))
+                .build());
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
         int numArgs = cl.getArgList().size();
         if (numArgs == 0)
@@ -135,7 +146,7 @@ public class Jpg2Dcm {
 
     private static void createMetadata(CommandLine cl, File inFile) throws Exception {
         inFileType = FileType.valueOf(inFile.toPath());
-        metadata = SAXReader.parse(StreamUtils.openFileOrURL(inFileType.sampleMetadataFile));
+        metadata = SAXReader.parse(StreamUtils.openFileOrURL(inFileType.getSampleMetadataFile()));
         if (cl.hasOption("f"))
             metadata.addAll(SAXReader.parse(cl.getOptionValue("f"), metadata));
         CLIUtils.addAttributes(metadata, cl.getOptionValues("m"));
@@ -192,7 +203,9 @@ public class Jpg2Dcm {
     }
 
     private enum FileType {
-        JPEG(UID.SecondaryCaptureImageStorage, "resource:secondaryCaptureImageMetadata.xml") {
+        JPEG(UID.SecondaryCaptureImageStorage,
+                vlPhotographicImage
+                        ? "resource:vlPhotographicImageMetadata.xml" : "resource:secondaryCaptureImageMetadata.xml") {
             @Override
             Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
                 JPEGParser jpegParser = new JPEGParser(channel);
@@ -248,6 +261,10 @@ public class Jpg2Dcm {
 
         void setPositionAfterAPPSegments(long positionAfterAPPSegments) {
             this.positionAfterAPPSegments = positionAfterAPPSegments;
+        }
+
+        String getSampleMetadataFile() {
+            return sampleMetadataFile;
         }
 
         static FileType valueOf(Path path) throws IOException {

@@ -2,7 +2,7 @@
     
     Encapsulate JPEG image or MPEG2 video or MP4 video file into DICOM file.
     DICOM attributes can be specified via command line (using -m option) or a
-    XML file (using -f option) If both the options are specified, system will
+    XML file (using -f option). If both the options are specified, system will
     generate metadata first from sample metadata file then from file specified
     by user, then add the attributes specified individually on command line
     and lastly read the header from the file to get specific information in
@@ -25,6 +25,9 @@
                              encapsulated JPEG stream; encapsulate JPEG stream
                              verbatim by default.
      -V,--version            output version information and exit
+        --xc                 generate sample metadata for VL Photographic
+                             Image from
+                             etc/jpg2dcm/vlPhotographicImageMetadata.xml file.
     -
     Example 1: jpg2dcm -f metadata.xml image.jpg image.dcm
     => Encapulate JPEG Image verbatim with DICOM attributes specified in

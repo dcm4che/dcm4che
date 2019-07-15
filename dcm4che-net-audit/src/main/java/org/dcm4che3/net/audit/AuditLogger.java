@@ -67,7 +67,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.TimeZone;
-import java.util.Comparator;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -171,13 +170,21 @@ public class AuditLogger {
     private static final char SYSLOG_VERSION = '1';
     private static final InetAddress localHost = localHost();
     private static final String processID = processID();
-    private static final Comparator<File> FILE_COMPARATOR = new Comparator<File>() {
+    private static final class CompareableFile implements Comparable<CompareableFile> {
+        final File file;
+        final long lastModified;
+
+        private CompareableFile(File file) {
+            this.file = file;
+            this.lastModified = file.lastModified();
+        }
+
         @Override
-        public int compare(File o1, File o2) {
-            long diff = o1.lastModified() - o2.lastModified();
+        public int compareTo(CompareableFile o) {
+            long diff = lastModified - o.lastModified;
             return diff < 0 ? -1 : diff > 0 ? 1 : 0;
         }
-    };
+    }
 
     public AuditLogger() {
     }
@@ -809,8 +816,8 @@ public class AuditLogger {
             File[] queuedMessages = dir.listFiles(FILENAME_FILTER);
             byte[] b = null;
             while (queuedMessages != null && queuedMessages.length > 0) {
-                Arrays.sort(queuedMessages, FILE_COMPARATOR);
-                for (File file : queuedMessages) {
+                for (CompareableFile compareableFile : sortFiles(dir.listFiles(FILENAME_FILTER))) {
+                    File file = compareableFile.file;
                     LOG.debug("Read audit message from {}", file);
                     int len = (int) file.length();
                     if (b == null || b.length < len)
@@ -847,6 +854,15 @@ public class AuditLogger {
         }
     }
 
+    private CompareableFile[] sortFiles(File[] files) {
+        CompareableFile[] queuedMessages = new CompareableFile[files.length];
+        for (int i = 0; i < files.length; i++) {
+            queuedMessages[i] = new CompareableFile(files[i]);
+        }
+        Arrays.sort(queuedMessages);
+        return queuedMessages;
+    }
+
     public Exception getLastException() {
         return lastException;
     }
@@ -856,7 +872,8 @@ public class AuditLogger {
     }
 
     public int getNumberOfQueuedMessages() {
-        return getQueuedMessages().length;
+        String[] fnames = spoolDirectory().list(FILENAME_FILTER);
+        return fnames == null ? 0 : fnames.length;
     }
 
     public File[] getQueuedMessages() {

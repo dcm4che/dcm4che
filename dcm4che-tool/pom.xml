@@ -55,6 +55,7 @@
     <module>dcm4che-tool-dcm2dcm</module>
     <module>dcm4che-tool-dcm2jpg</module>
     <module>dcm4che-tool-dcm2json</module>
+    <module>dcm4che-tool-dcm2pdf</module>
     <module>dcm4che-tool-dcm2str</module>
     <module>dcm4che-tool-dcm2xml</module>
     <module>dcm4che-tool-dcmdump</module>

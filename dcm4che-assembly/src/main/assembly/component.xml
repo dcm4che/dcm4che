@@ -132,6 +132,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcm2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2jpg</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2json</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcm2pdf</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2str</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>

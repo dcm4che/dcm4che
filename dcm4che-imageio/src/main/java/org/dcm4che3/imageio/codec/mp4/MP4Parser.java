@@ -49,6 +49,7 @@ import org.dcm4che3.imageio.codec.XPEGParser;
 import org.dcm4che3.imageio.codec.XPEGParserException;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Date;
@@ -199,30 +200,30 @@ public class MP4Parser implements XPEGParser {
     }
 
     private byte readByte(SeekableByteChannel channel) throws IOException {
-        buf.clear().limit(1);
+        ((Buffer) buf).clear().limit(1);
         channel.read(buf);
-        buf.rewind();
+        ((Buffer) buf).rewind();
         return buf.get();
     }
 
     private short readShort(SeekableByteChannel channel) throws IOException {
-        buf.clear().limit(2);
+        ((Buffer) buf).clear().limit(2);
         channel.read(buf);
-        buf.rewind();
+        ((Buffer) buf).rewind();
         return buf.getShort();
     }
 
     private int readInt(SeekableByteChannel channel) throws IOException {
-        buf.clear().limit(4);
+        ((Buffer) buf).clear().limit(4);
         channel.read(buf);
-        buf.rewind();
+        ((Buffer) buf).rewind();
         return buf.getInt();
     }
 
     private long readLong(SeekableByteChannel channel) throws IOException {
-        buf.clear();
+        ((Buffer) buf).clear();
         channel.read(buf);
-        buf.rewind();
+        ((Buffer) buf).rewind();
         return buf.getLong();
     }
 

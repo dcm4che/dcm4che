@@ -161,25 +161,27 @@ public class Jpg2Dcm {
     }
 
     private void convert(File infile, File outfile) throws IOException {
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(infile))) {
-            int itemLen = (int) infile.length();
-            try (DicomOutputStream dos = new DicomOutputStream(outfile)) {
-                dos.writeDataset(metadata.createFileMetaInformation(inFileType.getTransferSyntaxUID()), metadata);
-                dos.writeHeader(Tag.PixelData, VR.OB, -1);
-                dos.writeHeader(Tag.Item, null, 0);
-                if (noAPPn && inFileType == FileType.JPEG) {
-                    itemLen -= inFileType.getPositionAfterAPPSegments() - 3;
-                    dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
-                    dos.write((byte) -1);
-                    dos.write((byte) JPEG.SOI);
-                    dos.write((byte) -1);
-                } else
-                    dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
-                StreamUtils.copy(bis, dos);
-                if ((itemLen & 1) != 0)
-                    dos.write(0);
-                dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
-            }
+        int offset = 0;
+        int length = (int) infile.length();
+        int itemLen = (int) infile.length();
+        try (DicomOutputStream dos = new DicomOutputStream(outfile)) {
+            dos.writeDataset(metadata.createFileMetaInformation(inFileType.getTransferSyntaxUID()), metadata);
+            dos.writeHeader(Tag.PixelData, VR.OB, -1);
+            dos.writeHeader(Tag.Item, null, 0);
+            if (noAPPn && inFileType == FileType.JPEG) {
+                offset = (int) inFileType.getPositionAfterAPPSegments();
+                length -= offset;
+                itemLen -= offset - 3;
+                dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
+                dos.write((byte) -1);
+                dos.write((byte) JPEG.SOI);
+                dos.write((byte) -1);
+            } else
+                dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
+            dos.write(Files.readAllBytes(infile.toPath()), offset, length);
+            if ((itemLen & 1) != 0)
+                dos.write(0);
+            dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
         }
         System.out.println(MessageFormat.format(rb.getString("converted"), infile, outfile));
     }

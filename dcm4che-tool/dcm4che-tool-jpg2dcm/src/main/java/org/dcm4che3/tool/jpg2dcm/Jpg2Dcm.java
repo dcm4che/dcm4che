@@ -169,7 +169,7 @@ public class Jpg2Dcm {
             dos.writeHeader(Tag.PixelData, VR.OB, -1);
             dos.writeHeader(Tag.Item, null, 0);
             if (noAPPn && inFileType == FileType.JPEG) {
-                offset = (int) inFileType.getPositionAfterAPPSegments();
+                offset = (int) inFileType.getPositionAfterAPPSegments() + 1;
                 length -= offset;
                 itemLen -= offset - 3;
                 dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);

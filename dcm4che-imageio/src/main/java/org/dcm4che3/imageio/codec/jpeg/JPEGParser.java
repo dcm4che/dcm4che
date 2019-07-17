@@ -164,7 +164,7 @@ public class JPEGParser implements XPEGParser {
         buf.clear().limit(2);
         channel.read(buf);
         buf.rewind();
-        return buf.getShort();
+        return buf.getShort() & 0xffff;
     }
 
     private int readInt(SeekableByteChannel channel) throws IOException {

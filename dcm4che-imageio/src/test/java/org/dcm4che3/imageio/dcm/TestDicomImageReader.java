@@ -62,6 +62,7 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.plugins.dcm.DicomImageReader;
 import org.dcm4che3.imageio.plugins.dcm.DicomMetaData;
+import org.dcm4che3.imageio.plugins.dcm.ParseEntireFileMetaData;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.util.ByteUtils;
@@ -227,15 +228,8 @@ public class TestDicomImageReader {
     }
 
     private Raster testReadRasterFromAttributes(String ifname, int imageIndex, IncludeBulkData includeBulkData) throws IOException {
-        DicomInputStream dis = new DicomInputStream(new File("target/test-data/" + ifname));
-        Attributes attrs;
-        try {
-            dis.setIncludeBulkData(includeBulkData);
-            attrs = dis.readDataset(-1, -1);
-        } finally {
-            SafeClose.close(dis);
-        }
-        return testReadRasterFromInput(new DicomMetaData(dis.getFileMetaInformation(), attrs), imageIndex);
+        DicomMetaData dicomMetaData = new ParseEntireFileMetaData(new File("target/test-data/" + ifname));
+        return testReadRasterFromInput(dicomMetaData, imageIndex);
     }
 
     private Raster testReadRasterFromInput(Object input, int imageIndex)

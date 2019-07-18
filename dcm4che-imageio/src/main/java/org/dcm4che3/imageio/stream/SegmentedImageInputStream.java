@@ -257,4 +257,22 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
             return bulk.getSegmentEnd();
         }
     }
+
+    /**
+     * Determine the length of the total segmented stream.
+     */
+    @Override
+    public long length() {
+        long length = 0;
+        for(int i = firstSegment;i<Math.min(lastSegment,fragments.size());i++) {
+            Object fragment = fragments.get(i);
+            if(fragment instanceof BulkData) {
+                length += ((BulkData) fragments.get(i)).length();
+            } else {
+                length += ((byte[]) fragment).length;
+            }
+        }
+
+        return length;
+    }
 }

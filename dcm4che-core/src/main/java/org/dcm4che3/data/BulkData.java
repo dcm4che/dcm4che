@@ -39,26 +39,32 @@
 package org.dcm4che3.data;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.io.stream.ImageInputStreamLoader;
+import org.dcm4che3.io.stream.ServiceImageInputStreamLoader;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
 
+import javax.imageio.stream.ImageInputStream;
+
 /**
+ * Value that references it's content by URI.
+ * @author Andrew Cowan <awcowan@gmail.com>
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Bill Wallace <wayfarer3130@gmail.com>
  */
 public class BulkData implements Value {
+
+    private final ImageInputStreamLoader<URI> uriLoader = new ServiceImageInputStreamLoader<>();
 
     public static final int MAGIC_LEN = 0xfbfb;
 
@@ -333,17 +339,15 @@ public class BulkData implements Value {
         return uri.substring(0, uriPathEnd);
     }
 
-    public InputStream openStream() throws IOException {
+    public ImageInputStream openImageInputStream() throws IOException {
+        return openImageInputStream(URI.create(this.uri));
+    }
+
+    public ImageInputStream openImageInputStream(URI uri) throws IOException {
         if (uri == null)
             throw new IllegalStateException("uri: null");
- 
-        if (!uri.startsWith("file:"))
-            return new URL(uri).openStream();
 
-        InputStream in = new FileInputStream(getFile());
-        StreamUtils.skipFully(in, offset);
-        return in;
-
+        return this.uriLoader.openStream(URI.create(this.uri));
     }
 
     @Override
@@ -367,32 +371,31 @@ public class BulkData implements Value {
         if (length == 0)
             return ByteUtils.EMPTY_BYTES;
 
-        InputStream in = openStream();
-        try {
+        try (ImageInputStream iis = openImageInputStream()){
             byte[] b = new byte[length];
-            StreamUtils.readFully(in, b, 0, b.length);
+            iis.readFully(b);
             if (this.bigEndian != bigEndian) {
                 vr.toggleEndian(b, false);
             }
             return b;
-        } finally {
-            in.close();
         }
 
     }
 
     @Override
     public void writeTo(DicomOutputStream out, VR vr) throws IOException {
-        InputStream in = openStream();
-        try {
-            if (this.bigEndian != out.isBigEndian())
+        // Must open the URI properly:
+        try (InputStream in  = StreamUtils.toInputStream(openImageInputStream())) {
+            if (this.bigEndian != out.isBigEndian()) {
                 StreamUtils.copy(in, out, length, vr.numEndianBytes());
-            else
+            }
+            else {
                 StreamUtils.copy(in, out, length);
-            if ((length & 1) != 0)
+            }
+
+            if ((length & 1) != 0) {
                 out.write(vr.paddingByte());
-        } finally {
-            in.close();
+            }
         }
     }
 

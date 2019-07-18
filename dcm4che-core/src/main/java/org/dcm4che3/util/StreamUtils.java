@@ -38,6 +38,9 @@
 
 package org.dcm4che3.util;
 
+import org.dcm4che3.io.stream.CloseableImageInputStreamAdapter;
+
+import javax.imageio.stream.ImageInputStream;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -150,8 +153,7 @@ public class StreamUtils {
         }
     }
 
-    public static void copy(InputStream in, OutputStream out, int len,
-            int swapBytes) throws IOException {
+    public static void copy(InputStream in, OutputStream out, int len, int swapBytes) throws IOException {
         copy(in, out, len, swapBytes,
                 new byte[Math.min(len, COPY_BUFFER_SIZE)]);
     }
@@ -166,5 +168,13 @@ public class StreamUtils {
         if (name.indexOf(':') < 2)
             return new FileInputStream(name);
         return new URL(name).openStream();
+    }
+
+
+    /**
+     * Wrap an ImageInputStream with an InputStream
+     */
+    public static InputStream toInputStream(ImageInputStream imageInputStream) {
+        return new CloseableImageInputStreamAdapter(imageInputStream);
     }
 }

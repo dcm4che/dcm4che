@@ -38,33 +38,19 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
-import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 
-import org.dcm4che3.data.Attributes;
 import org.w3c.dom.Node;
 
 /**
+ * Class that encapsulates the metadata for the imaging data:  this includes the DICOM attributes, as well as providing
+ * access to the pixel data.  Different strategies for loading pixel data can be supported by providing different subclasses.
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DicomMetaData extends IIOMetadata {
+public abstract class DicomMetaData extends IIOMetadata implements DicomAccessor {
 
-    private final Attributes fileMetaInformation;
-    private final Attributes attributes;
-
-    public DicomMetaData(Attributes fileMetaInformation, Attributes attributes) {
-        this.fileMetaInformation = fileMetaInformation;
-        this.attributes = attributes;
-    }
-
-    public final Attributes getFileMetaInformation() {
-        return fileMetaInformation;
-    }
-
-    public final Attributes getAttributes() {
-        return attributes;
-    }
 
     @Override
     public boolean isReadOnly() {
@@ -77,8 +63,7 @@ public class DicomMetaData extends IIOMetadata {
     }
 
     @Override
-    public void mergeTree(String formatName, Node root)
-            throws IIOInvalidTreeException {
+    public void mergeTree(String formatName, Node root) {
         throw new UnsupportedOperationException();
     }
 

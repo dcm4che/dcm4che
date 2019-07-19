@@ -15,6 +15,7 @@
 package org.dcm4che3.imageio.plugins.dcm;
 
 import org.dcm4che3.data.*;
+import org.dcm4che3.error.NoPixelDataException;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.imageio.stream.BulkURIImageInputStream;
 import org.dcm4che3.imageio.stream.ByteArrayImageInputStream;
@@ -107,13 +108,16 @@ public class ParseEntireFileMetaData extends DicomMetaData {
     @Override
     public ImageInputStream openPixelStream(int frameIndex) throws IOException {
         ImageInputStream iisOfFrame;
-        boolean singleFrame = getAttributes().getInt(Tag.NumberOfFrames,1) == 1;
 
         // This can be a compressed or uncompressed frame
         // Use the BulkData to determine where it is, and then return the segmented value.
         // Can be byte[] or Fragment or BulkData
         if(pixelData instanceof Fragments) {
             // Encapsulated (compressed) data
+
+            if(isSingleFrame())
+                frameIndex = -1;
+
             ImageInputStream iisOfFile = uriLoader.openStream(this.uri);
             iisOfFrame = new SegmentedImageInputStream(iisOfFile,(Fragments)pixelData, frameIndex);
         }
@@ -126,15 +130,18 @@ public class ParseEntireFileMetaData extends DicomMetaData {
             ImageInputStream iisOfPixelData;
             if(pixelData instanceof BulkData) {
                 BulkData bulkData = (BulkData) pixelData;
-                iisOfPixelData = this.uriLoader.openStream(URI.create(bulkData.getURI()));
+                iisOfPixelData = this.uriLoader.openStream(bulkData.toFileURI());
                 offset += bulkData.offset();
             }
             else if (pixelData instanceof byte[]){
                 // replace with a byte[] reader
                 iisOfPixelData = new ByteArrayImageInputStream((byte[])pixelData);
             }
+            else if( pixelData == Value.NULL) {
+                throw new NoPixelDataException("No pixel data tag found in "+getURI());
+            }
             else {
-                throw new IllegalArgumentException("Unexpected pixel data type "+pixelData.getClass());
+                    throw new IllegalArgumentException("Unexpected pixel data type "+pixelData.getClass());
             }
 
             iisOfFrame = new BulkURIImageInputStream(iisOfPixelData, offset, frameLength);

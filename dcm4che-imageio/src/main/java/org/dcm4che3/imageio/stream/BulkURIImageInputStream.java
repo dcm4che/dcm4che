@@ -14,8 +14,6 @@
 //
 package org.dcm4che3.imageio.stream;
 
-import org.dcm4che3.io.stream.DelegateImageInputStream;
-
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 import java.io.IOException;
@@ -23,7 +21,7 @@ import java.io.IOException;
 /**
  * Return a subset of an image input stream.  The local variables track the location within the offset/length
  * bounds which are mapped onto the underlying full image input stream.
- * @author Andrew Cowan (andrew.cowan@agfa.com)
+ * @author Andrew Cowan (awcowan@gmail.com)
  */
 public class BulkURIImageInputStream extends ImageInputStreamImpl {
 

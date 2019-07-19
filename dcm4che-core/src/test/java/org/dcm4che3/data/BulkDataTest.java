@@ -39,11 +39,27 @@
 
 package org.dcm4che3.data;
 
+import org.dcm4che3.io.BulkDataDescriptor;
+import org.dcm4che3.io.DicomInputStream;
+import org.hamcrest.CoreMatchers;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import static org.junit.Assert.*;
 
 public class BulkDataTest {
+    private static final String US_MF_RLE = "../../src/test/data/US-PAL-8-10x-echo";
+
 
     public static final String URL_PATH = "file:/path";
     public static final String URL_OFFSET = "file:/path?offset=1234&length=5678";
@@ -53,12 +69,16 @@ public class BulkDataTest {
     public static final int OFFSET = 1234;
     public static final int LENGTH = 5678;
 
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Test
     public void testParseOffset() {
         BulkData bd = new BulkData(null, URL_OFFSET, false);
         assertEquals(URL_PATH, bd.uriWithoutQuery());
         assertEquals(OFFSET, bd.offset());
         assertEquals(LENGTH, bd.length());
+        assertEquals( URI.create("file:/path"), bd.toFileURI());
     }
 
     @Test
@@ -68,11 +88,49 @@ public class BulkDataTest {
         assertArrayEquals(OFFSETS, bd.offsets());
         assertArrayEquals(LENGTHS, bd.lengths());
         assertEquals(-1, bd.length());
+        assertEquals( URI.create("file:/path"), bd.toFileURI());
     }
 
     @Test
     public void testURIOffsets() {
         BulkData bd = new BulkData(URL_PATH, OFFSETS, LENGTHS, false);
         assertEquals(URL_OFFSETS, bd.uri);
+        assertEquals( URI.create("file:/path"), bd.toFileURI());
+    }
+
+
+    @Test
+    public void writeTo_ReadSectionOfText() throws URISyntaxException, IOException {
+        URI log4jURI = getClass().getResource("/log4j.properties").toURI();
+        BulkData bd = new BulkData(log4jURI.toString(), 0, 21, false );
+
+        byte[] bytes = bd.toBytes(VR.ST, false);
+        String actual = new String(bytes);
+        assertEquals("log4j.rootLogger=INFO", actual);
+    }
+
+    @Test
+    public void writeTo_HandlesPixelData() throws URISyntaxException, IOException, NoSuchAlgorithmException {
+        URI fileURI = getClass().getResource("/OT-PAL-8-face").toURI();
+        File file = Paths.get(fileURI).toFile();
+        try(DicomInputStream dis = new DicomInputStream(file)) {
+            dis.setURI(fileURI.toString());
+            dis.setBulkDataDescriptor(BulkDataDescriptor.PIXELDATA);
+            dis.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
+
+            DatasetWithFMI datasetWithFMI = dis.readDatasetWithFMI();
+            VR pixelVR = datasetWithFMI.getDataset().getVR(Tag.PixelData);
+            BulkData bulkData = (BulkData) datasetWithFMI.getDataset().getValue(Tag.PixelData);
+            assertEquals(fileURI, bulkData.toFileURI());
+            assertThat(bulkData.getURI(), CoreMatchers.endsWith("OT-PAL-8-face?offset=1654&length=307200"));
+            byte[] pixelData = bulkData.toBytes(pixelVR, false);
+            assertEquals("3E2C056D6BEC17502266C322DAB5AE65C0D25D88", toHexDigest(pixelData));
+        }
+    }
+
+    private String toHexDigest(byte[] bytes) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        digest.update(bytes);
+        return new HexBinaryAdapter().marshal(digest.digest());
     }
 }

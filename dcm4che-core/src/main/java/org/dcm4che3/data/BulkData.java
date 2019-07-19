@@ -132,6 +132,15 @@ public class BulkData implements Value {
         return uri;
     }
 
+    public URI toURI() {
+        return URI.create(getURI());
+    }
+
+    public URI toFileURI() {
+        return URI.create(uriWithoutQuery());
+    }
+
+
     /**
      * Returns a {@code BulkData} instance combining all {@code BulkData} instances in {@code bulkDataFragments}.
      *
@@ -262,7 +271,7 @@ public class BulkData implements Value {
 
     private String appendQuery(String uri, long[] offsets, int[] lengths) {
         StringBuilder sb = new StringBuilder(uri);
-        sb.append( "?offsets=");
+        sb.append("?offsets=");
         for (long offset : offsets)
             sb.append(offset).append(',');
         sb.setLength(sb.length()-1);
@@ -340,14 +349,10 @@ public class BulkData implements Value {
     }
 
     public ImageInputStream openImageInputStream() throws IOException {
-        return openImageInputStream(URI.create(this.uri));
-    }
-
-    public ImageInputStream openImageInputStream(URI uri) throws IOException {
         if (uri == null)
             throw new IllegalStateException("uri: null");
 
-        return this.uriLoader.openStream(URI.create(this.uri));
+        return this.uriLoader.openStream(this.toFileURI());
     }
 
     @Override

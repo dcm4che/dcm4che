@@ -107,9 +107,6 @@ public class Jpg2Dcm {
                         MessageFormat.format(rb.getString("nodestdir"), dest));
             createStaticMetadata(cl);
             main.convert(cl.getArgList());
-//            File inFile = new File(argList.get(0));
-//            createMetadata(cl, inFile);
-//            main.convert(inFile, new File(argList.get(1)));
         } catch (ParseException e) {
             System.err.println("jpg2dcm: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -146,29 +143,7 @@ public class Jpg2Dcm {
                 .desc(rb.getString("no-app"))
                 .build());
         return CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
-//        int numArgs = cl.getArgList().size();
-//        if (numArgs == 0)
-//            throw new ParseException(rb.getString("missing"));
-//        if (numArgs > 2)
-//            throw new ParseException(rb.getString("too-many"));
-//        return cl;
     }
-
-//    private static void createMetadata(CommandLine cl, File inFile) throws Exception {
-//        inFileType = FileType.valueOf(inFile.toPath());
-//        metadata = SAXReader.parse(StreamUtils.openFileOrURL(inFileType.getSampleMetadataFile()));
-//        if (cl.hasOption("f"))
-//            metadata.addAll(SAXReader.parse(cl.getOptionValue("f"), metadata));
-//        CLIUtils.addAttributes(metadata, cl.getOptionValues("m"));
-//        supplementMissingUIDs(metadata);
-//        supplementMissingValue(metadata, Tag.SeriesNumber, "999");
-//        supplementMissingValue(metadata, Tag.InstanceNumber, "1");
-//        supplementMissingValue(metadata, Tag.SOPClassUID, inFileType.getSOPClassUID());
-//        supplementMissingDateTime(metadata);
-//        try(FileInputStream fis = new FileInputStream(inFile)) {
-//            metadata = inFileType.getAttributes(fis.getChannel(), metadata);
-//        }
-//    }
 
     private Attributes createMetadata(Path srcFilePath, FileType fileType) throws Exception {
         Attributes fileMetadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataFile()));
@@ -263,32 +238,6 @@ public class Jpg2Dcm {
         }
         System.out.println(MessageFormat.format(rb.getString("converted"), srcFile, destFile));
     }
-
-//    private void convert(File infile, File outfile) throws IOException {
-//        int offset = 0;
-//        int length = (int) infile.length();
-//        int itemLen = (int) infile.length();
-//        try (DicomOutputStream dos = new DicomOutputStream(outfile)) {
-//            dos.writeDataset(metadata.createFileMetaInformation(inFileType.getTransferSyntaxUID()), metadata);
-//            dos.writeHeader(Tag.PixelData, VR.OB, -1);
-//            dos.writeHeader(Tag.Item, null, 0);
-//            if (noAPPn && inFileType == FileType.JPEG) {
-//                offset = (int) inFileType.getPositionAfterAPPSegments() + 1;
-//                length -= offset;
-//                itemLen -= offset - 3;
-//                dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
-//                dos.write((byte) -1);
-//                dos.write((byte) JPEG.SOI);
-//                dos.write((byte) -1);
-//            } else
-//                dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
-//            dos.write(Files.readAllBytes(infile.toPath()), offset, length);
-//            if ((itemLen & 1) != 0)
-//                dos.write(0);
-//            dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
-//        }
-//        System.out.println(MessageFormat.format(rb.getString("converted"), infile, outfile));
-//    }
 
     private static void supplementMissingUIDs(Attributes metadata) {
         for (int tag : IUID_TAGS)

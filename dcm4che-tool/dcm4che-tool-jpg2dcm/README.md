@@ -1,8 +1,11 @@
     usage: jpg2dcm [options] <jpeg|mpeg2|mp4-file> <dicom-file>
+    or jpg2dcm [options] <jpeg|mpeg2|mp4-file>... <dicom-outdir>
+    or jpg2dcm [options] <jpeg|mpeg2|mp4-indir>... <dicom-outdir>
     
-    Encapsulate JPEG image or MPEG2 video or MP4 video file into DICOM file.
-    DICOM attributes can be specified via command line (using -m option) or a
-    XML file (using -f option). If both the options are specified, system will
+    Encapsulate JPEG image or MPEG2 video or MP4 video file(s) (or present in
+    directories) into DICOM file(s) (or into DICOM directory). DICOM
+    attributes can be specified via command line (using -m option) or a XML
+    file (using -f option). If both the options are specified, system will
     generate metadata first from sample metadata file then from file specified
     by user, then add the attributes specified individually on command line
     and lastly read the header from the file to get specific information in
@@ -43,3 +46,11 @@
     -
     Example 4: jpg2dcm video.mp4 videoMP4.dcm
     => Encapulate MP4 Video into DICOM Video Object.
+    -
+    Example 5: jpg2dcm img1.jpeg video1.mp4 dicom-dir
+    => Encapulate the specified image and video files to DICOM objects in
+    dicom-dir.
+    -
+    Example 6: jpg2dcm image-dir mp4-dir mpeg2-dir dicom-object-dir
+    => Encapulate images and videos specified in mentioned directories to
+    DICOM objects in dicom-object-dir.

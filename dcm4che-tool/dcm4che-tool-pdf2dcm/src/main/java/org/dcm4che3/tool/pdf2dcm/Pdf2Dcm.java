@@ -16,7 +16,7 @@
  *
  *  The Initial Developer of the Original Code is
  *  J4Care.
- *  Portions created by the Initial Developer are Copyright (C) 2015-2017
+ *  Portions created by the Initial Developer are Copyright (C) 2018-2019
  *  the Initial Developer. All Rights Reserved.
  *
  *  Contributor(s):
@@ -45,8 +45,12 @@ import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.UIDUtils;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.nio.file.Files;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -67,20 +71,23 @@ public class Pdf2Dcm {
             Tag.SOPInstanceUID
     };
 
-    private Attributes metadata;
-
-    private void setMetadata(Attributes metadata) {
-        this.metadata = metadata;
-    }
+    private static Attributes staticMetadata;
 
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
             Pdf2Dcm pdf2Dcm = new Pdf2Dcm();
             final List<String> argList = cl.getArgList();
-            File inFile = new File(argList.get(0));
-            pdf2Dcm.setMetadata(createMetadata(cl, inFile));
-            pdf2Dcm.convert(inFile, new File(argList.get(1)));
+            int argc = argList.size();
+            if (argc < 2)
+                throw new ParseException(rb.getString("missing"));
+            File dest = new File(argList.get(argc-1));
+            if ((argc > 2 || new File(argList.get(0)).isDirectory())
+                    && !dest.isDirectory())
+                throw new ParseException(
+                        MessageFormat.format(rb.getString("nodestdir"), dest));
+            createStaticMetadata(cl);
+            pdf2Dcm.convert(cl.getArgList());
         } catch (ParseException e) {
             System.err.println("pdf2dcm: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -106,13 +113,7 @@ public class Pdf2Dcm {
                 .argName("xml-file")
                 .desc(rb.getString("file"))
                 .build());
-        CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Pdf2Dcm.class);
-        int numArgs = cl.getArgList().size();
-        if (numArgs == 0)
-            throw new ParseException(rb.getString("missing"));
-        if (numArgs > 2)
-            throw new ParseException(rb.getString("too-many"));
-        return cl;
+        return CLIUtils.parseComandLine(args, opts, rb, Pdf2Dcm.class);
     }
 
     enum FileType {
@@ -120,46 +121,111 @@ public class Pdf2Dcm {
         XML("resource:encapsulatedCDAMetadata.xml"),
         SLA("resource:encapsulatedSTLMetadata.xml");
 
-        private String sampleMetadataURL;
+        private String sampleMetadataFile;
 
-        public String getSampleMetadataURL() {
-            return sampleMetadataURL;
+        public String getSampleMetadataFile() {
+            return sampleMetadataFile;
         }
 
-        FileType(String sampleMetadataURL) {
-            this.sampleMetadataURL = sampleMetadataURL;
+        FileType(String sampleMetadataFile) {
+            this.sampleMetadataFile = sampleMetadataFile;
+        }
+
+        static FileType valueOf(Path path) throws IOException {
+            String contentType = Files.probeContentType(path);
+            try {
+                return valueOf(contentType.substring(contentType.indexOf("/") + 1).toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(
+                        MessageFormat.format(rb.getString("invalid-file-ext"), contentType, path));
+            }
         }
     }
 
-    private static Attributes createMetadata(CommandLine cl, File bulkDataFile) throws Exception {
-        FileType fileType = getFileType(bulkDataFile);
-        Attributes metadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataURL()));
+    private static void createStaticMetadata(CommandLine cl) throws Exception {
+        staticMetadata = new Attributes();
         if (cl.hasOption("f"))
-            metadata.addAll(SAXReader.parse(cl.getOptionValue("f"), metadata));
-        CLIUtils.addAttributes(metadata, cl.getOptionValues("m"));
-        supplementMissingUIDs(metadata);
-        supplementMissingDateTime(metadata, Tag.ContentDateAndTime, new Date());
-        supplementMissingDateTime(metadata, Tag.AcquisitionDateTime, new Date(bulkDataFile.lastModified()));
-        if (fileType == FileType.SLA && !metadata.containsValue(Tag.FrameOfReferenceUID))
-            metadata.setString(Tag.FrameOfReferenceUID, VR.UI, UIDUtils.createUID());
-        return metadata;
+            staticMetadata = SAXReader.parse(cl.getOptionValue("f"));
+
+        CLIUtils.addAttributes(staticMetadata, cl.getOptionValues("m"));
+        supplementMissingUIDs(staticMetadata);
+        supplementMissingDateTime(staticMetadata, Tag.ContentDateAndTime, new Date());
     }
 
-    private static FileType getFileType(File bulkDataFile) throws IOException {
-        String fileContentType = Files.probeContentType(bulkDataFile.toPath());
-        return FileType.valueOf(fileContentType.substring(fileContentType.indexOf("/") + 1).toUpperCase());
+    private Attributes createMetadata(Path srcFilePath, FileType fileType) throws Exception {
+        Attributes fileMetadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataFile()));
+        fileMetadata.addAll(staticMetadata);
+        supplementMissingDateTime(fileMetadata, Tag.AcquisitionDateTime, new Date(srcFilePath.toFile().lastModified()));
+        if (fileType == FileType.SLA && !fileMetadata.containsValue(Tag.FrameOfReferenceUID))
+            fileMetadata.setString(Tag.FrameOfReferenceUID, VR.UI, UIDUtils.createUID());
+        return fileMetadata;
     }
 
-    private void convert(File infile, File outfile) throws IOException {
-        long fileLength = infile.length();
-        if (fileLength > MAX_FILE_SIZE)
-            throw new IllegalArgumentException(MessageFormat.format(rb.getString("file-too-large"), infile));
-
-        try (DicomOutputStream dos = new DicomOutputStream(outfile)) {
-            dos.writeDataset(metadata.createFileMetaInformation(UID.ExplicitVRLittleEndian), metadata);
-            dos.writeAttribute(Tag.EncapsulatedDocument, VR.OB, Files.readAllBytes(infile.toPath()));
+    private void convert(List<String> args) throws Exception {
+        int argsSize = args.size();
+        Path destPath = Paths.get(args.get(argsSize - 1));
+        for (String src : args.subList(0, argsSize - 1)) {
+            Path srcPath = Paths.get(src);
+            if (Files.isDirectory(srcPath))
+                Files.walkFileTree(srcPath, new Pdf2DcmFileVisitor(srcPath, destPath));
+            else if (Files.isDirectory(destPath))
+                convert(srcPath, destPath.resolve(srcPath.getFileName() + ".dcm"));
+            else
+                convert(srcPath, destPath);
         }
-        System.out.println(MessageFormat.format(rb.getString("converted"), infile, outfile));
+    }
+
+    class Pdf2DcmFileVisitor extends SimpleFileVisitor<Path> {
+        private Path srcPath;
+        private Path destPath;
+
+        Pdf2DcmFileVisitor(Path srcPath, Path destPath) {
+            this.srcPath = srcPath;
+            this.destPath = destPath;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path srcFilePath, BasicFileAttributes attrs) throws IOException {
+            Path destFilePath = resolveDestFilePath(srcFilePath);
+            if (!Files.isDirectory(destFilePath))
+                Files.createDirectories(destFilePath);
+            try {
+                convert(srcFilePath, destFilePath.resolve(srcFilePath.getFileName() + ".dcm"));
+            } catch (SAXException | ParserConfigurationException e) {
+                System.out.println(MessageFormat.format(rb.getString("failed"), srcFilePath, e.getMessage()));
+                e.printStackTrace(System.out);
+                return FileVisitResult.TERMINATE;
+            } catch (Exception e) {
+                System.out.println(MessageFormat.format(rb.getString("failed"), srcFilePath, e.getMessage()));
+                e.printStackTrace(System.out);
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        private Path resolveDestFilePath(Path srcFilePath) {
+            int srcPathNameCount = srcPath.getNameCount();
+            int srcFilePathNameCount = srcFilePath.getNameCount() - 1;
+            if (srcPathNameCount == srcFilePathNameCount)
+                return destPath;
+
+            return destPath.resolve(srcFilePath.subpath(srcPathNameCount, srcFilePathNameCount));
+        }
+    }
+
+    private void convert(Path srcFilePath, Path destFilePath) throws Exception {
+        FileType fileType = FileType.valueOf(srcFilePath);
+        Attributes fileMetadata = createMetadata(srcFilePath, fileType);
+        File srcFile = srcFilePath.toFile();
+        File destFile = destFilePath.toFile();
+        long fileLength = srcFile.length();
+        if (fileLength > MAX_FILE_SIZE)
+            throw new IllegalArgumentException(MessageFormat.format(rb.getString("file-too-large"), srcFile));
+
+        try (DicomOutputStream dos = new DicomOutputStream(destFile)) {
+            dos.writeDataset(fileMetadata.createFileMetaInformation(UID.ExplicitVRLittleEndian), fileMetadata);
+            dos.writeAttribute(Tag.EncapsulatedDocument, VR.OB, Files.readAllBytes(srcFile.toPath()));
+        }
+        System.out.println(MessageFormat.format(rb.getString("converted"), srcFile, destFile));
     }
 
     private static void supplementMissingUIDs(Attributes metadata) {

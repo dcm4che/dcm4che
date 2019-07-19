@@ -1,6 +1,6 @@
-    usage: dcm2pdf [<options>] <dicom-file> <pdf-file>
-    or dcm2pdf [Options] <dicom-file>... <outdir>
-    or dcm2pdf [Options] <indir>... <outdir>
+    usage: dcm2pdf [<options>] <dicom-file> <pdf|cda|stl-file>
+    or dcm2pdf [Options] <dicom-file>... <pdf|cda|stl-outdir>
+    or dcm2pdf [Options] <dicom-dir>... <pdf|cda|stl-outdir>
     
     Convert DICOM file(s) to PDF (file extension pdf), CDA (file extension
     xml) or STL (file extension stl) file(s). By default DICOM file(s) will be

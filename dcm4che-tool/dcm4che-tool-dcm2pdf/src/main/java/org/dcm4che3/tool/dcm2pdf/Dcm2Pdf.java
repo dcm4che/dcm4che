@@ -166,11 +166,20 @@ public class Dcm2Pdf {
 
         @Override
         public FileVisitResult visitFile(Path srcFilePath, BasicFileAttributes attrs) throws IOException {
-            Path destFilePath = destPath.resolve(srcFilePath.subpath(srcPath.getNameCount(), srcFilePath.getNameCount() - 1));
+            Path destFilePath = resolveDestFilePath(srcFilePath);
             if (!Files.isDirectory(destFilePath))
                 Files.createDirectories(destFilePath);
             convert(srcFilePath, destFilePath.resolve(suffix(srcFilePath)));
             return FileVisitResult.CONTINUE;
+        }
+
+        private Path resolveDestFilePath(Path srcFilePath) {
+            int srcPathNameCount = srcPath.getNameCount();
+            int srcFilePathNameCount = srcFilePath.getNameCount() - 1;
+            if (srcPathNameCount == srcFilePathNameCount)
+                return destPath;
+
+            return destPath.resolve(srcFilePath.subpath(srcPathNameCount, srcFilePathNameCount));
         }
     }
 

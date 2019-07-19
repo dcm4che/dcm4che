@@ -40,6 +40,7 @@ package org.dcm4che3.tool.jpg2dcm;
 
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.*;
+import org.dcm4che3.imageio.codec.XPEGParser;
 import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGParser;
 import org.dcm4che3.imageio.codec.mp4.MP4Parser;
@@ -150,7 +151,8 @@ public class Jpg2Dcm {
         fileMetadata.addAll(staticMetadata);
         supplementMissingValue(fileMetadata, Tag.SOPClassUID, fileType.getSOPClassUID());
         try(FileInputStream fis = new FileInputStream(srcFilePath.toFile())) {
-            fileMetadata = fileType.getAttributes(fis.getChannel(), fileMetadata);
+            fileType.parse(fis.getChannel());
+            fileMetadata = fileType.getParser().getAttributes(fileMetadata);
         }
         return fileMetadata;
     }
@@ -221,25 +223,29 @@ public class Jpg2Dcm {
     private void convert(Path srcFilePath, Path destFilePath) throws Exception {
         FileType fileType = FileType.valueOf(srcFilePath);
         Attributes fileMetadata = createMetadata(srcFilePath, fileType);
-        int offset = 0;
+        XPEGParser parser = fileType.getParser();
+        int offset = (int) parser.getCodeStreamPosition();
         File srcFile = srcFilePath.toFile();
         int length = (int) srcFile.length();
         int itemLen = length;
         File destFile = destFilePath.toFile();
         try (DicomOutputStream dos = new DicomOutputStream(destFile)) {
-            dos.writeDataset(fileMetadata.createFileMetaInformation(fileType.getTransferSyntaxUID()), fileMetadata);
+            dos.writeDataset(fileMetadata.createFileMetaInformation(parser.getTransferSyntaxUID()), fileMetadata);
             dos.writeHeader(Tag.PixelData, VR.OB, -1);
             dos.writeHeader(Tag.Item, null, 0);
             if (noAPPn && fileType == FileType.JPEG) {
-                offset = (int) fileType.getPositionAfterAPPSegments() + 1;
+                offset = (int) ((JPEGParser) parser).getPositionAfterAPPSegments() + 1;
                 length -= offset;
                 itemLen -= offset - 3;
                 dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
                 dos.write((byte) -1);
                 dos.write((byte) JPEG.SOI);
                 dos.write((byte) -1);
-            } else
+            } else {
+                if (offset > 0)
+                    itemLen = length -= offset;
                 dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
+            }
             dos.write(Files.readAllBytes(srcFilePath), offset, length);
             if ((itemLen & 1) != 0)
                 dos.write(0);
@@ -271,36 +277,28 @@ public class Jpg2Dcm {
                 vlPhotographicImage
                         ? "resource:vlPhotographicImageMetadata.xml" : "resource:secondaryCaptureImageMetadata.xml") {
             @Override
-            Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
-                JPEGParser jpegParser = new JPEGParser(channel);
-                setTransferSyntaxUID(jpegParser.getTransferSyntaxUID());
-                setPositionAfterAPPSegments(jpegParser.getPositionAfterAPPSegments());
-                return jpegParser.getAttributes(attrs);
+            void parse(SeekableByteChannel channel) throws IOException {
+                setParser(new JPEGParser(channel));
             }
         },
         MPEG(UID.VideoPhotographicImageStorage, "resource:vlPhotographicImageMetadata.xml") {
             @Override
-            Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
-                MPEG2Parser mpeg2Parser = new MPEG2Parser(channel);
-                setTransferSyntaxUID(mpeg2Parser.getTransferSyntaxUID());
-                return mpeg2Parser.getAttributes(attrs);
+            void parse(SeekableByteChannel channel) throws IOException {
+                setParser(new MPEG2Parser(channel));
             }
         },
         MP4(UID.VideoPhotographicImageStorage, "resource:vlPhotographicImageMetadata.xml") {
             @Override
-            Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
-                MP4Parser mp4Parser = new MP4Parser(channel);
-                setTransferSyntaxUID(mp4Parser.getTransferSyntaxUID());
-                return mp4Parser.getAttributes(attrs);
+            void parse(SeekableByteChannel channel) throws IOException {
+                setParser(new MP4Parser(channel));
             }
         };
 
-        abstract Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException;
+        abstract void parse(SeekableByteChannel channel) throws IOException;
 
         private final String cuid;
         private final String sampleMetadataFile;
-        private String tsuid;
-        private long positionAfterAPPSegments;
+        private XPEGParser parser;
 
         FileType(String cuid, String sampleMetadataFile) {
             this.cuid = cuid;
@@ -311,30 +309,23 @@ public class Jpg2Dcm {
             return cuid;
         }
 
-        public String getTransferSyntaxUID() {
-            return tsuid;
-        }
-
-        void setTransferSyntaxUID(String tsuid) {
-            this.tsuid = tsuid;
-        }
-
-        public long getPositionAfterAPPSegments() {
-            return positionAfterAPPSegments;
-        }
-
-        void setPositionAfterAPPSegments(long positionAfterAPPSegments) {
-            this.positionAfterAPPSegments = positionAfterAPPSegments;
-        }
-
         String getSampleMetadataFile() {
             return sampleMetadataFile;
+        }
+
+        public XPEGParser getParser() {
+            return parser;
+        }
+
+        void setParser(XPEGParser parser) {
+            this.parser = parser;
         }
 
         static FileType valueOf(Path path) throws IOException {
             String contentType = Files.probeContentType(path);
             try {
-                return valueOf(contentType.substring(contentType.indexOf("/") + 1).toUpperCase());
+                String subType = contentType.substring(contentType.indexOf("/") + 1).toUpperCase();
+                return subType.equals("JP2") ? JPEG : valueOf(subType);
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(
                         MessageFormat.format(rb.getString("invalid-file-ext"), contentType, path));

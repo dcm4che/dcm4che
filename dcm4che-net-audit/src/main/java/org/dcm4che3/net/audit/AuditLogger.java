@@ -59,7 +59,13 @@ import javax.net.ssl.SSLContext;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -164,8 +170,10 @@ public class AuditLogger extends DeviceExtension {
     };
     private static final byte[] BOM = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
     private static final char SYSLOG_VERSION = '1';
-    private static final InetAddress localHost = localHost();
+
+    private static final LocalHostAccess localHostAccess = LocalHostAccess.INSTANCE;
     private static final String processID = processID();
+
     private static final Comparator<File> FILE_COMPARATOR = new Comparator<File>() {
         @Override
         public int compare(File o1, File o2) {
@@ -173,6 +181,82 @@ public class AuditLogger extends DeviceExtension {
             return diff < 0 ? -1 : diff > 0 ? 1 : 0;
         }
     };
+
+    /**
+     * Cached access to LocalHost address.
+     * The localhost address is cached for 1h. This is necessary due to the often bad characteristics (
+     * thread-contention, slow-lookup performance) of the underlying (DNS) Name System look-up calls.
+     */
+    private enum LocalHostAccess
+    {
+        INSTANCE;
+
+        private static final String LOCALHOST_CACHE_INTERVAL_SYS_PROPERTY = "org.dcm4che3.net.audit.AuditLogger.LocalHostCacheInterval";
+        private static final String UNKNOWN = "unknown";
+
+        private static final long CACHED_FOREVER = Long.MAX_VALUE;
+        private final long cachedDurationMillis;
+
+        private InetAddress localHost;
+        private String localHostName;
+        private String canonicalLocalHostName;
+
+        private volatile boolean initialized;
+        private volatile long lastRefreshTimestampMillis;
+
+        LocalHostAccess() {
+            String localHostCacheIntervalString = System.getProperty(LOCALHOST_CACHE_INTERVAL_SYS_PROPERTY, null);
+            cachedDurationMillis = (localHostCacheIntervalString != null) ? Long.parseLong(localHostCacheIntervalString) : CACHED_FOREVER;
+        }
+
+        InetAddress getLocalHost() {
+            checkRefresh();
+            return this.localHost;
+        }
+
+        String getLocalHostName() {
+            checkRefresh();
+            return this.localHostName;
+        }
+
+        String getCanonicalLocalHostName() {
+            checkRefresh();
+            return this.canonicalLocalHostName;
+        }
+
+        private void checkRefresh()
+        {
+            long nowTimestampMillis = new Date().getTime();
+            if(!initialized || (nowTimestampMillis - this.lastRefreshTimestampMillis) > cachedDurationMillis) {
+                // SYNCHRONIZED WITH DOUBLE-CHECK-IDIOM
+                synchronized( this ) {
+                    if(!initialized || (nowTimestampMillis - this.lastRefreshTimestampMillis) > cachedDurationMillis) {
+                        this.localHost = localHost();
+                        if (this.localHost == null) {
+                            this.localHostName = this.canonicalLocalHostName = UNKNOWN;
+                        }
+                        else {
+                            this.localHostName = this.localHost.getHostName();
+                            this.canonicalLocalHostName = this.localHost.getCanonicalHostName();
+                        }
+                        this.lastRefreshTimestampMillis = nowTimestampMillis;
+                        this.initialized = true;
+                    }
+                }
+            }
+        }
+
+        private static InetAddress localHost() {
+            try {
+                return InetAddress.getLocalHost();
+            }
+            catch (UnknownHostException e) {
+                return null;
+            }
+        }
+
+    }
+
     private static volatile AuditLogger defaultLogger;
 
     @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference",
@@ -435,11 +519,11 @@ public class AuditLogger extends DeviceExtension {
         Collection<String> aets = device.getApplicationAETitles();
 
         return createActiveParticipant(requestor,
-                processID(),
+                processID,
                 AuditMessages.alternativeUserIDForAETitle(
                         aets.toArray(new String[aets.size()])),
                 applicationName(),
-                localHost().getHostName(),
+                localHostAccess.getLocalHostName(),
                 roleIDs);
     }
 
@@ -1143,11 +1227,7 @@ public class AuditLogger extends DeviceExtension {
     }
 
     public static InetAddress localHost() {
-        try {
-            return InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            return null;
-        }
+        return localHostAccess.getLocalHost();
     }
 
     private Severity severityOf(AuditMessage msg) {
@@ -1219,8 +1299,9 @@ public class AuditLogger extends DeviceExtension {
             write(' ');
             write(timeStamp);
             write(' ');
-            if (localHost != null)
-                write(localHost.getCanonicalHostName().getBytes(encoding));
+            String canonicalLocalHostName = localHostAccess.getCanonicalLocalHostName();
+            if (!LocalHostAccess.UNKNOWN.equals(localHostAccess.getCanonicalLocalHostName()) )
+                write(canonicalLocalHostName.getBytes(encoding));
             else
                 write('-');
             write(' ');

@@ -48,6 +48,8 @@ import org.dcm4che3.data.Attributes;
  * @since Jun 2019
  */
 public interface XPEGParser {
+    long getCodeStreamPosition();
+
     Attributes getAttributes(Attributes attrs);
 
     String getTransferSyntaxUID() throws XPEGParserException;

@@ -49,6 +49,16 @@ public class JPEG {
 
     // Codes 0x02 - 0xBF are reserved
 
+    // JPEG 2000 markers
+    private static final int JPEG2000_STANDALONE = 0x30;
+    /** Start of codestream */
+    public static final int FF_SOC = 0xFF4F;
+    public static final int SOC = 0x4F;
+    /** Image and tile size */
+    public static final int SIZ = 0x51;
+    /** Coding style default */
+    public static final int COD = 0x52;
+
     // SOF markers for Nondifferential Huffman coding
     /** Baseline DCT */
     public static final int SOF0 = 0xC0;
@@ -105,6 +115,7 @@ public class JPEG {
     public static final int RESTART_RANGE = 8;
 
     /** Start of Image */
+    public static final int FF_SOI = 0xFFD8;
     public static final int SOI = 0xD8;
     /** End of Image */
     public static final int EOI = 0xD9;
@@ -170,7 +181,7 @@ public class JPEG {
         case EOI:
             return true;
         }
-        return false;
+        return (marker & 0xF0) == JPEG2000_STANDALONE;
     }
 
     public static boolean isSOF(int marker) {

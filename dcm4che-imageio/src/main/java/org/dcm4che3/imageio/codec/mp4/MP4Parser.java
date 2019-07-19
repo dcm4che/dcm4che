@@ -99,6 +99,11 @@ public class MP4Parser implements XPEGParser {
     }
 
     @Override
+    public long getCodeStreamPosition() {
+        return 0;
+    }
+
+    @Override
     public Attributes getAttributes(Attributes attrs) {
         if (attrs == null)
             attrs = new Attributes(14);

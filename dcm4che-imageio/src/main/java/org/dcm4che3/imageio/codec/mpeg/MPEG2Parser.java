@@ -116,6 +116,11 @@ public class MPEG2Parser implements XPEGParser {
     }
 
     @Override
+    public long getPositionAfterAPPSegments() {
+        return -1L;
+    }
+
+    @Override
     public Attributes getAttributes(Attributes attrs) {
         if (attrs == null)
             attrs = new Attributes(15);

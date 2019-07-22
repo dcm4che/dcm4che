@@ -87,6 +87,7 @@ public class JPEGParser implements XPEGParser {
         return codeStreamPosition;
     }
 
+    @Override
     public long getPositionAfterAPPSegments() {
         return positionAfterAPP;
     }

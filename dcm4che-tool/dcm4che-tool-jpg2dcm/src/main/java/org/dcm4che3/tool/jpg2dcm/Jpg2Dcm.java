@@ -233,8 +233,9 @@ public class Jpg2Dcm {
             dos.writeDataset(fileMetadata.createFileMetaInformation(parser.getTransferSyntaxUID()), fileMetadata);
             dos.writeHeader(Tag.PixelData, VR.OB, -1);
             dos.writeHeader(Tag.Item, null, 0);
-            if (noAPPn && fileType == FileType.JPEG) {
-                offset = (int) ((JPEGParser) parser).getPositionAfterAPPSegments() + 1;
+            long positionAfterAPPSegments = parser.getPositionAfterAPPSegments();
+            if (noAPPn && fileType == FileType.JPEG && positionAfterAPPSegments != -1L) {
+                offset = (int) positionAfterAPPSegments + 1;
                 length -= offset;
                 itemLen -= offset - 3;
                 dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);

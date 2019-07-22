@@ -1893,7 +1893,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 Connection.DEFAULT_TLS_PROTOCOLS);
         LdapUtils.storeDiff(ldapObj, mods, "dcmTLSNeedClientAuth",
                 a.isTlsNeedClientAuth(),
-                a.isTlsNeedClientAuth(),
+                b.isTlsNeedClientAuth(),
                 true);
         LdapUtils.storeDiff(ldapObj, mods, "dcmSendPDULength",
                 a.getSendPDULength(),

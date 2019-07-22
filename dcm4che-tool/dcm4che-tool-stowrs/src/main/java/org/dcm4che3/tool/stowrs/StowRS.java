@@ -63,6 +63,7 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.BulkData;
+import org.dcm4che3.imageio.codec.XPEGParser;
 import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGParser;
 import org.dcm4che3.imageio.codec.mp4.MP4Parser;
@@ -95,21 +96,20 @@ public class StowRS {
     private static String requestAccept;
     private static String requestContentType;
     private static String metadataFile;
-    private static String tsuid;
-    private static CompressedPixelData compressedPixelData;
+    private static boolean tsuid;
     private static ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.stowrs.messages");
     private static final String boundary = "myboundary";
     private static final String APPLN_DICOM = "application/dicom";
     private static final String APPLN_DICOM_XML = "application/dicom+xml";
     private static FileType fileType;
     private static Map<String, File> contentLocBulkData = new HashMap<>();
+    private static Map<String, String> contentLocTSUID = new HashMap<>();
 
     private static final String patName = "STOW-RS-PatientName";
 
     private static final int[] IUIDS_TAGS = {
             Tag.StudyInstanceUID,
-            Tag.SeriesInstanceUID,
-            Tag.SOPInstanceUID
+            Tag.SeriesInstanceUID
     };
 
     private static final long[] DA_TM_TAGS = {
@@ -153,7 +153,7 @@ public class StowRS {
                 .desc(rb.getString("type"))
                 .build());
         opts.addOption(Option.builder()
-                .hasArg()
+                .hasArg(false)
                 .argName("tsuid")
                 .longOpt("tsuid")
                 .desc(rb.getString("tsuid"))
@@ -210,7 +210,7 @@ public class StowRS {
         processFileType(files);
         keys = cl.getOptionValues("m");
         user = cl.getOptionValue("u");
-        tsuid = cl.getOptionValue("tsuid");
+        tsuid = cl.hasOption("tsuid");
         setContentAndAcceptType(cl);
         pixelHeader = cl.hasOption("pixel-header");
         noAppn = cl.hasOption("no-appn");
@@ -333,31 +333,36 @@ public class StowRS {
 
     private static Attributes createMetadata(File bulkdataFile, Attributes staticMetadata) throws IOException {
         LOG.info("Supplementing file specific metadata.");
+        String contentLoc = "bulk" + UIDUtils.createUID();
         Attributes metadata = new Attributes(staticMetadata);
-        supplementMissingUIDs(metadata);
+        supplementMissingUID(metadata, Tag.SOPInstanceUID);
         supplementMissingDateTime(metadata, bulkdataFile);
-        supplementBulkdata(metadata, fileType.getBulkdataTypeTag(), bulkdataFile);
+        supplementBulkdata(contentLoc, metadata, bulkdataFile);
         switch (fileType) {
-            case PDF:
-            case XML:
             case SLA:
+                supplementMissingUID(metadata, Tag.FrameOfReferenceUID);
                 break;
             case JPEG:
             case VLJPEG:
             case MPEG:
             case MP4:
-                pixelMetadata(bulkdataFile, metadata);
+                pixelMetadata(contentLoc, bulkdataFile, metadata);
                 break;
         }
         return metadata;
     }
 
-    private static void pixelMetadata(File bulkdataFile, Attributes metadata) throws IOException {
-        compressedPixelData = CompressedPixelData.valueOf();
-        if (pixelHeader)
+    private static void pixelMetadata(String contentLoc, File bulkdataFile, Attributes metadata) throws IOException {
+        if (pixelHeader || tsuid) {
+            CompressedPixelData compressedPixelData = CompressedPixelData.valueOf();
             try(FileInputStream fis = new FileInputStream(bulkdataFile)) {
-                compressedPixelData.getAttributes(fis.getChannel(), metadata);
+                compressedPixelData.parse(fis.getChannel());
+                XPEGParser parser = compressedPixelData.getParser();
+                contentLocTSUID.put(contentLoc, parser.getTransferSyntaxUID());
+                if (pixelHeader)
+                    parser.getAttributes(metadata);
             }
+        }
     }
 
     private static Attributes createStaticMetadata()
@@ -368,6 +373,7 @@ public class StowRS {
         addAttributesFromFile(metadata);
         CLIUtils.addAttributes(metadata, keys);
         supplementDefaultValue(metadata, Tag.SOPClassUID, fileType.getSOPClassUID());
+        supplementMissingUIDs(metadata);
         return metadata;
     }
 
@@ -382,9 +388,11 @@ public class StowRS {
         for (int tag : IUIDS_TAGS)
             if (!metadata.containsValue(tag))
                 metadata.setString(tag, VR.UI, UIDUtils.createUID());
+    }
 
-        if (fileType == FileType.SLA && !metadata.containsValue(Tag.FrameOfReferenceUID))
-            metadata.setString(Tag.FrameOfReferenceUID, VR.UI, UIDUtils.createUID());
+    private static void supplementMissingUID(Attributes metadata, int tag) {
+        if (!metadata.containsValue(tag))
+            metadata.setString(tag, VR.UI, UIDUtils.createUID());
     }
 
     private static void supplementDefaultValue(Attributes metadata, int tag, String value) {
@@ -399,50 +407,41 @@ public class StowRS {
                 metadata.setDate(tag, date);
     }
 
-    private static void supplementBulkdata(Attributes metadata, int tag, File bulkdataFile) {
-        if (!metadata.containsValue(tag)) {
-            String contentLoc = "bulk" + UIDUtils.createUID();
-            metadata.setValue(tag, VR.OB, new BulkData(null, contentLoc, false));
-            contentLocBulkData.put(contentLoc, bulkdataFile);
-        }
+    private static void supplementBulkdata(String contentLoc, Attributes metadata, File bulkdataFile) {
+        metadata.setValue(fileType.getBulkdataTypeTag(), VR.OB, new BulkData(null, contentLoc, false));
+        contentLocBulkData.put(contentLoc, bulkdataFile);
     }
 
     private enum CompressedPixelData {
         JPEG {
             @Override
-            Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
-                JPEGParser jpegParser = new JPEGParser(channel);
-                setTransferSyntaxUID(jpegParser.getTransferSyntaxUID());
-                return jpegParser.getAttributes(attrs);
+            void parse(SeekableByteChannel channel) throws IOException {
+                setParser(new JPEGParser(channel));
             }
         },
         MPEG {
             @Override
-            Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
-                MPEG2Parser mpeg2Parser = new MPEG2Parser(channel);
-                setTransferSyntaxUID(mpeg2Parser.getTransferSyntaxUID());
-                return mpeg2Parser.getAttributes(attrs);
+            void parse(SeekableByteChannel channel) throws IOException {
+                setParser(new MPEG2Parser(channel));
             }
         },
         MP4 {
             @Override
-            Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException {
-                MP4Parser mp4Parser = new MP4Parser(channel);
-                setTransferSyntaxUID(mp4Parser.getTransferSyntaxUID());
-                return mp4Parser.getAttributes(attrs);
+            void parse(SeekableByteChannel channel) throws IOException {
+                setParser(new MP4Parser(channel));
             }
         };
 
-        abstract Attributes getAttributes(SeekableByteChannel channel, Attributes attrs) throws IOException;
+        abstract void parse(SeekableByteChannel channel) throws IOException;
 
-        private String tsuid;
+        private XPEGParser parser;
 
-        public String getTransferSyntaxUID() {
-            return tsuid;
+        public XPEGParser getParser() {
+            return parser;
         }
 
-        void setTransferSyntaxUID(String tsuid) {
-            this.tsuid = tsuid;
+        void setParser(XPEGParser parser) {
+            this.parser = parser;
         }
 
         static CompressedPixelData valueOf() {
@@ -562,8 +561,8 @@ public class StowRS {
             }
             writeMetadata(out, bOut);
 
-            for (Map.Entry<String, File> entry : contentLocBulkData.entrySet())
-                writeFile(entry.getKey(), out, contentLocBulkData.get(entry.getKey()));
+            for (String contentLocation : contentLocBulkData.keySet())
+                writeFile(contentLocation, out);
 
             contentLocBulkData.clear();
         }
@@ -588,7 +587,7 @@ public class StowRS {
                 SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
                 writeMetadata(out, bOut);
             }
-            writeFile(((BulkData) metadata.getValue(fileType.getBulkdataTypeTag())).getURI(), out, bulkdataFile);
+            writeFile(((BulkData) metadata.getValue(fileType.getBulkdataTypeTag())).getURI(), out);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -604,26 +603,26 @@ public class StowRS {
         out.write(bOut.toByteArray());
     }
 
-    private static void writeFile(String contentLoc, OutputStream out, File bulkdataFile) throws Exception {
+    private static void writeFile(String contentLocation, OutputStream out) throws Exception {
         out.write(("\r\n--" + boundary + "\r\n").getBytes());
         String bulkdataContentType = fileType.getMediaType();
-        if (compressedPixelData != null && (pixelHeader || tsuid != null))
+        if (fileType.getBulkdataTypeTag() == Tag.PixelData && tsuid)
             bulkdataContentType = fileType.getMediaType()
                     + "; transfer-syntax="
-                    + (pixelHeader ? compressedPixelData.getTransferSyntaxUID() : tsuid);
+                    + contentLocTSUID.get(contentLocation);
         LOG.info("> Bulkdata Content Type: " + bulkdataContentType);
         out.write(("Content-Type: " + bulkdataContentType + "\r\n").getBytes());
         out.write(("Content-Location: "
-                + contentLoc
+                + contentLocation
                 + "\r\n")
                 .getBytes());
         out.write("\r\n".getBytes());
-        if (compressedPixelData == CompressedPixelData.JPEG && noAppn) {
+        if ((fileType == FileType.JPEG || fileType == FileType.VLJPEG) && noAppn) {
             out.write(-1);
             out.write((byte) JPEG.SOI);
             out.write(-1);
         }
-        Files.copy(bulkdataFile.toPath(), out);
+        Files.copy(contentLocBulkData.get(contentLocation).toPath(), out);
     }
 
     private static void applyFunctionToFile(String file, final StowRSFileFunction<Path> function) throws IOException {

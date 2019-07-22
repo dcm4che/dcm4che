@@ -62,8 +62,8 @@
                                  default. Note that for DICOM objects, tool
                                  will always send Content-type as
                                  application/dicom.
-        --tsuid <tsuid>          Specify the Transfer Syntax UID to be sent in
-                                 multipart request for content types
+        --tsuid                  Specify if the Transfer Syntax UID shall be
+                                 sent in multipart request for content types
                                  image/jpeg, video/mpeg or video/mp4 files.
      -u,--user <user:password>   Specify the user name and password to use for
                                  server authentication.

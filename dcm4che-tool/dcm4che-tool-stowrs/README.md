@@ -1,4 +1,4 @@
-    usage: stowrs [options]  -u <stowURL>
+    usage: stowrs [options]  --url <stowURL>
                   [<fileToBeStored>..][<filesInDirectoriesToBeStored>..]
     
     For DICOM files : Send multiple dicom files or directories containing
@@ -31,6 +31,9 @@
                                  application/dicom+json. If -t option is
                                  absent as well then application/dicom+xml
                                  will be used by default.
+        --bearer <bearer>        Specify the bearer token to be used in
+                                 Authorization header for server
+                                 authentication.
      -f,--file <file>            Specify the file containing the metadata (in
                                  XML format).
      -h,--help                   display this help and exit
@@ -49,9 +52,6 @@
                                  header of pixel data for jpeg images, mpeg
                                  and mp4 videos in addition to the metadata
                                  generation as explained above in description.
-                                 xc=Specify this option, if
-                                 vlPhotographicImage images are to be stored
-                                 to the server.
      -t,--type <type>            Specify the value for Content-type header :
                                  xml or json. The value of Content-type will
                                  then be sent in request header as

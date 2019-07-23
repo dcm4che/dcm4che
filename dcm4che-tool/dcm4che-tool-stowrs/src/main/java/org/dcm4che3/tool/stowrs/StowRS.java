@@ -91,6 +91,7 @@ public class StowRS {
     private static String[] keys;
     private String url;
     private String user;
+    private String bearer;
     private boolean noApp;
     private boolean pixelHeader;
     private static boolean vlPhotographicImage;
@@ -144,6 +145,12 @@ public class StowRS {
                 .argName("user:password")
                 .longOpt("user")
                 .desc(rb.getString("user"))
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("bearer")
+                .longOpt("bearer")
+                .desc(rb.getString("bearer"))
                 .build());
         opts.addOption(Option.builder("t")
                 .hasArg()
@@ -467,11 +474,7 @@ public class StowRS {
                 "multipart/related; type=\"" + requestContentType + "\"; boundary=" + boundary);
         connection.setRequestProperty("Accept", requestAccept);
         logOutgoing(connection);
-        if (user != null) {
-            String basicAuth = basicAuth(user);
-            LOG.info("> Authorization: " + basicAuth);
-            connection.setRequestProperty("Authorization", basicAuth);
-        }
+        authorize(connection);
         try (OutputStream out = connection.getOutputStream()) {
             writeData(files, out);
             out.write(("\r\n--" + boundary + "--\r\n").getBytes());
@@ -484,21 +487,30 @@ public class StowRS {
         }
     }
 
-    private static String basicAuth(String userPswd) {
-        byte[] userPswdBytes = userPswd.getBytes();
+    private void authorize(HttpURLConnection connection) {
+        if (user == null && bearer == null)
+            return;
+
+        String authorization = user != null ? basicAuth() : "Bearer " + bearer;
+        LOG.info("> Authorization: " + authorization);
+        connection.setRequestProperty("Authorization", authorization);
+    }
+
+    private String basicAuth() {
+        byte[] userPswdBytes = user.getBytes();
         int len = (userPswdBytes.length * 4 / 3 + 3) & ~3;
         char[] ch = new char[len];
         Base64.encode(userPswdBytes, 0, userPswdBytes.length, ch, 0);
         return "Basic " + new String(ch);
     }
 
-    private static void logOutgoing(HttpURLConnection connection) {
+    private void logOutgoing(HttpURLConnection connection) {
         LOG.info("> " + connection.getRequestMethod() + " " + connection.getURL());
         LOG.info("> Content-Type: " + connection.getRequestProperty("Content-Type"));
         LOG.info("> Accept: " + connection.getRequestProperty("Accept"));
     }
 
-    private static void logIncoming(HttpURLConnection connection) throws Exception {
+    private void logIncoming(HttpURLConnection connection) throws Exception {
         LOG.info("< Content-Length: " + connection.getContentLength());
         LOG.info("< HTTP/1.1 Response: " + connection.getResponseCode() + " " + connection.getResponseMessage());
         LOG.info("< Transfer-Encoding: " + connection.getContentEncoding());
@@ -624,7 +636,7 @@ public class StowRS {
         LOG.info("> Bulkdata Content Type: " + bulkdataContentType);
         writePartHeaders(out, bulkdataContentType, contentLocation);
 
-        int offset = parser != null ? (int) parser.getCodeStreamPosition() : 0;
+        int offset = 0;
         int length = (int) stowRSBulkdata.getBulkdataFilePath().toFile().length();
         long positionAfterAPPSegments = parser != null ? parser.getPositionAfterAPPSegments() : -1L;
         if (noApp && positionAfterAPPSegments != -1L) {

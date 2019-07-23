@@ -220,6 +220,7 @@ public class StowRS {
         noApp = cl.hasOption("no-appn");
         keys = cl.getOptionValues("m");
         user = cl.getOptionValue("u");
+        bearer = cl.getOptionValue("bearer");
         vlPhotographicImage = cl.hasOption("xc");
         setContentAndAcceptType(cl);
     }

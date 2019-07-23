@@ -1,4 +1,5 @@
-    usage: stowrs [options]  -u <stowURL> [<fileToBeStored>..][<directory>..]
+    usage: stowrs [options]  -u <stowURL>
+                  [<fileToBeStored>..][<filesInDirectoriesToBeStored>..]
     
     For DICOM files : Send multiple dicom files or directories containing
     DICOM files to STOW-RS receiver at a time.
@@ -13,10 +14,8 @@
     possible i.e for eg. one can send multiple pdfs in one request, but can
     not send combination of files like pdfs and images in one request.
     Supported content types for bulkdata are application/pdf, text/xml (for
-    CDA files), image/jpeg, video/mpeg, video/mp4 and application/sla (for STL
-    files). For Content types image/jpeg, video/mpeg and video/mp4, if options
-    --tsuid or --pixel-header are not specified, no transfer syntax will be
-    sent in the multipart request. File names shall not contain spaces.
+    CDA files), image/jpeg, video/mpeg, video/mp4, image/jp2 and
+    application/sla (for STL files). File names shall not contain spaces.
     -
     Options:
      -a,--accept <arg>           Specify the value for Accept header : xml or
@@ -42,16 +41,17 @@
                                  the keyword/tag value of the sequence
                                  attribute, e.g. 00400275/00400009 for
                                  Scheduled Procedure Step ID in the Request.
-        --no-appn                Application segments APPn are to be excluded
+        --no-app                 Application segments APPn are to be excluded
                                  from JPEG stream. If absent JPEG stream
                                  verbatim encapsulated by default.
-        --pixel-header           Metadata information shall be extracted from
+        --pixel-header           If this option is specified, then the
+                                 metadata information shall be extracted from
                                  header of pixel data for jpeg images, mpeg
-                                 and mp4 videos. in addition to the metadata
+                                 and mp4 videos in addition to the metadata
                                  generation as explained above in description.
-                                 If this option is specified then the transfer
-                                 syntax will be parsed from the bulkdata and
-                                 sent in the multipart request.
+                                 xc=Specify this option, if
+                                 vlPhotographicImage images are to be stored
+                                 to the server.
      -t,--type <type>            Specify the value for Content-type header :
                                  xml or json. The value of Content-type will
                                  then be sent in request header as
@@ -69,8 +69,10 @@
                                  server authentication.
         --url <url>              Specify the request URL.
      -V,--version                output version information and exit
-        --xc                     Specify this option, if vlPhotographicImage
-                                 images are to be stored to the server.
+        --xc                     Send image files as VL Photographic images by
+                                 generating sample metadata from
+                                 etc/stowrs/vlPhotographicImageMetadata.xml
+                                 file.
     -
     Example: stowrs -m PatientName=John^Doe --url
     http://localhost/stow/studies img.jpeg

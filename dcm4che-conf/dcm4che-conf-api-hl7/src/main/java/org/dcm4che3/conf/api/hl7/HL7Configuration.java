@@ -55,6 +55,12 @@ public interface HL7Configuration {
     @Deprecated
     void unregisterHL7Application(String name) throws ConfigurationException;
 
+    /**
+     * Looks-up the HL7-Application with the specified name from the configuration.
+     * @param name Name of the HL7-Application
+     * @return Returns the HL7-Application, if no HL7-Application with the given name exists then <code>null</code> is returned
+     * @throws ConfigurationException Thrown if some error happens while looking-up the application.
+     */
     HL7Application findHL7Application(String name) throws ConfigurationException;
 
     String[] listRegisteredHL7ApplicationNames() throws ConfigurationException;

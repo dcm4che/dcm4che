@@ -58,6 +58,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.GeneralSecurityException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -83,7 +84,6 @@ import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.security.action.GetPropertyAction;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -1266,7 +1266,12 @@ public class AuditLogger {
 
     private static class LazyHolder {
         static final File tmpdir = new File(AccessController
-                .doPrivileged(new GetPropertyAction("java.io.tmpdir")));
+                .doPrivileged(new PrivilegedAction<String>() {
+                    @Override
+                    public String run() {
+                        return System.getProperty("java.io.tmpdir");
+                    }
+                }));
     }
 
     private File spoolDirectory() {

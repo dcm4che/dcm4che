@@ -43,7 +43,7 @@
   <artifactId>dcm4che-parent</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>5.17.1</version>
+  <version>5.18.0</version>
   <description>dcm4che DICOM toolkit and utilities</description>
   <licenses>
     <license>

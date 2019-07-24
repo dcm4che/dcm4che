@@ -14,6 +14,9 @@
     <DicomAttribute keyword="InstanceNumber" tag="00200013" vr="IS"/>
     <DicomAttribute keyword="PatientOrientation" tag="00200020" vr="CS"/>
     <DicomAttribute keyword="AcquisitionContextSequence" tag="00400555" vr="SQ"/>
+    <DicomAttribute keyword="Modality" tag="00080060" vr="CS">
+        <Value number="1">XC</Value>
+    </DicomAttribute>
     <DicomAttribute keyword="ImageType" tag="00080008" vr="CS">
         <Value number="1">ORIGINAL</Value>
         <Value number="2">PRIMARY</Value>

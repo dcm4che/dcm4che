@@ -641,10 +641,9 @@ public class StowRS {
         int length = (int) stowRSBulkdata.getBulkdataFilePath().toFile().length();
         long positionAfterAPPSegments = parser != null ? parser.getPositionAfterAPPSegments() : -1L;
         if (noApp && positionAfterAPPSegments != -1L) {
-            offset = (int) positionAfterAPPSegments + 1;
+            offset = (int) positionAfterAPPSegments;
             out.write(-1);
             out.write((byte) JPEG.SOI);
-            out.write(-1);
         }
         length -= offset;
         out.write(Files.readAllBytes(stowRSBulkdata.getBulkdataFilePath()), offset, length);

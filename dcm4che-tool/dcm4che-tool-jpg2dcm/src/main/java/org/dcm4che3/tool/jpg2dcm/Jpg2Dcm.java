@@ -235,13 +235,12 @@ public class Jpg2Dcm {
             dos.writeHeader(Tag.Item, null, 0);
             long positionAfterAPPSegments = parser.getPositionAfterAPPSegments();
             if (noAPPn && fileType == FileType.JPEG && positionAfterAPPSegments != -1L) {
-                offset = (int) positionAfterAPPSegments + 1;
+                offset = (int) positionAfterAPPSegments;
                 length -= offset;
-                itemLen -= offset - 3;
+                itemLen -= offset - 2;
                 dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
                 dos.write((byte) -1);
                 dos.write((byte) JPEG.SOI);
-                dos.write((byte) -1);
             } else {
                 if (offset > 0)
                     itemLen = length -= offset;

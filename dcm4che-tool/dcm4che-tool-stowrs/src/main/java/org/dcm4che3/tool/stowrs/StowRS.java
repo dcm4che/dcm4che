@@ -105,8 +105,6 @@ public class StowRS {
     private static FileType fileType;
     private Map<String, StowRSBulkdata> contentLocBulkdata = new HashMap<>();
 
-    private static final String patName = "STOW-RS-PatientName";
-
     private static final int[] IUIDS_TAGS = {
             Tag.StudyInstanceUID,
             Tag.SeriesInstanceUID
@@ -390,7 +388,6 @@ public class StowRS {
             throws Exception {
         LOG.info("Creating static metadata. Set defaults, if essential attributes are not present.");
         Attributes metadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataResourceURL()));
-        supplementDefaultValue(metadata, Tag.PatientName, patName);
         addAttributesFromFile(metadata);
         CLIUtils.addAttributes(metadata, keys);
         supplementDefaultValue(metadata, Tag.SOPClassUID, fileType.getSOPClassUID());

@@ -44,6 +44,7 @@ import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.ldap.LdapUtils;
+import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.hl7.HL7ApplicationInfo;
 import org.dcm4che3.net.hl7.HL7Application;
@@ -53,7 +54,9 @@ import org.dcm4che3.util.StringUtils;
 import javax.naming.*;
 import javax.naming.directory.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -199,11 +202,12 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         try {
             String deviceName = keys.getDeviceName();
             ne = config.search(deviceName, HL7_ATTRS, toFilter(keys));
+            Map<String, Connection> connCache = new HashMap<>();
             while (ne.hasMore()) {
                 HL7ApplicationInfo hl7AppInfo = new HL7ApplicationInfo();
                 SearchResult ne1 = ne.next();
                 loadFrom(hl7AppInfo, ne1.getAttributes(),
-                        deviceName != null ? deviceName : LdapUtils.cutDeviceName(ne1.getName()));
+                        deviceName != null ? deviceName : LdapUtils.cutDeviceName(ne1.getName()), connCache);
                 results.add(hl7AppInfo);
             }
         } catch (NameNotFoundException e) {
@@ -216,7 +220,8 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         return results.toArray(new HL7ApplicationInfo[results.size()]);
     }
 
-    private void loadFrom(HL7ApplicationInfo hl7AppInfo, Attributes attrs, String deviceName)
+    private void loadFrom(HL7ApplicationInfo hl7AppInfo, Attributes attrs, String deviceName,
+            Map<String, Connection> connCache)
         throws NamingException, ConfigurationException {
         hl7AppInfo.setDeviceName(deviceName);
         hl7AppInfo.setHl7ApplicationName(
@@ -229,7 +234,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         hl7AppInfo.setInstalled(
                 LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
-            hl7AppInfo.getConnections().add(config.findConnection(connDN));
+            hl7AppInfo.getConnections().add(config.findConnection(connDN, connCache));
     }
 
 

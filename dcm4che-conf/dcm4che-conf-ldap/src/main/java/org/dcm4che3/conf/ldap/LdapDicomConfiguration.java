@@ -358,11 +358,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return loadDevice(deviceDN);
     }
 
-    public Connection findConnection(String connDN) throws NamingException {
-        String[] attrIds = { "dicomHostname", "dicomPort", "dicomTLSCipherSuite", "dicomInstalled" };
-        Attributes attrs = ctx.getAttributes(connDN, attrIds);
-        Connection conn = new Connection();
-        loadFrom(conn, attrs, false);
+    public Connection findConnection(String connDN, Map<String, Connection> cache) throws NamingException {
+        Connection conn = cache.get(connDN);
+        if (conn == null) {
+            String[] attrIds = {"dicomHostname", "dicomPort", "dicomTLSCipherSuite", "dicomInstalled"};
+            Attributes attrs = ctx.getAttributes(connDN, attrIds);
+            cache.put(connDN, conn = new Connection());
+            loadFrom(conn, attrs, false);
+        }
         return conn;
     }
 
@@ -483,7 +486,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         deviceInfo.setArcDevExt(LdapUtils.hasObjectClass(attrs, "dcmArchiveDevice"));
     }
 
-    private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs, String deviceName)
+    private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs, String deviceName,
+            Map<String, Connection> connCache)
             throws NamingException {
         aetInfo.setDeviceName(deviceName);
         aetInfo.setAETitle(
@@ -503,11 +507,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         aetInfo.setHl7ApplicationName(
                 LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
-            aetInfo.getConnections().add(findConnection(connDN));
+            aetInfo.getConnections().add(findConnection(connDN, connCache));
     }
 
-    private void loadFrom(WebApplicationInfo webappInfo, Attributes attrs, String deviceName)
-            throws NamingException {
+    private void loadFrom(WebApplicationInfo webappInfo, Attributes attrs, String deviceName,
+            Map<String, Connection> connCache, Map<String, KeycloakClient> keycloakClientCache) throws NamingException {
         webappInfo.setDeviceName(deviceName);
         webappInfo.setApplicationName(LdapUtils.stringValue(attrs.get("dcmWebAppName"), null));
         webappInfo.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
@@ -515,10 +519,25 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         webappInfo.setServiceClasses(LdapUtils.enumArray(WebApplication.ServiceClass.class, attrs.get("dcmWebServiceClass")));
         webappInfo.setAETitle(LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
         webappInfo.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
-        webappInfo.setKeycloakClientID(LdapUtils.stringValue(attrs.get("dcmKeycloakClientID"), null));
+        String keycloakClientID = LdapUtils.stringValue(attrs.get("dcmKeycloakClientID"), null);
+        webappInfo.setKeycloakClientID(keycloakClientID);
         webappInfo.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
-            webappInfo.getConnections().add(findConnection(connDN));
+            webappInfo.getConnections().add(findConnection(connDN, connCache));
+        if (keycloakClientID != null)
+            webappInfo.setKeycloakClient(findKeycloakClient(keycloakClientID, deviceName, keycloakClientCache));
+    }
+
+    private KeycloakClient findKeycloakClient(String clientID, String deviceName, Map<String, KeycloakClient> cache)
+            throws NamingException {
+        String keycloakClientDN = keycloakClientDN(clientID, deviceRef(deviceName));
+        KeycloakClient keycloakClient = cache.get(keycloakClientDN);
+        if (keycloakClient == null) {
+            Attributes attrs = ctx.getAttributes(keycloakClientDN);
+            cache.put(keycloakClientDN, keycloakClient = new KeycloakClient(clientID));
+            loadFrom(keycloakClient, attrs);
+        }
+        return keycloakClient;
     }
 
     @Override
@@ -2545,11 +2564,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         try {
             String deviceName = keys.getDeviceName();
             ne = search(deviceName, AE_ATTRS, toFilter(keys));
+            Map<String, Connection> connCache = new HashMap<>();
             while (ne.hasMore()) {
                 ApplicationEntityInfo aetInfo = new ApplicationEntityInfo();
                 SearchResult ne1 = ne.next();
                 loadFrom(aetInfo, ne1.getAttributes(),
-                        deviceName != null ? deviceName : LdapUtils.cutDeviceName(ne1.getName()));
+                        deviceName != null ? deviceName : LdapUtils.cutDeviceName(ne1.getName()), connCache);
                 results.add(aetInfo);
             }
         } catch (NameNotFoundException e) {
@@ -2568,16 +2588,19 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         if (!configurationExists())
             return new WebApplicationInfo[0];
 
-        ArrayList<WebApplicationInfo> results = new ArrayList<WebApplicationInfo>();
+        ArrayList<WebApplicationInfo> results = new ArrayList<>();
         NamingEnumeration<SearchResult> ne = null;
         try {
             String deviceName = keys.getDeviceName();
             ne = search(deviceName, WEBAPP_ATTRS, toFilter(keys));
+            Map<String, Connection> connCache = new HashMap<>();
+            Map<String, KeycloakClient> keycloakClientCache = new HashMap<>();
             while (ne.hasMore()) {
                 WebApplicationInfo webappInfo = new WebApplicationInfo();
                 SearchResult ne1 = ne.next();
                 loadFrom(webappInfo, ne1.getAttributes(),
-                        deviceName != null ? deviceName : LdapUtils.cutDeviceName(ne1.getName()));
+                        deviceName != null ? deviceName : LdapUtils.cutDeviceName(ne1.getName()),
+                        connCache, keycloakClientCache);
                 results.add(webappInfo);
             }
         } catch (NameNotFoundException e) {

@@ -293,7 +293,7 @@ attributeTypes: ( 1.2.40.0.13.1.15.0.3.67 NAME 'dcmWebAppName'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 attributeTypes: ( 1.2.40.0.13.1.15.0.3.68 NAME 'dcmWebServiceClass'
-  DESC 'Web Service Class. Enumerated values: WADO_URI, WADO_RS, STOW_RS, QIDO_RS, UPS_RS, DCM4CHEE_ARC, DCM4CHEE_ARC_AET'
+  DESC 'Web Service Class. Enumerated values: WADO_URI, WADO_RS, STOW_RS, QIDO_RS, UPS_RS, DCM4CHEE_ARC, DCM4CHEE_ARC_AET, PAM, MOVE, MOVE_MATCHING, ELASTICSEARCH'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 attributeTypes: ( 1.2.40.0.13.1.15.0.3.69 NAME 'dcmWebServicePath'

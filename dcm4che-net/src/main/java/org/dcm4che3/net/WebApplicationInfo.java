@@ -58,7 +58,6 @@ public class WebApplicationInfo {
     private String servicePath;
     private String aeTitle;
     private String[] applicationClusters = {};
-    private String keycloakClientID;
     private KeycloakClient keycloakClient;
     private Boolean installed;
     private EnumSet<WebApplication.ServiceClass> serviceClasses = EnumSet.noneOf(WebApplication.ServiceClass.class);
@@ -113,11 +112,13 @@ public class WebApplicationInfo {
     }
 
     public String getKeycloakClientID() {
-        return keycloakClientID;
-    }
+        String authURL = System.getProperty("auth-server-url");
+        if (keycloakClient == null || authURL == null
+                || (authURL.equals(keycloakClient.getKeycloakServerURL())
+                    && System.getProperty("realm-name", "dcm4che").equals(keycloakClient.getKeycloakRealm())))
+            return null;
 
-    public void setKeycloakClientID(String keycloakClientID) {
-        this.keycloakClientID = keycloakClientID;
+        return keycloakClient.getKeycloakClientID();
     }
 
     public KeycloakClient getKeycloakClient() {

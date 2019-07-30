@@ -520,6 +520,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         webappInfo.setAETitle(LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
         webappInfo.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         String keycloakClientID = LdapUtils.stringValue(attrs.get("dcmKeycloakClientID"), null);
+        webappInfo.setKeycloakClientID(keycloakClientID);
         webappInfo.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
         for (String connDN : LdapUtils.stringArray(attrs.get("dicomNetworkConnectionReference")))
             webappInfo.getConnections().add(findConnection(connDN, connCache));

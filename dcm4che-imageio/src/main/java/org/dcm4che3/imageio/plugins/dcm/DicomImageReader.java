@@ -794,6 +794,11 @@ public class DicomImageReader extends ImageReader implements Closeable {
                         ImageReaderFactory.getImageReaderParam(tsuid);
                 if (param == null)
                     throw new UnsupportedOperationException("Unsupported Transfer Syntax: " + tsuid);
+                TransferSyntaxType tsType = TransferSyntaxType.forUID(tsuid);
+                if (tsType.adjustBitsStoredTo12(ds)) {
+                    LOG.info("Adjust invalid Bits Stored: {} of {} to 12", bitsStored, tsType);
+                    bitsStored = 12;
+                }
                 pmiAfterDecompression = pmi.isYBR() && TransferSyntaxType.isYBRCompression(tsuid)
                         ? PhotometricInterpretation.RGB
                         : pmi;

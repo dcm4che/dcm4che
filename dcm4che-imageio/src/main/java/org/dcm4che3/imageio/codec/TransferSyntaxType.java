@@ -38,7 +38,10 @@
 
 package org.dcm4che3.imageio.codec;
 
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
+import org.dcm4che3.data.VR;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -90,6 +93,18 @@ public enum TransferSyntaxType {
 
     public int getMaxBitsStored() {
         return maxBitsStored;
+    }
+
+    public boolean adjustBitsStoredTo12(Attributes attrs) {
+        if (maxBitsStored == 12) {
+            int bitsStored = attrs.getInt(Tag.BitsStored, 8);
+            if (bitsStored > 8 && bitsStored < 12) {
+                attrs.setInt(Tag.BitsStored, VR.US, bitsStored = 12);
+                attrs.setInt(Tag.HighBit, VR.US, 11);
+                return true;
+            }
+        }
+        return false;
     }
 
     public static TransferSyntaxType forUID(String uid) {

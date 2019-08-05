@@ -498,12 +498,19 @@ public class Transcoder implements Closeable {
 
     private void adjustDataset() {
         PhotometricInterpretation pmi = imageDescriptor.getPhotometricInterpretation();
-        if (decompressor != null && imageDescriptor.getSamples() == 3) {
-            if (pmi.isYBR() && TransferSyntaxType.isYBRCompression(srcTransferSyntax)) {
-                pmi = PhotometricInterpretation.RGB;
-                dataset.setString(Tag.PhotometricInterpretation, VR.CS, pmi.toString());
+        if (decompressor != null) {
+            if (imageDescriptor.getSamples() == 3) {
+                if (pmi.isYBR() && TransferSyntaxType.isYBRCompression(srcTransferSyntax)) {
+                    pmi = PhotometricInterpretation.RGB;
+                    dataset.setString(Tag.PhotometricInterpretation, VR.CS, pmi.toString());
+                }
+                dataset.setInt(Tag.PlanarConfiguration, VR.US, srcTransferSyntaxType.getPlanarConfiguration());
+            } else {
+                if (srcTransferSyntaxType.adjustBitsStoredTo12(dataset)) {
+                    LOG.info("Adjust invalid Bits Stored: {} of {} to 12",
+                            imageDescriptor.getBitsStored(), srcTransferSyntaxType);
+                }
             }
-            dataset.setInt(Tag.PlanarConfiguration, VR.US, srcTransferSyntaxType.getPlanarConfiguration());
         }
         if (compressor != null) {
             if (pmi == PhotometricInterpretation.PALETTE_COLOR && lossyCompression) {
@@ -521,6 +528,11 @@ public class Transcoder implements Closeable {
                 ybr2rgb = true;
                 pmi = PhotometricInterpretation.RGB;
                 LOG.debug("Conversion to an RGB color model is required before compression.");
+            } else {
+                if (destTransferSyntaxType.adjustBitsStoredTo12(dataset)) {
+                    LOG.debug("Adjust Bits Stored: {} for {} to 12",
+                            imageDescriptor.getBitsStored(), destTransferSyntaxType);
+                }
             }
             dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmiForCompression(pmi).toString());
             compressorImageDescriptor = new ImageDescriptor(dataset);

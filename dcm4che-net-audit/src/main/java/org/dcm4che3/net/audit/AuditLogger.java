@@ -191,15 +191,23 @@ public class AuditLogger extends DeviceExtension {
     {
         INSTANCE;
 
+        private static final String LOCALHOST_CACHE_INTERVAL_SYS_PROPERTY = "org.dcm4che3.net.audit.AuditLogger.LocalHostCacheInterval";
         private static final String UNKNOWN = "unknown";
 
-        private static final long CACHED_DURATION_MILLIS = 1000 * 3600; // 1h
+        private static final long CACHED_FOREVER = Long.MAX_VALUE;
+        private final long cachedDurationMillis;
 
         private InetAddress localHost;
         private String localHostName;
         private String canonicalLocalHostName;
 
+        private volatile boolean initialized;
         private volatile long lastRefreshTimestampMillis;
+
+        LocalHostAccess() {
+            String localHostCacheIntervalString = System.getProperty(LOCALHOST_CACHE_INTERVAL_SYS_PROPERTY, null);
+            cachedDurationMillis = (localHostCacheIntervalString != null) ? Long.parseLong(localHostCacheIntervalString) : CACHED_FOREVER;
+        }
 
         InetAddress getLocalHost() {
             checkRefresh();
@@ -219,10 +227,10 @@ public class AuditLogger extends DeviceExtension {
         private void checkRefresh()
         {
             long nowTimestampMillis = new Date().getTime();
-            if( nowTimestampMillis - this.lastRefreshTimestampMillis > CACHED_DURATION_MILLIS ) {
+            if(!initialized || (nowTimestampMillis - this.lastRefreshTimestampMillis) > cachedDurationMillis) {
                 // SYNCHRONIZED WITH DOUBLE-CHECK-IDIOM
                 synchronized( this ) {
-                    if( nowTimestampMillis - this.lastRefreshTimestampMillis > CACHED_DURATION_MILLIS ) {
+                    if(!initialized || (nowTimestampMillis - this.lastRefreshTimestampMillis) > cachedDurationMillis) {
                         this.localHost = localHost();
                         if (this.localHost == null) {
                             this.localHostName = this.canonicalLocalHostName = UNKNOWN;
@@ -232,6 +240,7 @@ public class AuditLogger extends DeviceExtension {
                             this.canonicalLocalHostName = this.localHost.getCanonicalHostName();
                         }
                         this.lastRefreshTimestampMillis = nowTimestampMillis;
+                        this.initialized = true;
                     }
                 }
             }

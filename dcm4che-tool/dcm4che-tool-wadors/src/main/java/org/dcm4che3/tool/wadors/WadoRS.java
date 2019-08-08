@@ -285,9 +285,7 @@ public class WadoRS {
                 String type = s.substring(s.indexOf("=") + 1).replaceAll("\"", "");
                 setInput(Input.valueOf(type.substring(type.indexOf("=")+1)
                         .toUpperCase()
-                        .replace("/", "_")
-                        .replace("-", "_")
-                        .replace("+", "_")));
+                        .replaceAll("[-+/]", "_")));
             }
         }
         return boundary;

@@ -13,18 +13,20 @@
      -a,--accept <arg>           Specify the value for Accept header.
                                  Supported types for object retrieval are
                                  dicom, octetstream, pdf, jpeg, jp2, jpx,
-                                 xjls, xdicomrle, mpeg and mp4. To retrieve
-                                 metadata, supported types are xml or json. If
-                                 no value is specified, then wildcard shall be
-                                 sent in the request. The appropriate value of
-                                 Accept shall be sent in request header or as
-                                 a query parameter. For eg. if it is jpeg then
-                                 Accept value shall be
-                                 multipart/related;type=image/jpeg.
+                                 xjls, xdicomrle, cda, stl, mpeg, mp4 and zip.
+                                 To retrieve metadata, supported types are xml
+                                 or json. If no value is specified, then
+                                 wildcard shall be sent in the request. For
+                                 eg. if it is jpeg then Accept value shall be
+                                 sent as multipart/related;type=image/jpeg. If
+                                 specified, by default it will be appended to
+                                 the URL as a query parameter.
+        --bearer <bearer>        Specify the bearer token to be used in
+                                 Authorization header for server
+                                 authentication.
      -h,--help                   display this help and exit
         --header                 If specified, Accept value shall be sent as
-                                 header, else it shall be appended to the URL
-                                 as a query parameter.
+                                 HTTP Request Header.
         --out-dir <directory>    Specify directory where the received MIME
                                  multipart messages will be unpacked into
                                  different parts.

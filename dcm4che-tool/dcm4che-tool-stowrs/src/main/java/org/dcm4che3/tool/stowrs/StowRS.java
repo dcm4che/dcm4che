@@ -138,18 +138,6 @@ public class StowRS {
                 .longOpt("url")
                 .desc(rb.getString("url"))
                 .build());
-        opts.addOption(Option.builder("u")
-                .hasArg()
-                .argName("user:password")
-                .longOpt("user")
-                .desc(rb.getString("user"))
-                .build());
-        opts.addOption(Option.builder()
-                .hasArg()
-                .argName("bearer")
-                .longOpt("bearer")
-                .desc(rb.getString("bearer"))
-                .build());
         opts.addOption(Option.builder("t")
                 .hasArg()
                 .argName("type")
@@ -157,27 +145,41 @@ public class StowRS {
                 .desc(rb.getString("type"))
                 .build());
         opts.addOption(Option.builder()
-                .hasArg(false)
                 .argName("tsuid")
                 .longOpt("tsuid")
                 .desc(rb.getString("tsuid"))
                 .build());
         opts.addOption(Option.builder()
                 .longOpt("pixel-header")
-                .hasArg(false)
                 .desc(rb.getString("pixel-header"))
                 .build());
         opts.addOption(Option.builder()
                 .longOpt("no-app")
-                .hasArg(false)
                 .desc(rb.getString("no-app"))
                 .build());
         opts.addOption(Option.builder()
                 .longOpt("xc")
-                .hasArg(false)
                 .desc(rb.getString("xc"))
                 .build());
-        opts.addOption("a","accept", true, rb.getString("accept"));
+        opts.addOption(Option.builder("a")
+                .longOpt("accept")
+                .hasArg()
+                .desc(rb.getString("accept"))
+                .build());
+        OptionGroup group = new OptionGroup();
+        group.addOption(Option.builder("u")
+                .hasArg()
+                .argName("user:password")
+                .longOpt("user")
+                .desc(rb.getString("user"))
+                .build());
+        group.addOption(Option.builder()
+                .hasArg()
+                .argName("bearer")
+                .longOpt("bearer")
+                .desc(rb.getString("bearer"))
+                .build());
+        opts.addOptionGroup(group);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StowRS.class);
     }

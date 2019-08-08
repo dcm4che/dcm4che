@@ -111,7 +111,6 @@ public class WadoRS {
                 .build());
         opts.addOption(Option.builder()
                 .longOpt("header")
-                .hasArg(false)
                 .desc(rb.getString("header"))
                 .build());
         opts.addOption(Option.builder()

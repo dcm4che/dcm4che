@@ -47,7 +47,10 @@ import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 @SuppressWarnings("unchecked")
@@ -70,66 +73,110 @@ public class ConfigNodeTraverser {
     }
 
     public static class AConfigNodeFilter {
+
+        /**
+         * Visitor method for elements (key-value pair) of a Map-type.
+         * Called before node is traversed.
+         * @param containerNode node to be traversed
+         * @param key
+         * @param value
+         */
         public void beforeNodeElement(Map<String, Object> containerNode, String key, Object value) {
         }
 
+        /**
+         * Visitor method for elements (key-value pair) of a Map-type.
+         * Called after node has been traversed.
+         * @param containerNode node that has been traversed
+         * @param key
+         * @param value
+         */
         public void afterNodeElement(Map<String, Object> containerNode, String key, Object value) {
         }
 
+        /**
+         * Visitor method for all non-scalar node types.
+         * Called before node is traversed.
+         * @param node
+         */
         public void beforeNode(Map<String, Object> node) {
         }
 
+        /**
+         * Visitor method for all non-scalar node types.
+         * Called after node has been traversed.
+         * @param node
+         */
         public void afterNode(Map<String, Object> node) {
         }
 
+        /**
+         * Visitor method for all list node types.
+         * Called before node is traversed.
+         * @param list List to be traversed.
+         */
         public void beforeList(Collection list) {
         }
 
+        /**
+         * Visitor method for elements of list.
+         * Called for ALL types of list elements before node is traversed.
+         * @param list
+         * @param index
+         * @param element list element to be traversed
+         */
         public void beforeListElement(Collection list, int index, Object element) {
         }
 
+        /**
+         * Visitor method for elements of list.
+         * Called for ALL types of list elements after node has been traversed.
+         * @param list
+         * @param index
+         * @param element list element that has been traversed
+         */
         public void afterListElement(Collection list, int index, Object element) {
         }
 
+        /**
+         * Visitor method for all list node types.
+         * Called after node has been traversed.
+         * @param list List that has been traversed.
+         */
         public void afterList(Collection list) {
         }
 
         /**
-         * Fired for Boolean,String,Number,null
+         * Visitor method for primitive element types: Boolean, String, Number, null
          */
         public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
         }
 
         /**
-         * Fired for Boolean,String,Number,null
+         * Visitor method for scalar primitive list element types: Boolean, String, Number, null
          */
         public void onPrimitiveListElement(Collection list, Object element) {
         }
     }
 
     public static class ADualNodeFilter {
-        public void beforeNode(Map<String, Object> node1, Map<String, Object> node2) {
 
+        public void beforeNode(Map<String, Object> node1, Map<String, Object> node2) {
         }
 
         public void afterNode(Map<String, Object> node1, Map<String, Object> node2) {
-
         }
 
         public void afterNodeProperty(String key) {
-
         }
 
         public void beforeNodeProperty(String key) {
-
         }
 
         public void beforeListElement(int index1, int index2) {
-
         }
 
         public void afterListElement(int index1, int index2) {
-
         }
 
         /**
@@ -142,8 +189,8 @@ public class ConfigNodeTraverser {
         }
 
         public void afterList(List node1, List node2) {
-
         }
+
     }
 
     public static void traverseNodeTypesafe(Object node, ConfigProperty containerProperty, List<Class> allExtensionClasses, ConfigNodeTypesafeFilter filter) throws ConfigurationException {
@@ -272,7 +319,7 @@ public class ConfigNodeTraverser {
                 if (allUuids) {
                     // match on #uuid
                     // extract Map uuid -> index
-                    Map<String, Integer> index1 = new HashMap<String, Integer>();
+                    Map<String, Integer> index1 = new HashMap<>();
 
                     int i = 0;
                     for (Map<String, Object> node : nodeList1) {
@@ -313,7 +360,7 @@ public class ConfigNodeTraverser {
 
                     // match on #uuid
                     // extract Map uuid -> index
-                    Map<String, String> index1 = new HashMap<String, String>();
+                    Map<String, String> index1 = new HashMap<>();
                     for (Entry<String, Map<String, Object>> stringMapEntry : mapNode1.entrySet()) {
                         index1.put(
                                 (String) stringMapEntry.getValue().get(Configuration.UUID_KEY),
@@ -457,9 +504,6 @@ public class ConfigNodeTraverser {
         filter.beforeNode(node1, node2);
 
         if (node1 != null && node2 != null) {
-
-
-
             if (allEntriesAreNodesAndHaveUuids(node1) &&
                     allEntriesAreNodesAndHaveUuids(node2)) {
                 // conf objects with uuids
@@ -469,7 +513,7 @@ public class ConfigNodeTraverser {
 
                 // match on #uuid
                 // extract Map uuid -> index
-                Map<String, String> index1 = new HashMap<String, String>();
+                Map<String, String> index1 = new HashMap<>();
                 for (Entry<String, Map<String, Object>> stringMapEntry : mapNode1.entrySet()) {
                     index1.put(
                             (String) stringMapEntry.getValue().get(Configuration.UUID_KEY),
@@ -489,8 +533,6 @@ public class ConfigNodeTraverser {
                     }
 
                 }
-
-
             } else {
                 // conf objects without uuids
 
@@ -537,7 +579,7 @@ public class ConfigNodeTraverser {
                 // match on #uuid
 
                 // extract Map uuid -> index
-                Map<String, Integer> index1 = new HashMap<String, Integer>();
+                Map<String, Integer> index1 = new HashMap<>();
 
                 int i = 0;
                 for (Map<String, Object> node : nodeList1) {

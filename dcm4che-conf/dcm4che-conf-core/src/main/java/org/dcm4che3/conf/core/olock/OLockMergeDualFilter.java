@@ -65,14 +65,12 @@ import java.util.*;
  */
 class OLockMergeDualFilter extends ADualNodeFilter {
 
-    public static final String OLD_OLOCK_HASH_KEY = HashBasedOptimisticLockingConfiguration.OLD_OLOCK_HASH_KEY;
-
-    final Deque<Object> path = new ArrayDeque<Object>();
+    private final Deque<Object> path = new ArrayDeque<>();
 
     /**
      * Is currently merging new (non-conflicting) stuff from backend into the new node (being persisted)
      */
-    final Deque<Boolean> isMerging = new ArrayDeque<Boolean>();
+    private final Deque<Boolean> isMerging = new ArrayDeque<>();
 
 
     public OLockMergeDualFilter() {
@@ -92,12 +90,12 @@ class OLockMergeDualFilter extends ADualNodeFilter {
 
             // We are NOT merging now
 
-            if (newNode.get(OLD_OLOCK_HASH_KEY).equals(newNode.get(Configuration.OLOCK_HASH_KEY))) {
+            if (newNode.get(HashBasedOptimisticLockingConfiguration.OLD_OLOCK_HASH_KEY).equals(newNode.get(Configuration.OLOCK_HASH_KEY))) {
                 // If we met a olocked node where new node did not change, then we swap and turn on merging (from old to new)
                 isMerging.push(true);
                 swap(oldNode, newNode);
             } else {
-                if (newNode.get(OLD_OLOCK_HASH_KEY).equals(oldNode.get(Configuration.OLOCK_HASH_KEY))) {
+                if (newNode.get(HashBasedOptimisticLockingConfiguration.OLD_OLOCK_HASH_KEY).equals(oldNode.get(Configuration.OLOCK_HASH_KEY))) {
                     // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed - keep going
                     isMerging.push(false);
                 } else {
@@ -113,11 +111,11 @@ class OLockMergeDualFilter extends ADualNodeFilter {
             Map<String, Object> actualOldNode = newNode;
 
 
-            if (actualNewNode.get(OLD_OLOCK_HASH_KEY).equals(actualNewNode.get(Configuration.OLOCK_HASH_KEY))) {
+            if (actualNewNode.get(HashBasedOptimisticLockingConfiguration.OLD_OLOCK_HASH_KEY).equals(actualNewNode.get(Configuration.OLOCK_HASH_KEY))) {
                 // If we met a olocked node where new node did not change, then keep on merging (from old to new)
                 isMerging.push(true);
             } else {
-                if (actualNewNode.get(OLD_OLOCK_HASH_KEY).equals(actualOldNode.get(Configuration.OLOCK_HASH_KEY))) {
+                if (actualNewNode.get(HashBasedOptimisticLockingConfiguration.OLD_OLOCK_HASH_KEY).equals(actualOldNode.get(Configuration.OLOCK_HASH_KEY))) {
                     // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed, swap and switch to non-merging mode
                     isMerging.push(false);
                     swap(actualOldNode, actualNewNode);
@@ -130,13 +128,13 @@ class OLockMergeDualFilter extends ADualNodeFilter {
     }
 
     /**
-     * Swaps CONTENTS
+     * Swaps the content of the given maps
      *
      * @param oldNode
      * @param newNode
      */
-    private void swap(Map<String, Object> oldNode, Map<String, Object> newNode) {
-        Map<String, Object> tmpNode = new LinkedHashMap<String, Object>();
+    private static void swap(Map<String, Object> oldNode, Map<String, Object> newNode) {
+        Map<String, Object> tmpNode = new LinkedHashMap<>(oldNode.size());
         tmpNode.putAll(oldNode);
 
         oldNode.clear();
@@ -145,9 +143,6 @@ class OLockMergeDualFilter extends ADualNodeFilter {
         newNode.clear();
         newNode.putAll(tmpNode);
     }
-
-
-
 
     @Override
     public void afterNode(Map<String, Object> node1, Map<String, Object> node2) {

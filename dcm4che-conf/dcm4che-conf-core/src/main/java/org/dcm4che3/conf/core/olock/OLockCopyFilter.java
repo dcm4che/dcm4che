@@ -52,7 +52,7 @@ import java.util.Map;
  */
 public class OLockCopyFilter extends ConfigNodeTraverser.AConfigNodeFilter{
 
-    String oLockPropertyName;
+    private final String oLockPropertyName;
 
     public OLockCopyFilter(String oLockPropertyName) {
         this.oLockPropertyName = oLockPropertyName;

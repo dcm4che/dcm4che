@@ -35,54 +35,43 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+
 package org.dcm4che3.io.stream;
 
+import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Implementation;
 
 import javax.imageio.spi.ImageInputStreamSpi;
-import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Paths;
 import java.util.Locale;
 
 /**
- * Handle URIs in an extensible way.
-
- * @author Andrew Cowan (andrew.cowan@agfa.com)
+ * Return an ImageInputStream for a bulk data instance.
+ * @author Andrew Cowan (awcowan@gmail.com)
  */
-public class FileURIImageInputStreamSpi extends ImageInputStreamSpi {
+public class BulkDataImageInputStreamSpi extends ImageInputStreamSpi {
+    private static final ImageInputStreamLoader LOADER = new ServiceImageInputStreamLoader();
+
     private static final String VENDOR = "org.dcm4che";
     private static final String VERSION = Implementation.getVersionName();
 
-    public FileURIImageInputStreamSpi() {
-        super(VENDOR, VERSION, URI.class);
+
+    public BulkDataImageInputStreamSpi() {
+        super(VENDOR, VERSION, BulkData.class);
     }
+
 
     @Override
     public ImageInputStream createInputStreamInstance(Object input, boolean useCache, File cacheDir) throws IOException {
-        URI dataURI = (URI)input;
-        File file = toFile(dataURI);
-        return new FileImageInputStream(file);
-    }
-
-    protected File toFile(URI fileURI) {
-
-        if(fileURI.getQuery() != null) {
-            String uriStr = fileURI.toString();
-            int queryIdx = uriStr.indexOf('?');
-            uriStr = uriStr.substring(0,queryIdx);
-            fileURI = URI.create(uriStr);
-        }
-
-        return Paths.get(fileURI).toFile();
+        BulkData bulkData = (BulkData) input;
+        ImageInputStream iis = LOADER.openStream(bulkData.toFileURI());
+        return new BulkURIImageInputStream(iis, bulkData.offset(), bulkData.length());
     }
 
     @Override
     public String getDescription(Locale locale) {
-        return "ImageInputStream SPI for file:// URIs";
+        return "ImageInputStream SPI for BulkData instances";
     }
-
 }

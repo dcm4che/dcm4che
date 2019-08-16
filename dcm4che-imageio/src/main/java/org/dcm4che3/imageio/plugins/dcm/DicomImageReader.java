@@ -60,9 +60,7 @@ import java.awt.image.*;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * Image Reader implementation that reads from DICOM files.  Supports several
@@ -94,26 +92,13 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
     private static final Logger LOG = LoggerFactory.getLogger(DicomImageReader.class);
 
-    private static final Set<String> VIDEO_TSUID = new HashSet<>();
-    static {
-        VIDEO_TSUID.add(UID.MPEG2);
-        VIDEO_TSUID.add(UID.MPEG2MainProfileHighLevel);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel41);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For2DVideo);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For3DVideo);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264StereoHighProfileLevel42);
-        VIDEO_TSUID.add(UID.HEVCH265Main10ProfileLevel51);
-        VIDEO_TSUID.add(UID.HEVCH265MainProfileLevel51);
-    }
+    /** Default to reading the entire file for image rendering */
+    public static final DicomMetaDataFactory DEFAULT_METADATA_FACTORY = new DefaultMetaDataFactory(true);
+
+
+    private final DicomMetaDataFactory metadataFactory;
 
     private DicomMetaData metadata;
-
-    private int frames;
-
-    private int width;
-
-    private int height;
 
     private ImageReader decompressor;
 
@@ -121,20 +106,14 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
     private PatchJPEGLS patchJpegLS;
 
-    private int samples;
-
-    private boolean banded;
-
-    private int bitsStored;
-
-    private int bitsAllocated;
-
-    private int dataType;
-
-    private PhotometricInterpretation pmi;
     
     public DicomImageReader(ImageReaderSpi originatingProvider) {
+        this(originatingProvider, DEFAULT_METADATA_FACTORY);
+    }
+
+    public DicomImageReader(ImageReaderSpi originatingProvider, DicomMetaDataFactory metadataFactory) {
         super(originatingProvider);
+        this.metadataFactory = metadataFactory;
     }
 
     @Override
@@ -154,22 +133,23 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
     @Override
     public int getNumImages(boolean allowSearch) throws IOException {
+        // TODO:  Should this read through the metadata?
         readMetadata();
-        return frames;
+        return this.metadata.getNumberOfFrames();
     }
 
     @Override
     public int getWidth(int frameIndex) throws IOException {
        readMetadata();
        checkIndex(frameIndex);
-       return width;
+       return this.metadata.getColumns();
     }
 
     @Override
     public int getHeight(int frameIndex) throws IOException {
         readMetadata();
         checkIndex(frameIndex);
-        return height;
+        return this.metadata.getRows();
     }
 
 
@@ -180,10 +160,10 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         checkIndex(frameIndex);
 
         if (decompressor == null)
-            return createImageType(bitsStored, dataType, banded);
+            return createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), this.metadata.isBanded());
 
         if (rle)
-            return createImageType(bitsStored, dataType, true);
+            return createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), true);
 
         try (ImageInputStream iis = iisOfFrame( 0)) {
             decompressor.setInput(iis);
@@ -198,12 +178,12 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         checkIndex(frameIndex);
 
         ImageTypeSpecifier imageType;
-        if (pmi.isMonochrome())
+        if (this.metadata.getPhotometricInterpretation().isMonochrome())
             imageType = createImageType(8, DataBuffer.TYPE_BYTE, false);
         else if (decompressor == null)
-            imageType = createImageType(bitsStored, dataType, banded);
+            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), this.metadata.isBanded());
         else if (rle)
-            imageType = createImageType(bitsStored, dataType, true);
+            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), true);
         else {
             try (ImageInputStream iis = iisOfFrame( 0)) {
                 decompressor.setInput(iis);
@@ -249,8 +229,9 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
             if (decompressor != null) {
                 decompressor.setInput(iisOfFrame);
 
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Start decompressing frame #" + (frameIndex + 1));
+                LOG.debug("Start decompressing frame # {}", (frameIndex + 1));
+
+                PhotometricInterpretation pmi = this.metadata.getPhotometricInterpretation();
                 raster = pmi.decompress() == pmi && decompressor.canReadRaster()
                         ? decompressor.readRaster(0, decompressParam(param))
                         : decompressor.read(0, decompressParam(param)).getRaster();
@@ -259,7 +240,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
             }
             else {
-                WritableRaster wr = Raster.createWritableRaster(createSampleModel(dataType, banded), null);
+                WritableRaster wr = Raster.createWritableRaster(createSampleModel(this.metadata.getDataType(), this.metadata.isBanded()), null);
                 DataBuffer buf = wr.getDataBuffer();
 
                 if (buf instanceof DataBufferByte) {
@@ -309,7 +290,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
             dest = param.getDestination();
         }
         if (rle && imageType == null && dest == null)
-            imageType = createImageType(bitsStored, dataType, true);
+            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), true);
         decompressParam.setDestinationType(imageType);
         decompressParam.setDestination(dest);
         return decompressParam;
@@ -330,7 +311,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
                 BufferedImage bi = decompressor.read(0, decompressParam(param));
                 if (LOG.isDebugEnabled())
                     LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
-                if (samples > 1)
+                if (this.metadata.getSamplesPerPixel() > 1)
                     return bi;
 
                 raster = bi.getRaster();
@@ -339,7 +320,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
             raster = (WritableRaster) readRaster(frameIndex, param);
 
         ColorModel cm;
-        if (pmi.isMonochrome()) {
+        if (this.metadata.getPhotometricInterpretation().isMonochrome()) {
             int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
             byte[][] overlayData = new byte[overlayGroupOffsets.length][];
             for (int i = 0; i < overlayGroupOffsets.length; i++) {
@@ -353,7 +334,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
                         raster, frameIndex, param, 8, overlayData[i]);
             }
         } else {
-            cm = createColorModel(bitsStored, dataType);
+            cm = createColorModel(this.metadata.getBitsStored(), this.metadata.getDataType());
         }
         return new BufferedImage(cm, raster , false, null);
     }
@@ -372,9 +353,9 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         int length = ovlyRows * ovlyColumns;
 
         byte[] ovlyData = new byte[(((length+7)>>>3)+1)&(~1)] ;
-        if (bitPosition < bitsStored)
+        if (bitPosition < this.metadata.getBitsStored())
             LOG.info("Ignore embedded overlay #{} from bit #{} < bits stored: {}",
-                    (gg0000 >>> 17) + 1, bitPosition, bitsStored);
+                    (gg0000 >>> 17) + 1, bitPosition, this.metadata.getBitsStored());
         else
             Overlays.extractFromPixeldata(raster, mask, ovlyData, 0, length);
         return ovlyData;
@@ -513,7 +494,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         if (metadata != null)
             return;
 
-        setMetadata(new ParseEntireFileMetaData(input));
+        setMetadata(metadataFactory.readMetaData(input));
     }
 
     public boolean isVideo() {
@@ -564,16 +545,6 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
         if (metadata.containsPixelData()) {
             Attributes ds = metadata.getAttributes();
-            frames = ds.getInt(Tag.NumberOfFrames, 1);
-            width = ds.getInt(Tag.Columns, 0);
-            height = ds.getInt(Tag.Rows, 0);
-            samples = ds.getInt(Tag.SamplesPerPixel, 1);
-            banded = samples > 1 && ds.getInt(Tag.PlanarConfiguration, 0) != 0;
-            bitsAllocated = ds.getInt(Tag.BitsAllocated, 8);
-            bitsStored = ds.getInt(Tag.BitsStored, bitsAllocated);
-            dataType = bitsAllocated <= 8 ? DataBuffer.TYPE_BYTE 
-                                          : DataBuffer.TYPE_USHORT;
-            pmi = PhotometricInterpretation.fromString(ds.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
 
             if (metadata.getTransferSyntaxType().isPixeldataEncapsulated()) {
                 Attributes fmi = metadata.getFileMetaInformation();
@@ -593,7 +564,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     }
 
     private SampleModel createSampleModel(int dataType, boolean banded) {
-        return pmi.createSampleModel(dataType, width, height, samples, banded);
+        return this.metadata.getPhotometricInterpretation().createSampleModel(dataType, this.metadata.getColumns(), this.metadata.getRows(), this.metadata.getSamplesPerPixel(), banded);
     }
 
     private ImageTypeSpecifier createImageType(int bits, int dataType, boolean banded) {
@@ -603,27 +574,21 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     }
 
     private ColorModel createColorModel(int bits, int dataType) {
-        return pmi.createColorModel(bits, dataType, metadata.getAttributes());
+        return this.metadata.getPhotometricInterpretation().createColorModel(bits, dataType, metadata.getAttributes());
     }
 
     private void resetInternalState() {
         metadata = null;
-        frames = 0;
-        width = 0;
-        height = 0;
+
         if (decompressor != null) {
             decompressor.dispose();
             decompressor = null;
         }
         patchJpegLS = null;
-        pmi = null;
     }
 
     private void checkIndex(int frameIndex) {
-        if (frames == 0)
-            throw new IllegalStateException("Missing Pixel Data");
-
-        if (frameIndex < 0 || frameIndex >= frames)
+        if (frameIndex < 0 || frameIndex >= this.metadata.getNumberOfFrames())
             throw new IndexOutOfBoundsException("imageIndex: " + frameIndex);
     }
 
@@ -639,12 +604,6 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         clone.setInput(getStreamMetadata());
         return clone;
     }
-
-    /** Returns a byte array containing the raw bytes of the given frame */
-    public byte[] readBytes(int frame, ImageReadParam readParam) {
-        return null;
-    }
-
 
     @Override
     public void close() throws IOException {

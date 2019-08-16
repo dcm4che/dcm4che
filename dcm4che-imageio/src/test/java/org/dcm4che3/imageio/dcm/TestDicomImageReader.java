@@ -38,8 +38,19 @@
 
 package org.dcm4che3.imageio.dcm;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.dcm4che3.data.*;
+import org.dcm4che3.imageio.plugins.dcm.*;
+import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.SafeClose;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
@@ -50,27 +61,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.imageio.plugins.dcm.DicomImageReader;
-import org.dcm4che3.imageio.plugins.dcm.DicomMetaData;
-import org.dcm4che3.imageio.plugins.dcm.ParseEntireFileMetaData;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.util.ByteUtils;
-import org.dcm4che3.util.SafeClose;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 /**
@@ -78,7 +70,16 @@ import org.junit.Test;
  * @since Jan 2015
  *
  */
+@RunWith(Parameterized.class)
 public class TestDicomImageReader {
+
+    @Parameterized.Parameters(name="MetaData Factory: {0}")
+    public static Object[] data() {
+        return new Object[]{new DefaultMetaDataFactory(true), new DefaultMetaDataFactory(false), null};
+    }
+
+    @Parameterized.Parameter(0)
+    public DicomMetaDataFactory metaDataFactory;
 
     private static final String NM_MF = "../../src/test/data/NM-MONO2-16-13x-heart";
     private static final String NM_MF_CHECKSUM = "B2813DA2FE5B79A1B3CAF18DBD25023E2F84D4FE";
@@ -90,7 +91,14 @@ public class TestDicomImageReader {
 
     @Before
     public void setUp() throws Exception {
-        reader = ImageIO.getImageReadersByFormatName("DICOM").next();
+        // TODO:  Use a DicomImageReaderFactory...
+        if(metaDataFactory == null) {
+            reader = ImageIO.getImageReadersByFormatName("DICOM").next();
+        }
+        else {
+            DicomImageReaderSpi spi = new DicomImageReaderSpi();
+            reader = spi.createReaderInstance(metaDataFactory);
+        }
     }
 
     @After
@@ -228,7 +236,10 @@ public class TestDicomImageReader {
     }
 
     private Raster testReadRasterFromAttributes(String ifname, int imageIndex, IncludeBulkData includeBulkData) throws IOException {
-        DicomMetaData dicomMetaData = new ParseEntireFileMetaData(new File("target/test-data/" + ifname));
+        Assume.assumeNotNull(metaDataFactory);
+
+        File file = new File("target/test-data/" + ifname);
+        DicomMetaData dicomMetaData = metaDataFactory.readMetaData(file);
         return testReadRasterFromInput(dicomMetaData, imageIndex);
     }
 

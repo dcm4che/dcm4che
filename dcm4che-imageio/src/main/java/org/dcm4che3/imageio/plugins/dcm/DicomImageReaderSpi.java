@@ -47,12 +47,15 @@ import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che3.data.Implementation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class DicomImageReaderSpi extends ImageReaderSpi {
+    private static Logger LOG = LoggerFactory.getLogger(DicomImageReaderSpi.class);
 
     private static final String vendorName = "org.dcm4che";
     private static final String version = Implementation.getVersionName();
@@ -102,10 +105,21 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
         }
     }
 
+    /**
+     * Create a DicomImageReader with the indicated DicomMetadataFactory.
+     * @param extension DicomMetaFactory to use to generate the data.
+     * @return DicomImageReader
+     * @throws IOException
+     */
     @Override
-    public ImageReader createReaderInstance(Object extension)
-            throws IOException {
-        return new DicomImageReader(this);
+    public ImageReader createReaderInstance(Object extension) throws IOException {
+
+        DicomMetaDataFactory metaDataFactory = DicomImageReader.DEFAULT_METADATA_FACTORY;
+        if(extension instanceof DicomMetaDataFactory ) {
+            metaDataFactory = (DicomMetaDataFactory)extension;
+        }
+
+        return  new DicomImageReader(this, metaDataFactory);
     }
 
 }

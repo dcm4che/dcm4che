@@ -64,7 +64,7 @@ import javax.imageio.stream.ImageInputStream;
  */
 public class BulkData implements Value {
 
-    private final ImageInputStreamLoader<URI> uriLoader = new ServiceImageInputStreamLoader<>();
+    private static final ImageInputStreamLoader LOADER = new ServiceImageInputStreamLoader<>();
 
     public static final int MAGIC_LEN = 0xfbfb;
 
@@ -352,7 +352,11 @@ public class BulkData implements Value {
         if (uri == null)
             throw new IllegalStateException("uri: null");
 
-        return this.uriLoader.openStream(this.toFileURI());
+        return LOADER.openStream(this);
+    }
+
+    public InputStream openStream() throws IOException {
+        return StreamUtils.toInputStream(openImageInputStream());
     }
 
     @Override
@@ -390,7 +394,7 @@ public class BulkData implements Value {
     @Override
     public void writeTo(DicomOutputStream out, VR vr) throws IOException {
         // Must open the URI properly:
-        try (InputStream in  = StreamUtils.toInputStream(openImageInputStream())) {
+        try (InputStream in  = openStream()) {
             if (this.bigEndian != out.isBigEndian()) {
                 StreamUtils.copy(in, out, length, vr.numEndianBytes());
             }

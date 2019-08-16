@@ -37,52 +37,71 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.io.stream;
 
-import org.dcm4che3.data.Implementation;
-
-import javax.imageio.spi.ImageInputStreamSpi;
-import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import java.io.File;
+import javax.imageio.stream.ImageInputStreamImpl;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Paths;
-import java.util.Locale;
 
 /**
- * Handle URIs in an extensible way.
-
- * @author Andrew Cowan (andrew.cowan@agfa.com)
+ * Return a subset of an image input stream.  The local variables track the location within the offset/length
+ * bounds which are mapped onto the underlying full image input stream.
+ * @author Andrew Cowan (awcowan@gmail.com)
  */
-public class FileURIImageInputStreamSpi extends ImageInputStreamSpi {
-    private static final String VENDOR = "org.dcm4che";
-    private static final String VERSION = Implementation.getVersionName();
+public class BulkURIImageInputStream extends ImageInputStreamImpl {
 
-    public FileURIImageInputStreamSpi() {
-        super(VENDOR, VERSION, URI.class);
+    private final ImageInputStream iis;
+    private final long offset;
+    private final int length;
+
+
+
+    public BulkURIImageInputStream(ImageInputStream iis, long offset, int length) throws IOException {
+        this.iis = iis;
+        this.offset = offset;
+        this.length = length;
+
+        // Set the pointer to the start of the file
+        seek(0);
+    }
+
+
+    @Override
+    public int read() throws IOException {
+        int bytesRead;
+
+        if(this.getStreamPosition() >= this.length) {
+            bytesRead = -1;
+        }
+        else {
+            bytesRead = iis.read();
+            if(bytesRead > 0) this.streamPos++;
+        }
+        return bytesRead;
     }
 
     @Override
-    public ImageInputStream createInputStreamInstance(Object input, boolean useCache, File cacheDir) throws IOException {
-        URI dataURI = (URI)input;
-        File file = toFile(dataURI);
-        return new FileImageInputStream(file);
-    }
+    public int read(byte[] b, int offset, int len) throws IOException {
+        len = (int)Math.min(len, length() - getStreamPosition());
 
-    protected File toFile(URI fileURI) {
-
-        if(fileURI.getQuery() != null) {
-            String uriStr = fileURI.toString();
-            int queryIdx = uriStr.indexOf('?');
-            uriStr = uriStr.substring(0,queryIdx);
-            fileURI = URI.create(uriStr);
+        int bytesRead;
+        if(len <= 0) {
+            bytesRead = -1;
+        }
+        else {
+            bytesRead = this.iis.read(b, offset, len);
+            if(bytesRead > 0) this.streamPos += bytesRead;
         }
 
-        return Paths.get(fileURI).toFile();
+        return bytesRead;
     }
 
     @Override
-    public String getDescription(Locale locale) {
-        return "ImageInputStream SPI for file:// URIs";
+    public void seek(long pos) throws IOException {
+        super.seek(pos);
+        iis.seek(getStreamPosition() + this.offset);
     }
 
+    @Override
+    public long length() {
+        return this.length;
+    }
 }

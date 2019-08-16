@@ -38,6 +38,7 @@
 
 package org.dcm4che3.util;
 
+import org.dcm4che3.io.stream.BufferedImageInputStreamAdapter;
 import org.dcm4che3.io.stream.CloseableImageInputStreamAdapter;
 
 import javax.imageio.stream.ImageInputStream;
@@ -172,9 +173,14 @@ public class StreamUtils {
 
 
     /**
-     * Wrap an ImageInputStream with an InputStream
+     * Wrap an ImageInputStream with an unbuffered ImageInputStream.
      */
     public static InputStream toInputStream(ImageInputStream imageInputStream) {
-        return new CloseableImageInputStreamAdapter(imageInputStream);
+        return new BufferedImageInputStreamAdapter(imageInputStream);
     }
+
+    public static InputStream toInputStream(ImageInputStream imageInputStream, int bufferSize) {
+        return new BufferedImageInputStreamAdapter(imageInputStream,bufferSize);
+    }
+
 }

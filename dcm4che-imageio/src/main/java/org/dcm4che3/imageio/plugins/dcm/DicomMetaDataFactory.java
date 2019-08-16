@@ -35,54 +35,20 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.io.stream;
+package org.dcm4che3.imageio.plugins.dcm;
 
-import org.dcm4che3.data.Implementation;
-
-import javax.imageio.spi.ImageInputStreamSpi;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Paths;
-import java.util.Locale;
 
 /**
- * Handle URIs in an extensible way.
-
- * @author Andrew Cowan (andrew.cowan@agfa.com)
+ * Create a DicomMetaData instance to be used to access Attributes and Pixel data from a DICOM source.
+ * The interface is designed to allow implementors to override the low level details of how DICOM
+ * instances are loaded on a per DicomImageReader basis.
+ * @author Andrew Cowan (awcowan@gmail.com)
  */
-public class FileURIImageInputStreamSpi extends ImageInputStreamSpi {
-    private static final String VENDOR = "org.dcm4che";
-    private static final String VERSION = Implementation.getVersionName();
+public interface DicomMetaDataFactory {
 
-    public FileURIImageInputStreamSpi() {
-        super(VENDOR, VERSION, URI.class);
-    }
-
-    @Override
-    public ImageInputStream createInputStreamInstance(Object input, boolean useCache, File cacheDir) throws IOException {
-        URI dataURI = (URI)input;
-        File file = toFile(dataURI);
-        return new FileImageInputStream(file);
-    }
-
-    protected File toFile(URI fileURI) {
-
-        if(fileURI.getQuery() != null) {
-            String uriStr = fileURI.toString();
-            int queryIdx = uriStr.indexOf('?');
-            uriStr = uriStr.substring(0,queryIdx);
-            fileURI = URI.create(uriStr);
-        }
-
-        return Paths.get(fileURI).toFile();
-    }
-
-    @Override
-    public String getDescription(Locale locale) {
-        return "ImageInputStream SPI for file:// URIs";
-    }
-
+    /**
+     * Read metadata from the input instance indicated.
+     */
+    DicomMetaData readMetaData(Object input) throws IOException;
 }

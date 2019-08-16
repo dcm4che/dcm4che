@@ -124,7 +124,7 @@ public class BulkDataTest {
             assertEquals(fileURI, bulkData.toFileURI());
             assertThat(bulkData.getURI(), CoreMatchers.endsWith("OT-PAL-8-face?offset=1654&length=307200"));
             byte[] pixelData = bulkData.toBytes(pixelVR, false);
-            assertEquals("3E2C056D6BEC17502266C322DAB5AE65C0D25D88", toHexDigest(pixelData));
+            assertEquals("17AA58445D74CB965A7634EBAEFE66710372511B", toHexDigest(pixelData));
         }
     }
 

@@ -38,6 +38,7 @@
 
 package org.dcm4che3.io;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.dcm4che3.data.Attributes;
@@ -69,7 +70,7 @@ public abstract class BulkDataDescriptor {
             case Tag.PixelData:
                 return itemPointer.isEmpty();
             case Tag.WaveformData:
-                return itemPointer.size() == 1 
+                return itemPointer.size() == 1
                 && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
             }
             return false;
@@ -83,7 +84,7 @@ public abstract class BulkDataDescriptor {
             if (tag == Tag.PixelData)
                 return true;
             // Don't need any private tags larger than 64k
-            return TagUtils.isPrivateTag(tag) && length>64*1024; 
+            return TagUtils.isPrivateTag(tag) && length>64*1024;
         }
     };
 
@@ -101,6 +102,29 @@ public abstract class BulkDataDescriptor {
             }
         };
     }
+
+    public static BulkDataDescriptor or(BulkDataDescriptor... descriptors) {
+        return new BulkDataDescriptor() {
+            @Override
+            public boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length) {
+                for(BulkDataDescriptor bd : descriptors) {
+                    if(bd.isBulkData(itemPointer, privateCreator, tag,vr,length))
+                        return true;
+                }
+                return false;
+            }
+        };
+    }
+
+    public static BulkDataDescriptor privateTagGreaterThan( final int maxSize) {
+        return new BulkDataDescriptor() {
+            @Override
+            public boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length) {
+                return TagUtils.isPrivateTag(tag) && length > maxSize;
+            }
+        };
+    }
+
 
     public abstract boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length);
 

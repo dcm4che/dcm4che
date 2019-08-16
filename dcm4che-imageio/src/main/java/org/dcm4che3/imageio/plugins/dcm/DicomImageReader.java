@@ -487,8 +487,6 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     /**
      * Read all of the attributes into memory including the pixel data as BulkData.  The code will skip the pixel data
      * when generating the bulkdata so it *should* be efficient.
-     *
-     * // Move to the DicomMetadataReader...
      */
     private void readMetadata() throws IOException {
         if (metadata != null)
@@ -496,16 +494,6 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
         setMetadata(metadataFactory.readMetaData(input));
     }
-
-    public boolean isVideo() {
-        return isVideo(metadata.getFileMetaInformation().getString(Tag.TransferSyntaxUID));
-    }
-
-    /** Indicate if the given transfer syntax is video */
-    public static boolean isVideo(String tsuid) {
-        return VIDEO_TSUID.contains(tsuid);
-    }
-
 
     /** Creates an offset/length table based on the frame positions */
     public static void generateOffsetLengths(Fragments pixelData, int frames, byte[] basicOffsetTable, long start) {

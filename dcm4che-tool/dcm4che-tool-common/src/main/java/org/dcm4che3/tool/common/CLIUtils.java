@@ -547,8 +547,9 @@ public class CLIUtils {
 
         Device device = conn.getDevice();
         try {
-            device.setKeyManager(SSLManagerFactory.createKeyManager(
-                    keyStoreType, keyStoreURL, keyStorePass, keyPass));
+            if (!keyStoreURL.isEmpty())
+                device.setKeyManager(SSLManagerFactory.createKeyManager(
+                        keyStoreType, keyStoreURL, keyStorePass, keyPass));
             device.setTrustManager(SSLManagerFactory.createTrustManager(
                     trustStoreType, trustStoreURL, trustStorePass));
         } catch (GeneralSecurityException e) {

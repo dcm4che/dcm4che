@@ -248,13 +248,8 @@ public class WadoRS {
 
         try (InputStream is = connection.getInputStream()) {
             String contentType = connection.getContentType();
-            if (contentType.equals("application/zip")) {
-                write(uid, "zip", is);
-                return;
-            }
-
-            if (contentType.endsWith("json")) {
-                write(uid, "json", is);
+            if (!contentType.contains("multipart/related")) {
+                write(uid, partExtension(contentType), is);
                 return;
             }
 
@@ -269,7 +264,7 @@ public class WadoRS {
                 public void bodyPart(int partNumber, MultipartInputStream multipartInputStream) throws IOException {
                     Map<String, List<String>> headerParams = multipartInputStream.readHeaderParams();
                     try {
-                        String fileName = fileName(partNumber, uid, partExtension(headerParams));
+                        String fileName = fileName(partNumber, uid, partExtension(headerParams.get("content-type").get(0)));
                         LOG.info("Extract Part #{} {} \n{}", partNumber, fileName, headerParams);
                         write(multipartInputStream, fileName);
                     } catch (Exception e) {
@@ -286,8 +281,8 @@ public class WadoRS {
         write(is, fileName);
     }
 
-    private String partExtension(Map<String, List<String>> headerParams) {
-        String contentType = headerParams.get("content-type").get(0).replaceAll("[-+/]", "_");
+    private String partExtension(String partContentType) {
+        String contentType = partContentType.replaceAll("[-+/]", "_");
         return contentType.substring(contentType.lastIndexOf("_") + 1);
     }
 

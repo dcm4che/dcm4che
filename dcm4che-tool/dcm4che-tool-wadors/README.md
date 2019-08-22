@@ -1,13 +1,14 @@
     usage: wadors [options] [URLs...]
     
-    Wado RS client simulator. It supports retrieving Study, Series, Instance
-    and Metadata. One may choose to specify multiple urls as arguments. Each
-    of the objects of the Study/series shall be saved to the current working
-    directory or the directory selected by user as <uid>-001.dicom,
-    <uid>-002.dicom and so on. The uid is determined based on the url(s)
-    specified. For eg. if study is retrieved the Study IUID will be used, if
-    the url is for series retrieval then Series IUID shall be used. The
-    extension of individual parts is determined by content type of each part.
+    Wado RS client simulator. It supports retrieving Study, Series, Instance,
+    Metadata and Bulkdata. One may choose to specify multiple urls as
+    arguments. Each of the objects of the Study/series shall be saved to the
+    current working directory or the directory selected by user as
+    <uid>-001.dicom, <uid>-002.dicom and so on. The uid is determined based on
+    the url(s) specified. For eg. if study is retrieved the Study IUID will be
+    used, if the url is for series retrieval then Series IUID shall be used.
+    The extension of individual parts is determined by content type of each
+    part.
     -
     Options:
      -a,--accept <arg>           Specify the value for Accept header.

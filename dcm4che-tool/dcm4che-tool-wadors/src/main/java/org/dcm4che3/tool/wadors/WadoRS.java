@@ -249,33 +249,41 @@ public class WadoRS {
         try (InputStream is = connection.getInputStream()) {
             String contentType = connection.getContentType();
             if (contentType.equals("application/zip")) {
-                LOG.info("Extract DICOM data as zip");
-                write(is, 1, uid, "zip");
+                write(uid, "zip", is);
                 return;
             }
+
             if (contentType.endsWith("json")) {
-                LOG.info("Extract metadata as json");
-                write(is, 1, uid, "json");
+                write(uid, "json", is);
                 return;
             }
+
             String boundary = boundary(connection);
             if (boundary == null) {
                 LOG.warn("Invalid response. Unpacking of parts not possible.");
                 return;
             }
+
             new MultipartParser(boundary).parse(new BufferedInputStream(is), new MultipartParser.Handler() {
                 @Override
                 public void bodyPart(int partNumber, MultipartInputStream multipartInputStream) throws IOException {
                     Map<String, List<String>> headerParams = multipartInputStream.readHeaderParams();
-                    LOG.info("Extract Part #{}{}", partNumber, headerParams);
                     try {
-                        write(multipartInputStream, partNumber, uid, partExtension(headerParams));
+                        String fileName = fileName(partNumber, uid, partExtension(headerParams));
+                        LOG.info("Extract Part #{} {} \n{}", partNumber, fileName, headerParams);
+                        write(multipartInputStream, fileName);
                     } catch (Exception e) {
                         LOG.warn("Failed to process Part #" + partNumber + headerParams, e);
                     }
                 }
             });
         }
+    }
+
+    private void write(String uid, String ext, InputStream is) throws IOException {
+        String fileName = fileName(1, uid, ext);
+        LOG.info("Extract {} to {}", ext, fileName);
+        write(is, fileName);
     }
 
     private String partExtension(Map<String, List<String>> headerParams) {
@@ -294,11 +302,14 @@ public class WadoRS {
         return null;
     }
 
-    private static void write(InputStream in, int partNumber, String uid, String ext) throws IOException {
-        String file = uid + "-" + String.format("%03d", partNumber) + "." + ext;
+    private String fileName(int partNumber, String uid, String ext) {
+        return uid + "-" + String.format("%03d", partNumber) + "." + ext;
+    }
+
+    private static void write(InputStream in, String fileName) throws IOException {
         Path path = outDir != null
-                ? Files.createDirectories(Paths.get(outDir)).resolve(file)
-                : Paths.get(file);
+                ? Files.createDirectories(Paths.get(outDir)).resolve(fileName)
+                : Paths.get(fileName);
         try (OutputStream out = Files.newOutputStream(path)) {
             StreamUtils.copy(in, out);
         }

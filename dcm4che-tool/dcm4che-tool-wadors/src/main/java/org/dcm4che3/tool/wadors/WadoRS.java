@@ -66,7 +66,6 @@ import org.slf4j.LoggerFactory;
 public class WadoRS {
     private static final Logger LOG = LoggerFactory.getLogger(WadoRS.class);
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.wadors.messages");
-    private Input input = Input.APPLICATION_DICOM_JSON;
     private static String user;
     private static String bearer;
     private AcceptType acceptType = AcceptType.wildcard;
@@ -95,10 +94,6 @@ public class WadoRS {
 
     private void setAcceptType(String acceptType) {
         this.acceptType = AcceptType.valueOf(acceptType);
-    }
-
-    private void setInput(Input input) {
-        this.input = input;
     }
 
     private static CommandLine parseComandLine(String[] args) throws ParseException {
@@ -204,6 +199,10 @@ public class WadoRS {
         pdf("multipart/related;type=application/pdf"),
         cda("multipart/related;type=text/xml"),
         stl("multipart/related;type=model/stl"),
+        html("multipart/related;type=text/html"),
+        plaintext("multipart/related;type=text/plain"),
+        png("multipart/related;type=image/png"),
+        gif("multipart/related;type=image/gif"),
         jpeg("multipart/related;type=image/jpeg"),
         jp2("multipart/related;type=image/jp2"),
         jpx("multipart/related;type=image/jpx"),
@@ -242,16 +241,21 @@ public class WadoRS {
     }
 
     private void unpack(HttpURLConnection connection, final String uid) throws Exception {
+        if (connection.getResponseCode() != 200 && connection.getResponseCode() != 206) {
+            LOG.info(connection.getResponseMessage() + ": " + connection.getResponseCode());
+            return;
+        }
+
         try (InputStream is = connection.getInputStream()) {
             String contentType = connection.getContentType();
             if (contentType.equals("application/zip")) {
                 LOG.info("Extract DICOM data as zip");
-                write(is, 1, uid, Input.APPLICATION_ZIP.getExt());
+                write(is, 1, uid, "zip");
                 return;
             }
             if (contentType.endsWith("json")) {
                 LOG.info("Extract metadata as json");
-                write(is, 1, uid, input.getExt());
+                write(is, 1, uid, "json");
                 return;
             }
             String boundary = boundary(connection);
@@ -265,7 +269,7 @@ public class WadoRS {
                     Map<String, List<String>> headerParams = multipartInputStream.readHeaderParams();
                     LOG.info("Extract Part #{}{}", partNumber, headerParams);
                     try {
-                        write(multipartInputStream, partNumber, uid, input.getExt());
+                        write(multipartInputStream, partNumber, uid, partExtension(headerParams));
                     } catch (Exception e) {
                         LOG.warn("Failed to process Part #" + partNumber + headerParams, e);
                     }
@@ -274,49 +278,20 @@ public class WadoRS {
         }
     }
 
-    private String boundary(HttpURLConnection connection) {
-        String contentType = connection.getContentType();
-        String[] strings = contentType.split(";");
-        String boundary = null;
-        for (String s : strings) {
-            if (s.contains("boundary="))
-                boundary = s.substring(s.indexOf("=")+1).replaceAll("\"", "");
-            if (s.contains("type=")) {
-                String type = s.substring(s.indexOf("=") + 1).replaceAll("\"", "");
-                setInput(Input.valueOf(type.substring(type.indexOf("=")+1)
-                        .toUpperCase()
-                        .replaceAll("[-+/]", "_")));
-            }
-        }
-        return boundary;
+    private String partExtension(Map<String, List<String>> headerParams) {
+        String contentType = headerParams.get("content-type").get(0).replaceAll("[-+/]", "_");
+        return contentType.substring(contentType.lastIndexOf("_") + 1);
     }
 
-    private enum Input {
-        APPLICATION_DICOM("dicom"),
-        IMAGE_JPEG("jpeg"),
-        IMAGE_JP2("jp2"),
-        IMAGE_JPX("jpf"),
-        IMAGE_X_JLS("jls"),
-        IMAGE_X_DICOM_RLE("rle"),
-        VIDEO_MPEG("mpeg"),
-        VIDEO_MP4("mp4"),
-        APPLICATION_ZIP("zip"),
-        APPLICATION_PDF("pdf"),
-        TEXT_XML("xml"),
-        MODEL_STL("stl"),
-        APPLICATION_OCTET_STREAM("native"),
-        APPLICATION_DICOM_XML("xml"),
-        APPLICATION_DICOM_JSON("json");
+    private String boundary(HttpURLConnection connection) {
+        String[] respContentTypeParams = connection.getContentType().split(";");
+        for (String respContentTypeParam : respContentTypeParams)
+            if (respContentTypeParam.replace(" ", "").startsWith("boundary="))
+                return respContentTypeParam
+                        .substring(respContentTypeParam.indexOf("=") + 1)
+                        .replaceAll("\"", "");
 
-        private String ext;
-
-        Input(String ext) {
-            this.ext = ext;
-        }
-
-        String getExt() {
-            return ext;
-        }
+        return null;
     }
 
     private static void write(InputStream in, int partNumber, String uid, String ext) throws IOException {

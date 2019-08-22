@@ -7,20 +7,23 @@
     <uid>-002.dicom and so on. The uid is determined based on the url(s)
     specified. For eg. if study is retrieved the Study IUID will be used, if
     the url is for series retrieval then Series IUID shall be used. The
-    extension of individual parts is determined by accept header.
+    extension of individual parts is determined by content type of each part.
     -
     Options:
      -a,--accept <arg>           Specify the value for Accept header.
                                  Supported types for object retrieval are
-                                 dicom, octetstream, pdf, jpeg, jp2, jpx,
-                                 xjls, xdicomrle, cda, stl, mpeg, mp4 and zip.
-                                 To retrieve metadata, supported types are xml
-                                 or json. If no value is specified, then
-                                 wildcard shall be sent in the request. For
-                                 eg. if it is jpeg then Accept value shall be
-                                 sent as multipart/related;type=image/jpeg. If
+                                 dicom, octetstream, pdf, jpeg, jp2, jpx, gif,
+                                 png, xjls, xdicomrle, cda, stl, html,
+                                 plaintext, mpeg, mp4 and zip. To retrieve
+                                 metadata, supported types are xml or json. If
+                                 no value is specified, then wildcard shall be
+                                 sent in the request. For eg. if it is jpeg
+                                 then Accept value shall be sent as
+                                 multipart/related;type=image/jpeg. If
                                  specified, by default it will be appended to
-                                 the URL as a query parameter.
+                                 the URL as a query parameter. If not
+                                 specified wildcard * will be sent in the
+                                 request.
         --bearer <bearer>        Specify the bearer token to be used in
                                  Authorization header for server
                                  authentication.

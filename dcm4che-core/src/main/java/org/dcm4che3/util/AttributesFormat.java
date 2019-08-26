@@ -250,7 +250,7 @@ public class AttributesFormat extends Format {
         offset {
             @Override
             Object toArg(Attributes attrs, int tag, int index, int offset) {
-                return attrs.getInt(tag, index, 0) + offset;
+                return Integer.toString(attrs.getInt(tag, index, 0) + offset);
             }
         },
         date {

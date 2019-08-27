@@ -522,7 +522,7 @@ public class SpecificCharacterSet {
      * @return {@code true} if the code was replaced.
      */
     public static boolean trimISO2022(String[] codes) {
-        if (codes != null || codes.length == 1 && codes[0].startsWith("ISO 2022")) {
+        if (codes != null && codes.length == 1 && codes[0].startsWith("ISO 2022")) {
             switch (codes[0]) {
                 case "ISO 2022 IR 6":
                     codes[0] = "";

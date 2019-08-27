@@ -70,9 +70,9 @@ public class NullifyAttributesCoercion implements AttributesCoercion {
         for (int nullifyTag : nullifyTags) {
             Object value = attrs.getValue(nullifyTag, vr);
             if (value != null && value != Value.NULL) {
+                Object originalValue = attrs.setNull(nullifyTag, vr.vr);
                 if (modified != null)
-                    modified.setValue(nullifyTag, vr.vr, attrs.remove(nullifyTag));
-                attrs.setNull(nullifyTag, vr.vr);
+                    modified.setValue(nullifyTag, vr.vr, originalValue);
             }
         }
         if (next != null)

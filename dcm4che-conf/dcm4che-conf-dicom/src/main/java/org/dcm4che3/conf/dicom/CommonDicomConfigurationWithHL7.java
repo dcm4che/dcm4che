@@ -69,20 +69,22 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
     @Override
     public void unregisterHL7Application(String name) throws ConfigurationException {
     }
-
+    
     @Override
     public HL7Application findHL7Application(String name) throws ConfigurationException {
         String pathForDeviceName = DicomPath.DeviceNameByHL7AppName.set("hl7AppName", name).path();
 
         try {
             Iterator search = lowLevelConfig.search(pathForDeviceName);
+            if(!search.hasNext()) {
+                return null;
+            }
+
             String deviceName = (String) search.next();
 
             Device device = findDevice(deviceName);
 
             return device.getDeviceExtension(HL7DeviceExtension.class).getHL7Application(name);
-        } catch (NoSuchElementException e) {
-            throw new ConfigurationException("HL7 app with name '" + name + "' not found", e);
         } catch (Exception e) {
             throw new ConfigurationException("Error while searching for HL7 app with name '" + name + "'", e);
         }

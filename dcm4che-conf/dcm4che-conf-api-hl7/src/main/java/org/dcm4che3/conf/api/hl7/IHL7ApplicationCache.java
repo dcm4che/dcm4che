@@ -11,6 +11,12 @@ public interface IHL7ApplicationCache {
 
     void clear();
 
+    /**
+     * Looks-up the HL7-Application with the specified name from the cache.
+     * @param name Name of the HL7-Application
+     * @return Returns the HL7-Application, if no HL7-Application with the given name exists then <code>null</code> is returned
+     * @throws ConfigurationException Thrown if some error happens while looking-up the application.
+     */
     HL7Application get(String name) throws ConfigurationException;
 
     HL7Application findHL7Application(String name)

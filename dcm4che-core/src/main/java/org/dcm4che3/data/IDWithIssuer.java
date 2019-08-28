@@ -146,14 +146,14 @@ public class IDWithIssuer {
         IDWithIssuer other = (IDWithIssuer) obj;
         return id.equals(other.id) &&
                 (typeOfPatientID == null
-                        ? other.typeOfPatientID == null
-                        : typeOfPatientID.equals(typeOfPatientID)) &&
+                    ? other.typeOfPatientID == null
+                    : typeOfPatientID.equals(typeOfPatientID)) &&
                 (identifierTypeCode == null
-                        ? other.identifierTypeCode == null
-                        : identifierTypeCode.equals(identifierTypeCode)) &&
+                    ? other.identifierTypeCode == null
+                    : identifierTypeCode.equals(identifierTypeCode)) &&
                 (issuer == null
-                        ? other.issuer == null
-                        : issuer.equals(other.issuer));
+                    ? other.issuer == null
+                    : issuer.equals(other.issuer));
     }
 
     public boolean matches(IDWithIssuer other) {
@@ -249,7 +249,6 @@ public class IDWithIssuer {
         if (rootPidExists && !rootPidAlreadyPresent) {
             pids.add(pid);
         }
-
         return pids;
     }
 }

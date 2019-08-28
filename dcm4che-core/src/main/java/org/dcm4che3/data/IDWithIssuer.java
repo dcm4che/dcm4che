@@ -149,16 +149,19 @@ public class IDWithIssuer {
                     ? other.typeOfPatientID == null
                     : typeOfPatientID.equals(typeOfPatientID)) &&
                 (identifierTypeCode == null
-                    ? other.identifierTypeCode == null
-                    : identifierTypeCode.equals(identifierTypeCode)) &&
+                        ? other.identifierTypeCode == null
+                        : identifierTypeCode.equals(identifierTypeCode)) &&
                 (issuer == null
-                    ? other.issuer == null
-                    : issuer.equals(other.issuer));
+                        ? other.issuer == null
+                        : issuer.equals(other.issuer));
     }
 
     public boolean matches(IDWithIssuer other) {
+        if (other == null) {
+            return false;
+        }
         return id.equals(other.id) &&
-                (issuer == null 
+                (issuer == null
                     ? other.issuer == null
                     : issuer.matches(other.issuer));
     }
@@ -206,7 +209,7 @@ public class IDWithIssuer {
         if (id == null)
             return null;
 
-        IDWithIssuer result = 
+        IDWithIssuer result =
                 new IDWithIssuer(id, Issuer.fromIssuerOfPatientID(attrs));
         result.setTypeOfPatientID(attrs.getString(Tag.TypeOfPatientID));
         result.setIdentifierTypeCode(identifierTypeCodeOf(attrs));
@@ -228,16 +231,25 @@ public class IDWithIssuer {
                 return Collections.emptySet();
             else
                 return Collections.singleton(pid);
-        
+
         Set<IDWithIssuer> pids =
                 new HashSet<IDWithIssuer>((1 + opidseq.size()) << 1);
-        if (pid != null)
-            pids.add(pid);
+
+
+        boolean rootPidAlreadyPresent = false;
+
         for (Attributes item : opidseq) {
-            pid = IDWithIssuer.pidOf(item);
-            if (pid != null)
-                pids.add(pid);
+            IDWithIssuer pidOfItem = IDWithIssuer.pidOf(item);
+            if (pidOfItem != null){
+                pids.add(pidOfItem);
+                rootPidAlreadyPresent |= pidOfItem.matches(pid);
+            }
         }
+        boolean rootPidExists = pid != null;
+        if (rootPidExists && !rootPidAlreadyPresent) {
+            pids.add(pid);
+        }
+
         return pids;
     }
 }

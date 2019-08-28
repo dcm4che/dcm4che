@@ -146,8 +146,8 @@ public class IDWithIssuer {
         IDWithIssuer other = (IDWithIssuer) obj;
         return id.equals(other.id) &&
                 (typeOfPatientID == null
-                    ? other.typeOfPatientID == null
-                    : typeOfPatientID.equals(typeOfPatientID)) &&
+                        ? other.typeOfPatientID == null
+                        : typeOfPatientID.equals(typeOfPatientID)) &&
                 (identifierTypeCode == null
                         ? other.identifierTypeCode == null
                         : identifierTypeCode.equals(identifierTypeCode)) &&

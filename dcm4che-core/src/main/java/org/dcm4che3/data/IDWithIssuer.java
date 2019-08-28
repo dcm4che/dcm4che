@@ -44,9 +44,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.util.StringUtils;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -140,15 +137,15 @@ public class IDWithIssuer {
         IDWithIssuer other = (IDWithIssuer) obj;
         return id.equals(other.id) &&
                 (identifierTypeCode == null
-                    ? other.identifierTypeCode == null
-                    : identifierTypeCode.equals(identifierTypeCode)) &&
+                        ? other.identifierTypeCode == null
+                        : identifierTypeCode.equals(identifierTypeCode)) &&
                 (issuer == null
-                    ? other.issuer == null
-                    : issuer.equals(other.issuer));
+                        ? other.issuer == null
+                        : issuer.equals(other.issuer));
     }
 
     public boolean matches(IDWithIssuer other) {
-        if (other==null)
+        if (other == null)
             return false;
 
         return id.equals(other.id) &&
@@ -225,13 +222,21 @@ public class IDWithIssuer {
                 return Collections.singleton(pid);
 
         Set<IDWithIssuer> pids = new HashSet<>((1 + opidseq.size()) << 1);
-        if (pid != null)
-            pids.add(pid);
+
+        boolean rootPidExists = pid != null;
+        boolean rootPidAlreadyPresent = false;
+
         for (Attributes item : opidseq) {
             IDWithIssuer pidOfItem = IDWithIssuer.pidOf(item);
-            if (pidOfItem != null)
+            if (pidOfItem != null) {
                 pids.add(pidOfItem);
+                rootPidAlreadyPresent |= pidOfItem.matches(pid);
+            }
         }
-        return new OtherPatientIdCleaner(pids, pid).filterOutDuplicates();
+        if (rootPidExists && !rootPidAlreadyPresent) {
+            pids.add(pid);
+        }
+
+        return pids;
     }
 }

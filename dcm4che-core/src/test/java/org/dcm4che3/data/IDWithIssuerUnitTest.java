@@ -2,13 +2,12 @@ package org.dcm4che3.data;
 
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.dcm4che3.data.Tag.*;
 import static org.junit.Assert.assertEquals;
 
-public class OtherPatientIdCleanerUnitTest {
+public class IDWithIssuerUnitTest {
 
 
     private static final String ID = "ID";
@@ -17,31 +16,7 @@ public class OtherPatientIdCleanerUnitTest {
     private static final String ISO = "ISO";
 
     @Test
-    public void duplicates_should_be_removed() {
-        Attributes rootWithMainId = createIdWithNS(NS);
-
-        rootWithMainId.newSequence(OtherPatientIDsSequence, 0);
-        Sequence other = rootWithMainId.getSequence(OtherPatientIDsSequence);
-
-        Attributes otherPatientId = otherPatientIds(NS);
-        other.add(otherPatientId);
-
-        IDWithIssuer root = IDWithIssuer.pidOf(rootWithMainId);
-        Set<IDWithIssuer> all = new HashSet<>();
-        all.add(IDWithIssuer.pidOf(otherPatientId));
-        all.add(root);
-
-        assertEquals(all.size(), 2);
-
-        OtherPatientIdCleaner cleaner = new OtherPatientIdCleaner(all, root);
-        all = cleaner.filterOutDuplicates();
-
-        assertEquals(all.size(), 1);
-        assertEquals(all.iterator().next(), IDWithIssuer.pidOf(otherPatientId));
-
-    }
-    @Test
-    public void duplicates_should_be_removed_by_PidsOf_call() {
+    public void rootId_is_not_added_when_matching_id_is_already_there() {
         Attributes rootWithMainId = createIdWithNS(NS);
 
         rootWithMainId.newSequence(OtherPatientIDsSequence, 0);
@@ -51,7 +26,6 @@ public class OtherPatientIdCleanerUnitTest {
         other.add(otherPatientId);
 
         Set<IDWithIssuer> all = IDWithIssuer.pidsOf(rootWithMainId);
-
         assertEquals(all.size(), 1);
         assertEquals(all.iterator().next(), IDWithIssuer.pidOf(otherPatientId));
 
@@ -65,14 +39,9 @@ public class OtherPatientIdCleanerUnitTest {
         Attributes otherPatientId = otherPatientIds("other_ns");
         other.add(otherPatientId);
 
-        IDWithIssuer root = IDWithIssuer.pidOf(rootWithMainId);
-        Set<IDWithIssuer> all = new HashSet<>();
-        all.add(IDWithIssuer.pidOf(otherPatientId));
-        all.add(root);
+        Set<IDWithIssuer> all = IDWithIssuer.pidsOf(rootWithMainId);
 
-        OtherPatientIdCleaner cleaner = new OtherPatientIdCleaner(all, root);
-        all = cleaner.filterOutDuplicates();
-        assertEquals("Same pid but for different issuer should not be removed!",all.size(), 2);
+        assertEquals("Same pid but for different issuer should not be removed!", all.size(), 2);
     }
 
     @Test
@@ -85,18 +54,10 @@ public class OtherPatientIdCleanerUnitTest {
         Attributes otherPatientId = otherPatientIds("other_ns");
         other.add(otherPatientId);
 
-        Set<IDWithIssuer> all = new HashSet<>();
-        all.add(IDWithIssuer.pidOf(otherPatientId));
-        all.add(IDWithIssuer.pidOf(rootWithMainId));
+        Set<IDWithIssuer> all = IDWithIssuer.pidsOf(rootWithMainId);
 
-        assertEquals(all.size(), 2);
-        OtherPatientIdCleaner cleaner = new OtherPatientIdCleaner(all, null);
-        all = cleaner.filterOutDuplicates();
-
-        assertEquals("Same pid but for different issuer should not be removed!",all.size(), 2);
+        assertEquals("Same pid but for different issuer should not be removed!", all.size(), 2);
     }
-
-
 
 
     private Attributes otherPatientIds(String ns) {

@@ -38,11 +38,11 @@
 
 package org.dcm4che3.data;
 
-import org.dcm4che3.util.StringUtils;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.dcm4che3.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -115,7 +115,7 @@ public class IDWithIssuer {
     public String toString() {
         if (issuer == null && identifierTypeCode == null)
             return id;
-
+        
         StringBuilder sb = new StringBuilder(id);
         sb.append("^^^");
         if (issuer != null)
@@ -146,21 +146,21 @@ public class IDWithIssuer {
         IDWithIssuer other = (IDWithIssuer) obj;
         return id.equals(other.id) &&
                 (typeOfPatientID == null
-                        ? other.typeOfPatientID == null
-                        : typeOfPatientID.equals(typeOfPatientID)) &&
+                    ? other.typeOfPatientID == null
+                    : typeOfPatientID.equals(typeOfPatientID)) &&
                 (identifierTypeCode == null
-                        ? other.identifierTypeCode == null
-                        : identifierTypeCode.equals(identifierTypeCode)) &&
+                    ? other.identifierTypeCode == null
+                    : identifierTypeCode.equals(identifierTypeCode)) &&
                 (issuer == null
-                        ? other.issuer == null
-                        : issuer.equals(other.issuer));
+                    ? other.issuer == null
+                    : issuer.equals(other.issuer));
     }
 
     public boolean matches(IDWithIssuer other) {
         return id.equals(other.id) &&
-                (issuer == null
-                        ? other.issuer == null
-                        : issuer.matches(other.issuer));
+                (issuer == null 
+                    ? other.issuer == null
+                    : issuer.matches(other.issuer));
     }
 
     public Attributes exportPatientIDWithIssuer(Attributes attrs) {
@@ -184,7 +184,7 @@ public class IDWithIssuer {
             if (item == null) {
                 item = new Attributes(1);
                 attrs.newSequence(Tag.IssuerOfPatientIDQualifiersSequence, 1)
-                        .add(item);
+                    .add(item);
             }
             item.setString(Tag.IdentifierTypeCode, VR.CS, identifierTypeCode);
         }
@@ -192,7 +192,7 @@ public class IDWithIssuer {
     }
 
     public static IDWithIssuer valueOf(Attributes attrs, int idTag,
-                                       int issuerSeqTag) {
+            int issuerSeqTag) {
         String id = attrs.getString(idTag);
         if (id == null)
             return null;
@@ -206,7 +206,7 @@ public class IDWithIssuer {
         if (id == null)
             return null;
 
-        IDWithIssuer result =
+        IDWithIssuer result = 
                 new IDWithIssuer(id, Issuer.fromIssuerOfPatientID(attrs));
         result.setTypeOfPatientID(attrs.getString(Tag.TypeOfPatientID));
         result.setIdentifierTypeCode(identifierTypeCodeOf(attrs));
@@ -221,23 +221,23 @@ public class IDWithIssuer {
     }
 
     public static Set<IDWithIssuer> pidsOf(Attributes attrs) {
-        final IDWithIssuer pid = IDWithIssuer.pidOf(attrs);
-        final Sequence opidseq = attrs.getSequence(Tag.OtherPatientIDsSequence);
-
+        IDWithIssuer pid = IDWithIssuer.pidOf(attrs);
+        Sequence opidseq = attrs.getSequence(Tag.OtherPatientIDsSequence);
         if (opidseq == null)
             if (pid == null)
                 return Collections.emptySet();
             else
                 return Collections.singleton(pid);
-
-        Set<IDWithIssuer> pids = new HashSet<>((1 + opidseq.size()) << 1);
+        
+        Set<IDWithIssuer> pids =
+                new HashSet<IDWithIssuer>((1 + opidseq.size()) << 1);
         if (pid != null)
             pids.add(pid);
         for (Attributes item : opidseq) {
-            IDWithIssuer pidOfItem = IDWithIssuer.pidOf(item);
-            if (pidOfItem != null)
-                pids.add(pidOfItem);
+            pid = IDWithIssuer.pidOf(item);
+            if (pid != null)
+                pids.add(pid);
         }
-        return new OtherPatientIdCleaner(pids, pid).filterOutDuplicates();
+        return pids;
     }
 }

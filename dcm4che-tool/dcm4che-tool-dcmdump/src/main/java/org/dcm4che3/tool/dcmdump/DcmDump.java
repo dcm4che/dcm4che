@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -106,27 +105,28 @@ public class DcmDump implements DicomInputHandler {
         VR vr = dis.vr();
         int vallen = dis.length();
         boolean undeflen = vallen == -1;
+        int tag = dis.tag();
+        String privateCreator = attrs.getPrivateCreator(tag);
         if (vr == VR.SQ || undeflen) {
-            appendKeyword(dis, line);
+            appendKeyword(dis, privateCreator, line);
             System.out.println(line);
             dis.readValue(dis, attrs);
             if (undeflen) {
                 line.setLength(0);
                 appendPrefix(dis, line);
                 appendHeader(dis, line);
-                appendKeyword(dis, line);
+                appendKeyword(dis, privateCreator, line);
                 System.out.println(line);
             }
             return;
         }
-        int tag = dis.tag();
         byte[] b = dis.readValue();
         line.append(" [");
         if (vr.prompt(b, dis.bigEndian(),
                 attrs.getSpecificCharacterSet(),
                 width - line.length() - 1, line)) {
             line.append(']');
-            appendKeyword(dis, line);
+            appendKeyword(dis, privateCreator, line);
         }
         System.out.println(line);
         if (tag == Tag.FileMetaInformationGroupLength)
@@ -140,10 +140,11 @@ public class DcmDump implements DicomInputHandler {
     @Override
     public void readValue(DicomInputStream dis, Sequence seq)
             throws IOException {
+        String privateCreator = seq.getParent().getPrivateCreator(dis.tag());
         StringBuilder line = new StringBuilder(width);
         appendPrefix(dis, line);
         appendHeader(dis, line);
-        appendKeyword(dis, line);
+        appendKeyword(dis, privateCreator, line);
         appendNumber(seq.size() + 1, line);
         System.out.println(line);
         boolean undeflen = dis.length() == -1;
@@ -152,7 +153,7 @@ public class DcmDump implements DicomInputHandler {
             line.setLength(0);
             appendPrefix(dis, line);
             appendHeader(dis, line);
-            appendKeyword(dis, line);
+            appendKeyword(dis, privateCreator, line);
             System.out.println(line);
         }
     }
@@ -182,10 +183,10 @@ public class DcmDump implements DicomInputHandler {
         line.append('#').append(dis.length());
     }
 
-    private void appendKeyword(DicomInputStream dis, StringBuilder line) {
+    private void appendKeyword(DicomInputStream dis, String privateCreator, StringBuilder line) {
         if (line.length() < width) {
             line.append(" ");
-            line.append(ElementDictionary.keywordOf(dis.tag(), null));
+            line.append(ElementDictionary.keywordOf(dis.tag(), privateCreator));
             if (line.length() > width)
                 line.setLength(width);
         }
@@ -207,7 +208,7 @@ public class DcmDump implements DicomInputHandler {
         if (vr.prompt(b, dis.bigEndian(), null, 
                 width - line.length() - 1, line)) {
             line.append(']');
-            appendKeyword(dis, line);
+            appendKeyword(dis, null, line);
         }
     }
 

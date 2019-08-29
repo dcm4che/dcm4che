@@ -179,7 +179,7 @@ public class MPEG2Parser implements XPEGParser {
     private int findLastGOP(SeekableByteChannel channel) throws IOException {
         long size = channel.size();
         long startPos = size - BUFFER_SIZE;
-        long minStartPos = size - 0x20000;
+        long minStartPos = Math.max(0, size - 0x100000);
         while (startPos > minStartPos) {
             channel.position(startPos);
             ((Buffer) buf).clear();

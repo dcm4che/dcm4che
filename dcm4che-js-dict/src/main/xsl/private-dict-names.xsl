@@ -39,13 +39,13 @@
   ~
   ~ **** END LICENSE BLOCK *****
   -->
-<xsl:stylesheet version="1.0"
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="text"></xsl:output>
+  <xsl:param name="PrivateCreatorID"/>
 
   <xsl:template match="/">
     <xsl:text>DCM4CHE.elementName.addDictionary({
-"privateCreator":"DCM4CHEE Archive 5"</xsl:text>
+"privateCreator":"</xsl:text><xsl:value-of select="$PrivateCreatorID"/><xsl:text>"</xsl:text>
     <xsl:apply-templates select="//el[@keyword!='']"/>
     <xsl:text>
 });

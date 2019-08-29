@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module xmlns="urn:jboss:module:1.1" name="org.dcm4che.dict-arc">
+<module xmlns="urn:jboss:module:1.1" name="org.dcm4che.dict-priv">
     <resources>
-        <resource-root path="dcm4che-dict-arc-${version}.jar"/>
+        <resource-root path="dcm4che-dict-priv-${version}.jar"/>
     </resources>
 
     <dependencies>

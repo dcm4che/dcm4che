@@ -42,6 +42,8 @@
 <xsl:stylesheet version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="text"></xsl:output>
+  <xsl:param name="package"/>
+  <xsl:param name="PrivateCreatorID"/>
   <xsl:template match="/elements">
     <xsl:text>/* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
@@ -81,33 +83,42 @@
  *
  * ***** END LICENSE BLOCK *****
  */
- 
-package org.dcm4che3.dict.archive;
+
+package org.dcm4che3.dict.</xsl:text><xsl:value-of select="$package"/><xsl:text>;
 
 /**
  * @author Gunter Zeilinger &lt;gunterze@gmail.com&gt;
  */
-public class ArchiveKeyword {
+public class PrivateTag {
 
-    public static String valueOf(int tag) {
-        switch (tag &amp; 0xFFFF00FF) {
+    public static final String PrivateCreator = "</xsl:text><xsl:value-of select="$PrivateCreatorID"/><xsl:text>";
 </xsl:text>
-    <xsl:apply-templates 
-      select="//el" />
-    <xsl:text>        }
-        return "";
-    }
-
+    <xsl:apply-templates select="//el" />
+    <xsl:text>
 }
 </xsl:text>
   </xsl:template>
   <xsl:template match="el">
-    <xsl:text>        case ArchiveTag.</xsl:text>
+    <xsl:text>
+    /** (</xsl:text>
+    <xsl:value-of select="substring(@tag,1,4)" />
+    <xsl:text>,</xsl:text>
+    <xsl:value-of select="substring(@tag,5,4)" />
+    <xsl:text>) VR=</xsl:text>
+    <xsl:value-of select="@vr" />
+    <xsl:text> VM=</xsl:text>
+    <xsl:value-of select="@vm" />
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="text()" />
+    <xsl:if test="@retired='true'">
+      <xsl:text> (retired)</xsl:text>
+    </xsl:if>
+    <xsl:text> */
+    public static final int </xsl:text>
     <xsl:value-of select="@keyword" />
-    <xsl:text>:
-            return "</xsl:text>
-    <xsl:value-of select="@keyword" />
-    <xsl:text>";
+    <xsl:text> = 0x</xsl:text>
+    <xsl:value-of select="translate(@tag,'x','0')" />
+    <xsl:text>;
 </xsl:text>
   </xsl:template>
 </xsl:stylesheet>

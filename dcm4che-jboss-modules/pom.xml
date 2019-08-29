@@ -71,7 +71,7 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-dict-arc</artifactId>
+      <artifactId>dcm4che-dict-priv</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

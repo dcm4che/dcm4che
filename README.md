@@ -36,7 +36,7 @@ Modules
 - dcm4che-dcmr
 - dcm4che-deident
 - dcm4che-dict
-- dcm4che-dict-arc
+- dcm4che-dict-priv
 - dcm4che-emf
 - dcm4che-hl7
 - dcm4che-image

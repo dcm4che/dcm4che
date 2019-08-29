@@ -129,10 +129,34 @@
               <includes>
                 <include>arcelements.xml</include>
               </includes>
-              <stylesheet>src/main/xsl/dcm4chee-arc-dict-names.xsl</stylesheet>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>DCM4CHEE Archive 5</value>
+                </parameter>
+              </parameters>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>dcm4chee-arc-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>elscint-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>ELSCINT1</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>elscint-dict-names.js</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>

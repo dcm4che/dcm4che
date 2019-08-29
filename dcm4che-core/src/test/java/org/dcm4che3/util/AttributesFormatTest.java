@@ -59,6 +59,8 @@ public class AttributesFormatTest {
         "{00080020,date,yyyy/MM/dd}/{00080030,time,HH}/{0020000D,hash}/{0020000E,hash}/{00080018,md5}.dcm";
     private static final String TEST_PATTERN_RND =
         "{rnd}/{rnd,uuid}/{rnd,uid}";
+    private static final String TEST_PATTERN_OFFSET =
+        "{00200011,offset,100}/{00200013,offset,-1}";
     private static final Pattern ASSERT_PATTERN_RND =
             Pattern.compile("[0-9A-F]{8}+/[0-9a-f]{8}+(-[0-9a-f]{4}+){3}+-[0-9a-f]{12}+/2\\.25\\.\\d*");
 
@@ -91,5 +93,13 @@ public class AttributesFormatTest {
     public void testFormatRND() {
         assertTrue(ASSERT_PATTERN_RND.matcher(
                 new AttributesFormat(TEST_PATTERN_RND).format(new Attributes())).matches());
+    }
+
+    @Test
+    public void testOffset() {
+        Attributes attrs = new Attributes();
+        attrs.setString(Tag.SeriesNumber, VR.IS, "1");
+        attrs.setString(Tag.InstanceNumber, VR.IS, "2");
+        assertEquals("101/1", new AttributesFormat(TEST_PATTERN_OFFSET).format(attrs));
     }
 }

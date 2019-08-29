@@ -103,9 +103,9 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
-      <outputDirectory>/bundles/org/dcm4che/dict-arc/main</outputDirectory>
+      <outputDirectory>/bundles/org/dcm4che/dict-priv/main</outputDirectory>
       <includes>
-        <include>org.dcm4che:dcm4che-dict-arc</include>
+        <include>org.dcm4che:dcm4che-dict-priv</include>
       </includes>
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <useProjectArtifact>false</useProjectArtifact>

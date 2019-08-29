@@ -43,6 +43,7 @@ set JAVA=%JAVA_HOME%\bin\java
 set CP=%DCM4CHE_HOME%\etc\dcm2xml\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-dict-priv-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.25.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.25.jar

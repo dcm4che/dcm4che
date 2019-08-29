@@ -40,6 +40,7 @@ fi
 CP="$DCM4CHE_HOME/etc/dcm2json/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-dict-priv-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-json-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.7.25.jar"

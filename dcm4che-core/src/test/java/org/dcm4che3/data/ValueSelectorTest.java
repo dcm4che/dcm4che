@@ -43,6 +43,7 @@ import static org.junit.Assert.*;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.ItemPointer;
 import org.dcm4che3.data.ValueSelector;
+import org.dcm4che3.util.AttributesFormat;
 import org.junit.Test;
 
 /**
@@ -53,6 +54,9 @@ public class ValueSelectorTest {
     private static final String XPATH =
             "DicomAttribute[@tag=\"00400275\"]/Item[@number=\"1\"]/"
           + "DicomAttribute[@tag=\"0020000D\"]/Value[@number=\"1\"]";
+
+    private static final String PRIVATE_XPATH =
+            "DicomAttribute[@tag=\"00E10024\" and @privateCreator=\"ELCINT1\"]/Value[@number=\"1\"]";
 
     @Test
     public void testToString() {
@@ -72,6 +76,14 @@ public class ValueSelectorTest {
         assertEquals(Tag.RequestAttributesSequence, ip.sequenceTag);
         assertNull(ip.privateCreator);
         assertEquals(0, ip.itemIndex);
+    }
+
+   @Test
+    public void testPrivateValueOf() {
+        ValueSelector vs = ValueSelector.valueOf("DicomAttribute[@privateCreator='ELCINT1' and @tag='00E10024']/Value[@number='1']");
+        Attributes attrs = new Attributes(2);
+        attrs.setBytes("ELCINT1", 0x00E10024, VR.UN, new byte[]{89, 32});
+        System.out.println(vs.selectStringValue(attrs, null));
     }
 
 }

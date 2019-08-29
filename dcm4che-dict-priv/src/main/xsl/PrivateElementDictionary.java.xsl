@@ -42,6 +42,7 @@
 <xsl:stylesheet version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="text"></xsl:output>
+  <xsl:param name="package"/>
   <xsl:template match="/elements">
     <xsl:text>/* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
@@ -82,41 +83,77 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.dict.archive;
+package org.dcm4che3.dict.</xsl:text><xsl:value-of select="$package"/><xsl:text>;
+
+import org.dcm4che3.data.ElementDictionary;
+import org.dcm4che3.data.VR;
 
 /**
  * @author Gunter Zeilinger &lt;gunterze@gmail.com&gt;
  */
-public class ArchiveTag {
+    public class PrivateElementDictionary extends ElementDictionary {
 
-    public static final String PrivateCreator = "DCM4CHEE Archive 5";
-</xsl:text>
-    <xsl:apply-templates select="//el" />
-    <xsl:text>
+    public PrivateElementDictionary() {
+        super(PrivateTag.PrivateCreator, PrivateTag.class);
+    }
+
+    @Override
+    public String keywordOf(int tag) {
+        return PrivateKeyword.valueOf(tag);
+    }
+
+    @Override
+    public VR vrOf(int tag) {
+        switch (tag &amp; 0xFFFF00FF) {</xsl:text>
+    <xsl:apply-templates select="//el[@vr='AE']"/>
+    <xsl:apply-templates select="//el[@vr='AS']"/>
+    <xsl:apply-templates select="//el[@vr='AT']"/>
+    <xsl:apply-templates select="//el[@vr='CS']"/>
+    <xsl:apply-templates select="//el[@vr='DA']"/>
+    <xsl:apply-templates select="//el[@vr='DS']"/>
+    <xsl:apply-templates select="//el[@vr='DT']"/>
+    <xsl:apply-templates select="//el[@vr='FL']"/>
+    <xsl:apply-templates select="//el[@vr='FD']"/>
+    <xsl:apply-templates select="//el[@vr='IS']"/>
+    <xsl:apply-templates select="//el[@vr='LO']"/>
+    <xsl:apply-templates select="//el[@vr='LT']"/>
+    <xsl:apply-templates select="//el[@vr='OB']"/>
+    <xsl:apply-templates select="//el[@vr='OD']"/>
+    <xsl:apply-templates select="//el[@vr='OF']"/>
+    <xsl:apply-templates select="//el[@vr='OL']"/>
+    <xsl:apply-templates select="//el[@vr='OW']"/>
+    <xsl:apply-templates select="//el[@vr='PN']"/>
+    <xsl:apply-templates select="//el[@vr='SH']"/>
+    <xsl:apply-templates select="//el[@vr='SL']"/>
+    <xsl:apply-templates select="//el[@vr='SQ']"/>
+    <xsl:apply-templates select="//el[@vr='SS']"/>
+    <xsl:apply-templates select="//el[@vr='ST']"/>
+    <xsl:apply-templates select="//el[@vr='TM']"/>
+    <xsl:apply-templates select="//el[@vr='UC']"/>
+    <xsl:apply-templates select="//el[@vr='UI']"/>
+    <xsl:apply-templates select="//el[@vr='UL']"/>
+    <xsl:apply-templates select="//el[@vr='UR']"/>
+    <xsl:apply-templates select="//el[@vr='US']"/>
+    <xsl:apply-templates select="//el[@vr='UT']"/>
+<xsl:text>
+        }
+        return VR.UN;
+    }
 }
 </xsl:text>
   </xsl:template>
+
   <xsl:template match="el">
+    <xsl:param name="vr" select="@vr" />
     <xsl:text>
-    /** (</xsl:text>
-    <xsl:value-of select="substring(@tag,1,4)" />
-    <xsl:text>,</xsl:text>
-    <xsl:value-of select="substring(@tag,5,4)" />
-    <xsl:text>) VR=</xsl:text>
-    <xsl:value-of select="@vr" />
-    <xsl:text> VM=</xsl:text>
-    <xsl:value-of select="@vm" />
-    <xsl:text> </xsl:text>
-    <xsl:value-of select="text()" />
-    <xsl:if test="@retired='true'">
-      <xsl:text> (retired)</xsl:text>
+            case PrivateTag.</xsl:text>
+    <xsl:value-of select="@keyword"/>
+    <xsl:text>:</xsl:text>
+    <xsl:if test="position()=last()">
+      <xsl:text>
+                return VR.</xsl:text>
+      <xsl:value-of select="$vr"/>
+      <xsl:text>;</xsl:text>
     </xsl:if>
-    <xsl:text> */
-    public static final int </xsl:text>
-    <xsl:value-of select="@keyword" />
-    <xsl:text> = 0x</xsl:text>
-    <xsl:value-of select="translate(@tag,'x','0')" />
-    <xsl:text>;
-</xsl:text>
   </xsl:template>
 </xsl:stylesheet>

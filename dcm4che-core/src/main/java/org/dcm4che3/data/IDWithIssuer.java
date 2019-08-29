@@ -40,6 +40,7 @@ package org.dcm4che3.data;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.dcm4che3.util.StringUtils;
@@ -233,11 +234,26 @@ public class IDWithIssuer {
                 new HashSet<IDWithIssuer>((1 + opidseq.size()) << 1);
         if (pid != null)
             pids.add(pid);
-        for (Attributes item : opidseq) {
-            pid = IDWithIssuer.pidOf(item);
-            if (pid != null)
-                pids.add(pid);
-        }
+        for (Attributes item : opidseq)
+            addTo(IDWithIssuer.pidOf(item), pids);
         return pids;
+    }
+
+    private static void addTo(IDWithIssuer pid, Set<IDWithIssuer> pids) {
+        if (pid == null)
+            return;
+
+        for (Iterator<IDWithIssuer> itr = pids.iterator(); itr.hasNext();) {
+            IDWithIssuer next = itr.next();
+            if (next.matches(pid)) {
+                // replace existing matching pid if it is lesser qualified
+                if (pid.issuer != null && (next.issuer == null
+                        || next.issuer.isLesserQualifiedThan(pid.issuer)))
+                    itr.remove();
+                else
+                    return;
+            }
+        }
+        pids.add(pid);
     }
 }

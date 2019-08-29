@@ -265,4 +265,8 @@ public class Issuer implements Serializable {
         return attrs;
     }
 
+    public boolean isLesserQualifiedThan(Issuer other) {
+        return other.universalEntityID != null && (universalEntityID == null
+                || other.localNamespaceEntityID != null && localNamespaceEntityID == null);
+    }
 }

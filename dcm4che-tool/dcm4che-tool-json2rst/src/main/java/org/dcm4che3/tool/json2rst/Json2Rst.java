@@ -45,6 +45,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -198,7 +200,8 @@ public class Json2Rst {
         out.print("\",");
         out.print(isObj ? "object" : typeObj.getString("type"));
         out.print(",\"");
-        out.print(property.getString("description").replace("\"","\"\""));
+        out.print(ensureNoUndefinedSubstitutionReferenced(
+                property.getString("description").replace("\"","\"\"")));
         JsonArray anEnum = typeObj.getJsonArray("enum");
         if (anEnum != null) {
             out.print(" Enumerated values: ");
@@ -218,5 +221,18 @@ public class Json2Rst {
             out.print(')');
         }
         out.println('"');
+    }
+
+    private String ensureNoUndefinedSubstitutionReferenced(String desc) {
+        if (!desc.contains("|"))
+            return desc;
+
+        StringBuffer sb = new StringBuffer(desc.length());
+        Matcher matcher = Pattern.compile(" \\|([^ ]*?)\\|").matcher(desc);
+        while(matcher.find()){
+            matcher.appendReplacement(sb, " `|" + matcher.group(1) + "|`");
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 }

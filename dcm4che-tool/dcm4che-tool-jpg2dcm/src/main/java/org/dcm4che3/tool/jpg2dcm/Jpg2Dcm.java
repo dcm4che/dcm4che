@@ -326,7 +326,7 @@ public class Jpg2Dcm {
             try {
                 String subType = contentType.substring(contentType.indexOf("/") + 1).toUpperCase();
                 return subType.equals("JP2") ? JPEG : valueOf(subType);
-            } catch (IllegalArgumentException e) {
+            } catch (Exception e) {
                 throw new IllegalArgumentException(
                         MessageFormat.format(rb.getString("invalid-file-ext"), contentType, path));
             }

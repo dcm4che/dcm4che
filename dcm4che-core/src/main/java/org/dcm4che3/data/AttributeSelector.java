@@ -203,9 +203,9 @@ public class AttributeSelector implements Serializable {
         for (int i = 0; i < level; i++) {
             ItemPointer itemPointer = itemPointers.get(i);
             ItemPointer other = itemPointer(i);
-            if (itemPointer.itemIndex < 0 || other.itemIndex < 0
+            if (!(itemPointer.itemIndex < 0 || other.itemIndex < 0
                     ? itemPointer.equalsIgnoreItemIndex(other)
-                    : itemPointer.equals(other)) {
+                    : itemPointer.equals(other))) {
                 return false;
             }
         }

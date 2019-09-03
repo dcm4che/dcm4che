@@ -43,6 +43,9 @@ package org.dcm4che3.data;
 
 import org.junit.Test;
 
+import java.util.Collections;
+
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -71,5 +74,12 @@ public class AttributeSelectorTest {
         assertEquals(Tag.RequestAttributesSequence, ip.sequenceTag);
         assertNull(ip.privateCreator);
         assertEquals(-1, ip.itemIndex);
+    }
+
+    @Test
+    public void testMatches() {
+        ItemPointer ip = new ItemPointer(Tag.RequestAttributesSequence);
+        AttributeSelector selector = new AttributeSelector(Tag.StudyInstanceUID, null, ip);
+        assertTrue(selector.matches(Collections.singletonList(ip), null, Tag.StudyInstanceUID));
     }
 }

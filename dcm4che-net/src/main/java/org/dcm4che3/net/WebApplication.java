@@ -65,6 +65,8 @@ public class WebApplication {
         PAM,
         MOVE,
         MOVE_MATCHING,
+        IAN_MATCHING,
+        STGCMT_MATCHING,
         ELASTICSEARCH
     }
 

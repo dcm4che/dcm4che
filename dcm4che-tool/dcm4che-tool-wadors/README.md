@@ -11,15 +11,15 @@
     part.
     -
     Options:
-     -a,--accept <arg>           Specify the value for Accept header. For eg.
+     -a,--accept <arg>           Specify Acceptable Media Types for the
+                                 response payload. Default: */* For eg.
                                  multipart/related;type=application/dicom;tran
                                  sfer-syntax=* or
                                  multipart/related;type=application/dicom or
                                  multipart/related;type=image/jpeg or
                                  multipart/related;type=application/dicom+xml
                                  If specified, by default it will be appended
-                                 to the URL as a query parameter. If no value
-                                 is specified wildcard (*) will be sent.
+                                 to the URL as a query parameter.
         --bearer <bearer>        Specify the bearer token to be used in
                                  Authorization header for server
                                  authentication.

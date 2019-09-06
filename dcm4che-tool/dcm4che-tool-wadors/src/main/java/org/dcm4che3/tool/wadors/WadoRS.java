@@ -68,8 +68,8 @@ public class WadoRS {
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.wadors.messages");
     private static String user;
     private static String bearer;
-    private AcceptType acceptType = AcceptType.wildcard;
     private static boolean header;
+    private String accept = "*";
     private static String outDir;
 
     public WadoRS() {}
@@ -92,8 +92,13 @@ public class WadoRS {
         }
     }
 
-    private void setAcceptType(String acceptType) {
-        this.acceptType = AcceptType.valueOf(acceptType);
+    private void setAccept(String... accept) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(!header ? accept[0].replace("+", "%2B") : accept[0]);
+        for (int i = 1; i < accept.length; i++)
+            sb.append(",").append(!header ? accept[i].replace("+", "%2B") : accept[i]);
+
+        this.accept = sb.toString();
     }
 
     private static CommandLine parseComandLine(String[] args) throws ParseException {
@@ -134,12 +139,12 @@ public class WadoRS {
     private static void init(CommandLine cl, WadoRS wadoRS) throws Exception {
         if (cl.getArgList().isEmpty())
             throw new MissingArgumentException("Missing url");
+        header = cl.hasOption("header");
         if (cl.hasOption("a"))
-            wadoRS.setAcceptType(cl.getOptionValue("a"));
+            wadoRS.setAccept(cl.getOptionValues("a"));
         user = cl.getOptionValue("u");
         bearer = cl.getOptionValue("bearer");
         outDir = cl.getOptionValue("out-dir");
-        header = cl.hasOption("header");
     }
 
     private void wado(String url) throws Exception {
@@ -152,7 +157,7 @@ public class WadoRS {
         connection.setDoInput(true);
         connection.setRequestMethod("GET");
         if (header)
-            connection.setRequestProperty("Accept", acceptType.getAccept());
+            connection.setRequestProperty("Accept", accept);
         logOutgoing(connection);
         authorize(connection);
         logIncoming(connection);
@@ -181,53 +186,20 @@ public class WadoRS {
         return url
                 + (url.indexOf('?') != -1 ? "&" : "?")
                 + "accept="
-                + acceptType.getAccept().replace("+", "%2B");
+                + accept;
     }
 
     private String uidFrom(String url) {
         return url.contains("metadata")
                 ? url.substring(url.substring(0, url.lastIndexOf('/')).lastIndexOf('/') + 1, url.lastIndexOf('/'))
                 : url.contains("?")
-                    ? url.substring(url.substring(0, url.indexOf('?')).lastIndexOf('/') + 1, url.indexOf('?'))
-                    : url.substring(url.lastIndexOf('/')+1);
-    }
-
-    enum AcceptType {
-        wildcard("*"),
-        dicom("multipart/related;type=application/dicom"),
-        octetstream("multipart/related;type=application/octet-stream"),
-        pdf("multipart/related;type=application/pdf"),
-        cda("multipart/related;type=text/xml"),
-        stl("multipart/related;type=model/stl"),
-        html("multipart/related;type=text/html"),
-        plaintext("multipart/related;type=text/plain"),
-        png("multipart/related;type=image/png"),
-        gif("multipart/related;type=image/gif"),
-        jpeg("multipart/related;type=image/jpeg"),
-        jp2("multipart/related;type=image/jp2"),
-        jpx("multipart/related;type=image/jpx"),
-        xdicomrle("multipart/related;type=image/x-dicom+rle"),
-        xjls("multipart/related;type=image/x-jls"),
-        mpeg("multipart/related;type=video/mpeg"),
-        mp4("multipart/related;type=video/mp4"),
-        zip("application/zip"),
-        xml("multipart/related;type=application/dicom+xml"),
-        json("application/dicom+json");
-
-        private String accept;
-
-        AcceptType(String accept) {
-            this.accept = accept;
-        }
-
-        String getAccept() {
-            return accept;
-        }
+                ? url.substring(url.substring(0, url.indexOf('?')).lastIndexOf('/') + 1, url.indexOf('?'))
+                : url.substring(url.lastIndexOf('/')+1);
     }
 
     private void logOutgoing(HttpURLConnection connection) {
         LOG.info("> " + connection.getRequestMethod() + " " + connection.getURL());
-        LOG.info("> Accept: " + acceptType.getAccept());
+        LOG.info("> Accept: " + accept);
     }
 
     private void logIncoming(HttpURLConnection connection) throws Exception {

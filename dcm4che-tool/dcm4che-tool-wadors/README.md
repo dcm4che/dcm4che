@@ -11,26 +11,22 @@
     part.
     -
     Options:
-     -a,--accept <arg>           Specify the value for Accept header.
-                                 Supported types for object retrieval are
-                                 dicom, octetstream, pdf, jpeg, jp2, jpx, gif,
-                                 png, xjls, xdicomrle, cda, stl, html,
-                                 plaintext, mpeg, mp4 and zip. To retrieve
-                                 metadata, supported types are xml or json. If
-                                 no value is specified, then wildcard shall be
-                                 sent in the request. For eg. if it is jpeg
-                                 then Accept value shall be sent as
-                                 multipart/related;type=image/jpeg. If
-                                 specified, by default it will be appended to
-                                 the URL as a query parameter. If not
-                                 specified wildcard * will be sent in the
-                                 request.
+     -a,--accept <arg>           Specify the value for Accept header. For eg.
+                                 multipart/related;type=application/dicom;tran
+                                 sfer-syntax=* or
+                                 multipart/related;type=application/dicom or
+                                 multipart/related;type=image/jpeg or
+                                 multipart/related;type=application/dicom+xml
+                                 If specified, by default it will be appended
+                                 to the URL as a query parameter. If no value
+                                 is specified wildcard (*) will be sent.
         --bearer <bearer>        Specify the bearer token to be used in
                                  Authorization header for server
                                  authentication.
      -h,--help                   display this help and exit
         --header                 If specified, Accept value shall be sent as
-                                 HTTP Request Header.
+                                 HTTP Request Header instead being appended to
+                                 url as query parameter.
         --out-dir <directory>    Specify directory where the received MIME
                                  multipart messages will be unpacked into
                                  different parts.

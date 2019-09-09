@@ -76,6 +76,7 @@
 
 package org.dcm4che3.data;
 
+import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -263,7 +264,7 @@ public class SpecificCharacterSet {
                     cr.throwException();
             } catch (CharacterCodingException x) {
                 cb.position(cbmark);
-                bb.position(bbmark);
+                StreamUtils.safeBufferType(bb).position(bbmark);
                 return false;
             }
             return true;

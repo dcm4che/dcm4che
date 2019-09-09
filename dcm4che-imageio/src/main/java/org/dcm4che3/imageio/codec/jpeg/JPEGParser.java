@@ -47,9 +47,9 @@ import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.codec.XPEGParser;
 import org.dcm4che3.imageio.codec.XPEGParserException;
+import org.dcm4che3.util.StreamUtils;
 
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
@@ -142,23 +142,23 @@ public class JPEGParser implements XPEGParser {
     }
 
     private int readUShort(SeekableByteChannel channel) throws IOException {
-        ((Buffer) buf).clear().limit(2);
+    	StreamUtils.safeBufferType(buf).clear().limit(2);
         channel.read(buf);
-        ((Buffer) buf).rewind();
+        StreamUtils.safeBufferType(buf).rewind();
         return buf.getShort() & 0xffff;
     }
 
     private int readInt(SeekableByteChannel channel) throws IOException {
-        ((Buffer) buf).clear().limit(4);
+    	StreamUtils.safeBufferType(buf).clear().limit(4);
         channel.read(buf);
-        ((Buffer) buf).rewind();
+        StreamUtils.safeBufferType(buf).rewind();
         return buf.getInt();
     }
 
     private long readLong(SeekableByteChannel channel) throws IOException {
-        ((Buffer) buf).clear();
+    	StreamUtils.safeBufferType(buf).clear();
         channel.read(buf);
-        ((Buffer) buf).rewind();
+        StreamUtils.safeBufferType(buf).rewind();
         return buf.getLong();
     }
 

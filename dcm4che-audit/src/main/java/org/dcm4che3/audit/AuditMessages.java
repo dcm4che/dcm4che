@@ -660,6 +660,11 @@ public class AuditMessages {
         pod.setAnonymized(anonymized);
         return pod;
     }
+    
+    public static ParticipantObjectDescription createParticipantObjectDescription() {
+        ParticipantObjectDescription pod = new ParticipantObjectDescription();
+        return pod;
+    }
 
     public static ParticipantObjectDetail createParticipantObjectDetail(
             String type, byte[] value) {

@@ -49,3 +49,9 @@
     Send WADO RS request to Wado RS Receiver to retrieve studies with Study
     Instance UID StudyIUID1 and to retrieve series of study with Study
     Instance UID StudyIUID2 and series instance UID as SeriesIUID21.
+    
+    => wadors -a "multipart/related;type=image/jpeg"
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies/{StudyIUID}
+    /series/{SeriesIUID}/instances/{SOPIUID}
+    Send WADO RS request to Wado RS Receiver to retrieve specified instance as
+    a jpeg file.

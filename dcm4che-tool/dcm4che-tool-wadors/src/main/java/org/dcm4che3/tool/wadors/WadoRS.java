@@ -254,7 +254,7 @@ public class WadoRS {
     }
 
     private String partExtension(String partContentType) {
-        String contentType = partContentType.replaceAll("[-+/]", "_");
+        String contentType = partContentType.split(";")[0].replaceAll("[-+/]", "_");
         return contentType.substring(contentType.lastIndexOf("_") + 1);
     }
 

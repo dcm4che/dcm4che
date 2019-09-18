@@ -45,8 +45,6 @@ package org.dcm4che3.conf.core.olock;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
 import org.dcm4che3.util.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -61,20 +59,17 @@ import java.util.Map;
  * @author Roman K
  */
 public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
-
-    Logger log = LoggerFactory.getLogger(HashBasedOptimisticLockingConfiguration.class);
-
-    final Deque<byte[]> stack = new ArrayDeque<byte[]>();
-    private String ignoredKey;
+    private final Deque<byte[]> hashCalculationNodeStack = new ArrayDeque<>();
+    private final String ignoredKey;
     private MessageDigest cript;
 
     public OLockHashCalcFilter() {
-        stack.push(new byte[20]);
+       this(null);
 
     }
 
     public OLockHashCalcFilter(String ignoredKey) {
-        this();
+        hashCalculationNodeStack.push(new byte[20]);
         this.ignoredKey = ignoredKey;
     }
 
@@ -84,20 +79,20 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
      * @param one
      * @param two
      */
-    public void addHash(byte[] one, byte[] two) {
+    private void addHash(byte[] one, byte[] two) {
 
         for (int i = 0; i < one.length; i++) {
             one[i] = (byte) (one[i] + two[i]);
         }
     }
 
-    public byte[] getHash(String what) {
+    private byte[] getHash(String what) {
         getCript().reset();
         getCript().update(what.getBytes());
         return getCript().digest();
     }
 
-    public MessageDigest getCript() {
+    private MessageDigest getCript() {
 
         if (cript == null)
             try {
@@ -109,16 +104,11 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
         return cript;
     }
 
-    public Deque<byte[]> getStack() {
-        return stack;
-    }
-
-
     @Override
     public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
 
         // add up to hash
-        addHash(stack.peek(), getHash(String.valueOf(value)));
+        addHash( hashCalculationNodeStack.peek(), getHash(String.valueOf(value)));
 
     }
 
@@ -130,57 +120,54 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
         return Configuration.OLOCK_HASH_KEY.equals(key) || ignoredKey != null && ignoredKey.equals(key);
     }
 
-
     @Override
     public void beforeNode(Map<String, Object> node) {
-        stack.push(new byte[20]);
+        hashCalculationNodeStack.push(new byte[20]);
     }
 
     @Override
     public void afterNode(Map<String, Object> node) {
 
-        byte[] pop = stack.pop();
+        byte[] pop = hashCalculationNodeStack.pop();
 
         // if this node is olock'd, save hash, otherwise addup to what will be consumed by the parent
         if (node.containsKey(Configuration.OLOCK_HASH_KEY))
             node.put(Configuration.OLOCK_HASH_KEY, hashToString(pop));
         else
-            addHash(stack.peek(), getHash(hashToString(pop)));
+            addHash( hashCalculationNodeStack.peek(), getHash(hashToString(pop)));
     }
 
     @Override
     public void beforeNodeElement(Map<String, Object> containerNode, String key, Object value) {
-        stack.push(new byte[20]);
+        hashCalculationNodeStack.push(new byte[20]);
     }
 
     @Override
     public void afterNodeElement(Map<String, Object> containerNode, String key, Object value) {
-        byte[] valueHash = stack.pop();
+        byte[] valueHash = hashCalculationNodeStack.pop();
 
         // don't add for olock hashes and ignored keys
         if (!doIgnore(key)) {
 //            String peekStr = hashToString(stack.peek());
-            addHash(stack.peek(), getHash(key + hashToString(valueHash)));
-//            log.info("Added hash of property '{}' ({} -> {})", key, peekStr, hashToString(stack.peek()));
+            addHash( hashCalculationNodeStack.peek(), getHash(key + hashToString(valueHash)));
+//            log.info("Added hash of property '{}' ({} -Up> {})", key, peekStr, hashToString(stack.peek()));
         }
-
-
     }
 
     @Override
     public void beforeListElement(Collection list, int index, Object element) {
-        stack.push(new byte[20]);
+        hashCalculationNodeStack.push(new byte[20]);
     }
 
     @Override
     public void afterListElement(Collection list, int index, Object element) {
-        byte[] listElementHash = stack.pop();
-        byte[] listHash = stack.pop();
-        stack.push(getHash(hashToString(listHash) + hashToString(listElementHash)));
+        byte[] listElementHash = hashCalculationNodeStack.pop();
+        byte[] listHash = hashCalculationNodeStack.pop();
+        hashCalculationNodeStack.push(getHash(hashToString(listHash) + hashToString(listElementHash)));
     }
 
     @Override
     public void onPrimitiveListElement(Collection list, Object element) {
-        addHash(stack.peek(), getHash(String.valueOf(element)));
+        addHash( hashCalculationNodeStack.peek(), getHash(String.valueOf(element)));
     }
 }

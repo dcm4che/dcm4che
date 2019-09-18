@@ -239,7 +239,7 @@ public class ConfigProperty
 
         label = !configurablePropertyAnnotation.label().isEmpty() || isOlockHash || isUuid ?
                 configurablePropertyAnnotation.label() :
-                camelCaseToReadableLabel( annotatedName );
+                annotatedName;
 
         description = configurablePropertyAnnotation.description();
 
@@ -252,11 +252,6 @@ public class ConfigProperty
     public String getLabel()
     {
         return label;
-    }
-
-    public String camelCaseToReadableLabel( String annotatedName )
-    {
-        return annotatedName.replaceAll( "(?<=[A-Z])(?=[A-Z][a-z])|(?<=[^A-Z])(?=[A-Z])|(?<=[A-Za-z])(?=[^A-Za-z])", " " );
     }
 
     public ConfigProperty( Map<Type, Annotation> annotations, Type type )

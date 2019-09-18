@@ -1,6 +1,7 @@
 package org.dcm4che3.conf.core.olock;
 
 import org.dcm4che3.conf.core.DelegatingConfiguration;
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Path;
@@ -8,9 +9,6 @@ import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ConfigNodeTypesafeFilter;
-import org.dcm4che3.conf.core.Nodes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -37,13 +35,10 @@ import java.util.Map;
  */
 @SuppressWarnings("unchecked")
 public class HashBasedOptimisticLockingConfiguration extends DelegatingConfiguration {
-
-    private static final Logger log = LoggerFactory.getLogger(HashBasedOptimisticLockingConfiguration.class);
-
-    public static final String NOT_CALCULATED_YET = "not-calculated-yet";
+    private static final String NOT_CALCULATED_YET = "not-calculated-yet";
     public static final String OLD_OLOCK_HASH_KEY = "#old_hash";
 
-    private List<Class> allExtensionClasses;
+    private final List<Class> allExtensionClasses;
 
     /**
      * @param delegate
@@ -51,7 +46,6 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
      */
     public HashBasedOptimisticLockingConfiguration(Configuration delegate, List<Class> allExtensionClasses) {
         super(delegate);
-
         this.allExtensionClasses = allExtensionClasses;
     }
 
@@ -74,22 +68,23 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
         // save old hashes in node being persisted
         ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new OLockCopyFilter(OLD_OLOCK_HASH_KEY));
 
-        // calculate current hashes in node being persisted
+        // calculate current hashes in node being persisted and set them in OLOCK_HASH_KEY property,
+        // ensure to ignore OLD_OLOCK_HASH_KEY property in calculation
         ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new OLockHashCalcFilter(OLD_OLOCK_HASH_KEY));
 
         ////// merge the object /////
         ConfigNodeTraverser.dualTraverseMapNodes(nodeInStorage, nodeBeingPersisted, new OLockMergeDualFilter());
 
-        // filter the #hash clutter out
+        // filter all the set #hash properties out before persisting the node in the storage
         ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new CleanupFilter(OLD_OLOCK_HASH_KEY, Configuration.OLOCK_HASH_KEY));
 
         delegate.persistNode(path, nodeBeingPersisted, configurableClass);
     }
 
-
     @Override
     public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
 
+        // load node from (storage) backend
         Object configurationNode = super.getConfigurationNode(path, configurableClass);
 
         //  calculate olock hashes if called with configurableClass
@@ -102,6 +97,7 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
                     new HashMarkingTypesafeNodeFilter()
             );
 
+            // calculate hashes and set them in OLOCK_HASH_KEY property
             ConfigNodeTraverser.traverseMapNode(configurationNode, new OLockHashCalcFilter());
         }
 

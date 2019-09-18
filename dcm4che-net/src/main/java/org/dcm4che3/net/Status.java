@@ -278,6 +278,12 @@ public class Status {
     public static final int UnableToProcess                    = 0xC000;
     public static final int CannotUnderstand                   = 0xC000;
 
+    public static final int UPSMayNoLongerBeUpdated            = 0xC000;
+    public static final int TransactionUIDNotCorrect           = 0xC001;
+    public static final int NoSuchUPSInstance                  = 0xC307;
+    public static final int UPSStateNotScheduled               = 0xC309;
+    public static final int UPSStateNotInProgress              = 0xC310;
+
     public static boolean isPending(int status) {
         return (status & Pending) == Pending;
     }

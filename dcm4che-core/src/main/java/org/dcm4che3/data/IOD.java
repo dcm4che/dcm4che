@@ -427,20 +427,18 @@ public class IOD extends ArrayList<IOD.DataElement> {
         @Override
         public void startElement(String uri, String localName, String qName,
                 org.xml.sax.Attributes atts) throws SAXException {
-            switch (qName.charAt(0)) {
-            case 'A':
-                if (qName.equals("And"))
+            switch (qName) {
+                case "And":
                     startCondition(qName, new And());
-                break;
-            case 'C':
-                if (qName.equals("Code"))
+                    break;
+                case "Code":
                     startCode(
                             atts.getValue("codeValue"),
                             atts.getValue("codingSchemeDesignator"),
                             atts.getValue("codingSchemeVersion"),
                             atts.getValue("codeMeaning"));
-            case 'D':
-                if (qName.equals("DataElement"))
+                    break;
+                case "DataElement":
                     startDataElement(
                             atts.getValue("tag"),
                             atts.getValue("vr"),
@@ -448,41 +446,39 @@ public class IOD extends ArrayList<IOD.DataElement> {
                             atts.getValue("vm"),
                             atts.getValue("items"),
                             atts.getValue("valueNumber"));
-                break;
-            case 'I':
-                if (qName.equals("If"))
+                    break;
+                case "If":
                     startIf(atts.getValue("id"), atts.getValue("idref"));
-                else if (qName.equals("Item"))
+                    break;
+                case "Item":
                     startItem(atts.getValue("id"),
                             atts.getValue("idref"),
                             atts.getValue("type"));
-                break;
-            case 'M':
-                if (qName.equals("MemberOf"))
+                    break;
+                case "MemberOf":
                     startCondition(qName, memberOf(atts));
-                break;
-            case 'N':
-                if (qName.equals("NotAnd"))
+                    break;
+                case "NotAnd":
                     startCondition(qName, new And().not());
-                else if (qName.equals("NotMemberOf"))
+                    break;
+                case "NotMemberOf":
                     startCondition(qName, memberOf(atts).not());
-                else if (qName.equals("NotOr"))
+                    break;
+                case "NotOr":
                     startCondition(qName, new Or().not());
-                else if (qName.equals("NotPresent"))
+                    break;
+                case "NotPresent":
                     startCondition(qName, present(atts).not());
-                break;
-            case 'O':
-                if (qName.equals("Or"))
+                    break;
+                case "Or":
                     startCondition(qName, new Or());
-                break;
-            case 'P':
-                if (qName.equals("Present"))
+                    break;
+                case "Present":
                     startCondition(qName, present(atts));
-                break;
-            case 'V':
-                if (qName.equals("Value"))
+                    break;
+                case "Value":
                     startValue();
-                break;
+                    break;
             }
         }
 
@@ -525,47 +521,27 @@ public class IOD extends ArrayList<IOD.DataElement> {
         @Override
         public void endElement(String uri, String localName, String qName)
                 throws SAXException {
-            switch (qName.charAt(0)) {
-            case 'A':
-                if (qName.equals("And"))
-                    endCondition(qName);
-                break;
-            case 'D':
-                if (qName.equals("DataElement"))
+            switch (qName) {
+                case "DataElement":
                     endDataElement();
-                break;
-            case 'I':
-                if (qName.equals("If"))
-                    endCondition(qName);
-                else if (qName.equals("Item"))
+                    break;
+                case "Item":
                     endItem();
-                break;
-            case 'M':
-                if (qName.equals("MemberOf"))
-                    endCondition(qName);
-                break;
-            case 'N':
-                if (qName.equals("NotAnd"))
-                    endCondition(qName);
-                else if (qName.equals("NotMemberOf"))
-                    endCondition(qName);
-                else if (qName.equals("NotOr"))
-                    endCondition(qName);
-                else if (qName.equals("NotPresent"))
-                    endCondition(qName);
-                break;
-            case 'O':
-                if (qName.equals("Or"))
-                    endCondition(qName);
-                break;
-            case 'P':
-                if (qName.equals("Present"))
-                    endCondition(qName);
-                break;
-            case 'V':
-                if (qName.equals("Value"))
+                    break;
+                case "Value":
                     endValue();
-                break;
+                    break;
+                case "And":
+                case "If":
+                case "MemberOf":
+                case "NotAnd":
+                case "NotMemberOf":
+                case "NotOr":
+                case "NotPresent":
+                case "Or":
+                case "Present":
+                    endCondition(qName);
+                    break;
             }
             processCharacters = false;
             idref = null;

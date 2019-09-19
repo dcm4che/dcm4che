@@ -48,7 +48,7 @@
   
   <xsl:template match="/doc:book">
   <uids>
-    <xsl:apply-templates select="doc:chapter[11]/doc:table[1]/doc:tbody/doc:tr"/>
+    <xsl:apply-templates select="doc:chapter[12]/doc:table[1]/doc:tbody/doc:tr"/>
     <xsl:call-template name="uidsEx"/>
   </uids>
   </xsl:template>

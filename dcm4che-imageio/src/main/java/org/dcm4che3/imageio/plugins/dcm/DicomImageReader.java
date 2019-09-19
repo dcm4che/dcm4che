@@ -60,7 +60,9 @@ import java.awt.image.*;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Image Reader implementation that reads from DICOM files.  Supports several
@@ -92,6 +94,19 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
     private static final Logger LOG = LoggerFactory.getLogger(DicomImageReader.class);
 
+    private static final Set<String> VIDEO_TSUID = new HashSet<>();
+    static {
+        VIDEO_TSUID.add(UID.MPEG2);
+        VIDEO_TSUID.add(UID.MPEG2MainProfileHighLevel);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel41);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For2DVideo);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For3DVideo);
+        VIDEO_TSUID.add(UID.MPEG4AVCH264StereoHighProfileLevel42);
+        VIDEO_TSUID.add(UID.HEVCH265Main10ProfileLevel51);
+        VIDEO_TSUID.add(UID.HEVCH265MainProfileLevel51);
+    }
+
     /** Default to reading the entire file for image rendering */
     public static final DicomMetaDataFactory DEFAULT_METADATA_FACTORY = new DefaultMetaDataFactory(true);
 
@@ -99,6 +114,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     private final DicomMetaDataFactory metadataFactory;
 
     private DicomMetaData metadata;
+
 
     private ImageReader decompressor;
 
@@ -493,6 +509,11 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
             return;
 
         setMetadata(metadataFactory.readMetaData(input));
+    }
+
+    /** Indicate if the given transfer syntax is video */
+    public static boolean isVideo(String tsuid) {
+        return VIDEO_TSUID.contains(tsuid);
     }
 
     /** Creates an offset/length table based on the frame positions */

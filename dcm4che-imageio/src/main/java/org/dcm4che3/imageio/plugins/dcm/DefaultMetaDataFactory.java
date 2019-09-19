@@ -68,20 +68,6 @@ public class DefaultMetaDataFactory implements DicomMetaDataFactory {
 
     private static final ImageInputStreamLoader SERVICE_LOADER = new ServiceImageInputStreamLoader();
 
-    private static final Set<String> VIDEO_TSUID = new HashSet<>();
-    static {
-        VIDEO_TSUID.add(UID.MPEG2);
-        VIDEO_TSUID.add(UID.MPEG2MainProfileHighLevel);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel41);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For2DVideo);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For3DVideo);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264StereoHighProfileLevel42);
-        VIDEO_TSUID.add(UID.HEVCH265Main10ProfileLevel51);
-        VIDEO_TSUID.add(UID.HEVCH265MainProfileLevel51);
-    }
-
-
     public static int READ_ENTIRE_FILE = -1;
     public static int DEFAULT_STOP_TAG = READ_ENTIRE_FILE;
     public static int DEFAULT_BUFFER_SIZE = 16 * 1024;
@@ -227,8 +213,8 @@ public class DefaultMetaDataFactory implements DicomMetaDataFactory {
     }
 
     /** Indicate if the given transfer syntax is video */
-    public boolean isVideo(String tsUID) {
-        return VIDEO_TSUID.contains(tsUID);
+    private boolean isVideo(String tsUID) {
+        return DicomImageReader.isVideo(tsUID);
     }
 
 

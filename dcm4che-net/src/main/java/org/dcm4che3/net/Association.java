@@ -309,6 +309,11 @@ public class Association {
         return (requestor ? rq : ac).getImplClassUID();
     }
 
+    public String getAbstractSyntax(int pcid) {
+        PresentationContext rqpc = rq.getPresentationContext(pcid);
+        return rqpc != null ? rqpc.getAbstractSyntax() : null;
+    }
+
     final int getMaxPDULengthSend() {
         return maxPDULength;
     }

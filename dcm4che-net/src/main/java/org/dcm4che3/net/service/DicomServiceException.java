@@ -64,17 +64,29 @@ public class DicomServiceException extends IOException {
     }
 
     public DicomServiceException(int status, String message) {
+        this(status, message, true);
+    }
+
+    public DicomServiceException(int status, String message, boolean errorComment) {
         super(message);
         rsp = new Attributes();
         setStatus(status);
-        setErrorComment(getMessage());
+        if (errorComment) {
+            setErrorComment(getMessage());
+        }
     }
 
     public DicomServiceException(int status, Throwable cause) {
+        this(status, cause, true);
+    }
+
+    public DicomServiceException(int status, Throwable cause, boolean errorComment) {
         super(cause);
         rsp = new Attributes();
         setStatus(status);
-        setErrorComment(getMessage());
+        if (errorComment) {
+            setErrorComment(getMessage());
+        }
     }
 
     public static Throwable initialCauseOf(Throwable e) {
@@ -147,19 +159,18 @@ public class DicomServiceException extends IOException {
         return this;
     }
 
-    public static DicomServiceException valueOf(ValidationResult result,
-            Attributes attrs) {
+    public static DicomServiceException valueOf(ValidationResult result, Attributes attrs) {
         if (result.hasNotAllowedAttributes())
-            return new DicomServiceException(Status.NoSuchAttribute)
+            return new DicomServiceException(Status.NoSuchAttribute, result.getErrorComment(), false)
                 .setAttributeIdentifierList(result.tagsOfNotAllowedAttributes());
         if (result.hasMissingAttributes())
-            return new DicomServiceException(Status.MissingAttribute)
+            return new DicomServiceException(Status.MissingAttribute, result.getErrorComment(), false)
                 .setAttributeIdentifierList(result.tagsOfMissingAttributes());
         if (result.hasMissingAttributeValues())
-            return new DicomServiceException(Status.MissingAttributeValue)
+            return new DicomServiceException(Status.MissingAttributeValue, result.getErrorComment(), false)
                 .setDataset(new Attributes(attrs, result.tagsOfMissingAttributeValues()));
         if (result.hasInvalidAttributeValues())
-            return new DicomServiceException(Status.InvalidAttributeValue)
+            return new DicomServiceException(Status.InvalidAttributeValue, result.getErrorComment(), false)
                 .setDataset(new Attributes(attrs, result.tagsOfInvalidAttributeValues()));
         return null;
     }

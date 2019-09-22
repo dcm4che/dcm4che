@@ -270,35 +270,29 @@ public class LookupTableFactory {
         if (modalityLUT != null || voiLUT != null || windowWidth != 0)
             return false;
 
-        int min = img.getInt(Tag.SmallestImagePixelValue, 0);
-        int max = img.getInt(Tag.LargestImagePixelValue, 0);
-        if (max == 0) {
-            int[] min_max;
-            ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
-            DataBuffer dataBuffer = raster.getDataBuffer();
-            switch (dataBuffer.getDataType()) {
+        int[] min_max = calcMinMax(raster);
+        windowCenter = (min_max[0] + min_max[1] + 1) / 2 * rescaleSlope + rescaleIntercept;
+        windowWidth = Math.abs((min_max[1] + 1 - min_max[0]) * rescaleSlope);
+        return true;
+    }
+
+    private int[] calcMinMax(Raster raster) {
+        ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
+        DataBuffer dataBuffer = raster.getDataBuffer();
+        switch (dataBuffer.getDataType()) {
             case DataBuffer.TYPE_BYTE:
-                min_max = calcMinMax(storedValue, sm,
+                return calcMinMax(storedValue, sm,
                         ((DataBufferByte) dataBuffer).getData());
-                break;
             case DataBuffer.TYPE_USHORT:
-                min_max = calcMinMax(storedValue, sm,
+                return calcMinMax(storedValue, sm,
                         ((DataBufferUShort) dataBuffer).getData());
-                break;
             case DataBuffer.TYPE_SHORT:
-                min_max = calcMinMax(storedValue, sm,
+                return calcMinMax(storedValue, sm,
                         ((DataBufferShort) dataBuffer).getData());
-                break;
             default:
                 throw new UnsupportedOperationException(
                         "DataBuffer: "+ dataBuffer.getClass() + " not supported");
-            }
-            min = min_max[0];
-            max = min_max[1];
         }
-        windowCenter = (min + max + 1) / 2 * rescaleSlope + rescaleIntercept;
-        windowWidth = Math.abs((max + 1 - min) * rescaleSlope);
-        return true;
     }
 
     private int[] calcMinMax(StoredValue storedValue, ComponentSampleModel sm,

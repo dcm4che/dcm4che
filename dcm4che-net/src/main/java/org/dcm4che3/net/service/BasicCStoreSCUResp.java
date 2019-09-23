@@ -43,6 +43,7 @@ import org.dcm4che3.net.Status;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
@@ -109,7 +110,10 @@ public class BasicCStoreSCUResp {
 
         setCompleted(getCompleted() + addendumResponse.getCompleted());
         setFailed(getFailed() + addendumResponse.getFailed());
-		setLastError(addendumResponse.getLastError());
+        // Do not forget the last error
+        if (Objects.nonNull(addendumResponse.getLastError())) {
+            setLastError(addendumResponse.getLastError());
+        }
         setWarning(getWarning() + addendumResponse.getWarning());
 
         String[] currentCompletedUIDs = getCompletedUIDs();

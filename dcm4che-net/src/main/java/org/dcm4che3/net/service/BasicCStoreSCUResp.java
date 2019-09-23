@@ -40,10 +40,10 @@ package org.dcm4che3.net.service;
 
 import org.dcm4che3.net.Status;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.stream.Stream;
+
+import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
@@ -110,30 +110,24 @@ public class BasicCStoreSCUResp {
 
         setCompleted(getCompleted() + addendumResponse.getCompleted());
         setFailed(getFailed() + addendumResponse.getFailed());
+
         // Do not forget the last error
-        if (Objects.nonNull(addendumResponse.getLastError())) {
+        if (nonNull(addendumResponse.getLastError())) {
             setLastError(addendumResponse.getLastError());
         }
-        setWarning(getWarning() + addendumResponse.getWarning());
 
-        String[] currentCompletedUIDs = getCompletedUIDs();
-        String[] newCompletedUIDs = addendumResponse.getCompletedUIDs();
-        if (currentCompletedUIDs == null) {
-            setCompletedUIDs(newCompletedUIDs);
-        } else if (newCompletedUIDs != null) {
-            String[] completedUIDs = Arrays.copyOf(currentCompletedUIDs, currentCompletedUIDs.length + newCompletedUIDs.length);
-            System.arraycopy(newCompletedUIDs, 0, completedUIDs, currentCompletedUIDs.length, newCompletedUIDs.length);
-            setCompletedUIDs(completedUIDs);
+        setWarning(getWarning() + addendumResponse.getWarning());
+        setCompletedUIDs(unionOf(getCompletedUIDs(), addendumResponse.getCompletedUIDs()));
+        setFailedUIDs(unionOf(getFailedUIDs(), addendumResponse.getFailedUIDs()));
+    }
+
+    private static String[] unionOf(String[] first, String[] second) {
+        if (isNull(first)) {
+            return second;
         }
-		
-        String[] currentFailedUIDs = getFailedUIDs();
-        String[] newFailedUIDs = addendumResponse.getFailedUIDs();
-        if (currentFailedUIDs == null) {
-            setFailedUIDs(newFailedUIDs);
-        } else if (newFailedUIDs != null) {
-            String[] failedUIDs = Arrays.copyOf(currentFailedUIDs, currentFailedUIDs.length + newFailedUIDs.length);
-            System.arraycopy(newFailedUIDs, 0, failedUIDs, currentFailedUIDs.length, newFailedUIDs.length);
-            setFailedUIDs(failedUIDs);
+        if (isNull(second)) {
+            return first;
         }
+        return Stream.concat(Stream.of(first), Stream.of(second)).toArray(String[]::new);
     }
 }

@@ -278,11 +278,26 @@ public class Status {
     public static final int UnableToProcess                    = 0xC000;
     public static final int CannotUnderstand                   = 0xC000;
 
-    public static final int UPSMayNoLongerBeUpdated            = 0xC000;
-    public static final int TransactionUIDNotCorrect           = 0xC001;
-    public static final int NoSuchUPSInstance                  = 0xC307;
-    public static final int UPSStateNotScheduled               = 0xC309;
-    public static final int UPSStateNotInProgress              = 0xC310;
+    public static final int UPSCreatedWithModifications = 0xB300;
+    public static final int UPSDeletionLockNotGranted = 0xB301;
+    public static final int UPSAlreadyInRequestedStateOfCanceled = 0xB304;
+    public static final int UPSCoercedInvalidValuesToValidValues = 0xB305;
+    public static final int UPSAlreadyInRequestedStateOfCompleted = 0xB306;
+
+    public static final int UPSMayNoLongerBeUpdated = 0xC300;
+    public static final int UPSTransactionUIDNotCorrect = 0xC301;
+    public static final int UPSAlreadyInProgress = 0xC302;
+    public static final int UPSStateMayNotChangedToScheduled = 0xC303;
+    public static final int UPSNotMetFinalStateRequirements = 0xC304;
+    public static final int UPSDoesNotExist = 0xC307;
+    public static final int UPSUnknownReceivingAET = 0xC308;
+    public static final int UPSNotScheduled = 0xC309;
+    public static final int UPSNotYetInProgress = 0xC310;
+    public static final int UPSAlreadyCompleted = 0xC311;
+    public static final int UPSPerformerCannotBeContacted = 0xC312;
+    public static final int UPSPerformerChoosesNotToCancel = 0xC313;
+    public static final int UPSActionNotAppropriate = 0xC314;
+    public static final int UPSDoesNotSupportEventReports = 0xC315;
 
     public static boolean isPending(int status) {
         return (status & Pending) == Pending;

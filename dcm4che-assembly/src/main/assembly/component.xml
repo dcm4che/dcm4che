@@ -167,6 +167,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-swappxdata</include>
         <include>org.dcm4che.tool:dcm4che-tool-syslog</include>
         <include>org.dcm4che.tool:dcm4che-tool-syslogd</include>
+        <include>org.dcm4che.tool:dcm4che-tool-upsscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-wadors</include>
         <include>org.dcm4che.tool:dcm4che-tool-wadows</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>

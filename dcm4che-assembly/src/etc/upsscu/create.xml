@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><NativeDicomModel xml:space="preserve">
+    <DicomAttribute keyword="AdmittingDiagnosesDescription" tag="00081080" vr="LO"/>
+    <DicomAttribute keyword="AdmittingDiagnosesCodeSequence" tag="00081084" vr="SQ"/>
+    <DicomAttribute keyword="TransactionUID" tag="00081195" vr="UI"/>
+    <DicomAttribute keyword="PatientName" tag="00100010" vr="PN"/>
+    <DicomAttribute keyword="PatientID" tag="00100020" vr="LO"/>
+    <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA"/>
+    <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS"/>
+    <DicomAttribute keyword="OtherPatientIDSequence" tag="00101002" vr="SQ"/>
+    <DicomAttribute keyword="AdmissionID" tag="00380010" vr="LO"/>
+    <DicomAttribute keyword="IssuerOfAdmissionIDSequence" tag="00380014" vr="SQ"/>
+    <DicomAttribute keyword="CommentsOnTheScheduledProcedureStep" tag="00400400" vr="LT"/>
+    <DicomAttribute keyword="ScheduledStationNameCodeSequence" tag="00402025" vr="SQ"/>
+    <DicomAttribute keyword="ScheduledStationClassCodeSequence" tag="00402026" vr="SQ"/>
+    <DicomAttribute keyword="ScheduledStationGeographicLocationCodeSequence" tag="00402027" vr="SQ"/>
+    <DicomAttribute keyword="ScheduledWorkitemCodeSequence" tag="00404018" vr="SQ"/>
+    <DicomAttribute keyword="InputInformationSequence" tag="00404021" vr="SQ"/>
+    <DicomAttribute keyword="InputReadinessState" tag="00404041" vr="CS">
+        <Value number="1">READY</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="ReferencedRequestSequence" tag="0040A370" vr="SQ"/>
+    <DicomAttribute keyword="ProcedureStepState" tag="00741000" vr="CS">
+        <Value number="1">SCHEDULED</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="ProgressInformationSequence" tag="00741002" vr="SQ"/>
+    <DicomAttribute keyword="ScheduledProcedureStepPriority" tag="00741200" vr="CS">
+        <Value number="1">MEDIUM</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="WorklistLabel" tag="00741202" vr="LO"/>
+    <DicomAttribute keyword="ProcedureStepLabel" tag="00741204" vr="LO">
+        <Value number="1">DEFAULT</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="ScheduledProcessingParametersSequence" tag="00741210" vr="SQ"/>
+    <DicomAttribute keyword="UnifiedProcedureStepPerformedProcedureSequence" tag="00741216" vr="SQ"/>
+</NativeDicomModel>

@@ -38,12 +38,9 @@
 
 package org.dcm4che3.tool.upsscu;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Paths;
+import java.io.*;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -59,23 +56,86 @@ import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StreamUtils;
+import org.dcm4che3.util.TagUtils;
 
+/**
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @since Sep 2019
+ */
 public class UpsSCU {
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che3.tool.upsscu.messages");
 
     public interface RSPHandlerFactory {
+        DimseRSPHandler createDimseRSPHandlerForCFind();
         DimseRSPHandler createDimseRSPHandlerForNCreate();
+        DimseRSPHandler createDimseRSPHandlerForNSet();
+        DimseRSPHandler createDimseRSPHandlerForNGet();
+        DimseRSPHandler createDimseRSPHandlerForNAction();
+        DimseRSPHandler createDimseRSPHandlerForNEvent();
     }
 
     //default response handler
     private RSPHandlerFactory rspHandlerFactory = new RSPHandlerFactory(){
+        @Override
+        public DimseRSPHandler createDimseRSPHandlerForCFind() {
+            return new DimseRSPHandler(as.nextMessageID()) {
+                @Override
+                public void onDimseRSP(Association as, Attributes cmd,
+                                       Attributes data) {
+                    //TODO
+                }
+            };
+        }
+
         @Override
         public DimseRSPHandler createDimseRSPHandlerForNCreate() {
             return new DimseRSPHandler(as.nextMessageID()) {
                 @Override
                 public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
                     super.onDimseRSP(as, cmd, data);
+                }
+            };
+        }
+
+        @Override
+        public DimseRSPHandler createDimseRSPHandlerForNSet() {
+            return new DimseRSPHandler(as.nextMessageID()){
+                @Override
+                public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
+                    super.onDimseRSP(as, cmd, data);
+                }
+            };
+        };
+
+        @Override
+        public DimseRSPHandler createDimseRSPHandlerForNGet() {
+            return new DimseRSPHandler(as.nextMessageID()) {
+                @Override
+                public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
+                    super.onDimseRSP(as, cmd, data);
+                }
+            };
+        }
+
+        @Override
+        public DimseRSPHandler createDimseRSPHandlerForNAction() {
+            return new DimseRSPHandler(as.nextMessageID()) {
+                @Override
+                public void onDimseRSP(Association as, Attributes cmd,
+                                       Attributes data) {
+                    //TODO
+                }
+            };
+        };
+
+        @Override
+        public DimseRSPHandler createDimseRSPHandlerForNEvent() {
+            return new DimseRSPHandler(as.nextMessageID()) {
+                @Override
+                public void onDimseRSP(Association as, Attributes cmd,
+                                       Attributes data) {
+                    //TODO
                 }
             };
         }
@@ -88,33 +148,45 @@ public class UpsSCU {
     private Association as;
     private String xmlFile;
     private String[] keys;
-    private String upsuid;
+    private int[] tags;
+    private String upsiuid;
+    private State state;
+    private CommandType commandType = CommandType.Find;
 
     public UpsSCU( ApplicationEntity ae) {
         this.remote = new Connection();
         this.ae = ae;
     }
 
-    public void setTransferSyntaxes(String[] tss) {
+    public void addVerificationPresentationContext() {
         rq.addPresentationContext(
                 new PresentationContext(1, UID.VerificationSOPClass,
                         UID.ImplicitVRLittleEndian));
-        rq.addPresentationContext(
-                new PresentationContext(3,
-                        UID.UnifiedProcedureStepPushSOPClass,
-                        tss));
     }
 
-    public final void setUPSUID(String upsuid) {
-        this.upsuid = upsuid;
+    public final void setUPSIUID(String upsiuid) {
+        this.upsiuid = upsiuid;
     }
 
     public final void setKeys(String[] keys) {
         this.keys = keys;
     }
 
+    public void setState(State state, String transactionUID) {
+        this.state = state.setUid(transactionUID);
+    }
+
+    public final void setType(CommandType commandType, String[] tss) {
+        this.commandType = commandType;
+        rq.addPresentationContext(new PresentationContext(3, commandType.negotiatingSOPClassUID, tss));
+    }
+
     public final void setXmlFile(String xmlFile) {
         this.xmlFile = xmlFile;
+    }
+
+    public void setTags(int[] tags) {
+        this.tags = tags;
     }
 
     @SuppressWarnings("unchecked")
@@ -134,7 +206,7 @@ public class UpsSCU {
             CLIUtils.configure(conn, cl);
             main.remote.setTlsProtocols(conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
-            main.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
+            main.addVerificationPresentationContext();
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
@@ -143,7 +215,7 @@ public class UpsSCU {
             device.setScheduledExecutor(scheduledExecutorService);
             try {
                 main.open();
-                main.createUps();
+                main.process();
             } finally {
                 main.close();
                 executorService.shutdown();
@@ -174,6 +246,16 @@ public class UpsSCU {
     }
 
     private static void addUPSOptions(Options opts) {
+        opts.addOption(Option.builder("C")
+                .hasArg()
+                .longOpt("command")
+                .desc(rb.getString("command"))
+                .build());
+        opts.addOption(Option.builder("S")
+                .hasArg()
+                .longOpt("state")
+                .desc(rb.getString("state"))
+                .build());
         opts.addOption(Option.builder("s")
                 .hasArgs()
                 .argName("[seq/]attr=value")
@@ -187,13 +269,6 @@ public class UpsSCU {
                 .desc(rb.getString("contact"))
                 .build());
         opts.addOption(Option.builder()
-                .hasArgs()
-                .longOpt("code")
-                .argName("[seq/]attr=Code")
-                .valueSeparator('=')
-                .desc(rb.getString("code"))
-                .build());
-        opts.addOption(Option.builder()
                 .hasArg()
                 .longOpt("reason")
                 .argName("reason")
@@ -201,33 +276,26 @@ public class UpsSCU {
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
+                .longOpt("truid")
+                .argName("uid")
+                .desc(rb.getString("truid"))
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
                 .longOpt("reason-code")
                 .argName("code")
                 .desc(rb.getString("reason-code"))
                 .build());
-        opts.addOption(Option.builder("C")
-                .hasArg()
-                .longOpt("complete")
-                .argName("transaction-uid")
-                .desc(rb.getString("complete"))
-                .build());
-        opts.addOption(Option.builder("D")
-                .hasArg()
-                .longOpt("cancel")
-                .argName("transaction-uid")
-                .desc(rb.getString("cancel"))
-                .build());
-        opts.addOption(Option.builder("P")
-                .hasArg()
-                .longOpt("process")
-                .argName("transaction-uid")
-                .desc(rb.getString("process"))
-                .build());
         opts.addOption(Option.builder()
                 .hasArg()
-                .longOpt("upsuid")
+                .longOpt("upsiuid")
                 .argName("uid")
-                .desc(rb.getString("upsuid"))
+                .desc(rb.getString("upsiuid"))
+                .build());
+        opts.addOption(Option.builder("r")
+                .hasArgs()
+                .argName("[seq/]attr")
+                .desc(rb.getString("return"))
                 .build());
     }
 
@@ -244,27 +312,130 @@ public class UpsSCU {
         }
     }
 
-    public void createUps() throws Exception {
-        createUps(ensureSPSStartDateTime(workItem()));
+    public void process() throws Exception {
+        switch (commandType) {
+            case Create:
+                create();
+                break;
+            case Update:
+                updateUps();
+                break;
+            case Get:
+            case GetPull:
+            case GetWatch:
+                get();
+                break;
+            case Find:
+            case FindWatch:
+                find();
+                break;
+            case ChangeState:
+                changeState();
+                break;
+            case RequestCancel:
+            case RequestCancelWatch:
+                requestCancel();
+                break;
+            case Subscribe:
+            case Unsubscribe:
+                subscribeUnsubscribe();
+                break;
+            case Suspend:
+                suspend();
+                break;
+            case Receive:
+                receive();
+                break;
+        }
+    }
+
+    private void create() throws Exception {
+        createUps(ensureSPSStartDateTime(workItem(xmlFile == null
+                ? "resource:create.xml" : xmlFile)));
         as.waitForOutstandingRSP();
     }
 
     private void createUps(final Attributes workitems) throws IOException, InterruptedException {
         as.ncreate(UID.UnifiedProcedureStepPushSOPClass,
-                upsuid, workitems, null, rspHandlerFactory.createDimseRSPHandlerForNCreate());
+                upsiuid,
+                workitems,
+                null,
+                rspHandlerFactory.createDimseRSPHandlerForNCreate());
     }
 
-    private static void configureUps(UpsSCU main, CommandLine cl) throws Exception {
-        main.setXmlFile(cl.getArgList().get(0));
+    private void updateUps() throws Exception {
+        as.nset(UID.UnifiedProcedureStepPullSOPClass,
+                UID.UnifiedProcedureStepPushSOPClass,
+                upsiuid,
+                workItem(xmlFile == null || xmlFile.equals("update") ? null : xmlFile),
+                null,
+                rspHandlerFactory.createDimseRSPHandlerForNSet());
+    }
+
+    private void get() throws IOException, InterruptedException {
+        as.nget(commandType.getNegotiatingSOPClassUID(),
+                UID.UnifiedProcedureStepPushSOPClass,
+                upsiuid,
+                tags,
+                rspHandlerFactory.createDimseRSPHandlerForNGet());
+    }
+
+    private static void configureUps(UpsSCU main, CommandLine cl) throws ParseException {
+        if (!cl.getArgList().isEmpty()) {
+            if (cl.getArgList().size() > 1)
+                throw new IllegalArgumentException(rb.getString("too-many-xml-files"));
+
+            main.setXmlFile(cl.getArgList().get(0));
+        }
+        main.setUPSIUID(cl.getOptionValue("upsiuid"));
         main.setKeys(cl.getOptionValues("s"));
-        main.setUPSUID(cl.getOptionValue("upsuid"));
+        if (cl.hasOption("r"))
+            main.setTags(toTags(cl.getOptionValues("r")));
+        configureCommand(main, cl);
+        configureStateChange(main, cl);
+        if (main.upsiuid == null && (main.commandType.name().startsWith("Get") || main.commandType == CommandType.Update))
+            throw new MissingOptionException(rb.getString("missing-ups-iuid"));
+    }
+    
+    private static void configureCommand(UpsSCU main, CommandLine cl) throws ParseException {
+        main.setType(CommandType.valueOf(cl), CLIUtils.transferSyntaxesOf(cl));
     }
 
-    private Attributes workItem() throws Exception {
+    private static void configureStateChange(UpsSCU main, CommandLine cl) throws ParseException {
+        if (main.commandType != CommandType.ChangeState)
+            return;
+
+        if (!cl.hasOption("S"))
+            throw new MissingOptionException(rb.getString("missing-state"));
+
+        if (!cl.hasOption("truid"))
+            throw new MissingOptionException(rb.getString("missing-tr-uid"));
+
+        main.setState(stateOf(cl), cl.getOptionValue("transaction-uid"));
+    }
+
+    private static State stateOf(CommandLine cl) throws ParseException {
+        try {
+            return State.valueOf(cl.getOptionValue("S").toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(
+                    MessageFormat.format(
+                        rb.getString("invalid-change-state"),
+                        cl.getOptionValue("S")));
+        }
+    }
+
+    private static int[] toTags(String[] tagsAsStr) {
+        int[] tags = new int[tagsAsStr.length];
+        for (int i = 0; i < tagsAsStr.length; i++)
+            tags[i] = TagUtils.forName(tagsAsStr[i]);
+        return tags;
+    }
+
+    private Attributes workItem(String xmlFile) throws Exception {
         Attributes attrs = new Attributes();
         if (xmlFile != null)
-            try (InputStream is = StreamUtils.openFileOrURL(xmlFile.equals("create")
-                    ? "resource:create.xml" : xmlFile)) {
+            try (InputStream is = StreamUtils.openFileOrURL(xmlFile)) {
                 SAXReader.parse(is, attrs);
             }
         CLIUtils.addAttributes(attrs, keys);
@@ -276,6 +447,103 @@ public class UpsSCU {
         if (spsStartDateTime == null)
             ups.setString(Tag.ScheduledProcedureStepStartDateTime, VR.DT, DateUtils.formatDT(null, new Date()));
         return ups;
+    }
+
+    private Attributes state(State state) {
+        Attributes attrs = new Attributes();
+        attrs.setString(Tag.TransactionUID, VR.UI, state.getUid());
+        attrs.setString(Tag.ProcedureStepState, VR.CS, state.getCode());
+        return attrs;
+    }
+
+    enum CommandType {
+        Create(UID.UnifiedProcedureStepPushSOPClass),
+        Update(UID.UnifiedProcedureStepPullSOPClass),
+        Find(UID.UnifiedProcedureStepPullSOPClass),
+        FindWatch(UID.UnifiedProcedureStepWatchSOPClass),
+        Get(UID.UnifiedProcedureStepPushSOPClass),
+        GetPull(UID.UnifiedProcedureStepPullSOPClass),
+        GetWatch(UID.UnifiedProcedureStepWatchSOPClass),
+        ChangeState(UID.UnifiedProcedureStepPullSOPClass),
+        RequestCancel(UID.UnifiedProcedureStepPushSOPClass),
+        RequestCancelWatch(UID.UnifiedProcedureStepWatchSOPClass),
+        Subscribe(UID.UnifiedProcedureStepWatchSOPClass),
+        Unsubscribe(UID.UnifiedProcedureStepWatchSOPClass),
+        Suspend(UID.UnifiedProcedureStepWatchSOPClass),
+        Receive(UID.UnifiedProcedureStepEventSOPClass);
+
+        private String negotiatingSOPClassUID;
+
+        CommandType(String negotiatingSOPClassUID) {
+            this.negotiatingSOPClassUID = negotiatingSOPClassUID;
+        }
+
+        String getNegotiatingSOPClassUID() {
+            return negotiatingSOPClassUID;
+        }
+
+        static CommandType valueOf(CommandLine cl) throws ParseException {
+            try {
+                return cl.hasOption("C")
+                        ? CommandType.valueOf(cl.getOptionValue("C"))
+                        : CommandType.Find;
+            } catch (IllegalArgumentException e) {
+                throw new ParseException(
+                        MessageFormat.format(
+                                rb.getString("invalid-command-name"),
+                                cl.getOptionValue("C")));
+            }
+        }
+    }
+
+    enum State {
+        COMPLETE("COMPLETED"),
+        PROCESS("IN PROGRESS"),
+        DISCONTINUE("CANCELED");
+
+        private String code;
+        private String uid;
+
+        State(String code) {
+            this.code = code;
+        }
+
+        String getCode() {
+            return code;
+        }
+
+        String getUid() {
+            return uid;
+        }
+
+        State setUid(String val) {
+            uid = val;
+            return this;
+        }
+    }
+
+    private void find() {
+        //TODO
+    }
+
+    private void changeState() {
+        //TODO
+    }
+
+    private void requestCancel() {
+        //TODO
+    }
+
+    private void subscribeUnsubscribe() {
+        //TODO
+    }
+
+    private void suspend() {
+        //TODO
+    }
+
+    private void receive() {
+        //TODO
     }
 
 }

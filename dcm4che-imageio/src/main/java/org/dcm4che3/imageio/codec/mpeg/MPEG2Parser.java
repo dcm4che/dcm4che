@@ -177,11 +177,10 @@ public class MPEG2Parser implements XPEGParser {
     }
 
     private int findLastGOP(SeekableByteChannel channel) throws IOException {
-        long size = channel.size();
-        long startPos = size - BUFFER_SIZE;
-        long minStartPos = Math.max(0, size - 0x100000);
-        while (startPos > minStartPos) {
-            channel.position(startPos);
+        long pos = channel.size() - 8;
+        do {
+            pos = Math.max(0, pos + 8 - BUFFER_SIZE);
+            channel.position(pos);
             ((Buffer) buf).clear();
             channel.read(buf);
             int i = 0;
@@ -192,8 +191,7 @@ public class MPEG2Parser implements XPEGParser {
                 }
                 i += data[i + 2] == 0 ? data[i + 1] == 0 ? 1 : 2 : 3;
             }
-            startPos -= BUFFER_SIZE - 8;
-        }
+        } while (pos > 0);
         throw new XPEGParserException("last MPEG2 Group of Pictures not found");
     }
 

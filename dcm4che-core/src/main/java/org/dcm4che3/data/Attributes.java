@@ -2010,7 +2010,7 @@ public class Attributes implements Serializable {
     }
 
     public boolean addSelected(Attributes other, Attributes selection) {
-        return add(other, selection.tags, null, 0, selection.size, selection, null,
+        return add(other, null, null, 0, 0, selection, null,
                 false, false, null);
     }
 
@@ -2098,7 +2098,7 @@ public class Attributes implements Serializable {
         boolean toggleEndian = bigEndian != other.bigEndian;
         boolean modifiedToggleEndian = modified != null
                 && bigEndian != modified.bigEndian;
-        final int[] tags = other.tags;
+        final int[] otherTags = other.tags;
         final VR[] srcVRs = other.vrs;
         final Object[] srcValues = other.values;
         final int otherSize = other.size;
@@ -2106,23 +2106,18 @@ public class Attributes implements Serializable {
         String privateCreator = null;
         int creatorTag = 0;
         for (int i = 0; i < otherSize; i++) {
-            int tag = tags[i];
+            int tag = otherTags[i];
             VR vr = srcVRs[i];
             Object value = vr.isStringType() ? other.decodeStringValue(i) : srcValues[i];
             if (TagUtils.isPrivateCreator(tag)) {
-                if (contains(tag))
-                    continue; // do not overwrite private creator IDs
-
-                if (vr == VR.LO) {
-                    if ((value instanceof String)
-                            && creatorTagOf((String) value, tag, false) != -1)
-                        continue; // do not add duplicate private creator ID
-                }
+                continue; // private creators will be automatically added with the private tags
             }
+
             if (include != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) < 0)
                 continue;
             if (exclude != null && Arrays.binarySearch(exclude, fromIndex, toIndex, tag) >= 0)
                 continue;
+
             if (TagUtils.isPrivateTag(tag)) {
                 int tmp = TagUtils.creatorTagOf(tag);
                 if (creatorTag != tmp) {
@@ -2133,9 +2128,14 @@ public class Attributes implements Serializable {
                 creatorTag = 0;
                 privateCreator = null;
             }
+
+            if (selection != null && !selection.contains(privateCreator, tag))
+                continue;
+
             if (updatePolicy != null) {
                 if (updatePolicy != UpdatePolicy.OVERWRITE && isEmpty(value))
                     continue;
+
                 int j = indexOf(tag);
                 if (j < 0) {
                     if (updatePolicy == UpdatePolicy.PRESERVE)
@@ -2168,7 +2168,7 @@ public class Attributes implements Serializable {
                     else
                         set(privateCreator, tag, (Sequence) value,
                             selection != null 
-                                ? selection.getNestedDataset(tag)
+                                ? selection.getNestedDataset(privateCreator, tag)
                                 : null);
                 } else if (value instanceof Fragments) {
                     set(privateCreator, tag, (Fragments) value);

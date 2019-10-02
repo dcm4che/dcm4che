@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
+import java.util.stream.Collectors;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
@@ -75,7 +76,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     protected List<T> completed = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> warning = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> failed = Collections.synchronizedList(new ArrayList<T>());
-	protected Throwable lastError;
+	protected Exception lastError;
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
@@ -145,7 +146,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
 
                 try {
                     storeInstance(storeas, inst);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     LOG.warn(
                             "Unable to perform sub-operation on association to {}",
                             storeas.getRemoteAET(), e);
@@ -163,7 +164,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         } finally {
             try {
                 close();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 LOG.warn("Exception thrown by {}.close()",
                         getClass().getName(), e);
             }
@@ -294,21 +295,19 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
 
         BasicCStoreSCUResp rsp = new BasicCStoreSCUResp();
         rsp.setStatus(status);
-        rsp.setCompleted(completed.size());
-        rsp.setFailed(failed.size());        
         rsp.setWarning(warning.size());
         if (!failed.isEmpty()) {
-            String[] iuids = new String[failed.size()];
-            for (int i = 0; i < iuids.length; i++)
-                iuids[i] = failed.get(i).iuid;
-            rsp.setFailedUIDs(iuids);
-            rsp.setLastError(lastError);
+            List<String> iuids = failed.stream()
+                    .map(i -> i.iuid)
+                    .collect(Collectors.toList());
+            rsp.addFailedUIDs(iuids);
+            rsp.addError(lastError);
         }
         if (!completed.isEmpty()) {
-            String[] iuids = new String[completed.size()];
-            for (int i = 0; i < iuids.length; i++)
-                iuids[i] = completed.get(i).iuid;
-            rsp.setCompletedUIDs(iuids);
+            List<String> iuids = completed.stream()
+                    .map(i -> i.iuid)
+                    .collect(Collectors.toList());
+            rsp.addCompletedUIDs(iuids);
         }
         return rsp;
     }

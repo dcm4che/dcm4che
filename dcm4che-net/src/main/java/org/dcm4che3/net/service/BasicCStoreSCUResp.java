@@ -40,9 +40,13 @@ package org.dcm4che3.net.service;
 
 import org.dcm4che3.net.Status;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
@@ -51,12 +55,25 @@ import java.util.List;
 public class BasicCStoreSCUResp {
 
     private int status;
-    private int completed;
-    private int failed;
     private int warning;
-    private String[] completedUIDs;
-    private String[] failedUIDs;
-	private Throwable lastError;
+    private Set<String> completedUIDs = new HashSet<>();
+    private Set<String> failedUIDs = new HashSet<>();
+    private List<Exception> errors = new ArrayList<>();
+
+    public BasicCStoreSCUResp() { }
+
+    /**
+     * This creates a shallow copy of the BasicCStoreSCUResp referenced by
+     * other.
+     * @param other The BasicCStoreSCUResp to be copied.
+     */
+    protected BasicCStoreSCUResp(BasicCStoreSCUResp other) {
+        this.status = other.status;
+        this.warning = other.warning;
+        this.completedUIDs = other.completedUIDs;
+        this.failedUIDs = other.failedUIDs;
+        this.errors = other.errors;
+    }
    
     public int getStatus() {
         return status;
@@ -65,16 +82,10 @@ public class BasicCStoreSCUResp {
         this.status = status;
     }
     public int getCompleted() {
-        return completed;
-    }
-    public void setCompleted(int completed) {
-        this.completed = completed;
+        return completedUIDs.size();
     }
     public int getFailed() {
-        return failed;
-    }
-    public void setFailed(int failed) {
-        this.failed = failed;
+        return failedUIDs.size();
     }
     public int getWarning() {
         return warning;
@@ -82,54 +93,40 @@ public class BasicCStoreSCUResp {
     public void setWarning(int warning) {
         this.warning = warning;
     }
-    public String[] getCompletedUIDs() {
-        return completedUIDs;
+    public Set<String> getCompletedUIDs() {
+        return Collections.unmodifiableSet(this.completedUIDs);
     }
-    public void setCompletedUIDs(String[] completedUIDs) {
-        this.completedUIDs = completedUIDs;
+    public void addCompletedUIDs(Collection<String> completedUIDs) {
+        this.completedUIDs.addAll(completedUIDs);
     }
-    public String[] getFailedUIDs() {
-        return failedUIDs;
+    public Set<String> getFailedUIDs() {
+        return Collections.unmodifiableSet(this.failedUIDs);
     }
-    public void setFailedUIDs(String[] failedUIDs) {
-        this.failedUIDs = failedUIDs;
+    public void addFailedUIDs(Collection<String> failedUIDs) {
+        this.failedUIDs.addAll(failedUIDs);
     }
-	public Throwable getLastError() {
-        return lastError;
+    public List<Exception> getErrors() {
+        return Collections.unmodifiableList(errors);
     }
-    public void setLastError(Throwable lastError) {
-        this.lastError = lastError;
+    public Optional<Exception> getLastError() {
+        return errors.stream().skip(Math.max(0, errors.size() - 1)).findFirst();
+    }
+    public void addError(Exception error) {
+        this.errors.add(error);
     }
 
+    /**
+     * Extends the current response object with the results from the
+     * addendumResponse.
+     * @param addendumResponse the response object to use for extension.
+     */
     public void extendResponse(BasicCStoreSCUResp addendumResponse) {
-
         if (getStatus() != addendumResponse.getStatus()) {
             setStatus(Status.OneOrMoreFailures);
         }
-
-        setCompleted(getCompleted() + addendumResponse.getCompleted());
-        setFailed(getFailed() + addendumResponse.getFailed());
-		setLastError(addendumResponse.getLastError());
+        errors.addAll(addendumResponse.getErrors());
         setWarning(getWarning() + addendumResponse.getWarning());
-
-        String[] currentCompletedUIDs = getCompletedUIDs();
-        String[] newCompletedUIDs = addendumResponse.getCompletedUIDs();
-        if (currentCompletedUIDs == null) {
-            setCompletedUIDs(newCompletedUIDs);
-        } else if (newCompletedUIDs != null) {
-            String[] completedUIDs = Arrays.copyOf(currentCompletedUIDs, currentCompletedUIDs.length + newCompletedUIDs.length);
-            System.arraycopy(newCompletedUIDs, 0, completedUIDs, currentCompletedUIDs.length, newCompletedUIDs.length);
-            setCompletedUIDs(completedUIDs);
-        }
-		
-        String[] currentFailedUIDs = getFailedUIDs();
-        String[] newFailedUIDs = addendumResponse.getFailedUIDs();
-        if (currentFailedUIDs == null) {
-            setFailedUIDs(newFailedUIDs);
-        } else if (newFailedUIDs != null) {
-            String[] failedUIDs = Arrays.copyOf(currentFailedUIDs, currentFailedUIDs.length + newFailedUIDs.length);
-            System.arraycopy(newFailedUIDs, 0, failedUIDs, currentFailedUIDs.length, newFailedUIDs.length);
-            setFailedUIDs(failedUIDs);
-        }
+        addCompletedUIDs(addendumResponse.getCompletedUIDs());
+        addFailedUIDs(addendumResponse.getFailedUIDs());
     }
 }

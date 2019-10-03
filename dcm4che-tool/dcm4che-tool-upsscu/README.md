@@ -42,6 +42,8 @@
                                               explicit VR little endian first
                                               (default: implicit VR little
                                               endian first)
+        --filtered-global                     Subscribe to Filtered Global
+                                              Subscription.
      -h,--help                                display this help and exit
         --idle-timeout <ms>                   timeout in ms for receiving
                                               DIMSE-RQ, no timeout by default
@@ -59,6 +61,22 @@
                                               'secret' by default
         --key-store-type <storetype>          type of key store containing the
                                               private key, JKS by default
+     -l,--lock                                Subscribe
+                                              Globally/FilteredGlobalSubscript
+                                              ion/SpecificUPSInstance with
+                                              deletion lock.
+     -m <[seq/]attr=value>                    Specify matching key for
+                                              subscribing to Filtered Global
+                                              Subscription. Attributes can be
+                                              specified by keyword or tag
+                                              value (in hex), e.g. PatientName
+                                              or 00100010. Attributes in
+                                              nested Datasets can be specified
+                                              by including the keyword/tag
+                                              value of the sequence attribute,
+                                              e.g. 00400275/00400009 for
+                                              Scheduled Procedure Step ID in
+                                              the Request Attributes Sequence.
         --max-ops-invoked <no>                maximum number of operations
                                               this AE may invoke
                                               asynchronously, unlimited by
@@ -91,21 +109,31 @@
                                               data PDV in one P-DATA-TF PDU by
                                               default
      -O,--operation <name>                    Specifies Operation type.
-                                              Supported names: Create, Update,
-                                              Get, GetPull, GetWatch, Find,
-                                              FindWatch ChangeState,
-                                              RequestCancel,
-                                              RequestCancelWatch, Subscribe,
-                                              Unsubscribe, Suspend, Receive.
-                                              If no Command is specified, Find
-                                              will be used.
+                                              Supported names: create, update,
+                                              get, changeState, requestCancel,
+                                              subscribe, unsubscribe,
+                                              suspendGlobal, receive. If no
+                                              operation is specified, find
+                                              will be used. By default, for
+                                              get/requestCancel operations,
+                                              UPS Push SOP Class SCU shall be
+                                              used. If no --upsiuid is
+                                              specified, by default
+                                              subscribe(without
+                                              lock)/unsubscribe operations
+                                              will be done Globally. For
+                                              suspendGlobal operation, do not
+                                              specify option --upsiuid.
      -P,--process <transaction-uid>           Change Workitem State to IN
                                               PROGRESS with given
                                               <transaction-uid>.
+     -p,--pull                                Use UPS Pull SOP Class SCU for
+                                              --operation get
         --proxy <[user:password@]host:port>   specify host and port of the
                                               HTTP Proxy to tunnel the DICOM
                                               connection.
-     -r <[seq/]attr>                          specify return key. key can be
+     -r <[seq/]attr>                          Specify return key for
+                                              --operation get. Key can be
                                               specified by keyword or tag
                                               value (in hex), e.g.
                                               NumberOfStudyRelatedSeries or
@@ -116,6 +144,11 @@
                                               (<CodeValue>,<CodingSchemeDesign
                                               ator>,"<CodeMeaning>") of
                                               Request Cancellation of UPS.
+        --receiving-ae <aet>                  Specify Receiving AE for
+                                              subscription or unsubscription.
+                                              If not specified, Calling AE
+                                              Title of association will be
+                                              used as ReceivingAE.
         --release-timeout <ms>                timeout in ms for receiving
                                               A-RELEASE-RP, no timeout by
                                               default
@@ -199,9 +232,8 @@
                                               by default
         --trust-store-type <storetype>        type of key store with trusted
                                               certificates, JKS by default
-        --upsiuid <uid>                       Specify UPS Instance UID to be
-                                              used in UPS requests as Affected
-                                              SOP InstanceUID (0000,1000).
+     -u,--upsiuid <uid>                       Specify the Unified Procedure
+                                              Step Instance UID.
         --user <name>                         negotiate user identity with
                                               specified user name
         --user-pass <password>                negotiate user identity with
@@ -210,39 +242,82 @@
                                               positive response requested
      -V,--version                             output version information and
                                               exit
+     -w,--watch                               Use UPS Watch SOP Class SCU for
+                                              --operation <get|requestCancel>
     
     Examples:
-    => upsscu -c UPSSCP@localhost:11112 -O Create
+    => upsscu -c UPSSCP@localhost:11112 -O create
     Send UPS N-CREATE RQ to UPS SCP listening on localport 11112. Use
     /etc/upsscu/create.xml to set attributes in the dataset.
     
-    => upsscu -c UPSSCP@localhost:11112 -O Create --
+    => upsscu -c UPSSCP@localhost:11112 -O create --
     /path-to-custom-create.xml
     Send UPS N-CREATE RQ to UPS SCP listening on localport 11112. Set
     attributes in the dataset from /path-to-custom-create.xml.
     
-    => upsscu -c UPSSCP@localhost:11112 -O Update --upsiuid 1.2.3.4.5.6.7.8
+    => upsscu -c UPSSCP@localhost:11112 -O update -u 1.2.3.4.5.6.7.8
     Send UPS N-SET RQ to UPS SCP listening on localport 11112 with UPS
     Instance UID as 1.2.3.4.5.6.7.8
     
-    => upsscu -c UPSSCP@localhost:11112 -O Get --upsiuid 1.2.3.4.5.6.7.8
+    => upsscu -c UPSSCP@localhost:11112 -O get -u 1.2.3.4.5.6.7.8
     Send UPS N-GET RQ to UPS SCP listening on localport 11112 with UPS
     Instance UID and Negotiating SOP Class UID as Unified Procedure Step Push
     Sop Class.
     
-    => upsscu -c UPSSCP@localhost:11112 -O GetPull --upsiuid 1.2.3.4.5.6.7.8
+    => upsscu -c UPSSCP@localhost:11112 -O get -p -u 1.2.3.4.5.6.7.8
     Send UPS N-GET RQ to UPS SCP listening on localport 11112 with UPS
     Instance UID as 1.2.3.4.5.6.7.8 and Negotiating SOP Class UID as Unified
     Procedure Step Pull Sop Class.
     
-    => upsscu -c UPSSCP@localhost:11112 -O ChangeState -P=1.2.3.4.5 --upsiuid
+    => upsscu -c UPSSCP@localhost:11112 -O changeState -P=1.2.3.4.5 -u
     1.2.3.4.5.6.7.8
     Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to change the
     state of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from SCHEDULED to IN
     PROGRESS.
     
-    => upsscu -c UPSSCP@localhost:11112 -O RequestCancel --upsiuid
-    1.2.3.4.5.6.7.8
+    => upsscu -c UPSSCP@localhost:11112 -O requestCancel -u 1.2.3.4.5.6.7.8
     Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to request
     cancellation of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from
     SCHEDULED to CANCELED.
+    
+    => upsscu -c UPSSCP@localhost:11112 -O requestCancel -w -u 1.2.3.4.5.6.7.8
+    
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to request
+    cancellation of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from
+    SCHEDULED to CANCELED using Negotiating SOP Class UID as Unified Procedure
+    Step Watch Sop Class.
+    
+    => upsscu -c UPSSCP@localhost:11112 -O subscribe -u 1.2.3.4.5.6.7.8
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to subscribe
+    receiving UPS Event Reports for UPS with UPS Instance UID as
+    1.2.3.4.5.6.7.8
+    
+    => upsscu -c UPSSCP@localhost:11112 -O subscribe -u 1.2.3.4.5.6.7.8 -l
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to subscribe
+    receiving UPS Event Reports for UPS with UPS Instance UID as
+    1.2.3.4.5.6.7.8 with deletion lock enabled.
+    
+    => upsscu -c UPSSCP@localhost:11112 -O subscribe
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to subscribe
+    receiving UPS Event Reports for all UPS instances, i.e. subscribe globally
+    
+    => upsscu -c UPSSCP@localhost:11112 -O subscribe --filtered-global -m
+    ScheduledProcedureStepPriority=HIGH -m InputReadinessState=READY
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to subscribe
+    receiving UPS Event Reports for all UPS instances which have HIGH
+    ScheduledProcedureStepPriority and InputReadinessState as READY
+    
+    => upsscu -c UPSSCP@localhost:11112 -O unsubscribe -u 1.2.3.4.5.6.7.8
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to
+    unsubscribe receiving UPS Event Reports for UPS with UPS Instance UID as
+    1.2.3.4.5.6.7.8
+    
+    => upsscu -c UPSSCP@localhost:11112 -O unsubscribe
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to
+    unsubscribe receiving UPS Event Reports for all UPS instances, i.e.
+    unsubscribe globally
+    
+    => upsscu -c UPSSCP@localhost:11112 -O suspendGlobal
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to suspend
+    global subscription to stop receiving UPS Event Reports for NEW UPS
+    instances without removing specific subscriptions.

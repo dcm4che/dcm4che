@@ -40,7 +40,6 @@ package org.dcm4che3.tool.upsscu;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
-import java.text.MessageFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -150,9 +149,10 @@ public class UpsSCU {
     private String[] keys;
     private int[] tags;
     private String upsiuid;
-    private Operation operation = Operation.Find;
+    private Operation operation;
     private Attributes requestCancel;
     private Attributes changeState;
+    private Attributes subscriptionAction;
 
     public UpsSCU( ApplicationEntity ae) {
         this.remote = new Connection();
@@ -192,6 +192,10 @@ public class UpsSCU {
 
     public void setRequestCancel(Attributes requestCancel) {
         this.requestCancel = requestCancel;
+    }
+
+    public void setSubscriptionAction(Attributes subscriptionAction) {
+        this.subscriptionAction = subscriptionAction;
     }
 
     @SuppressWarnings("unchecked")
@@ -271,29 +275,42 @@ public class UpsSCU {
                 .desc(rb.getString("cancel"))
                 .build());
         opts.addOptionGroup(changeState);
+        opts.addOption(Option.builder()
+                .hasArg()
+                .longOpt("contact")
+                .argName("name")
+                .desc(rb.getString("contact"))
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .longOpt("contact-uri")
+                .argName("uri")
+                .desc(rb.getString("contact-uri"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("filtered-global")
+                .desc(rb.getString("filtered-global"))
+                .build());
+        opts.addOption(Option.builder("l")
+                .longOpt("lock")
+                .desc(rb.getString("lock"))
+                .build());
+        opts.addOption(Option.builder("m")
+                .hasArgs()
+                .argName("[seq/]attr=value")
+                .valueSeparator('=')
+                .desc(rb.getString("match"))
+                .build());
         opts.addOption(Option.builder("O")
                 .hasArg()
                 .longOpt("operation")
                 .argName("name")
                 .desc(rb.getString("operation"))
                 .build());
-        opts.addOption(Option.builder("s")
+        opts.addOption(Option.builder("r")
                 .hasArgs()
-                .argName("[seq/]attr=value")
-                .valueSeparator('=')
-                .desc(rb.getString("set"))
-                .build());
-        opts.addOption(Option.builder()
-                .hasArgs()
-                .longOpt("contact")
-                .argName("name")
-                .desc(rb.getString("contact"))
-                .build());
-        opts.addOption(Option.builder()
-                .hasArgs()
-                .longOpt("contact-uri")
-                .argName("uri")
-                .desc(rb.getString("contact-uri"))
+                .argName("[seq/]attr")
+                .desc(rb.getString("return"))
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
@@ -309,14 +326,31 @@ public class UpsSCU {
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
+                .longOpt("receiving-ae")
+                .argName("aet")
+                .desc(rb.getString("receiving-ae"))
+                .build());
+        opts.addOption(Option.builder("s")
+                .hasArgs()
+                .argName("[seq/]attr=value")
+                .valueSeparator('=')
+                .desc(rb.getString("set"))
+                .build());
+        OptionGroup serviceClassGroup = new OptionGroup();
+        serviceClassGroup.addOption(Option.builder("p")
+                .longOpt("pull")
+                .desc(rb.getString("pull"))
+                .build());
+        serviceClassGroup.addOption(Option.builder("w")
+                .longOpt("watch")
+                .desc(rb.getString("watch"))
+                .build());
+        opts.addOptionGroup(serviceClassGroup);
+        opts.addOption(Option.builder("u")
+                .hasArg()
                 .longOpt("upsiuid")
                 .argName("uid")
                 .desc(rb.getString("upsiuid"))
-                .build());
-        opts.addOption(Option.builder("r")
-                .hasArgs()
-                .argName("[seq/]attr")
-                .desc(rb.getString("return"))
                 .build());
     }
 
@@ -340,23 +374,24 @@ public class UpsSCU {
 
             main.setXmlFile(cl.getArgList().get(0));
         }
-        main.setUPSIUID(cl.getOptionValue("upsiuid"));
+        main.setUPSIUID(cl.getOptionValue("u"));
         main.setKeys(cl.getOptionValues("s"));
         if (cl.hasOption("r"))
             main.setTags(toTags(cl.getOptionValues("r")));
         configureOperation(main, cl);
         configureChangeState(main, cl);
         configureRequestCancel(main, cl);
+        configureSubscribeUnsubscribe(main, cl);
         if (main.upsiuid == null && main.operation.checkUPSIUID)
             throw new MissingOptionException(rb.getString("missing-ups-iuid"));
     }
 
-    private static void configureOperation(UpsSCU main, CommandLine cl) throws ParseException {
+    private static void configureOperation(UpsSCU main, CommandLine cl) {
         main.setType(Operation.valueOf(cl), CLIUtils.transferSyntaxesOf(cl));
     }
 
-    private static void configureChangeState(UpsSCU main, CommandLine cl) throws ParseException {
-        if (main.operation != Operation.ChangeState)
+    private static void configureChangeState(UpsSCU main, CommandLine cl) throws MissingOptionException {
+        if (main.operation != Operation.changeState)
             return;
 
         if (cl.hasOption("P"))
@@ -370,7 +405,7 @@ public class UpsSCU {
     }
 
     private static void configureRequestCancel(UpsSCU main, CommandLine cl) {
-        if (!main.operation.name().startsWith("RequestCancel"))
+        if (main.operation != Operation.requestCancel)
             return;
 
         Attributes attrs = new Attributes();
@@ -386,6 +421,31 @@ public class UpsSCU {
         main.setRequestCancel(attrs);
     }
 
+    private static void configureSubscribeUnsubscribe(UpsSCU main, CommandLine cl) throws MissingOptionException {
+        if (main.operation != Operation.subscriptionAction)
+            return;
+
+        Attributes attrs = new Attributes();
+        attrs.setString(Tag.ReceivingAE, VR.AE,
+                cl.hasOption("receiving-ae") ? cl.getOptionValue("receiving-ae") : main.ae.getAETitle());
+        
+        if (main.operation.getActionTypeID() == 3) {
+            attrs.setString(Tag.DeletionLock, VR.LO, cl.hasOption("l") ? "TRUE" : "FALSE");
+            if (cl.hasOption("filtered-global")) {
+                if (!cl.hasOption("m"))
+                    throw new MissingOptionException(rb.getString("missing-matching-keys"));
+
+                CLIUtils.addAttributes(attrs, cl.getOptionValues("m"));
+                main.setUPSIUID(UID.UPSFilteredGlobalSubscriptionSOPInstance);
+            }
+        }
+
+        if (main.upsiuid == null)
+            main.setUPSIUID(UID.UPSGlobalSubscriptionSOPInstance);
+
+        main.setSubscriptionAction(attrs);
+    }
+
     private static int[] toTags(String[] tagsAsStr) {
         int[] tags = new int[tagsAsStr.length];
         for (int i = 0; i < tagsAsStr.length; i++)
@@ -395,36 +455,28 @@ public class UpsSCU {
 
     public void process() throws Exception {
         switch (operation) {
-            case Create:
+            case create:
                 createUps();
                 break;
-            case Update:
+            case update:
                 updateUps();
                 break;
-            case Get:
-            case GetPull:
-            case GetWatch:
+            case get:
                 getUps();
                 break;
-            case Find:
-            case FindWatch:
+            case find:
                 findUps();
                 break;
-            case ChangeState:
-                changeStateUps();
+            case changeState:
+                actionOnUps(changeState, 1);
                 break;
-            case RequestCancel:
-            case RequestCancelWatch:
-                requestCancelUps();
+            case requestCancel:
+                actionOnUps(requestCancel, 2);
                 break;
-            case Subscribe:
-            case Unsubscribe:
-                subscribeUnsubscribe();
+            case subscriptionAction:
+                actionOnUps(subscriptionAction, operation.getActionTypeID());
                 break;
-            case Suspend:
-                suspend();
-                break;
-            case Receive:
+            case receive:
                 receive();
                 break;
         }
@@ -481,23 +533,18 @@ public class UpsSCU {
     }
 
     enum Operation {
-        Create(UID.UnifiedProcedureStepPushSOPClass, false),
-        Update(UID.UnifiedProcedureStepPullSOPClass, true),
-        Find(UID.UnifiedProcedureStepPullSOPClass, false),
-        FindWatch(UID.UnifiedProcedureStepWatchSOPClass, false),
-        Get(UID.UnifiedProcedureStepPushSOPClass, true),
-        GetPull(UID.UnifiedProcedureStepPullSOPClass, true),
-        GetWatch(UID.UnifiedProcedureStepWatchSOPClass, true),
-        ChangeState(UID.UnifiedProcedureStepPullSOPClass, true),
-        RequestCancel(UID.UnifiedProcedureStepPushSOPClass, true),
-        RequestCancelWatch(UID.UnifiedProcedureStepWatchSOPClass, true),
-        Subscribe(UID.UnifiedProcedureStepWatchSOPClass, false),
-        Unsubscribe(UID.UnifiedProcedureStepWatchSOPClass, false),
-        Suspend(UID.UnifiedProcedureStepWatchSOPClass, false),
-        Receive(UID.UnifiedProcedureStepEventSOPClass, false);
+        create(UID.UnifiedProcedureStepPushSOPClass, false),
+        update(UID.UnifiedProcedureStepPullSOPClass, true),
+        find(UID.UnifiedProcedureStepPullSOPClass, false),
+        get(UID.UnifiedProcedureStepPushSOPClass, true),
+        changeState(UID.UnifiedProcedureStepPullSOPClass, true),
+        requestCancel(UID.UnifiedProcedureStepPushSOPClass, true),
+        subscriptionAction(UID.UnifiedProcedureStepWatchSOPClass, false),
+        receive(UID.UnifiedProcedureStepEventSOPClass, false);
 
         private String negotiatingSOPClassUID;
         private boolean checkUPSIUID;
+        private int actionTypeID;
 
         Operation(String negotiatingSOPClassUID, boolean checkUPSIUID) {
             this.negotiatingSOPClassUID = negotiatingSOPClassUID;
@@ -508,16 +555,46 @@ public class UpsSCU {
             return negotiatingSOPClassUID;
         }
 
-        static Operation valueOf(CommandLine cl) throws ParseException {
-            try {
-                return cl.hasOption("O")
-                        ? Operation.valueOf(cl.getOptionValue("O"))
-                        : Operation.Find;
-            } catch (IllegalArgumentException e) {
-                throw new ParseException(
-                        MessageFormat.format(
-                                rb.getString("invalid-operation-name"),
-                                cl.getOptionValue("O")));
+        Operation setNegotiatingSOPClassUID(String val) {
+            this.negotiatingSOPClassUID = val;
+            return this;
+        }
+
+        int getActionTypeID() {
+            return actionTypeID;
+        }
+
+        Operation setActionTypeID(int val) {
+            this.actionTypeID = val;
+            return this;
+        }
+
+        static Operation valueOf(CommandLine cl) {
+            switch (cl.getOptionValue("O")) {
+                case "create":
+                    return create;
+                case "update":
+                    return update;
+                case "get":
+                    return cl.hasOption("p")
+                            ? get.setNegotiatingSOPClassUID(UID.UnifiedProcedureStepPullSOPClass)
+                            : cl.hasOption("w")
+                                ? get.setNegotiatingSOPClassUID(UID.UnifiedProcedureStepWatchSOPClass)
+                                : get;
+                case "changeState":
+                    return changeState;
+                case "requestCancel":
+                    return cl.hasOption("w")
+                            ? requestCancel.setNegotiatingSOPClassUID(UID.UnifiedProcedureStepWatchSOPClass)
+                            : requestCancel;
+                case "subscribe":
+                    return subscriptionAction.setActionTypeID(3);
+                case "unsubscribe":
+                    return subscriptionAction.setActionTypeID(4);
+                case "suspendGlobal":
+                    return subscriptionAction.setActionTypeID(5);
+                default:
+                    return find;
             }
         }
     }
@@ -526,28 +603,14 @@ public class UpsSCU {
         //TODO
     }
 
-    private void changeStateUps() throws IOException, InterruptedException {
-        as.naction(operation.getNegotiatingSOPClassUID(),
+    private void actionOnUps(Attributes data, int actionTypeId) throws IOException, InterruptedException {
+        as.naction(operation.negotiatingSOPClassUID,
                 UID.UnifiedProcedureStepPushSOPClass,
                 upsiuid,
-                1,
-                changeState,
+                actionTypeId,
+                data,
                 null,
                 rspHandlerFactory.createDimseRSPHandlerForNAction());
-    }
-
-    private void requestCancelUps() throws IOException, InterruptedException {
-        as.naction(operation.getNegotiatingSOPClassUID(),
-                UID.UnifiedProcedureStepPushSOPClass,
-                upsiuid,
-                2,
-                requestCancel,
-                null,
-                rspHandlerFactory.createDimseRSPHandlerForNAction());
-    }
-
-    private void subscribeUnsubscribe() {
-        //TODO
     }
 
     private void suspend() {

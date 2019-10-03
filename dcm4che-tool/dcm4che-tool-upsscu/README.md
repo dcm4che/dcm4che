@@ -26,15 +26,6 @@
      -c,--connect <aet@host:port>             specify AE Title, remote address
                                               and port of the remote
                                               Application Entity.
-     -C,--command <arg>                       specifies Command. Supported
-                                              names: Create, Update, Get,
-                                              GetPull, GetWatch, Find,
-                                              FindWatch ChangeState,
-                                              RequestCancel,
-                                              RequestCancelWatch, Subscribe,
-                                              Unsubscribe, Suspend, Receive.
-                                              If no Command is specified, Find
-                                              will be used.
         --connect-timeout <ms>                timeout in ms for TCP connect,
                                               no timeout by default
         --contact <name>                      Specify Contact Display Name of
@@ -91,6 +82,15 @@
                                               P-Data-TF PDU; pack command and
                                               data PDV in one P-DATA-TF PDU by
                                               default
+     -O,--operation <name>                    Specifies Operation type.
+                                              Supported names: Create, Update,
+                                              Get, GetPull, GetWatch, Find,
+                                              FindWatch ChangeState,
+                                              RequestCancel,
+                                              RequestCancelWatch, Subscribe,
+                                              Unsubscribe, Suspend, Receive.
+                                              If no Command is specified, Find
+                                              will be used.
         --proxy <[user:password@]host:port>   specify host and port of the
                                               HTTP Proxy to tunnel the DICOM
                                               connection.
@@ -110,10 +110,10 @@
         --response-timeout <ms>               timeout in ms for receiving
                                               outstanding response messages,
                                               no timeout by default
-     -S,--state <arg>                         specifies value for changing
+     -S,--state <P|C|D>                       specifies value for changing
                                               state of UPS. Supported state
-                                              changes: Complete, Process,
-                                              Discontinue.
+                                              changes: C(=COMPLETED), P(=IN
+                                              PROGRESS), D(=CANCELED).
      -s <[seq/]attr=value>                    Set element of dataset in format
                                               <attribute=value>.
         --soclose-delay <ms>                  delay in ms after sending
@@ -183,8 +183,6 @@
         --tls12                               enable only TLS/SSL protocol
                                               TLSv1.2; equivalent to
                                               --tls-protocol TLSv1.2
-        --truid <uid>                         Specify transaction UID for
-                                              changing state of UPS
         --trust-store <file|url>              file path of key store
                                               containing trusted certificates,
                                               resource:cacerts.jks by default
@@ -206,24 +204,31 @@
                                               exit
     
     Examples:
-    => upsscu -c UPSSCP@localhost:11112 -C Create
-    Send UPS N-CREATE RQ listening on localport 11112. Use
+    => upsscu -c UPSSCP@localhost:11112 -O Create
+    Send UPS N-CREATE RQ to UPS SCP listening on localport 11112. Use
     /etc/upsscu/create.xml to set attributes in the dataset.
     
-    => upsscu -c UPSSCP@localhost:11112 -C Create --
+    => upsscu -c UPSSCP@localhost:11112 -O Create --
     /path-to-custom-create.xml
-    Send UPS N-CREATE RQ listening on localport 11112. Set attributes in the
-    dataset from /path-to-custom-create.xml.
+    Send UPS N-CREATE RQ to UPS SCP listening on localport 11112. Set
+    attributes in the dataset from /path-to-custom-create.xml.
     
-    => upsscu -c UPSSCP@localhost:11112 -C Update --upsiuid 1.2.3.4.5.6.7.8
-    Send UPS N-SET RQ listening on localport 11112 with UPS Instance UID as
-    1.2.3.4.5.6.7.8
+    => upsscu -c UPSSCP@localhost:11112 -O Update --upsiuid 1.2.3.4.5.6.7.8
+    Send UPS N-SET RQ to UPS SCP listening on localport 11112 with UPS
+    Instance UID as 1.2.3.4.5.6.7.8
     
-    => upsscu -c UPSSCP@localhost:11112 -C Get --upsiuid 1.2.3.4.5.6.7.8
-    Send UPS N-GET RQ listening on localport 11112 with UPS Instance UID and
-    Negotiating SOP Class UID as Unified Procedure Step Push Sop Class.
+    => upsscu -c UPSSCP@localhost:11112 -O Get --upsiuid 1.2.3.4.5.6.7.8
+    Send UPS N-GET RQ to UPS SCP listening on localport 11112 with UPS
+    Instance UID and Negotiating SOP Class UID as Unified Procedure Step Push
+    Sop Class.
     
-    => upsscu -c UPSSCP@localhost:11112 -C GetPull --upsiuid 1.2.3.4.5.6.7.8
-    Send UPS N-GET RQ listening on localport 11112 with UPS Instance UID as
-    1.2.3.4.5.6.7.8 and Negotiating SOP Class UID as Unified Procedure Step
-    Pull Sop Class.
+    => upsscu -c UPSSCP@localhost:11112 -O GetPull --upsiuid 1.2.3.4.5.6.7.8
+    Send UPS N-GET RQ to UPS SCP listening on localport 11112 with UPS
+    Instance UID as 1.2.3.4.5.6.7.8 and Negotiating SOP Class UID as Unified
+    Procedure Step Pull Sop Class.
+    
+    => upsscu -c UPSSCP@localhost:11112 -O ChangeState -S P
+    -sTransactionUID=1.2.3.4.5 --upsiuid 1.2.3.4.5.6.7.8
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to change the
+    state of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from SCHEDULED to IN
+    PROGRESS.

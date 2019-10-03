@@ -124,7 +124,7 @@ public class UpsSCU {
                 @Override
                 public void onDimseRSP(Association as, Attributes cmd,
                                        Attributes data) {
-                    //TODO
+                    super.onDimseRSP(as, cmd, data);
                 }
             };
         };
@@ -151,7 +151,7 @@ public class UpsSCU {
     private int[] tags;
     private String upsiuid;
     private State state;
-    private CommandType commandType = CommandType.Find;
+    private Operation operation = Operation.Find;
 
     public UpsSCU( ApplicationEntity ae) {
         this.remote = new Connection();
@@ -176,9 +176,9 @@ public class UpsSCU {
         this.state = state.setUid(transactionUID);
     }
 
-    public final void setType(CommandType commandType, String[] tss) {
-        this.commandType = commandType;
-        rq.addPresentationContext(new PresentationContext(3, commandType.negotiatingSOPClassUID, tss));
+    public final void setType(Operation operation, String[] tss) {
+        this.operation = operation;
+        rq.addPresentationContext(new PresentationContext(3, operation.negotiatingSOPClassUID, tss));
     }
 
     public final void setXmlFile(String xmlFile) {
@@ -246,15 +246,17 @@ public class UpsSCU {
     }
 
     private static void addUPSOptions(Options opts) {
-        opts.addOption(Option.builder("C")
-                .hasArg()
-                .longOpt("command")
-                .desc(rb.getString("command"))
-                .build());
         opts.addOption(Option.builder("S")
                 .hasArg()
                 .longOpt("state")
+                .argName("P|C|D")
                 .desc(rb.getString("state"))
+                .build());
+        opts.addOption(Option.builder("O")
+                .hasArg()
+                .longOpt("operation")
+                .argName("name")
+                .desc(rb.getString("operation"))
                 .build());
         opts.addOption(Option.builder("s")
                 .hasArgs()
@@ -273,12 +275,6 @@ public class UpsSCU {
                 .longOpt("reason")
                 .argName("reason")
                 .desc(rb.getString("reason"))
-                .build());
-        opts.addOption(Option.builder()
-                .hasArg()
-                .longOpt("truid")
-                .argName("uid")
-                .desc(rb.getString("truid"))
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
@@ -312,13 +308,66 @@ public class UpsSCU {
         }
     }
 
+    private static void configureUps(UpsSCU main, CommandLine cl) throws ParseException {
+        if (!cl.getArgList().isEmpty()) {
+            if (cl.getArgList().size() > 1)
+                throw new IllegalArgumentException(rb.getString("too-many-xml-files"));
+
+            main.setXmlFile(cl.getArgList().get(0));
+        }
+        main.setUPSIUID(cl.getOptionValue("upsiuid"));
+        main.setKeys(cl.getOptionValues("s"));
+        if (cl.hasOption("r"))
+            main.setTags(toTags(cl.getOptionValues("r")));
+        configureOperation(main, cl);
+        configureStateChange(main, cl);
+        if (main.upsiuid == null && main.operation.checkUPSIUID)
+            throw new MissingOptionException(rb.getString("missing-ups-iuid"));
+    }
+
+    private static void configureOperation(UpsSCU main, CommandLine cl) throws ParseException {
+        main.setType(Operation.valueOf(cl), CLIUtils.transferSyntaxesOf(cl));
+    }
+
+    private static void configureStateChange(UpsSCU main, CommandLine cl) throws ParseException {
+        if (main.operation != Operation.ChangeState)
+            return;
+
+        if (!cl.hasOption("S"))
+            throw new MissingOptionException(rb.getString("missing-state"));
+
+        for (String key : main.keys)
+            if (key.startsWith("TransactionUID"))
+                main.setState(stateOf(cl), key.substring(key.indexOf("=") + 1));
+
+        throw new MissingOptionException(rb.getString("missing-tr-uid"));
+    }
+
+    private static State stateOf(CommandLine cl) throws ParseException {
+        try {
+            return State.valueOf(cl.getOptionValue("S").toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(
+                    MessageFormat.format(
+                        rb.getString("invalid-change-state"),
+                        cl.getOptionValue("S")));
+        }
+    }
+
+    private static int[] toTags(String[] tagsAsStr) {
+        int[] tags = new int[tagsAsStr.length];
+        for (int i = 0; i < tagsAsStr.length; i++)
+            tags[i] = TagUtils.forName(tagsAsStr[i]);
+        return tags;
+    }
+
     public void process() throws Exception {
-        switch (commandType) {
+        switch (operation) {
             case Create:
                 create();
                 break;
             case Update:
-                updateUps();
+                update();
                 break;
             case Get:
             case GetPull:
@@ -356,80 +405,34 @@ public class UpsSCU {
     }
 
     private void createUps(final Attributes workitems) throws IOException, InterruptedException {
-        as.ncreate(UID.UnifiedProcedureStepPushSOPClass,
+        as.ncreate(operation.getNegotiatingSOPClassUID(),
                 upsiuid,
                 workitems,
                 null,
                 rspHandlerFactory.createDimseRSPHandlerForNCreate());
     }
 
-    private void updateUps() throws Exception {
-        as.nset(UID.UnifiedProcedureStepPullSOPClass,
+    private void update() throws Exception {
+        Attributes workItem = workItem(xmlFile == null || xmlFile.equals("update") ? null : xmlFile);
+        ensureTransactionUID(workItem);
+        updateUps(workItem);
+    }
+
+    private void updateUps(final Attributes workitem) throws Exception {
+        as.nset(operation.getNegotiatingSOPClassUID(),
                 UID.UnifiedProcedureStepPushSOPClass,
                 upsiuid,
-                workItem(xmlFile == null || xmlFile.equals("update") ? null : xmlFile),
+                workitem,
                 null,
                 rspHandlerFactory.createDimseRSPHandlerForNSet());
     }
 
     private void get() throws IOException, InterruptedException {
-        as.nget(commandType.getNegotiatingSOPClassUID(),
+        as.nget(operation.getNegotiatingSOPClassUID(),
                 UID.UnifiedProcedureStepPushSOPClass,
                 upsiuid,
                 tags,
                 rspHandlerFactory.createDimseRSPHandlerForNGet());
-    }
-
-    private static void configureUps(UpsSCU main, CommandLine cl) throws ParseException {
-        if (!cl.getArgList().isEmpty()) {
-            if (cl.getArgList().size() > 1)
-                throw new IllegalArgumentException(rb.getString("too-many-xml-files"));
-
-            main.setXmlFile(cl.getArgList().get(0));
-        }
-        main.setUPSIUID(cl.getOptionValue("upsiuid"));
-        main.setKeys(cl.getOptionValues("s"));
-        if (cl.hasOption("r"))
-            main.setTags(toTags(cl.getOptionValues("r")));
-        configureCommand(main, cl);
-        configureStateChange(main, cl);
-        if (main.upsiuid == null && (main.commandType.name().startsWith("Get") || main.commandType == CommandType.Update))
-            throw new MissingOptionException(rb.getString("missing-ups-iuid"));
-    }
-    
-    private static void configureCommand(UpsSCU main, CommandLine cl) throws ParseException {
-        main.setType(CommandType.valueOf(cl), CLIUtils.transferSyntaxesOf(cl));
-    }
-
-    private static void configureStateChange(UpsSCU main, CommandLine cl) throws ParseException {
-        if (main.commandType != CommandType.ChangeState)
-            return;
-
-        if (!cl.hasOption("S"))
-            throw new MissingOptionException(rb.getString("missing-state"));
-
-        if (!cl.hasOption("truid"))
-            throw new MissingOptionException(rb.getString("missing-tr-uid"));
-
-        main.setState(stateOf(cl), cl.getOptionValue("transaction-uid"));
-    }
-
-    private static State stateOf(CommandLine cl) throws ParseException {
-        try {
-            return State.valueOf(cl.getOptionValue("S").toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new ParseException(
-                    MessageFormat.format(
-                        rb.getString("invalid-change-state"),
-                        cl.getOptionValue("S")));
-        }
-    }
-
-    private static int[] toTags(String[] tagsAsStr) {
-        int[] tags = new int[tagsAsStr.length];
-        for (int i = 0; i < tagsAsStr.length; i++)
-            tags[i] = TagUtils.forName(tagsAsStr[i]);
-        return tags;
     }
 
     private Attributes workItem(String xmlFile) throws Exception {
@@ -442,9 +445,12 @@ public class UpsSCU {
         return attrs;
     }
 
+    private boolean ensureTransactionUID(Attributes workitem) {
+        return workitem.containsValue(Tag.TransactionUID);
+    }
+
     private Attributes ensureSPSStartDateTime(Attributes ups) {
-        Date spsStartDateTime = ups.getDate(Tag.ScheduledProcedureStepStartDateTime);
-        if (spsStartDateTime == null)
+        if (!ups.containsValue(Tag.ScheduledProcedureStepStartDateTime))
             ups.setString(Tag.ScheduledProcedureStepStartDateTime, VR.DT, DateUtils.formatDT(null, new Date()));
         return ups;
     }
@@ -456,50 +462,52 @@ public class UpsSCU {
         return attrs;
     }
 
-    enum CommandType {
-        Create(UID.UnifiedProcedureStepPushSOPClass),
-        Update(UID.UnifiedProcedureStepPullSOPClass),
-        Find(UID.UnifiedProcedureStepPullSOPClass),
-        FindWatch(UID.UnifiedProcedureStepWatchSOPClass),
-        Get(UID.UnifiedProcedureStepPushSOPClass),
-        GetPull(UID.UnifiedProcedureStepPullSOPClass),
-        GetWatch(UID.UnifiedProcedureStepWatchSOPClass),
-        ChangeState(UID.UnifiedProcedureStepPullSOPClass),
-        RequestCancel(UID.UnifiedProcedureStepPushSOPClass),
-        RequestCancelWatch(UID.UnifiedProcedureStepWatchSOPClass),
-        Subscribe(UID.UnifiedProcedureStepWatchSOPClass),
-        Unsubscribe(UID.UnifiedProcedureStepWatchSOPClass),
-        Suspend(UID.UnifiedProcedureStepWatchSOPClass),
-        Receive(UID.UnifiedProcedureStepEventSOPClass);
+    enum Operation {
+        Create(UID.UnifiedProcedureStepPushSOPClass, false),
+        Update(UID.UnifiedProcedureStepPullSOPClass, true),
+        Find(UID.UnifiedProcedureStepPullSOPClass, false),
+        FindWatch(UID.UnifiedProcedureStepWatchSOPClass, false),
+        Get(UID.UnifiedProcedureStepPushSOPClass, true),
+        GetPull(UID.UnifiedProcedureStepPullSOPClass, true),
+        GetWatch(UID.UnifiedProcedureStepWatchSOPClass, true),
+        ChangeState(UID.UnifiedProcedureStepPullSOPClass, true),
+        RequestCancel(UID.UnifiedProcedureStepPushSOPClass, false),
+        RequestCancelWatch(UID.UnifiedProcedureStepWatchSOPClass, false),
+        Subscribe(UID.UnifiedProcedureStepWatchSOPClass, false),
+        Unsubscribe(UID.UnifiedProcedureStepWatchSOPClass, false),
+        Suspend(UID.UnifiedProcedureStepWatchSOPClass, false),
+        Receive(UID.UnifiedProcedureStepEventSOPClass, false);
 
         private String negotiatingSOPClassUID;
+        private boolean checkUPSIUID;
 
-        CommandType(String negotiatingSOPClassUID) {
+        Operation(String negotiatingSOPClassUID, boolean checkUPSIUID) {
             this.negotiatingSOPClassUID = negotiatingSOPClassUID;
+            this.checkUPSIUID = checkUPSIUID;
         }
 
         String getNegotiatingSOPClassUID() {
             return negotiatingSOPClassUID;
         }
 
-        static CommandType valueOf(CommandLine cl) throws ParseException {
+        static Operation valueOf(CommandLine cl) throws ParseException {
             try {
-                return cl.hasOption("C")
-                        ? CommandType.valueOf(cl.getOptionValue("C"))
-                        : CommandType.Find;
+                return cl.hasOption("O")
+                        ? Operation.valueOf(cl.getOptionValue("O"))
+                        : Operation.Find;
             } catch (IllegalArgumentException e) {
                 throw new ParseException(
                         MessageFormat.format(
-                                rb.getString("invalid-command-name"),
-                                cl.getOptionValue("C")));
+                                rb.getString("invalid-operation-name"),
+                                cl.getOptionValue("O")));
             }
         }
     }
 
     enum State {
-        COMPLETE("COMPLETED"),
-        PROCESS("IN PROGRESS"),
-        DISCONTINUE("CANCELED");
+        C("COMPLETED"),
+        P("IN PROGRESS"),
+        D("CANCELED");
 
         private String code;
         private String uid;
@@ -526,8 +534,14 @@ public class UpsSCU {
         //TODO
     }
 
-    private void changeState() {
-        //TODO
+    private void changeState() throws IOException, InterruptedException {
+        as.naction(operation.getNegotiatingSOPClassUID(),
+                UID.UnifiedProcedureStepPushSOPClass,
+                upsiuid,
+                1,
+                state(state),
+                null,
+                rspHandlerFactory.createDimseRSPHandlerForNAction());
     }
 
     private void requestCancel() {

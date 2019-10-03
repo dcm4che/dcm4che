@@ -150,8 +150,9 @@ public class UpsSCU {
     private String[] keys;
     private int[] tags;
     private String upsiuid;
-    private State state;
     private Operation operation = Operation.Find;
+    private Attributes requestCancel;
+    private Attributes changeState;
 
     public UpsSCU( ApplicationEntity ae) {
         this.remote = new Connection();
@@ -172,10 +173,6 @@ public class UpsSCU {
         this.keys = keys;
     }
 
-    public void setState(State state, String transactionUID) {
-        this.state = state.setUid(transactionUID);
-    }
-
     public final void setType(Operation operation, String[] tss) {
         this.operation = operation;
         rq.addPresentationContext(new PresentationContext(3, operation.negotiatingSOPClassUID, tss));
@@ -187,6 +184,14 @@ public class UpsSCU {
 
     public void setTags(int[] tags) {
         this.tags = tags;
+    }
+
+    public void setChangeState(Attributes changeState) {
+        this.changeState = changeState;
+    }
+
+    public void setRequestCancel(Attributes requestCancel) {
+        this.requestCancel = requestCancel;
     }
 
     @SuppressWarnings("unchecked")
@@ -246,12 +251,26 @@ public class UpsSCU {
     }
 
     private static void addUPSOptions(Options opts) {
-        opts.addOption(Option.builder("S")
+        OptionGroup changeState = new OptionGroup();
+        changeState.addOption(Option.builder("P")
                 .hasArg()
-                .longOpt("state")
-                .argName("P|C|D")
-                .desc(rb.getString("state"))
+                .argName("transaction-uid")
+                .longOpt("process")
+                .desc(rb.getString("process"))
                 .build());
+        changeState.addOption(Option.builder("C")
+                .hasArg()
+                .argName("transaction-uid")
+                .longOpt("complete")
+                .desc(rb.getString("complete"))
+                .build());
+        changeState.addOption(Option.builder("D")
+                .hasArg()
+                .argName("transaction-uid")
+                .longOpt("cancel")
+                .desc(rb.getString("cancel"))
+                .build());
+        opts.addOptionGroup(changeState);
         opts.addOption(Option.builder("O")
                 .hasArg()
                 .longOpt("operation")
@@ -269,6 +288,12 @@ public class UpsSCU {
                 .longOpt("contact")
                 .argName("name")
                 .desc(rb.getString("contact"))
+                .build());
+        opts.addOption(Option.builder()
+                .hasArgs()
+                .longOpt("contact-uri")
+                .argName("uri")
+                .desc(rb.getString("contact-uri"))
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
@@ -320,7 +345,8 @@ public class UpsSCU {
         if (cl.hasOption("r"))
             main.setTags(toTags(cl.getOptionValues("r")));
         configureOperation(main, cl);
-        configureStateChange(main, cl);
+        configureChangeState(main, cl);
+        configureRequestCancel(main, cl);
         if (main.upsiuid == null && main.operation.checkUPSIUID)
             throw new MissingOptionException(rb.getString("missing-ups-iuid"));
     }
@@ -329,29 +355,35 @@ public class UpsSCU {
         main.setType(Operation.valueOf(cl), CLIUtils.transferSyntaxesOf(cl));
     }
 
-    private static void configureStateChange(UpsSCU main, CommandLine cl) throws ParseException {
+    private static void configureChangeState(UpsSCU main, CommandLine cl) throws ParseException {
         if (main.operation != Operation.ChangeState)
             return;
 
-        if (!cl.hasOption("S"))
-            throw new MissingOptionException(rb.getString("missing-state"));
-
-        for (String key : main.keys)
-            if (key.startsWith("TransactionUID"))
-                main.setState(stateOf(cl), key.substring(key.indexOf("=") + 1));
-
-        throw new MissingOptionException(rb.getString("missing-tr-uid"));
+        if (cl.hasOption("P"))
+            main.setChangeState(state(cl.getOptionValue("P"), "IN PROGRESS"));
+        else if (cl.hasOption("C"))
+            main.setChangeState(state(cl.getOptionValue("C"), "COMPLETED"));
+        else if (cl.hasOption("D"))
+            main.setChangeState(state(cl.getOptionValue("D"), "CANCELED"));
+        else
+            throw new MissingOptionException(rb.getString("missing-change-state"));
     }
 
-    private static State stateOf(CommandLine cl) throws ParseException {
-        try {
-            return State.valueOf(cl.getOptionValue("S").toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new ParseException(
-                    MessageFormat.format(
-                        rb.getString("invalid-change-state"),
-                        cl.getOptionValue("S")));
-        }
+    private static void configureRequestCancel(UpsSCU main, CommandLine cl) {
+        if (!main.operation.name().startsWith("RequestCancel"))
+            return;
+
+        Attributes attrs = new Attributes();
+        if (cl.hasOption("reason"))
+            attrs.setString(Tag.ReasonForCancellation, VR.LT, cl.getOptionValue("reason"));
+        if (cl.hasOption("reason-code"))
+            attrs.newSequence(Tag.ProcedureStepDiscontinuationReasonCodeSequence, 1)
+                    .add(new Code(cl.getOptionValue("reason-code")).toItem());
+        if (cl.hasOption("contact-uri"))
+            attrs.setString(Tag.ContactURI, VR.UR, cl.getOptionValue("contact-uri"));
+        if (cl.hasOption("contact"))
+            attrs.setString(Tag.ContactDisplayName, VR.LO, cl.getOptionValue("contact"));
+        main.setRequestCancel(attrs);
     }
 
     private static int[] toTags(String[] tagsAsStr) {
@@ -364,26 +396,26 @@ public class UpsSCU {
     public void process() throws Exception {
         switch (operation) {
             case Create:
-                create();
+                createUps();
                 break;
             case Update:
-                update();
+                updateUps();
                 break;
             case Get:
             case GetPull:
             case GetWatch:
-                get();
+                getUps();
                 break;
             case Find:
             case FindWatch:
-                find();
+                findUps();
                 break;
             case ChangeState:
-                changeState();
+                changeStateUps();
                 break;
             case RequestCancel:
             case RequestCancelWatch:
-                requestCancel();
+                requestCancelUps();
                 break;
             case Subscribe:
             case Unsubscribe:
@@ -398,36 +430,26 @@ public class UpsSCU {
         }
     }
 
-    private void create() throws Exception {
-        createUps(ensureSPSStartDateTime(workItem(xmlFile == null
-                ? "resource:create.xml" : xmlFile)));
+    private void createUps() throws Exception {
+        as.ncreate(operation.getNegotiatingSOPClassUID(),
+                upsiuid,
+                ensureSPSStartDateTime(workItem(xmlFile == null
+                        ? "resource:create.xml" : xmlFile)),
+                null,
+                rspHandlerFactory.createDimseRSPHandlerForNCreate());
         as.waitForOutstandingRSP();
     }
 
-    private void createUps(final Attributes workitems) throws IOException, InterruptedException {
-        as.ncreate(operation.getNegotiatingSOPClassUID(),
-                upsiuid,
-                workitems,
-                null,
-                rspHandlerFactory.createDimseRSPHandlerForNCreate());
-    }
-
-    private void update() throws Exception {
-        Attributes workItem = workItem(xmlFile == null || xmlFile.equals("update") ? null : xmlFile);
-        ensureTransactionUID(workItem);
-        updateUps(workItem);
-    }
-
-    private void updateUps(final Attributes workitem) throws Exception {
+    private void updateUps() throws Exception {
         as.nset(operation.getNegotiatingSOPClassUID(),
                 UID.UnifiedProcedureStepPushSOPClass,
                 upsiuid,
-                workitem,
+                workItem(xmlFile == null || xmlFile.equals("update") ? null : xmlFile),
                 null,
                 rspHandlerFactory.createDimseRSPHandlerForNSet());
     }
 
-    private void get() throws IOException, InterruptedException {
+    private void getUps() throws IOException, InterruptedException {
         as.nget(operation.getNegotiatingSOPClassUID(),
                 UID.UnifiedProcedureStepPushSOPClass,
                 upsiuid,
@@ -445,20 +467,16 @@ public class UpsSCU {
         return attrs;
     }
 
-    private boolean ensureTransactionUID(Attributes workitem) {
-        return workitem.containsValue(Tag.TransactionUID);
-    }
-
     private Attributes ensureSPSStartDateTime(Attributes ups) {
         if (!ups.containsValue(Tag.ScheduledProcedureStepStartDateTime))
             ups.setString(Tag.ScheduledProcedureStepStartDateTime, VR.DT, DateUtils.formatDT(null, new Date()));
         return ups;
     }
 
-    private Attributes state(State state) {
+    private static Attributes state(String uid, String code) {
         Attributes attrs = new Attributes();
-        attrs.setString(Tag.TransactionUID, VR.UI, state.getUid());
-        attrs.setString(Tag.ProcedureStepState, VR.CS, state.getCode());
+        attrs.setString(Tag.TransactionUID, VR.UI, uid);
+        attrs.setString(Tag.ProcedureStepState, VR.CS, code);
         return attrs;
     }
 
@@ -471,8 +489,8 @@ public class UpsSCU {
         GetPull(UID.UnifiedProcedureStepPullSOPClass, true),
         GetWatch(UID.UnifiedProcedureStepWatchSOPClass, true),
         ChangeState(UID.UnifiedProcedureStepPullSOPClass, true),
-        RequestCancel(UID.UnifiedProcedureStepPushSOPClass, false),
-        RequestCancelWatch(UID.UnifiedProcedureStepWatchSOPClass, false),
+        RequestCancel(UID.UnifiedProcedureStepPushSOPClass, true),
+        RequestCancelWatch(UID.UnifiedProcedureStepWatchSOPClass, true),
         Subscribe(UID.UnifiedProcedureStepWatchSOPClass, false),
         Unsubscribe(UID.UnifiedProcedureStepWatchSOPClass, false),
         Suspend(UID.UnifiedProcedureStepWatchSOPClass, false),
@@ -504,48 +522,28 @@ public class UpsSCU {
         }
     }
 
-    enum State {
-        C("COMPLETED"),
-        P("IN PROGRESS"),
-        D("CANCELED");
-
-        private String code;
-        private String uid;
-
-        State(String code) {
-            this.code = code;
-        }
-
-        String getCode() {
-            return code;
-        }
-
-        String getUid() {
-            return uid;
-        }
-
-        State setUid(String val) {
-            uid = val;
-            return this;
-        }
-    }
-
-    private void find() {
+    private void findUps() {
         //TODO
     }
 
-    private void changeState() throws IOException, InterruptedException {
+    private void changeStateUps() throws IOException, InterruptedException {
         as.naction(operation.getNegotiatingSOPClassUID(),
                 UID.UnifiedProcedureStepPushSOPClass,
                 upsiuid,
                 1,
-                state(state),
+                changeState,
                 null,
                 rspHandlerFactory.createDimseRSPHandlerForNAction());
     }
 
-    private void requestCancel() {
-        //TODO
+    private void requestCancelUps() throws IOException, InterruptedException {
+        as.naction(operation.getNegotiatingSOPClassUID(),
+                UID.UnifiedProcedureStepPushSOPClass,
+                upsiuid,
+                2,
+                requestCancel,
+                null,
+                rspHandlerFactory.createDimseRSPHandlerForNAction());
     }
 
     private void subscribeUnsubscribe() {

@@ -26,10 +26,18 @@
      -c,--connect <aet@host:port>             specify AE Title, remote address
                                               and port of the remote
                                               Application Entity.
+     -C,--complete <transaction-uid>          Change Workitem State to
+                                              COMPLETED with given
+                                              <transaction-uid>.
         --connect-timeout <ms>                timeout in ms for TCP connect,
                                               no timeout by default
         --contact <name>                      Specify Contact Display Name of
-                                              Cancellation Request.
+                                              Request Cancellation of UPS.
+        --contact-uri <uri>                   Specify Contact URI of Request
+                                              Cancellation of UPS.
+     -D,--cancel <transaction-uid>            Change Workitem State to
+                                              CANCELED with given
+                                              <transaction-uid>.
         --explicit-vr                         propose all uncompressed TS,
                                               explicit VR little endian first
                                               (default: implicit VR little
@@ -91,6 +99,9 @@
                                               Unsubscribe, Suspend, Receive.
                                               If no Command is specified, Find
                                               will be used.
+     -P,--process <transaction-uid>           Change Workitem State to IN
+                                              PROGRESS with given
+                                              <transaction-uid>.
         --proxy <[user:password@]host:port>   specify host and port of the
                                               HTTP Proxy to tunnel the DICOM
                                               connection.
@@ -99,21 +110,18 @@
                                               value (in hex), e.g.
                                               NumberOfStudyRelatedSeries or
                                               00201206.
-        --reason <reason>                     Specify Reason of Cancellation
-                                              Request.
+        --reason <reason>                     Specify Reason of Request
+                                              Cancellation of UPS.
         --reason-code <code>                  Specify Reason Code in format
-                                              <id>^<text>^<scheme> of
-                                              Cancellation Request.
+                                              (<CodeValue>,<CodingSchemeDesign
+                                              ator>,"<CodeMeaning>") of
+                                              Request Cancellation of UPS.
         --release-timeout <ms>                timeout in ms for receiving
                                               A-RELEASE-RP, no timeout by
                                               default
         --response-timeout <ms>               timeout in ms for receiving
                                               outstanding response messages,
                                               no timeout by default
-     -S,--state <P|C|D>                       specifies value for changing
-                                              state of UPS. Supported state
-                                              changes: C(=COMPLETED), P(=IN
-                                              PROGRESS), D(=CANCELED).
      -s <[seq/]attr=value>                    Set element of dataset in format
                                               <attribute=value>.
         --soclose-delay <ms>                  delay in ms after sending
@@ -227,8 +235,14 @@
     Instance UID as 1.2.3.4.5.6.7.8 and Negotiating SOP Class UID as Unified
     Procedure Step Pull Sop Class.
     
-    => upsscu -c UPSSCP@localhost:11112 -O ChangeState -S P
-    -sTransactionUID=1.2.3.4.5 --upsiuid 1.2.3.4.5.6.7.8
+    => upsscu -c UPSSCP@localhost:11112 -O ChangeState -P=1.2.3.4.5 --upsiuid
+    1.2.3.4.5.6.7.8
     Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to change the
     state of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from SCHEDULED to IN
     PROGRESS.
+    
+    => upsscu -c UPSSCP@localhost:11112 -O RequestCancel --upsiuid
+    1.2.3.4.5.6.7.8
+    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to request
+    cancellation of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from
+    SCHEDULED to CANCELED.

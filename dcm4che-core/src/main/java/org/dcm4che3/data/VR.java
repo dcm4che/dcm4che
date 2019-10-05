@@ -49,36 +49,159 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public enum VR {
+    /**
+     * Application Entity
+     */
     AE(0x4145, 8, ' ', StringValueType.ASCII, false),
+
+    /**
+     * Age String
+     */
     AS(0x4153, 8, ' ', StringValueType.ASCII, false),
+
+    /**
+     * Attribute Tag
+     */
     AT(0x4154, 8, 0, BinaryValueType.TAG, false),
+
+    /**
+     * Code String
+     */
     CS(0x4353, 8, ' ', StringValueType.ASCII, false),
+
+    /**
+     * Date
+     */
     DA(0x4441, 8, ' ', StringValueType.DA, false),
+
+    /**
+     * Decimal String
+     */
     DS(0x4453, 8, ' ', StringValueType.DS, false),
+
+    /**
+     * Date Time
+     */
     DT(0x4454, 8, ' ', StringValueType.DT, false),
+
+    /**
+     * Floating Point Double
+     */
     FD(0x4644, 8, 0, BinaryValueType.DOUBLE, false),
+
+    /**
+     * Floating Point Single
+     */
     FL(0x464c, 8, 0, BinaryValueType.FLOAT, false),
+
+    /**
+     * Integer String
+     */
     IS(0x4953, 8, ' ', StringValueType.IS, false),
+
+    /**
+     * Long String
+     */
     LO(0x4c4f, 8, ' ', StringValueType.STRING, false),
+
+    /**
+     * Long Text
+     */
     LT(0x4c54, 8, ' ', StringValueType.TEXT, false),
+
+    /**
+     * Other Byte String
+     */
     OB(0x4f42, 12, 0, BinaryValueType.BYTE, true),
+
+    /**
+     * Other Double String
+     */
     OD(0x4f44, 12, 0, BinaryValueType.DOUBLE, true),
+
+    /**
+     * Other Float String
+     */
     OF(0x4f46, 12, 0, BinaryValueType.FLOAT, true),
+
+    /**
+     * Other Long String
+     */
     OL(0x4f4c, 12, 0, BinaryValueType.INT, true),
+
+    /**
+     * Other Word String
+     */
     OW(0x4f57, 12, 0, BinaryValueType.SHORT, true),
+
+    /**
+     * Person Name
+     */
     PN(0x504e, 8, ' ', StringValueType.PN, false),
+
+    /**
+     * Short String
+     */
     SH(0x5348, 8, ' ', StringValueType.STRING, false),
+
+    /**
+     * Signed Long
+     */
     SL(0x534c, 8, 0, BinaryValueType.INT, false),
+
+    /**
+     * Sequence of Items
+     */
     SQ(0x5351, 12, 0, SequenceValueType.SQ, false),
+
+    /**
+     * Signed Short
+     */
     SS(0x5353, 8, 0, BinaryValueType.SHORT, false),
+
+    /**
+     * Short Text
+     */
     ST(0x5354, 8, ' ', StringValueType.TEXT, false),
+
+    /**
+     * Time
+     */
     TM(0x544d, 8, ' ', StringValueType.TM, false),
+
+    /**
+     * Unlimited Characters
+     */
     UC(0x5543, 12, ' ', StringValueType.STRING, false),
+
+    /**
+     * Unique Identifier (UID)
+     */
     UI(0x5549, 8, 0, StringValueType.ASCII, false),
+
+    /**
+     * Unsigned Long
+     */
     UL(0x554c, 8, 0, BinaryValueType.UINT, false),
+
+    /**
+     * Unknown
+     */
     UN(0x554e, 12, 0, BinaryValueType.BYTE, true),
+
+    /**
+     * Universal Resource Identifier or Universal Resource Locator (URI/URL)
+     */
     UR(0x5552, 12, ' ', StringValueType.UR, false),
+
+    /**
+     * Unsigned Short
+     */
     US(0x5553, 8, 0, BinaryValueType.USHORT, false),
+
+    /**
+     * Unlimited Text
+     */
     UT(0x5554, 12, ' ', StringValueType.TEXT, false);
 
     private static Logger LOG = LoggerFactory.getLogger(VR.class);

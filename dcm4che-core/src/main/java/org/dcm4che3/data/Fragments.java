@@ -49,6 +49,34 @@ import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
 
 /**
+ * Fragments are used for encapsulation of an encoded (=compressed) pixel data
+ * stream into the Pixel Data (7FE0,0010) portion of the DICOM Data Set. They
+ * are encoded as a sequence of items with Value Representation OB.
+ * 
+ * <p>
+ * Each item is either a byte[], {@link BulkData} or {@link Value#NULL}.
+ * 
+ * <p>
+ * The first Item in the sequence of items before the encoded Pixel Data Stream
+ * is a Basic Offset Table item. The value of the Basic Offset Table, however,
+ * is not required to be present. The first item is then {@link Value#NULL}.
+ * 
+ * <p>
+ * Depending on the transfer syntax, a frame may be entirely contained within a
+ * single fragment, or may span multiple fragments to support buffering during
+ * compression or to avoid exceeding the maximum size of a fixed length
+ * fragment. A recipient can detect fragmentation of frames by comparing the
+ * number of fragments (the number of Items minus one for the Basic Offset
+ * Table) with the number of frames.
+ * 
+ * <p>
+ * See also <a href=
+ * "http://medical.nema.org/medical/dicom/current/output/chtml/part05/sect_A.4.html">
+ * DICOM Part 5: A.4 TRANSFER SYNTAXES FOR ENCAPSULATION OF ENCODED PIXEL
+ * DATA</a> and <a href=
+ * "http://medical.nema.org/medical/dicom/current/output/chtml/part05/sect_8.2.html">
+ * DICOM Part 5: 8.2 Native or Encapsulated Format Encoding</a>
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class Fragments extends ArrayList<Object> implements Value {

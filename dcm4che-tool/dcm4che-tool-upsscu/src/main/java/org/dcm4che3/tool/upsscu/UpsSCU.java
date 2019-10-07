@@ -52,10 +52,13 @@ import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.PresentationContext;
+import org.dcm4che3.net.service.*;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -64,6 +67,7 @@ import org.dcm4che3.util.TagUtils;
 public class UpsSCU {
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che3.tool.upsscu.messages");
+    private static final Logger LOG = LoggerFactory.getLogger(UpsSCU.class);
 
     public interface RSPHandlerFactory {
         DimseRSPHandler createDimseRSPHandlerForCFind();
@@ -71,11 +75,37 @@ public class UpsSCU {
         DimseRSPHandler createDimseRSPHandlerForNSet();
         DimseRSPHandler createDimseRSPHandlerForNGet();
         DimseRSPHandler createDimseRSPHandlerForNAction();
-        DimseRSPHandler createDimseRSPHandlerForNEvent();
     }
 
+    private static final DicomService upsscuNEventRqHandler =
+            new AbstractDicomService(UID.UnifiedProcedureStepPushSOPClass) {
+                @Override
+                public void onDimseRQ(Association as, PresentationContext pc,
+                                      Dimse dimse, Attributes cmd, PDVInputStream data)
+                        throws IOException {
+                    if (dimse != Dimse.N_EVENT_REPORT_RQ)
+                        throw new DicomServiceException(Status.UnrecognizedOperation);
+
+                    int eventTypeID = cmd.getInt(Tag.EventTypeID, 0);
+                    if (eventTypeID == 0 || eventTypeID > 5)
+                        throw new DicomServiceException(Status.NoSuchEventType).setEventTypeID(eventTypeID);
+
+                    try {
+                        as.writeDimseRSP(pc, Commands.mkNEventReportRSP(cmd, status));
+                    } catch (AssociationStateException e) {
+                        LOG.warn("{} << N-EVENT-RECORD-RSP failed: {}", as, e.getMessage());
+                    }
+                }
+
+                @Override
+                protected void onDimseRQ(Association as, PresentationContext pc,
+                                         Dimse dimse, Attributes cmd, Attributes data) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+
     //default response handler
-    private RSPHandlerFactory rspHandlerFactory = new RSPHandlerFactory(){
+    private RSPHandlerFactory rspHandlerFactory = new RSPHandlerFactory() {
         @Override
         public DimseRSPHandler createDimseRSPHandlerForCFind() {
             return new DimseRSPHandler(as.nextMessageID()) {
@@ -126,17 +156,6 @@ public class UpsSCU {
                     super.onDimseRSP(as, cmd, data);
                 }
             };
-        };
-
-        @Override
-        public DimseRSPHandler createDimseRSPHandlerForNEvent() {
-            return new DimseRSPHandler(as.nextMessageID()) {
-                @Override
-                public void onDimseRSP(Association as, Attributes cmd,
-                                       Attributes data) {
-                    //TODO
-                }
-            };
         }
     };
 
@@ -148,6 +167,7 @@ public class UpsSCU {
     private String xmlFile;
     private String[] keys;
     private int[] tags;
+    private static int status;
     private String upsiuid;
     private Operation operation;
     private Attributes requestCancel;
@@ -217,18 +237,21 @@ public class UpsSCU {
             main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             main.addVerificationPresentationContext();
             ExecutorService executorService =
-                    Executors.newSingleThreadExecutor();
+                    Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
             device.setExecutor(executorService);
             device.setScheduledExecutor(scheduledExecutorService);
+            device.bindConnections();
             try {
                 main.open();
                 main.process();
             } finally {
                 main.close();
-                executorService.shutdown();
-                scheduledExecutorService.shutdown();
+                if (main.operation != Operation.receive) {
+                    executorService.shutdown();
+                    scheduledExecutorService.shutdown();
+                }
             }
         } catch (ParseException e) {
             System.err.println("upsscu: " + e.getMessage());
@@ -336,6 +359,12 @@ public class UpsSCU {
                 .valueSeparator('=')
                 .desc(rb.getString("set"))
                 .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .longOpt("status")
+                .argName("code")
+                .desc(rb.getString("status"))
+                .build());
         OptionGroup serviceClassGroup = new OptionGroup();
         serviceClassGroup.addOption(Option.builder("p")
                 .longOpt("pull")
@@ -379,21 +408,25 @@ public class UpsSCU {
         if (cl.hasOption("r"))
             main.setTags(toTags(cl.getOptionValues("r")));
         configureOperation(main, cl);
-        configureChangeState(main, cl);
-        configureRequestCancel(main, cl);
-        configureSubscribeUnsubscribe(main, cl);
         if (main.upsiuid == null && main.operation.checkUPSIUID)
             throw new MissingOptionException(rb.getString("missing-ups-iuid"));
     }
 
-    private static void configureOperation(UpsSCU main, CommandLine cl) {
-        main.setType(Operation.valueOf(cl), CLIUtils.transferSyntaxesOf(cl));
+    private static void configureOperation(UpsSCU main, CommandLine cl) throws MissingOptionException {
+        Operation operation = Operation.valueOf(cl);
+        String[] tss = CLIUtils.transferSyntaxesOf(cl);
+        main.setType(operation, tss);
+        if (operation == Operation.changeState)
+            configureChangeState(main, cl);
+        if (operation == Operation.requestCancel)
+            configureRequestCancel(main, cl);
+        if (operation == Operation.subscriptionAction)
+            configureSubscribeUnsubscribe(main, cl);
+        if (operation == Operation.receive)
+            configureReceive(main, tss, cl);
     }
 
     private static void configureChangeState(UpsSCU main, CommandLine cl) throws MissingOptionException {
-        if (main.operation != Operation.changeState)
-            return;
-
         if (cl.hasOption("P"))
             main.setChangeState(state(cl.getOptionValue("P"), "IN PROGRESS"));
         else if (cl.hasOption("C"))
@@ -405,9 +438,6 @@ public class UpsSCU {
     }
 
     private static void configureRequestCancel(UpsSCU main, CommandLine cl) {
-        if (main.operation != Operation.requestCancel)
-            return;
-
         Attributes attrs = new Attributes();
         if (cl.hasOption("reason"))
             attrs.setString(Tag.ReasonForCancellation, VR.LT, cl.getOptionValue("reason"));
@@ -422,9 +452,6 @@ public class UpsSCU {
     }
 
     private static void configureSubscribeUnsubscribe(UpsSCU main, CommandLine cl) throws MissingOptionException {
-        if (main.operation != Operation.subscriptionAction)
-            return;
-
         Attributes attrs = new Attributes();
         attrs.setString(Tag.ReceivingAE, VR.AE,
                 cl.hasOption("receiving-ae") ? cl.getOptionValue("receiving-ae") : main.ae.getAETitle());
@@ -444,6 +471,24 @@ public class UpsSCU {
             main.setUPSIUID(UID.UPSGlobalSubscriptionSOPInstance);
 
         main.setSubscriptionAction(attrs);
+    }
+
+    private static void configureReceive(UpsSCU main, String[] tss, CommandLine cl) {
+        DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+        serviceRegistry.addDicomService(new BasicCEchoSCP());
+        serviceRegistry.addDicomService(upsscuNEventRqHandler);
+        main.ae.setDimseRQHandler(serviceRegistry);
+        main.ae.addTransferCapability(
+                new TransferCapability(null,
+                        UID.VerificationSOPClass,
+                        TransferCapability.Role.SCP,
+                        UID.ImplicitVRLittleEndian));
+        main.ae.addTransferCapability(
+                new TransferCapability(null,
+                        main.operation.negotiatingSOPClassUID,
+                        TransferCapability.Role.SCU,
+                        tss));
+        status = CLIUtils.getIntOption(cl, "status", 0);
     }
 
     private static int[] toTags(String[] tagsAsStr) {
@@ -475,9 +520,6 @@ public class UpsSCU {
                 break;
             case subscriptionAction:
                 actionOnUps(subscriptionAction, operation.getActionTypeID());
-                break;
-            case receive:
-                receive();
                 break;
         }
     }
@@ -593,6 +635,8 @@ public class UpsSCU {
                     return subscriptionAction.setActionTypeID(4);
                 case "suspendGlobal":
                     return subscriptionAction.setActionTypeID(5);
+                case "receive":
+                    return receive;
                 default:
                     return find;
             }
@@ -611,14 +655,6 @@ public class UpsSCU {
                 data,
                 null,
                 rspHandlerFactory.createDimseRSPHandlerForNAction());
-    }
-
-    private void suspend() {
-        //TODO
-    }
-
-    private void receive() {
-        //TODO
     }
 
 }

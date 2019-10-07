@@ -128,7 +128,7 @@
                                               PROGRESS with given
                                               <transaction-uid>.
      -p,--pull                                Use UPS Pull SOP Class SCU for
-                                              --operation get
+                                              -O get operation.
         --proxy <[user:password@]host:port>   specify host and port of the
                                               HTTP Proxy to tunnel the DICOM
                                               connection.
@@ -176,6 +176,10 @@
         --ssl3                                enable only TLS/SSL protocol
                                               SSLv3; equivalent to
                                               --tls-protocol SSLv3
+        --status <code>                       Specifies status code in
+                                              returned N-EVENT-REPORT RSPs for
+                                              -O receive operation, 0000H by
+                                              default.
         --tcp-delay                           set TCP_NODELAY socket option to
                                               false, true by default
         --tls                                 enable TLS connection without
@@ -243,81 +247,88 @@
      -V,--version                             output version information and
                                               exit
      -w,--watch                               Use UPS Watch SOP Class SCU for
-                                              --operation <get|requestCancel>
+                                              -O <get|requestCancel>
+                                              operations.
     
     Examples:
     => upsscu -c UPSSCP@localhost:11112 -O create
-    Send UPS N-CREATE RQ to UPS SCP listening on localport 11112. Use
+    Send UPS N-CREATE RQ to UPS SCP listening on local port 11112. Use
     /etc/upsscu/create.xml to set attributes in the dataset.
     
     => upsscu -c UPSSCP@localhost:11112 -O create --
     /path-to-custom-create.xml
-    Send UPS N-CREATE RQ to UPS SCP listening on localport 11112. Set
+    Send UPS N-CREATE RQ to UPS SCP listening on local port 11112. Set
     attributes in the dataset from /path-to-custom-create.xml.
     
     => upsscu -c UPSSCP@localhost:11112 -O update -u 1.2.3.4.5.6.7.8
-    Send UPS N-SET RQ to UPS SCP listening on localport 11112 with UPS
+    Send UPS N-SET RQ to UPS SCP listening on local port 11112 with UPS
     Instance UID as 1.2.3.4.5.6.7.8
     
     => upsscu -c UPSSCP@localhost:11112 -O get -u 1.2.3.4.5.6.7.8
-    Send UPS N-GET RQ to UPS SCP listening on localport 11112 with UPS
+    Send UPS N-GET RQ to UPS SCP listening on local port 11112 with UPS
     Instance UID and Negotiating SOP Class UID as Unified Procedure Step Push
     Sop Class.
     
     => upsscu -c UPSSCP@localhost:11112 -O get -p -u 1.2.3.4.5.6.7.8
-    Send UPS N-GET RQ to UPS SCP listening on localport 11112 with UPS
+    Send UPS N-GET RQ to UPS SCP listening on local port 11112 with UPS
     Instance UID as 1.2.3.4.5.6.7.8 and Negotiating SOP Class UID as Unified
     Procedure Step Pull Sop Class.
     
     => upsscu -c UPSSCP@localhost:11112 -O changeState -P=1.2.3.4.5 -u
     1.2.3.4.5.6.7.8
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to change the
-    state of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from SCHEDULED to IN
-    PROGRESS.
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to change
+    the state of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from SCHEDULED
+    to IN PROGRESS.
     
     => upsscu -c UPSSCP@localhost:11112 -O requestCancel -u 1.2.3.4.5.6.7.8
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to request
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to request
     cancellation of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from
     SCHEDULED to CANCELED.
     
     => upsscu -c UPSSCP@localhost:11112 -O requestCancel -w -u 1.2.3.4.5.6.7.8
     
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to request
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to request
     cancellation of UPS with UPS Instance UID as 1.2.3.4.5.6.7.8 from
     SCHEDULED to CANCELED using Negotiating SOP Class UID as Unified Procedure
     Step Watch Sop Class.
     
     => upsscu -c UPSSCP@localhost:11112 -O subscribe -u 1.2.3.4.5.6.7.8
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to subscribe
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to subscribe
     receiving UPS Event Reports for UPS with UPS Instance UID as
     1.2.3.4.5.6.7.8
     
     => upsscu -c UPSSCP@localhost:11112 -O subscribe -u 1.2.3.4.5.6.7.8 -l
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to subscribe
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to subscribe
     receiving UPS Event Reports for UPS with UPS Instance UID as
     1.2.3.4.5.6.7.8 with deletion lock enabled.
     
     => upsscu -c UPSSCP@localhost:11112 -O subscribe
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to subscribe
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to subscribe
     receiving UPS Event Reports for all UPS instances, i.e. subscribe globally
     
     => upsscu -c UPSSCP@localhost:11112 -O subscribe --filtered-global -m
     ScheduledProcedureStepPriority=HIGH -m InputReadinessState=READY
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to subscribe
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to subscribe
     receiving UPS Event Reports for all UPS instances which have HIGH
     ScheduledProcedureStepPriority and InputReadinessState as READY
     
     => upsscu -c UPSSCP@localhost:11112 -O unsubscribe -u 1.2.3.4.5.6.7.8
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to
     unsubscribe receiving UPS Event Reports for UPS with UPS Instance UID as
     1.2.3.4.5.6.7.8
     
     => upsscu -c UPSSCP@localhost:11112 -O unsubscribe
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to
     unsubscribe receiving UPS Event Reports for all UPS instances, i.e.
     unsubscribe globally
     
     => upsscu -c UPSSCP@localhost:11112 -O suspendGlobal
-    Send UPS N-ACTION RQ to UPS SCP listening on localport 11112 to suspend
+    Send UPS N-ACTION RQ to UPS SCP listening on local port 11112 to suspend
     global subscription to stop receiving UPS Event Reports for NEW UPS
     instances without removing specific subscriptions.
+    
+    => upsscu -b UPSSCU:11119 -c DCM4CHEE@localhost:11112 -O receive
+    Starts upsscu tool listening on port 11119, accepting association requests
+    with UPSSCU as called AE title, for receiving changes in UPS Status
+    Reports (N-EVENT-REPORT) requests from Event Report Information Service
+    Class Provider DCM4CHEE listening on local port 11112.

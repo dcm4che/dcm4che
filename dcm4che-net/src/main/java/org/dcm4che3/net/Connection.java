@@ -167,6 +167,10 @@ public class Connection implements Serializable {
         this.port = port;
     }
 
+    public Connection(Connection from) {
+        reconfigure(from);
+    }
+
     public static TCPProtocolHandler registerTCPProtocolHandler(
             Protocol protocol, TCPProtocolHandler handler) {
         return tcpHandlers.put(protocol, handler);

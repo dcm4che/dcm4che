@@ -45,6 +45,7 @@ import org.dcm4che3.imageio.stream.ByteArrayImageInputStream;
 import org.dcm4che3.imageio.stream.SegmentedImageInputStream;
 import org.dcm4che3.io.stream.BulkURIImageInputStream;
 import org.dcm4che3.io.stream.ImageInputStreamLoader;
+import org.dcm4che3.io.stream.ServiceImageInputStreamLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,14 +69,18 @@ public class BulkDataMetaData extends DicomMetaData {
     private final Object pixelData;
     private final VR pixelDataVR;
 
-    protected BulkDataMetaData(URI uri, ImageInputStreamLoader loader, DatasetWithFMI datasetWithFMI, Object pixelData, VR pixelDataVR) throws IOException {
+    public BulkDataMetaData(URI uri, DatasetWithFMI datasetWithFMI) throws IOException {
+        this(uri, datasetWithFMI, new ServiceImageInputStreamLoader());
+    }
+
+    public BulkDataMetaData(URI uri,  DatasetWithFMI datasetWithFMI, ImageInputStreamLoader loader) throws IOException {
         this.uri = uri;
         this.uriLoader = loader;
 
         this.fmi = datasetWithFMI.getFileMetaInformation();
         this.attributes = datasetWithFMI.getDataset();
-        this.pixelData = pixelData;
-        this.pixelDataVR = pixelDataVR;
+        this.pixelData = attributes.getValue(Tag.PixelData);
+        this.pixelDataVR = attributes.getVR(Tag.PixelData);
     }
 
     @Override

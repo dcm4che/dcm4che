@@ -55,8 +55,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Default DICOM metadata factory which will generate BulkData based MetaData objects.  The builder is used to
@@ -107,13 +105,10 @@ public class DefaultMetaDataFactory implements DicomMetaDataFactory {
                 pixelDataVR = dis.vr();
                 int numberOfFrames = datasetWithFMI.getDataset().getInt(Tag.NumberOfFrames,1);
                 pixelData = createPixelDataValue(dis, numberOfFrames);
-            }
-            else {
-                pixelDataVR = datasetWithFMI.getDataset().getVR(Tag.PixelData);
-                pixelData = datasetWithFMI.getDataset().remove(Tag.PixelData);
+                datasetWithFMI.getDataset().setValue(Tag.PixelData, pixelDataVR, pixelData);
             }
 
-            return new BulkDataMetaData(inputURI, loader, datasetWithFMI, pixelData, pixelDataVR);
+            return new BulkDataMetaData(inputURI,  datasetWithFMI, loader);
         }
     }
 

@@ -48,11 +48,14 @@ import java.net.URISyntaxException;
 
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.io.stream.BulkURIImageInputStream;
 import org.dcm4che3.io.stream.ImageInputStreamLoader;
 import org.dcm4che3.io.stream.ServiceImageInputStreamLoader;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
 
@@ -63,6 +66,7 @@ import javax.imageio.stream.ImageInputStream;
  * @author Bill Wallace <wayfarer3130@gmail.com>
  */
 public class BulkData implements Value {
+    private static final Logger LOG = LoggerFactory.getLogger(BulkData.class);
 
     private static final ImageInputStreamLoader LOADER = new ServiceImageInputStreamLoader<>();
 
@@ -352,7 +356,8 @@ public class BulkData implements Value {
         if (uri == null)
             throw new IllegalStateException("uri: null");
 
-        return LOADER.openStream(this);
+        ImageInputStream iis = LOADER.openStream(this.toURI());
+        return new BulkURIImageInputStream(iis, this.offset, this.length);
     }
 
     public InputStream openStream() throws IOException {

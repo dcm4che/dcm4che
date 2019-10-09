@@ -37,6 +37,11 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.data;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 import java.util.Set;
@@ -48,6 +53,17 @@ import static org.junit.Assert.assertEquals;
  * @author Mark Dechamps <mark.dechamps@gmail.com>
  */
 public class IDWithIssuerTest {
+
+    public static final String ID1 = "ID1";
+    public static final String ID_ESCAPEDDELIMITER_1 = "ID" + IDWithIssuer.escapedDelimiter + "1";
+    public static final String ID_DEESCAPEDDELIMITER_1 = "ID" + IDWithIssuer.delimiter + "1";
+    public static final String IDENTIFIERTYPECODE1 = "IdentifierTypeCode1";
+    public static final String TYPEOFPATIENTID1 = "TypeOfPatientID1";
+    public static final String ID_IDENTIFIERTYPECODE_ONLY = ID1 + "^^^^" + IDENTIFIERTYPECODE1;
+    public static final String ID_IDENTIFIERTYPECODE_INCLUDINGISSUERINFO = ID1 + "^^^"
+            + IssuerTest.ALL3_WITHAMPERSANDS_UNESCAPED + "^" + IDENTIFIERTYPECODE1;
+    public static final String IDESCAPED_IDENTIFIERTYPECODE_INCLUDINGISSUERINFO = ID_ESCAPEDDELIMITER_1 + "^^^"
+            + IssuerTest.ALL3_WITHAMPERSANDS_UNESCAPED + "^" + IDENTIFIERTYPECODE1;
 
 
     private static final String ID = "ID";
@@ -120,5 +136,110 @@ public class IDWithIssuerTest {
         attributes.setString(PatientID, VR.LO, ID);
         attributes.setString(IssuerOfPatientID, VR.LO, ns);
         return attributes;
+    }
+
+    @Test
+    public void validatePositiveScenario_IDProvidedOnly_ShouldParseIDValueOnly() {
+        IDWithIssuer idWithIssuer = new IDWithIssuer(ID1);
+        validate(idWithIssuer, ID1, null);
+    }
+
+    @Test
+    public void validatePositiveScenario_IDWithEscapedDelimiterProvided_ShouldParseUnescapedIDValue() {
+        IDWithIssuer idWithIssuer = new IDWithIssuer(ID_ESCAPEDDELIMITER_1);
+        validate(idWithIssuer, ID_DEESCAPEDDELIMITER_1, null);
+    }
+
+    @Test
+    public void validatePositiveScenario_IDWithIdentiferTypeCodeIncludingIssuerInfo_ShouldParseAndFindIDAndCreateIssuerObject() {
+        IDWithIssuer idWithIssuer = new IDWithIssuer(ID_IDENTIFIERTYPECODE_INCLUDINGISSUERINFO);
+        validate(idWithIssuer, ID1, IDENTIFIERTYPECODE1);
+        assertNotNull("idWithIssuer.Issuer is null!", idWithIssuer.getIssuer());
+    }
+
+    @Test
+    public void validatePositiveScenario_IDWithEscapedDelimiterAndIdentiferTypeCodeIncludingIssuerInfo_ShouldParseAndFindIDAndCreateIssuerObject() {
+        IDWithIssuer idWithIssuer = new IDWithIssuer(IDESCAPED_IDENTIFIERTYPECODE_INCLUDINGISSUERINFO);
+        validate(idWithIssuer, ID_DEESCAPEDDELIMITER_1, IDENTIFIERTYPECODE1);
+        assertNotNull("idWithIssuer.Issuer is null!", idWithIssuer.getIssuer());
+    }
+
+    @Test
+    public void validatePositiveScenario_IDWithIdentiferTypeCodeIncludingIssuerInfoString_ShouldParseAndFindIDAndCreateIssuerObject() {
+        IDWithIssuer idWithIssuer = new IDWithIssuer(ID1, IssuerTest.ALL3_WITHAMPERSANDS_UNESCAPED);
+        validate(idWithIssuer, ID1, null);
+        assertNotNull("idWithIssuer.Issuer is null!", idWithIssuer.getIssuer());
+    }
+
+    @Test
+    public void validatePositiveScenario_IDWithEscapedDelimiterAndIdentiferTypeCodeAndNullIssuer_ShouldParseAndFindIDAndCreateIssuerObject() {
+        IDWithIssuer idWithIssuer = new IDWithIssuer(ID_ESCAPEDDELIMITER_1, (Issuer) null);
+        validate(idWithIssuer, ID_DEESCAPEDDELIMITER_1, null);
+        assertNull("idWithIssuer.Issuer is not null!", idWithIssuer.getIssuer());
+    }
+
+    @Test
+    public void validatePositiveScenario_IDWithEscapedDelimiterAndIdentiferTypeCodeIncludingIssuerInfoString_ShouldParseAndFindIDAndCreateIssuerObject() {
+        IDWithIssuer idWithIssuer = new IDWithIssuer(ID_ESCAPEDDELIMITER_1, IssuerTest.ALL3_WITHAMPERSANDS_UNESCAPED);
+        validate(idWithIssuer, ID_DEESCAPEDDELIMITER_1, null);
+        assertNotNull("idWithIssuer.Issuer is null!", idWithIssuer.getIssuer());
+    }
+
+    @Test(expected = ArrayIndexOutOfBoundsException.class)
+    public void validateNegativeScenario_WhereNullIDProvided_ShouldThrowException() {
+        new IDWithIssuer(null);
+        fail("Expected an Exception to be thrown!");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void validateNegativeScenario_WhereNullIDAndIssuerProvided_ShouldThrowException() {
+        new IDWithIssuer(null, (Issuer) null);
+        fail("Expected an Exception to be thrown!");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void validateNegativeScenario_WhereNullIDAndIssuerStringProvided_ShouldThrowException() {
+        new IDWithIssuer(null, (String) null);
+        fail("Expected an Exception to be thrown!");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void validateNegativeScenario_WhereEmptyIDAndNullIssuerStringProvided_ShouldThrowException() {
+        new IDWithIssuer("", (String) null);
+        fail("Expected an Exception to be thrown!");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void validateNegativeScenario_WhereBlankIDAndNullIssuerStringProvided_ShouldThrowException() {
+        new IDWithIssuer(" ", (String) null);
+        fail("Expected an Exception to be thrown!");
+    }
+
+    @Test(expected = ArrayIndexOutOfBoundsException.class)
+    public void validateNegativeScenario_WhereEmptyStringIDProvided_ShouldThrowException() {
+        new IDWithIssuer("");
+        fail("Expected an Exception to be thrown!");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void validateNegativeScenario_WhereSingleSpaceStringIDProvided_ShouldThrowException() {
+        new IDWithIssuer(" ");
+        fail("Expected an IllegalArgumentException to be thrown!");
+    }
+
+    /**
+     * This is an interesting one! If you provide an ID and an IdentifierTypeCode then the Constructor EXPECTS you to
+     * also provide the Issuer Info in an embedded String!
+     */
+    @Test(expected = ArrayIndexOutOfBoundsException.class)
+    public void validateNegativeScenario_WhereIDProvidedWithIdentifierTypeCodeOnly_ShouldThrowException() {
+        new IDWithIssuer(ID_IDENTIFIERTYPECODE_ONLY);
+        fail("Expected an ArrayIndexOutOfBoundsException to be thrown!");
+    }
+
+    private void validate(IDWithIssuer idWithIssuer, String expectedID, String expectedIdentifierTypeCode) {
+        assertEquals("IDWithIssuer.ID is wrong!", expectedID, idWithIssuer.getID());
+        assertEquals("IDWithIssuer.IdentifierTypeCode is wrong!", expectedIdentifierTypeCode,
+                idWithIssuer.getIdentifierTypeCode());
     }
 }

@@ -229,7 +229,7 @@ public class QC {
         String url = qc.getUrl();
         if (qc.getPid() != null) {
             url += "/delete/patient/" + qc.getPid().getID();
-            return   url += qc.getPid().getIssuer() != null? "/issuer/"+ qc.getPid().getIssuer().toString(':'):"";
+            return   url += qc.getPid().getIssuer() != null? "/issuer/"+ qc.getPid().getIssuer().serializeForPersistence(':'):"";
         }
         url += "/delete/studies/" + qc.getStudyToDelete();
         if (qc.getSeriesToDelete() != null)

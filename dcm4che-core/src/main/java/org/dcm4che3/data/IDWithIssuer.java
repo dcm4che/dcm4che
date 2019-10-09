@@ -34,47 +34,62 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
-
+ * ***** END LICENSE BLOCK *****
+ */
 package org.dcm4che3.data;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.util.StringUtils;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Gunter Zeilinger &lt;gunterze@gmail.com&gt;
  */
 public class IDWithIssuer {
-
     public static final IDWithIssuer[] EMPTY = {};
-
+    public static final char delimiter = '^';
+    public static final String escapedDelimiter = "\\S\\";
     private final String id;
     private String typeOfPatientID;
     private String identifierTypeCode;
     private Issuer issuer;
 
     public IDWithIssuer(String id, Issuer issuer) {
-        if (id.isEmpty())
-            throw new IllegalArgumentException("empty id");
-        this.id = id;
+        this.id = parseAndDeescapeDelimiters(id);
         this.setIssuer(issuer);
+        validate();
     }
 
+    /**
+     * When using this constructor, the first parameter contains the id value and the second parameter issuer must
+     * contain 3 embedded values delimited by the ampersand, and any ampersands which are embedded within any one of
+     * those three values is escaped as &quot;&#092;T&#092;&quot;, so they do not conflict with the delimiters around
+     * the 3 values themselves, all within that second parameter issuer.
+     * 
+     * @param id the id value.
+     * @param issuer a String value that will be used to initialize the Issuer class instance.
+     */
     public IDWithIssuer(String id, String issuer) {
-        this.id = id;
-        this.setIssuer(issuer != null ? new Issuer(issuer, '&') : null);
+        this.id = parseAndDeescapeDelimiters(id);
+        this.setIssuer(emptyToNull(issuer) != null ? new Issuer(issuer) : null);
+        validate();
     }
 
+    /**
+     * When using this constructor, you must provide your values delimited by the caret (&quot;^&quot;), and also ensure
+     * that any carets which are embedded within any one of the included values is escaped as &quot;&#092;S&#092;&quot;,
+     * so they do not conflict with the delimiters around the values themselves.
+     * 
+     * @param s a String value that will be used to initialize the IDWithIssuer class instance.
+     */
     public IDWithIssuer(String cx) {
-        String[] ss = StringUtils.split(cx, '^');
-        this.id = ss[0];
-        this.setIdentifierTypeCode(ss.length > 4 ? ss[4] : null);
-        this.setIssuer(ss.length > 3 ? new Issuer(ss[3], '&') : null);
-        
+        String[] ss = StringUtils.split(cx, delimiter);
+        this.id = parseAndDeescapeDelimiters(ss[0]);
+        this.setIdentifierTypeCode(ss.length > 4 ? parseAndDeescapeDelimiters(ss[4]) : null);
+        this.setIssuer(ss.length > 3 ? new Issuer(ss[3]) : null);
+        validate();
     }
 
     public final String getID() {
@@ -105,18 +120,69 @@ public class IDWithIssuer {
         this.issuer = issuer;
     }
 
+    private String emptyToNull(String s) {
+        return (s == null || s.trim().isEmpty()) ? null : s;
+    }
+
+    private String parseAndDeescapeDelimiters(String s) {
+        String value = emptyToNull(s);
+        if (value != null && value.contains(escapedDelimiter)) {
+            value = value.replace(escapedDelimiter, String.valueOf(delimiter));
+        }
+        return value;
+    }
+
+    private String escapeDelimiters(String s) {
+        String value = emptyToNull(s);
+        if (value != null && value.indexOf(delimiter, 0) >= 0) {
+            value = value.replace(String.valueOf(delimiter), escapedDelimiter);
+        }
+        return value;
+    }
+
     @Override
     public String toString() {
+        // NOTE: We will use the existing serializeForPersistence() method as a convenience. If any changes are required
+        // to the output of the toString() method, they should be made in THIS method and NOT within the
+        // serializeForPersistence() method!
+        return serializeForPersistence();
+    }
+
+    /**
+     * This method is used to serialize the object just prior to storing it in the configuration persistence layer.
+     * <p>
+     * NOTE: Do not make changes to this method for any other reason than to change how it gets persisted to the
+     * configuration persistence layer!
+     * 
+     * @param delim the delimiter to use when serializing the component parts of this object
+     * @return the serialized information that can be stored within the configuration persistence layer
+     */
+    public String serializeForPersistence(char delim) {
         if (issuer == null && identifierTypeCode == null)
-            return id;
-        
+            return escapeDelimiters(id);
         StringBuilder sb = new StringBuilder(id);
-        sb.append("^^^");
+        sb.append(delim + delim + delim);
         if (issuer != null)
-            sb.append(issuer.toString('&'));
+            sb.append(issuer.serializeForPersistence());
         if (identifierTypeCode != null)
-            sb.append('^').append(identifierTypeCode);
+            sb.append(delim).append(escapeDelimiters(identifierTypeCode));
         return sb.toString();
+    }
+
+    /**
+     * An overloaded method which does not require the caller to specify a delimiter.
+     * 
+     * @return the serialized information that can be stored within the configuration persistence layer
+     */
+    public String serializeForPersistence() {
+        return serializeForPersistence(delimiter);
+    }
+
+    private void validate() throws IllegalArgumentException {
+        if (id == null)
+            throw new IllegalArgumentException("null id");
+        if (id.isEmpty())
+            throw new IllegalArgumentException("empty id");
     }
 
     @Override

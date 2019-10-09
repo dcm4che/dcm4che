@@ -34,8 +34,8 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
-
+ * ***** END LICENSE BLOCK *****
+ */
 package org.dcm4che3.data;
 
 import java.io.Serializable;
@@ -43,11 +43,12 @@ import java.io.Serializable;
 import org.dcm4che3.util.StringUtils;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Gunter Zeilinger &lt;gunterze@gmail.com&gt;
  */
 public class Issuer implements Serializable {
-
     private static final long serialVersionUID = 5350502680059507981L;
+    public static final char delimiter = '&';
+    public static final String escapedDelimiter = "\\T\\";
 
     private String localNamespaceEntityID;
     private String universalEntityID;
@@ -61,17 +62,32 @@ public class Issuer implements Serializable {
         validate();
     }
 
+    /**
+     * When using this constructor, you must provide 3 values delimited by the ampersand, and also ensure that any
+     * ampersands which are embedded within any one of those three values is escaped as &quot;&#092;T&#092;&quot;, so
+     * they do not conflict with the delimiters around the 3 values themselves.
+     * 
+     * @param s a String value that will be used to initialize the Issuer class instance.
+     */
     public Issuer(String s) {
-        this(s, '&');
+        this(s, delimiter);
     }
 
+    /**
+     * When using this constructor, the first parameter s must contain 3 values delimited by the second parameter delim,
+     * and any ampersands which are embedded within any one of those three values is escaped as
+     * &quot;&#092;T&#092;&quot;, so they do not conflict with the delimiters around the 3 values themselves.
+     * 
+     * @param s a String value that will be used to initialize the Issuer class instance.
+     * @param delim a char delimiter that will be used to parse 3 values from the String parameter s.
+     */
     public Issuer(String s, char delim) {
         String[] ss = StringUtils.split(s, delim);
         if (ss.length > 3)
             throw new IllegalArgumentException(s);
-        this.localNamespaceEntityID = emptyToNull(ss[0]);
-        this.universalEntityID = ss.length > 1 ? emptyToNull(ss[1]) : null;
-        this.universalEntityIDType = ss.length > 2 ? emptyToNull(ss[2]) : null;
+        this.localNamespaceEntityID = parseAndDeescapeDelimiters(ss[0]);
+        this.universalEntityID = ss.length > 1 ? parseAndDeescapeDelimiters(ss[1]) : null;
+        this.universalEntityIDType = ss.length > 2 ? parseAndDeescapeDelimiters(ss[2]) : null;
         validate();
     }
 
@@ -125,8 +141,24 @@ public class Issuer implements Serializable {
         }
     }
 
+    private String parseAndDeescapeDelimiters(String s) {
+        String value = emptyToNull(s);
+        if (value != null && value.contains(escapedDelimiter)) {
+            value = value.replace(escapedDelimiter, String.valueOf(delimiter));
+        }
+        return value;
+    }
+
+    private String escapeDelimiters(String s) {
+        String value = emptyToNull(s);
+        if (value != null && value.indexOf(delimiter, 0) >= 0) {
+            value = value.replace(String.valueOf(delimiter), escapedDelimiter);
+        }
+        return value;
+    }
+
     private String emptyToNull(String s) {
-        return s.isEmpty() ? null : s;
+        return (s == null || s.trim().isEmpty()) ? null : s;
     }
 
     public String getLocalNamespaceEntityID() {
@@ -206,20 +238,47 @@ public class Issuer implements Serializable {
 
     @Override
     public String toString() {
-        return toString('&');
+        // NOTE: We will use the existing serializeForPersistence() method as a convenience. If any changes are required
+        // to the output of the toString() method, they should be made in THIS method and NOT within the
+        // serializeForPersistence() method!
+        return serializeForPersistence();
     }
 
     public String toString(char delim) {
+        // NOTE: This method is being added for backwards-compatibility with some calling code that used to rely on the
+        // toString() method which implemented all the persistence logic.
+        return serializeForPersistence(delim);
+    }
+
+    /**
+     * This method is used to serialize the object just prior to storing it in the configuration persistence layer.
+     * <p>
+     * NOTE: Do not make changes to this method for any other reason than to change how it gets persisted to the
+     * configuration persistence layer!
+     * 
+     * @param delim the delimiter to use when serializing the component parts of this object
+     * @return the serialized information that can be stored within the configuration persistence layer
+     */
+    public String serializeForPersistence(char delim) {
         if (universalEntityID == null)
-            return localNamespaceEntityID;
+            return escapeDelimiters(localNamespaceEntityID);
         StringBuilder sb = new StringBuilder();
         if (localNamespaceEntityID != null)
-            sb.append(localNamespaceEntityID);
+            sb.append(escapeDelimiters(localNamespaceEntityID));
         sb.append(delim);
-        sb.append(universalEntityID);
+        sb.append(escapeDelimiters(universalEntityID));
         sb.append(delim);
-        sb.append(universalEntityIDType);
+        sb.append(escapeDelimiters(universalEntityIDType));
         return sb.toString();
+    }
+
+    /**
+     * An overloaded method which does not require the caller to specify a delimiter.
+     * 
+     * @return the serialized information that can be stored within the configuration persistence layer
+     */
+    public String serializeForPersistence() {
+        return serializeForPersistence(delimiter);
     }
 
     public Attributes toItem() {

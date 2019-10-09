@@ -2159,6 +2159,11 @@ public class Attributes implements Serializable {
                 }
             }
             if (!simulate) {
+                if (privateCreator != null
+                        && creatorTagOf(privateCreator, tag, false) < 0
+                        && !contains(creatorTag)) {
+                    setString(creatorTag, VR.LO, privateCreator); // preserve non-conflicting Private Creator ID tag positions
+                }
                 if (value instanceof Sequence) {
                     Sequence dest;
                     if (mergeOriginalAttributesSequence

@@ -49,6 +49,7 @@ import org.dcm4che3.data.DatePrecision;
 import org.dcm4che3.util.DateUtils;
 
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.Handler;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -61,13 +62,13 @@ public class XDSUtils {
 
     public static void ensureMustUnderstandHandler(Object port) {
         BindingProvider bindingProvider = (BindingProvider) port;
-        bindingProvider.getBinding().setHandlerChain(Collections.singletonList(new EnsureMustUnderstandHandler()));
+        bindingProvider.getBinding().setHandlerChain(Collections.singletonList((Handler) new EnsureMustUnderstandHandler()));
     }
 
     public static void setEndpointAddress(Object port, String url)
             throws GeneralSecurityException, IOException {
         BindingProvider bindingProvider = (BindingProvider) port;
-        bindingProvider.getBinding().setHandlerChain(Collections.singletonList(new EnsureMustUnderstandHandler()));
+        bindingProvider.getBinding().setHandlerChain(Collections.singletonList((Handler) new EnsureMustUnderstandHandler()));
         Map<String, Object> reqCtx = bindingProvider.getRequestContext();
         reqCtx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, url);
     }

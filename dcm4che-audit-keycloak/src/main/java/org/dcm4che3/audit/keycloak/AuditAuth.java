@@ -41,7 +41,6 @@ package org.dcm4che3.audit.keycloak;
 
 import org.dcm4che3.audit.*;
 import org.dcm4che3.net.audit.AuditLogger;
-import org.dcm4che3.util.StringUtils;
 
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
@@ -56,8 +55,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -74,7 +71,8 @@ class AuditAuth {
         try {
             if (!Files.exists(dir))
                 Files.createDirectories(dir);
-            if (isLogout(event) && Files.exists(dir.resolve(event.getSessionId()))) {
+            if (AuditUtils.AuditEventType.isLogout(event)
+                    && Files.exists(dir.resolve(event.getSessionId()))) {
                 sendAuditMessage(dir.resolve(event.getSessionId()), event, log, keycloakSession);
                 return;
             }
@@ -96,124 +94,45 @@ class AuditAuth {
         sendAuditMessage(file, event, log, keycloakSession);
     }
 
-    private static boolean isLogout(Event event) {
-        return event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGOUT_ERROR;
-    }
-
-    private static boolean isUpdatePassword(Event event) {
-        return event.getType() == EventType.UPDATE_PASSWORD || event.getType() == EventType.UPDATE_PASSWORD_ERROR;
-    }
-
-    private static void sendAuditMessage(Path file, Event event, AuditLogger log, KeycloakSession keycloakSession) {
+    private static void sendAuditMessage(Path file, Event event, AuditLogger auditLogger, KeycloakSession keycloakSession) {
         try {
             AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
-
-            ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
             String userName = info.getField(AuthInfo.USER_NAME);
-            activeParticipants[0] = new ActiveParticipantBuilder.Builder(
-                    userName,
-                    info.getField(AuthInfo.IP_ADDR))
-                    .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
-                    .isRequester().build();
-            activeParticipants[1] = new ActiveParticipantBuilder.Builder(
-                    log.getDevice().getDeviceName(),
-                    log.getConnections().get(0).getHostname())
-                    .userIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName)
-                    .altUserID(AuditLogger.processID()).build();
+            ActiveParticipantBuilder[] activeParticipants = AuditUtils.activeParticipants(info, auditLogger);
 
-            if (isUpdatePassword(event)) {
-                emitAudit(log,
-                        eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.UPDT_USER),
-                        activeParticipants);
-            } else {
-                emitAudit(log,
-                        eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.forUserAuth(event)),
+            AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forEvent(event);
+            emitAudit(auditLogger,
+                    AuditUtils.eventID(eventType, auditLogger, event.getError(), null),
+                    activeParticipants);
+
+            if (event.getUserId() != null
+                    && isSuperUser(userName, keycloakSession)
+                    && eventType != AuditUtils.AuditEventType.UPDT_USER)
+                emitAudit(auditLogger,
+                        AuditUtils.eventID(
+                            AuditUtils.AuditEventType.forSuperUserAuth(event), auditLogger, event.getError(), null),
                         activeParticipants);
 
-                if (event.getUserId() != null
-                        && userRoles(userName, keycloakSession).contains(System.getProperty("super-user-role")))
-                    emitAudit(log,
-                            eventIDBuilder(log, event.getError(), AuditUtils.AuditEventType.forSuperUserAuth(event)),
-                            activeParticipants);
-            }
             if (event.getType() != EventType.LOGIN)
                 Files.delete(file);
         } catch (Exception e) {
-            LOG.warn("Failed to process Audit Spool File {} of Audit Logger {} : {}",
-                    file, log.getCommonName(), e);
-            try {
-                Files.move(file, file.resolveSibling(file.getFileName().toString() + ".failed"));
-            } catch (IOException e1) {
-                LOG.warn("Failed to mark Audit Spool File {} of Audit Logger {} as failed : {}",
-                        file, log.getCommonName(), e);
-            }
+            AuditUtils.moveFailedFile(file, auditLogger, e);
         }
     }
 
     private static void emitAudit(
-            AuditLogger log, EventIdentificationBuilder eventID, ActiveParticipantBuilder[] activeParticipants) {
-        AuditMessage msg = AuditMessages.createMessage(eventID, activeParticipants);
-        msg.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
-        try {
-            AuditLogger.SendStatus write = log.write(log.timeStamp(), msg);
-            System.out.println("log send status: " + write);
-        } catch (Exception e) {
-            LOG.warn("Failed to emit audit message", e);
-        }
+            AuditLogger auditLogger, EventIdentificationBuilder eventID, ActiveParticipantBuilder[] activeParticipants) {
+        AuditUtils.emitAudit(auditLogger, AuditMessages.createMessage(eventID, activeParticipants));
     }
 
-    private static EventIdentificationBuilder eventIDBuilder(
-            AuditLogger log, String outcome, AuditUtils.AuditEventType eventType) {
-        return new EventIdentificationBuilder.Builder(
-                eventType.eventID,
-                AuditMessages.EventActionCode.Execute,
-                log.timeStamp(),
-                eventOutcomeIndicator(outcome))
-                .outcomeDesc(outcome)
-                .eventTypeCode(eventType.eventTypeCode)
-                .build();
-    }
-
-    private static List<String> userRoles(String userName, KeycloakSession keycloakSession) {
-        List<String> userRoles = new ArrayList<>();
+    private static boolean isSuperUser(String userName, KeycloakSession keycloakSession) {
+        String suRole = System.getProperty("super-user-role");
         for (RoleModel roleMapping : keycloakSession.users()
-                                      .getUserByUsername(userName, keycloakSession.getContext().getRealm())
-                                      .getRoleMappings())
-            userRoles.add(roleMapping.getName());
-        return userRoles;
-    }
+                .getUserByUsername(userName, keycloakSession.getContext().getRealm())
+                .getRoleMappings())
+            if (roleMapping.getName().equals(suRole))
+                return true;
 
-    private static String eventOutcomeIndicator(String outcomeDesc) {
-        return outcomeDesc != null
-                ? AuditMessages.EventOutcomeIndicator.MinorFailure
-                : AuditMessages.EventOutcomeIndicator.Success;
-    }
-
-    static class AuthInfo {
-        private static final int USER_NAME = 0;
-        private static final int IP_ADDR = 1;
-        private  final String[] fields;
-
-        AuthInfo (Event event, KeycloakSession keycloakSession) {
-            fields = new String[] {
-                    event.getDetails() != null
-                        ? event.getDetails().get("username")
-                        : keycloakSession.users().getUserById(event.getUserId(), keycloakSession.getContext().getRealm())
-                            .getUsername(),
-                    event.getIpAddress()
-            };
-        }
-        AuthInfo(String s) {
-            fields = StringUtils.split(s, '\\');
-        }
-
-        String getField(int field) {
-            return StringUtils.maskEmpty(fields[field], null);
-        }
-
-        @Override
-        public String toString() {
-            return StringUtils.concat(fields, '\\');
-        }
+        return false;
     }
 }

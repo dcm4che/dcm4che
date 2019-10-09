@@ -41,7 +41,6 @@ package org.dcm4che3.audit.keycloak;
 
 import org.dcm4che3.audit.*;
 import org.dcm4che3.net.audit.AuditLogger;
-import org.dcm4che3.util.StringUtils;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.AuthDetails;
 import org.keycloak.models.KeycloakSession;
@@ -64,29 +63,37 @@ class AdminEventsAuditService {
     private static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
 
     static void spoolAuditMsg(AdminEvent adminEvent, AuditLogger auditLogger, KeycloakSession keycloakSession) {
-        String dataDir = System.getProperty(JBOSS_SERVER_DATA_DIR);
-        Path dir = Paths.get(dataDir, "audit-auth-spool", auditLogger.getCommonName().replaceAll(" ", "_"));
         try {
-            if (!Files.exists(dir))
-                Files.createDirectories(dir);
-
-            spoolAndAudit(dir, auditLogger, adminEvent, keycloakSession);
+            Path file = createFile(auditLogger, adminEvent);
+            spoolAndAudit(file, auditLogger, adminEvent, keycloakSession);
         } catch (Exception e) {
             LOG.warn("Failed to spool and audit admin event {}: {} ",
                     adminEvent.getOperationType().name() + " " + adminEvent.getResourceType().name(), e);
         }
     }
 
-    private static void spoolAndAudit(Path dir, AuditLogger auditLogger, AdminEvent adminEvent,
-                                      KeycloakSession keycloakSession) throws IOException {
+    private static Path createFile(AuditLogger auditLogger, AdminEvent adminEvent) throws Exception {
+        String dataDir = System.getProperty(JBOSS_SERVER_DATA_DIR);
+        Path dir = Paths.get(dataDir,
+                "audit-auth-spool",
+                auditLogger.getCommonName().replaceAll(" ", "_"));
+
+        if (!Files.exists(dir))
+            Files.createDirectories(dir);
+
         AuthDetails authDetails = adminEvent.getAuthDetails();
-        Path file = Files.createTempFile(dir, authDetails.getIpAddress() + "-" + authDetails.getUserId(), null);
+        return Files.createTempFile(dir, authDetails.getIpAddress() + "-" + authDetails.getUserId(), null);
+    }
+
+    private static void spoolAndAudit(Path file, AuditLogger auditLogger, AdminEvent adminEvent,
+                                      KeycloakSession keycloakSession) throws IOException {
+        try (SpoolFileWriter writer = new SpoolFileWriter(
+                Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
+            writer.writeLine(new AuthInfo(adminEvent, keycloakSession));
+        }
+
         try {
-            try (SpoolFileWriter writer = new SpoolFileWriter(
-                    Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
-                writer.writeLine(new AuthInfo(adminEvent, keycloakSession));
-            }
-            emitAudit(auditLogger, createAuditMsg(file, adminEvent, auditLogger));
+            AuditUtils.emitAudit(auditLogger, createAuditMsg(file, adminEvent, auditLogger));
             Files.delete(file);
         } catch (Exception e) {
             LOG.warn("Failed to process Audit Spool File {} of Audit Logger {} : {}",
@@ -103,27 +110,10 @@ class AdminEventsAuditService {
     private static AuditMessage createAuditMsg(Path file, AdminEvent adminEvent, AuditLogger auditLogger) {
         AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
         AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forAdminEvent(adminEvent);
-        EventIdentificationBuilder eventIdentification = new EventIdentificationBuilder.Builder(
-                eventType.eventID,
-                AuditMessages.EventActionCode.Execute,
-                auditLogger.timeStamp(),
-                eventOutcomeIndicator(adminEvent.getError()))
-                .outcomeDesc(info.getField(AuthInfo.EVENT))
-                .eventTypeCode(eventType.eventTypeCode)
-                .build();
+        EventIdentificationBuilder eventIdentification = AuditUtils.eventID(
+                eventType, auditLogger, adminEvent.getError(), info.getField(AuthInfo.EVENT));
 
-        ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
-        String userName = info.getField(AuthInfo.USER_NAME);
-        activeParticipants[0] = new ActiveParticipantBuilder.Builder(
-                userName,
-                info.getField(AuthInfo.IP_ADDR))
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
-                .isRequester().build();
-        activeParticipants[1] = new ActiveParticipantBuilder.Builder(
-                auditLogger.getDevice().getDeviceName(),
-                auditLogger.getConnections().get(0).getHostname())
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName)
-                .altUserID(AuditLogger.processID()).build();
+        ActiveParticipantBuilder[] activeParticipants = AuditUtils.activeParticipants(info, auditLogger);
 
         ParticipantObjectIdentificationBuilder poi = new ParticipantObjectIdentificationBuilder.Builder(
                 auditLogger.getDevice().getDeviceName(),
@@ -136,54 +126,5 @@ class AdminEventsAuditService {
                                 + "\nResourcePath: " + info.getField(AuthInfo.RESOURCE_PATH)))
                 .build();
         return AuditMessages.createMessage(eventIdentification, activeParticipants, poi);
-    }
-
-    private static String eventOutcomeIndicator(String outcomeDesc) {
-        return outcomeDesc != null
-                ? AuditMessages.EventOutcomeIndicator.MinorFailure
-                : AuditMessages.EventOutcomeIndicator.Success;
-    }
-
-    private static void emitAudit(AuditLogger auditLogger, AuditMessage auditMsg) {
-        auditMsg.getAuditSourceIdentification().add(auditLogger.createAuditSourceIdentification());
-        try {
-            AuditLogger.SendStatus write = auditLogger.write(auditLogger.timeStamp(), auditMsg);
-            System.out.println("log send status: " + write);
-        } catch (Exception e) {
-            LOG.warn("Failed to emit audit message", e);
-        }
-    }
-
-    static class AuthInfo {
-        private static final int USER_NAME = 0;
-        private static final int IP_ADDR = 1;
-        private static final int EVENT = 2;
-        private static final int RESOURCE_PATH = 3;
-        private static final int REPRESENTATION = 4;
-        private  final String[] fields;
-
-        AuthInfo (AdminEvent adminEvent, KeycloakSession keycloakSession) {
-            AuthDetails authDetails = adminEvent.getAuthDetails();
-            fields = new String[] {
-                    keycloakSession.users().getUserById(authDetails.getUserId(), keycloakSession.getContext().getRealm())
-                            .getUsername(),
-                    authDetails.getIpAddress(),
-                    adminEvent.getOperationType().name() + " " + adminEvent.getResourceType().name(),
-                    adminEvent.getResourcePath(),
-                    adminEvent.getRepresentation()
-            };
-        }
-        AuthInfo(String s) {
-            fields = StringUtils.split(s, '\\');
-        }
-
-        String getField(int field) {
-            return StringUtils.maskEmpty(fields[field], null);
-        }
-
-        @Override
-        public String toString() {
-            return StringUtils.concat(fields, '\\');
-        }
     }
 }

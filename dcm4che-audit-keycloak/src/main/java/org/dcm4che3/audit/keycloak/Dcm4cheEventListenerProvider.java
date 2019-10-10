@@ -68,11 +68,6 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(Event event) {
-        if (keycloakSession.getContext().getClient() == null) {
-            LOG.warn("Client not found.");
-            return;
-        }
-
         if (includedEvents != null && includedEvents.contains(event.getType())) {
             try {
                 Collection<AuditLogger> loggers = new AuditLoggerFactory().getAuditLoggers();

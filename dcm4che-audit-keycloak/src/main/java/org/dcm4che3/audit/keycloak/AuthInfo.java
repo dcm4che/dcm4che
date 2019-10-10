@@ -62,8 +62,10 @@ class AuthInfo {
         fields = new String[] {
                 event.getDetails() != null
                         ? event.getDetails().get("username")
-                        : keycloakSession.users().getUserById(event.getUserId(), keycloakSession.getContext().getRealm())
-                        .getUsername(),
+                        : event.getUserId() != null
+                            ? keycloakSession.users().getUserById(event.getUserId(), keycloakSession.getContext().getRealm())
+                                .getUsername()
+                            : event.getIpAddress(),
                 event.getIpAddress()
         };
     }

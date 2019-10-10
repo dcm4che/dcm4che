@@ -83,13 +83,13 @@
     <weasis.opencv.native.version>4.1.1-dcm</weasis.opencv.native.version>
     <keycloak.version>7.0.0</keycloak.version>
     <jaxws-tools-maven-plugin.version>1.2.1.Final</jaxws-tools-maven-plugin.version>
-    <jbossws-cxf-client.version>5.2.4.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>3.2.7</apache-cxf.version>
+    <jbossws-cxf-client.version>5.3.0.Final</jbossws-cxf-client.version>
+    <apache-cxf.version>3.3.3</apache-cxf.version>
     <jakarta.activation.version>1.2.1</jakarta.activation.version>
     <jakarta.xml.bind.version>2.3.2</jakarta.xml.bind.version>
     <jakarta.xml.ws.version>2.3.2</jakarta.xml.ws.version>
     <jakarta.xml.soap-api.version>1.4.1</jakarta.xml.soap-api.version>
-    <jakarta.json.version>1.1.5</jakarta.json.version>
+    <jakarta.json.version>1.1.6</jakarta.json.version>
     <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
     <com.sun.istack.version>3.0.8</com.sun.istack.version>
     <com.sun.xml.messaging.saaj.version>1.5.1</com.sun.xml.messaging.saaj.version>

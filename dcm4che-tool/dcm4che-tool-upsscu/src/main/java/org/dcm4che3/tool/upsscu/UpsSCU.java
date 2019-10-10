@@ -509,9 +509,6 @@ public class UpsSCU {
             case get:
                 getUps();
                 break;
-            case find:
-                findUps();
-                break;
             case changeState:
                 actionOnUps(changeState, 1);
                 break;
@@ -577,7 +574,6 @@ public class UpsSCU {
     enum Operation {
         create(UID.UnifiedProcedureStepPushSOPClass, false),
         update(UID.UnifiedProcedureStepPullSOPClass, true),
-        find(UID.UnifiedProcedureStepPullSOPClass, false),
         get(UID.UnifiedProcedureStepPushSOPClass, true),
         changeState(UID.UnifiedProcedureStepPullSOPClass, true),
         requestCancel(UID.UnifiedProcedureStepPushSOPClass, true),
@@ -613,8 +609,6 @@ public class UpsSCU {
 
         static Operation valueOf(CommandLine cl) {
             switch (cl.getOptionValue("O")) {
-                case "create":
-                    return create;
                 case "update":
                     return update;
                 case "get":
@@ -638,13 +632,9 @@ public class UpsSCU {
                 case "receive":
                     return receive;
                 default:
-                    return find;
+                    return create;
             }
         }
-    }
-
-    private void findUps() {
-        //TODO
     }
 
     private void actionOnUps(Attributes data, int actionTypeId) throws IOException, InterruptedException {

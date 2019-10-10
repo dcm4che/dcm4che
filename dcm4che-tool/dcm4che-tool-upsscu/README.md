@@ -113,7 +113,7 @@
                                               get, changeState, requestCancel,
                                               subscribe, unsubscribe,
                                               suspendGlobal, receive. If no
-                                              operation is specified, find
+                                              operation is specified, create
                                               will be used. By default, for
                                               get/requestCancel operations,
                                               UPS Push SOP Class SCU shall be

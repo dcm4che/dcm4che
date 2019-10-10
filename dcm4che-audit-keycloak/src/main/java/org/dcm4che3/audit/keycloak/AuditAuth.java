@@ -97,22 +97,15 @@ class AuditAuth {
     private static void sendAuditMessage(Path file, Event event, AuditLogger auditLogger, KeycloakSession keycloakSession) {
         try {
             AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
-            String userName = info.getField(AuthInfo.USER_NAME);
             ActiveParticipantBuilder[] activeParticipants = AuditUtils.activeParticipants(info, auditLogger);
 
             AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forEvent(event);
-            emitAudit(auditLogger,
-                    AuditUtils.eventID(eventType, auditLogger, event.getError(), null),
-                    activeParticipants);
+            AuditUtils.emitAudit(auditLogger,
+                    AuditMessages.createMessage(
+                            AuditUtils.eventID(eventType, auditLogger, event.getError(), null),
+                            activeParticipants));
 
-            if (event.getUserId() != null
-                    && isSuperUser(userName, keycloakSession)
-                    && eventType != AuditUtils.AuditEventType.UPDT_USER)
-                emitAudit(auditLogger,
-                        AuditUtils.eventID(
-                            AuditUtils.AuditEventType.forSuperUserAuth(event), auditLogger, event.getError(), null),
-                        activeParticipants);
-
+            superUserAudit(event, auditLogger, keycloakSession, eventType, activeParticipants);
             if (event.getType() != EventType.LOGIN)
                 Files.delete(file);
         } catch (Exception e) {
@@ -120,15 +113,26 @@ class AuditAuth {
         }
     }
 
-    private static void emitAudit(
-            AuditLogger auditLogger, EventIdentificationBuilder eventID, ActiveParticipantBuilder[] activeParticipants) {
-        AuditUtils.emitAudit(auditLogger, AuditMessages.createMessage(eventID, activeParticipants));
+    private static void superUserAudit(Event event, AuditLogger auditLogger, KeycloakSession keycloakSession,
+                                       AuditUtils.AuditEventType eventType, ActiveParticipantBuilder[] activeParticipants) {
+        if (event.getUserId() == null
+                || eventType == AuditUtils.AuditEventType.UPDT_USER
+                || !isSuperUser(event, keycloakSession))
+            return;
+
+        AuditUtils.emitAudit(auditLogger,
+                AuditMessages.createMessage(
+                        AuditUtils.eventID(AuditUtils.AuditEventType.forSuperUserAuth(event),
+                                auditLogger,
+                                event.getError(),
+                                null),
+                        activeParticipants));
     }
 
-    private static boolean isSuperUser(String userName, KeycloakSession keycloakSession) {
+    private static boolean isSuperUser(Event event, KeycloakSession keycloakSession) {
         String suRole = System.getProperty("super-user-role");
         for (RoleModel roleMapping : keycloakSession.users()
-                .getUserByUsername(userName, keycloakSession.getContext().getRealm())
+                .getUserById(event.getUserId(), keycloakSession.getContext().getRealm())
                 .getRoleMappings())
             if (roleMapping.getName().equals(suRole))
                 return true;

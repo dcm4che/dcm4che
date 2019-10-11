@@ -235,12 +235,12 @@ public class JPEGParser implements XPEGParser {
 
         @Override
         public int rows() {
-            return sofParams.getShort(3) & 0xffff;
+            return sofParams.getShort(1) & 0xffff;
         }
 
         @Override
         public int columns() {
-            return sofParams.getShort(1) & 0xffff;
+            return sofParams.getShort(3) & 0xffff;
         }
 
         @Override

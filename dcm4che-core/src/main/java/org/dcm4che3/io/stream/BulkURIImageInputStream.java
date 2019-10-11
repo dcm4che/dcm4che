@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.io.stream;
 
+import org.dcm4che3.error.TruncatedPixelDataException;
+
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 import java.io.IOException;
@@ -88,7 +90,15 @@ public class BulkURIImageInputStream extends ImageInputStreamImpl {
         }
         else {
             bytesRead = this.iis.read(b, offset, len);
-            if(bytesRead > 0) this.streamPos += bytesRead;
+            if(bytesRead > 0) {
+                this.streamPos += bytesRead;
+            }
+            else if(bytesRead == -1) {
+                // EOF, but did we read everything?
+                if(this.streamPos < length()) {
+                    throw new TruncatedPixelDataException();
+                }
+            }
         }
 
         return bytesRead;
@@ -103,5 +113,12 @@ public class BulkURIImageInputStream extends ImageInputStreamImpl {
     @Override
     public long length() {
         return this.length;
+    }
+
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        this.iis.close();
     }
 }

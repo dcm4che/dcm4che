@@ -113,6 +113,10 @@ public class DicomOutputStream extends FilterOutputStream {
     public void write(byte[] b, int off, int len) throws IOException {
         out.write(b, off, len);
     }
+    
+    public void write(byte b) throws IOException {
+        out.write(b);
+    }
 
     public void writeCommand(Attributes cmd) throws IOException {
         if (explicitVR || bigEndian)

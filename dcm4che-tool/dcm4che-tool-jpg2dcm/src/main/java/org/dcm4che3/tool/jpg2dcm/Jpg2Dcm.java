@@ -54,6 +54,9 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -246,9 +249,28 @@ public class Jpg2Dcm {
                     itemLen = length -= offset;
                 dos.writeHeader(Tag.Item, null, (itemLen + 1) & ~1);
             }
-            dos.write(Files.readAllBytes(srcFilePath), offset, length);
-            if ((itemLen & 1) != 0)
+
+            // Faster chunked read
+            try (RandomAccessFile file = new RandomAccessFile(srcFilePath.toFile(), "r");
+                    FileChannel fileChannel = file.getChannel();) {
+                MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileChannel.size());
+
+                // Ignore offseted byte
+                while (offset > 0 && mappedByteBuffer.hasRemaining()) {
+                    mappedByteBuffer.get();
+                    --offset;
+                }
+
+                // Write file content
+                while (mappedByteBuffer.hasRemaining()) {
+                    dos.write(mappedByteBuffer.get());
+                }
+            }
+
+            if ((itemLen & 1) != 0) {
                 dos.write(0);
+            }
+
             dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
         }
         System.out.println(MessageFormat.format(rb.getString("converted"), srcFile, destFile));

@@ -358,13 +358,18 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return loadDevice(deviceDN);
     }
 
-    public Connection findConnection(String connDN, Map<String, Connection> cache) throws NamingException {
+    public Connection findConnection(String connDN, Map<String, Connection> cache)
+            throws NamingException, ConfigurationException {
         Connection conn = cache.get(connDN);
         if (conn == null) {
-            String[] attrIds = {"dicomHostname", "dicomPort", "dicomTLSCipherSuite", "dicomInstalled"};
-            Attributes attrs = ctx.getAttributes(connDN, attrIds);
-            cache.put(connDN, conn = new Connection());
-            loadFrom(conn, attrs, false);
+            try {
+                String[] attrIds = {"dicomHostname", "dicomPort", "dicomTLSCipherSuite", "dicomInstalled"};
+                Attributes attrs = ctx.getAttributes(connDN, attrIds);
+                cache.put(connDN, conn = new Connection());
+                loadFrom(conn, attrs, false);
+            } catch (NameNotFoundException e) {
+                throw new ConfigurationException(e);
+            }
         }
         return conn;
     }
@@ -488,7 +493,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private void loadFrom(ApplicationEntityInfo aetInfo, Attributes attrs, String deviceName,
             Map<String, Connection> connCache)
-            throws NamingException {
+            throws NamingException, ConfigurationException {
         aetInfo.setDeviceName(deviceName);
         aetInfo.setAETitle(
                 LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
@@ -511,7 +516,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private void loadFrom(WebApplicationInfo webappInfo, Attributes attrs, String deviceName,
-            Map<String, Connection> connCache, Map<String, KeycloakClient> keycloakClientCache) throws NamingException {
+            Map<String, Connection> connCache, Map<String, KeycloakClient> keycloakClientCache)
+            throws NamingException, ConfigurationException {
         webappInfo.setDeviceName(deviceName);
         webappInfo.setApplicationName(LdapUtils.stringValue(attrs.get("dcmWebAppName"), null));
         webappInfo.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
@@ -529,13 +535,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private KeycloakClient findKeycloakClient(String clientID, String deviceName, Map<String, KeycloakClient> cache)
-            throws NamingException {
+            throws NamingException, ConfigurationException {
         String keycloakClientDN = keycloakClientDN(clientID, deviceRef(deviceName));
         KeycloakClient keycloakClient = cache.get(keycloakClientDN);
         if (keycloakClient == null) {
-            Attributes attrs = ctx.getAttributes(keycloakClientDN);
-            cache.put(keycloakClientDN, keycloakClient = new KeycloakClient(clientID));
-            loadFrom(keycloakClient, attrs);
+            try {
+                Attributes attrs = ctx.getAttributes(keycloakClientDN);
+                cache.put(keycloakClientDN, keycloakClient = new KeycloakClient(clientID));
+                loadFrom(keycloakClient, attrs);
+            } catch (NameNotFoundException e) {
+                throw new ConfigurationException(e);
+            }
         }
         return keycloakClient;
     }

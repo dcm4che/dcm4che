@@ -76,6 +76,7 @@
 
 package org.dcm4che3.data;
 
+import org.dcm4che3.util.SafeBuffer;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -262,8 +263,8 @@ public class SpecificCharacterSet {
                 if (!cr.isUnderflow())
                     cr.throwException();
             } catch (CharacterCodingException x) {
-                cb.position(cbmark);
-                bb.position(bbmark);
+                SafeBuffer.position(cb, cbmark);
+                SafeBuffer.position(bb, bbmark);
                 return false;
             }
             return true;

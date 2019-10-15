@@ -47,9 +47,9 @@ import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.codec.XPEGParser;
 import org.dcm4che3.imageio.codec.XPEGParserException;
+import org.dcm4che3.util.SafeBuffer;
 
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Date;
@@ -210,30 +210,30 @@ public class MP4Parser implements XPEGParser {
     }
 
     private byte readByte(SeekableByteChannel channel) throws IOException {
-        ((Buffer) buf).clear().limit(1);
+        SafeBuffer.clear(buf).limit(1);
         channel.read(buf);
-        ((Buffer) buf).rewind();
+        SafeBuffer.rewind(buf);
         return buf.get();
     }
 
     private short readShort(SeekableByteChannel channel) throws IOException {
-        ((Buffer) buf).clear().limit(2);
+        SafeBuffer.clear(buf).limit(2);
         channel.read(buf);
-        ((Buffer) buf).rewind();
+        SafeBuffer.rewind(buf);
         return buf.getShort();
     }
 
     private int readInt(SeekableByteChannel channel) throws IOException {
-        ((Buffer) buf).clear().limit(4);
+        SafeBuffer.clear(buf).limit(4);
         channel.read(buf);
-        ((Buffer) buf).rewind();
+        SafeBuffer.rewind(buf);
         return buf.getInt();
     }
 
     private long readLong(SeekableByteChannel channel) throws IOException {
-        ((Buffer) buf).clear();
+        SafeBuffer.clear(buf);
         channel.read(buf);
-        ((Buffer) buf).rewind();
+        SafeBuffer.rewind(buf);
         return buf.getLong();
     }
 

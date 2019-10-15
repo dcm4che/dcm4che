@@ -46,9 +46,10 @@ import java.nio.Buffer;
 /**
  * Utility to avoid NoSuchMethodError on builds with Java 9 running on Java 7 or Java 8
  * caused by overloaded methods for derived classes of Buffer with covariant return types
- * for clear(), flip(), limit(), mark(), position(), reset(), rewind() added in Java 9.
+ * for {@code clear()}, {@code flip()}, {@code limit()}, {@code mark()}, {@code position()},
+ * {@code reset()}, {@code rewind()} added in Java 9.
  *
- * Usage: replace @code(buffer.clear()) by @code(SafeBuffer.clear(buffer)), ...
+ * <p> Usage: replace {@code buffer.clear()} by {@code SafeBuffer.clear(buffer)}, ...
  *
  * @author Gunter Zeilinger (gunterze@protonmail.com)
  * @since Oct 2019

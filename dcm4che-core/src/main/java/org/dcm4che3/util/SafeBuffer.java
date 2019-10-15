@@ -44,10 +44,10 @@ package org.dcm4che3.util;
 import java.nio.Buffer;
 
 /**
- * Utility to avoid NoSuchMethodError on builds with Java 9 running on Java 7 or Java 8
- * caused by overloaded methods for derived classes of Buffer with covariant return types
- * for {@code clear()}, {@code flip()}, {@code limit()}, {@code mark()}, {@code position()},
- * {@code reset()}, {@code rewind()} added in Java 9.
+ * Utility to avoid {@link NoSuchMethodError} on builds with Java 9 running on Java 7 or Java 8
+ * caused by overloaded methods for derived classes of {@link Buffer} with covariant return types
+ * for {@link Buffer#clear()}, {@link Buffer#flip()}, {@link Buffer#limit(int)}, {@link Buffer#mark()},
+ * {@link Buffer#position(int)}, {@link Buffer#reset()}, {@link Buffer#rewind()} added in Java 9.
  *
  * <p> Usage: replace {@code buffer.clear()} by {@code SafeBuffer.clear(buffer)}, ...
  *

@@ -80,6 +80,7 @@ public class ImageParameters {
     private int format;
     private boolean signedData;
     private boolean initSignedData;
+    private boolean jfif;
     private int jpegMarker;
 
     public ImageParameters() {
@@ -206,6 +207,14 @@ public class ImageParameters {
         this.bands = bands;
     }
 
+    public void setJFIF(boolean jfif) {
+        this.jfif = jfif;
+    }
+
+    public boolean isJFIF() {
+        return jfif;
+    }
+
     public int getJpegMarker() {
         return jpegMarker;
     }
@@ -230,5 +239,4 @@ public class ImageParameters {
         buf.append(signedData);
         return buf.toString();
     }
-
 }

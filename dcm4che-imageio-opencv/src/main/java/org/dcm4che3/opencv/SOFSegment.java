@@ -46,18 +46,24 @@ package org.dcm4che3.opencv;
  * @since Mar 2018
  */
 class SOFSegment {
+    private final boolean jfif;
     private final int marker;
     private final int samplePrecision;
     private final int lines; // height
     private final int samplesPerLine; // width
     private final int components;
 
-    SOFSegment(int marker, int samplePrecision, int lines, int samplesPerLine, int components) {
+    SOFSegment(boolean jfif, int marker, int samplePrecision, int lines, int samplesPerLine, int components) {
+        this.jfif = jfif;
         this.marker = marker;
         this.samplePrecision = samplePrecision;
         this.lines = lines;
         this.samplesPerLine = samplesPerLine;
         this.components = components;
+    }
+
+    public boolean isJFIF() {
+        return jfif;
     }
 
     public int getMarker() {

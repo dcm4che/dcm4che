@@ -262,12 +262,7 @@ public class NativeImageReader extends ImageReader implements Closeable {
 
         int dcmFlags =
             (canEncodeSigned && desc.isSigned()) ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
-        // Force JPEG Baseline (1.2.840.10008.1.2.4.50) to YBR_FULL_422 color model when RGB with JFIF header
-        // (error made by some constructors). RGB color model doesn't make sense for lossy jpeg with JFIF header.
-        // http://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_8.2.html#sect_8.2.1
-        PhotometricInterpretation pmi = desc.getPhotometricInterpretation();
-        if (pmi.name().startsWith("YBR") || ("RGB".equalsIgnoreCase(pmi.name())
-                && params.isJFIF() && params.getJpegMarker() == 0xffc0)) {
+        if (ybr2rgb(desc.getPhotometricInterpretation())) {
             dcmFlags |= Imgcodecs.DICOM_IMREAD_YBR;
         }
 
@@ -296,7 +291,25 @@ public class NativeImageReader extends ImageReader implements Closeable {
         }
         return null;
     }
-    
+
+    private boolean ybr2rgb(PhotometricInterpretation pmi) {
+        // Preserve YBR for JPEG Lossless (1.2.840.10008.1.2.4.57, 1.2.840.10008.1.2.4.70)
+        if (params.getJpegMarker() == 0xffc3) {
+            return false;
+        }
+        switch (pmi) {
+            case MONOCHROME1:
+            case MONOCHROME2:
+            case PALETTE_COLOR:
+                return false;
+            case RGB:
+                // Force JPEG Baseline (1.2.840.10008.1.2.4.50) to YBR_FULL_422 color model when RGB with JFIF header
+                // (error made by some constructors). RGB color model doesn't make sense for lossy jpeg with JFIF header.
+                return params.isJFIF() && params.getJpegMarker() == 0xffc0;
+        }
+        return true;
+    }
+
     public static void closeMat(Mat mat) {
         if (mat != null) {
             mat.release();

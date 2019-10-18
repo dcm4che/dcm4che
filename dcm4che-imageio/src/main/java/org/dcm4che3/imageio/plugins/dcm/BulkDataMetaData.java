@@ -79,8 +79,8 @@ public class BulkDataMetaData extends DicomMetaData {
 
         this.fmi = datasetWithFMI.getFileMetaInformation();
         this.attributes = datasetWithFMI.getDataset();
-        this.pixelData = attributes.getValue(Tag.PixelData);
         this.pixelDataVR = attributes.getVR(Tag.PixelData);
+        this.pixelData = attributes.remove(Tag.PixelData);
     }
 
     @Override
@@ -106,6 +106,22 @@ public class BulkDataMetaData extends DicomMetaData {
     @Override
     public VR getPixelDataVR() {
         return pixelDataVR;
+    }
+
+    @Override
+    public int countFrames() throws IOException {
+        int frames = 0;
+        if(containsPixelData()) {
+            if(pixelData instanceof Fragments) {
+                Fragments fragments = (Fragments) pixelData;
+                frames = fragments.size() - 1;
+            }
+            else {
+                frames = 1;
+            }
+        }
+
+        return frames;
     }
 
     @Override

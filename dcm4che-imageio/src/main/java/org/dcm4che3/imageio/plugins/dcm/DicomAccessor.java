@@ -76,11 +76,13 @@ public interface DicomAccessor {
     /**
      * Open an ImageInputStream which is partitioned to view only the pixels for the indicated frameIndex.
      * @param frameIndex 0 based index of the frame to view.
-     * @throws IOException if the pixel data source could not be accessed
-     * @throws IllegalArgumentException if there is no pixel data tag for this object.
+     * @throws IOException if there was a failure in the underlying data source when streaming the data
+     * @throws IndexOutOfBoundsException if the frameIndex is less than 0 or greater than NumberOfFrames-1
+     * @throws org.dcm4che3.error.TruncatedPixelDataException if there were fewer bytes streamed than expected
+     * @throws org.dcm4che3.error.UnavailableFrameException if the frame requested is valid but does not exist in the instance.
+     * @throws org.dcm4che3.error.NoPixelDataException  if this instance does not have a pixel data tag.
      * @return An open ImageInputStream.
      */
-    // Do we want to have a PixelDataMissingException that subclasses IOException?
     ImageInputStream openPixelStream(int frameIndex) throws IOException;
 
     /**
@@ -88,8 +90,17 @@ public interface DicomAccessor {
      */
     boolean containsPixelData();
 
+    /**
+     * Get the VR of the pixel data tag.
+     */
     VR getPixelDataVR();
 
+    /**
+     * Count the number of frames in the underlying instance.  This method may need to read
+     * through to the underlying data source to determine the actual length of the data.
+     * Results may be cached after the first call.
+     */
+    int countFrames() throws IOException;
 
     default String getSOPInstanceUID() {return getAttributes().getString(Tag.SOPInstanceUID);}
     default String getSOPClassUID() {return getAttributes().getString(Tag.SOPClassUID);}

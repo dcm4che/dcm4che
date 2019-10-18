@@ -59,10 +59,7 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.image.*;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Image Reader implementation that reads from DICOM files.  Supports several
@@ -122,7 +119,10 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
     private PatchJPEGLS patchJpegLS;
 
-    
+    /** Number of frames that have been read from the underlying instance. */
+    private Integer actualNumberOfFrames;
+
+
     public DicomImageReader(ImageReaderSpi originatingProvider) {
         this(originatingProvider, DEFAULT_METADATA_FACTORY);
     }
@@ -142,16 +142,23 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         if (input instanceof DicomMetaData) {
             setMetadata((DicomMetaData) input);
         }
-
     }
 
 
 
+
+
     @Override
-    public int getNumImages(boolean allowSearch) throws IOException {
-        // TODO:  Should this read through the metadata?
+    public synchronized int getNumImages(boolean allowSearch) throws IOException {
         readMetadata();
-        return this.metadata.getNumberOfFrames();
+
+        if(allowSearch && this.actualNumberOfFrames == null) {
+            this.actualNumberOfFrames = this.metadata.countFrames();
+        }
+
+        return this.actualNumberOfFrames == null
+                ? this.metadata.getNumberOfFrames()
+                : this.actualNumberOfFrames;
     }
 
     @Override
@@ -262,7 +269,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
                 if (buf instanceof DataBufferByte) {
                     byte[][] data = ((DataBufferByte) buf).getBankData();
                     for (byte[] bs : data) {
-                        System.out.printf("Filling buffer of size %s from %s with offset %s and remaining %s",
+                        LOG.debug("Filling buffer of size {} from {} with offset {} and remaining {}",
                                 bs.length,
                                 iisOfFrame.toString(),
                                 iisOfFrame.getStreamPosition(),
@@ -332,8 +339,9 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
                 raster = bi.getRaster();
             }
-        } else
+        } else {
             raster = (WritableRaster) readRaster(frameIndex, param);
+        }
 
         ColorModel cm;
         if (this.metadata.getPhotometricInterpretation().isMonochrome()) {
@@ -353,6 +361,20 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
             cm = createColorModel(this.metadata.getBitsStored(), this.metadata.getDataType());
         }
         return new BufferedImage(cm, raster , false, null);
+    }
+
+    /**
+     * Read the raw bytes of a frame into a byte[].  This is a convenience method, which will result in a significant
+     * amount of memory being used --- especially for uncompressed images.  Developers are encouraged to stream bytes
+     * with ImageInputStreamS when possible.
+     */
+    public byte[] readBytes(int frameIndex) throws IOException {
+        byte[] bytes;
+        try(ImageInputStream iis = this.metadata.openPixelStream(frameIndex)) {
+            bytes = new byte[(int)iis.length()];
+            iis.readFully(bytes);
+        }
+        return bytes;
     }
 
     private byte[] extractOverlay(int gg0000, WritableRaster raster) {
@@ -549,25 +571,31 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         }
     }
 
+    /**
+     * Get the DicomAccessor instance which is being used to read the underlying DICOM instance.
+     * @return the current DicomAccessor, or NULL if the DicomImageReader is uninitialized.
+     */
+    public DicomMetaData getDicomAccessor() {
+        return this.metadata;
+    }
+
     private void setMetadata(DicomMetaData metadata) {
         this.metadata = metadata;
 
         if (metadata.containsPixelData()) {
-            Attributes ds = metadata.getAttributes();
+             if (metadata.getTransferSyntaxType().isPixeldataEncapsulated()) {
+                 String tsuid = metadata.getTransferSyntax();
+                if (tsuid == null)
+                    throw new IllegalArgumentException("Missing Transfer Syntax for Data Set with compressed Pixel Data");
 
-            if (metadata.getTransferSyntaxType().isPixeldataEncapsulated()) {
-                Attributes fmi = metadata.getFileMetaInformation();
-                if (fmi == null)
-                    throw new IllegalArgumentException("Missing File Meta Information for Data Set with compressed Pixel Data");
-                
-                String tsuid = fmi.getString(Tag.TransferSyntaxUID);
-                ImageReaderParam param =
-                        ImageReaderFactory.getImageReaderParam(tsuid);
+                ImageReaderParam param = ImageReaderFactory.getImageReaderParam(tsuid);
                 if (param == null)
                     throw new UnsupportedOperationException("Unsupported Transfer Syntax: " + tsuid);
                 this.rle = tsuid.equals(UID.RLELossless);
                 this.decompressor = ImageReaderFactory.getImageReader(param);
                 this.patchJpegLS = param.patchJPEGLS;
+
+                LOG.debug("Transfer Syntax {} is assigned Image Reader {}",tsuid, param.getClassName());
             }
         }
     }
@@ -587,13 +615,15 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     }
 
     private void resetInternalState() {
-        metadata = null;
+        this.metadata = null;
 
         if (decompressor != null) {
             decompressor.dispose();
             decompressor = null;
         }
-        patchJpegLS = null;
+
+        this.patchJpegLS = null;
+        this.actualNumberOfFrames = null;
     }
 
     private void checkIndex(int frameIndex) {

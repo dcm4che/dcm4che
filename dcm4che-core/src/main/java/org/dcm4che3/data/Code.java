@@ -39,6 +39,9 @@
 package org.dcm4che3.data;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Objects;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -53,20 +56,24 @@ public class Code implements Serializable {
     private String codingSchemeDesignator;
     private String codingSchemeVersion;
     private String codeMeaning;
-    private transient int hashCode;
     private transient final Key key = new Key();
 
     public Code(String codeValue, String codingSchemeDesignator,
             String codingSchemeVersion, String codeMeaning) {
-        if (codeValue == null)
+        if (codeValue == null || codeValue.isEmpty())
             throw new NullPointerException("Missing Code Value");
-        if (codingSchemeDesignator == null)
-            throw new NullPointerException("Missing Coding Scheme Designator");
-        if (codeMeaning == null)
+        if (isURN(codeValue)) {
+            if (codingSchemeDesignator != null || codingSchemeVersion != null)
+                throw new IllegalArgumentException("URN Code Value with Coding Scheme Designator");
+        } else {
+            if (codingSchemeDesignator == null || codingSchemeDesignator.isEmpty())
+                throw new NullPointerException("Missing Coding Scheme Designator");
+        }
+        if (codeMeaning == null || codeMeaning.isEmpty())
             throw new NullPointerException("Missing Code Meaning");
         this.codeValue = codeValue;
         this.codingSchemeDesignator = codingSchemeDesignator;
-        this.codingSchemeVersion = nullifyDCM01(codingSchemeVersion);
+        this.codingSchemeVersion = nullifyDCM01(codingSchemeDesignator, codingSchemeVersion);
         this.codeMeaning = codeMeaning;
     }
 
@@ -81,32 +88,39 @@ public class Code implements Serializable {
         int endVal = s.indexOf(',');
         int endScheme = s.indexOf(',', endVal + 1);
         int startMeaning = s.indexOf('"', endScheme + 1) + 1;
-        this.codeValue = trimsubstring(s, 1, endVal);
-        this.codingSchemeDesignator = trimsubstring(s, endVal+1, endScheme);
-        this.codeMeaning = trimsubstring(s, startMeaning, len-2);
-        if (codingSchemeDesignator.endsWith("]")) {
-            int endVersion = s.lastIndexOf(']', endScheme - 1);
-            endScheme = s.lastIndexOf('[', endVersion - 1);
-            this.codingSchemeDesignator = trimsubstring(s, endVal+1, endScheme);
-            this.codingSchemeVersion = nullifyDCM01(trimsubstring(s, endScheme+1, endVersion));
+        this.codeValue = trimsubstring(s, 1, endVal, false);
+        if (isURN(codeValue)) {
+            trimsubstring(s, endVal+1, endScheme, true);
+        } else {
+            this.codingSchemeDesignator = trimsubstring(s, endVal+1, endScheme, false);
+            if (codingSchemeDesignator.endsWith("]")) {
+                int endVersion = s.lastIndexOf(']', endScheme - 1);
+                endScheme = s.lastIndexOf('[', endVersion - 1);
+                this.codingSchemeDesignator = trimsubstring(s, endVal+1, endScheme, false);
+                this.codingSchemeVersion = nullifyDCM01(codingSchemeDesignator,
+                        trimsubstring(s, endScheme+1, endVersion, false));
+            }
         }
+        this.codeMeaning = trimsubstring(s, startMeaning, len-2, false);
     }
 
-    private String nullifyDCM01(String codingSchemeVersion) {
-        return "01".equals(codingSchemeVersion) && "DCM".equals(codingSchemeDesignator) ? null : codingSchemeVersion;
+    private static String nullifyDCM01(String codingSchemeDesignator, String codingSchemeVersion) {
+        return "01".equals(codingSchemeVersion) && "DCM".equals(codingSchemeDesignator)
+                ? null
+                : codingSchemeVersion;
     }
 
-    private String trimsubstring(String s, int start, int end) {
+    private static String trimsubstring(String s, int start, int end, boolean empty) {
         try {
             String trim = s.substring(start, end).trim();
-            if (!trim.isEmpty())
+            if (trim.isEmpty() == empty)
                 return trim;
         } catch (StringIndexOutOfBoundsException e) {}
         throw new IllegalArgumentException(s);
     }
 
     public Code(Attributes item) {
-        this(item.getString(Tag.CodeValue, null),
+        this(codeValueOf(item),
              item.getString(Tag.CodingSchemeDesignator, null),
              item.getString(Tag.CodingSchemeVersion, null),
              item.getString(Tag.CodeMeaning, NO_CODE_MEANING));
@@ -132,60 +146,75 @@ public class Code implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = hashCode;
-        if (result == 0) {
-            result = 17;
-            result = 31 * result + codeValue.hashCode();
-            result = 31 * result + codingSchemeDesignator.hashCode();
-            result = 31 * result + (codingSchemeVersion != null ? codingSchemeVersion.hashCode() : 0);
-            hashCode = result;
-        }
-        return result;
+        return codeValue.hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
-        return equals(o, false);
-    }
-
-    public boolean equalsIgnoreMeaning(Code o) {
-        return equals(o, true);
-    }
-
-    private boolean equals(Object o, boolean ignoreMeaning) {
         if (o == this)
             return true;
         if (!(o instanceof Code))
             return false;
         Code other = (Code) o;
-        return codeValue.equals(other.codeValue)
-                && codingSchemeDesignator.equals(other.codingSchemeDesignator)
-                && equals(codingSchemeVersion, other.codingSchemeVersion)
-                && (ignoreMeaning || codeMeaning.equals(other.codeMeaning));
+        return equalsIgnoreMeaning(other)
+                && codeMeaning.equals(other.codeMeaning);
     }
 
-    private boolean equals(String s1, String s2) {
-        return s1 == s2 || s1 != null && s1.equals(s2);
+    public boolean equalsIgnoreMeaning(Code other) {
+        if (other == this)
+            return true;
+        return codeValue.equals(other.codeValue)
+                && Objects.equals(codingSchemeDesignator, other.codingSchemeDesignator)
+                && Objects.equals(codingSchemeVersion, other.codingSchemeVersion);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append('(').append(codeValue).append(", ").append(codingSchemeDesignator);
-        if (codingSchemeVersion != null)
-            sb.append(" [").append(codingSchemeVersion).append(']');
+        sb.append('(').append(codeValue).append(", ");
+        if (codingSchemeDesignator != null) {
+            sb.append(codingSchemeDesignator);
+            if (codingSchemeVersion != null)
+                sb.append(" [").append(codingSchemeVersion).append(']');
+        }
         sb.append(", \"").append(codeMeaning).append("\")");
         return sb.toString();
     }
 
     public Attributes toItem() {
         Attributes codeItem = new Attributes(codingSchemeVersion != null ? 4 : 3);
-        codeItem.setString(Tag.CodeValue, VR.SH, codeValue);
-        codeItem.setString(Tag.CodingSchemeDesignator, VR.SH, codingSchemeDesignator);
-        if (codingSchemeVersion != null)
-            codeItem.setString(Tag.CodingSchemeVersion, VR.SH, codingSchemeVersion);
+        if (codingSchemeDesignator == null) {
+            codeItem.setString(Tag.URNCodeValue, VR.UR, codeValue);
+        } else {
+            if (codeValue.length() > 16) {
+                codeItem.setString(Tag.LongCodeValue, VR.UC, codeValue);
+            } else {
+                codeItem.setString(Tag.CodeValue, VR.SH, codeValue);
+            }
+            codeItem.setString(Tag.CodingSchemeDesignator, VR.SH, codingSchemeDesignator);
+            if (codingSchemeVersion != null) {
+                codeItem.setString(Tag.CodingSchemeVersion, VR.SH, codingSchemeVersion);
+            }
+        }
         codeItem.setString(Tag.CodeMeaning, VR.LO, codeMeaning);
         return codeItem ;
+    }
+
+    private static String codeValueOf(Attributes item) {
+        String codeValue;
+        return (codeValue = item.getString(Tag.CodeValue)) != null ? codeValue
+                : (codeValue = item.getString(Tag.LongCodeValue)) != null ? codeValue
+                : item.getString(Tag.URNCodeValue);
+    }
+
+    private static boolean isURN(String codeValue) {
+        if (codeValue.indexOf(':') > 0)
+            try {
+                if (!codeValue.startsWith("urn:"))
+                    new URL(codeValue);
+                return true;
+            } catch (MalformedURLException e) {}
+        return false;
     }
 
     public final Key key() {
@@ -197,7 +226,7 @@ public class Code implements Serializable {
 
         @Override
         public int hashCode() {
-            return outer().hashCode();
+            return codeValue.hashCode();
         }
 
         @Override
@@ -208,7 +237,7 @@ public class Code implements Serializable {
                 return false;
 
             Key other = (Key) o;
-            return outer().equalsIgnoreMeaning(other.outer());
+            return equalsIgnoreMeaning(other.outer());
         }
 
         private Code outer() {

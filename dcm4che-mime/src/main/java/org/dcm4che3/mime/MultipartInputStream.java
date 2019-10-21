@@ -169,20 +169,14 @@ public class MultipartInputStream extends FilterInputStream {
     }
 
     public Map<String, List<String>> readHeaderParams() throws IOException {
-        Map<String, List<String>> map = new TreeMap<String, List<String>>(
-                new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        return o1.compareToIgnoreCase(o2);
-                    }
-                });
+        Map<String, List<String>> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Field field = new Field();
         while (readHeaderParam(field)) {
             String name = field.toString();
             String value = "";
             int endName = name.indexOf(':');
             if (endName != -1) {
-                value =  unquote(name.substring(endName+1)).trim();
+                value =  unquote(name.substring(endName+1).trim());
                 name = name.substring(0, endName);
             }
             List<String> list = map.get(name);
@@ -195,15 +189,20 @@ public class MultipartInputStream extends FilterInputStream {
     }
 
     private static String unquote(String s) {
-        char[] cs = s.toCharArray();
+        int srcEnd = s.length() - 1;
+        if (srcEnd < 0 || s.charAt(0) != '\"') {
+            return s;
+        }
+        if (srcEnd == 0 || s.charAt(srcEnd) != '\"') { // missing closing quote
+            srcEnd++;
+        }
+        char[] cs = new char[srcEnd - 1];
+        s.getChars(1, srcEnd, cs, 0);
         boolean backslash = false;
         int count = 0;
         for (char c : cs) {
-            if (c != '\"' && c != '\\' || backslash) {
+            if (!(backslash = !backslash && c == '\\')) {
                 cs[count++] = c;
-                backslash = false;
-            } else {
-                backslash = c == '\\';
             }
         }
         return new String(cs, 0, count);

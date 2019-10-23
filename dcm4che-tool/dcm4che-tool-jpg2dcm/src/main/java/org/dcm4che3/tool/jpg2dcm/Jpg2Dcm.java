@@ -155,7 +155,7 @@ public class Jpg2Dcm {
 
     private static void createStaticMetadata(CommandLine cl, Attributes staticMetadata) throws Exception {
         if (cl.hasOption("f"))
-            staticMetadata = SAXReader.parse(cl.getOptionValue("f"));
+            SAXReader.parse(cl.getOptionValue("f"), staticMetadata);
 
         CLIUtils.addAttributes(staticMetadata, cl.getOptionValues("m"));
         supplementMissingUIDs(staticMetadata);

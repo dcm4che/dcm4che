@@ -464,6 +464,21 @@ public class Association {
         }
     }
 
+    /**
+     * Block if the number of outstanding DIMSE responses has reached the negotiated value
+     * for the maximum number of outstanding operations it may invoke asynchronously.
+     *
+     * @throws InterruptedException if any thread interrupted the current thread before or
+     *         while the current thread was waiting
+     */
+    public void waitForNonBlockingInvoke() throws InterruptedException {
+        if (maxOpsInvoked > 0)
+            synchronized (rspHandlerForMsgId) {
+                while (rspHandlerForMsgId.size() >= maxOpsInvoked)
+                    rspHandlerForMsgId.wait();
+            }
+    }
+
     void write(AAssociateRQ rq) throws IOException {
         name = rq.getCallingAET() + delim() + rq.getCalledAET() + '(' + serialNo + ')';
         this.rq = rq;

@@ -60,16 +60,16 @@ public class Code implements Serializable {
 
     public Code(String codeValue, String codingSchemeDesignator,
             String codingSchemeVersion, String codeMeaning) {
-        if (codeValue == null || codeValue.isEmpty())
+        if (codeValue == null)
             throw new NullPointerException("Missing Code Value");
         if (isURN(codeValue)) {
             if (codingSchemeDesignator != null || codingSchemeVersion != null)
                 throw new IllegalArgumentException("URN Code Value with Coding Scheme Designator");
         } else {
-            if (codingSchemeDesignator == null || codingSchemeDesignator.isEmpty())
+            if (codingSchemeDesignator == null)
                 throw new NullPointerException("Missing Coding Scheme Designator");
         }
-        if (codeMeaning == null || codeMeaning.isEmpty())
+        if (codeMeaning == null)
             throw new NullPointerException("Missing Code Meaning");
         this.codeValue = codeValue;
         this.codingSchemeDesignator = codingSchemeDesignator;

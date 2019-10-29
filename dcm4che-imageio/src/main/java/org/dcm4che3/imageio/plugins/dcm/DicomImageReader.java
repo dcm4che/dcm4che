@@ -277,7 +277,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
                         iisOfFrame.readFully(bs);
                     }
 
-                    if (this.metadata.getPixelDataVR() == VR.OW && bigEndian()) {
+                    if (this.metadata.isSwapShortsRequired()) {
                         ByteUtils.swapShorts(data);
                     }
                 } else {
@@ -583,8 +583,8 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         this.metadata = metadata;
 
         if (metadata.containsPixelData()) {
-             if (metadata.getTransferSyntaxType().isPixeldataEncapsulated()) {
-                 String tsuid = metadata.getTransferSyntax();
+             if (metadata.isCompressed()) {
+                String tsuid = metadata.getTransferSyntax();
                 if (tsuid == null)
                     throw new IllegalArgumentException("Missing Transfer Syntax for Data Set with compressed Pixel Data");
 

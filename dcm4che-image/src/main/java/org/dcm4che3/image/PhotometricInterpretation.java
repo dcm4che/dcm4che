@@ -207,8 +207,21 @@ public enum PhotometricInterpretation {
         }
     };
 
-    public static PhotometricInterpretation fromString(String s) {
-        return s.equals("PALETTE COLOR") ? PALETTE_COLOR : valueOf(s);
+    public static PhotometricInterpretation fromString(String pmiStr) {
+        PhotometricInterpretation pmi;
+        switch(pmiStr) {
+            case "MONOCHROME":
+                pmi = MONOCHROME2;
+                break;
+            case "PALETTE COLOR":
+                pmi = PALETTE_COLOR;
+                break;
+            default:
+                pmi = valueOf(pmiStr);
+                break;
+        }
+
+        return pmi;
     }
 
     public int frameLength(int w, int h, int samples, int bitsAllocated) {

@@ -112,7 +112,7 @@ public class BulkDataMetaData extends DicomMetaData {
     public int countFrames() throws IOException {
         int frames = 0;
         if(containsPixelData()) {
-            if(pixelData instanceof Fragments) {
+            if(isCompressed()) {
                 Fragments fragments = (Fragments) pixelData;
                 frames = fragments.size() - 1;
             }
@@ -122,6 +122,11 @@ public class BulkDataMetaData extends DicomMetaData {
         }
 
         return frames;
+    }
+
+    @Override
+    public boolean isCompressed() {
+        return pixelData instanceof Fragments;
     }
 
     @Override

@@ -48,13 +48,13 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.image.DataBuffer;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.ByteOrder;
 
 /**
  * Interface that provides basic methods for accessing DICOM attribute data.
  * @author Andrew Cowan (andrew.cowan@agfa.com)
  */
 public interface DicomAccessor {
-
     /**
      * Get the base URI of the underlying DICOM data.
      */
@@ -126,10 +126,17 @@ public interface DicomAccessor {
     default boolean isMonochrome() {
         return ColorModelFactory.isMonochrome(getAttributes());
     }
-    default PhotometricInterpretation getPhotometricInterpretation() { return PhotometricInterpretation.fromString(getAttributes().getString(Tag.PhotometricInterpretation, "MONOCHROME2")); }
+    default PhotometricInterpretation getPhotometricInterpretation() {
+        String pmiStr = getAttributes().getString(Tag.PhotometricInterpretation, "MONOCHROME2");
+        return PhotometricInterpretation.fromString(pmiStr);
+    }
     default int getNumberOfFrames() { return getAttributes().getInt(Tag.NumberOfFrames, 1); }
     default boolean isSingleFrame() { return getNumberOfFrames() == 1; }
     default int getPlanarConfiguration() { return getAttributes().getInt(Tag.PlanarConfiguration, 0); }
     default boolean isBanded() {return getSamplesPerPixel() > 1 && getPlanarConfiguration() != 0;}
     default int getDataType() { return getBitsAllocated() <= 8 ? DataBuffer.TYPE_BYTE : DataBuffer.TYPE_USHORT;}
+    default boolean isSwapShortsRequired() {return getPixelDataVR() == VR.OW && getAttributes().bigEndian();}
+    default boolean isCompressed() {return getTransferSyntaxType().isPixeldataEncapsulated();}
+    default boolean isOB() { return getPixelDataVR() == VR.OB; }
+    default ByteOrder getByteOrder() {return getAttributes().bigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;}
 }

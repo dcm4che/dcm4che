@@ -761,4 +761,14 @@ public class AttributesTest {
 
         assertEquals(filteredExpected, filtered);
     }
+
+    @Test
+    public void testPreserveEmptyPrivateCreator() {
+        Attributes original = new Attributes();
+        original.setString(0x00990010, VR.LO, "PrivateCreatorA");
+        original.setString(0x00990020, VR.LO, "PrivateCreatorB");
+        Attributes copy = new Attributes(original);
+        assertEquals("PrivateCreatorA", copy.getString(0x00990010));
+        assertEquals("PrivateCreatorB", copy.getString(0x00990020));
+    }
 }

@@ -2109,14 +2109,22 @@ public class Attributes implements Serializable {
             int tag = otherTags[i];
             VR vr = srcVRs[i];
             Object value = vr.isStringType() ? other.decodeStringValue(i) : srcValues[i];
-            if (TagUtils.isPrivateCreator(tag)) {
-                continue; // private creators will be automatically added with the private tags
-            }
 
             if (include != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) < 0)
                 continue;
             if (exclude != null && Arrays.binarySearch(exclude, fromIndex, toIndex, tag) >= 0)
                 continue;
+
+            if (TagUtils.isPrivateCreator(tag)
+                    && vr == VR.LO
+                    && (privateCreator = other.getString(tag)) != null) {
+                if ((selection == null || selection.creatorTagOf(privateCreator, tag, false) > 0)
+                        && creatorTagOf(privateCreator, tag, false) < 0
+                        && !contains(tag)) {    // preserve non-conflicting Private Creator ID tag positions
+                    setString(tag, VR.LO, privateCreator);
+                }
+                continue;
+            }
 
             if (TagUtils.isPrivateTag(tag)) {
                 int tmp = TagUtils.creatorTagOf(tag);
@@ -2159,11 +2167,6 @@ public class Attributes implements Serializable {
                 }
             }
             if (!simulate) {
-                if (privateCreator != null
-                        && creatorTagOf(privateCreator, tag, false) < 0
-                        && !contains(creatorTag)) {
-                    setString(creatorTag, VR.LO, privateCreator); // preserve non-conflicting Private Creator ID tag positions
-                }
                 if (value instanceof Sequence) {
                     Sequence dest;
                     if (mergeOriginalAttributesSequence

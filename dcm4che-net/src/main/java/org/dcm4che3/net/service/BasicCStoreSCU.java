@@ -78,7 +78,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     protected List<T> failed = Collections.synchronizedList(new ArrayList<T>());
 	protected Exception lastError;
     protected int outstandingRSP = 0;
-    protected Object outstandingRSPLock = new Object();
+    protected final Object outstandingRSPLock = new Object();
 
     @Override
     public int getStatus() {
@@ -237,7 +237,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         return messageID;
     }
 
-    private final class CStoreRSPHandler extends DimseRSPHandler {
+    protected final class CStoreRSPHandler extends DimseRSPHandler {
 
         private final T inst;
 

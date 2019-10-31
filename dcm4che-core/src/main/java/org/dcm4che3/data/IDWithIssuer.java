@@ -166,7 +166,7 @@ public class IDWithIssuer {
         if (issuer == null && identifierTypeCode == null)
             return escapeDelimiters(id);
         StringBuilder sb = new StringBuilder(id);
-        sb.append(delim + delim + delim);
+        sb.append(delim).append(delim).append(delim);
         if (issuer != null)
             sb.append(issuer.serializeForPersistence());
         if (identifierTypeCode != null)

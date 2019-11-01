@@ -114,10 +114,17 @@ public class BulkDataMetaData extends DicomMetaData {
         if(containsPixelData()) {
             if(isCompressed()) {
                 Fragments fragments = (Fragments) pixelData;
-                frames = fragments.size() - 1;
+                frames = Math.max(1, fragments.size() - 1);
             }
             else {
-                frames = 1;
+                int frameLength = calculateFrameLength();
+                long pixelDataLength = Fragments.length(pixelData);
+                if(pixelDataLength % frameLength == 0) {
+                    frames = (int) pixelDataLength / frameLength;
+                }
+                else {
+                    frames = getNumberOfFrames();
+                }
             }
         }
 
@@ -140,7 +147,7 @@ public class BulkDataMetaData extends DicomMetaData {
         // This can be a compressed or uncompressed frame
         // Use the BulkData to determine where it is, and then return the segmented value.
         // Can be byte[] or Fragment or BulkData
-        if(pixelData instanceof Fragments) {
+        if(isCompressed()) {
             // Encapsulated (compressed) data
 
             if(isSingleFrame()) {
@@ -152,8 +159,7 @@ public class BulkDataMetaData extends DicomMetaData {
         }
         else {
             // Uncompressed data stored directly into the PixelData tag.
-            PhotometricInterpretation pmi = getPhotometricInterpretation();
-            int frameLength = pmi.frameLength(getColumns(), getRows(), getSamplesPerPixel(), getBitsAllocated());
+            int frameLength = calculateFrameLength();
             long offset  = frameLength * frameIndex;
 
             ImageInputStream iisOfPixelData;
@@ -181,6 +187,14 @@ public class BulkDataMetaData extends DicomMetaData {
                 : ByteOrder.LITTLE_ENDIAN);
 
         return iisOfFrame;
+    }
+
+    /**
+     * Calculate the length of a uncompressed frame.
+     */
+    private int calculateFrameLength() {
+        PhotometricInterpretation pmi = getPhotometricInterpretation();
+        return pmi.frameLength(getColumns(), getRows(), getSamplesPerPixel(), getBitsAllocated());
     }
 
 

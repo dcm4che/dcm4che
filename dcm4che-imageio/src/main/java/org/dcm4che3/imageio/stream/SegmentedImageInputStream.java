@@ -44,10 +44,7 @@ import java.util.List;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.VR;
+import org.dcm4che3.data.*;
 import org.dcm4che3.util.ByteUtils;
 
 /**
@@ -72,14 +69,20 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
     /** Create a segmented input stream, that updates the bulk data entries as required, frameIndex
      * of -1 means the entire object/value.
      */
-    public SegmentedImageInputStream(ImageInputStream stream,
-            Fragments pixeldataFragments, int frameIndex) throws IOException {
-        if( frameIndex==-1 ) {
+    public SegmentedImageInputStream(ImageInputStream stream, Fragments pixeldataFragments, int frameIndex) throws IOException {
+        if( frameIndex < 0 ) {
             frameIndex = 0;
-        } else {
-            firstSegment = frameIndex+1;
-            lastSegment = frameIndex+2;
         }
+
+        firstSegment = frameIndex + 1;
+        lastSegment = frameIndex + 2;
+
+        if(!isValidOffsetTable(pixeldataFragments)) {
+            firstSegment--;
+            lastSegment--;
+        }
+
+
         this.fragments = pixeldataFragments;
         this.stream = stream;
         this.curSegment = frameIndex;
@@ -266,13 +269,27 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
         long length = 0;
         for(int i = firstSegment;i<Math.min(lastSegment,fragments.size());i++) {
             Object fragment = fragments.get(i);
-            if(fragment instanceof BulkData) {
-                length += ((BulkData) fragments.get(i)).length();
-            } else {
-                length += ((byte[]) fragment).length;
-            }
+            length += Fragments.length(fragment);
         }
 
         return length;
     }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        this.stream.close();
+    }
+
+    /**
+     * Some modalities generate bad data which put pixel data in the first segement of an encapsulated image.  This
+     * situation is easy to spot by checking the size of the
+     */
+    protected boolean isValidOffsetTable(Fragments pixeldataFragments) {
+        if(pixeldataFragments.isEmpty()) return false;
+
+        long length = Fragments.length(pixeldataFragments.get(0));
+        return length == 0 || length == 4 * (pixeldataFragments.size() -1);
+    }
+
 }

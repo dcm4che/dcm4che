@@ -41,7 +41,9 @@
 package org.dcm4che3.conf.json;
 
 import org.dcm4che3.data.Code;
+import org.dcm4che3.data.DatePrecision;
 import org.dcm4che3.data.Issuer;
+import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +53,7 @@ import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParsingException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.TimeZone;
 
@@ -174,6 +177,10 @@ public class JsonReader {
 
     public TimeZone timeZoneValue() {
         return TimeZone.getTimeZone(stringValue());
+    }
+
+    public Date dateTimeValue() {
+        return DateUtils.parseDT(null, stringValue(), new DatePrecision());
     }
 
     public void skipUnknownProperty() {

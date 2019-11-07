@@ -39,10 +39,7 @@ package org.dcm4che3.conf.ldap;
 
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
@@ -56,9 +53,11 @@ import javax.naming.directory.ModificationItem;
 
 import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.data.Code;
+import org.dcm4che3.data.DatePrecision;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.DateUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -174,17 +173,6 @@ public class LdapUtils {
     public static <T> void storeNotNullOrDef(Attributes attrs, String attrID, T val, T defVal) {
         if (val != null && !val.equals(defVal))
             attrs.put(attrID, LdapUtils.toString(val));
-    }
-
-    public static void storeNotNullOrDef(ConfigurationChanges.ModifiedObject ldapObj, Attributes attrs, String attrID, TimeZone val, TimeZone defVal) {
-        if (val != null && !val.equals(defVal)) {
-            attrs.put(attrID, val.getID());
-            if (ldapObj != null) {
-                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrID);
-                attribute.addValue(val);
-                ldapObj.add(attribute);
-            }
-        }
     }
 
     public static void storeNotNull(ConfigurationChanges.ModifiedObject ldapObj, Attributes attrs, String attrID, Integer val) {
@@ -316,13 +304,15 @@ public class LdapUtils {
                 mods.add(new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                         new BasicAttribute(attrId)));
                 if (ldapObj != null)
-                    ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId, prev, val));
+                    ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId,
+                            LdapUtils.toString(prev), LdapUtils.toString(val)));
             }
         } else if (!val.equals(prev)) {
             mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                     new BasicAttribute(attrId, LdapUtils.toString(val))));
             if (ldapObj != null)
-                ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId, prev, val));
+                ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId,
+                        LdapUtils.toString(prev), LdapUtils.toString(val)));
         }
     }
 
@@ -437,6 +427,10 @@ public class LdapUtils {
         return attr != null ? TimeZone.getTimeZone((String) attr.get()) : defVal;
     }
 
+    public static Date dateTimeValue(Attribute attr) throws NamingException {
+        return attr != null ? DateUtils.parseDT(null, (String) attr.get(), new DatePrecision()) : null;
+    }
+
     public static <T extends Enum<T>> T enumValue(Class<T> enumType, Attribute attr, T defVal) throws NamingException {
         return attr != null ? Enum.valueOf(enumType, (String) attr.get()) : defVal;
     }
@@ -509,8 +503,9 @@ public class LdapUtils {
     }
 
     public static String toString(Object o) {
-        return (o instanceof Boolean)
-                ? toString(((Boolean) o).booleanValue())
+        return (o instanceof Boolean) ? toString(((Boolean) o).booleanValue())
+                : (o instanceof TimeZone) ? ((TimeZone) o).getID()
+                : (o instanceof Date) ? DateUtils.formatDT(null, (Date) o)
                 : o != null ? o.toString() : null;
     }
 

@@ -41,8 +41,10 @@
 package org.dcm4che3.conf.json;
 
 import org.dcm4che3.net.Connection;
+import org.dcm4che3.util.DateUtils;
 
 import javax.json.stream.JsonGenerator;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -107,6 +109,11 @@ public class JsonWriter {
     public void writeNotNullOrDef(String name, TimeZone value, TimeZone defVal) {
         if (value != null && !value.equals(defVal))
             gen.write(name, value.getID());
+    }
+
+    public void writeNotNull(String name, Date value) {
+        if (value != null)
+            gen.write(name, DateUtils.formatDT(null, value));
     }
 
     public <T> void writeNotEmpty(String name, T[] values, T... defVals) {

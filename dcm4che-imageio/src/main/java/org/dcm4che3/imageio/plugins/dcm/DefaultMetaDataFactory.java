@@ -180,7 +180,7 @@ public class DefaultMetaDataFactory implements DicomMetaDataFactory {
 
     /** Initializes the pixel data reading from an image input stream */
     private Object createPixelDataValue(DicomInputStream dis, int numberOfFrames) throws IOException {
-         int pixelDataLength = dis.length();
+        int pixelDataLength = dis.length();
 
         Object pixelData;
         if( pixelDataLength==0 ) {
@@ -194,14 +194,19 @@ public class DefaultMetaDataFactory implements DicomMetaDataFactory {
             byte[] offsetTable = new byte[dis.length()];
             dis.readFully(offsetTable);
 
-            long start = dis.getPosition();
-
             String tsUID = dis.getFileMetaInformation().getString(Tag.TransferSyntaxUID);
             Fragments pixelDataFragments = new Fragments(null, Tag.PixelData, dis.vr(), dis.bigEndian(), isVideo(tsUID) ? 16 : numberOfFrames);
-            pixelDataFragments.add(offsetTable);
-
-            generateOffsetLengths(pixelDataFragments, dis.getURI(), isVideo(tsUID) ? 1 : numberOfFrames, offsetTable, start);
+            if(offsetTable.length == 0) {
+                // Generate fragments by scanning file.
+                generateFragments(pixelDataFragments, dis);
+            }
+            else {
+                // Generate fragments based on offset table.
+                pixelDataFragments.add(offsetTable);
+                generateFragments(pixelDataFragments, dis.getURI(), isVideo(tsUID) ? 1 : numberOfFrames, offsetTable, dis.getPosition());
+            }
             pixelData = pixelDataFragments;
+
         }
 
         return pixelData;
@@ -212,9 +217,20 @@ public class DefaultMetaDataFactory implements DicomMetaDataFactory {
         return DicomImageReader.isVideo(tsUID);
     }
 
+    /**
+     * Generate a set of Fragments by scanning through the pixel data.
+     */
+    public void generateFragments(Fragments pixelData,  DicomInputStream dis) throws IOException {
+        while(dis.readItemHeader() && dis.tag() == Tag.Item) {
+            long offset = dis.getPosition();
+            int length = dis.length();
+            pixelData.add(new BulkData(dis.getURI(), offset, length, false));
+            dis.skipFully(length);
+        }
+    }
 
     /** Creates an offset/length table based on the frame positions */
-    public void generateOffsetLengths(Fragments pixelData, String inputURI, int frames, byte[] basicOffsetTable, long start) {
+    public void generateFragments(Fragments pixelData, String inputURI, int frames, byte[] basicOffsetTable, long start) {
         long lastOffset = 0;
         BulkData lastFrag = null;
         for(int frame=0; frame<frames; frame++) {

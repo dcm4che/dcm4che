@@ -38,44 +38,37 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
-import org.dcm4che3.data.DatasetWithFMI;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.stream.CloseableImageInputStreamAdapter;
-import org.junit.Test;
 
-import javax.imageio.stream.FileImageInputStream;
-import java.io.File;
-import java.io.IOException;
+import org.dcm4che3.io.BulkDataDescriptor;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-import static org.junit.Assert.*;
-
-public class BulkDataMetaDataTest {
-
-    private static final String NM_MF = "../../src/test/data/NM-MONO2-16-13x-heart";
-    private static final String US_MF_RLE = "../../src/test/data/US-PAL-8-10x-echo";
+import java.util.Arrays;
+import java.util.Collection;
 
 
-    @Test
-    public void countFrames_Uncompressed() throws IOException {
-        DicomMetaData metaData = createMetadata(NM_MF);
-        int count = metaData.countFrames();
-        assertEquals("We must be able to calculate the number of frames from the pixel data",13, count);
+@RunWith(Parameterized.class)
+public class BulkDataMetaDataTest extends DicomMetaDataTest {
+    @Parameterized.Parameters(name="{1} -> Read entire file: {0}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                {true, BulkDataDescriptor.DEFAULT},
+                {true, BulkDataDescriptor.PIXELDATA},
+                {false, BulkDataDescriptor.DEFAULT },
+                {false, BulkDataDescriptor.PIXELDATA}
+        });
     }
 
-    @Test
-    public void countFrames_Compressed() throws IOException {
-        DicomMetaData metaData = createMetadata(US_MF_RLE);
-        int count = metaData.countFrames();
-        assertEquals("We must be able to calculate the number of frames from the pixel data",10, count);
-    }
+    @Parameterized.Parameter(0)
+    public boolean readEntireFile;
 
-    private DicomMetaData createMetadata(String name) throws IOException {
-        File file = new File("target/test-data/" + name);
-        FileImageInputStream iis = new FileImageInputStream(file);
-        try (DicomInputStream dis = new DicomInputStream(new CloseableImageInputStreamAdapter(iis))) {
-            DatasetWithFMI dataset =  dis.readDatasetWithFMI();
-            return new BulkDataMetaData(file.toURI(), dataset);
-        }
-    }
+    @Parameterized.Parameter(1)
+    public BulkDataDescriptor descriptor;
 
+    @Override
+    DicomMetaDataFactory createMetadataFactory() {
+        DefaultMetaDataFactory factory = new DefaultMetaDataFactory(readEntireFile);
+        factory.setDescriptor(descriptor);
+        return factory;
+    }
 }

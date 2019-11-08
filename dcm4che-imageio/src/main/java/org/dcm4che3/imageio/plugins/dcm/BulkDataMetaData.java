@@ -40,6 +40,7 @@ package org.dcm4che3.imageio.plugins.dcm;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.error.NoPixelDataException;
+import org.dcm4che3.error.UnavailableFrameException;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.imageio.stream.ByteArrayImageInputStream;
 import org.dcm4che3.imageio.stream.SegmentedImageInputStream;
@@ -113,8 +114,13 @@ public class BulkDataMetaData extends DicomMetaData {
         int frames = 0;
         if(containsPixelData()) {
             if(isCompressed()) {
-                Fragments fragments = (Fragments) pixelData;
-                frames = Math.max(1, fragments.size() - 1);
+                if(isSingleFrame()) {
+                    frames = 1;
+                }
+                else {
+                    Fragments fragments = (Fragments) pixelData;
+                    frames = Math.max(1, fragments.size() - 1);
+                }
             }
             else {
                 int frameLength = calculateFrameLength();
@@ -142,6 +148,11 @@ public class BulkDataMetaData extends DicomMetaData {
             throw new NoPixelDataException("No PixelData defined for "+getSOPInstanceUID());
         }
 
+        int availableFrames = countFrames();
+        if(frameIndex < -1 || frameIndex >= availableFrames) {
+            throw new UnavailableFrameException("Requested frameIndex does not exist: "+frameIndex);
+        }
+
         ImageInputStream iisOfFrame;
 
         // This can be a compressed or uncompressed frame
@@ -154,8 +165,9 @@ public class BulkDataMetaData extends DicomMetaData {
                 frameIndex = -1;
             }
 
+            Fragments fragments = (Fragments)pixelData;
             ImageInputStream iisOfFile = uriLoader.openStream(this.uri);
-            iisOfFrame = new SegmentedImageInputStream(iisOfFile,(Fragments)pixelData, frameIndex);
+            iisOfFrame = new SegmentedImageInputStream(iisOfFile,fragments, frameIndex);
         }
         else {
             // Uncompressed data stored directly into the PixelData tag.

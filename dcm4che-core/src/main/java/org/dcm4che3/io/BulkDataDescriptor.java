@@ -75,6 +75,11 @@ public abstract class BulkDataDescriptor {
             }
             return false;
         }
+
+        @Override
+        public String toString() {
+            return "BulkDataDescriptor.DEFAULT";
+        }
     };
 
     public final static BulkDataDescriptor PIXELDATA = new BulkDataDescriptor() {
@@ -85,6 +90,11 @@ public abstract class BulkDataDescriptor {
                 return true;
             // Don't need any private tags larger than 64k
             return TagUtils.isPrivateTag(tag) && length>64*1024;
+        }
+
+        @Override
+        public String toString() {
+            return "BulkDataDescriptor.PIXELDATA";
         }
     };
 

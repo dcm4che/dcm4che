@@ -38,6 +38,7 @@
 
 package org.dcm4che3.imageio.dcm;
 
+import org.dcm4che.test.data.TestData;
 import org.dcm4che3.data.*;
 import org.dcm4che3.imageio.plugins.dcm.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
@@ -49,13 +50,12 @@ import org.junit.runners.Parameterized;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -81,9 +81,9 @@ public class TestDicomImageReader {
     @Parameterized.Parameter(0)
     public DicomMetaDataFactory metaDataFactory;
 
-    private static final String NM_MF = "../../src/test/data/NM-MONO2-16-13x-heart";
+    private static final String NM_MF = "NM-MONO2-16-13x-heart";
     private static final String NM_MF_CHECKSUM = "B2813DA2FE5B79A1B3CAF18DBD25023E2F84D4FE";
-    private static final String US_MF_RLE = "../../src/test/data/US-PAL-8-10x-echo";
+    private static final String US_MF_RLE = "US-PAL-8-10x-echo";
     private static final String US_MF_RLE_CHECKSUM = "5F4909DEDD7D1E113CC69172C693B4705FEE5B46";
 
 
@@ -91,7 +91,6 @@ public class TestDicomImageReader {
 
     @Before
     public void setUp() throws Exception {
-        // TODO:  Use a DicomImageReaderFactory...
         if(metaDataFactory == null) {
             reader = ImageIO.getImageReadersByFormatName("DICOM").next();
         }
@@ -217,17 +216,16 @@ public class TestDicomImageReader {
 
     private Raster testReadRasterFromImageInputStream(String ifname, int imageIndex)
             throws IOException {
-        FileImageInputStream iis = new FileImageInputStream(new File("target/test-data/" + ifname));
-        try {
+        TestData data = new TestData(ifname);
+        try (ImageInputStream iis = data.toImageInputStream()) {
             return testReadRasterFromInput(iis, imageIndex);
-        } finally {
-            SafeClose.close(iis);
         }
     }
 
     private Raster testReadRasterFromInputStream(String ifname, int imageIndex)
             throws IOException {
-        FileInputStream is = new FileInputStream(new File("target/test-data/" + ifname));
+        TestData data = new TestData(ifname);
+        FileInputStream is = new FileInputStream(data.toFile());
         try {
             return testReadRasterFromInput(is, imageIndex);
         } finally {
@@ -238,8 +236,8 @@ public class TestDicomImageReader {
     private Raster testReadRasterFromAttributes(String ifname, int imageIndex, IncludeBulkData includeBulkData) throws IOException {
         Assume.assumeNotNull(metaDataFactory);
 
-        File file = new File("target/test-data/" + ifname);
-        DicomMetaData dicomMetaData = metaDataFactory.readMetaData(file);
+        TestData data = new TestData(ifname);
+        DicomMetaData dicomMetaData = metaDataFactory.readMetaData(data.toFile());
         return testReadRasterFromInput(dicomMetaData, imageIndex);
     }
 

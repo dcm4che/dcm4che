@@ -100,6 +100,7 @@ public class FindSCU {
         MWL(UID.ModalityWorklistInformationModelFIND, null),
         UPSPull(UID.UnifiedProcedureStepPullSOPClass, null),
         UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, null),
+        UPSQuery(UID.UnifiedProcedureStepQuerySOPClass, null),
         HangingProtocol(UID.HangingProtocolInformationModelFIND, null),
         ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelFIND, null);
 

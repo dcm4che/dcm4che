@@ -86,10 +86,10 @@
                                               Supported names: PatientRoot,
                                               StudyRoot, PatientStudyOnly,
                                               MWL, UPSPull, UPSWatch,
-                                              HangingProtocol or ColorPalette.
-                                              If no Information Model is
-                                              specified, StudyRoot will be
-                                              used.
+                                              UPSQuery, HangingProtocol or
+                                              ColorPalette. If no Information
+                                              Model is specified, StudyRoot
+                                              will be used.
      -m <[seq/]attr=value>                    specify matching key. attr can
                                               be specified by keyword or tag
                                               value (in hex), e.g. PatientName

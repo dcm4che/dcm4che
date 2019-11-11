@@ -52,7 +52,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -64,11 +63,18 @@ import java.util.ResourceBundle;
 public class Pdf2Dcm {
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.pdf2dcm.messages");
     private static final long MAX_FILE_SIZE = 0x7FFFFFFE;
+    private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
 
     private static final int[] IUID_TAGS = {
             Tag.StudyInstanceUID,
             Tag.SeriesInstanceUID,
             Tag.SOPInstanceUID
+    };
+
+    private static final int[] TYPE2_TAGS = {
+            Tag.ContentDate,
+            Tag.ContentTime,
+            Tag.AcquisitionDateTime
     };
 
     private static Attributes staticMetadata;
@@ -149,13 +155,12 @@ public class Pdf2Dcm {
 
         CLIUtils.addAttributes(staticMetadata, cl.getOptionValues("m"));
         supplementMissingUIDs(staticMetadata);
-        supplementMissingDateTime(staticMetadata, Tag.ContentDateAndTime, new Date());
+        supplementType2Tags(staticMetadata);
     }
 
-    private Attributes createMetadata(Path srcFilePath, FileType fileType) throws Exception {
+    private Attributes createMetadata(FileType fileType) throws Exception {
         Attributes fileMetadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataFile()));
         fileMetadata.addAll(staticMetadata);
-        supplementMissingDateTime(fileMetadata, Tag.AcquisitionDateTime, new Date(srcFilePath.toFile().lastModified()));
         if (fileType == FileType.SLA && !fileMetadata.containsValue(Tag.FrameOfReferenceUID))
             fileMetadata.setString(Tag.FrameOfReferenceUID, VR.UI, UIDUtils.createUID());
         return fileMetadata;
@@ -214,7 +219,7 @@ public class Pdf2Dcm {
 
     private void convert(Path srcFilePath, Path destFilePath) throws Exception {
         FileType fileType = FileType.valueOf(srcFilePath);
-        Attributes fileMetadata = createMetadata(srcFilePath, fileType);
+        Attributes fileMetadata = createMetadata(fileType);
         File srcFile = srcFilePath.toFile();
         File destFile = destFilePath.toFile();
         long fileLength = srcFile.length();
@@ -234,8 +239,9 @@ public class Pdf2Dcm {
                 metadata.setString(tag, VR.UI, UIDUtils.createUID());
     }
 
-    private static void supplementMissingDateTime(Attributes metadata, long tag, Date date) {
-        if (!metadata.containsValue((int) (tag >>> 32)))
-            metadata.setDate(tag, date);
+    private static void supplementType2Tags(Attributes metadata) {
+        for (int tag : TYPE2_TAGS)
+            if (!metadata.contains(tag))
+                metadata.setNull(tag, DICT.vrOf(tag));
     }
 }

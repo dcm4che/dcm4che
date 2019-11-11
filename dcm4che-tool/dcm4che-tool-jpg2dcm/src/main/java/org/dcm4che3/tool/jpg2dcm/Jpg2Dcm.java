@@ -80,9 +80,9 @@ public class Jpg2Dcm {
             Tag.SOPInstanceUID
     };
 
-    private static final long[] DA_TM_TAGS = {
-            Tag.ContentDateAndTime,
-            Tag.InstanceCreationDateAndTime
+    private static final int[] TYPE2_TAGS = {
+            Tag.ContentDate,
+            Tag.ContentTime
     };
 
     private boolean noAPPn;
@@ -161,7 +161,7 @@ public class Jpg2Dcm {
         supplementMissingUIDs(staticMetadata);
         supplementMissingValue(staticMetadata, Tag.SeriesNumber, "999");
         supplementMissingValue(staticMetadata, Tag.InstanceNumber, "1");
-        supplementMissingDateTime(staticMetadata);
+        supplementType2Tags(staticMetadata);
     }
 
     private void convert(List<String> args) throws Exception {
@@ -269,11 +269,10 @@ public class Jpg2Dcm {
             metadata.setString(tag, DICT.vrOf(tag), value);
     }
 
-    private static void supplementMissingDateTime(Attributes metadata) {
-        Date now = new Date();
-        for (long tag : DA_TM_TAGS)
-            if (!metadata.containsValue((int) (tag >>> 32)))
-                metadata.setDate(tag, now);
+    private static void supplementType2Tags(Attributes metadata) {
+        for (int tag : TYPE2_TAGS)
+            if (!metadata.contains(tag))
+                metadata.setNull(tag, DICT.vrOf(tag));
     }
 
     private enum ContentType {

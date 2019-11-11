@@ -110,9 +110,9 @@ public class StowRS {
             Tag.SeriesInstanceUID
     };
 
-    private static final long[] DA_TM_TAGS = {
-            Tag.ContentDateAndTime,
-            Tag.AcquisitionDateTime
+    private static final int[] TYPE2_TAGS = {
+            Tag.ContentDate,
+            Tag.ContentTime
     };
 
     private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
@@ -349,23 +349,20 @@ public class StowRS {
         String contentLoc = "bulk" + UIDUtils.createUID();
         Attributes metadata = new Attributes(staticMetadata);
         supplementMissingUID(metadata, Tag.SOPInstanceUID);
-        File bulkdataFile = bulkdataFilePath.toFile();
-        supplementMissingDateTime(metadata, bulkdataFile);
+        supplementType2Tags(metadata);
         metadata.setValue(fileType.getBulkdataTypeTag(), VR.OB, new BulkData(null, contentLoc, false));
         switch (fileType) {
             case PDF:
             case XML:
-                contentLocBulkdata.put(contentLoc, new StowRSBulkdata(bulkdataFilePath));
-                break;
             case SLA:
-                supplementMissingUID(metadata, Tag.FrameOfReferenceUID);
+                supplementEncapsulatedDocAttrs(metadata);
                 contentLocBulkdata.put(contentLoc, new StowRSBulkdata(bulkdataFilePath));
                 break;
             case JPEG:
             case JP2:
             case MPEG:
             case MP4:
-                pixelMetadata(contentLoc, bulkdataFile, metadata);
+                pixelMetadata(contentLoc, bulkdataFilePath.toFile(), metadata);
                 break;
         }
         return metadata;
@@ -392,7 +389,7 @@ public class StowRS {
         Attributes metadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataResourceURL()));
         addAttributesFromFile(metadata);
         CLIUtils.addAttributes(metadata, keys);
-        supplementDefaultValue(metadata, Tag.SOPClassUID, fileType.getSOPClassUID());
+        supplementSOPClass(metadata, fileType.getSOPClassUID());
         supplementMissingUIDs(metadata);
         return metadata;
     }
@@ -415,16 +412,22 @@ public class StowRS {
             metadata.setString(tag, VR.UI, UIDUtils.createUID());
     }
 
-    private static void supplementDefaultValue(Attributes metadata, int tag, String value) {
-        if (!metadata.containsValue(tag))
-            metadata.setString(tag, DICT.vrOf(tag), value);
+    private static void supplementSOPClass(Attributes metadata, String value) {
+        if (!metadata.containsValue(Tag.SOPClassUID))
+            metadata.setString(Tag.SOPClassUID, VR.UI, value);
     }
 
-    private static void supplementMissingDateTime(Attributes metadata, File bulkdataFile) {
-        Date date = new Date(bulkdataFile.lastModified());
-        for (long tag : DA_TM_TAGS)
-            if (!metadata.containsValue((int) (tag >>> 32)))
-                metadata.setDate(tag, date);
+    private static void supplementType2Tags(Attributes metadata) {
+        for (int tag : TYPE2_TAGS)
+            if (!metadata.contains(tag))
+                metadata.setNull(tag, DICT.vrOf(tag));
+    }
+
+    private static void supplementEncapsulatedDocAttrs(Attributes metadata) {
+        if (fileType == FileType.SLA)
+            supplementMissingUID(metadata, Tag.FrameOfReferenceUID);
+        if (!metadata.contains(Tag.AcquisitionDateTime))
+            metadata.setNull(Tag.AcquisitionDateTime, VR.DT);
     }
 
     private enum CompressedPixelData {
@@ -648,7 +651,7 @@ public class StowRS {
         out.write(Files.readAllBytes(stowRSBulkdata.getBulkdataFilePath()), offset, length);
     }
 
-    class StowRSBulkdata {
+    static class StowRSBulkdata {
         Path bulkdataFilePath;
         XPEGParser parser;
 
@@ -682,7 +685,7 @@ public class StowRS {
             function.apply(path);
     }
 
-    class StowRSFileVisitor extends SimpleFileVisitor<Path> {
+    static class StowRSFileVisitor extends SimpleFileVisitor<Path> {
         private StowRSFileConsumer<Path> consumer;
 
         StowRSFileVisitor(StowRSFileConsumer<Path> consumer){

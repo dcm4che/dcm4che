@@ -67,7 +67,9 @@ public class WebApplication {
         MOVE,
         MOVE_MATCHING,
         ELASTICSEARCH,
-        DCM4CHEE_ARC_AET_DIFF
+        DCM4CHEE_ARC_AET_DIFF,
+        IID_PATIENT,
+        IID_STUDY
     }
 
     private Device device;

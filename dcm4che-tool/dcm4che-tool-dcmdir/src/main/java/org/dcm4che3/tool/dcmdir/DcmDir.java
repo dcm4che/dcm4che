@@ -50,7 +50,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -101,7 +100,6 @@ public class DcmDir {
     private RecordFactory recFact;
 
     private String csv;
-    private String recordConfig;
     private char delim;
     private char quote;
 
@@ -197,68 +195,26 @@ public class DcmDir {
             main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
             CLIUtils.configure(main.fsInfo, cl);
             main.setOriginalSequenceLength(cl.hasOption("orig-seq-len"));
-            if (cl.hasOption("w")) {
-                String s = cl.getOptionValue("w");
-                try {
-                    main.setWidth(Integer.parseInt(s));
-                } catch (IllegalArgumentException e) {
-                    throw new ParseException(MessageFormat.format(
-                            rb.getString("illegal-width"), s));
-                }
-            }
+            if (cl.hasOption("w"))
+                applyWidth(cl, main);
             try {
                 List<String> argList = cl.getArgList();
                 long start = System.currentTimeMillis();
-                if (cl.hasOption("l")) {
-                    main.openForReadOnly(new File(cl.getOptionValue("l")));
-                    main.list();
-                } else if (cl.hasOption("d")) {
-                    main.open(new File(cl.getOptionValue("d")));
-                    int num = 0;
-                    for (String arg : argList)
-                        num += main.removeReferenceTo(new File(arg));
-                    main.close();
-                    long end = System.currentTimeMillis();
-                    System.out.println();
-                    System.out.println(MessageFormat.format(
-                            rb.getString("deleted"),
-                            num, main.getFile(), (end - start)));
-                } else if (cl.hasOption("p")) {
-                    main.open(new File(cl.getOptionValue("p")));
-                    int num = main.purge();
-                    main.close();
-                    long end = System.currentTimeMillis();
-                    System.out.println(MessageFormat.format(
-                            rb.getString("purged"),
-                            num, main.getFile(), (end - start)));
-                } else if (cl.hasOption("z")) {
-                    String fpath = cl.getOptionValue("z");
-                    File f = new File(fpath);
-                    File bak = new File(fpath + "~");
-                    main.compact(f, bak);
-                    long end = System.currentTimeMillis();
-                    System.out.println(MessageFormat.format(
-                            rb.getString("compacted"),
-                            f, bak.length(), f.length(), (end - start)));
-                } else {
-                    if (cl.hasOption("c")) {
+                if (cl.hasOption("l"))
+                    listRecords(cl, main);
+                else if (cl.hasOption("d"))
+                    deleteRecords(cl, main, argList, start);
+                else if (cl.hasOption("p"))
+                    purgeRecords(cl, main, start);
+                else if (cl.hasOption("z"))
+                    compactDirRecords(cl, main, start);
+                else {
+                    if (cl.hasOption("c"))
                         main.create(new File(cl.getOptionValue("c")));
-                    } else if (cl.hasOption("u")) {
+                    else if (cl.hasOption("u"))
                         main.open(new File(cl.getOptionValue("u")));
-                    }
-                    main.setRecordFactory(new RecordFactory());
-                    int num = 0;
-                    for (String arg : argList)
-                        num += main.addReferenceTo(new File(arg));
-                    if (cl.hasOption("csv")) {
-                        main.csv = cl.getOptionValue("csv");
-                        if (cl.hasOption("record-config"))
-                            main.recordConfig = cl.getOptionValue("record-config");
-                        main.delim = cl.hasOption("csv-delim") ? cl.getOptionValue("csv-delim").charAt(0) : ',';
-                        main.quote = cl.hasOption("csv-quote") && !cl.getOptionValue("csv-quote").equals("")
-                                ? cl.getOptionValue("csv-quote").charAt(0) : '\"';
-                        num = main.readCSVFile(num);
-                    }
+                    initializeRecords(cl, main);
+                    int num = addRecords(cl, main, argList);
                     main.close();
                     long end = System.currentTimeMillis();
                     System.out.println();
@@ -280,9 +236,75 @@ public class DcmDir {
         }
     }
 
+    private static void applyWidth(CommandLine cl, DcmDir main) throws ParseException {
+        String s = cl.getOptionValue("w");
+        try {
+            main.setWidth(Integer.parseInt(s));
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(MessageFormat.format(
+                    rb.getString("illegal-width"), s));
+        }
+    }
+
+    private static void listRecords(CommandLine cl, DcmDir main) throws IOException {
+        main.openForReadOnly(new File(cl.getOptionValue("l")));
+        main.list();
+    }
+
+    private static void deleteRecords(CommandLine cl, DcmDir main, List<String> argList, long start) throws IOException {
+        main.open(new File(cl.getOptionValue("d")));
+        int num = 0;
+        for (String arg : argList)
+            num += main.removeReferenceTo(new File(arg));
+        main.close();
+        long end = System.currentTimeMillis();
+        System.out.println();
+        System.out.println(MessageFormat.format(
+                rb.getString("deleted"),
+                num, main.getFile(), (end - start)));
+    }
+
+    private static void purgeRecords(CommandLine cl, DcmDir main, long start) throws IOException {
+        main.open(new File(cl.getOptionValue("p")));
+        int num = main.purge();
+        main.close();
+        long end = System.currentTimeMillis();
+        System.out.println(MessageFormat.format(
+                rb.getString("purged"),
+                num, main.getFile(), (end - start)));
+    }
+
+    private static void compactDirRecords(CommandLine cl, DcmDir main, long start) throws IOException {
+        String fpath = cl.getOptionValue("z");
+        File f = new File(fpath);
+        File bak = new File(fpath + "~");
+        main.compact(f, bak);
+        long end = System.currentTimeMillis();
+        System.out.println(MessageFormat.format(
+                rb.getString("compacted"),
+                f, bak.length(), f.length(), (end - start)));
+    }
+
+    private static int addRecords(CommandLine cl, DcmDir main, List<String> argList) throws Exception {
+        int num = 0;
+        if (cl.hasOption("csv")) {
+            main.csv = cl.getOptionValue("csv");
+            main.delim = cl.hasOption("csv-delim") ? cl.getOptionValue("csv-delim").charAt(0) : ',';
+            main.quote = cl.hasOption("csv-quote") && !cl.getOptionValue("csv-quote").equals("")
+                    ? cl.getOptionValue("csv-quote").charAt(0) : '\"';
+            num = main.readCSVFile(num);
+        } else for (String arg : argList)
+                num += main.addReferenceTo(new File(arg));
+        return num;
+    }
+
+    private static void initializeRecords(CommandLine cl, DcmDir main) {
+        main.setRecordFactory(new RecordFactory());
+        if (cl.hasOption("record-config"))
+            main.loadCustomConfiguration(cl.getOptionValue("record-config"));
+    }
+
     private int readCSVFile(int num) throws Exception {
-        if (recordConfig != null)
-            loadCustomConfiguration();
         try(BufferedReader br = new BufferedReader(new FileReader(csv))) {
             CSVParser parser = new CSVParser(delim, quote, br.readLine());
             String nextLine;
@@ -664,7 +686,7 @@ public class DcmDir {
             throw new IllegalStateException(rb.getString("no-record-factory"));
     }
 
-    private void loadCustomConfiguration() {
+    private void loadCustomConfiguration(String recordConfig) {
         try {
             recFact.loadConfiguration(Paths.get(recordConfig).toString());
         } catch (Exception e) {
@@ -718,5 +740,4 @@ public class DcmDir {
                     : field;
         }
     }
-
 }

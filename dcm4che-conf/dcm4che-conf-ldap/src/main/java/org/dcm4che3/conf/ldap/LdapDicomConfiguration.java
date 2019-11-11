@@ -126,6 +126,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             "dicomAETitle",
             "dicomDescription",
             "dicomApplicationCluster",
+            "dcmProperty",
             "dicomInstalled",
             "dicomNetworkConnectionReference"
     };

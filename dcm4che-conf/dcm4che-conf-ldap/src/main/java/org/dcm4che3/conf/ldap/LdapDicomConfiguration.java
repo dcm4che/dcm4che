@@ -525,6 +525,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         webappInfo.setServiceClasses(LdapUtils.enumArray(WebApplication.ServiceClass.class, attrs.get("dcmWebServiceClass")));
         webappInfo.setAETitle(LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
         webappInfo.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
+        webappInfo.setProperties(LdapUtils.stringArray(attrs.get("dcmProperty")));
         String keycloakClientID = LdapUtils.stringValue(attrs.get("dcmKeycloakClientID"), null);
         webappInfo.setKeycloakClientID(keycloakClientID);
         webappInfo.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
@@ -1137,6 +1138,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmWebServiceClass", webapp.getServiceClasses());
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomAETitle", webapp.getAETitle(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomApplicationCluster", webapp.getApplicationClusters());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmProperty", webapp.getProperties());
         LdapUtils.storeConnRefs(ldapObj, attrs, webapp.getConnections(), deviceDN);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomInstalled", webapp.getInstalled(), null);
         return attrs;
@@ -1652,6 +1654,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         webapp.setServiceClasses(LdapUtils.enumArray(WebApplication.ServiceClass.class, attrs.get("dcmWebServiceClass")));
         webapp.setAETitle(LdapUtils.stringValue(attrs.get("dicomAETitle"), null));
         webapp.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
+        webapp.setProperties(LdapUtils.stringArray(attrs.get("dcmProperty")));
         webapp.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
     }
 
@@ -2091,6 +2094,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(ldapObj, mods, "dicomApplicationCluster",
                 a.getApplicationClusters(),
                 b.getApplicationClusters());
+        LdapUtils.storeDiffProperties(ldapObj, mods, "dcmProperty", a.getProperties(), b.getProperties());
         LdapUtils.storeDiff(ldapObj, mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),

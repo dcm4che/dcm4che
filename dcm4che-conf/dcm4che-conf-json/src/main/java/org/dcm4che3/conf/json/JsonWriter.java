@@ -46,6 +46,7 @@ import org.dcm4che3.util.DateUtils;
 import javax.json.stream.JsonGenerator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 /**
@@ -124,6 +125,19 @@ public class JsonWriter {
             gen.writeEnd();
         }
     }
+
+    public <T> void writeNotEmpty(String name, Map<String, T> map) {
+        writeNotEmpty(name, toStrings(map));
+    }
+
+    private static <T> String[] toStrings(Map<String, T> map) {
+        String[] ss = new String[map.size()];
+        int i = 0;
+        for (Map.Entry<String, T> entry : map.entrySet())
+            ss[i++] = entry.getKey() + '=' + entry.getValue();
+        return ss;
+    }
+
 
     public static <T> boolean equals(T[] a, T[] a2) {
         int length = a.length;

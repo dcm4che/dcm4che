@@ -123,9 +123,26 @@ public class LdapUtils {
         }
     }
 
+    public static <T> void storeNotEmpty(ConfigurationChanges.ModifiedObject ldapObj, Attributes attrs, String attrID,
+            Map<String, T> map) {
+        storeNotEmpty(ldapObj, attrs, attrID, toStrings(map));
+    }
+
+    public static <T> String[] toStrings(Map<String, T> map) {
+        String[] ss = new String[map.size()];
+        int i = 0;
+        for (Map.Entry<String, T> entry : map.entrySet())
+            ss[i++] = entry.getKey() + '=' + entry.getValue();
+        return ss;
+    }
+
     public static <T> void storeNotEmpty(Attributes attrs, String attrID, T[] vals, T... defVals) {
         if (vals.length > 0 && !LdapUtils.equals(vals, defVals))
             attrs.put(LdapUtils.attr(attrID, vals));
+    }
+
+    public static <T> Attribute attr(String attrID, Map<String, T> map) {
+        return attr(attrID, toStrings(map));
     }
 
     public static <T> Attribute attr(String attrID, T... vals) {
@@ -314,6 +331,41 @@ public class LdapUtils {
                 ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId,
                         LdapUtils.toString(prev), LdapUtils.toString(val)));
         }
+    }
+
+    public static <T> void storeDiffProperties(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
+            String attrID, Map<String, T> prevs, Map<String, T> props) {
+        if (!equalsProperties(prevs, props)) {
+            mods.add(props.size() == 0
+                    ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute(attrID))
+                    : new ModificationItem(DirContext.REPLACE_ATTRIBUTE, LdapUtils.attr(attrID, props)));
+            if (ldapObj != null) {
+                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrID);
+                for (String val : LdapUtils.toStrings(props))
+                    attribute.addValue(val);
+                for (String prev : LdapUtils.toStrings(prevs))
+                    attribute.removeValue(prev);
+                ldapObj.add(attribute);
+            }
+        }
+    }
+
+    private static <T> boolean equalsProperties(Map<String, T> prevs, Map<String, T> props) {
+        if (prevs == props)
+            return true;
+
+        if (prevs.size() != props.size())
+            return false;
+
+        for (Map.Entry<String, T> prop : props.entrySet()) {
+            Object value = prop.getValue();
+            Object prevValue = prevs.get(prop.getKey());
+            if (!(value == null
+                    ? prevValue == null && prevs.containsKey(prop.getKey())
+                    : prevValue != null && prevValue.toString().equals(value.toString())))
+                return false;
+        }
+        return true;
     }
 
     public static <T> void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,

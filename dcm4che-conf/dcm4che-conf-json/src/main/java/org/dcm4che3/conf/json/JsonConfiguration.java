@@ -128,6 +128,7 @@ public class JsonConfiguration {
         writer.writeNotEmpty("dcmWebServiceClass", webappInfo.getServiceClasses());
         writer.writeNotNullOrDef("dicomAETitle", webappInfo.getAETitle(), null);
         writer.writeNotEmpty("dicomApplicationCluster", webappInfo.getApplicationClusters());
+        writer.writeNotEmpty("dcmProperty", webappInfo.getProperties());
         writer.writeNotNull("dicomInstalled", webappInfo.getInstalled());
         writeNotExtendedConns(webappInfo.getConnections(), writer);
         gen.writeEnd();
@@ -868,6 +869,7 @@ public class JsonConfiguration {
         writer.writeNotEmpty("dcmWebServiceClass", webapp.getServiceClasses());
         writer.writeNotNullOrDef("dicomAETitle", webapp.getAETitle(), null);
         writer.writeNotEmpty("dicomApplicationCluster", webapp.getApplicationClusters());
+        writer.writeNotEmpty("dcmProperty", webapp.getProperties());
         writer.writeConnRefs(conns, webapp.getConnections());
         writer.writeNotNull("dicomInstalled", webapp.getInstalled());
         writer.writeEnd();
@@ -908,6 +910,9 @@ public class JsonConfiguration {
                     break;
                 case "dicomApplicationCluster":
                     webapp.setApplicationClusters(reader.stringArray());
+                    break;
+                case "dcmProperty":
+                    webapp.setProperties(reader.stringArray());
                     break;
                 case "dicomInstalled":
                     webapp.setInstalled(reader.booleanValue());

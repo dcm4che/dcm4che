@@ -639,6 +639,7 @@ objectClasses: ( 1.2.40.0.13.1.15.0.4.10 NAME 'dcmWebApp'
     dicomAETitle $
     dicomApplicationCluster $
     dcmKeycloakClientID $
+    dcmProperty $
     dicomInstalled ) )
 objectClasses: ( 1.2.40.0.13.1.15.0.4.11 NAME 'dcmBulkDataDescriptor'
   DESC 'Bulk Data Descriptor'

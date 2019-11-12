@@ -799,6 +799,7 @@ public class ApplicationEntity implements Serializable {
         setAssociationAcceptor(from.associationAcceptor);
         setAssociationInitiator(from.associationInitiator);
         setAeInstalled(from.aeInstalled);
+        setImplicitRelationalQueryEnabled(from.implicitRelationalQueryEnabled);
         setUuid(from.getUuid());
     }
 

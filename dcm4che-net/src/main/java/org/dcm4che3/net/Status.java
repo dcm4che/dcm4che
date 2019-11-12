@@ -42,7 +42,7 @@ package org.dcm4che3.net;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Status {
+public final class Status {
 
     public static final int Success                            = 0x0000;
 
@@ -275,11 +275,20 @@ public class Status {
     public static final int ElementsDiscarded                  = 0xB006;
     public static final int DataSetDoesNotMatchSOPClassWarning = 0xB007;
 
+    /**
+     * Warning: Relational Behavior Not Negotiated (B1xxH): relational behavior
+     * was allowed but not negotiated during association.
+     */
+    public static final int RelationalBehaviorNotNegotiated    = 0xB100;
+
     public static final int UnableToProcess                    = 0xC000;
     public static final int CannotUnderstand                   = 0xC000;
 
     public static boolean isPending(int status) {
         return (status & Pending) == Pending;
     }
+
+    // Prevents instantiation
+    private Status() { }
 
 }

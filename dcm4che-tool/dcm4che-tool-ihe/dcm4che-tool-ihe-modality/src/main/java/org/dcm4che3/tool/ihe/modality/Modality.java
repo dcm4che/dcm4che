@@ -316,6 +316,8 @@ public class Modality {
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addSendTimeoutOption(opts);
+        CLIUtils.addStoreTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
         CLIUtils.addBindOption(opts, "IOCMTEST");

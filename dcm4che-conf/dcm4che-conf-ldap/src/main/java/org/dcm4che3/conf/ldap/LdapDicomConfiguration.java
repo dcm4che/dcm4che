@@ -1066,6 +1066,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmARRPTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmSendTimeout",
+                conn.getSendTimeout(), Connection.NO_TIMEOUT);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmStoreTimeout",
+                conn.getStoreTimeout(), Connection.NO_TIMEOUT);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmResponseTimeout",
                 conn.getResponseTimeout(), Connection.NO_TIMEOUT);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmRetrieveTimeout",
@@ -1539,6 +1543,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 Connection.NO_TIMEOUT));
         conn.setReleaseTimeout(LdapUtils.intValue(attrs.get("dcmARRPTimeout"),
                 Connection.NO_TIMEOUT));
+        conn.setSendTimeout(LdapUtils.intValue(attrs.get("dcmSendTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setStoreTimeout(LdapUtils.intValue(attrs.get("dcmStoreTimeout"),
+                Connection.NO_TIMEOUT));
         conn.setResponseTimeout(LdapUtils.intValue(attrs.get("dcmResponseTimeout"),
                 Connection.NO_TIMEOUT));
         conn.setRetrieveTimeout(LdapUtils.intValue(attrs.get("dcmRetrieveTimeout"),
@@ -1881,6 +1889,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(ldapObj, mods, "dcmARRPTimeout",
                 a.getReleaseTimeout(),
                 b.getReleaseTimeout(),
+                Connection.NO_TIMEOUT);
+        LdapUtils.storeDiff(ldapObj, mods, "dcmSendTimeout",
+                a.getSendTimeout(),
+                b.getSendTimeout(),
+                Connection.NO_TIMEOUT);
+        LdapUtils.storeDiff(ldapObj, mods, "dcmStoreTimeout",
+                a.getStoreTimeout(),
+                b.getStoreTimeout(),
                 Connection.NO_TIMEOUT);
         LdapUtils.storeDiff(ldapObj, mods, "dcmResponseTimeout",
                 a.getResponseTimeout(),

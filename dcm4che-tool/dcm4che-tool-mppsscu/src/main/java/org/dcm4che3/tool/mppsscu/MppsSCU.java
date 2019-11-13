@@ -468,6 +468,7 @@ public class MppsSCU {
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "MPPSSCU");
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addSendTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
         addMPPSOptions(opts);

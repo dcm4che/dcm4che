@@ -216,6 +216,7 @@ public class IanSCU {
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "IANSCU");
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addSendTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
         addIANOptions(opts);

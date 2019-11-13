@@ -418,6 +418,10 @@ public class JsonConfiguration {
                     conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
             writer.writeNotDef("dcmARRPTimeout",
                     conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmSendTimeout",
+                    conn.getSendTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmStoreTimeout",
+                    conn.getStoreTimeout(), Connection.NO_TIMEOUT);
             writer.writeNotDef("dcmResponseTimeout",
                     conn.getResponseTimeout(), Connection.NO_TIMEOUT);
             writer.writeNotDef("dcmRetrieveTimeout",
@@ -507,6 +511,12 @@ public class JsonConfiguration {
                                 break;
                             case "dcmARRPTimeout":
                                 conn.setReleaseTimeout(reader.intValue());
+                                break;
+                            case "dcmSendTimeout":
+                                conn.setSendTimeout(reader.intValue());
+                                break;
+                            case "dcmStoreTimeout":
+                                conn.setStoreTimeout(reader.intValue());
                                 break;
                             case "dcmResponseTimeout":
                                 conn.setResponseTimeout(reader.intValue());

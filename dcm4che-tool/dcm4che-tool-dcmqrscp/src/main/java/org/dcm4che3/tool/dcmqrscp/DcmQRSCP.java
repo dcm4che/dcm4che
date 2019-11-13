@@ -601,6 +601,8 @@ public class DcmQRSCP {
         CLIUtils.addAcceptTimeoutOption(opts);
         CLIUtils.addAEOptions(opts);
         CLIUtils.addCommonOptions(opts);
+        CLIUtils.addSendTimeoutOption(opts);
+        CLIUtils.addStoreTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         addDicomDirOption(opts);
         addTransferCapabilityOptions(opts);

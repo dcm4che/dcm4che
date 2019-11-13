@@ -271,6 +271,7 @@ public class UpsSCU {
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "UPSSCU");
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addSendTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
         addUPSOptions(opts);

@@ -38,12 +38,12 @@ attributeTypes: ( 1.2.40.0.13.1.15.0.3.7 NAME 'dcmARRPTimeout'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 attributeTypes: ( 1.2.40.0.13.1.15.0.3.8 NAME 'dcmResponseTimeout'
-  DESC 'Timeout in ms for receive of response message; no timeout if absent'
+  DESC 'Timeout in ms for receiving other outstanding DIMSE-RSPs than C-MOVE-RSP or C-GET-RSP; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 attributeTypes: ( 1.2.40.0.13.1.15.0.3.9 NAME 'dcmRetrieveTimeout'
-  DESC 'Timeout in ms for receive of C-GET-RSP or C-MOVE-RSP; no timeout if absent'
+  DESC 'Timeout in ms for receive of outstanding C-GET-RSP or C-MOVE-RSP; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
@@ -358,6 +358,16 @@ attributeTypes: ( 1.2.40.0.13.1.15.0.3.81 NAME 'dcmRoleSelectionNegotiationLenie
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.82 NAME 'dcmSendTimeout'
+  DESC 'Timeout in ms for sending of DIMSE-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.83 NAME 'dcmStoreTimeout'
+  DESC 'Timeout in ms for sending of C-STORE-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 attributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -599,6 +609,8 @@ objectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
     dcmAARQTimeout $
     dcmAAACTimeout $
     dcmARRPTimeout $
+    dcmSendTimeout $
+    dcmStoreTimeout $
     dcmResponseTimeout $
     dcmRetrieveTimeout $
     dcmRetrieveTimeoutTotal $

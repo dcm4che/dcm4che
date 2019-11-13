@@ -251,6 +251,7 @@ public class GetSCU {
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "GETSCU");
             CLIUtils.addAEOptions(opts);
+            CLIUtils.addSendTimeoutOption(opts);
             CLIUtils.addRetrieveTimeoutOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);

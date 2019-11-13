@@ -230,6 +230,7 @@ public class FindSCU {
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "FINDSCU");
             CLIUtils.addAEOptions(opts);
+            CLIUtils.addSendTimeoutOption(opts);
             CLIUtils.addResponseTimeoutOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);

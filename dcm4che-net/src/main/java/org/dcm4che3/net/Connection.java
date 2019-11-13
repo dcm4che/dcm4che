@@ -119,6 +119,8 @@ public class Connection implements Serializable {
     private int requestTimeout;
     private int acceptTimeout;
     private int releaseTimeout;
+    private int sendTimeout;
+    private int storeTimeout;
     private int responseTimeout;
     private int retrieveTimeout;
     private boolean retrieveTimeoutTotal;
@@ -276,9 +278,8 @@ public class Connection implements Serializable {
      * If {@code "0.0.0.0"} the system pick up any local ip for outgoing
      * connections. If {@code null}, bind outgoing connections to
      * {@link #getHostname()}. This is the default.
-     * 
-     * @param bindAddress
-     *            Bind address of outgoing connection, {@code 0.0.0.0} or {@code null}
+     *
+     * @return Bind address of outgoing connection, {@code 0.0.0.0} or {@code null}
      */
     public String getClientBindAddress() {
         return clientBindAddress;
@@ -348,23 +349,23 @@ public class Connection implements Serializable {
     }
 
     /**
-     * The TCP port that the AE is listening on or <code>-1</code> for a
+     * The TCP port that the AE is listening on or {@code -1} for a
      *          network connection that only initiates associations.
      * 
-     * @return An int containing the port number or <code>-1</code>.
+     * @return An int containing the port number or {@code -1}.
      */
     public final int getPort() {
         return port;
     }
 
     /**
-     * The TCP port that the AE is listening on or <code>0</code> for a
+     * The TCP port that the AE is listening on or {@code 0} for a
      *          network connection that only initiates associations.
      * 
      * A valid port value is between 0 and 65535.
      * 
      * @param port
-     *            The port number or <code>-1</code>.
+     *            The port number or {@code -1}.
      */
     public final void setPort(int port) {
         if (this.port == port)
@@ -419,20 +420,18 @@ public class Connection implements Serializable {
     }
 
     /**
-     * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
+     * Timeout in ms for receiving A-ASSOCIATE-RQ.
      * 
-     * @param An
-     *            int value containing the milliseconds.
+     * @return Timeout in ms or {@code 0} (= no timeout).
      */
     public final int getRequestTimeout() {
         return requestTimeout;
     }
 
     /**
-     * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
+     * Timeout in ms for receiving A-ASSOCIATE-RQ.
      * 
-     * @param timeout
-     *            An int value containing the milliseconds.
+     * @param timeout Timeout in ms or {@code 0} (= no timeout).
      */
     public final void setRequestTimeout(int timeout) {
         if (timeout < 0)
@@ -452,19 +451,18 @@ public class Connection implements Serializable {
 
 
     /**
-     * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
+     * Timeout in ms for receiving A-RELEASE-RP.
      * 
-     * @return An int value containing the milliseconds.
+     * @return Timeout in ms or {@code 0} (= no timeout).
      */
     public final int getReleaseTimeout() {
         return releaseTimeout;
     }
 
     /**
-     * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
+     * Timeout in ms for receiving A-RELEASE-RP.
      * 
-     * @param timeout
-     *            An int value containing the milliseconds.
+     * @param timeout Timeout in ms or {@code 0} (= no timeout).
      */
     public final void setReleaseTimeout(int timeout) {
         if (timeout < 0)
@@ -473,19 +471,18 @@ public class Connection implements Serializable {
     }
 
     /**
-     * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
+     * Delay in ms for Socket close after sending A-ASSOCIATE-RJ or A-ABORT, 50ms by default.
      * 
-     * @return An int value containing the milliseconds.
+     * @return Delay in ms.
      */
     public final int getSocketCloseDelay() {
         return socketCloseDelay;
     }
 
     /**
-     * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
+     * Delay in ms for Socket close after sending A-ASSOCIATE-RJ or A-ABORT.
      * 
-     * @param delay
-     *            An int value containing the milliseconds.
+     * @param delay Delay in ms.
      */
     public final void setSocketCloseDelay(int delay) {
         if (delay < 0)
@@ -493,36 +490,116 @@ public class Connection implements Serializable {
         this.socketCloseDelay = delay;
     }
 
-    public final void setResponseTimeout(int timeout) {
-        this.responseTimeout = timeout;
+    /**
+     * Timeout in ms for sending other DIMSE RQs than C STORE-RQs.
+     *
+     * @return Timeout in ms or {@code 0} (= no timeout).
+     */
+    public int getSendTimeout() {
+        return sendTimeout;
     }
 
+    /**
+     * Timeout in ms for sending other DIMSE RQs than C-STORE RQs.
+     *
+     * @param timeout Timeout in ms or {@code 0} (= no timeout).
+     */
+    public void setSendTimeout(int timeout) {
+        this.sendTimeout = timeout;
+    }
+
+    /**
+     * Timeout in ms for sending C-STORE RQs.
+     *
+     * @return Timeout in ms or {@code 0} (= no timeout).
+     */
+    public int getStoreTimeout() {
+        return storeTimeout;
+    }
+
+    /**
+     * Timeout in ms for sending C-STORE RQs.
+     *
+     * @param timeout Timeout in ms or {@code 0} (= no timeout).
+     */
+    public void setStoreTimeout(int timeout) {
+        this.storeTimeout = timeout;
+    }
+
+    /**
+     * Timeout in ms for receiving other outstanding DIMSE RSPs than C-MOVE  or C-GET RSPs.
+     *
+     * @return Timeout in ms or {@code 0} (= no timeout).
+     */
     public final int getResponseTimeout() {
         return responseTimeout;
     }
 
+    /**
+     * Timeout in ms for receiving other outstanding DIMSE RSPs than C-MOVE  or C-GET RSPs.
+     *
+     * @param timeout Timeout in ms or {@code 0} (= no timeout).
+     */
+    public final void setResponseTimeout(int timeout) {
+        this.responseTimeout = timeout;
+    }
+
+    /**
+     * Timeout in ms for receiving outstanding C-MOVE or C-GET RSPs.
+     *
+     * @return Timeout in ms or {@code 0} (= no timeout).
+     */
     public final int getRetrieveTimeout() {
         return retrieveTimeout;
     }
 
+    /**
+     * Timeout in ms for receiving outstanding C-MOVE or C-GET RSPs.
+     *
+     * @param timeout Timeout in ms or {@code 0} (= no timeout).
+     */
     public final void setRetrieveTimeout(int timeout) {
         this.retrieveTimeout = timeout;
     }
 
+    /**
+     * Indicates if the timer with the specified timeout for outstanding C-GET and C-MOVE RSPs shall be restarted
+     * on receive of pending RSPs.
+     *
+     * @return if {@code false}, restart the timer with the specified timeout for outstanding C-GET and C-MOVE RSPs
+     * on receive of pending RSPs, otherwise not.
+     */
     public final boolean isRetrieveTimeoutTotal() {
         return retrieveTimeoutTotal;
     }
 
-    public final void setRetrieveTimeoutTotal(boolean retrieveTimeoutTotal) {
-        this.retrieveTimeoutTotal = retrieveTimeoutTotal;
+    /**
+     * Indicates if the timer with the specified timeout for outstanding C-GET and C-MOVE RSPs shall be restarted
+     * on receive of pending RSPs.
+     *
+     * @param total if {@code false}, restart the timer with the specified timeout for outstanding C-GET and C-MOVE
+     *              RSPs on receive of pending RSPs, otherwise not.
+     */
+    public final void setRetrieveTimeoutTotal(boolean total) {
+        this.retrieveTimeoutTotal = total;
     }
 
+    /**
+     * Timeout in ms for aborting of idle Associations.
+     *
+     * @return Timeout in ms or {@code 0} (= no timeout).
+     */
     public final int getIdleTimeout() {
         return idleTimeout;
     }
 
-    public final void setIdleTimeout(int idleTimeout) {
-        this.idleTimeout = idleTimeout;
+    /**
+     * Timeout in ms for aborting of idle Associations.
+     *
+     * @param timeout Timeout in ms or {@code 0} (= no timeout).
+     */
+    public final void setIdleTimeout(int timeout) {
+        this.idleTimeout = timeout;
     }
 
     /**
@@ -541,7 +618,7 @@ public class Connection implements Serializable {
      * TLS CipherSuites shall be described using an RFC-2246 string
      * representation (e.g. 'SSL_RSA_WITH_3DES_EDE_CBC_SHA')
      * 
-     * @param tlsCipherSuite
+     * @return
      *            A String array containing the supported cipher suites
      */
     public void setTlsCipherSuites(String... tlsCipherSuites) {
@@ -1146,6 +1223,8 @@ public class Connection implements Serializable {
         setRequestTimeout(from.requestTimeout);
         setAcceptTimeout(from.acceptTimeout);
         setReleaseTimeout(from.releaseTimeout);
+        setSendTimeout(from.sendTimeout);
+        setStoreTimeout(from.storeTimeout);
         setResponseTimeout(from.responseTimeout);
         setRetrieveTimeout(from.retrieveTimeout);
         setIdleTimeout(from.idleTimeout);

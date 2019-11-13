@@ -89,7 +89,6 @@ public class CLIUtils {
         opts.addOption("V", "version", false, rb.getString("version"));
     }
 
-    @SuppressWarnings("static-access")
     public static void addBindOption(Options opts, String defAET) {
         opts.addOption(Option.builder("b")
                 .hasArg()
@@ -100,7 +99,6 @@ public class CLIUtils {
                 .build());
     }
 
-    @SuppressWarnings("static-access")
     public static void addBindServerOption(Options opts) {
         opts.addOption(Option.builder("b")
                 .hasArg()
@@ -111,7 +109,6 @@ public class CLIUtils {
         addRequestTimeoutOption(opts);
     }
 
-    @SuppressWarnings("static-access")
     public static void addConnectOption(Options opts) {
         opts.addOption(Option.builder("c")
                 .hasArg()
@@ -142,7 +139,6 @@ public class CLIUtils {
         addAcceptTimeoutOption(opts);
     }
 
-    @SuppressWarnings("static-access")
     public static void addAEOptions(Options opts) {
         opts.addOption(Option.builder()
                 .hasArg()
@@ -192,7 +188,6 @@ public class CLIUtils {
         addTLSOptions(opts);
     }
 
-    @SuppressWarnings("static-access")
     public static void addRequestTimeoutOption(Options opts) {
         opts.addOption(Option.builder()
             .hasArg()
@@ -202,7 +197,6 @@ public class CLIUtils {
             .build());
     }
 
-    @SuppressWarnings("static-access")
     public static void addAcceptTimeoutOption(Options opts) {
         opts.addOption(Option.builder()
                 .hasArg()
@@ -212,7 +206,6 @@ public class CLIUtils {
                 .build());
     }
 
-    @SuppressWarnings("static-access")
     public static void addSocketOptions(Options opts) {
         opts.addOption(Option.builder()
                 .hasArg()
@@ -229,7 +222,6 @@ public class CLIUtils {
         opts.addOption(null, "tcp-delay", false, rb.getString("tcp-delay"));
     }
 
-    @SuppressWarnings("static-access")
     public static void addConnectTimeoutOption(Options opts) {
         opts.addOption(Option.builder()
                 .hasArg()
@@ -239,7 +231,24 @@ public class CLIUtils {
                 .build());
     }
 
-    @SuppressWarnings("static-access")
+    public static void addSendTimeoutOption(Options opts) {
+        opts.addOption(Option.builder()
+            .hasArg()
+            .argName("ms")
+            .desc(rb.getString("send-timeout"))
+            .longOpt("send-timeout")
+            .build());
+    }
+
+    public static void addStoreTimeoutOption(Options opts) {
+        opts.addOption(Option.builder()
+            .hasArg()
+            .argName("ms")
+            .desc(rb.getString("store-timeout"))
+            .longOpt("store-timeout")
+            .build());
+    }
+
     public static void addResponseTimeoutOption(Options opts) {
         opts.addOption(Option.builder()
             .hasArg()
@@ -249,7 +258,6 @@ public class CLIUtils {
             .build());
     }
 
-    @SuppressWarnings("static-access")
     public static void addRetrieveTimeoutOption(Options opts) {
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder()
@@ -267,7 +275,6 @@ public class CLIUtils {
         opts.addOptionGroup(group);
     }
 
-    @SuppressWarnings("static-access")
     public static void addTLSOptions(Options opts) {
         addTLSCipherOptions(opts);
         opts.addOption(Option.builder()
@@ -339,7 +346,6 @@ public class CLIUtils {
         opts.addOption(null, "tls-aes", false, rb.getString("tls-aes"));
     }
 
-    @SuppressWarnings("static-access")
     public static void addPriorityOption(Options opts) {
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder()
@@ -480,6 +486,8 @@ public class CLIUtils {
         conn.setRequestTimeout(getIntOption(cl, "request-timeout", 0));
         conn.setAcceptTimeout(getIntOption(cl, "accept-timeout", 0));
         conn.setReleaseTimeout(getIntOption(cl, "release-timeout", 0));
+        conn.setSendTimeout(getIntOption(cl, "send-timeout", 0));
+        conn.setStoreTimeout(getIntOption(cl, "store-timeout", 0));
         conn.setResponseTimeout(getIntOption(cl, "response-timeout", 0));
         if (cl.hasOption("retrieve-timeout")) {
             conn.setRetrieveTimeout(getIntOption(cl, "retrieve-timeout", 0));
@@ -570,7 +578,6 @@ public class CLIUtils {
         return p;
     }
 
-    @SuppressWarnings("static-access")
     public static void addEncodingOptions(Options opts) {
         opts.addOption(null, "group-len", false, rb.getString("group-len"));
         OptionGroup sqlenGroup = new OptionGroup();
@@ -627,7 +634,6 @@ public class CLIUtils {
         }
     }
 
-    @SuppressWarnings("static-access")
     public static void addFilesetInfoOptions(Options opts) {
         opts.addOption(Option.builder()
                 .longOpt("fs-desc")
@@ -663,7 +669,6 @@ public class CLIUtils {
         fsInfo.setDescriptorFileCharset(cl.getOptionValue("fs-desc-cs"));
     }
 
-    @SuppressWarnings("static-access")
     public static void addTransferSyntaxOptions(Options opts) {
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder()

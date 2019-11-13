@@ -314,6 +314,7 @@ public class StgCmtSCU {
         CLIUtils.addBindOption(opts, "STGCMTSCU");
         CLIUtils.addRequestTimeoutOption(opts);
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addSendTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
         addStgCmtOptions(opts);

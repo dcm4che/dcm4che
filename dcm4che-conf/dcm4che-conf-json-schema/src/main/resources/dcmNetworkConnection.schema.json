@@ -162,15 +162,27 @@
       "type": "integer",
       "minimum": 100
     },
+    "dcmSendTimeout": {
+      "title": "Send Timeout",
+      "description": "Timeout in ms for sending other DIMSE RQs than C-STORE RQs; no timeout if absent",
+      "type": "integer",
+      "minimum": 100
+    },
+    "dcmStoreTimeout": {
+      "title": "Store Timeout",
+      "description": "Timeout in ms for sending C-STORE RQs; no timeout if absent",
+      "type": "integer",
+      "minimum": 100
+    },
     "dcmResponseTimeout": {
       "title": "Response Timeout",
-      "description": "Timeout in ms for receive of response message; no timeout if absent",
+      "description": "Timeout in ms for receive of other outstanding DIMSE RSPs than C-MOVE  or C-GET RSPs; no timeout if absent",
       "type": "integer",
       "minimum": 100
     },
     "dcmRetrieveTimeout": {
       "title": "Retrieve Timeout",
-      "description": "Timeout in ms for receive of C-GET-RSP or C-MOVE-RSP; no timeout if absent",
+      "description": "Timeout in ms for receive of outstanding C-GET or C-MOVE RSPs; no timeout if absent",
       "type": "integer",
       "minimum": 100
     },

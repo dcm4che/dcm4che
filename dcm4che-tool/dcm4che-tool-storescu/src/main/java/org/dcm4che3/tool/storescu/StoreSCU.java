@@ -194,6 +194,7 @@ public class StoreSCU {
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "STORESCU");
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addStoreTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);

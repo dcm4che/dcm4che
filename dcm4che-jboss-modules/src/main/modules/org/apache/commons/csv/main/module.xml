@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.1" name="org.apache.commons.csv">
+    <resources>
+        <resource-root path="commons-csv-${apache-commons-csv.version}.jar"/>
+    </resources>
+
+    <dependencies>
+    </dependencies>
+</module>

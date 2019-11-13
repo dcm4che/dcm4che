@@ -194,6 +194,11 @@
       <artifactId>keycloak-admin-client</artifactId>
       <version>${keycloak.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>${apache-commons-csv.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

@@ -25,7 +25,8 @@
           "DICOM",
           "HL7",
           "SYSLOG_TLS",
-          "SYSLOG_UDP"
+          "SYSLOG_UDP",
+          "HTTP"
       ]
     },
     "dcmHTTPProxy": {

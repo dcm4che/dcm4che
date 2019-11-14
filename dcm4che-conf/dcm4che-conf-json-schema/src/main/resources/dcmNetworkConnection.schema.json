@@ -42,11 +42,12 @@
     "dcmTLSProtocol": {
       "title": "TLS Protocol",
       "description": "The Supported TLS Protocols.",
-      "default": ["TLSv1.2", "TLSv1.1", "TLSv1"],
+      "default": ["TLSv1.2"],
       "type": "array",
       "items" : {
         "type": "string",
         "enum": [
+          "TLSv1.3",
           "TLSv1.2",
           "TLSv1.1",
           "TLSv1",

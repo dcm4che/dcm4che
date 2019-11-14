@@ -105,7 +105,7 @@ public class Connection implements Serializable {
     public static final String TLS_RSA_WITH_NULL_SHA = "SSL_RSA_WITH_NULL_SHA";
     public static final String TLS_RSA_WITH_3DES_EDE_CBC_SHA = "SSL_RSA_WITH_3DES_EDE_CBC_SHA";
     public static final String TLS_RSA_WITH_AES_128_CBC_SHA = "TLS_RSA_WITH_AES_128_CBC_SHA";
-    public static final String[] DEFAULT_TLS_PROTOCOLS =  { "TLSv1.2", "TLSv1.1", "TLSv1" };
+    public static final String[] DEFAULT_TLS_PROTOCOLS =  { "TLSv1.2" };
 
     private Device device;
     private String commonName;

@@ -286,6 +286,7 @@ public class CLIUtils {
         opts.addOption(null, "tls1", false, rb.getString("tls1"));
         opts.addOption(null, "tls11", false, rb.getString("tls11"));
         opts.addOption(null, "tls12", false, rb.getString("tls12"));
+        opts.addOption(null, "tls13", false, rb.getString("tls13"));
         opts.addOption(null, "ssl3", false, rb.getString("ssl3"));
         opts.addOption(null, "ssl2Hello", false, rb.getString("ssl2Hello"));
         opts.addOption(null, "tls-noauth", false, rb.getString("tls-noauth"));
@@ -530,7 +531,9 @@ public class CLIUtils {
         if (!configureTLSCipher(conn, cl))
             return;
 
-        if (cl.hasOption("tls12"))
+        if (cl.hasOption("tls13"))
+            conn.setTlsProtocols("TLSv1.3");
+        else if (cl.hasOption("tls12"))
             conn.setTlsProtocols("TLSv1.2");
         else if (cl.hasOption("tls11"))
             conn.setTlsProtocols("TLSv1.1");

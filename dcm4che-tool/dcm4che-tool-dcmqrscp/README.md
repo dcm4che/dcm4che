@@ -1,4 +1,3 @@
-```
 usage: dcmqrscp [options] -b [<aet>[@<ip>]:]<port> --dicomdir
                 /media/cdrom/DICOMDIR
 
@@ -223,11 +222,10 @@ Options:
     --tls-protocol <protocol>           TLS/SSL protocol to use. Multiple
                                         TLS/SSL protocols may be enabled
                                         by multiple --tls-protocol
-                                        options. Supported values by
-                                        SunJSSE 1.8: TLSv1, TLSv1.1,
-                                        TLSv1.2, SSLv3, SSLv2Hello. By
-                                        default, TLSv1, TLSv1.1 and
-                                        TLSv1.2 are enabled.
+                                        options. Supported values by Java
+                                        11: TLSv1, TLSv1.1, TLSv1.2,
+                                        TLSv1.3, SSLv3, SSLv2Hello. By
+                                        default, only TLSv1.2 is enabled.
     --tls1                              enable only TLS/SSL protocol
                                         TLSv1; equivalent to
                                         --tls-protocol TLSv1
@@ -237,6 +235,9 @@ Options:
     --tls12                             enable only TLS/SSL protocol
                                         TLSv1.2; equivalent to
                                         --tls-protocol TLSv1.2
+    --tls13                             enable only TLS/SSL protocol
+                                        TLSv1.3; equivalent to
+                                        --tls-protocol TLSv1.3
     --trust-store <file|url>            file path of key store containing
                                         trusted certificates,
                                         resource:cacerts.jks by default
@@ -251,4 +252,3 @@ Options:
 Example: dcmqrscp -b DCMQRSCP:11112 --dicomdir /media/cdrom/DICOMDIR
 => Starts server listening on port 11112, accepting association requests
 with DCMQRSCP as called AE title.
-```

@@ -5,8 +5,7 @@
   "required": [
     "dcmWebAppName",
     "dcmWebServicePath",
-    "dcmWebServiceClass",
-    "dicomNetworkConnectionReference"
+    "dcmWebServiceClass"
   ],
   "properties": {
     "dcmWebAppName": {
@@ -46,11 +45,12 @@
           "UPS_RS",
           "DCM4CHEE_ARC",
           "DCM4CHEE_ARC_AET",
+          "DCM4CHEE_ARC_AET_DIFF",
           "PAM",
+          "REJECT",
           "MOVE",
           "MOVE_MATCHING",
-          "ELASTICSEARCH",
-          "DCM4CHEE_ARC_AET_DIFF"
+          "ELASTICSEARCH"
         ]
       }
     },
@@ -76,7 +76,7 @@
     },
     "dcmProperty": {
       "title": "Property",
-      "description": "Property in format <name>=<value>. E.g: IID_PATIENT_URL=http(s)://<viewer-host>:<viewer-port>/IHEInvokeImageDisplay?requestType=PATIENT&patientID={} or IID_STUDY_URL=http(s)://<viewer-host>:<viewer-port>/IHEInvokeImageDisplay?requestType=STUDY&studyUID={}",
+      "description": "Property in format <name>=<value>. E.g.: IID_PATIENT_URL=http(s)://<viewer-host>:<viewer-port>/IHEInvokeImageDisplay?requestType=PATIENT&patientID={} or IID_STUDY_URL=http(s)://<viewer-host>:<viewer-port>/IHEInvokeImageDisplay?requestType=STUDY&studyUID={}",
       "type": "array",
       "items": {
         "type": "string"

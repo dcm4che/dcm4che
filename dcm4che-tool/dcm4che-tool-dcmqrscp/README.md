@@ -1,3 +1,4 @@
+```
 usage: dcmqrscp [options] -b [<aet>[@<ip>]:]<port> --dicomdir
                 /media/cdrom/DICOMDIR
 
@@ -139,6 +140,12 @@ Options:
                                         Factory.xml by default
     --relational                        support relational queries and
                                         retrievals
+    --relational-lenient                accept C-FIND, C-GET and C-MOVE
+                                        RQs with missing Unique Key
+                                        Attribute for levels above the
+                                        Query/Retrieve level even if no
+                                        Relational-Queries/Retrieve was
+                                        negotiated
     --release-timeout <ms>              timeout in ms for receiving
                                         A-RELEASE-RP, no timeout by
                                         default
@@ -252,3 +259,4 @@ Options:
 Example: dcmqrscp -b DCMQRSCP:11112 --dicomdir /media/cdrom/DICOMDIR
 => Starts server listening on port 11112, accepting association requests
 with DCMQRSCP as called AE title.
+```

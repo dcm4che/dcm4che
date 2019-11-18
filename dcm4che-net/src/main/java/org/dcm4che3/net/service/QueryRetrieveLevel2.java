@@ -47,6 +47,8 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
 
@@ -60,6 +62,7 @@ public enum QueryRetrieveLevel2 {
     SERIES(Tag.SeriesInstanceUID, VR.UI),
     IMAGE(Tag.SOPInstanceUID, VR.UI);
 
+    private static Logger LOG = LoggerFactory.getLogger(QueryRetrieveLevel2.class);
     private static ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
     private final int uniqueKey;
     private final VR vrOfUniqueKey;
@@ -80,17 +83,29 @@ public enum QueryRetrieveLevel2 {
     public static QueryRetrieveLevel2 validateQueryIdentifier(
             Attributes keys, EnumSet<QueryRetrieveLevel2> levels, boolean relational)
             throws DicomServiceException {
-        return validateIdentifier(keys, levels, relational, true);
+        return validateIdentifier(keys, levels, relational, false, true);
+    }
+
+    public static QueryRetrieveLevel2 validateQueryIdentifier(
+            Attributes keys, EnumSet<QueryRetrieveLevel2> levels, boolean relational, boolean lenient)
+            throws DicomServiceException {
+        return validateIdentifier(keys, levels, relational, lenient, true);
     }
 
     public static QueryRetrieveLevel2 validateRetrieveIdentifier(
             Attributes keys, EnumSet<QueryRetrieveLevel2> levels, boolean relational)
             throws DicomServiceException {
-        return validateIdentifier(keys, levels, relational, false);
+        return validateIdentifier(keys, levels, relational, false,false);
+    }
+
+    public static QueryRetrieveLevel2 validateRetrieveIdentifier(
+            Attributes keys, EnumSet<QueryRetrieveLevel2> levels, boolean relational, boolean lenient)
+            throws DicomServiceException {
+        return validateIdentifier(keys, levels, relational, lenient,false);
     }
 
     private static QueryRetrieveLevel2 validateIdentifier(
-            Attributes keys, EnumSet<QueryRetrieveLevel2> levels, boolean relational, boolean query)
+            Attributes keys, EnumSet<QueryRetrieveLevel2> levels, boolean relational, boolean lenient, boolean query)
             throws DicomServiceException {
         String value = keys.getString(Tag.QueryRetrieveLevel);
         if (value == null)
@@ -105,29 +120,27 @@ public enum QueryRetrieveLevel2 {
         if (!levels.contains(level))
             throw invalidAttributeValue(Tag.QueryRetrieveLevel, value);
 
-        if (level == QueryRetrieveLevel2.PATIENT) {
-            level.checkUniqueKey(keys, query, false);
-            return level;
-        }
-
         for (QueryRetrieveLevel2 level2 : levels) {
             if (level2 == level) {
-                if (!query)
-                    level.checkUniqueKey(keys, false, true);
+                level.checkUniqueKey(keys, query, false, level != QueryRetrieveLevel2.PATIENT);
                 break;
             }
-            level2.checkUniqueKey(keys, relational, false);
+            level2.checkUniqueKey(keys, relational, lenient, false);
         }
 
         return level;
     }
 
-    private void checkUniqueKey(Attributes keys, boolean optional, boolean multiple)
+    private void checkUniqueKey(Attributes keys, boolean optional, boolean lenient, boolean multiple)
             throws DicomServiceException {
         String[] ids = keys.getStrings(uniqueKey);
         if (ids == null || ids.length == 0) {
             if (!optional)
-                throw missingAttribute(uniqueKey);
+                if (lenient)
+                    LOG.info("Missing " + DICT.keywordOf(uniqueKey) + " " + TagUtils.toString(uniqueKey)
+                            + " in Query/Retrieve Identifier");
+                else
+                    throw missingAttribute(uniqueKey);
         } else if (!multiple && ids.length > 1)
             throw invalidAttributeValue(uniqueKey, StringUtils.concat(ids, '\\'));
     }

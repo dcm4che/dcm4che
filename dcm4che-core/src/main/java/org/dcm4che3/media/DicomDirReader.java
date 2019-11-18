@@ -372,7 +372,7 @@ public class DicomDirReader implements Closeable {
     private Attributes keys(Attributes attrs, RecordFactory recFact) {
         int[] selection = recFact.getRecordKeys(RecordType.SR_DOCUMENT);
         Attributes keys = new Attributes(selection.length + 1);
-        String[] iuids = keys.getStrings(Tag.SOPInstanceUID);
+        String[] iuids = attrs.getStrings(Tag.SOPInstanceUID);
         if (iuids != null && iuids.length > 0)
             keys.setString(Tag.ReferencedSOPInstanceUIDInFile, VR.CS, iuids);
         keys.addSelected(attrs, selection);

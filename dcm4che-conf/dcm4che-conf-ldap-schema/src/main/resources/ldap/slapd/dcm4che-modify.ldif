@@ -655,6 +655,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.10 NAME 'dcmWebApp'
     dcmWebServiceClass $
     dcmWebServicePath )
   MAY (
+    dicomNetworkConnectionReference $
     dicomDescription $
     dicomAETitle $
     dicomApplicationCluster $

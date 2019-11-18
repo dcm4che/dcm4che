@@ -653,8 +653,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.10 NAME 'dcmWebApp'
   MUST (
     dcmWebAppName $
     dcmWebServiceClass $
-    dcmWebServicePath $
-    dicomNetworkConnectionReference )
+    dcmWebServicePath )
   MAY (
     dicomDescription $
     dicomAETitle $

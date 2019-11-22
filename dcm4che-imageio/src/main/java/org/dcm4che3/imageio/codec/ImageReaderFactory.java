@@ -73,8 +73,10 @@ import org.slf4j.LoggerFactory;
 @LDAP(objectClasses = "dcmImageReaderFactory")
 @ConfigurableClass
 public class ImageReaderFactory implements Serializable {
-
     private static final Logger LOG = LoggerFactory.getLogger(ImageReaderFactory.class);
+
+    /** Optional flag that */
+    public static final String IMAGE_TYPE_SPECIFIER_REQUIRED = "IMAGE_TYPE_SPECIFIER_REQUIRED";
 
     private static final long serialVersionUID = -2881173333124498212L;
 
@@ -93,15 +95,20 @@ public class ImageReaderFactory implements Serializable {
         @ConfigurableProperty(name = "dcmPatchJPEGLS")
         public PatchJPEGLS patchJPEGLS;
 
+        @ConfigurableProperty(name = "dcmImageTypeSpecifierRequired", defaultValue = "false")
+        private boolean imageTypeSpecifierRequired;
+
         public ImageReaderParam() {
         }
 
-        public ImageReaderParam(String formatName, String className,
-                String patchJPEGLS) {
+        public ImageReaderParam(String formatName, String className) {
             this.formatName = formatName;
             this.className = nullify(className);
-            this.patchJPEGLS = patchJPEGLS != null && !patchJPEGLS.isEmpty() ? PatchJPEGLS
-                    .valueOf(patchJPEGLS) : null;
+        }
+
+        public ImageReaderParam(String formatName, String className, String patchJPEGLS) {
+            this(formatName, className);
+            setPatchJPEGLS(patchJPEGLS);
         }
 
         public String getFormatName() {
@@ -126,6 +133,20 @@ public class ImageReaderFactory implements Serializable {
 
         public void setPatchJPEGLS(PatchJPEGLS patchJPEGLS) {
             this.patchJPEGLS = patchJPEGLS;
+        }
+
+        public void setPatchJPEGLS(String patchJPEGLS) {
+            if(patchJPEGLS != null && !patchJPEGLS.isEmpty()) {
+                setPatchJPEGLS( PatchJPEGLS .valueOf(patchJPEGLS));
+            }
+        }
+
+        public boolean isImageTypeSpecifierRequired() {
+            return imageTypeSpecifierRequired;
+        }
+
+        public void setImageTypeSpecifierRequired(boolean imageTypeSpecifierRequired) {
+            this.imageTypeSpecifierRequired = imageTypeSpecifierRequired;
         }
     }
 
@@ -265,12 +286,33 @@ public class ImageReaderFactory implements Serializable {
             String[] ss = StringUtils.split((String) entry.getValue(), ':');
             String formatName = ss[0];
             String className = ss[1];
-            String patchJPEGLS = ss[2];
+
+            ImageReaderParam readerParam = new ImageReaderParam(formatName, className);
+
+            // parse the optional flags at the end of the settings
+            for(String flag : StringUtils.split(ss[2], ',')) {
+                flag = flag.trim();
+
+                if(IMAGE_TYPE_SPECIFIER_REQUIRED.equals(flag)) {
+                    readerParam.setImageTypeSpecifierRequired(true);
+                }
+                else {
+                    try {
+                        PatchJPEGLS patch = PatchJPEGLS.valueOf(flag);
+                        if (patch != null) {
+                            readerParam.setPatchJPEGLS(patch);
+                        }
+                    }
+                    catch(IllegalArgumentException e) {
+                        LOG.warn("Invalid ImageReader flag ignored: {}", flag);
+                    }
+                }
+            }
 
             if (key.contains("/")) { // mime type
-                mapMimeTypes.put(key, new ImageReaderParam(formatName, className, patchJPEGLS));
+                mapMimeTypes.put(key, readerParam);
             } else { // transfer syntax uid
-                mapTransferSyntaxUIDs.put(key, new ImageReaderParam(formatName, className, patchJPEGLS));
+                mapTransferSyntaxUIDs.put(key, readerParam);
             }
         }
     }

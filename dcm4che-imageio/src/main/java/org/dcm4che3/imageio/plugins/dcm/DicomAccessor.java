@@ -99,6 +99,8 @@ public interface DicomAccessor {
      * Count the number of frames in the underlying instance.  This method may need to read
      * through to the underlying data source to determine the actual length of the data.
      * Results may be cached after the first call.
+     * <p/>
+     * @return Number of frames, or -1 if the number of frames is ambiguous.
      */
     int countFrames() throws IOException;
 

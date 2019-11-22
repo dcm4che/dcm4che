@@ -67,9 +67,6 @@ public class BulkDataMetaData extends DicomMetaData {
     private final Attributes fmi;
     private final Attributes attributes;
 
-    private final Object pixelData;
-    private final VR pixelDataVR;
-
     public BulkDataMetaData(URI uri, DatasetWithFMI datasetWithFMI) throws IOException {
         this(uri, datasetWithFMI, new ServiceImageInputStreamLoader());
     }
@@ -80,8 +77,6 @@ public class BulkDataMetaData extends DicomMetaData {
 
         this.fmi = datasetWithFMI.getFileMetaInformation();
         this.attributes = datasetWithFMI.getDataset();
-        this.pixelDataVR = attributes.getVR(Tag.PixelData);
-        this.pixelData = attributes.remove(Tag.PixelData);
     }
 
     @Override
@@ -101,36 +96,43 @@ public class BulkDataMetaData extends DicomMetaData {
 
     @Override
     public boolean containsPixelData() {
-        return pixelData != null;
+        return getPixelDataValue() != null;
     }
 
     @Override
     public VR getPixelDataVR() {
-        return pixelDataVR;
+        return this.attributes.getVR(Tag.PixelData);
+    }
+
+    protected Object getPixelDataValue() {
+        return this.attributes.getValue(Tag.PixelData);
     }
 
     @Override
     public int countFrames() throws IOException {
-        int frames = 0;
-        if(containsPixelData()) {
-            if(isCompressed()) {
-                if(isSingleFrame()) {
-                    frames = 1;
-                }
-                else {
-                    Fragments fragments = (Fragments) pixelData;
-                    frames = Math.max(1, fragments.size() - 1);
-                }
+        if(!containsPixelData()) {
+            throw new NoPixelDataException("No PixelData defined for "+getSOPInstanceUID());
+        }
+
+        int frames;
+        if(isCompressed()) {
+            if(isSingleFrame()) {
+                frames = 1;
             }
             else {
-                int frameLength = calculateFrameLength();
-                long pixelDataLength = Fragments.length(pixelData);
-                if(pixelDataLength % frameLength == 0) {
-                    frames = (int) pixelDataLength / frameLength;
-                }
-                else {
-                    frames = getNumberOfFrames();
-                }
+                Fragments fragments = (Fragments) getPixelDataValue();
+                frames = Math.max(1, fragments.size() - 1);
+            }
+        }
+        else {
+            int frameLength = calculateFrameLength();
+            long pixelDataLength = Fragments.length(getPixelDataValue());
+            if(pixelDataLength % frameLength == 0) {
+                frames = (int) pixelDataLength / frameLength;
+            }
+            else {
+                // Number of frames is ambiguous:  return -1.
+                frames = -1;
             }
         }
 
@@ -139,25 +141,19 @@ public class BulkDataMetaData extends DicomMetaData {
 
     @Override
     public boolean isCompressed() {
-        return pixelData instanceof Fragments;
+        return getPixelDataValue() instanceof Fragments;
     }
 
     @Override
     public ImageInputStream openPixelStream(int frameIndex) throws IOException {
-        if(!containsPixelData()) {
-            throw new NoPixelDataException("No PixelData defined for "+getSOPInstanceUID());
-        }
-
-        int availableFrames = countFrames();
-        if(frameIndex < -1 || frameIndex >= availableFrames) {
-            throw new UnavailableFrameException("Requested frameIndex does not exist: "+frameIndex);
-        }
-
-        ImageInputStream iisOfFrame;
+        checkFrameIndex(frameIndex);
 
         // This can be a compressed or uncompressed frame
         // Use the BulkData to determine where it is, and then return the segmented value.
         // Can be byte[] or Fragment or BulkData
+
+        ImageInputStream iisOfFrame;
+        Object pixelData = getPixelDataValue();
         if(isCompressed()) {
             // Encapsulated (compressed) data
 
@@ -165,7 +161,7 @@ public class BulkDataMetaData extends DicomMetaData {
                 frameIndex = -1;
             }
 
-            Fragments fragments = (Fragments)pixelData;
+            Fragments fragments = (Fragments) pixelData;
             ImageInputStream iisOfFile = uriLoader.openStream(this.uri);
             iisOfFrame = new SegmentedImageInputStream(iisOfFile,fragments, frameIndex);
         }
@@ -201,10 +197,22 @@ public class BulkDataMetaData extends DicomMetaData {
         return iisOfFrame;
     }
 
+    protected  void checkFrameIndex(int frameIndex) throws IOException {
+        // Read the actual number of frames:  use the configured number if it is ambiguous.
+        int availableFrames = countFrames();
+        if(availableFrames == -1) {
+            availableFrames = getNumberOfFrames();
+        }
+
+        if(frameIndex < -1 || frameIndex >= availableFrames) {
+            throw new UnavailableFrameException("Requested frameIndex does not exist: "+frameIndex);
+        }
+    }
+
     /**
      * Calculate the length of a uncompressed frame.
      */
-    private int calculateFrameLength() {
+    protected int calculateFrameLength() {
         PhotometricInterpretation pmi = getPhotometricInterpretation();
         return pmi.frameLength(getColumns(), getRows(), getSamplesPerPixel(), getBitsAllocated());
     }

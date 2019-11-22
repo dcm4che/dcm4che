@@ -114,10 +114,8 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
 
     private ImageReader decompressor;
+    private ImageReaderParam decompressorConfig;
 
-    private boolean rle;
-
-    private PatchJPEGLS patchJpegLS;
 
     /** Number of frames that have been read from the underlying instance. */
     private Integer actualNumberOfFrames;
@@ -156,7 +154,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
             this.actualNumberOfFrames = this.metadata.countFrames();
         }
 
-        return this.actualNumberOfFrames == null
+        return this.actualNumberOfFrames == null || this.actualNumberOfFrames == -1
                 ? this.metadata.getNumberOfFrames()
                 : this.actualNumberOfFrames;
     }
@@ -182,16 +180,18 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         readMetadata();
         checkIndex(frameIndex);
 
-        if (decompressor == null)
-            return createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), this.metadata.isBanded());
-
-        if (rle)
-            return createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), true);
-
-        try (ImageInputStream iis = iisOfFrame( 0)) {
-            decompressor.setInput(iis);
-            return decompressor.getRawImageType(0);
+        ImageTypeSpecifier imageType;
+        if (this.isImageTypeSpecifierRequired()) {
+            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), this.metadata.isBanded());
         }
+        else {
+            try (ImageInputStream iis = iisOfFrame(frameIndex)) {
+                decompressor.setInput(iis);
+                imageType = decompressor.getRawImageType(0);
+            }
+        }
+
+        return imageType;
     }
 
     @Override
@@ -201,12 +201,12 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         checkIndex(frameIndex);
 
         ImageTypeSpecifier imageType;
-        if (this.metadata.getPhotometricInterpretation().isMonochrome())
+        if (this.metadata.getPhotometricInterpretation().isMonochrome()) {
             imageType = createImageType(8, DataBuffer.TYPE_BYTE, false);
-        else if (decompressor == null)
+        }
+        else if (this.isImageTypeSpecifierRequired()) {
             imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), this.metadata.isBanded());
-        else if (rle)
-            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), true);
+        }
         else {
             try (ImageInputStream iis = iisOfFrame( 0)) {
                 decompressor.setInput(iis);
@@ -295,28 +295,33 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
     private ImageInputStream iisOfFrame(int frameIndex) throws IOException {
         ImageInputStream iisOfFrame = this.metadata.openPixelStream(frameIndex);
-        return patchJpegLS != null
-                ? new PatchJPEGLSImageInputStream(iisOfFrame, patchJpegLS)
-                : iisOfFrame;
+        if(this.decompressorConfig != null && this.decompressorConfig.getPatchJPEGLS()!=null) {
+            PatchJPEGLS patch = this.decompressorConfig.getPatchJPEGLS();
+            iisOfFrame = new PatchJPEGLSImageInputStream(iisOfFrame, patch);
+        }
+        return iisOfFrame;
     }
 
     public boolean bigEndian() {
         return metadata.getAttributes().bigEndian();
     }
 
-    private ImageReadParam decompressParam(ImageReadParam param) {
-        ImageReadParam decompressParam = decompressor.getDefaultReadParam();
+    private ImageReadParam decompressParam(ImageReadParam readParam) {
         ImageTypeSpecifier imageType = null;
         BufferedImage dest = null;
-        if (param != null) {
-            imageType = param.getDestinationType();
-            dest = param.getDestination();
+        if (readParam != null) {
+            imageType = readParam.getDestinationType();
+            dest = readParam.getDestination();
         }
-        if (rle && imageType == null && dest == null)
-            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), true);
-        decompressParam.setDestinationType(imageType);
-        decompressParam.setDestination(dest);
-        return decompressParam;
+
+        if (imageType == null && dest == null && this.isImageTypeSpecifierRequired()) {
+            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), this.metadata.isBanded());
+        }
+
+        ImageReadParam updatedReadParam = decompressor.getDefaultReadParam();
+        updatedReadParam.setDestinationType(imageType);
+        updatedReadParam.setDestination(dest);
+        return updatedReadParam;
     }
 
     @Override
@@ -329,11 +334,12 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         if (decompressor != null) {
             try (ImageInputStream iis = iisOfFrame(frameIndex)) {
                 decompressor.setInput(iis);
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Start decompressing frame #" + (frameIndex + 1));
+
+                long start = System.currentTimeMillis();
+                LOG.debug("Start decompressing frame #{} with decompressor {}",frameIndex+1, decompressor);
                 BufferedImage bi = decompressor.read(0, decompressParam(param));
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
+                LOG.debug("Finished decompressing frame #{} in {}ms", frameIndex+1, System.currentTimeMillis() - start);
+
                 if (this.metadata.getSamplesPerPixel() > 1)
                     return bi;
 
@@ -591,9 +597,9 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
                 ImageReaderParam param = ImageReaderFactory.getImageReaderParam(tsuid);
                 if (param == null)
                     throw new UnsupportedOperationException("Unsupported Transfer Syntax: " + tsuid);
-                this.rle = tsuid.equals(UID.RLELossless);
+
+                this.decompressorConfig = param;
                 this.decompressor = ImageReaderFactory.getImageReader(param);
-                this.patchJpegLS = param.patchJPEGLS;
 
                 LOG.debug("Transfer Syntax {} is assigned Image Reader {}",tsuid, param.getClassName());
             }
@@ -622,13 +628,17 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
             decompressor = null;
         }
 
-        this.patchJpegLS = null;
+        this.decompressorConfig = null;
         this.actualNumberOfFrames = null;
     }
 
     private void checkIndex(int frameIndex) {
         if (frameIndex < 0 || frameIndex >= this.metadata.getNumberOfFrames())
             throw new IndexOutOfBoundsException("imageIndex: " + frameIndex);
+    }
+
+    private boolean isImageTypeSpecifierRequired() {
+        return decompressor == null || decompressorConfig.isImageTypeSpecifierRequired();
     }
 
     @Override

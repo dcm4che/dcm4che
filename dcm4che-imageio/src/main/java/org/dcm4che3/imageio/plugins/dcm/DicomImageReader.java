@@ -56,6 +56,7 @@ import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
+import java.awt.*;
 import java.awt.image.*;
 import java.io.Closeable;
 import java.io.IOException;
@@ -309,9 +310,11 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     private ImageReadParam decompressParam(ImageReadParam readParam) {
         ImageTypeSpecifier imageType = null;
         BufferedImage dest = null;
+        Rectangle region = null;
         if (readParam != null) {
             imageType = readParam.getDestinationType();
             dest = readParam.getDestination();
+            region = readParam.getSourceRegion();
         }
 
         if (imageType == null && dest == null && this.isImageTypeSpecifierRequired()) {
@@ -321,6 +324,8 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         ImageReadParam updatedReadParam = decompressor.getDefaultReadParam();
         updatedReadParam.setDestinationType(imageType);
         updatedReadParam.setDestination(dest);
+        updatedReadParam.setSourceRegion(region);
+
         return updatedReadParam;
     }
 

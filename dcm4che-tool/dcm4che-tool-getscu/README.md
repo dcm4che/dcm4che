@@ -78,10 +78,10 @@ Options:
                                           Supported names: PatientRoot,
                                           StudyRoot, PatientStudyOnly,
                                           CompositeInstanceRoot,
-                                          HangingProtocol or ColorPalette.
-                                          If no Information Model is
-                                          specified, StudyRoot will be
-                                          used.
+                                          WithoutBulkData, HangingProtocol
+                                          or ColorPalette. If no
+                                          Information Model is specified,
+                                          StudyRoot will be used.
  -m <attr=value>                          specify matching key. attr can
                                           be specified by keyword or tag
                                           value in hex), e.g.

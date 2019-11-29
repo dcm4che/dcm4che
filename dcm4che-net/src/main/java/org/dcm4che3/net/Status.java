@@ -42,7 +42,7 @@ package org.dcm4che3.net;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Status {
+public final class Status {
 
     public static final int Success                            = 0x0000;
 
@@ -281,5 +281,8 @@ public class Status {
     public static boolean isPending(int status) {
         return (status & Pending) == Pending;
     }
+
+    // Prevents instantiation
+    private Status() { }
 
 }

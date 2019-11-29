@@ -149,6 +149,12 @@ public class ApplicationEntity implements Serializable {
             label = "Aliases (alternative AE titles)")
     private List<String> AETitleAliases = new ArrayList<String>();
 
+    @ConfigurableProperty(name = "dcmImplicitRelationalQueryEnabled",
+            label = "Enable Implicit Relational C-FIND",
+            description = "Allows C-FIND queries to have relational behavior even if not negotiated",
+            defaultValue = "false")
+    private boolean implicitRelationalQueryEnabled = false;
+
     @Parent
     private Device device;
 
@@ -460,6 +466,25 @@ public class ApplicationEntity implements Serializable {
      */
     public void setAeInstalled(Boolean aeInstalled) {
         this.aeInstalled = aeInstalled;
+    }
+
+    /**
+     * Determines whether or not Queries from this AE require relational behavior
+     * to be explicitly negotiated in associations.
+     * @return true if relational behavior should be implicit.
+     */
+    public boolean isImplicitRelationalQueryEnabled() {
+        return this.implicitRelationalQueryEnabled;
+    }
+
+    /**
+     * Enables or disables the implicit relational behaviour in Queries from this AE.
+     * @param implicitRelationalQueryEnabled A boolean value indicating whether or not to
+     *                                       treat all queries from this AE as if Relational
+     *                                       behavior was negotiated in the association.
+     */
+    public void setImplicitRelationalQueryEnabled(boolean implicitRelationalQueryEnabled) {
+        this.implicitRelationalQueryEnabled = implicitRelationalQueryEnabled;
     }
 
     public DimseRQHandler getDimseRQHandler() {
@@ -774,6 +799,7 @@ public class ApplicationEntity implements Serializable {
         setAssociationAcceptor(from.associationAcceptor);
         setAssociationInitiator(from.associationInitiator);
         setAeInstalled(from.aeInstalled);
+        setImplicitRelationalQueryEnabled(from.implicitRelationalQueryEnabled);
         setUuid(from.getUuid());
     }
 

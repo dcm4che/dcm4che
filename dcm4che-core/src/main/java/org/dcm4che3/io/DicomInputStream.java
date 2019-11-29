@@ -90,9 +90,9 @@ public class DicomInputStream extends FilterInputStream
         "Missing Transfer Syntax (0002,0010) - assume Explicit VR Little Endian";
     private static final String MISSING_FMI_LENGTH =
         "Missing or wrong File Meta Information Group Length (0002,0000)";
-    private static final String NOT_A_DICOM_STREAM = 
+    private static final String NOT_A_DICOM_STREAM =
         "Not a DICOM Stream";
-    private static final String IMPLICIT_VR_BIG_ENDIAN =
+    protected static final String IMPLICIT_VR_BIG_ENDIAN =
         "Implicit VR Big Endian encoded DICOM Stream";
     private static final String DEFLATED_WITH_ZLIB_HEADER =
         "Deflated DICOM Stream with ZLIB Header";
@@ -107,12 +107,12 @@ public class DicomInputStream extends FilterInputStream
     private byte[] byteBuf;
     private int allocateLimit = DEF_ALLOCATE_LIMIT;
     private String uri;
-    private String tsuid;
+    protected String tsuid;
     private byte[] preamble;
     private Attributes fileMetaInformation;
     private boolean hasfmi;
-    private boolean bigEndian;
-    private boolean explicitVR;
+    protected boolean bigEndian;
+    protected boolean explicitVR;
     private IncludeBulkData includeBulkData = IncludeBulkData.YES;
     private IncludeBulkData includeFragmentBulkData;
     private long pos;
@@ -149,7 +149,7 @@ public class DicomInputStream extends FilterInputStream
     public DicomInputStream(InputStream in) throws IOException {
         super(in.markSupported() ? in : new BufferedInputStream(in));
         if( in instanceof CloneIt ) originalInput = (CloneIt<InputStream, IOException>) in;
-        guessTransferSyntax();
+        this.guessTransferSyntax();
     }
 
     public DicomInputStream(File file) throws IOException {
@@ -828,15 +828,15 @@ public class DicomInputStream extends FilterInputStream
             }
         }
         if (rlen < 8
-                || !guessTransferSyntax(b132, rlen, false)
-                && !guessTransferSyntax(b132, rlen, true))
+                || !this.guessTransferSyntax(b132, rlen, false)
+                && !this.guessTransferSyntax(b132, rlen, true))
             throw new DicomStreamException(NOT_A_DICOM_STREAM);
         reset();
         hasfmi = TagUtils.isFileMetaInformation(
                 ByteUtils.bytesToTag(b132, 0, bigEndian));
     }
 
-    private boolean guessTransferSyntax(byte[] b128, int rlen, boolean bigEndian)
+    protected boolean guessTransferSyntax(byte[] b128, int rlen, boolean bigEndian)
             throws DicomStreamException {
         int tag1 = ByteUtils.bytesToTag(b128, 0, bigEndian);
         VR vr = ElementDictionary.vrOf(tag1, null);

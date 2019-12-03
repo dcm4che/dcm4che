@@ -334,8 +334,8 @@ public class AuditLogger extends DeviceExtension {
     @ConfigurableProperty(name = "dcmAuditMessageSupplement95Schema", defaultValue = "false")
     private boolean supplement95;
 
-    @ConfigurableProperty(name = "dicomInstalled", defaultValue = "false")
-    private boolean auditLoggerInstalled = false;
+    @ConfigurableProperty(name = "dicomInstalled", defaultValue = "true")
+    private boolean auditLoggerInstalled = true;
 
     @ConfigurableProperty(name = "dcmAuditIncludeInstanceUID")
     private boolean doIncludeInstanceUID = false;

@@ -58,7 +58,6 @@ import javax.naming.directory.SearchResult;
 import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.data.Issuer;
 import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.Connection.Protocol;
@@ -1436,21 +1435,21 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         device.setStationName(LdapUtils.stringValue(attrs.get("dicomStationName"), null));
         device.setDeviceSerialNumber(LdapUtils.stringValue(attrs.get("dicomDeviceSerialNumber"), null));
         device.setIssuerOfPatientID(
-                issuerValue(attrs.get("dicomIssuerOfPatientID")));
+                LdapUtils.issuerValue(attrs.get("dicomIssuerOfPatientID")));
         device.setIssuerOfAccessionNumber(
-                issuerValue(attrs.get("dicomIssuerOfAccessionNumber")));
+                LdapUtils.issuerValue(attrs.get("dicomIssuerOfAccessionNumber")));
         device.setOrderPlacerIdentifier(
-                issuerValue(attrs.get("dicomOrderPlacerIdentifier")));
+                LdapUtils.issuerValue(attrs.get("dicomOrderPlacerIdentifier")));
         device.setOrderFillerIdentifier(
-                issuerValue(attrs.get("dicomOrderFillerIdentifier")));
+                LdapUtils.issuerValue(attrs.get("dicomOrderFillerIdentifier")));
         device.setIssuerOfAdmissionID(
-                issuerValue(attrs.get("dicomIssuerOfAdmissionID")));
+                LdapUtils.issuerValue(attrs.get("dicomIssuerOfAdmissionID")));
         device.setIssuerOfServiceEpisodeID(
-                issuerValue(attrs.get("dicomIssuerOfServiceEpisodeID")));
+                LdapUtils.issuerValue(attrs.get("dicomIssuerOfServiceEpisodeID")));
         device.setIssuerOfContainerIdentifier(
-                issuerValue(attrs.get("dicomIssuerOfContainerIdentifier")));
+                LdapUtils.issuerValue(attrs.get("dicomIssuerOfContainerIdentifier")));
         device.setIssuerOfSpecimenIdentifier(
-                issuerValue(attrs.get("dicomIssuerOfSpecimenIdentifier")));
+                LdapUtils.issuerValue(attrs.get("dicomIssuerOfSpecimenIdentifier")));
         device.setInstitutionNames(LdapUtils.stringArray(attrs.get("dicomInstitutionName")));
         device.setInstitutionCodes(LdapUtils.codeArray(attrs.get("dicomInstitutionCode")));
         device.setInstitutionAddresses(LdapUtils.stringArray(attrs.get("dicomInstitutionAddress")));
@@ -2150,10 +2149,6 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             bb[i] = (byte[]) attr.get(i);
 
         return bb;
-    }
-
-    private static Issuer issuerValue(Attribute attr) throws NamingException {
-        return attr != null ? new Issuer((String) attr.get()) : null;
     }
 
     private void mergeAEs(ConfigurationChanges diffs, Device prevDev, Device dev, String deviceDN, boolean preserveVendorData)

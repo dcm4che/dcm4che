@@ -54,6 +54,7 @@ import javax.naming.directory.ModificationItem;
 import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.DatePrecision;
+import org.dcm4che3.data.Issuer;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.util.ByteUtils;
@@ -516,6 +517,10 @@ public class LdapUtils {
 
     public static Code codeValue(Attribute attr) throws NamingException {
         return attr != null ? new Code((String) attr.get()) : null;
+    }
+
+    public static Issuer issuerValue(Attribute attr) throws NamingException {
+        return attr != null ? new Issuer((String) attr.get()) : null;
     }
 
     public static int[] intArray(Attribute attr) throws NamingException {

@@ -76,7 +76,7 @@ public class PDUDecoderTest {
         executor = Executors.newCachedThreadPool();
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         requestor = createDevice("REQUESTOR", 0);
-        acceptor = createDevice("ACCEPTOR", 11112);
+        acceptor = createDevice("ACCEPTOR", 55104);
         acceptor.bindConnections();
     }
 

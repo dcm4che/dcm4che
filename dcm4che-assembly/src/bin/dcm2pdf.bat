@@ -44,9 +44,9 @@ set CP=%DCM4CHE_HOME%\etc\dcm2pdf\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-${project.version}.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.25.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.25.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.17.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-${slf4j.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-${slf4j.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-${log4j.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-${commons-cli.version}.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

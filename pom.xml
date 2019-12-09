@@ -79,6 +79,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
+    <slf4j.version>1.7.29</slf4j.version>
+    <log4j.version>1.2.17</log4j.version>
     <weasis.version>3.5.3</weasis.version>
     <weasis.opencv.native.version>4.1.1-dcm</weasis.opencv.native.version>
     <keycloak.version>8.0.1</keycloak.version>
@@ -223,12 +225,12 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.25</version>
+        <version>${slf4j.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
-        <version>1.7.25</version>
+        <version>${slf4j.version}</version>
         <scope>runtime</scope>
       </dependency>
       <dependency>

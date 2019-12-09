@@ -44,12 +44,9 @@ import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.*;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -114,6 +111,9 @@ public class MoveSCU extends Device {
     private Attributes keys = new Attributes();
     private int[] inFilter = DEF_IN_FILTER;
     private Association as;
+    private int cancelAfter;
+    private boolean releaseEager;
+    private ScheduledFuture<?> scheduledCancel;
 
     public MoveSCU() throws IOException {
         super("movescu");
@@ -124,6 +124,14 @@ public class MoveSCU extends Device {
 
     public final void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public void setCancelAfter(int cancelAfter) {
+        this.cancelAfter = cancelAfter;
+    }
+
+    public void setReleaseEager(boolean releaseEager) {
+        this.releaseEager = releaseEager;
     }
 
     public final void setInformationModel(InformationModel model, String[] tss,
@@ -160,6 +168,8 @@ public class MoveSCU extends Device {
             addKeyOptions(opts);
             addRetrieveLevelOption(opts);
             addDestinationOption(opts);
+            addCancelAfterOption(opts);
+            addRetrieveEagerOption(opts);
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "MOVESCU");
             CLIUtils.addAEOptions(opts);
@@ -170,7 +180,6 @@ public class MoveSCU extends Device {
             return CLIUtils.parseComandLine(args, opts, rb, MoveSCU.class);
     }
 
-    @SuppressWarnings("static-access")
     private static void addRetrieveLevelOption(Options opts) {
         opts.addOption(Option.builder("L")
                 .hasArg()
@@ -179,7 +188,6 @@ public class MoveSCU extends Device {
                 .build());
    }
 
-    @SuppressWarnings("static-access")
     private static void addDestinationOption(Options opts) {
         opts.addOption(Option.builder()
                 .longOpt("dest")
@@ -190,7 +198,19 @@ public class MoveSCU extends Device {
         
     }
 
-    @SuppressWarnings("static-access")
+    private static void addCancelAfterOption(Options opts) {
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("ms")
+                .desc(rb.getString("cancel-after"))
+                .longOpt("cancel-after")
+                .build());
+    }
+
+    private static void addRetrieveEagerOption(Options opts) {
+        opts.addOption(null, "release-eager", false, rb.getString("release-eager"));
+    }
+
     private static void addKeyOptions(Options opts) {
         opts.addOption(Option.builder("m")
                 .hasArgs()
@@ -205,7 +225,6 @@ public class MoveSCU extends Device {
                 .build());
     }
 
-    @SuppressWarnings("static-access")
     private static void addServiceClassOptions(Options opts) {
         opts.addOption(Option.builder("M")
                 .hasArg()
@@ -216,7 +235,6 @@ public class MoveSCU extends Device {
         opts.addOption(null, "relational", false, rb.getString("relational"));
     }
 
-    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
@@ -230,6 +248,8 @@ public class MoveSCU extends Device {
             configureKeys(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));
             main.setDestination(destinationOf(cl));
+            main.setCancelAfter(CLIUtils.getIntOption(cl, "cancel-after", 0));
+            main.setReleaseEager(cl.hasOption("release-eager"));
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
@@ -301,8 +321,13 @@ public class MoveSCU extends Device {
     }
 
     public void close() throws IOException, InterruptedException {
+        if (scheduledCancel != null && releaseEager) { // release by scheduler thread
+            return;
+        }
         if (as != null && as.isReadyForDataTransfer()) {
-            as.waitForOutstandingRSP();
+            if (!releaseEager) {
+                as.waitForOutstandingRSP();
+            }
             as.release();
         }
     }
@@ -324,7 +349,7 @@ public class MoveSCU extends Device {
     }
 
     private void retrieve(Attributes keys) throws IOException, InterruptedException {
-         DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
+        final DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 
             @Override
             public void onDimseRSP(Association as, Attributes cmd,
@@ -334,6 +359,23 @@ public class MoveSCU extends Device {
         };
 
         as.cmove(model.cuid, priority, keys, null, destination, rspHandler);
+        if (cancelAfter > 0) {
+            scheduledCancel = schedule(new Runnable() {
+                                                       @Override
+                                                       public void run() {
+                                                           try {
+                                                               rspHandler.cancel(as);
+                                                               if (releaseEager) {
+                                                                   as.release();
+                                                               }
+                                                           } catch (IOException e) {
+                                                               e.printStackTrace();
+                                                           }
+                                                       }
+                                                   },
+                    cancelAfter,
+                    TimeUnit.MILLISECONDS);
+        }
     }
 
 }

@@ -31,6 +31,8 @@ Options:
  -c,--connect <aet@host:port>             specify AE Title, remote address
                                           and port of the remote
                                           Application Entity.
+    --cancel-after <ms>                   cancel retrieve after specified
+                                          time in ms.
     --connect-timeout <ms>                timeout in ms for TCP connect,
                                           no timeout by default
     --dest <aet>                          specifies AE title of the Move
@@ -127,7 +129,14 @@ Options:
                                           HTTP Proxy to tunnel the DICOM
                                           connection.
     --relational                          negotiate relational-retrieve
-                                          support
+                                          support.
+    --release-eager                       release association immediate
+                                          after sending the retrieve or -
+                                          with specified --cancel-after
+                                          <ms> - cancel request.
+                                          Otherwise, the assocation is
+                                          released after receive of the
+                                          final C-MOVE response.
     --release-timeout <ms>                timeout in ms for receiving
                                           A-RELEASE-RP, no timeout by
                                           default

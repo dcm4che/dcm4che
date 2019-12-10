@@ -57,6 +57,7 @@ public class WebApplication {
         STOW_RS,
         QIDO_RS,
         UPS_RS,
+        QIDO_COUNT,
         DCM4CHEE_ARC,
         DCM4CHEE_ARC_AET,
         PAM,

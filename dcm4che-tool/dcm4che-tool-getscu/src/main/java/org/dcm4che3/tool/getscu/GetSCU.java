@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option.Builder;
@@ -130,6 +131,7 @@ public class GetSCU {
     private Attributes keys = new Attributes();
     private int[] inFilter = DEF_IN_FILTER;
     private Association as;
+    private int cancelAfter;
 
     private BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
 
@@ -218,6 +220,10 @@ public class GetSCU {
         this.priority = priority;
     }
 
+    public void setCancelAfter(int cancelAfter) {
+        this.cancelAfter = cancelAfter;
+    }
+
     public final void setInformationModel(InformationModel model, String[] tss,
             boolean relational) {
        this.model = model;
@@ -248,6 +254,7 @@ public class GetSCU {
             addKeyOptions(opts);
             addRetrieveLevelOption(opts);
             addStorageDirectoryOptions(opts);
+            addCancelAfterOption(opts);
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "GETSCU");
             CLIUtils.addAEOptions(opts);
@@ -258,7 +265,6 @@ public class GetSCU {
             return CLIUtils.parseComandLine(args, opts, rb, GetSCU.class);
     }
 
-    @SuppressWarnings("static-access")
     private static void addRetrieveLevelOption(Options opts) {
         opts.addOption(Option.builder("L")
                 .hasArg()
@@ -267,7 +273,6 @@ public class GetSCU {
                 .build());
    }
 
-    @SuppressWarnings("static-access")
     private static void addStorageDirectoryOptions(Options opts) {
         opts.addOption(null, "ignore", false,
                 rb.getString("ignore"));
@@ -279,7 +284,15 @@ public class GetSCU {
                 .build());
     }
 
-    @SuppressWarnings("static-access")
+    private static void addCancelAfterOption(Options opts) {
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("ms")
+                .desc(rb.getString("cancel-after"))
+                .longOpt("cancel-after")
+                .build());
+    }
+
     private static void addKeyOptions(Options opts) {
         opts.addOption(Option.builder("m")
                 .hasArgs()
@@ -294,7 +307,6 @@ public class GetSCU {
                 .build());
     }
 
-    @SuppressWarnings("static-access")
     private static void addServiceClassOptions(Options opts) {
         opts.addOption(Option.builder("M")
                 .hasArg()
@@ -318,7 +330,6 @@ public class GetSCU {
     }
 
 
-    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
@@ -332,6 +343,7 @@ public class GetSCU {
             configureKeys(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));
             configureStorageDirectory(main, cl);
+            main.setCancelAfter(CLIUtils.getIntOption(cl, "cancel-after", 0));
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
@@ -458,7 +470,7 @@ public class GetSCU {
     }
     
     private void retrieve(Attributes keys) throws IOException, InterruptedException {
-         DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
+         final DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 
             @Override
             public void onDimseRSP(Association as, Attributes cmd,
@@ -468,6 +480,20 @@ public class GetSCU {
         };
 
         retrieve (keys, rspHandler);
+        if (cancelAfter > 0) {
+            device.schedule(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        rspHandler.cancel(as);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            },
+                    cancelAfter,
+                    TimeUnit.MILLISECONDS);
+        }
     }
     
     public void retrieve(DimseRSPHandler rspHandler) throws IOException, InterruptedException {

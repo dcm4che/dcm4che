@@ -30,6 +30,8 @@ Options:
  -c,--connect <aet@host:port>             specify AE Title, remote address
                                           and port of the remote
                                           Application Entity.
+    --cancel-after <ms>                   cancel retrieve after specified
+                                          time in ms.
     --connect-timeout <ms>                timeout in ms for TCP connect,
                                           no timeout by default
     --directory <path>                    directory to which retrieved

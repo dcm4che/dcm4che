@@ -117,6 +117,8 @@ public class Transcoder implements Closeable {
 
     private boolean lossyCompression;
 
+    private int bitsCompressed = -1;
+
     private int maxPixelValueError = -1;
 
     private int avgPixelValueBlockSize = 1;
@@ -320,6 +322,8 @@ public class Transcoder implements Closeable {
                 this.maxPixelValueError = ((Number) property.getValue()).intValue();
             else if (name.equals("avgPixelValueBlockSize"))
                 this.avgPixelValueBlockSize = ((Number) property.getValue()).intValue();
+            else if (name.equals("bitsCompressed"))
+                this.bitsCompressed = ((Number) property.getValue()).intValue();
             else {
                 if (count++ == 0)
                     compressParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
@@ -378,7 +382,7 @@ public class Transcoder implements Closeable {
         public void readValue(DicomInputStream dis, Attributes attrs) throws IOException {
             int tag = dis.tag();
             if (dis.level() == 0 && tag == Tag.PixelData) {
-                imageDescriptor = new ImageDescriptor(attrs);
+                imageDescriptor = new ImageDescriptor(attrs, bitsCompressed);
                 initDicomOutputStream();
                 processPixelData();
                 postPixelData = new Attributes(dis.bigEndian());
@@ -570,7 +574,7 @@ public class Transcoder implements Closeable {
     }
 
     private void nullifyUnusedBits() {
-        if (imageDescriptor.getBitsStored() < imageDescriptor.getBitsAllocated()) {
+        if (imageDescriptor.getBitsCompressed() < imageDescriptor.getBitsAllocated()) {
             DataBuffer db = originalBi.getRaster().getDataBuffer();
             switch (db.getDataType()) {
                 case DataBuffer.TYPE_USHORT:
@@ -584,7 +588,7 @@ public class Transcoder implements Closeable {
     }
 
     private void nullifyUnusedBits(short[] data) {
-        int mask = (1<<imageDescriptor.getBitsStored())-1;
+        int mask = (1<<imageDescriptor.getBitsCompressed())-1;
         for (int i = 0; i < data.length; i++)
             data[i] &= mask;
     }

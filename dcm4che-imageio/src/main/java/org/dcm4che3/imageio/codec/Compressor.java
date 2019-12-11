@@ -97,6 +97,7 @@ public class Compressor extends Decompressor implements Closeable {
     private int[] embeddedOverlays;
     private int maxPixelValueError = -1;
     private int avgPixelValueBlockSize = 1;
+    private int bitsCompressed;
     private BufferedImage bi2;
 
     private ImageReadParam verifyParam;
@@ -148,6 +149,8 @@ public class Compressor extends Decompressor implements Closeable {
                 this.maxPixelValueError = ((Number) property.getValue()).intValue();
             else if (name.equals("avgPixelValueBlockSize"))
                 this.avgPixelValueBlockSize = ((Number) property.getValue()).intValue();
+            else if (name.equals("bitsCompressed"))
+                this.bitsCompressed = ((Number) property.getValue()).intValue();
             else {
                 if (count++ == 0)
                     compressParam.setCompressionMode(

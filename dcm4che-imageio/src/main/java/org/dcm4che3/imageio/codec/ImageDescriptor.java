@@ -59,6 +59,7 @@ public final class ImageDescriptor {
     private final PhotometricInterpretation photometricInterpretation;
     private final int bitsAllocated;
     private final int bitsStored;
+    private final int bitsCompressed;
     private final int pixelRepresentation;
     private final String sopClassUID;
     private final String bodyPartExamined;
@@ -67,6 +68,10 @@ public final class ImageDescriptor {
     private final int planarConfiguration;
 
     public ImageDescriptor(Attributes attrs) {
+        this(attrs, -1);
+    }
+
+    public ImageDescriptor(Attributes attrs, int bitsCompressed) {
         this.rows = attrs.getInt(Tag.Rows, 0);
         this.columns = attrs.getInt(Tag.Columns, 0);
         this.samples = attrs.getInt(Tag.SamplesPerPixel, 0);
@@ -74,6 +79,9 @@ public final class ImageDescriptor {
                 attrs.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
         this.bitsAllocated = attrs.getInt(Tag.BitsAllocated, 8);
         this.bitsStored = attrs.getInt(Tag.BitsStored, bitsAllocated);
+        this.bitsCompressed = bitsCompressed > 0
+                ? Math.min(bitsCompressed, bitsAllocated)
+                : bitsStored;
         this.pixelRepresentation = attrs.getInt(Tag.PixelRepresentation, 0);
         this.planarConfiguration = attrs.getInt(Tag.PlanarConfiguration, 0);
         this.sopClassUID = attrs.getString(Tag.SOPClassUID);
@@ -104,6 +112,10 @@ public final class ImageDescriptor {
 
     public int getBitsStored() {
         return bitsStored;
+    }
+
+    public int getBitsCompressed() {
+        return bitsCompressed;
     }
 
     public int getPixelRepresentation() {

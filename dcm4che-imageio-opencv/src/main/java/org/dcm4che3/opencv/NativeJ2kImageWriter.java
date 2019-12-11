@@ -126,7 +126,7 @@ class NativeJ2kImageWriter extends ImageWriter {
                 params[Imgcodecs.DICOM_PARAM_HEIGHT] = mat.height(); // Image height
                 params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_J2K; // Type of compression
                 params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
-                params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsStored(); // Bits per sample
+                params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsCompressed(); // Bits per sample
                 params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
                 params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
                 params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = j2kParams.isCompressionLossless() ? 0 : 1;

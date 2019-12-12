@@ -195,7 +195,7 @@ public class StringUtils {
 
     public static int parseIS(String s) {
         return s != null && s.length() != 0
-                ? Integer.parseInt(s.charAt(0) == '+' ? s.substring(1) : s)
+                ? (int) Long.parseLong(s.charAt(0) == '+' ? s.substring(1) : s)
                 : 0;
     }
 

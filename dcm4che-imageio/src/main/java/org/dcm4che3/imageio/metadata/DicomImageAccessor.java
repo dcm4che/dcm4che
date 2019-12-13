@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.imageio.plugins.dcm;
+package org.dcm4che3.imageio.metadata;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
@@ -51,10 +51,13 @@ import java.net.URI;
 import java.nio.ByteOrder;
 
 /**
- * Interface that provides basic methods for accessing DICOM attribute data.
+ * Interface that provides basic methods for accessing DICOM pixel data and related attributes.
  * @author Andrew Cowan (andrew.cowan@agfa.com)
  */
-public interface DicomAccessor {
+public interface DicomImageAccessor {
+    /** URI that indicates that the parsing IIS should be used for pixel data reading */
+    String INTERNAL_URI = "java:iis";
+
     /**
      * Get the base URI of the underlying DICOM data.
      */
@@ -106,9 +109,9 @@ public interface DicomAccessor {
 
     default String getSOPInstanceUID() {return getAttributes().getString(Tag.SOPInstanceUID);}
     default String getSOPClassUID() {return getAttributes().getString(Tag.SOPClassUID);}
-    default String getTransferSyntax() {return getFileMetaInformation().getString(Tag.TransferSyntaxUID);}
+    default String getTransferSyntaxUID() {return getFileMetaInformation().getString(Tag.TransferSyntaxUID);}
     default TransferSyntaxType getTransferSyntaxType() {
-        return TransferSyntaxType.forUID(getTransferSyntax());
+        return TransferSyntaxType.forUID(getTransferSyntaxUID());
     }
     default int getColumns() {
         return getAttributes().getInt(Tag.Columns, 0);

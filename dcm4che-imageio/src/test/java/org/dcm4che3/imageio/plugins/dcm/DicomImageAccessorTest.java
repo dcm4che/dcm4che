@@ -43,6 +43,7 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.image.PhotometricInterpretation;
+import org.dcm4che3.imageio.metadata.DicomImageAccessor;
 import org.dcm4che3.imageio.codec.TransferSyntaxType;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,12 +56,12 @@ import java.nio.ByteOrder;
 
 import static org.junit.Assert.*;
 
-public class DicomAccessorTest {
+public class DicomImageAccessorTest {
     private Attributes attributes;
     private Attributes fmi;
     private VR pixelDataVR;
 
-    private DicomAccessor dicomAccessor = new BasicDicomAccessor();
+    private DicomImageAccessor dicomAccessor = new BasicDicomImageAccessor();
 
     @Before
     public void setup() {
@@ -73,7 +74,7 @@ public class DicomAccessorTest {
     public void getTransferSyntax_Default() {
         String expectedTS = UID.ExplicitVRLittleEndian;
         this.fmi.setString(Tag.TransferSyntaxUID, VR.UI, expectedTS);
-        assertEquals(expectedTS, dicomAccessor.getTransferSyntax());
+        assertEquals(expectedTS, dicomAccessor.getTransferSyntaxUID());
     }
 
 
@@ -277,7 +278,7 @@ public class DicomAccessorTest {
         assertEquals(ByteOrder.LITTLE_ENDIAN, this.dicomAccessor.getByteOrder());
     }
 
-    private class BasicDicomAccessor implements DicomAccessor {
+    private class BasicDicomImageAccessor implements DicomImageAccessor {
 
         @Override
         public Attributes getAttributes() {

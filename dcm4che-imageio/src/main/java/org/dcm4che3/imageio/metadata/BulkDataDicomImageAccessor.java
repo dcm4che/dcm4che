@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.imageio.plugins.dcm;
+package org.dcm4che3.imageio.metadata;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.error.NoPixelDataException;
@@ -53,13 +53,14 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteOrder;
 
 /**
- * Abstract interface for handling a bulk data based DicomMetadata object.
+ * Accessor that uses DICOM bulk data to read the pixel data and associated attributes.
  */
-public class BulkDataMetaData extends DicomMetaData {
-    private static Logger LOG = LoggerFactory.getLogger(BulkDataMetaData.class);
+public class BulkDataDicomImageAccessor implements DicomImageAccessor {
+    private static Logger LOG = LoggerFactory.getLogger(BulkDataDicomImageAccessor.class);
 
     protected final ImageInputStreamLoader uriLoader;
     protected final URI uri;
@@ -67,12 +68,12 @@ public class BulkDataMetaData extends DicomMetaData {
     private final Attributes fmi;
     private final Attributes attributes;
 
-    public BulkDataMetaData(URI uri, DatasetWithFMI datasetWithFMI) throws IOException {
+    public BulkDataDicomImageAccessor(URI uri, DatasetWithFMI datasetWithFMI) {
         this(uri, datasetWithFMI, new ServiceImageInputStreamLoader());
     }
 
-    public BulkDataMetaData(URI uri,  DatasetWithFMI datasetWithFMI, ImageInputStreamLoader loader) throws IOException {
-        this.uri = uri;
+    public BulkDataDicomImageAccessor(URI uri, DatasetWithFMI datasetWithFMI, ImageInputStreamLoader loader){
+        this.uri = uri == null ? getInternalURI() : uri;
         this.uriLoader = loader;
 
         this.fmi = datasetWithFMI.getFileMetaInformation();
@@ -102,6 +103,16 @@ public class BulkDataMetaData extends DicomMetaData {
     @Override
     public VR getPixelDataVR() {
         return this.attributes.getVR(Tag.PixelData);
+    }
+
+
+    public URI getInternalURI() {
+        try {
+            return new URI(INTERNAL_URI);
+        }
+        catch(URISyntaxException e) {
+            throw new RuntimeException("Unable to bind URI: "+ INTERNAL_URI);
+        }
     }
 
     protected Object getPixelDataValue() {

@@ -35,7 +35,9 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.imageio.plugins.dcm;
+package org.dcm4che3.imageio.metadata;
+
+import org.dcm4che3.imageio.plugins.dcm.DicomMetaData;
 
 import java.io.IOException;
 

@@ -40,6 +40,8 @@ package org.dcm4che3.imageio.dcm;
 
 import org.dcm4che.test.data.TestData;
 import org.dcm4che3.data.*;
+import org.dcm4che3.imageio.metadata.DefaultMetaDataFactory;
+import org.dcm4che3.imageio.metadata.DicomMetaDataFactory;
 import org.dcm4che3.imageio.plugins.dcm.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.util.ByteUtils;

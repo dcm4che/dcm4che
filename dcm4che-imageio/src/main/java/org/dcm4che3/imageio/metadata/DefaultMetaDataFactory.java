@@ -35,9 +35,11 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.imageio.plugins.dcm;
+package org.dcm4che3.imageio.metadata;
 
 import org.dcm4che3.data.*;
+import org.dcm4che3.imageio.plugins.dcm.DicomImageReader;
+import org.dcm4che3.imageio.plugins.dcm.DicomMetaData;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.stream.DelegateImageInputStreamLoader;
@@ -108,7 +110,8 @@ public class DefaultMetaDataFactory implements DicomMetaDataFactory {
                 datasetWithFMI.getDataset().setValue(Tag.PixelData, pixelDataVR, pixelData);
             }
 
-            return new BulkDataMetaData(inputURI,  datasetWithFMI, loader);
+            DicomImageAccessor accessor = new BulkDataDicomImageAccessor(inputURI,  datasetWithFMI, loader);
+            return new DicomMetaData(accessor) ;
         }
     }
 
@@ -145,8 +148,7 @@ public class DefaultMetaDataFactory implements DicomMetaDataFactory {
      * Define how the URI is defined in the code.
      */
     protected URI createURI(Object input) {
-        // Default to java:originalImageInputStream to avoid writing temp files
-        String inputURI = "java:iis";
+        String inputURI = DicomImageAccessor.INTERNAL_URI;
 
         if(input instanceof URI) {
             inputURI = input.toString();

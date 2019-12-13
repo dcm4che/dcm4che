@@ -3,6 +3,7 @@ package org.dcm4che3.imageio.plugins.dcm;
 
 import org.dcm4che.test.data.TestData;
 import org.dcm4che3.error.UnavailableFrameException;
+import org.dcm4che3.imageio.metadata.DicomMetaDataFactory;
 import org.junit.Test;
 
 import javax.imageio.stream.ImageInputStream;
@@ -26,21 +27,21 @@ public abstract class DicomMetaDataTest {
     @Test
     public void countFrames_Uncompressed() throws IOException {
         DicomMetaData metaData = createMetadata(NM_MF);
-        int count = metaData.countFrames();
+        int count = metaData.getAccessor().countFrames();
         assertEquals("We must be able to calculate the number of frames from the pixel data",13, count);
     }
 
     @Test
     public void countFrames_Compressed_RLE() throws IOException {
         DicomMetaData metaData = createMetadata(US_MF_RLE);
-        int count = metaData.countFrames();
+        int count = metaData.getAccessor().countFrames();
         assertEquals("We must be able to calculate the number of frames from the pixel data",10, count);
     }
 
     @Test
     public void openStream_Compressed_RLE_KnownFrame() throws IOException {
         DicomMetaData metaData = createMetadata(US_MF_RLE);
-        try(ImageInputStream iis = metaData.openPixelStream(5)) {
+        try(ImageInputStream iis = metaData.getAccessor().openPixelStream(5)) {
             assertEquals("The image input stream must be the length of the appropriate fragment..",43946, iis.length());
         }
     }
@@ -49,8 +50,8 @@ public abstract class DicomMetaDataTest {
     @Test(expected = UnavailableFrameException.class)
     public void openStream_Compressed_RLE_FrameOutOfBounds() throws IOException {
         DicomMetaData metaData = createMetadata(US_MF_RLE);
-        int outOfBounds = metaData.countFrames() + 5;
-        try(ImageInputStream iis = metaData.openPixelStream(outOfBounds)) {
+        int outOfBounds = metaData.getAccessor().countFrames() + 5;
+        try(ImageInputStream iis = metaData.getAccessor().openPixelStream(outOfBounds)) {
             fail("We must throw a specific error when a non-existant frame is requested. ");
         }
     }
@@ -58,7 +59,7 @@ public abstract class DicomMetaDataTest {
     @Test
     public void countFrames_SingleFrame_Segmented() throws IOException {
         DicomMetaData metaData = createMetadata(MR_SEGMENTED_SINGLE_FRAME);
-        int count = metaData.countFrames();
+        int count = metaData.getAccessor().countFrames();
         assertEquals("This is a segmented single frame.  Must be able to detect that",1, count);
     }
 
@@ -66,7 +67,7 @@ public abstract class DicomMetaDataTest {
     @Test
     public void openStream_SingleFrame_Segmented() throws IOException {
         DicomMetaData metaData = createMetadata(MR_SEGMENTED_SINGLE_FRAME);
-        try(ImageInputStream iis = metaData.openPixelStream(-1)) {
+        try(ImageInputStream iis = metaData.getAccessor().openPixelStream(-1)) {
             assertEquals("The data stream must be the length of the segments combined.",153390, iis.length());
         }
     }

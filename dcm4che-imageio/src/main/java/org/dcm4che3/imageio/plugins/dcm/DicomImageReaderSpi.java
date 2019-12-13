@@ -47,6 +47,7 @@ import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che3.data.Implementation;
+import org.dcm4che3.imageio.metadata.DicomMetaDataFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

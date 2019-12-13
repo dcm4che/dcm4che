@@ -45,6 +45,9 @@ import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderParam;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
+import org.dcm4che3.imageio.metadata.DefaultMetaDataFactory;
+import org.dcm4che3.imageio.metadata.DicomImageAccessor;
+import org.dcm4che3.imageio.metadata.DicomMetaDataFactory;
 import org.dcm4che3.io.CloneIt;
 import org.dcm4che3.util.ByteUtils;
 import org.slf4j.Logger;
@@ -152,11 +155,11 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         readMetadata();
 
         if(allowSearch && this.actualNumberOfFrames == null) {
-            this.actualNumberOfFrames = this.metadata.countFrames();
+            this.actualNumberOfFrames = getAccessor().countFrames();
         }
 
         return this.actualNumberOfFrames == null || this.actualNumberOfFrames == -1
-                ? this.metadata.getNumberOfFrames()
+                ? getAccessor().getNumberOfFrames()
                 : this.actualNumberOfFrames;
     }
 
@@ -164,14 +167,14 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     public int getWidth(int frameIndex) throws IOException {
        readMetadata();
        checkIndex(frameIndex);
-       return this.metadata.getColumns();
+       return getAccessor().getColumns();
     }
 
     @Override
     public int getHeight(int frameIndex) throws IOException {
         readMetadata();
         checkIndex(frameIndex);
-        return this.metadata.getRows();
+        return getAccessor().getRows();
     }
 
 
@@ -183,7 +186,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
         ImageTypeSpecifier imageType;
         if (this.isImageTypeSpecifierRequired()) {
-            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), this.metadata.isBanded());
+            imageType = createImageType(getAccessor().getBitsStored(), getAccessor().getDataType(), getAccessor().isBanded());
         }
         else {
             try (ImageInputStream iis = iisOfFrame(frameIndex)) {
@@ -202,11 +205,11 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         checkIndex(frameIndex);
 
         ImageTypeSpecifier imageType;
-        if (this.metadata.getPhotometricInterpretation().isMonochrome()) {
+        if (getAccessor().getPhotometricInterpretation().isMonochrome()) {
             imageType = createImageType(8, DataBuffer.TYPE_BYTE, false);
         }
         else if (this.isImageTypeSpecifierRequired()) {
-            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), this.metadata.isBanded());
+            imageType = createImageType(getAccessor().getBitsStored(), getAccessor().getDataType(), getAccessor().isBanded());
         }
         else {
             try (ImageInputStream iis = iisOfFrame( 0)) {
@@ -255,7 +258,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
                 LOG.debug("Start decompressing frame # {}", (frameIndex + 1));
 
-                PhotometricInterpretation pmi = this.metadata.getPhotometricInterpretation();
+                PhotometricInterpretation pmi = getAccessor().getPhotometricInterpretation();
                 raster = pmi.decompress() == pmi && decompressor.canReadRaster()
                         ? decompressor.readRaster(0, decompressParam(param))
                         : decompressor.read(0, decompressParam(param)).getRaster();
@@ -264,7 +267,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
             }
             else {
-                WritableRaster wr = Raster.createWritableRaster(createSampleModel(this.metadata.getDataType(), this.metadata.isBanded()), null);
+                WritableRaster wr = Raster.createWritableRaster(createSampleModel(getAccessor().getDataType(), getAccessor().isBanded()), null);
                 DataBuffer buf = wr.getDataBuffer();
 
                 if (buf instanceof DataBufferByte) {
@@ -278,7 +281,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
                         iisOfFrame.readFully(bs);
                     }
 
-                    if (this.metadata.isSwapShortsRequired()) {
+                    if (getAccessor().isSwapShortsRequired()) {
                         ByteUtils.swapShorts(data);
                     }
                 } else {
@@ -295,7 +298,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     }
 
     private ImageInputStream iisOfFrame(int frameIndex) throws IOException {
-        ImageInputStream iisOfFrame = this.metadata.openPixelStream(frameIndex);
+        ImageInputStream iisOfFrame = getAccessor().openPixelStream(frameIndex);
         if(this.decompressorConfig != null && this.decompressorConfig.getPatchJPEGLS()!=null) {
             PatchJPEGLS patch = this.decompressorConfig.getPatchJPEGLS();
             iisOfFrame = new PatchJPEGLSImageInputStream(iisOfFrame, patch);
@@ -318,7 +321,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         }
 
         if (imageType == null && dest == null && this.isImageTypeSpecifierRequired()) {
-            imageType = createImageType(this.metadata.getBitsStored(), this.metadata.getDataType(), this.metadata.isBanded());
+            imageType = createImageType(getAccessor().getBitsStored(), getAccessor().getDataType(), getAccessor().isBanded());
         }
 
         ImageReadParam updatedReadParam = decompressor.getDefaultReadParam();
@@ -345,7 +348,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
                 BufferedImage bi = decompressor.read(0, decompressParam(param));
                 LOG.debug("Finished decompressing frame #{} in {}ms", frameIndex+1, System.currentTimeMillis() - start);
 
-                if (this.metadata.getSamplesPerPixel() > 1)
+                if (getAccessor().getSamplesPerPixel() > 1)
                     return bi;
 
                 raster = bi.getRaster();
@@ -355,7 +358,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         }
 
         ColorModel cm;
-        if (this.metadata.getPhotometricInterpretation().isMonochrome()) {
+        if (getAccessor().getPhotometricInterpretation().isMonochrome()) {
             int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
             byte[][] overlayData = new byte[overlayGroupOffsets.length][];
             for (int i = 0; i < overlayGroupOffsets.length; i++) {
@@ -369,7 +372,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
                         raster, frameIndex, param, 8, overlayData[i]);
             }
         } else {
-            cm = createColorModel(this.metadata.getBitsStored(), this.metadata.getDataType());
+            cm = createColorModel(getAccessor().getBitsStored(), getAccessor().getDataType());
         }
         return new BufferedImage(cm, raster , false, null);
     }
@@ -381,7 +384,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
      */
     public byte[] readBytes(int frameIndex) throws IOException {
         byte[] bytes;
-        try(ImageInputStream iis = this.metadata.openPixelStream(frameIndex)) {
+        try(ImageInputStream iis = getAccessor().openPixelStream(frameIndex)) {
             bytes = new byte[(int)iis.length()];
             iis.readFully(bytes);
         }
@@ -402,9 +405,9 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         int length = ovlyRows * ovlyColumns;
 
         byte[] ovlyData = new byte[(((length+7)>>>3)+1)&(~1)] ;
-        if (bitPosition < this.metadata.getBitsStored())
+        if (bitPosition < getAccessor().getBitsStored())
             LOG.info("Ignore embedded overlay #{} from bit #{} < bits stored: {}",
-                    (gg0000 >>> 17) + 1, bitPosition, this.metadata.getBitsStored());
+                    (gg0000 >>> 17) + 1, bitPosition, getAccessor().getBitsStored());
         else
             Overlays.extractFromPixeldata(raster, mask, ovlyData, 0, length);
         return ovlyData;
@@ -583,19 +586,19 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     }
 
     /**
-     * Get the DicomAccessor instance which is being used to read the underlying DICOM instance.
-     * @return the current DicomAccessor, or NULL if the DicomImageReader is uninitialized.
+     * Get the DicomImageAccessor instance which is being used to read the underlying DICOM instance.
+     * @return the current DicomImageAccessor, or NULL if the DicomImageReader is uninitialized.
      */
-    public DicomMetaData getDicomAccessor() {
-        return this.metadata;
+    public DicomImageAccessor getAccessor() {
+        return this.metadata.getAccessor();
     }
 
     private void setMetadata(DicomMetaData metadata) {
         this.metadata = metadata;
 
-        if (metadata.containsPixelData()) {
-             if (metadata.isCompressed()) {
-                String tsuid = metadata.getTransferSyntax();
+        if (getAccessor().containsPixelData()) {
+             if (getAccessor().isCompressed()) {
+                String tsuid = getAccessor().getTransferSyntaxUID();
                 if (tsuid == null)
                     throw new IllegalArgumentException("Missing Transfer Syntax for Data Set with compressed Pixel Data");
 
@@ -612,7 +615,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     }
 
     private SampleModel createSampleModel(int dataType, boolean banded) {
-        return this.metadata.getPhotometricInterpretation().createSampleModel(dataType, this.metadata.getColumns(), this.metadata.getRows(), this.metadata.getSamplesPerPixel(), banded);
+        return this.getAccessor().getPhotometricInterpretation().createSampleModel(dataType, this.getAccessor().getColumns(), this.getAccessor().getRows(), this.getAccessor().getSamplesPerPixel(), banded);
     }
 
     private ImageTypeSpecifier createImageType(int bits, int dataType, boolean banded) {
@@ -622,7 +625,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     }
 
     private ColorModel createColorModel(int bits, int dataType) {
-        return this.metadata.getPhotometricInterpretation().createColorModel(bits, dataType, metadata.getAttributes());
+        return this.getAccessor().getPhotometricInterpretation().createColorModel(bits, dataType, getAccessor().getAttributes());
     }
 
     private void resetInternalState() {
@@ -638,7 +641,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     }
 
     private void checkIndex(int frameIndex) {
-        if (frameIndex < 0 || frameIndex >= this.metadata.getNumberOfFrames())
+        if (frameIndex < 0 || frameIndex >= this.getAccessor().getNumberOfFrames())
             throw new IndexOutOfBoundsException("imageIndex: " + frameIndex);
     }
 

@@ -319,7 +319,7 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
 
     /**
      * Some modalities generate bad data which put pixel data in the first segement of an encapsulated image.  This
-     * situation is easy to spot by checking the size of the
+     * situation is easy to spot by checking the size of the first sequence item.
      */
     protected boolean isValidOffsetTable(Fragments pixeldataFragments) {
         if(pixeldataFragments.isEmpty()) return false;

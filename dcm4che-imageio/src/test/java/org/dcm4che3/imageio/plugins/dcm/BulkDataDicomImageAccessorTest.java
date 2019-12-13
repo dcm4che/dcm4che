@@ -39,6 +39,8 @@
 package org.dcm4che3.imageio.plugins.dcm;
 
 
+import org.dcm4che3.imageio.metadata.DefaultMetaDataFactory;
+import org.dcm4che3.imageio.metadata.DicomMetaDataFactory;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -48,7 +50,7 @@ import java.util.Collection;
 
 
 @RunWith(Parameterized.class)
-public class BulkDataMetaDataTest extends DicomMetaDataTest {
+public class BulkDataDicomImageAccessorTest extends DicomMetaDataTest {
     @Parameterized.Parameters(name="{1} -> Read entire file: {0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {

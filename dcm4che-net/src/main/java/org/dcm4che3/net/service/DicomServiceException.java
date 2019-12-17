@@ -134,6 +134,14 @@ public class DicomServiceException extends IOException {
         return this;
     }
 
+    public DicomServiceException setNumberOfCompletedFailedWarningSuboperations(
+            int completed, int failed, int warning) {
+        rsp.setInt(Tag.NumberOfCompletedSuboperations, VR.US, completed);
+        rsp.setInt(Tag.NumberOfFailedSuboperations, VR.US, failed);
+        rsp.setInt(Tag.NumberOfWarningSuboperations, VR.US, warning);
+        return this;
+    }
+
     public DicomServiceException setOffendingElements(int... tags) {
         rsp.setInt(Tag.OffendingElement, VR.AT, tags);
         return this;

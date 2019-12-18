@@ -874,8 +874,8 @@ public class DicomInputStream extends FilterInputStream
         // than 64 bytes. That is reasonable to assume, as every Composite
         // Object will contain a SOP Class UID (0008,0016), and all tags that
         // could come before that do not have VRs that allow length > 64. In
-        // fact we are reading a maximum value of 132-8=128 bytes initially, so
-        // we would also accept a longer length of 128 bytes for the first tag
+        // fact we are reading a maximum value of 132-8=124 bytes initially, so
+        // we would also accept a longer length of 124 bytes for the first tag
         // value.)
         if (len < 0 || 8 + len > rlen)
             return false;

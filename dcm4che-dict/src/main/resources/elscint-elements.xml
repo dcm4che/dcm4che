@@ -41,6 +41,14 @@
   -->
 
 <elements>
+  <el tag="00E1xx21" keyword="DLP" vr="DS" vm="1">DLP</el>
   <el tag="00E1xx24" keyword="PresentationHorizontalInvert" vr="CS" vm="1">Presentation Horizontal Invert</el>
   <el tag="00E1xx25" keyword="PresentationVerticalInvert" vr="CS" vm="1">Presentation Vertical Invert</el>
+  <el tag="00E1xx26" keyword="PhantomType" vr="CS" vm="1">Phantom Type</el>
+  <el tag="00E1xx50" keyword="AcquisitionDuration" vr="DS" vm="1">Acquisition Duration</el>
+  <el tag="00F1xx01" keyword="AcquisitionType" vr="CS" vm="1">Acquisition Type</el>
+  <el tag="00F1xx07" keyword="TableVelocity" vr="DS" vm="1">Table Velocity</el>
+  <el tag="00F1xx26" keyword="Pitch" vr="DS" vm="1">Pitch</el>
+  <el tag="00F1xx27" keyword="RotationTime" vr="DS" vm="1">Rotation Time</el>
+  <el tag="6001xx90" keyword="OverlayLabel" vr="LO" vm="1">Overlay Label</el>
 </elements>

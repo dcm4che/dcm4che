@@ -269,7 +269,8 @@
   <el tag="5001xx83" keyword="_5001_xx83_" vr="FL" vm="1-n">_5001_xx83_</el>
   <el tag="5001xx84" keyword="_5001_xx84_" vr="SQ" vm="1">_5001_xx84_</el>
   <el tag="6001xx10" keyword="TextOverlayFlag" vr="CS" vm="1">Text Overlay Flag</el>
-  <el tag="6001xx90" keyword="OverlayLabel" vr="LO" vm="1">Overlay Label</el>
+  <el tag="6001xx30" keyword="_6001_xx30_" vr="FL" vm="4">_6001_xx30_</el>
+  <el tag="6001xx90" keyword="_6001_xx90_" vr="LO" vm="1">_6001_xx90_</el>
   <el tag="7FDFxxF0" keyword="_7FDF_xxF0_" vr="OB" vm="1">_7FDF_xxF0_</el>
   <el tag="7FDFxxFF" keyword="_7FDF_xxFF_" vr="SH" vm="1">_7FDF_xxFF_</el>
 </elements>

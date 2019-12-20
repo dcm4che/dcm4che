@@ -50,7 +50,10 @@ import org.dcm4che3.xdsi.RetrieveRenderedImagingDocumentSetRequestType.StudyRequ
 import org.dcm4che3.xdsi.RetrieveDocumentSetResponseType.DocumentResponse;
 import org.dcm4che3.xdsi.RetrieveRenderedImagingDocumentSetResponseType.RenderedDocumentResponse;
 import org.dcm4che3.xdsi.RetrieveRenderedImagingDocumentSetRequestType.StudyRequest.SeriesRequest.RenderedDocumentRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.activation.DataHandler;
 import javax.xml.ws.soap.AddressingFeature;
 import javax.xml.ws.soap.MTOMFeature;
 import java.io.*;
@@ -67,6 +70,7 @@ import java.util.ResourceBundle;
  */
 
 public class WadoWS {
+    private static final Logger LOG = LoggerFactory.getLogger(WadoWS.class);
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.wadows.messages");
     private static final String DEFAULT_CONTENT_TYPE = "image/jpeg";
     private static final String DEFAULT_TRANSFER_SYNTAX_UID = UID.ExplicitVRLittleEndian;
@@ -232,16 +236,22 @@ public class WadoWS {
                             createRetrieveRenderedImagingDocumentSetRequest());
             List<RenderedDocumentResponse> renderedDocumentResponse = retrieveRenderedImagingDocumentSetResponseType
                                                                         .getRenderedDocumentResponse();
-            for (RenderedDocumentResponse rsp : renderedDocumentResponse)
+            LOG.info("<< RetrieveRenderedImagingDocumentSetResponse:");
+            for (RenderedDocumentResponse rsp : renderedDocumentResponse) {
+                logIncoming(rsp);
                 write(rsp.getDocument().getInputStream());
+            }
             return;
         }
 
         RetrieveDocumentSetResponseType retrieveDocumentSetResponseType
                 = port.imagingDocumentSourceRetrieveImagingDocumentSet(createRetrieveImagingDocumentSetRequest());
         List<DocumentResponse> documentResponse = retrieveDocumentSetResponseType.getDocumentResponse();
-        for (DocumentResponse rsp : documentResponse)
+        LOG.info("<< RetrieveDocumentSetResponse:");
+        for (DocumentResponse rsp : documentResponse) {
+            logIncoming(rsp);
             write(rsp.getDocument().getInputStream());
+        }
     }
 
     private static void write(InputStream in) throws IOException {
@@ -274,8 +284,73 @@ public class WadoWS {
             tsuidList.getTransferSyntaxUID().add(tsuid);
 
         req.setTransferSyntaxUIDList(tsuidList);
-
+        logOutgoing(req);
         return req;
+    }
+
+    private void logOutgoing(RetrieveImagingDocumentSetRequestType req) {
+        LOG.info(">> RetrieveImagingDocumentSetRequest:");
+        for (RetrieveImagingDocumentSetRequestType.StudyRequest studyReq : req.getStudyRequest()) {
+            LOG.info("  Study[uid=" + studyReq.getStudyInstanceUID() + "]");
+            for (RetrieveImagingDocumentSetRequestType.StudyRequest.SeriesRequest seriesReq : studyReq.getSeriesRequest()) {
+                LOG.info("   Series[uid=" + seriesReq.getSeriesInstanceUID() + "]");
+                for (DocumentRequest docReq : seriesReq.getDocumentRequest()) {
+                    LOG.info("    Document[uid=" + docReq.getDocumentUniqueId() + "]");
+                    LOG.info("    Repository[uid=" + docReq.getRepositoryUniqueId() + "]");
+                }
+            }
+        }
+        for (String tsuid : req.getTransferSyntaxUIDList().getTransferSyntaxUID())
+            LOG.info("  Transfer Syntax[uid=" + tsuid + "]");
+    }
+
+    private void logOutgoing(RetrieveRenderedImagingDocumentSetRequestType req) {
+        LOG.info(">> RetrieveRenderedImagingDocumentSetRequest:");
+        for (RetrieveRenderedImagingDocumentSetRequestType.StudyRequest studyReq : req.getStudyRequest()) {
+            LOG.info("  Study[uid=" + studyReq.getStudyInstanceUID() + "]");
+            for (RetrieveRenderedImagingDocumentSetRequestType.StudyRequest.SeriesRequest seriesReq : studyReq.getSeriesRequest()) {
+                LOG.info("   Series[uid=" + seriesReq.getSeriesInstanceUID() + "]");
+                for (RenderedDocumentRequest docReq : seriesReq.getRenderedDocumentRequest()) {
+                    LOG.info("    Document[uid=" + docReq.getDocumentUniqueId() + "]");
+                    LOG.info("    Repository[uid=" + docReq.getRepositoryUniqueId() + "]");
+                }
+            }
+        }
+    }
+
+    private void logIncoming(DocumentResponse rsp) {
+        DataHandler document = rsp.getDocument();
+        LOG.info("< Document[uid="
+                + rsp.getDocumentUniqueId()
+                + ", name=" + document.getName()
+                + ", contentType=" + document.getContentType()
+                + "]");
+        LOG.info("< Home Community ID: " + rsp.getHomeCommunityId());
+        LOG.info("< Mime Type: " + rsp.getMimeType());
+        LOG.info("< Repository Unique ID: " + rsp.getRepositoryUniqueId());
+    }
+
+    private void logIncoming(RenderedDocumentResponse rsp) {
+        DataHandler document = rsp.getDocument();
+        LOG.info("< Document[uid="
+                + rsp.getSourceDocumentUniqueId()
+                + ", Name=" + document.getName()
+                + ", ContentType=" + document.getContentType()
+                + ", Rows=" + rsp.getRows()
+                + ", Columns=" + rsp.getColumns()
+                + ", Region=" + rsp.getRegion()
+                + ", WindowWidth=" + rsp.getWindowWidth()
+                + ", WindowCenter=" + rsp.getWindowCenter()
+                + ", ImageQuality=" + rsp.getImageQuality()
+                + ", PresentationUID=" + rsp.getPresentationUID()
+                + ", PresentationSeriesUID=" + rsp.getPresentationSeriesUID()
+                + ", Annotation=" + rsp.getAnnotation()
+                + ", Anonymize=" + rsp.getAnonymize()
+                + ", FrameNumber=" + rsp.getFrameNumber()
+                + "]");
+        LOG.info("< Home Community ID: " + rsp.getHomeCommunityId());
+        LOG.info("< Mime Type: " + rsp.getMimeType());
+        LOG.info("< Repository Unique ID: " + rsp.getRepositoryUniqueId());
     }
 
     private RetrieveImagingDocumentSetRequestType.StudyRequest createStudyReq(Attributes refStudy) {
@@ -309,6 +384,7 @@ public class WadoWS {
         for (Attributes refStudy : kosAttr.getSequence(Tag.CurrentRequestedProcedureEvidenceSequence))
             req.getStudyRequest().add(createRenderedStudyReq(refStudy));
 
+        logOutgoing(req);
         return req;
     }
 

@@ -56,8 +56,8 @@ import javax.imageio.stream.ImageInputStream;
 public class NativeJPEGImageReaderSpi extends ImageReaderSpi {
 
     static final String[] NAMES = { "jpeg-cv" };
-    static final String[] SUFFIXES = null;
-    static final String[] MIMES = null;
+    static final String[] SUFFIXES = {};
+    static final String[] MIMES = {};
 
     public NativeJPEGImageReaderSpi() {
         super("Weasis Team", "1.0", NAMES, SUFFIXES, MIMES, NativeImageReader.class.getName(),
@@ -73,6 +73,16 @@ public class NativeJPEGImageReaderSpi extends ImageReaderSpi {
     @Override
     public String getDescription(Locale locale) {
         return "Natively-accelerated JPEG Image Reader (8/12/16 bits, IJG 6b based)";
+    }
+    
+    @Override
+    public String[] getFileSuffixes() {
+        return SUFFIXES;
+    }
+
+    @Override
+    public String[] getMIMETypes() {
+        return MIMES;
     }
 
     @Override

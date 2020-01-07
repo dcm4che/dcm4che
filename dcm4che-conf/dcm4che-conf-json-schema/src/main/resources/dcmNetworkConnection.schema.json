@@ -13,7 +13,8 @@
     "dcmReceivePDULength",
     "dcmMaxOpsPerformed",
     "dcmMaxOpsInvoked",
-    "dcmPackPDV"
+    "dcmPackPDV",
+    "dcmRetrieveTimeoutTotal"
   ],
   "properties": {
     "dcmProtocol": {

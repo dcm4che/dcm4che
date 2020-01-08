@@ -85,8 +85,11 @@ Options:
                                      A-RELEASE-RP, no timeout by default
     --request-timeout <ms>           timeout in ms for receiving
                                      A-ASSOCIATE-RQ, no timeout by default
-    --response-delay <ms>            delay in ms returning C-STORE-RSPs,
-                                     no delay by default
+    --response-delay <ms>            delay in ms returning C-STORE-RSPs.
+                                     If more than one value is specified,
+                                     values will be selected sequentially
+                                     for subsequent received C-STORE-RQs.
+                                     No delay by default.
     --soclose-delay <ms>             delay in ms after sending
                                      A-ASSOCATE-RJ, A-RELEASE-RQ or
                                      A-ABORT before the socket is closed;

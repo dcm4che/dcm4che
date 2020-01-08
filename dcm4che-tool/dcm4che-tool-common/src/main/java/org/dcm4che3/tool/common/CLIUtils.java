@@ -464,9 +464,25 @@ public class CLIUtils {
         if (optVal == null)
             return defVal;
         
+        return parseInt(optVal);
+    }
+
+    private static int parseInt(String optVal) {
         return optVal.endsWith("H")
                 ? Integer.parseInt(optVal.substring(0, optVal.length() - 1), 16)
                 : Integer.parseInt(optVal);
+    }
+
+    public static int[] getIntsOption(CommandLine cl, String opt) {
+        String[] optVals = cl.getOptionValues(opt);
+        if (optVals == null)
+            return null;
+
+        int[] intVals = new int[optVals.length];
+        for (int i = 0; i < optVals.length; i++) {
+            intVals[i] = parseInt(optVals[i]);
+        }
+        return intVals;
     }
 
     public static void configure(Connection conn, CommandLine cl)

@@ -92,7 +92,8 @@ public class StoreSCP {
     private File storageDir;
     private AttributesFormat filePathFormat;
     private int status;
-    private int responseDelay;
+    private int[] responseDelays;
+    private int count;
     private final BasicCStoreSCP cstoreSCP = new BasicCStoreSCP("*") {
 
         @Override
@@ -120,6 +121,9 @@ public class StoreSCP {
                     throw new DicomServiceException(Status.ProcessingFailure, e);
                 }
             } finally {
+                int responseDelay = responseDelays != null
+                        ? responseDelays[count++ % responseDelays.length]
+                        : 0;
                 if (responseDelay > 0)
                     try {
                         Thread.sleep(responseDelay);
@@ -198,8 +202,8 @@ public class StoreSCP {
         this.status = status;
     }
 
-    public void setResponseDelay(int responseDelay) {
-        this.responseDelay = responseDelay;
+    public void setResponseDelays(int[] responseDelays) {
+        this.responseDelays = responseDelays;
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -227,7 +231,7 @@ public class StoreSCP {
 
     private static void addResponseDelayOption(Options opts) {
         opts.addOption(Option.builder()
-                .hasArg()
+                .hasArgs()
                 .argName("ms")
                 .desc(rb.getString("response-delay"))
                 .longOpt("response-delay")
@@ -271,7 +275,7 @@ public class StoreSCP {
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
             main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
-            main.setResponseDelay(CLIUtils.getIntOption(cl, "response-delay", 0));
+            main.setResponseDelays(CLIUtils.getIntsOption(cl, "response-delay"));
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();

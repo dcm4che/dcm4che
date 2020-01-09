@@ -56,13 +56,7 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.PDVInputStream;
-import org.dcm4che3.net.Status;
-import org.dcm4che3.net.TransferCapability;
+import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.BasicCStoreSCP;
@@ -93,7 +87,6 @@ public class StoreSCP {
     private AttributesFormat filePathFormat;
     private int status;
     private int[] responseDelays;
-    private int count;
     private final BasicCStoreSCP cstoreSCP = new BasicCStoreSCP("*") {
 
         @Override
@@ -122,7 +115,7 @@ public class StoreSCP {
                 }
             } finally {
                 int responseDelay = responseDelays != null
-                        ? responseDelays[count++ % responseDelays.length]
+                        ? responseDelays[(as.getNumberOfReceived(Dimse.C_STORE_RQ) - 1) % responseDelays.length]
                         : 0;
                 if (responseDelay > 0)
                     try {

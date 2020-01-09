@@ -642,7 +642,7 @@ public class Association {
     }
 
     void onAAssociateRJ(AAssociateRJ rj) throws IOException {
-        LOG.info("{} >> {}", name, rj);
+        LOG.info("{} >> {}", name, rj.toString());
         state.onAAssociateRJ(this, rj);
     }
 
@@ -709,7 +709,7 @@ public class Association {
    }
 
     void onAAbort(AAbort aa) {
-        LOG.info("{} >> {}", name, aa);
+        LOG.info("{} >> {}", name, aa.toString());
         stopTimeout();
         ex = aa;
         closeSocket();

@@ -39,16 +39,7 @@
 package org.dcm4che3.image;
 
 import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.DirectColorModel;
-import java.awt.image.Raster;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
+import java.awt.image.*;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
@@ -84,7 +75,7 @@ public class PaletteColorModel extends ColorModel {
         lut = LUT.create(bits, r, g, b, rDesc[1], gDesc[1], bDesc[1]);
     }
 
-    private int[] lutDescriptor(Attributes ds, int descTag) {
+    private static int[] lutDescriptor(Attributes ds, int descTag) {
         int[] desc = ds.getInts(descTag);
         if (desc == null) {
             throw new IllegalArgumentException("Missing LUT Descriptor!");
@@ -282,6 +273,22 @@ public class PaletteColorModel extends ColorModel {
         }
         return new BufferedImage(cm, discreteRaster, false, null);
     }
+
+    public IndexColorModel toIndexColorModel() {
+        int size = 1 << this.pixel_bits;
+        byte[] red = new byte[size];
+        byte[] green = new byte[size];
+        byte[] blue = new byte[size];
+
+        for(int i=0;i<size;i++) {
+            red[i] = (byte)getRed(i);
+            blue[i] = (byte)getBlue(i);
+            green[i] = (byte)getGreen(i);
+        }
+
+        return new IndexColorModel(this.pixel_bits,size , red, green, blue);
+    }
+
 
     private static abstract class LUT {
 

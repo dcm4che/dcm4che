@@ -81,6 +81,13 @@ Options:
     --not-pack-pdv                   send only one PDV in one P-Data-TF
                                      PDU; pack command and data PDV in one
                                      P-DATA-TF PDU by default
+    --receive-delay <ms>             delay in ms after reading first
+                                     P-DATA-TF PDU with C-STORE-RQ from
+                                     the tcp socket. If more than one
+                                     value is specified, values will be
+                                     selected sequentially for subsequent
+                                     received C-STORE-RQs. No delay by
+                                     default.
     --release-timeout <ms>           timeout in ms for receiving
                                      A-RELEASE-RP, no timeout by default
     --request-timeout <ms>           timeout in ms for receiving

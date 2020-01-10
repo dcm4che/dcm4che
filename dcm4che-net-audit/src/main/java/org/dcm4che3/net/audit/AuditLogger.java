@@ -1631,6 +1631,9 @@ public class AuditLogger extends DeviceExtension {
                 // clear payload of event in the ring buffer so the contained message, etc. can be GCed
                 .then(new ClearingObjectHandler());
 
+        // Add an Exception handler so we do not lose any Audit Messages
+        disruptorInstance.setDefaultExceptionHandler(new AuditMessageExceptionHandler());
+
         // Start the Disruptor, starts all threads running
         disruptorInstance.start();
 

@@ -663,10 +663,10 @@ public class Transcoder implements Closeable {
         DataBuffer dataBuffer = raster.getDataBuffer();
         switch (dataBuffer.getDataType()) {
             case DataBuffer.TYPE_SHORT:
-                readFully(((DataBufferShort) dataBuffer).getData());
+                readFully(((DataBufferShort) dataBuffer).getData() , true);
                 break;
             case DataBuffer.TYPE_USHORT:
-                readFully(((DataBufferUShort) dataBuffer).getData());
+                readFully(((DataBufferUShort) dataBuffer).getData(), false);
                 break;
             case DataBuffer.TYPE_BYTE:
                 readFully(((DataBufferByte) dataBuffer).getBankData());
@@ -682,14 +682,17 @@ public class Transcoder implements Closeable {
             ByteUtils.swapShorts(bb);
     }
 
-    private void readFully(short[] s) throws IOException {
+    private void readFully(short[] s, boolean shortBuffer) throws IOException {
         int off = 0;
         int len = s.length;
         byte[] b = buffer();
         while (len > 0) {
             int nelts = Math.min(len, b.length/2);
             dis.readFully(b, 0, nelts * 2);
-            toShorts(b, s, off, nelts, dis.bigEndian());
+            if(shortBuffer && imageDescriptor.getBitsStored() < imageDescriptor.getBitsAllocated())
+            	toLimitedShorts(b, s, off, nelts, dis.bigEndian());
+            else 
+            	toShorts(b, s, off, nelts, dis.bigEndian());
             off += nelts;
             len -= nelts;
         }
@@ -709,6 +712,33 @@ public class Transcoder implements Closeable {
                 int b0 = b[boff + 1];
                 int b1 = b[boff] & 0xff;
                 s[off + j] = (short)((b0 << 8) | b1);
+                boff += 2;
+            }
+        }
+    }
+    
+    private void toLimitedShorts(byte[] b, short[] s, int off, int len, boolean bigEndian) {
+		int mask = (1 << imageDescriptor.getBitsCompressed());
+		int limit = mask /2;
+        int boff = 0;
+        if (bigEndian) {
+            for (int j = 0; j < len; j++) {
+                int b0 = b[boff];
+                int b1 = b[boff + 1] & 0xff;
+                s[off + j] = (short)((b0 << 8) | b1);
+                if(s[off + j] >= limit) {
+                	s[off + j] = (short) (s[off + j] - mask);
+                }
+                boff += 2;
+            }
+        } else {
+            for (int j = 0; j < len; j++) {
+                int b0 = b[boff + 1];
+                int b1 = b[boff] & 0xff;
+                s[off + j] = (short)((b0 << 8) | b1);
+                if(s[off + j] >= limit) {
+                	s[off + j] = (short) (s[off + j] - mask);
+                }
                 boff += 2;
             }
         }

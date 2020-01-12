@@ -525,18 +525,26 @@ public class Compressor extends Decompressor implements Closeable {
         DataBuffer db = bi.getRaster().getDataBuffer();
         switch (db.getDataType()) {
         case DataBuffer.TYPE_USHORT:
-            nullifyUnusedBits(bitsStored, ((DataBufferUShort) db).getData());
+        	nullifyUshortUnusedBits(bitsStored, ((DataBufferUShort) db).getData());
             break;
         case DataBuffer.TYPE_SHORT:
-            nullifyUnusedBits(bitsStored, ((DataBufferShort) db).getData());
+        	nullifyShortUnusedBits(bitsStored, ((DataBufferShort) db).getData());
             break;
         }
     }
 
-    private void nullifyUnusedBits(int bitsStored, short[] data) {
-        int mask = (1<<bitsStored)-1;
+    private void nullifyUshortUnusedBits(int bitsStored, short[] data) {
+		int mask = (1 << bitsStored) - 1;
         for (int i = 0; i < data.length; i++)
             data[i] &= mask;
+    }
+    
+    private void nullifyShortUnusedBits(int bitsStored, short[] data) {
+		int maskNeg = (1 << (bitsStored -1));
+		int maskPos = maskNeg -1;
+        for (int i = 0; i < data.length; i++) {
+        	data[i] = (short) (data[i] < 0 ? data[i] | maskNeg: data[i] & maskPos);
+        }
     }
 
     private void extractEmbeddedOverlays(int frameIndex, BufferedImage bi) {

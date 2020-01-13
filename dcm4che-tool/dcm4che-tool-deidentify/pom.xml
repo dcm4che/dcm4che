@@ -46,7 +46,7 @@
     <parent>
         <artifactId>dcm4che-tool</artifactId>
         <groupId>org.dcm4che.tool</groupId>
-        <version>5.20.0</version>
+        <version>5.21.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

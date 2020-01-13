@@ -107,5 +107,5 @@ Options:
                                      default
 -
 Example: hl7rcv -b 2575
-=> Starts receiver listening on port 11112.
+=> Starts receiver listening on port 2575.
 ```

@@ -77,7 +77,7 @@ public class DicomOutputStream extends FilterOutputStream {
             throws IOException {
         super(out);
         switchBigEndianAndExplicitVr(tsuid);
-		switchOutputStream(tsuid);
+        switchOutputStream(tsuid);
     }
 
     public DicomOutputStream(File file) throws IOException {
@@ -136,7 +136,7 @@ public class DicomOutputStream extends FilterOutputStream {
             throws IOException {
         if (fmi != null) {
             writeFileMetaInformation(fmi);
-			switchOutputStream(fmi.getString(Tag.TransferSyntaxUID, null));
+            switchOutputStream(fmi.getString(Tag.TransferSyntaxUID, null));
         }
         if (dataset.bigEndian() != bigEndian
                 || encOpts.groupLength
@@ -148,18 +148,18 @@ public class DicomOutputStream extends FilterOutputStream {
         dataset.writeTo(this);
     }
 
-	private void switchBigEndianAndExplicitVr(String tsuid) {
-		bigEndian = tsuid.equals(UID.ExplicitVRBigEndianRetired);
-		explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
-	}
+    private void switchBigEndianAndExplicitVr(String tsuid) {
+        bigEndian = tsuid.equals(UID.ExplicitVRBigEndianRetired);
+        explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
+    }
 
     private void switchOutputStream(String tsuid) {
-		if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
+        if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
                         || tsuid.equals(UID.JPIPReferencedDeflate)) {
                 super.out = new DeflaterOutputStream(super.out,
                         new Deflater(Deflater.DEFAULT_COMPRESSION, true));
         }
-	}
+    }
 
     public void writeHeader(int tag, VR vr, int len) throws IOException {
         byte[] b = buf;

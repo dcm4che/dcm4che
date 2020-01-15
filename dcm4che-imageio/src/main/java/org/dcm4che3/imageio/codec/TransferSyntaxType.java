@@ -109,6 +109,11 @@ public enum TransferSyntaxType {
 
     public static TransferSyntaxType forUID(String uid) {
         switch(uid) {
+        	case UID.ImplicitVRLittleEndian:
+        	case UID.ExplicitVRLittleEndian:
+        	case UID.ExplicitVRBigEndianRetired:
+        	case UID.DeflatedExplicitVRLittleEndian:
+        		return NATIVE;
             case UID.JPEGBaseline1:
                 return JPEG_BASELINE;
             case UID.JPEGExtended24:
@@ -143,8 +148,9 @@ public enum TransferSyntaxType {
                 return MPEG;
             case UID.RLELossless:
                 return RLE;
+            default:
+            	return null;
         }
-        return NATIVE;
     }
 
     public static boolean isLossyCompression(String uid) {

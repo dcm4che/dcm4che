@@ -148,8 +148,7 @@ public enum QueryRetrieveLevel {
         }
 
         if (!collector.isEmpty()) {
-            throw new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass, collector.getFailureMessage())
-                    .setOffendingElements(collector.getTags());
+            throw identifierDoesNotMatchSOPClass(collector.getFailureMessage(), collector.getTags());
         }
         return level;
     }
@@ -235,9 +234,9 @@ public enum QueryRetrieveLevel {
         return identifierDoesNotMatchSOPClass(message, Tag.QueryRetrieveLevel);
     }
 
-    private static DicomServiceException identifierDoesNotMatchSOPClass(String comment, int tag) {
+    private static DicomServiceException identifierDoesNotMatchSOPClass(String comment, int... tags) {
         return new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass, comment)
-                .setOffendingElements(tag);
+                .setOffendingElements(tags);
     }
 
 }

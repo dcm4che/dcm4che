@@ -51,10 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -136,7 +132,7 @@ public enum QueryRetrieveLevel {
             throw invalidAttributeValue(Tag.QueryRetrieveLevel, value);
         }
 
-        KeyCheckFailureCollector collector = new KeyCheckFailureCollector();
+        UniqueKeyCheckFailureCollector collector = new UniqueKeyCheckFailureCollector();
         for (QueryRetrieveLevel it : qrLevels) {
             int keyIndex = Math.min(it.ordinal(), UNIQUE_KEYS.length - 1);
             int key = UNIQUE_KEYS[keyIndex];
@@ -148,7 +144,9 @@ public enum QueryRetrieveLevel {
         }
 
         if (!collector.isEmpty()) {
-            throw new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass);
+            throw new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass,
+                    collector.getFailureMessage())
+                    .setOffendingElements(collector.getTags());
         }
         return level;
     }
@@ -204,8 +202,7 @@ public enum QueryRetrieveLevel {
     }
 
     private static Optional<UniqueKeyCheckFailure> checkUniqueKey(int key, Attributes attributes, boolean optional,
-                                                                  boolean lenient, boolean multiple)
-            throws DicomServiceException {
+                                                                  boolean lenient, boolean multiple) {
         UniqueKeyCheckFailure failure = null;
         String[] ids = attributes.getStrings(key);
         if (Objects.isNull(ids) || ids.length == 0) {

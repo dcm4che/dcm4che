@@ -19,8 +19,14 @@ package org.dcm4che3.net.service;
  */
 class UniqueKeyCheckFailure {
     public enum FailureType {
-        INVALID_ATTRIBUTE,
-        MISSING_ATTRIBUTE
+        INVALID_ATTRIBUTE("Invalid Attribute"),
+        MISSING_ATTRIBUTE("Missing Attribute");
+
+        public final String description;
+
+        FailureType(String description) {
+            this.description = description;
+        }
     }
 
     public final FailureType type;

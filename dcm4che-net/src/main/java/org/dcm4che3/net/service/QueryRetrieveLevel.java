@@ -51,7 +51,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public enum QueryRetrieveLevel {
@@ -131,16 +136,19 @@ public enum QueryRetrieveLevel {
             throw invalidAttributeValue(Tag.QueryRetrieveLevel, value);
         }
 
+        KeyCheckFailureCollector collector = new KeyCheckFailureCollector();
         for (QueryRetrieveLevel it : qrLevels) {
             int keyIndex = Math.min(it.ordinal(), UNIQUE_KEYS.length - 1);
             int key = UNIQUE_KEYS[keyIndex];
             boolean multiple = UNIQUE_KEYS_VM[keyIndex] == -1;
 
-            if (it == level) {
-                checkUniqueKey(key, keys, false, false, multiple);
-                break;
-            }
-            checkUniqueKey(key, keys, relational, lenient, multiple);
+            boolean required = it == level;
+            checkUniqueKey(key, keys, !required && relational, !required && lenient, multiple)
+                .ifPresent(collector::add);
+        }
+
+        if (!collector.isEmpty()) {
+            throw new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass);
         }
         return level;
     }
@@ -195,20 +203,24 @@ public enum QueryRetrieveLevel {
                 .setOffendingElements(result.getOffendingElements());
     }
 
-    private static void checkUniqueKey(int key, Attributes attributes, boolean optional, boolean lenient, boolean multiple)
+    private static Optional<UniqueKeyCheckFailure> checkUniqueKey(int key, Attributes attributes, boolean optional,
+                                                                  boolean lenient, boolean multiple)
             throws DicomServiceException {
+        UniqueKeyCheckFailure failure = null;
         String[] ids = attributes.getStrings(key);
         if (Objects.isNull(ids) || ids.length == 0) {
             if (!optional) {
                 if (lenient) {
                     LOG.info("Missing %s %s in Query/Retrieve Identifier");
                 } else {
-                    throw missingAttribute(key);
+                    failure = new UniqueKeyCheckFailure(UniqueKeyCheckFailure.FailureType.MISSING_ATTRIBUTE, key, null);
                 }
             }
         } else if (!multiple && ids.length > 1) {
-            throw invalidAttributeValue(key, StringUtils.concat(ids, '\\'));
+            failure = new UniqueKeyCheckFailure(UniqueKeyCheckFailure.FailureType.INVALID_ATTRIBUTE, key,
+                    StringUtils.concat(ids, '\\'));
         }
+        return Optional.ofNullable(failure);
     }
 
     private static DicomServiceException missingAttribute(int missingTag) {
@@ -227,4 +239,5 @@ public enum QueryRetrieveLevel {
         return new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass, comment)
                 .setOffendingElements(tag);
     }
+
 }

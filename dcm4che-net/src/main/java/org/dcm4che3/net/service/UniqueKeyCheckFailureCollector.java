@@ -14,11 +14,10 @@
 //
 package org.dcm4che3.net.service;
 
-import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.util.TagUtils;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,8 +28,7 @@ import java.util.stream.Collectors;
  * @author apyii
  */
 public class UniqueKeyCheckFailureCollector {
-    private Map<UniqueKeyCheckFailure.FailureType, List<UniqueKeyCheckFailure>> failures;
-    private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
+    private Map<UniqueKeyCheckFailure.FailureType, List<UniqueKeyCheckFailure>> failures = new HashMap<>();
 
     public void add(UniqueKeyCheckFailure failure) {
         List<UniqueKeyCheckFailure> previous = failures.computeIfAbsent(failure.type, t -> new ArrayList<>());
@@ -44,21 +42,19 @@ public class UniqueKeyCheckFailureCollector {
     public String getFailureMessage() {
         StringBuilder sb = new StringBuilder();
 
-        for (UniqueKeyCheckFailure.FailureType type: failures.keySet()) {
+        for (Map.Entry<UniqueKeyCheckFailure.FailureType, List<UniqueKeyCheckFailure>> entry: failures.entrySet()) {
             if (sb.length() > 0) {
                 sb.append("; ");
             }
-            sb.append(type.description);
-            List<UniqueKeyCheckFailure> entries = failures.get(type);
-            if (entries.size() > 1) {
+            sb.append(entry.getKey().description);
+            if (entry.getValue().size() > 1) {
                 sb.append("s");
             }
             sb.append(": ");
-            List<String> messages = entries.stream().map(entry -> {
-                String entryMsg = MessageFormat.format("{0} {1}",
-                        DICT.keywordOf(entry.key), TagUtils.toString(entry.key));
-                if (Objects.nonNull(entry.value)) {
-                    entryMsg = MessageFormat.format("{0} - \"{1}\"", entryMsg, entry.value);
+            List<String> messages = entry.getValue().stream().map(failed -> {
+                String entryMsg = TagUtils.toString(failed.key);
+                if (Objects.nonNull(failed.value)) {
+                    entryMsg = String.format("%s - \"%s\"", entryMsg, failed.value);
                 }
                 return entryMsg;
             }).collect(Collectors.toList());

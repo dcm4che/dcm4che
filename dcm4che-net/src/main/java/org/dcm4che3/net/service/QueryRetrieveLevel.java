@@ -138,14 +138,17 @@ public enum QueryRetrieveLevel {
             int key = UNIQUE_KEYS[keyIndex];
             boolean multiple = UNIQUE_KEYS_VM[keyIndex] == -1;
 
-            boolean required = it == level;
-            checkUniqueKey(key, keys, !required && relational, !required && lenient, multiple)
-                .ifPresent(collector::add);
+            if (it == level) {
+                checkUniqueKey(key, keys, false, false, multiple)
+                        .ifPresent(collector::add);
+                break;
+            }
+            checkUniqueKey(key, keys, relational, lenient, multiple)
+                    .ifPresent(collector::add);
         }
 
         if (!collector.isEmpty()) {
-            throw new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass,
-                    collector.getFailureMessage())
+            throw new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass, collector.getFailureMessage())
                     .setOffendingElements(collector.getTags());
         }
         return level;

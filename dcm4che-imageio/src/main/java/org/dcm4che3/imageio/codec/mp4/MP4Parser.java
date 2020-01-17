@@ -187,18 +187,16 @@ public class MP4Parser implements XPEGParser {
                 : new Box((int) type, size - 8);
     }
 
-    private Box findBox(SeekableByteChannel channel, long end, int... types)
+    private Box findBox(SeekableByteChannel channel, long end, int type)
             throws IOException {
         long remaining;
         while ((remaining = end - channel.position()) > 0) {
             Box box = nextBox(channel, remaining);
-            for (int type : types) {
-                if (box.type == type)
-                    return box;
-            }
+            if (box.type == type)
+                return box;
             skip(channel, box.contentSize);
         }
-        throw new XPEGParserException(boxNotFound(types[0]));
+        throw new XPEGParserException(boxNotFound(type));
     }
 
     private static String boxNotFound(int type) {
@@ -257,7 +255,9 @@ public class MP4Parser implements XPEGParser {
 
     private void parseMovieBox(SeekableByteChannel channel, Box box) throws IOException {
         long end = channel.position() + box.contentSize;
-        parseTrackBox(channel, findBox(channel, end, TrackBoxType));
+        do {
+            parseTrackBox(channel, findBox(channel, end, TrackBoxType));
+        } while (visualSampleEntryType == 0);
         channel.position(end);
     }
 
@@ -309,28 +309,29 @@ public class MP4Parser implements XPEGParser {
     private void parseSampleDescriptionBox(SeekableByteChannel channel, Box box) throws IOException {
         long end = channel.position() + box.contentSize;
         skip(channel, 8);
-        parseVisualSampleEntry(channel,
-                findBox(channel, end, VisualSampleEntryTypeAVC1, VisualSampleEntryTypeHVC1));
+        parseVisualSampleEntry(channel, nextBox(channel, end));
         channel.position(end);
     }
 
     private void parseVisualSampleEntry(SeekableByteChannel channel, Box box) throws IOException {
         long end = channel.position() + box.contentSize;
-        visualSampleEntryType = box.type;
-        skip(channel, 24);
-        int val = readInt(channel);
-        columns = val >>> 16;
-        rows = val & 0xffff;
-        skip(channel, 50);
-        switch (box.type) {
-            case VisualSampleEntryTypeAVC1:
-                parseAvcConfigurationBox(channel,
-                        findBox(channel, end, AvcConfigurationBoxType));
-                break;
-            case VisualSampleEntryTypeHVC1:
-                parseHevcConfigurationBox(channel,
-                        findBox(channel, end, HevcConfigurationBoxType));
-                break;
+        if (box.type == VisualSampleEntryTypeAVC1 || box.type == VisualSampleEntryTypeHVC1) {
+            visualSampleEntryType = box.type;
+            skip(channel, 24);
+            int val = readInt(channel);
+            columns = val >>> 16;
+            rows = val & 0xffff;
+            skip(channel, 50);
+            switch (box.type) {
+                case VisualSampleEntryTypeAVC1:
+                    parseAvcConfigurationBox(channel,
+                            findBox(channel, end, AvcConfigurationBoxType));
+                    break;
+                case VisualSampleEntryTypeHVC1:
+                    parseHevcConfigurationBox(channel,
+                            findBox(channel, end, HevcConfigurationBoxType));
+                    break;
+            }
         }
         channel.position(end);
     }

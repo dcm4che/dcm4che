@@ -315,25 +315,28 @@ public class MP4Parser implements XPEGParser {
 
     private void parseVisualSampleEntry(SeekableByteChannel channel, Box box) throws IOException {
         long end = channel.position() + box.contentSize;
-        if (box.type == VisualSampleEntryTypeAVC1 || box.type == VisualSampleEntryTypeHVC1) {
-            visualSampleEntryType = box.type;
-            skip(channel, 24);
-            int val = readInt(channel);
-            columns = val >>> 16;
-            rows = val & 0xffff;
-            skip(channel, 50);
-            switch (box.type) {
-                case VisualSampleEntryTypeAVC1:
-                    parseAvcConfigurationBox(channel,
-                            findBox(channel, end, AvcConfigurationBoxType));
-                    break;
-                case VisualSampleEntryTypeHVC1:
-                    parseHevcConfigurationBox(channel,
-                            findBox(channel, end, HevcConfigurationBoxType));
-                    break;
-            }
+        switch (box.type) {
+            case VisualSampleEntryTypeAVC1:
+                parseVisualSampleEntryHeader(channel, box);
+                parseAvcConfigurationBox(channel,
+                        findBox(channel, end, AvcConfigurationBoxType));
+                break;
+            case VisualSampleEntryTypeHVC1:
+                parseVisualSampleEntryHeader(channel, box);
+                parseHevcConfigurationBox(channel,
+                        findBox(channel, end, HevcConfigurationBoxType));
+                break;
         }
         channel.position(end);
+    }
+
+    private void parseVisualSampleEntryHeader(SeekableByteChannel channel, Box box) throws IOException {
+        visualSampleEntryType = box.type;
+        skip(channel, 24);
+        int val = readInt(channel);
+        columns = val >>> 16;
+        rows = val & 0xffff;
+        skip(channel, 50);
     }
 
     private void parseAvcConfigurationBox(SeekableByteChannel channel, Box box) throws IOException {

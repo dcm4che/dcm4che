@@ -41,7 +41,7 @@ package org.dcm4che3.net.service;
 import org.dcm4che3.util.TagUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,10 +49,11 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author apyii
+ * @author Homero Cardoso de Almeida <homero.cardosodealmeida@agfa.com>
  */
 public class UniqueKeyCheckFailureCollector {
-    private Map<UniqueKeyCheckFailure.FailureType, List<UniqueKeyCheckFailure>> failures = new HashMap<>();
+    private Map<UniqueKeyCheckFailure.FailureType, List<UniqueKeyCheckFailure>> failures =
+            new EnumMap<>(UniqueKeyCheckFailure.FailureType.class);
 
     public void add(UniqueKeyCheckFailure failure) {
         List<UniqueKeyCheckFailure> previous = failures.computeIfAbsent(failure.type, t -> new ArrayList<>());

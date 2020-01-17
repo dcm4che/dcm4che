@@ -39,12 +39,12 @@
 package org.dcm4che3.net.service;
 
 /**
- * @author apyii
+ * @author Homero Cardoso de Almeida <homero.cardosodealmeida@agfa.com>
  */
 class UniqueKeyCheckFailure {
     public enum FailureType {
-        INVALID_ATTRIBUTE("Invalid Attribute"),
-        MISSING_ATTRIBUTE("Missing Attribute");
+        MISSING_ATTRIBUTE("Missing Attribute"),
+        INVALID_ATTRIBUTE("Invalid Attribute");
 
         public final String description;
 

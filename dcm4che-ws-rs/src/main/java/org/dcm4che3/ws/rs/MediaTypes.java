@@ -208,6 +208,17 @@ public class MediaTypes {
             new MediaType("video", "mp4");
 
     /**
+     * "video/quicktime"
+     */
+    public final static String VIDEO_QUICKTIME = "video/quicktime";
+
+    /**
+     * "video/quicktime"
+     */
+    public final static MediaType VIDEO_QUICKTIME_TYPE =
+            new MediaType("video", "quicktime");
+
+    /**
      * "application/pdf"
      */
     public final static String APPLICATION_PDF = "application/pdf";
@@ -362,7 +373,7 @@ public class MediaTypes {
         } else if (type.equals("video")) {
             if (subtype.equals("mpeg"))
                 return UID.MPEG2;
-            else if (subtype.equals("mp4"))
+            else if (subtype.equals("mp4") || subtype.equals("quicktime"))
                 return UID.MPEG4AVCH264HighProfileLevel41;
         }
         return UID.ExplicitVRLittleEndian;

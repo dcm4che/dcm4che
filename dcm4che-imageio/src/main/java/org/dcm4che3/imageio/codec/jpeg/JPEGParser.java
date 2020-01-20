@@ -47,6 +47,7 @@ import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.codec.XPEGParser;
 import org.dcm4che3.imageio.codec.XPEGParserException;
+import org.dcm4che3.imageio.codec.mp4.MP4FileType;
 import org.dcm4che3.util.SafeBuffer;
 
 import java.io.IOException;
@@ -90,6 +91,11 @@ public class JPEGParser implements XPEGParser {
     @Override
     public long getPositionAfterAPPSegments() {
         return positionAfterAPP;
+    }
+
+    @Override
+    public MP4FileType getMP4FileType() {
+        return null;
     }
 
     @Override

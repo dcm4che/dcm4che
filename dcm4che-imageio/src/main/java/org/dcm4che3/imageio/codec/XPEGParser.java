@@ -42,6 +42,7 @@
 package org.dcm4che3.imageio.codec;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.imageio.codec.mp4.MP4FileType;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -51,6 +52,8 @@ public interface XPEGParser {
     long getCodeStreamPosition();
 
     long getPositionAfterAPPSegments();
+
+    MP4FileType getMP4FileType();
 
     Attributes getAttributes(Attributes attrs);
 

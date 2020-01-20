@@ -59,6 +59,7 @@ import java.util.Date;
  * @since Jun 2019
  */
 public class MP4Parser implements XPEGParser {
+    private static final int FileBoxType = 0x66747970; // ftyp;
     private static final int MovieBoxType = 0x6d6f6f76; // moov;
     private static final int TrackBoxType = 0x7472616b; // trak
     private static final int MediaBoxType = 0x6d646961; // mdia
@@ -73,6 +74,7 @@ public class MP4Parser implements XPEGParser {
     private static final int SampleSizeBoxType = 0x7374737a; // stsz
 
     private final ByteBuffer buf = ByteBuffer.allocate(8);
+    private MP4FileType mp4FileType;
     private Date creationTime;
     private Date modificationTime;
     private int timescale;
@@ -87,6 +89,13 @@ public class MP4Parser implements XPEGParser {
     private int level_idc;
 
     public MP4Parser(SeekableByteChannel channel) throws IOException {
+        long position = channel.position();
+        Box box = nextBox(channel, channel.size() - position);
+        if (box.type == FileBoxType) {
+            mp4FileType = new MP4FileType(readInt(channel), readInt(channel), readInts(channel, box.end));
+        } else {
+            channel.position(position);
+        }
         parseMovieBox(channel, findBox(channel, channel.size(), MovieBoxType));
     }
 
@@ -106,6 +115,11 @@ public class MP4Parser implements XPEGParser {
     @Override
     public long getPositionAfterAPPSegments() {
         return -1L;
+    }
+
+    @Override
+    public MP4FileType getMP4FileType() {
+        return mp4FileType;
     }
 
     @Override
@@ -201,6 +215,14 @@ public class MP4Parser implements XPEGParser {
                 (type >> 16) & 0xff,
                 (type >> 8) & 0xff,
                 type & 0xff);
+    }
+
+    private int[] readInts(SeekableByteChannel channel, long end) throws IOException {
+        int[] values = new int[(int) ((end - channel.position()) / 4)];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = readInt(channel);
+        }
+        return values;
     }
 
     private byte readByte(SeekableByteChannel channel) throws IOException {

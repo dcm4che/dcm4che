@@ -60,7 +60,6 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -332,6 +331,7 @@ public class Jpg2Dcm {
                 case "video/mpeg":
                     return ContentType.VIDEO_MPEG;
                 case "video/mp4":
+                case "video/quicktime":
                     return ContentType.VIDEO_MP4;
             }
             throw new IllegalArgumentException(

@@ -86,12 +86,17 @@ public class Jpg2Dcm {
     };
 
     private boolean noAPPn;
+    private boolean qt2mp4;
     private boolean photo;
     private Attributes staticMetadata = new Attributes();
     private byte[] buf = new byte[BUFFER_SIZE];
 
     private void setNoAPPn(boolean noAPPn) {
         this.noAPPn = noAPPn;
+    }
+
+    public void setQt2mp4(boolean qt2mp4) {
+        this.qt2mp4 = qt2mp4;
     }
 
     private void setPhoto(boolean photo) {
@@ -112,6 +117,7 @@ public class Jpg2Dcm {
                 throw new ParseException(
                         MessageFormat.format(rb.getString("nodestdir"), dest));
             main.setNoAPPn(cl.hasOption("no-app"));
+            main.setQt2mp4(cl.hasOption("qt2mp4"));
             main.setPhoto(cl.hasOption("xc"));
             createStaticMetadata(cl, main.staticMetadata);
             main.convert(cl.getArgList());
@@ -149,6 +155,11 @@ public class Jpg2Dcm {
                 .longOpt("no-app")
                 .hasArg(false)
                 .desc(rb.getString("no-app"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("qt2mp4")
+                .hasArg(false)
+                .desc(rb.getString("qt2mp4"))
                 .build());
         return CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
     }

@@ -243,6 +243,8 @@ public class StowRS {
         MPEG(UID.VideoPhotographicImageStorage, Tag.PixelData, MediaTypes.VIDEO_MPEG,
                 "vlPhotographicImageMetadata.xml"),
         MP4(UID.VideoPhotographicImageStorage, Tag.PixelData, MediaTypes.VIDEO_MP4,
+                "vlPhotographicImageMetadata.xml"),
+        QUICKTIME(UID.VideoPhotographicImageStorage, Tag.PixelData, MediaTypes.VIDEO_QUICKTIME,
                 "vlPhotographicImageMetadata.xml");
 
         private String cuid;
@@ -362,6 +364,7 @@ public class StowRS {
             case JP2:
             case MPEG:
             case MP4:
+            case QUICKTIME:
                 pixelMetadata(contentLoc, bulkdataFilePath.toFile(), metadata);
                 break;
         }
@@ -463,7 +466,10 @@ public class StowRS {
         }
 
         static CompressedPixelData valueOf() {
-            return fileType == FileType.JP2 ? JPEG : valueOf(fileType.name());
+            return fileType == FileType.JP2
+                    ? JPEG
+                    : fileType == FileType.QUICKTIME
+                        ? MP4 : valueOf(fileType.name());
         }
     }
 

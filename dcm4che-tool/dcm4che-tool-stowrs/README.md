@@ -14,8 +14,8 @@
     possible i.e for eg. one can send multiple pdfs in one request, but can
     not send combination of files like pdfs and images in one request.
     Supported content types for bulkdata are application/pdf, text/xml (for
-    CDA files), image/jpeg, video/mpeg, video/mp4, image/jp2 and
-    application/sla (for STL files). File names shall not contain spaces.
+    CDA files), image/jpeg, video/mpeg, video/mp4, video/quicktime, image/jp2
+    and application/sla (for STL files). File names shall not contain spaces.
     -
     Options:
      -a,--accept <arg>           Specify the value for Accept header : xml or
@@ -49,9 +49,10 @@
                                  verbatim encapsulated by default.
         --pixel-header           If this option is specified, then the
                                  metadata information shall be extracted from
-                                 header of pixel data for jpeg images, mpeg
-                                 and mp4 videos in addition to the metadata
-                                 generation as explained above in description.
+                                 header of pixel data for jpeg images, mpeg,
+                                 mp4 and quicktime videos in addition to the
+                                 metadata generation as explained above in
+                                 description.
      -t,--type <type>            Specify the value for Content-type header :
                                  xml or json. The value of Content-type will
                                  then be sent in request header as
@@ -64,7 +65,8 @@
                                  application/dicom.
         --tsuid                  Specify if the Transfer Syntax UID shall be
                                  sent in multipart request for content types
-                                 image/jpeg, video/mpeg or video/mp4 files.
+                                 image/jpeg, video/mpeg, video/mp4 or
+                                 video/quicktime files.
      -u,--user <user:password>   Specify the user name and password to use for
                                  server authentication.
         --url <url>              Specify the request URL.

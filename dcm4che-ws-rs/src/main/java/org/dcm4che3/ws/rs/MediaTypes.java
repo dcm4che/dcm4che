@@ -413,20 +413,6 @@ public class MediaTypes {
                 : null;
     }
 
-    public static String mimeTypeOf(MediaType bulkdataMediaType) {
-        return equalsIgnoreParameters(bulkdataMediaType, APPLICATION_PDF_TYPE)
-                ? APPLICATION_PDF
-                : equalsIgnoreParameters(bulkdataMediaType, MediaType.APPLICATION_XML_TYPE)
-                    ? MediaType.TEXT_XML
-                    : equalsIgnoreParameters(bulkdataMediaType, MODEL_STL_TYPE)
-                        ? MODEL_STL
-                        : equalsIgnoreParameters(bulkdataMediaType, MODEL_MTL_TYPE)
-                            ? MODEL_MTL
-                            : equalsIgnoreParameters(bulkdataMediaType, MODEL_OBJ_TYPE)
-                                ? MODEL_OBJ
-                                : null;
-    }
-
     public static boolean equalsIgnoreParameters(MediaType type1, MediaType type2) {
         return type1.getType().equalsIgnoreCase(type2.getType())
                 &&  type1.getSubtype().equalsIgnoreCase(type2.getSubtype());

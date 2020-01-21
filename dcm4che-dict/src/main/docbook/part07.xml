@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2019e - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2020a - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2019</year>
+      <year>2020</year>
       <holder>NEMA</holder>
     </copyright>
       <legalnotice>
@@ -1815,13 +1815,13 @@
   <para xml:id="para_98793424-a21b-4a97-b815-a440c853491a">This parameter contains the error or success notification for the operation. It shall be included by the performing DIMSE Service User in the response/confirmation. The following types of status may occur in a response/confirmation (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
   <orderedlist numeration="loweralpha">
     <listitem>
-      <para xml:id="para_93acf72d-d182-4d55-b80f-d725e50785dc">Refused: Out of Resources (Status value is Service Class specific) - This indicates that the peer DIMSE Service User was unable to store the composite SOP Instance because it was out of resources.</para>
+      <para xml:id="para_93acf72d-d182-4d55-b80f-d725e50785dc">Refused: Out of resources (Status value is Service Class specific) - This indicates that the peer DIMSE Service User was unable to store the composite SOP Instance because it was out of resources.</para>
 </listitem>
     <listitem>
-<para xml:id="para_1416a945-3d5a-4aac-ba7a-ce3ace5eb943">Failed: SOP Class Not Supported (0112H) - This indicates that the peer DIMSE Service User was unable to store the composite SOP Instance because the SOP Class is not supported,</para>
+        <para xml:id="para_1416a945-3d5a-4aac-ba7a-ce3ace5eb943">Refused: SOP Class not supported (0112H) - This indicates that the peer DIMSE Service User was unable to store the composite SOP Instance because the SOP Class is not supported,</para>
 </listitem>
     <listitem>
-      <para xml:id="para_6ddd8166-0685-4651-a0bf-41fe6b7afad1">Error: Cannot Understand (Status value is Service Class specific) - This indicates that the peer DIMSE Service User was unable to store the composite SOP Instance because it cannot understand certain Data Elements.</para>
+      <para xml:id="para_6ddd8166-0685-4651-a0bf-41fe6b7afad1">Error: Cannot understand (Status value is Service Class specific) - This indicates that the peer DIMSE Service User was unable to store the composite SOP Instance because it Cannot understand certain Data Elements.</para>
 </listitem>
     <listitem>
       <para xml:id="para_dc33a875-cae2-47bb-85be-6b78fc9bf764">Error: Data Set does not match SOP Class (Status value is Service Class specific) - This indicates that the peer DIMSE Service User was unable to store the composite SOP Instance because the Data Set does not match the SOP Class.</para>
@@ -1833,19 +1833,19 @@
 <para xml:id="para_eefa62e5-cff0-47ab-838d-5db3c36a6231">Success (0000H) - This indicates that the composite SOP Instance was successfully stored.</para>
 </listitem>
     <listitem>
-      <para xml:id="para_d1f7dcbf-2bcc-4f38-9f06-66d6cabe54d6">Duplicate Invocation (0210H) - Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
+      <para xml:id="para_d1f7dcbf-2bcc-4f38-9f06-66d6cabe54d6">Duplicate invocation (0210H) - Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
 </listitem>
     <listitem>
-      <para xml:id="para_bacadf2e-81fa-4aaa-abdc-640104faf686">Invalid Object Instance (0117H) - Indicates that the SOP Instance UID specified implied a violation of the UID construction rules.</para>
+      <para xml:id="para_bacadf2e-81fa-4aaa-abdc-640104faf686">Invalid SOP Instance (0117H) - Indicates that the SOP Instance UID specified implied a violation of the UID construction rules.</para>
 </listitem>
     <listitem>
-      <para xml:id="para_a1b99766-e2a1-492f-8dbc-c8711cc65e37">Mistyped Argument (0212H) - Indicates that one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
+      <para xml:id="para_a1b99766-e2a1-492f-8dbc-c8711cc65e37">Mistyped argument (0212H) - Indicates that one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
 </listitem>
     <listitem>
-      <para xml:id="para_99679638-34b6-43fd-9759-9ea9c2a5d107">Unrecognized Operation (0211H) - Indicates that the operation is not one of those agreed between the DIMSE Service Users.</para>
+      <para xml:id="para_99679638-34b6-43fd-9759-9ea9c2a5d107">Unrecognized operation (0211H) - Indicates that the operation is not one of those agreed between the DIMSE Service Users.</para>
 </listitem>
     <listitem>
-      <para xml:id="para_e2068937-12cc-46f6-bfb5-347457b4915f">Refused: Not Authorized (0124H) - Indicates that the peer DIMSE Service User was not authorized to store the composite SOP Instance.</para>
+      <para xml:id="para_e2068937-12cc-46f6-bfb5-347457b4915f">Refused: Not authorized (0124H) - Indicates that the peer DIMSE Service User was not authorized to store the composite SOP Instance.</para>
 </listitem>
   </orderedlist>
 </section>
@@ -2044,10 +2044,10 @@
                   <para xml:id="para_8850be41-96bd-42b7-8c55-990bc880b5a4">Pending (Status value is Service Class specific) - This indicates that processing of the matches is initiated or continuing. It shall contain a matching Identifier.</para>
               </listitem>
               <listitem>
-                  <para xml:id="para_a05b8cfe-0a23-4309-a58c-a5fb37a639f0">Refused: Out of Resources (Status value is Service Class specific) - Indicates that processing of the C-FIND has been terminated because it was out of resources. This may be the initial response to the C-FIND, or may be sent after a number of pending C-FIND responses. This response shall not contain a matching Identifier.</para>
+                  <para xml:id="para_a05b8cfe-0a23-4309-a58c-a5fb37a639f0">Refused: Out of resources (Status value is Service Class specific) - Indicates that processing of the C-FIND has been terminated because it was out of resources. This may be the initial response to the C-FIND, or may be sent after a number of pending C-FIND responses. This response shall not contain a matching Identifier.</para>
               </listitem>
               <listitem>
-                  <para xml:id="para_1579ffc7-0ec3-4a73-abb2-ff1b6d2fe939">Refused: SOP Class Not Supported (0122H) - Indicates that processing of the C-FIND has been terminated because the SOP Class was not supported. This response shall not contain a matching Identifier.</para>
+                  <para xml:id="para_1579ffc7-0ec3-4a73-abb2-ff1b6d2fe939">Refused: SOP Class not supported (0122H) - Indicates that processing of the C-FIND has been terminated because the SOP Class was not supported. This response shall not contain a matching Identifier.</para>
               </listitem>
               <listitem>
                   <para xml:id="para_43499368-f3cb-44f1-b2bd-cd176d7b6266">Cancel (FE00H) - Indicates that the processing of the C-FIND has been terminated due to a C-FIND Cancel indication primitive. The response shall not contain an Identifier.</para>
@@ -2348,10 +2348,10 @@
   <para xml:id="para_69f09355-8e78-4f62-8d63-9039d529857b">Pending (Status value is Service Class specific) - This indicates that processing of the matches and sub-operations is initiated or continuing.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_68c10ed1-de9e-484c-be20-4504e2568bfd">Refused: Out of Resources (Status value is Service Class specific) - Indicates that processing of the C-GET has been terminated because it was out of resources. This may be the initial response to the C-GET or may be sent after a number of Pending statuses.</para>
+  <para xml:id="para_68c10ed1-de9e-484c-be20-4504e2568bfd">Refused: Out of resources (Status value is Service Class specific) - Indicates that processing of the C-GET has been terminated because it was out of resources. This may be the initial response to the C-GET or may be sent after a number of Pending statuses.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_57aa15b9-133c-494a-b46d-47a2b6a0c5fb">Refused: SOP Class Not Supported (0122H) - Indicates that processing of the C-GET has been terminated because the SOP Class was not supported.</para>
+  <para xml:id="para_57aa15b9-133c-494a-b46d-47a2b6a0c5fb">Refused: SOP Class not supported (0122H) - Indicates that processing of the C-GET has been terminated because the SOP Class was not supported.</para>
 </listitem>
 <listitem>
   <para xml:id="para_54b84554-c8b7-4c68-afd3-80dc23b79bed">Cancel (FE00H) - Indicates that processing of the C-GET has been terminated due to a C-GET Cancel indication primitive.</para>
@@ -2360,16 +2360,16 @@
   <para xml:id="para_d9670778-ee08-44c8-b8dd-5d285e6c271c">Failed (Status value is Service Class specific) - Indicates that the C-GET operation failed at the performing DIMSE Service User.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_4309e45c-2baf-4fbf-baf0-7dd808f8194e">Duplicate Invocation (0210H) - Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
+  <para xml:id="para_4309e45c-2baf-4fbf-baf0-7dd808f8194e">Duplicate invocation (0210H) - Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_74a4c4f3-28c4-4018-980b-83fa3e247db9">Mistyped Argument (0212H) - Indicates that one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
+  <para xml:id="para_74a4c4f3-28c4-4018-980b-83fa3e247db9">Mistyped argument (0212H) - Indicates that one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_46a99c07-6782-456a-99ce-adbdba467778">Unrecognized Operation (0211H) - Indicates that the operation is not one of those agreed between the DIMSE Service Users.</para>
+  <para xml:id="para_46a99c07-6782-456a-99ce-adbdba467778">Unrecognized operation (0211H) - Indicates that the operation is not one of those agreed between the DIMSE Service Users.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_960782bd-f9f4-4d1f-a047-d479a890ca94">Refused: Not Authorized (0124H) - Indicates that the peer DIMSE Service User was not authorized to invoke the C-FIND operation.</para>
+  <para xml:id="para_960782bd-f9f4-4d1f-a047-d479a890ca94">Refused: Not authorized (0124H) - Indicates that the peer DIMSE Service User was not authorized to invoke the C-FIND operation.</para>
 </listitem>
     <listitem>
       <para xml:id="para_32b6e760-0652-40f1-8b97-5d8cf8dcfd56">Warning (Status value is Service Class specific) - This indicates that the peer DIMSE Service User was able to perform sub-operations but detected a probable error with one or more of them.</para>
@@ -2709,13 +2709,13 @@
   <para xml:id="para_7edfbf9d-cbf7-4a20-86be-b9c19f11e20d">Pending (Status value is Service Class specific) - This indicates that procession of the matches and sub-operations is initiated or continuing.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_cfe66527-6476-4e3c-bb5f-0dde5ec2bfcd">Refused: Out of Resources (Status value is Service Class specific) - Indicates that processing of the C-MOVE has been terminated because it was out of resources. This may be the initial response to the C-MOVE or may be sent after a number of Pending statuses.</para>
+  <para xml:id="para_cfe66527-6476-4e3c-bb5f-0dde5ec2bfcd">Refused: Out of resources (Status value is Service Class specific) - Indicates that processing of the C-MOVE has been terminated because it was out of resources. This may be the initial response to the C-MOVE or may be sent after a number of Pending statuses.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_a539ad29-f10f-407e-9ba8-18bbb5d808f4">Refused: SOP Class Not Supported (0122H) - Indicates that processing of the C-MOVE has been terminated because the SOP Class was not supported.</para>
+  <para xml:id="para_a539ad29-f10f-407e-9ba8-18bbb5d808f4">Refused: SOP Class not supported (0122H) - Indicates that processing of the C-MOVE has been terminated because the SOP Class was not supported.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_c7ccff60-ca2d-496c-b7c6-d442401adf97">Refused: Move Destination Unknown (Status value is Service Class specific) - Indicates that processing of the C-MOVE has been terminated because the Move destination was unknown.</para>
+  <para xml:id="para_c7ccff60-ca2d-496c-b7c6-d442401adf97">Refused: Move Destination unknown (Status value is Service Class specific) - Indicates that processing of the C-MOVE has been terminated because the Move destination was unknown.</para>
 </listitem>
 <listitem>
   <para xml:id="para_5d3d21ab-5466-43dc-80de-9b888f928594">Cancel (FE00H) - Indicates that processing of the C-MOVE has been terminated due to a C-MOVE Cancel indication primitive.</para>
@@ -2724,16 +2724,16 @@
   <para xml:id="para_7737dbe2-f7a1-40e0-89a1-164c4a417f06">Failed (Status value is Service Class specific) - Indicates that the C-MOVE operation failed at the performing DIMSE Service User.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_147d02b7-b271-4783-89ae-a5349ee2b7ac">Duplicate Invocation (0210H) - Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
+  <para xml:id="para_147d02b7-b271-4783-89ae-a5349ee2b7ac">Duplicate invocation (0210H) - Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_b54110d0-1154-4026-b0fb-0eb0b940e05e">Mistyped Argument (0212H) - Indicates that one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
+  <para xml:id="para_b54110d0-1154-4026-b0fb-0eb0b940e05e">Mistyped argument (0212H) - Indicates that one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_893c6c5d-f4fb-4c32-b51b-7b89be2bfef8">Unrecognized Operation (0211H) - Indicates that the operation is not one of those agreed between the DIMSE Service Users.</para>
+  <para xml:id="para_893c6c5d-f4fb-4c32-b51b-7b89be2bfef8">Unrecognized operation (0211H) - Indicates that the operation is not one of those agreed between the DIMSE Service Users.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_7b3eb0f7-e411-464e-ad20-b57618467419">Refused: Not Authorized (0124H) - Indicates that the peer DIMSE Service User was not authorized to invoke the C-MOVE operation.</para>
+  <para xml:id="para_7b3eb0f7-e411-464e-ad20-b57618467419">Refused: Not authorized (0124H) - Indicates that the peer DIMSE Service User was not authorized to invoke the C-MOVE operation.</para>
 </listitem>
     <listitem>
       <para xml:id="para_f72fbcac-98b7-4181-9436-70f7713ecad2">Warning (Status value is Service Class specific) - This indicates that the peer DIMSE Service User was able to perform sub-operations but detected a probable error with one or more of them.</para>
@@ -2939,16 +2939,16 @@
   <para xml:id="para_b9bf63c7-79c5-4356-963b-981f8a5eb492">Success (0000H)</para>
 </listitem>
 <listitem>
-  <para xml:id="para_79c6de52-7146-4b91-b0de-acbaf8472971">Refused: SOP Class Not Supported (0122H) - Indicates that a different SOP Class than the Verification SOP Class was specified, which was not supported.</para>
+  <para xml:id="para_79c6de52-7146-4b91-b0de-acbaf8472971">Refused: SOP Class not supported (0122H) - Indicates that a different SOP Class than the Verification SOP Class was specified, which was not supported.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_f40859ce-07a4-439c-b30d-4989baacfebf">Duplicate Invocation (0210H) - Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
+  <para xml:id="para_f40859ce-07a4-439c-b30d-4989baacfebf">Duplicate invocation (0210H) - Indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
 </listitem>
 <listitem>
   <para xml:id="para_2da0f57e-bf80-4a35-a1b7-f1d336e0733a">Mistyped argument (0212H) - Indicates that one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
 </listitem>
 <listitem>
-  <para xml:id="para_8e8de79d-d546-47d8-a989-cdbc8488f374">Unrecognized Operation (0211H) - Indicates that a different SOP Class than the Verification SOP Class was specified, which does not recognize a C-ECHO operation.</para>
+  <para xml:id="para_8e8de79d-d546-47d8-a989-cdbc8488f374">Unrecognized operation (0211H) - Indicates that a different SOP Class than the Verification SOP Class was specified, which does not recognize a C-ECHO operation.</para>
 </listitem>
 </orderedlist>
   </section>
@@ -5544,31 +5544,31 @@
   <para xml:id="para_74783bdc-98ef-4a66-8e64-31a37df6b54c">This parameter contains the error or success notification for the operation. It shall be included by the performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_2a089c8b-456c-4283-9f86-00190a7e3a40">Class-Instance Conflict (0119H) -  the specified SOP Instance is not a member of the specified SOP class.</para>
+<para xml:id="para_2a089c8b-456c-4283-9f86-00190a7e3a40">Class-Instance conflict (0119H) -  the specified SOP Instance is not a member of the specified SOP class.</para>
 </listitem>
   <listitem>
-<para xml:id="para_df0d2602-b28d-4a11-ba6a-5654f9fe54e0">Duplicate Invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
+<para xml:id="para_df0d2602-b28d-4a11-ba6a-5654f9fe54e0">Duplicate invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
 </listitem>
   <listitem>
-<para xml:id="para_f59887e8-5a44-4c67-b1a5-15bc4218af95">Invalid Argument Value (0115H) - the event information value specified was out of range or otherwise inappropriate.</para>
+<para xml:id="para_f59887e8-5a44-4c67-b1a5-15bc4218af95">Invalid argument value (0115H) - the event information value specified was out of range or otherwise inappropriate.</para>
 </listitem>
   <listitem>
-<para xml:id="para_115fd909-aa9c-4792-81b7-2aba8f917c68">Invalid Object Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
+<para xml:id="para_115fd909-aa9c-4792-81b7-2aba8f917c68">Invalid SOP Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
 </listitem>
   <listitem>
-<para xml:id="para_07b20026-aada-4ec3-ae52-c0c9d43bf33d">Mistyped Argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
+<para xml:id="para_07b20026-aada-4ec3-ae52-c0c9d43bf33d">Mistyped argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
 </listitem>
   <listitem>
-<para xml:id="para_87c94342-6343-4fcb-9603-e75c1e9cfe0b">No Such Argument (0114H) - the event information specified was not recognized.</para>
+<para xml:id="para_87c94342-6343-4fcb-9603-e75c1e9cfe0b">No such argument (0114H) - the event information specified was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_a4121313-d338-49b8-a2b4-0fbfff56ab50">No Such Event Type (0113H) - the event type specified was not recognized.</para>
+<para xml:id="para_a4121313-d338-49b8-a2b4-0fbfff56ab50">No such Event Type (0113H) - the event type specified was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_2832575e-a803-4da4-88c9-4905ae57e53e">No Such SOP Class (0118H) - the SOP Class was not recognized.</para>
+<para xml:id="para_2832575e-a803-4da4-88c9-4905ae57e53e">No such SOP Class (0118H) - the SOP Class was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_f7cdf78c-f4a0-4297-acbe-35b4c9ce005b">No Such SOP Instance (0112H) - the SOP Instance was not recognized.</para>
+<para xml:id="para_f7cdf78c-f4a0-4297-acbe-35b4c9ce005b">No such SOP Instance (0112H) - the SOP Instance was not recognized.</para>
 </listitem>
   <listitem>
 <para xml:id="para_6d42bb01-7272-49be-9b47-a6ae3061b34a">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
@@ -5580,7 +5580,7 @@
 <para xml:id="para_aa33f5b9-a799-4825-9b24-abc0cae92509">Success (0000H) - successful notification.</para>
 </listitem>
   <listitem>
-<para xml:id="para_7126e6f1-17da-4047-b0ed-5066286ca3b9">Unrecognized Operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
+<para xml:id="para_7126e6f1-17da-4047-b0ed-5066286ca3b9">Unrecognized operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
 </listitem>
 </itemizedlist>
   </section>
@@ -5612,7 +5612,7 @@
 <section label="10.1.2" status="3" xml:id="sect_10.1.2">
     <title>N-GET Service</title>
   
-  <para xml:id="para_3c96fc65-282d-48f9-b676-7fbe7eee5c31">The N-GET service is used by a DIMSE Service User to retrieve Attribute values from a peer DIMSE Service User. It is a confirmed service.</para>
+  <para xml:id="para_3c96fc65-282d-48f9-b676-7fbe7eee5c31">The N-GET service is used by a DIMSE Service User to retrieve Attribute Values from a peer DIMSE Service User. It is a confirmed service.</para>
   <section label="10.1.2.1" status="4" xml:id="sect_10.1.2.1">
     <title>N-GET Parameters</title>
   
@@ -5791,25 +5791,25 @@
   <para xml:id="para_0d753bbb-9e15-4e72-8ddb-d8a6ca195807">This parameter contains the error or success notification for the operation. It shall be included by the performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_45dfd1c5-2ad6-4247-b826-40e5c68c4326">Attribute List Error (0107H) - one or more Attribute Values were not read because the specified Attribute was not recognized. The Attribute Values that could be read are returned.</para>
+<para xml:id="para_45dfd1c5-2ad6-4247-b826-40e5c68c4326">Attribute list error (0107H) - one or more Attribute Values were not read because the specified Attribute was not recognized. The Attribute Values that could be read are returned.</para>
 </listitem>
   <listitem>
-<para xml:id="para_dd119344-f551-42d2-a916-68eb919d7073">Class-Instance Conflict (0119H) -  the specified SOP Instance is not a member of the specified SOP Class.</para>
+<para xml:id="para_dd119344-f551-42d2-a916-68eb919d7073">Class-Instance conflict (0119H) -  the specified SOP Instance is not a member of the specified SOP Class.</para>
 </listitem>
   <listitem>
-<para xml:id="para_bbf7d00d-ac88-45e8-9210-941f21c45345">Duplicate Invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
+<para xml:id="para_bbf7d00d-ac88-45e8-9210-941f21c45345">Duplicate invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
 </listitem>
   <listitem>
-<para xml:id="para_5387994d-ab5c-4aa8-a606-104bc38cae37">Invalid Object Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
+<para xml:id="para_5387994d-ab5c-4aa8-a606-104bc38cae37">Invalid SOP Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
 </listitem>
   <listitem>
-<para xml:id="para_eecc7b07-aa17-4dc0-b55a-abf02b9c8783">Mistyped Argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
+<para xml:id="para_eecc7b07-aa17-4dc0-b55a-abf02b9c8783">Mistyped argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
 </listitem>
   <listitem>
-<para xml:id="para_68eabf53-8ca0-41fc-952e-cd059e272694">No Such SOP Class (0118H) - the SOP Class was not recognized.</para>
+<para xml:id="para_68eabf53-8ca0-41fc-952e-cd059e272694">No such SOP Class (0118H) - the SOP Class was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_d7e4fcf1-fa28-4d52-b6ba-beb13481d385">No Such SOP Instance (0112H) - the SOP Instance was not recognized.</para>
+<para xml:id="para_d7e4fcf1-fa28-4d52-b6ba-beb13481d385">No such SOP Instance (0112H) - the SOP Instance was not recognized.</para>
 </listitem>
   <listitem>
 <para xml:id="para_5e4c546a-5394-4a81-9b35-f3e7b37dbdf7">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
@@ -5821,10 +5821,10 @@
 <para xml:id="para_a26ba732-aae9-4ed4-ba22-cfb920a35973">Success (0000H) - successful operation.</para>
 </listitem>
   <listitem>
-<para xml:id="para_8b5fc79d-4e83-4f04-b0ea-ea5af72a7be2">Unrecognized Operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
+<para xml:id="para_8b5fc79d-4e83-4f04-b0ea-ea5af72a7be2">Unrecognized operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
 </listitem>
   <listitem>
-<para xml:id="para_1ab7d7ce-a777-4341-9c69-396146626e6d">Refused: Not Authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation</para>
+<para xml:id="para_1ab7d7ce-a777-4341-9c69-396146626e6d">Refused: Not authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation</para>
 </listitem>
   <listitem>
 <para xml:id="para_ffb2da4b-bb72-4599-955b-4e0f65ef39c2">Warning (Status value is Service Class specific): not all optional attributes were returned by DIMSE Service User</para>
@@ -6040,37 +6040,37 @@
   <para xml:id="para_9c1720f0-5caa-4a3e-a479-0add7462b9b9">This parameter contains the error or success notification for the operation. It shall be included by the performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_14650a81-a258-4635-a10a-f62fc31d4efc">Class-Instance Conflict (0119H) -  the specified SOP Instance is not a member of the specified SOP Class.</para>
+<para xml:id="para_14650a81-a258-4635-a10a-f62fc31d4efc">Class-Instance conflict (0119H) -  the specified SOP Instance is not a member of the specified SOP Class.</para>
 </listitem>
   <listitem>
-<para xml:id="para_743e5948-4eb2-449b-9786-88b3a8444580">Duplicate Invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
+<para xml:id="para_743e5948-4eb2-449b-9786-88b3a8444580">Duplicate invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_c9950a0a-5896-4225-8237-cf173834163c">Invalid Attribute Value (0106H) - the Attribute Value specified was out of range or otherwise inappropriate.</para>
 </listitem>
   <listitem>
-<para xml:id="para_88804362-6630-4641-9948-752af79c0202">Attribute Value Out Of Range (0116H) - the Attribute Value specified was out of range or otherwise inappropriate. The Attribute Values that could be modified were modified.</para>
+<para xml:id="para_88804362-6630-4641-9948-752af79c0202">Attribute Value out of range (0116H) - the Attribute Value specified was out of range or otherwise inappropriate. The Attribute Values that could be modified were modified.</para>
 </listitem>
   <listitem>
-<para xml:id="para_353e60fc-c1e1-4f57-9aeb-6336a9f4b4fd">Mistyped Argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
+<para xml:id="para_353e60fc-c1e1-4f57-9aeb-6336a9f4b4fd">Mistyped argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
 </listitem>
   <listitem>
-<para xml:id="para_54108f35-2a51-45a7-b652-20410b7c19a6">Invalid Object Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
+<para xml:id="para_54108f35-2a51-45a7-b652-20410b7c19a6">Invalid SOP Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
 </listitem>
   <listitem>
 <para xml:id="para_8cf32770-204d-4f4c-a7bf-14e33324223b">Missing Attribute Value (0121H) - a required Attribute Value was not supplied.</para>
 </listitem>
   <listitem>
-<para xml:id="para_2f468e80-65f3-46c9-a0c6-476b313597f1">No Such Attribute (0105H) - the Tag for the specified Attribute was not recognized.</para>
+<para xml:id="para_2f468e80-65f3-46c9-a0c6-476b313597f1">No such Attribute (0105H) - the Tag for the specified Attribute was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_62ebb814-3b53-4ce4-b6dc-8c839c21465f">Attribute List Error (0107H) - one or more Attribute Values were not modified because the specified Attributes were not recognized. The Attribute Values that could be modified were modified.</para>
+<para xml:id="para_62ebb814-3b53-4ce4-b6dc-8c839c21465f">Attribute list error (0107H) - one or more Attribute Values were not modified because the specified Attributes were not recognized. The Attribute Values that could be modified were modified.</para>
 </listitem>
   <listitem>
-<para xml:id="para_8fe69bf5-5f8f-4f75-8079-f8f621225735">No Such SOP Class (0118H) - the SOP Class was not recognized.</para>
+<para xml:id="para_8fe69bf5-5f8f-4f75-8079-f8f621225735">No such SOP Class (0118H) - the SOP Class was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_9eb61f30-7a32-4ff9-9e51-f122181575c2">No Such SOP Instance (0112H) - the SOP Instance was not recognized.</para>
+<para xml:id="para_9eb61f30-7a32-4ff9-9e51-f122181575c2">No such SOP Instance (0112H) - the SOP Instance was not recognized.</para>
 </listitem>
   <listitem>
 <para xml:id="para_dadf18c4-e7c9-471b-8d49-a2b0d77c530d">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
@@ -6082,10 +6082,10 @@
 <para xml:id="para_b6023420-18b6-48a9-8bef-d622216f3b86">Success (0000H) - successful operation.</para>
 </listitem>
   <listitem>
-<para xml:id="para_afb11504-5158-4095-8fd2-1a6356755656">Unrecognized Operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
+<para xml:id="para_afb11504-5158-4095-8fd2-1a6356755656">Unrecognized operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
 </listitem>
   <listitem>
-<para xml:id="para_a0a5543f-19e5-47b4-8afe-8d07f994ceef">Refused: Not Authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation.</para>
+<para xml:id="para_a0a5543f-19e5-47b4-8afe-8d07f994ceef">Refused: Not authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation.</para>
 </listitem>
   <listitem>
     <para xml:id="para_2b9cfe2f-677f-400b-a036-1db67c4a83b2">Failed (Status value is Service Class specific): the operation was not performed as certain conditions for operation were not met</para>
@@ -6330,31 +6330,31 @@
   <para xml:id="para_a03f6014-8875-46b2-a1cc-9fa84fa773ff">This parameter contains the error or success notification for the operation. It shall be included by the performing DIMSE Service User in any response/confirmation. The following type of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_f7ed75e0-39e5-48b5-9157-bc326b9c0b92">Class-Instance Conflict (0119H) - the specified SOP Instance is not a member of the specified SOP Class.</para>
+<para xml:id="para_f7ed75e0-39e5-48b5-9157-bc326b9c0b92">Class-Instance conflict (0119H) - the specified SOP Instance is not a member of the specified SOP Class.</para>
 </listitem>
   <listitem>
-<para xml:id="para_4576723e-5649-4bee-9209-139beb0f2b8d">Duplicate Invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
+<para xml:id="para_4576723e-5649-4bee-9209-139beb0f2b8d">Duplicate invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
 </listitem>
   <listitem>
-<para xml:id="para_9ca89caa-47e2-4580-ba77-6a1e9f68cfa9">Invalid Argument Value (0115H) - the action information value specified was out of range or otherwise inappropriate.</para>
+<para xml:id="para_9ca89caa-47e2-4580-ba77-6a1e9f68cfa9">Invalid argument value (0115H) - the action information value specified was out of range or otherwise inappropriate.</para>
 </listitem>
   <listitem>
-<para xml:id="para_94ca31d0-79f6-44a6-89cf-bf8114d98a7a">Invalid Object Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
+<para xml:id="para_94ca31d0-79f6-44a6-89cf-bf8114d98a7a">Invalid SOP Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
 </listitem>
   <listitem>
-<para xml:id="para_bcee84f8-a022-4a15-a6e5-0fc497810276">Mistyped Argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
+<para xml:id="para_bcee84f8-a022-4a15-a6e5-0fc497810276">Mistyped argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
 </listitem>
   <listitem>
-<para xml:id="para_05cc88cc-e4df-47d0-8148-28866062a334">No Such Action (0123H) - the action type specified was not supported.</para>
+<para xml:id="para_05cc88cc-e4df-47d0-8148-28866062a334">No such Action (0123H) - the action type specified was not supported.</para>
 </listitem>
   <listitem>
-<para xml:id="para_7a2a544e-eb1f-454d-85e8-9ffbadf648e3">No Such Argument (0114H) - the action information specified was not supported.</para>
+<para xml:id="para_7a2a544e-eb1f-454d-85e8-9ffbadf648e3">No such argument (0114H) - the action information specified was not supported.</para>
 </listitem>
   <listitem>
-<para xml:id="para_50c4307b-b743-42b3-a726-506cc435de7a">No Such SOP Class (0118H) - the SOP Class was not recognized.</para>
+<para xml:id="para_50c4307b-b743-42b3-a726-506cc435de7a">No such SOP Class (0118H) - the SOP Class was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_42fd5646-20e6-466c-a886-44d6f6df87b5">No Such SOP Instance (0112H) - the SOP Instance was not recognized.</para>
+<para xml:id="para_42fd5646-20e6-466c-a886-44d6f6df87b5">No such SOP Instance (0112H) - the SOP Instance was not recognized.</para>
 </listitem>
   <listitem>
 <para xml:id="para_a25015fa-ef5f-4236-9075-5596df935b83">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
@@ -6366,10 +6366,10 @@
 <para xml:id="para_77175464-c2fe-4872-9f0a-e8d2601a6580">Success (0000H) - successful operation.</para>
 </listitem>
   <listitem>
-<para xml:id="para_5e84ff0d-6ab4-4ed4-afb9-ab1b49e73988">Unrecognized Operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
+<para xml:id="para_5e84ff0d-6ab4-4ed4-afb9-ab1b49e73988">Unrecognized operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
 </listitem>
   <listitem>
-<para xml:id="para_357cefe1-f5d7-48d1-af5e-2703d2930529">Refused: Not Authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation.</para>
+<para xml:id="para_357cefe1-f5d7-48d1-af5e-2703d2930529">Refused: Not authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation.</para>
 </listitem>
   <listitem>
     <para xml:id="para_2f079914-3e42-4676-964b-4adb9f4eb204">Failed (Status value is Service Class specific): the operation was not performed as certain conditions for operation were not met</para>
@@ -6541,7 +6541,7 @@
   <para xml:id="para_a091bbd0-43b4-4cca-a376-6dfdfc6ac5a4">This parameter contains the error or success notification for the operation. It shall be included by the performing DIMSE Service User in any response/confirmation. The following type of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_d7a4d438-ac76-4da0-b101-31b0f64687e2">Duplicate Invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
+<para xml:id="para_d7a4d438-ac76-4da0-b101-31b0f64687e2">Duplicate invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_5fef87c0-98a0-460a-aa3c-7627aea879d9">Duplicate SOP Instance (0111H) - the new managed SOP Instance Value supplied by the invoking DIMSE Service User was already registered for a managed SOP Instance of the specified SOP Class.</para>
@@ -6550,10 +6550,10 @@
 <para xml:id="para_95c8155f-de45-4be3-86ee-fb827c0e039b">Invalid Attribute Value (0106H) - the Attribute Value specified was out of range or otherwise inappropriate.</para>
 </listitem>
   <listitem>
-<para xml:id="para_f5022213-1479-440b-902f-3ea674a205f1">Attribute Value Out Of Range (0116H) - the Attribute Value specified was out of range or otherwise inappropriate. The SCP will apply a default value or will not include the attribute in the created instance.</para>
+<para xml:id="para_f5022213-1479-440b-902f-3ea674a205f1">Attribute Value out of range (0116H) - the Attribute Value specified was out of range or otherwise inappropriate. The SCP will apply a default value or will not include the attribute in the created instance.</para>
 </listitem>
   <listitem>
-<para xml:id="para_ccc14c5e-ab2c-4c5a-a488-ce7aca0eb0b8">Invalid Object Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
+<para xml:id="para_ccc14c5e-ab2c-4c5a-a488-ce7aca0eb0b8">Invalid SOP Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules.</para>
 </listitem>
   <listitem>
 <para xml:id="para_1a21ad5f-6900-44af-8981-b4abd5c588cb">Missing Attribute (0120H) - a required Attribute was not supplied.</para>
@@ -6562,16 +6562,16 @@
 <para xml:id="para_e1970518-5e99-4937-bd5d-68e593a7299f">Missing Attribute Value (0121H) - a required Attribute Value was not supplied and a default value was not available.</para>
 </listitem>
   <listitem>
-<para xml:id="para_9145ed6c-e06d-4c85-930a-736dbe0a74b5">Mistyped Argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
+<para xml:id="para_9145ed6c-e06d-4c85-930a-736dbe0a74b5">Mistyped argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users.</para>
 </listitem>
   <listitem>
-<para xml:id="para_e0862c63-426e-4d37-b2a4-b16fdf4a268c">No Such Attribute (0105H) - the Tag for the specified Attribute was not recognized.</para>
+<para xml:id="para_e0862c63-426e-4d37-b2a4-b16fdf4a268c">No such Attribute (0105H) - the Tag for the specified Attribute was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_d1963d97-d707-4e70-a618-f2a60870f238">Attribute List Error (0107H) -one or more specified Attributes were not recognized and not included in the created instance.</para>
+<para xml:id="para_d1963d97-d707-4e70-a618-f2a60870f238">Attribute list error (0107H) -one or more specified Attributes were not recognized and not included in the created instance.</para>
 </listitem>
   <listitem>
-<para xml:id="para_2214f90c-300c-4a89-b3a2-35bba4bf66bb">No Such SOP Class (0118H) - the SOP Class was not recognized.</para>
+<para xml:id="para_2214f90c-300c-4a89-b3a2-35bba4bf66bb">No such SOP Class (0118H) - the SOP Class was not recognized.</para>
 </listitem>
   <listitem>
 <para xml:id="para_b9e95c90-5d8f-41cd-a09a-e723d201977c">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
@@ -6583,10 +6583,10 @@
 <para xml:id="para_dcdb980a-b108-4d68-9fae-c4eead16ac1c">Success (0000H) - successful operation.</para>
 </listitem>
   <listitem>
-<para xml:id="para_31c3a6b6-ed51-4845-bc52-c346b59526bc">Unrecognized Operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
+<para xml:id="para_31c3a6b6-ed51-4845-bc52-c346b59526bc">Unrecognized operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users.</para>
 </listitem>
   <listitem>
-<para xml:id="para_3d8ff9f6-f989-4107-bdaa-f617ac6c1f54">Refused: Not Authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation.</para>
+<para xml:id="para_3d8ff9f6-f989-4107-bdaa-f617ac6c1f54">Refused: Not authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation.</para>
 </listitem>
   <listitem>
     <para xml:id="para_5730b3b7-708b-4f6b-be71-dedb38e32078">Failed (Status value is Service Class specific): no instance was created by the DIMSE Service User</para>
@@ -6774,22 +6774,22 @@
   <para xml:id="para_b20afe09-91e6-42f4-a46a-896c3434982e">This parameter contains the error or success notification for the operation. It shall be included by the performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_946ab28d-f4a6-4ffc-a0d8-5fca8f3c2931">Class-Instance Conflict (0119H) - the specified SOP Instance is not a member of the specified SOP Class</para>
+<para xml:id="para_946ab28d-f4a6-4ffc-a0d8-5fca8f3c2931">Class-Instance conflict (0119H) - the specified SOP Instance is not a member of the specified SOP Class</para>
 </listitem>
   <listitem>
-<para xml:id="para_7c74ca7b-23ab-409e-8bcd-c07acedaa703">Duplicate Invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation</para>
+<para xml:id="para_7c74ca7b-23ab-409e-8bcd-c07acedaa703">Duplicate invocation (0210H) - the Message ID (0000,0110) specified is allocated to another notification or operation</para>
 </listitem>
   <listitem>
-<para xml:id="para_de29b350-bbf7-4e15-91ea-8fc1673edc3e">Invalid Object Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules</para>
+<para xml:id="para_de29b350-bbf7-4e15-91ea-8fc1673edc3e">Invalid SOP Instance (0117H) - the SOP Instance UID specified implied a violation of the UID construction rules</para>
 </listitem>
   <listitem>
-<para xml:id="para_711c5fdb-903a-45c2-8362-91565198cf57">Mistyped Argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users</para>
+<para xml:id="para_711c5fdb-903a-45c2-8362-91565198cf57">Mistyped argument (0212H) - one of the parameters supplied has not been agreed for use on the Association between the DIMSE Service Users</para>
 </listitem>
   <listitem>
-<para xml:id="para_f98ec44e-809f-4c5e-9ef6-8520764fd5a8">No Such SOP Class (0118H) - the SOP Class was not recognized</para>
+<para xml:id="para_f98ec44e-809f-4c5e-9ef6-8520764fd5a8">No such SOP Class (0118H) - the SOP Class was not recognized</para>
 </listitem>
   <listitem>
-<para xml:id="para_1e6ea131-1b46-43b0-a02c-b9c630f05777">No Such SOP Instance (0112H) - the SOP Instance was not recognized</para>
+<para xml:id="para_1e6ea131-1b46-43b0-a02c-b9c630f05777">No such SOP Instance (0112H) - the SOP Instance was not recognized</para>
 </listitem>
   <listitem>
 <para xml:id="para_236dee26-8cce-4ee1-83eb-ccf04bce8b8c">Processing Failure (0110H) - a general failure in processing the operation was encountered</para>
@@ -6801,10 +6801,10 @@
 <para xml:id="para_fccef240-ce91-4893-9dd1-db69c42e55dd">Success (0000H) - successful operation</para>
 </listitem>
   <listitem>
-<para xml:id="para_f2a6a785-3ea7-464b-9bf2-16cc4043cb39">Unrecognized Operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users</para>
+<para xml:id="para_f2a6a785-3ea7-464b-9bf2-16cc4043cb39">Unrecognized operation (0211H) - the operation is not one of those agreed between the DIMSE Service Users</para>
 </listitem>
   <listitem>
-<para xml:id="para_6a277702-e912-4973-ad75-35ac2927655e">Refused: Not Authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation.</para>
+<para xml:id="para_6a277702-e912-4973-ad75-35ac2927655e">Refused: Not authorized (0124H) - the DIMSE Service User was not authorized to invoke the operation.</para>
 </listitem>
 </itemizedlist>
   </section>
@@ -7723,7 +7723,7 @@
         <para xml:id="para_269616f7-aeb7-4369-af1c-a8cb86be0ecd">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_18deb029-8805-4bd5-922b-9c871685694c">SOP Class UID of the SOP Instance for which Attribute values are to be modified.</para>
+        <para xml:id="para_18deb029-8805-4bd5-922b-9c871685694c">SOP Class UID of the SOP Instance for which Attribute Values are to be modified.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -7791,7 +7791,7 @@
         <para xml:id="para_771e7ba1-31bd-44b5-9361-261e06a503c6">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_258e847e-b930-44bb-a304-4c2dd7d8a62a">Contains the UID of the SOP Instance for which Attribute values are to be modified.</para>
+        <para xml:id="para_258e847e-b930-44bb-a304-4c2dd7d8a62a">Contains the UID of the SOP Instance for which Attribute Values are to be modified.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -9237,7 +9237,7 @@
 <chapter label="C" status="1" xml:id="chapter_C">
     <title>Status Type Encoding (Normative)</title>
   
-  <para xml:id="para_be9eff79-eeca-42b0-bc00-5a7a46af4cd3">The following sections define the encoding for the Status Types supported by the DIMSE services. The applicability and semantics for each Status Type (i.e., Attribute List Error, etc.) are defined in the DIMSE Services. Each Status Type is categorized in a Status Class and represents certain Status Meaning within the Status Class.</para>
+  <para xml:id="para_be9eff79-eeca-42b0-bc00-5a7a46af4cd3">The following sections define the encoding for the Status Types supported by the DIMSE services. The applicability and semantics for each Status Type (i.e., Attribute list error, etc.) are defined in the DIMSE Services. Each Status Type is categorized in a Status Class and represents certain Status Meaning within the Status Class.</para>
   <note>
     <para xml:id="para_59b902cd-eb56-4872-bf4a-f68b719a4d70">The Status (0000,0900) Command Element is required for all Status Types.</para>
   </note>
@@ -9567,7 +9567,7 @@
 
   </section>
 <section label="C.4.2" status="3" xml:id="sect_C.4.2">
-    <title>Attribute List Error</title>
+    <title>Attribute list error</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -9674,7 +9674,7 @@
 
   </section>
 <section label="C.4.3" status="3" xml:id="sect_C.4.3">
-    <title>Attribute Value Out of Range</title>
+    <title>Attribute Value out of range</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -9752,7 +9752,7 @@
   
   <para xml:id="para_7cd9660c-8a13-40f5-9d7a-4b91d7d972a1">Statuses in this Status Class convey that the operation/notification failed and was not performed.</para>
   <section label="C.5.1" status="3" xml:id="sect_C.5.1">
-    <title>Error: Cannot Understand</title>
+    <title>Error: Cannot understand</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -9842,7 +9842,7 @@
 
   </section>
 <section label="C.5.2" status="3" xml:id="sect_C.5.2">
-    <title>Error: Data Set Does Not Match SOP Class</title>
+    <title>Error: Data Set does not match SOP Class</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -10022,7 +10022,7 @@
 
   </section>
 <section label="C.5.4" status="3" xml:id="sect_C.5.4">
-    <title>Refused: Move Destination Unknown</title>
+    <title>Refused: Move Destination unknown</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -10095,7 +10095,7 @@
 
   </section>
 <section label="C.5.5" status="3" xml:id="sect_C.5.5">
-    <title>Refused: Out of Resources</title>
+    <title>Refused: Out of resources</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -10168,7 +10168,7 @@
 
   </section>
 <section label="C.5.6" status="3" xml:id="sect_C.5.6">
-    <title>Refused: SOP Class Not Supported</title>
+    <title>Refused: SOP Class not supported</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -10241,7 +10241,7 @@
 
   </section>
 <section label="C.5.7" status="3" xml:id="sect_C.5.7">
-    <title>Class-Instance Conflict</title>
+    <title>Class-Instance conflict</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -10404,7 +10404,7 @@
 
   </section>
 <section label="C.5.9" status="3" xml:id="sect_C.5.9">
-    <title>Duplicate Invocation</title>
+    <title>Duplicate invocation</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -10460,7 +10460,7 @@
 
   </section>
 <section label="C.5.10" status="3" xml:id="sect_C.5.10">
-    <title>Invalid Argument Value</title>
+    <title>Invalid argument value</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -10691,7 +10691,7 @@
 
   </section>
 <section label="C.5.12" status="3" xml:id="sect_C.5.12">
-    <title>Invalid Object Instance</title>
+    <title>Invalid SOP Instance</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -10910,7 +10910,7 @@
 
   </section>
 <section label="C.5.15" status="3" xml:id="sect_C.5.15">
-    <title>Mistyped Argument</title>
+    <title>Mistyped argument</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -10966,7 +10966,7 @@
 
   </section>
 <section label="C.5.16" status="3" xml:id="sect_C.5.16">
-    <title>No Such Argument</title>
+    <title>No such argument</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -11073,7 +11073,7 @@
 
   </section>
 <section label="C.5.17" status="3" xml:id="sect_C.5.17">
-    <title>No Such Attribute</title>
+    <title>No such Attribute</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -11146,7 +11146,7 @@
 
   </section>
 <section label="C.5.18" status="3" xml:id="sect_C.5.18">
-    <title>No Such Event Type</title>
+    <title>No such Event Type</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -11236,7 +11236,7 @@
 
   </section>
 <section label="C.5.19" status="3" xml:id="sect_C.5.19">
-    <title>No Such SOP Instance</title>
+    <title>No such SOP Instance</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -11309,7 +11309,7 @@
 
   </section>
 <section label="C.5.20" status="3" xml:id="sect_C.5.20">
-    <title>No Such SOP Class</title>
+    <title>No such SOP Class</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -11562,7 +11562,7 @@
 
   </section>
 <section label="C.5.23" status="3" xml:id="sect_C.5.23">
-    <title>Unrecognized Operation</title>
+    <title>Unrecognized operation</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -11618,7 +11618,7 @@
 
   </section>
 <section label="C.5.24" status="3" xml:id="sect_C.5.24">
-    <title>No Such Action Type</title>
+    <title>No such Action Type</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -11708,7 +11708,7 @@
 
   </section>
 <section label="C.5.25" status="3" xml:id="sect_C.5.25">
-    <title>Refused: Not Authorized</title>
+    <title>Refused: Not authorized</title>
   
   <informaltable frame="box" rules="all">
     <thead>

@@ -307,6 +307,28 @@ public class MediaTypes {
     public final static MediaType MODEL_STL_TYPE =
             new MediaType("model", "stl");
 
+    /**
+     * "model/obj"
+     */
+    public final static String MODEL_OBJ = "model/obj";
+
+    /**
+     * "model/obj"
+     */
+    public final static MediaType MODEL_OBJ_TYPE =
+            new MediaType("model", "obj");
+
+    /**
+     * "model/mtl"
+     */
+    public final static String MODEL_MTL = "model/mtl";
+
+    /**
+     * "model/mtl"
+     */
+    public final static MediaType MODEL_MTL_TYPE =
+            new MediaType("model", "mtl");
+
 
     public static MediaType forTransferSyntax(String ts) {
         MediaType type;
@@ -386,6 +408,8 @@ public class MediaTypes {
                 : equalsIgnoreParameters(bulkdataMediaType, APPLICATION_PDF_TYPE) ? UID.EncapsulatedPDFStorage
                 : equalsIgnoreParameters(bulkdataMediaType, MediaType.APPLICATION_XML_TYPE) ? UID.EncapsulatedCDAStorage
                 : equalsIgnoreParameters(bulkdataMediaType, MODEL_STL_TYPE) ? UID.EncapsulatedSTLStorage
+                : equalsIgnoreParameters(bulkdataMediaType, MODEL_OBJ_TYPE) ? UID.EncapsulatedOBJStorage
+                : equalsIgnoreParameters(bulkdataMediaType, MODEL_MTL_TYPE) ? UID.EncapsulatedMTLStorage
                 : null;
     }
 

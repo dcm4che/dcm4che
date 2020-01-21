@@ -419,7 +419,12 @@ public class MediaTypes {
                 : equalsIgnoreParameters(bulkdataMediaType, MediaType.APPLICATION_XML_TYPE)
                     ? MediaType.TEXT_XML
                     : equalsIgnoreParameters(bulkdataMediaType, MODEL_STL_TYPE)
-                        ? MODEL_STL : null;
+                        ? MODEL_STL
+                        : equalsIgnoreParameters(bulkdataMediaType, MODEL_MTL_TYPE)
+                            ? MODEL_MTL
+                            : equalsIgnoreParameters(bulkdataMediaType, MODEL_OBJ_TYPE)
+                                ? MODEL_OBJ
+                                : null;
     }
 
     public static boolean equalsIgnoreParameters(MediaType type1, MediaType type2) {

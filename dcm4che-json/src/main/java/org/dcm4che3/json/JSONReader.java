@@ -73,6 +73,7 @@ public class JSONReader {
     private Attributes fmi;
     private Event event;
     private String s;
+    private int level = -1;
     private final ByteArrayOutputStream bout = new ByteArrayOutputStream(64);
     private final EnumMap<Group, String> pnGroups = new EnumMap<>(PersonName.Group.class);
 
@@ -143,18 +144,20 @@ public class JSONReader {
     }
 
     private Attributes doReadDataset(Attributes attrs) {
+        level++;
         while (event == JsonParser.Event.KEY_NAME) {
             readAttribute(attrs);
             next();
         }
         expect(JsonParser.Event.END_OBJECT);
         attrs.trimToSize();
+        level--;
         return attrs;
     }
 
     private void readAttribute(Attributes attrs) {
         int tag = (int) Long.parseLong(getString(), 16);
-        if (TagUtils.isFileMetaInformation(tag)) {
+        if (level == 0 && TagUtils.isFileMetaInformation(tag)) {
             if (fmi == null)
                 fmi = new Attributes();
             attrs = fmi;

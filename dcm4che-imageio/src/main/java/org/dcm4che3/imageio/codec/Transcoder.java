@@ -539,7 +539,7 @@ public class Transcoder implements Closeable {
                 }
             }
             dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmiForCompression(pmi).toString());
-            compressorImageDescriptor = new ImageDescriptor(dataset);
+            compressorImageDescriptor = new ImageDescriptor(dataset, bitsCompressed);
             pmi = pmi.compress(destTransferSyntax);
             dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmi.toString());
             if (dataset.getInt(Tag.SamplesPerPixel, 1) > 1)

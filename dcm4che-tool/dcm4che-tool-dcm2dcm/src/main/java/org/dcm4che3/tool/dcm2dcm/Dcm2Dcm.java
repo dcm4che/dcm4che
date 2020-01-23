@@ -415,7 +415,7 @@ public class Dcm2Dcm {
                 }
             });
         } catch (Exception e) {
-            Files.delete(dest.toPath());
+            Files.deleteIfExists(dest.toPath());
             throw e;
         }
     }

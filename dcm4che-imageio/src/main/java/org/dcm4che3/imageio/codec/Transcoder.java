@@ -117,7 +117,7 @@ public class Transcoder implements Closeable {
 
     private boolean lossyCompression;
 
-    private int bitsCompressed = -1;
+    private int bitsCompressed = 0;
 
     private int maxPixelValueError = -1;
 
@@ -574,21 +574,22 @@ public class Transcoder implements Closeable {
     }
 
     private void nullifyUnusedBits() {
-        if (imageDescriptor.getBitsCompressed() < imageDescriptor.getBitsAllocated()) {
+        int bitsCompressed = imageDescriptor.getBitsCompressed();
+        if (bitsCompressed < imageDescriptor.getBitsAllocated()) {
             DataBuffer db = originalBi.getRaster().getDataBuffer();
             switch (db.getDataType()) {
                 case DataBuffer.TYPE_USHORT:
-                    nullifyUnusedBits(((DataBufferUShort) db).getData());
+                    nullifyUnusedBits(((DataBufferUShort) db).getData(), bitsCompressed);
                     break;
                 case DataBuffer.TYPE_SHORT:
-                    nullifyUnusedBits(((DataBufferShort) db).getData());
+                    nullifyUnusedBits(((DataBufferShort) db).getData(), bitsCompressed);
                     break;
             }
         }
     }
 
-    private void nullifyUnusedBits(short[] data) {
-        int mask = (1<<imageDescriptor.getBitsCompressed())-1;
+    private static void nullifyUnusedBits(short[] data, int bitsCompressed) {
+        int mask = (1<<bitsCompressed)-1;
         for (int i = 0; i < data.length; i++)
             data[i] &= mask;
     }

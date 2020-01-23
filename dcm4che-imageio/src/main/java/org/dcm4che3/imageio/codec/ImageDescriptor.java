@@ -68,7 +68,7 @@ public final class ImageDescriptor {
     private final int planarConfiguration;
 
     public ImageDescriptor(Attributes attrs) {
-        this(attrs, -1);
+        this(attrs, 0);
     }
 
     public ImageDescriptor(Attributes attrs, int bitsCompressed) {
@@ -79,15 +79,14 @@ public final class ImageDescriptor {
                 attrs.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
         this.bitsAllocated = attrs.getInt(Tag.BitsAllocated, 8);
         this.bitsStored = attrs.getInt(Tag.BitsStored, bitsAllocated);
-        this.bitsCompressed = bitsCompressed > 0
-                ? Math.min(bitsCompressed, bitsAllocated)
-                : bitsStored;
         this.pixelRepresentation = attrs.getInt(Tag.PixelRepresentation, 0);
         this.planarConfiguration = attrs.getInt(Tag.PlanarConfiguration, 0);
         this.sopClassUID = attrs.getString(Tag.SOPClassUID);
         this.bodyPartExamined = attrs.getString(Tag.BodyPartExamined);
         this.frames = attrs.getInt(Tag.NumberOfFrames, 1);
         this.embeddedOverlays = Overlays.getEmbeddedOverlayGroupOffsets(attrs);
+        this.bitsCompressed =  Math.min(bitsAllocated, Math.max(bitsStored,
+                (bitsCompressed < 0 && isSigned()) ? -bitsCompressed : bitsCompressed));
     }
 
     public int getRows() {

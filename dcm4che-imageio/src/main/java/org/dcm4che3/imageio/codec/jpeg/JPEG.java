@@ -206,6 +206,6 @@ public class JPEG {
     }
 
     public static boolean isAPP(int marker) {
-        return (marker & APP0) == APP0;
+        return (marker & 0xF0) == APP0;
     }
 }

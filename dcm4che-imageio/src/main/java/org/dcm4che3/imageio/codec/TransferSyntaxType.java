@@ -53,11 +53,11 @@ public enum TransferSyntaxType {
     JPEG_EXTENDED(true, true, false, 12, 0),
     JPEG_SPECTRAL(true, true, false, 12, 0),
     JPEG_PROGRESSIVE(true, true, false, 12, 0),
-    JPEG_LOSSLESS(true, true, false, 16, 0),
-    JPEG_LS(true, true, false, 16, 0),
+    JPEG_LOSSLESS(true, true, true, 16, 0),
+    JPEG_LS(true, true, true, 16, 0),
     JPEG_2000(true, true, true, 16, 0),
-    RLE(true, false, false, 16, 1),
-    JPIP(false, false, false, 16, 0),
+    RLE(true, false, true, 16, 1),
+    JPIP(false, false, true, 16, 0),
     MPEG(true, false, false, 8, 0);
 
     private final boolean pixeldataEncapsulated;

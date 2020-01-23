@@ -47,6 +47,7 @@
         <remoteResource>cplx_p02.dcm</remoteResource>
         <remoteResource>DICOMDIR</remoteResource>
         <remoteResource>jpeg-ls-Palette.dcm</remoteResource>
+        <remoteResource>MR2_UNC</remoteResource>
         <remoteResource>NM-MONO2-16-13x-heart</remoteResource>
         <remoteResource>NM1_JPLY</remoteResource>
         <remoteResource>OT-PAL-8-face</remoteResource>

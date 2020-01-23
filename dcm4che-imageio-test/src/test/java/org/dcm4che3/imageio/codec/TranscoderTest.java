@@ -44,13 +44,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
+import org.dcm4che3.imageio.codec.jpeg.JPEGParser;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.util.Property;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -156,8 +162,42 @@ public class TranscoderTest {
         test("YBR_422.dcm", "YBR_422-j2k.dcm", UID.JPEG2000, true);
     }
 
-    private void test(String ifname, String ofname, final String outts, boolean fmi) throws IOException {
+    @Test
+    public void testCompress12BitsJPLL() throws Exception {
+        test("MR2_UNC", "MR2_UNC-JPLL.dcm", UID.JPEGLossless, true);
+        assertEquals(12, jpegBitsPerSample("MR2_UNC-JPLL.dcm"));
+    }
 
+    @Test
+    public void testCompress12BitsJLSL() throws Exception {
+        test("MR2_UNC", "MR2_UNC-JLSL.dcm", UID.JPEGLSLossless, true);
+        assertEquals(12, jpegBitsPerSample("MR2_UNC-JLSL.dcm"));
+    }
+
+    @Test
+    public void testCompress12BitsJ2KR() throws Exception {
+        test("MR2_UNC", "MR2_UNC-J2KR.dcm", UID.JPEG2000LosslessOnly, true);
+        assertEquals(12, jpegBitsPerSample("MR2_UNC-J2KR.dcm"));
+    }
+
+    private int jpegBitsPerSample(String ofname) throws IOException {
+        final File ofile = new File("target/test-out/" + ofname);
+        long jpegPos = jpegPos(ofile);
+        try (SeekableByteChannel channel = Files.newByteChannel(ofile.toPath())) {
+            channel.position(jpegPos);
+            return new JPEGParser(channel).getAttributes(null).getInt(Tag.BitsStored, -1);
+        }
+    }
+
+    private long jpegPos(File ofile) throws IOException {
+        try (DicomInputStream dis = new DicomInputStream(ofile)) {
+            dis.readDataset(-1, Tag.PixelData);
+            return dis.getPosition() + 16;
+        }
+    }
+
+    private void test(String ifname, String ofname, final String outts, boolean fmi, Property... compressParams)
+            throws IOException {
         final File ifile = new File("target/test-data/" + ifname);
         final File ofile = new File("target/test-out/" + ofname);
         Transcoder.Handler handler = new Transcoder.Handler() {
@@ -172,7 +212,7 @@ public class TranscoderTest {
             boolean transcodeNotRequired = transcoder.getDestinationTransferSyntax().equals(outts);
             transcoder.setDestinationTransferSyntax(outts);
             if (!transcodeNotRequired && TransferSyntaxType.forUID(outts).isPixeldataEncapsulated()) {
-                transcoder.setCompressParams(new Property[] {});
+                transcoder.setCompressParams(compressParams);
             }
             transcoder.transcode(handler);
         }

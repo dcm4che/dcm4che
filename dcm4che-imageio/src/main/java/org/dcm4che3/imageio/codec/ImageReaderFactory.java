@@ -123,7 +123,7 @@ public class ImageReaderFactory implements Serializable {
 
         @Override
         public String toString() {
-            return "ImageWriterParam{" +
+            return "ImageReaderParam{" +
                     "formatName='" + formatName + '\'' +
                     ", className='" + className + '\'' +
                     ", patchJPEGLS=" + patchJPEGLS +

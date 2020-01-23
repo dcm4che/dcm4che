@@ -50,8 +50,6 @@ import org.dcm4che3.hl7.HL7Parser;
 import org.dcm4che3.io.ContentHandlerAdapter;
 import org.dcm4che3.io.SAXTransformer;
 import org.dcm4che3.io.SAXWriter;
-import org.dcm4che3.io.TemplatesCache;
-import org.dcm4che3.util.StringUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.Templates;
@@ -72,14 +70,13 @@ public class HL7SAXTransformer {
 
     private static SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
 
-    public static Attributes transform(
-            byte[] data, String hl7charset, String dicomCharset, String uri, SAXTransformer.SetupTransformer setup)
+    public static Attributes transform(byte[] data, String hl7charset, String dicomCharset, Templates templates,
+            SAXTransformer.SetupTransformer setup)
             throws TransformerConfigurationException, IOException, SAXException {
-        Templates tpl = TemplatesCache.getDefault().get(StringUtils.replaceSystemProperties(uri));
         Attributes attrs = new Attributes();
         if (dicomCharset != null)
             attrs.setString(Tag.SpecificCharacterSet, VR.CS, dicomCharset);
-        TransformerHandler th = factory.newTransformerHandler(tpl);
+        TransformerHandler th = factory.newTransformerHandler(templates);
         th.setResult(new SAXResult(new ContentHandlerAdapter(attrs)));
         if (setup != null)
             setup.setup(th.getTransformer());
@@ -89,19 +86,20 @@ public class HL7SAXTransformer {
         return attrs;
     }
 
-    public static byte[] transform(Attributes attrs, String hl7charset, String uri, SAXTransformer.SetupTransformer setup)
+    public static byte[] transform(Attributes attrs, String hl7charset, Templates templates,
+            boolean includeNameSpaceDeclaration, boolean includeKeword,
+            SAXTransformer.SetupTransformer setup)
             throws TransformerConfigurationException, SAXException, UnsupportedEncodingException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        Templates tpl = TemplatesCache.getDefault().get(StringUtils.replaceSystemProperties(uri));
-        TransformerHandler th = factory.newTransformerHandler(tpl);
+        TransformerHandler th = factory.newTransformerHandler(templates);
         th.setResult(new SAXResult(new HL7ContentHandler(new OutputStreamWriter(out, HL7Charset.toCharsetName(hl7charset)))));
         if (setup != null)
             setup.setup(th.getTransformer());
 
         SAXWriter saxWriter = new SAXWriter(th);
-        saxWriter.setIncludeKeyword(true);
-        saxWriter.setIncludeNamespaceDeclaration(false);
+        saxWriter.setIncludeKeyword(includeKeword);
+        saxWriter.setIncludeNamespaceDeclaration(includeNameSpaceDeclaration);
         saxWriter.write(attrs);
 
         return out.toByteArray();

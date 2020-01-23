@@ -45,8 +45,6 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.image.Overlays;
 import org.dcm4che3.image.PhotometricInterpretation;
 
-import java.awt.image.DataBuffer;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jul 2015

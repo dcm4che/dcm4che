@@ -272,9 +272,9 @@ public class Transcoder implements Closeable {
         this.lossyCompression = TransferSyntaxType.isLossyCompression(tsuid);
         this.destTransferSyntax = tsuid;
 
-        if (srcTransferSyntaxType != TransferSyntaxType.NATIVE)
+        if (srcTransferSyntaxType.isPixeldataEncapsulated())
             initDecompressor();
-        if (destTransferSyntaxType != TransferSyntaxType.NATIVE)
+        if (destTransferSyntaxType.isPixeldataEncapsulated())
             initCompressor(tsuid);
     }
 
@@ -526,7 +526,7 @@ public class Transcoder implements Closeable {
                 dataset.setInt(Tag.HighBit, VR.US, 7);
                 pmi = PhotometricInterpretation.RGB;
                 LOG.warn("Converting PALETTE_COLOR model into a lossy format is not recommended, prefer a lossless format");
-            } else if ((pmi.isSubSampled() && srcTransferSyntaxType == TransferSyntaxType.NATIVE)
+            } else if ((pmi.isSubSampled() && !srcTransferSyntaxType.isPixeldataEncapsulated())
                     || (pmi == PhotometricInterpretation.YBR_FULL
                             && TransferSyntaxType.isYBRCompression(destTransferSyntax))) {
                 ybr2rgb = true;

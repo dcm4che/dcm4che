@@ -146,7 +146,7 @@ public class DicomOutputStream extends FilterOutputStream {
         dataset.writeTo(this);
     }
 
-    private void switchTransferSyntax(String tsuid) throws IOException {
+    public void switchTransferSyntax(String tsuid)  {
         bigEndian = tsuid.equals(UID.ExplicitVRBigEndianRetired);
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)

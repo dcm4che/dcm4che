@@ -771,4 +771,22 @@ public class AttributesTest {
         assertEquals("PrivateCreatorA", copy.getString(0x00990010));
         assertEquals("PrivateCreatorB", copy.getString(0x00990020));
     }
+
+    @Test
+    public void testRemoveOverlayData() {
+        Attributes attrs = new Attributes();
+        attrs.setNull(Tag.SpecificCharacterSet, VR.CS);
+        attrs.setInt(Tag.OverlayRows, VR.US, 1234);
+        attrs.setInt(Tag.OverlayColumns, VR.US, 1234);
+        attrs.setInt(Tag.OverlayRows | 0x00020000, VR.US, 1234);
+        attrs.setInt(Tag.OverlayColumns | 0x00020000, VR.US, 1234);
+        attrs.setNull("PRIVATE", 0x60110001, VR.OB);
+        attrs.setInt(Tag.OverlayRows | 0x001E0000, VR.US, 1234);
+        attrs.setInt(Tag.OverlayColumns | 0x001E0000, VR.US, 1234);
+        attrs.setInt(Tag.OverlayRows | 0x00200000, VR.US, 1234);
+        attrs.setInt(Tag.OverlayColumns | 0x00200000, VR.US, 1234);
+        attrs.setNull(Tag.PixelData, VR.OB);
+        attrs.removeOverlayData();
+        assertEquals(6, attrs.size());
+    }
 }

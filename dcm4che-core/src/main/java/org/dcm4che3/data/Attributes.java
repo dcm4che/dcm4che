@@ -3484,20 +3484,21 @@ public class Attributes implements Serializable {
         int i = indexForInsertOf(ggxxxxxx);
         if (i < 0)
             i = -i-1;
-        int j = i;
-        while (j < size1 && (tags[i] & 0xFF000000) == ggxxxxxx)
-            j++;
-
-        if (j > i) {
-            int len = size1 - j;
-            if (len > 0) {
-                System.arraycopy(tags, j, tags, i, len);
-                System.arraycopy(vrs, j, vrs, i, len);
-                System.arraycopy(values, j, values, i, len);
+        while (i < size1 && (tags[i] & 0xFFE00000) == ggxxxxxx) {
+            int j = i;
+            while (j < size1 && (tags[j] & 0xFFE10000) == ggxxxxxx)
+                j++;
+            if (j > i) {
+                int len = size1 - j;
+                if (len > 0) {
+                    System.arraycopy(tags, j, tags, i, len);
+                    System.arraycopy(vrs, j, vrs, i, len);
+                    System.arraycopy(values, j, values, i, len);
+                }
+                size1 -= j - i;
             }
-            size1 -= j - i;
+            i++;
         }
-
         int removed = size - size1;
         if (removed > 0) {
             Arrays.fill(tags, size1, size, 0);

@@ -339,7 +339,9 @@ public class SAXWriter implements DicomInputHandler {
                 writePNGroup("Phonetic", pn, PersonName.Group.Phonetic);
                 endElement("PersonName");
             } else {
-                writeElement("Value", s);
+                startElement("Value");
+                if (s != null) writeText(s);
+                endElement("Value");
             }
         }
     }
@@ -368,14 +370,18 @@ public class SAXWriter implements DicomInputHandler {
 
     private void writeElement(String qname, String s) throws SAXException {
         if (s != null) {
-            startElement(qname); 
-            char[] buf = buffer;
-            for (int off = 0, totlen = s.length(); off < totlen;) {
-                int len = Math.min(totlen - off, buf.length);
-                s.getChars(off, off += len, buf, 0);
-                ch.characters(buf, 0, len);
-            }
+            startElement(qname);
+            writeText(s);
             endElement(qname);
+        }
+    }
+
+    private void writeText(String s) throws SAXException {
+        char[] buf = buffer;
+        for (int off = 0, totlen = s.length(); off < totlen;) {
+            int len = Math.min(totlen - off, buf.length);
+            s.getChars(off, off += len, buf, 0);
+            ch.characters(buf, 0, len);
         }
     }
 

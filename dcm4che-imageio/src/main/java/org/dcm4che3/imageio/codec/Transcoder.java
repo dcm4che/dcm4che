@@ -888,24 +888,15 @@ public class Transcoder implements Closeable {
                 }
             return maxDiff / samples.length;
         }
-        switch (db.getDataType()) {
-            case DataBuffer.TYPE_BYTE:
-                return maxDiff(csm, ((DataBufferByte) db).getBankData(),
-                        csm2, ((DataBufferByte) db2).getBankData());
-            case DataBuffer.TYPE_USHORT:
-                return maxDiff(csm, ((DataBufferUShort) db).getData(),
-                        csm2, db2.getDataType() == DataBuffer.TYPE_SHORT
-                                ? ((DataBufferShort) db2).getData()
-                                : ((DataBufferUShort) db2).getData());
-            case DataBuffer.TYPE_SHORT:
-                return maxDiff(csm, ((DataBufferShort) db).getData(),
-                        csm2,  db2.getDataType() == DataBuffer.TYPE_SHORT
-                                ? ((DataBufferShort) db2).getData()
-                                : ((DataBufferUShort) db2).getData());
-            default:
-                throw new UnsupportedOperationException(
-                        "Unsupported Datatype: " + db.getDataType());
-        }
+        return (db.getDataType() == DataBuffer.TYPE_BYTE)
+            ? maxDiff(csm, ((DataBufferByte) db).getBankData(), csm2, ((DataBufferByte) db2).getBankData())
+            : maxDiff(csm, toShortData(db), csm2, toShortData(db2));
+    }
+
+    private static short[] toShortData(DataBuffer db) {
+        return  db.getDataType() == DataBuffer.TYPE_SHORT
+                                ? ((DataBufferShort) db).getData()
+                                : ((DataBufferUShort) db).getData();
     }
 
     private int sum(int[] samples) {

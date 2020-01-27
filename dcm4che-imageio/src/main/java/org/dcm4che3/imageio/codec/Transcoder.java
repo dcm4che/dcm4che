@@ -574,23 +574,29 @@ public class Transcoder implements Closeable {
     }
 
     private void nullifyUnusedBits() {
-        if (imageDescriptor.getBitsCompressed() < imageDescriptor.getBitsAllocated()) {
+        if (imageDescriptor.getBitsStored() < imageDescriptor.getBitsAllocated()) {
             DataBuffer db = originalBi.getRaster().getDataBuffer();
             switch (db.getDataType()) {
                 case DataBuffer.TYPE_USHORT:
                     nullifyUnusedBits(((DataBufferUShort) db).getData());
                     break;
                 case DataBuffer.TYPE_SHORT:
-                    nullifyUnusedBits(((DataBufferShort) db).getData());
+                    extendSignUnusedBits(((DataBufferShort) db).getData());
                     break;
             }
         }
     }
 
     private void nullifyUnusedBits(short[] data) {
-        int mask = (1<<imageDescriptor.getBitsCompressed())-1;
+        int mask = (1<<imageDescriptor.getBitsStored())-1;
         for (int i = 0; i < data.length; i++)
             data[i] &= mask;
+    }
+
+    private void extendSignUnusedBits(short[] data) {
+        int unused = 32 - imageDescriptor.getBitsStored();
+        for (int i = 0; i < data.length; i++)
+            data[i] = (short) ((data[i] << unused) >> unused);
     }
 
     private BufferedImage decompressFrame(int frameIndex) throws IOException {

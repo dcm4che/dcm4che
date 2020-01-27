@@ -180,12 +180,27 @@ public class TranscoderTest {
         assertEquals(12, jpegBitsPerSample("MR2_UNC-J2KR.dcm"));
     }
 
+//    @Test - broken
+    public void testSigned12BitsJ2KI() throws Exception {
+        test("test16signed.dcm", "test16signed-J2KI.dcm", UID.JPEG2000, true);
+        assertEquals(1, jpegPixelRepresentation("test16signed-J2KI.dcm"));
+    }
+
     private int jpegBitsPerSample(String ofname) throws IOException {
         final File ofile = new File("target/test-out/" + ofname);
         long jpegPos = jpegPos(ofile);
         try (SeekableByteChannel channel = Files.newByteChannel(ofile.toPath())) {
             channel.position(jpegPos);
             return new JPEGParser(channel).getAttributes(null).getInt(Tag.BitsStored, -1);
+        }
+    }
+
+    private int jpegPixelRepresentation(String ofname) throws IOException {
+        final File ofile = new File("target/test-out/" + ofname);
+        long jpegPos = jpegPos(ofile);
+        try (SeekableByteChannel channel = Files.newByteChannel(ofile.toPath())) {
+            channel.position(jpegPos);
+            return new JPEGParser(channel).getAttributes(null).getInt(Tag.PixelRepresentation, -1);
         }
     }
 

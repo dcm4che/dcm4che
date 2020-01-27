@@ -53,6 +53,7 @@
         <remoteResource>OT-PAL-8-face</remoteResource>
         <remoteResource>ovly_p01.dcm</remoteResource>
         <remoteResource>report_dfl</remoteResource>
+        <remoteResource>test16signed.dcm</remoteResource>
         <remoteResource>US-PAL-8-10x-echo</remoteResource>
         <remoteResource>US-RGB-8-epicard</remoteResource>
         <remoteResource>US-RGB-8-esopecho</remoteResource>

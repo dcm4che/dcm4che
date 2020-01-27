@@ -65,7 +65,7 @@
         </os>
       </activation>
       <properties>
-<!--        <skipTests>false</skipTests>-->
+        <skipTests>false</skipTests>
         <os-name>macosx</os-name>
         <cpu-name>x86-64</cpu-name>
       </properties>
@@ -80,7 +80,7 @@
         </os>
       </activation>
       <properties>
-<!--        <skipTests>false</skipTests>-->
+        <skipTests>false</skipTests>
         <os-name>linux</os-name>
         <cpu-name>x86-64</cpu-name>
       </properties>
@@ -95,7 +95,7 @@
         </os>
       </activation>
       <properties>
-<!--        <skipTests>false</skipTests>-->
+        <skipTests>false</skipTests>
         <os-name>linux</os-name>
         <cpu-name>x86-64</cpu-name>
       </properties>
@@ -110,7 +110,7 @@
         </os>
       </activation>
       <properties>
-<!--        <skipTests>false</skipTests>-->
+        <skipTests>false</skipTests>
         <os-name>linux</os-name>
         <cpu-name>x86</cpu-name>
       </properties>
@@ -124,7 +124,7 @@
         </os>
       </activation>
       <properties>
-<!--        <skipTests>false</skipTests>-->
+        <skipTests>false</skipTests>
         <os-name>windows</os-name>
         <cpu-name>x86-64</cpu-name>
       </properties>
@@ -138,7 +138,7 @@
         </os>
       </activation>
       <properties>
-<!--        <skipTests>false</skipTests>-->
+        <skipTests>false</skipTests>
         <os-name>windows</os-name>
         <cpu-name>x86-64</cpu-name>
       </properties>
@@ -152,7 +152,7 @@
         </os>
       </activation>
       <properties>
-<!--        <skipTests>false</skipTests>-->
+        <skipTests>false</skipTests>
         <os-name>windows</os-name>
         <cpu-name>x86</cpu-name>
       </properties>

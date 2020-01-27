@@ -894,10 +894,14 @@ public class Transcoder implements Closeable {
                         csm2, ((DataBufferByte) db2).getBankData());
             case DataBuffer.TYPE_USHORT:
                 return maxDiff(csm, ((DataBufferUShort) db).getData(),
-                        csm2, ((DataBufferUShort) db2).getData());
+                        csm2, db2.getDataType() == DataBuffer.TYPE_SHORT
+                                ? ((DataBufferShort) db2).getData()
+                                : ((DataBufferUShort) db2).getData());
             case DataBuffer.TYPE_SHORT:
                 return maxDiff(csm, ((DataBufferShort) db).getData(),
-                        csm2, ((DataBufferShort) db2).getData());
+                        csm2,  db2.getDataType() == DataBuffer.TYPE_SHORT
+                                ? ((DataBufferShort) db2).getData()
+                                : ((DataBufferUShort) db2).getData());
             default:
                 throw new UnsupportedOperationException(
                         "Unsupported Datatype: " + db.getDataType());

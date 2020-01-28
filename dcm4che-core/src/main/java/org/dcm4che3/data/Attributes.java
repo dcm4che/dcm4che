@@ -2108,7 +2108,7 @@ public class Attributes implements Serializable {
         for (int i = 0; i < otherSize; i++) {
             int tag = otherTags[i];
             VR vr = srcVRs[i];
-            Object value = vr.isStringType() ? other.decodeStringValue(i) : srcValues[i];
+            Object value = srcValues[i];
 
             if (include != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) < 0)
                 continue;
@@ -2117,7 +2117,7 @@ public class Attributes implements Serializable {
 
             if (TagUtils.isPrivateCreator(tag)
                     && vr == VR.LO
-                    && (privateCreator = other.getString(tag)) != null) {
+                    && (privateCreator = (String) other.decodeStringValue(i)) != null) {
                 if ((selection == null || selection.creatorTagOf(privateCreator, tag, false) > 0)
                         && creatorTagOf(privateCreator, tag, false) < 0
                         && !contains(tag)) {    // preserve non-conflicting Private Creator ID tag positions

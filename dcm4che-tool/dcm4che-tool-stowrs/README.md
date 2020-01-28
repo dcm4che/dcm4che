@@ -14,8 +14,9 @@
     possible i.e for eg. one can send multiple pdfs in one request, but can
     not send combination of files like pdfs and images in one request.
     Supported content types for bulkdata are application/pdf, text/xml (for
-    CDA files), image/jpeg, video/mpeg, video/mp4, video/quicktime, image/jp2
-    and application/sla (for STL files). File names shall not contain spaces.
+    CDA files), image/jpeg, video/mpeg, video/mp4, video/quicktime, image/jp2,
+    application/sla (for STL files), model/mtl (for MTL files) and model/obj
+    (for OBJ files). File names shall not contain spaces.
     -
     Options:
      -a,--accept <arg>           Specify the value for Accept header : xml or

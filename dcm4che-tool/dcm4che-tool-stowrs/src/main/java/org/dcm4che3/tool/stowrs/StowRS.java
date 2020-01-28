@@ -38,12 +38,7 @@
 
 package org.dcm4che3.tool.stowrs;
 
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -232,6 +227,10 @@ public class StowRS {
                 "encapsulatedCDAMetadata.xml"),
         SLA(UID.EncapsulatedSTLStorage, Tag.EncapsulatedDocument, MediaTypes.MODEL_STL,
                 "encapsulatedSTLMetadata.xml"),
+        MTL(UID.EncapsulatedMTLStorage, Tag.EncapsulatedDocument, MediaTypes.MODEL_MTL,
+                "encapsulatedMTLMetadata.xml"),
+        OBJ(UID.EncapsulatedOBJStorage, Tag.EncapsulatedDocument, MediaTypes.MODEL_OBJ,
+                "encapsulatedOBJMetadata.xml"),
         JPEG(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage, 
                 Tag.PixelData, 
                 MediaTypes.IMAGE_JPEG,
@@ -302,17 +301,32 @@ public class StowRS {
 
     private static void checkFileContentType(Path path) throws IOException {
         String contentType = Files.probeContentType(path);
+        if (contentType == null)
+            contentType = mtlOrObj(path);
+
         if (fileContentType == null) {
             if ((fileContentType = contentType) == null)
                 if (isDICOM(path))
                     fileContentType = APPLN_DICOM;
-        }
-        else {
+        } else {
             if (contentType == null)
                 isDICOM(path);
             else if (!fileContentType.equals(contentType))
                 throw new IllegalArgumentException("Uploading multiple files of different content types not supported.");
         }
+    }
+
+    private static String mtlOrObj(Path path) {
+        String fileName = path.toFile().getName();
+        String ext = fileName.substring(fileName.lastIndexOf('.') + 1);
+        if (ext.equalsIgnoreCase("obj")) {
+            fileType = FileType.OBJ;
+            fileContentType = "model/obj";
+        } else if (ext.equalsIgnoreCase("mtl")) {
+            fileType = FileType.MTL;
+            fileContentType = "model/mtl";
+        }
+        return fileContentType;
     }
 
     private static boolean isDICOM(Path path) {
@@ -357,6 +371,8 @@ public class StowRS {
             case PDF:
             case XML:
             case SLA:
+            case MTL:
+            case OBJ:
                 supplementEncapsulatedDocAttrs(metadata);
                 contentLocBulkdata.put(contentLoc, new StowRSBulkdata(bulkdataFilePath));
                 break;
@@ -427,7 +443,7 @@ public class StowRS {
     }
 
     private static void supplementEncapsulatedDocAttrs(Attributes metadata) {
-        if (fileType == FileType.SLA)
+        if (fileType == FileType.SLA || fileType == FileType.OBJ)
             supplementMissingUID(metadata, Tag.FrameOfReferenceUID);
         if (!metadata.contains(Tag.AcquisitionDateTime))
             metadata.setNull(Tag.AcquisitionDateTime, VR.DT);

@@ -125,7 +125,9 @@ public class Pdf2Dcm {
     enum FileType {
         PDF("resource:encapsulatedPDFMetadata.xml"),
         XML("resource:encapsulatedCDAMetadata.xml"),
-        SLA("resource:encapsulatedSTLMetadata.xml");
+        SLA("resource:encapsulatedSTLMetadata.xml"),
+        MTL("resource:encapsulatedMTLMetadata.xml"),
+        OBJ("resource:encapsulatedOBJMetadata.xml");
 
         private String sampleMetadataFile;
 
@@ -138,14 +140,31 @@ public class Pdf2Dcm {
         }
 
         static FileType valueOf(Path path) throws IOException {
-            String contentType = Files.probeContentType(path);
+            String contentType = contentTypeOfFile(path);
+            if (contentType == null)
+                throw new IllegalArgumentException(
+                        MessageFormat.format(rb.getString("content-type-undetermined"), path));
+
             try {
                 return valueOf(contentType.substring(contentType.indexOf("/") + 1).toUpperCase());
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(
-                        MessageFormat.format(rb.getString("invalid-file-ext"), contentType, path));
+                        MessageFormat.format(rb.getString("invalid-content-type"), contentType, path));
             }
         }
+    }
+
+    private static String contentTypeOfFile(Path path) throws IOException {
+        String contentType = Files.probeContentType(path);
+        if (contentType != null)
+            return contentType;
+
+        String fileName = path.toFile().getName();
+        String ext = fileName.substring(fileName.lastIndexOf('.') + 1);
+        return ext.equalsIgnoreCase("obj")
+                ? "model/obj"
+                : ext.equalsIgnoreCase("mtl")
+                    ? "model/mtl" : null;
     }
 
     private static void createStaticMetadata(CommandLine cl) throws Exception {
@@ -161,7 +180,7 @@ public class Pdf2Dcm {
     private Attributes createMetadata(FileType fileType) throws Exception {
         Attributes fileMetadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataFile()));
         fileMetadata.addAll(staticMetadata);
-        if (fileType == FileType.SLA && !fileMetadata.containsValue(Tag.FrameOfReferenceUID))
+        if ((fileType == FileType.SLA || fileType == FileType.OBJ) && !fileMetadata.containsValue(Tag.FrameOfReferenceUID))
             fileMetadata.setString(Tag.FrameOfReferenceUID, VR.UI, UIDUtils.createUID());
         return fileMetadata;
     }

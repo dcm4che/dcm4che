@@ -307,10 +307,12 @@ public class Dcm2Jpg {
             if (argc < 2)
                 throw new ParseException(rb.getString("missing"));
             File dest = new File(argList.get(argc-1));
-            if ((argc > 2 || new File(argList.get(0)).isDirectory())
-                    && !dest.isDirectory())
-                throw new ParseException(
-                        MessageFormat.format(rb.getString("nodestdir"), dest));
+            if ((argc > 2 || new File(argList.get(0)).isDirectory())) {
+                dest.mkdirs();
+                if (!dest.isDirectory())
+                    throw new ParseException(
+                            MessageFormat.format(rb.getString("nodestdir"), dest));
+            }
             for (String src : argList.subList(0, argc-1))
                 main.mconvert(new File(src), dest);
         } catch (ParseException e) {

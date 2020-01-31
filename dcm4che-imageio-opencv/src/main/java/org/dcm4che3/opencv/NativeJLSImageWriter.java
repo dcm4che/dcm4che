@@ -61,6 +61,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.osgi.OpenCVNativeLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.weasis.opencv.data.ImageCV;
 import org.weasis.opencv.op.ImageConversion;
 
@@ -74,6 +76,7 @@ class NativeJLSImageWriter extends ImageWriter {
         OpenCVNativeLoader loader = new OpenCVNativeLoader();
         loader.init();
     }
+    private static final Logger LOGGER = LoggerFactory.getLogger(NativeJLSImageWriter.class);
 
     NativeJLSImageWriter(ImageWriterSpi originatingProvider) throws IOException {
         super(originatingProvider);
@@ -111,11 +114,16 @@ class NativeJLSImageWriter extends ImageWriter {
                 // So the input image has always a pixel interleaved mode mode((PlanarConfiguration = 0)
                 mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
 
+                int jpeglsNLE = param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0;
                 int cvType = mat.type();
                 int elemSize = (int) mat.elemSize1();
                 int channels = CvType.channels(cvType);
                 int dcmFlags = CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED
                     : Imgcodecs.DICOM_IMREAD_UNSIGNED;
+                if((dcmFlags & Imgcodecs.DICOM_IMREAD_SIGNED) == Imgcodecs.DICOM_IMREAD_SIGNED) {
+                    LOGGER.warn("Force compression to JPEG-LS lossless as lossy is not adapted to signed data.");
+                    jpeglsNLE = 0;
+                }
 
                 int[] params = new int[15];
                 params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
@@ -127,9 +135,7 @@ class NativeJLSImageWriter extends ImageWriter {
                 params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsCompressed(); // Bits per sample
                 params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
                 params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
-                params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] =
-                    // Allowed lossy error for jpeg-ls
-                    param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0;
+                params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = jpeglsNLE; // Lossy error for jpeg-ls
 
                 dicomParams = new MatOfInt(params);
                 buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");

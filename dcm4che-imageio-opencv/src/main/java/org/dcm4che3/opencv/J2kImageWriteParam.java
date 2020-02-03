@@ -53,17 +53,46 @@ public class J2kImageWriteParam extends ImageWriteParam {
 
     private static final String[] COMPRESSION_TYPES = { "LOSSY", "LOSSLESS" };
 
+    private int compressionRatiofactor;
+
     public J2kImageWriteParam(Locale locale) {
         super(locale);
         super.canWriteCompressed = true;
         super.compressionMode = MODE_EXPLICIT;
-        super.compressionQuality = 0.75F;
         super.compressionType = "LOSSY";
         super.compressionTypes = COMPRESSION_TYPES;
+        this.compressionRatiofactor = 10; // 10:1 is considered as visually lossless
+    }
+    
+    @Override
+    public void setCompressionType(String compressionType) {
+        super.setCompressionType(compressionType);
+        if(isCompressionLossless()) {
+            this.compressionRatiofactor = 0;   
+        }
     }
 
     @Override
     public boolean isCompressionLossless() {
         return compressionType.equals("LOSSLESS");
     }
+
+    public int getCompressionRatiofactor() {
+        return compressionRatiofactor;
+    }
+
+    /**
+     * Set the lossy compression factor
+     * 
+     * Near-lossless compression ratios of 5:1 to 20:1 (e.g. compressionRatiofactor = 10)
+     * 
+     * Lossy compression with acceptable degradation can have ratios of 30:1 to 100:1 (e.g. compressionRatiofactor = 50)
+     * 
+     * @param compressionRatiofactor
+     *            the compression ratio
+     */
+    public void setCompressionRatiofactor(int compressionRatiofactor) {
+        this.compressionRatiofactor = compressionRatiofactor;
+    }
+
 }

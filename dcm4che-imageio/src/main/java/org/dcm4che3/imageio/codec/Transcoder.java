@@ -813,17 +813,6 @@ public class Transcoder implements Closeable {
         dos.writeDataset(fmi, dataset);
     }
 
-    private Property[] cat(Property[] a, Property[] b) {
-        if (a.length == 0)
-            return b;
-        if (b.length == 0)
-            return a;
-        Property[] c = new Property[a.length + b.length];
-        System.arraycopy(a, 0, c, 0, a.length);
-        System.arraycopy(b, 0, c, a.length, b.length);
-        return c;
-    }
-
     private void initBufferedImage() {
         if (originalBi != null)
             return;

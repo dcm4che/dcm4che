@@ -406,8 +406,7 @@ public class Dcm2Dcm {
             transcoder.setRetainFileMetaInformation(retainfmi);
             transcoder.setEncodingOptions(encOpts);
             transcoder.setDestinationTransferSyntax(tsuid);
-            if (tstype.isPixeldataEncapsulated())
-                transcoder.setCompressParams(params.toArray(new Property[params.size()]));
+            transcoder.setCompressParams(params.toArray(new Property[params.size()]));
             transcoder.transcode(new Transcoder.Handler(){
                 @Override
                 public OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException {

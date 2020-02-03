@@ -312,11 +312,13 @@ public class Transcoder implements Closeable {
         LOG.debug("Compressor: {}", compressor.getClass().getName());
 
         this.compressParam = compressor.getDefaultWriteParam();
+        setCompressParams(compressorParam.getImageWriteParams());
     }
 
-    public void setCompressParams(Property[] imageWriteParams) {
+    public void setCompressParams(Property... imageWriteParams) {
+        if (compressorParam == null) return;
         int count = 0;
-        for (Property property : cat(compressorParam.getImageWriteParams(), imageWriteParams)) {
+        for (Property property : imageWriteParams) {
             String name = property.getName();
             if (name.equals("maxPixelValueError"))
                 this.maxPixelValueError = ((Number) property.getValue()).intValue();

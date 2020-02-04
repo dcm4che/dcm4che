@@ -601,14 +601,14 @@ public class Attributes implements Serializable {
 
         int creatorTag = (tag & 0xffff0000) | ((tag >>> 8) & 0xff);
         int index = indexOf(creatorTag);
-        if (index < 0 || vrs[index] != VR.LO || values[index] == Value.NULL)
-            return null;
-        
-        Object value = decodeStringValue(index);
-        if (value == Value.NULL)
-            return null;
+        return privateCreatorAt(index);
+    }
 
-        return VR.LO.toString(value, false, 0, null);
+    private String privateCreatorAt(int index) {
+        Object value;
+        return (index < 0 || vrs[index] != VR.LO || (value = decodeStringValue(index)) == Value.NULL)
+            ? null
+            : VR.LO.toString(value, false, 0, null);
     }
 
     public Object getValue(int tag) {
@@ -2449,24 +2449,38 @@ public class Attributes implements Serializable {
         if (size != other.size)
             return false;
 
+        String privateCreator = null;
         int creatorTag = 0;
         int otherCreatorTag = 0;
         for (int i = 0; i < size; i++) {
             int tag = tags[i];
-            if (!TagUtils.isPrivateGroup(tag)) {
-                if (tag != other.tags[i] || !equalValues(other, i, i))
-                    return false;
-            } else if (TagUtils.isPrivateTag(tag)) {
-                int tmp = TagUtils.creatorTagOf(tag);
-                if (creatorTag != tmp) {
-                    creatorTag = tmp;
-                    otherCreatorTag = other.creatorTagOf(privateCreatorOf(tag), tag, false);
-                    if (otherCreatorTag == -1)
+            switch (TagUtils.Type.typeOf(tag)) {
+                case PRIVATE_CREATOR:
+                    continue;
+                case PRIVATE:
+                    int tmp = TagUtils.creatorTagOf(tag);
+                    if (creatorTag != tmp) {
+                        creatorTag = tmp;
+                        privateCreator = privateCreatorAt(indexOf(tmp));
+                        if (privateCreator != null) {
+                            otherCreatorTag = other.creatorTagOf(privateCreator, tag, false);
+                            if (otherCreatorTag == -1)
+                                return false; // other has no matching private creator
+                        } else {
+                            if (other.privateCreatorAt(other.indexOf(tmp)) != null)
+                                return false; // other attribute has associated private creator
+                        }
+                    }
+                    if (privateCreator != null) {
+                        int j = other.indexOf(TagUtils.toPrivateTag(otherCreatorTag, tag));
+                        if (j < 0 || !equalValues(other, i, j))
+                            return false;
+                        continue;
+                    }
+                    // fall through: treat private attributes without associated private creator like standard attributes
+                case STANDARD:
+                    if (tag != other.tags[i] || !equalValues(other, i, i))
                         return false;
-                }
-                int j = other.indexOf(TagUtils.toPrivateTag(otherCreatorTag, tag));
-                if (j < 0 || !equalValues(other, i, j))
-                    return false;
             }
         }
         return true;

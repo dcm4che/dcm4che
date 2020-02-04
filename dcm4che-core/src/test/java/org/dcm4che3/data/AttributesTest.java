@@ -789,4 +789,11 @@ public class AttributesTest {
         attrs.removeOverlayData();
         assertEquals(6, attrs.size());
     }
+
+    @Test
+    public void testNullPrivateCreator() {
+        Attributes attrs = new Attributes();
+        attrs.setNull(0x00990010, VR.LO);
+        assertTrue(new Attributes(attrs).contains(0x00990010));
+    }
 }

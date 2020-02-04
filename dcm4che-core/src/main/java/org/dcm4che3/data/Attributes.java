@@ -597,14 +597,14 @@ public class Attributes implements Serializable {
 
         int creatorTag = (tag & 0xffff0000) | ((tag >>> 8) & 0xff);
         int index = indexOf(creatorTag);
-        if (index < 0 || vrs[index] != VR.LO || values[index] == Value.NULL)
-            return null;
-        
-        Object value = decodeStringValue(index);
-        if (value == Value.NULL)
-            return null;
+        return privateCreatorAt(index);
+    }
 
-        return VR.LO.toString(value, false, 0, null);
+    private String privateCreatorAt(int index) {
+        Object value;
+        return (index < 0 || vrs[index] != VR.LO || (value = decodeStringValue(index)) == Value.NULL)
+            ? null
+            : VR.LO.toString(value, false, 0, null);
     }
 
     public Object getValue(int tag) {
@@ -2116,8 +2116,7 @@ public class Attributes implements Serializable {
                 continue;
 
             if (TagUtils.isPrivateCreator(tag)
-                    && vr == VR.LO
-                    && (privateCreator = (String) other.decodeStringValue(i)) != null) {
+                    && (privateCreator = other.privateCreatorAt(i)) != null) {
                 if ((selection == null || selection.creatorTagOf(privateCreator, tag, false) > 0)
                         && creatorTagOf(privateCreator, tag, false) < 0
                         && !contains(tag)) {    // preserve non-conflicting Private Creator ID tag positions

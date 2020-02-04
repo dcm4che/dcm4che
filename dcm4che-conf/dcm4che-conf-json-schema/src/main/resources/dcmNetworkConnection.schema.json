@@ -25,6 +25,7 @@
       "enum": [
           "DICOM",
           "HL7",
+          "HL7_MLLP2",
           "SYSLOG_TLS",
           "SYSLOG_UDP",
           "HTTP"

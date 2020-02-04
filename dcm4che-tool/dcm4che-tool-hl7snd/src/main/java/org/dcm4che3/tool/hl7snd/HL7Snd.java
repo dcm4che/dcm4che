@@ -56,6 +56,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.hl7.MLLPConnection;
+import org.dcm4che3.hl7.MLLPRelease;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.IncompatibleConnectionException;
@@ -76,6 +77,7 @@ public class HL7Snd extends Device {
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
 
+    private MLLPRelease mllpRelease;
     private Socket sock;
     private MLLPConnection mllp;
 
@@ -84,11 +86,16 @@ public class HL7Snd extends Device {
         addConnection(conn);
     }
 
+    public void setMLLPRelease(MLLPRelease mllpRelease) {
+        this.mllpRelease = mllpRelease;
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
         addConnectOption(opts);
         addBindOption(opts);
+        CLIUtils.addMLLP2Option(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addSocketOptions(opts);
         CLIUtils.addTLSOptions(opts);
@@ -151,6 +158,7 @@ public class HL7Snd extends Device {
             configureConnect(main.remote, cl);
             configureBind(main.conn, cl);
             CLIUtils.configure(main.conn, cl);
+            main.setMLLPRelease(CLIUtils.isMLLP2(cl) ? MLLPRelease.MLLP2 : MLLPRelease.MLLP1);
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             try {
@@ -173,7 +181,7 @@ public class HL7Snd extends Device {
     public void open() throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         sock = conn.connect(remote);
         sock.setSoTimeout(conn.getResponseTimeout());
-        mllp = new MLLPConnection(sock);
+        mllp = new MLLPConnection(sock, mllpRelease);
     }
 
     public void close() {

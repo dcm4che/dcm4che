@@ -226,7 +226,7 @@ public class HL7Application implements Serializable {
     }
 
     public void addConnection(Connection conn) {
-        if (conn.getProtocol() != Connection.Protocol.HL7)
+        if (!conn.getProtocol().isHL7())
             throw new IllegalArgumentException(
                     "protocol != HL7 - " + conn.getProtocol());
             

@@ -347,6 +347,14 @@ public class CLIUtils {
         opts.addOption(null, "tls-aes", false, rb.getString("tls-aes"));
     }
 
+    public static void addMLLP2Option(Options opts) {
+        opts.addOption(null, "mllp2", false, rb.getString("mllp2"));
+    }
+
+    public static boolean isMLLP2(CommandLine cl) {
+        return cl.hasOption("mllp2");
+    }
+
     public static void addPriorityOption(Options opts) {
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder()
@@ -360,7 +368,7 @@ public class CLIUtils {
         opts.addOptionGroup(group);
     }
 
-    public static CommandLine parseComandLine(String[] args, Options opts, 
+    public static CommandLine parseComandLine(String[] args, Options opts,
             ResourceBundle rb2, Class<?> clazz) throws ParseException {
         CommandLineParser parser = new DetectEndOfOptionsPosixParser();
         CommandLine cl = parser.parse(opts, args);

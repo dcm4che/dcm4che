@@ -52,21 +52,34 @@ import org.slf4j.LoggerFactory;
 public class MLLPConnection implements Closeable {
 
     private static Logger LOG = LoggerFactory.getLogger(MLLPConnection.class);
+    private static final byte ACK = 0x06;
+    private static final byte NAK = 0x15;
 
     private final Socket sock;
     private final MLLPInputStream mllpIn;
     private final MLLPOutputStream mllpOut;
+    private final MLLPRelease mllpRelease;
 
     public MLLPConnection(Socket sock) throws IOException {
+        this(sock, MLLPRelease.MLLP1);
+    }
+
+    public MLLPConnection(Socket sock, MLLPRelease mllpRelease) throws IOException {
         this.sock = sock;
         mllpIn = new MLLPInputStream(sock.getInputStream());
         mllpOut = new MLLPOutputStream(sock.getOutputStream());
+        this.mllpRelease = mllpRelease;
     }
 
     public MLLPConnection(Socket sock, int bufferSize) throws IOException {
+        this(sock, MLLPRelease.MLLP1, bufferSize);
+    }
+
+    public MLLPConnection(Socket sock, MLLPRelease mllpRelease, int bufferSize) throws IOException {
         this.sock = sock;
         mllpIn = new MLLPInputStream(sock.getInputStream());
         mllpOut = new MLLPOutputStream(new BufferedOutputStream(sock.getOutputStream(), bufferSize));
+        this.mllpRelease = mllpRelease;
     }
 
     public final Socket getSocket() {
@@ -80,13 +93,42 @@ public class MLLPConnection implements Closeable {
     public void writeMessage(byte[] b, int off, int len) throws IOException {
         log("{} << {}", b, off, len);
         mllpOut.writeMessage(b, off, len);
+        if (mllpRelease == MLLPRelease.MLLP2)
+            readACK();
     }
 
     public byte[] readMessage() throws IOException {
         byte[] b = mllpIn.readMessage();
-        if (b != null)
+        if (b != null) {
             log("{} >> {}", b, 0, b.length);
+            if (mllpRelease == MLLPRelease.MLLP2)
+                writeACK();
+        }
         return b;
+    }
+
+    private void writeACK() throws IOException {
+        LOG.debug("{} << <ACK>", sock);
+        mllpOut.write(ACK);
+        mllpOut.finish();
+    }
+
+    private void readACK() throws IOException {
+        byte[] b = mllpIn.readMessage();
+        if (b == null)
+            throw new IOException("Connection closed by receiver");
+        if (b.length == 1) {
+            switch (b[0]) {
+                case ACK:
+                    LOG.debug("{} >> <ACK>", sock);
+                    return;
+                case NAK:
+                    LOG.info("{} >> <NAK>", sock);
+                    throw new IOException("NAK received");
+            }
+        }
+        LOG.info("{}: <ACK> or <NAK> expected, but received {} bytes", sock, b.length);
+        throw new IOException("<ACK> or <NAK> expected, but received " + b.length + " bytes");
     }
 
     private void log(String format, byte[] b, int off, int len) {

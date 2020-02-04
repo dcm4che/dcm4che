@@ -34,6 +34,8 @@ Options:
                                      private key, 'secret' by default
     --key-store-type <storetype>     type of key store containing the
                                      private key, JKS by default
+    --mllp2                          use MLLP Release 2 with Commit
+                                     Acknowledgement Block
     --sorcv-buffer <length>          set SO_RCVBUF socket option to
                                      specified value
     --sosnd-buffer <length>          set SO_SNDBUF socket option to

@@ -58,6 +58,8 @@ public class HL7DeviceExtension extends DeviceExtension {
     static {
         Connection.registerTCPProtocolHandler(
                 Connection.Protocol.HL7, HL7ProtocolHandler.INSTANCE);
+        Connection.registerTCPProtocolHandler(
+                Connection.Protocol.HL7_MLLP2, HL7ProtocolHandler.INSTANCE);
     }
 
     private final LinkedHashMap<String, HL7Application> hl7apps =

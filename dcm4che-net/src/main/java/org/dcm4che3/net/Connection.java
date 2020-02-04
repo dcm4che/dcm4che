@@ -86,8 +86,9 @@ public class Connection implements Serializable {
 
     private static final long serialVersionUID = -7814748788035232055L;
 
-    public enum Protocol { DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP, HTTP;
+    public enum Protocol { DICOM, HL7, HL7_MLLP2, SYSLOG_TLS, SYSLOG_UDP, HTTP;
         public boolean isTCP() { return this != SYSLOG_UDP; }
+        public boolean isHL7() { return this == HL7 || this == HL7_MLLP2; }
         public boolean isSyslog() { return this == SYSLOG_TLS || this == SYSLOG_UDP; }
     }
 

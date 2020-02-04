@@ -133,6 +133,7 @@ public class HL7Rcv {
             throws ParseException {
         Options opts = new Options();
         addOptions(opts);
+        CLIUtils.addMLLP2Option(opts);
         CLIUtils.addSocketOptions(opts);
         CLIUtils.addTLSOptions(opts);
         CLIUtils.addCommonOptions(opts);
@@ -204,8 +205,7 @@ public class HL7Rcv {
     }
 
     private static void configure(HL7Rcv main, CommandLine cl)
-            throws Exception, MalformedURLException, ParseException,
-            IOException {
+            throws Exception {
         if (!cl.hasOption("ignore"))
             main.setStorageDirectory(
                     cl.getOptionValue("directory", "."));
@@ -215,6 +215,7 @@ public class HL7Rcv {
             main.setXSLTParameters(cl.getOptionValues("xsl-param"));
         }
         main.setCharacterSet(cl.getOptionValue("charset"));
+        main.conn.setProtocol(CLIUtils.isMLLP2(cl) ? Protocol.HL7_MLLP2 : Protocol.HL7);
         configureBindServer(main.conn, cl);
         CLIUtils.configure(main.conn, cl);
     }

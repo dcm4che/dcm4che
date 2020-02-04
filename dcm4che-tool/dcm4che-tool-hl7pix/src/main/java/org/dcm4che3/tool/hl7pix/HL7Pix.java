@@ -46,13 +46,13 @@ import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.hl7.HL7Message;
 import org.dcm4che3.hl7.HL7Segment;
 import org.dcm4che3.hl7.MLLPConnection;
+import org.dcm4che3.hl7.MLLPRelease;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.IncompatibleConnectionException;
@@ -69,6 +69,7 @@ public class HL7Pix extends Device {
 
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
+    private MLLPRelease mllpRelease;
     private String sendingApplication = "hl7pix^dcm4che";
     private String receivingApplication = "";
     private String charset;
@@ -79,6 +80,10 @@ public class HL7Pix extends Device {
     public HL7Pix() throws IOException {
         super("hl7pix");
         addConnection(conn);
+    }
+
+    public void setMLLPRelease(MLLPRelease mllpRelease) {
+        this.mllpRelease = mllpRelease;
     }
 
     public String getSendingApplication() {
@@ -107,6 +112,7 @@ public class HL7Pix extends Device {
         addConnectOption(opts);
         addBindOption(opts);
         addCharsetOption(opts);
+        CLIUtils.addMLLP2Option(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addSocketOptions(opts);
         CLIUtils.addTLSOptions(opts);
@@ -190,6 +196,7 @@ public class HL7Pix extends Device {
             configureConnect(main, cl);
             configureBind(main, cl);
             CLIUtils.configure(main.conn, cl);
+            main.setMLLPRelease(CLIUtils.isMLLP2(cl) ? MLLPRelease.MLLP2 : MLLPRelease.MLLP1);
             main.setCharacterSet(cl.getOptionValue("charset"));
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
@@ -217,7 +224,7 @@ public class HL7Pix extends Device {
     public void open() throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         sock = conn.connect(remote);
         sock.setSoTimeout(conn.getResponseTimeout());
-        mllp = new MLLPConnection(sock);
+        mllp = new MLLPConnection(sock, mllpRelease);
     }
 
     public void close() {

@@ -37,6 +37,8 @@ Options:
                                           'secret' by default
     --key-store-type <storetype>          type of key store containing the
                                           private key, JKS by default
+    --mllp2                               use MLLP Release 2 with Commit
+                                          Acknowledgement Block
     --proxy <[user:password@]host:port>   specify host and port of the
                                           HTTP Proxy to tunnel the HL7
                                           connection.

@@ -80,7 +80,14 @@ public class NativeJ2kImageReaderSpi extends ImageReaderSpi {
         if (!(source instanceof ImageInputStream)) {
             return false;
         }
+
         ImageInputStream iis = (ImageInputStream) source;
+        // NativeImageReader.read() eventually instantiates a StreamSegment, 
+        // which does not support all ImageInputStreams
+        if (!StreamSegment.supportsInputStream(iis)) {
+        	return false;
+        }
+
         iis.mark();
         try {
             int marker = (iis.read() << 8) | iis.read();

@@ -40,6 +40,10 @@
 
 package org.dcm4che3.image;
 
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
+
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
@@ -153,6 +157,111 @@ public class BufferedImageUtils {
         b[1] = (byte) ((pix >> 8) & 0xff);
         b[2] = (byte) (pix & 0xff);
         return b;
+    }
+
+    /**
+     * Set Image Pixel Module Attributes from Buffered Image. Supports Buffered Images with ColorSpace GRAY or RGB
+     * and with a DataBuffer containing one bank of unsigned byte data.
+     *
+     * @param bi Buffered Image
+     * @param attrs Data Set to supplement with Image Pixel Module Attributes or {@code null}
+     * @return Data Set with included Image Pixel Module Attributes
+     * @throws UnsupportedOperationException if the ColorSpace or DataBuffer of the Buffered Image is not supported
+     */
+    public static Attributes toImagePixelModule(BufferedImage bi, Attributes attrs) {
+        ColorModel cm = bi.getColorModel();
+        ColorSpace cs = cm.getColorSpace();
+        Raster raster = bi.getRaster();
+        switch (cs.getType()) {
+            case ColorSpace.TYPE_GRAY:
+                return toImagePixelModule(raster, 1, "MONOCHROME2", toMonochrome2PixelData(raster), attrs);
+            case ColorSpace.TYPE_RGB:
+                return toImagePixelModule(raster, 3, "RGB", toRGBPixelData(raster), attrs);
+            default:
+                throw new UnsupportedOperationException(toString(cs));
+        }
+    }
+
+    private static String toString(ColorSpace cs) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0, n = cs.getNumComponents(); i < n; i++) {
+            sb.append(i > 0 ? ", 0" : "ColorSpace[").append(cs.getName(i));
+        }
+        return sb.append(']').toString();
+    }
+
+    private static byte[] toMonochrome2PixelData(Raster raster) {
+        ComponentSampleModel csb = getComponentSampleModel(raster);
+        int pixelStride = csb.getPixelStride();
+        int scanlineStride = csb.getScanlineStride();
+        int h = csb.getHeight();
+        int w = csb.getWidth();
+        int offset = csb.getOffset(0, 0);
+        byte[] src = getData(raster);
+        byte[] dest = new byte[h * w];
+        for (int y = 0, j = 0; y < h; y++) {
+            for (int x = 0, i = y * scanlineStride; x < w; x++, i += pixelStride) {
+                dest[j++] = src[i + offset];
+            }
+        }
+        return dest;
+    }
+
+    private static byte[] toRGBPixelData(Raster raster) {
+        ComponentSampleModel csb = getComponentSampleModel(raster);
+        int pixelStride = csb.getPixelStride();
+        int scanlineStride = csb.getScanlineStride();
+        int h = csb.getHeight();
+        int w = csb.getWidth();
+        int r = csb.getOffset(0, 0, 0);
+        int g = csb.getOffset(0, 0, 1);
+        int b = csb.getOffset(0, 0, 2);
+        byte[] src = getData(raster);
+        byte[] dest = new byte[h * w * 3];
+        for (int y = 0, j = 0; y < h; y++) {
+            for (int x = 0, i = y * scanlineStride; x < w; x++, i += pixelStride) {
+                dest[j++] = src[i + r];
+                dest[j++] = src[i + g];
+                dest[j++] = src[i + b];
+            }
+        }
+        return dest;
+    }
+
+    private static byte[] getData(Raster raster) {
+        DataBuffer dataBuffer = raster.getDataBuffer();
+        if (!(dataBuffer instanceof DataBufferByte) || dataBuffer.getNumBanks() > 1) {
+            throw new UnsupportedOperationException(raster.toString());
+        }
+        return ((DataBufferByte) dataBuffer).getData();
+    }
+
+    private static ComponentSampleModel getComponentSampleModel(Raster raster) {
+        SampleModel sb = raster.getSampleModel();
+        if (!(sb instanceof ComponentSampleModel)) {
+            throw new UnsupportedOperationException(sb.toString());
+        }
+        return (ComponentSampleModel) sb;
+    }
+
+    private static Attributes toImagePixelModule(Raster raster, int samples, String pmi, byte[] pixelData,
+            Attributes attrs) {
+        if (attrs == null) {
+            attrs = new Attributes(10);
+        }
+        attrs.setInt(Tag.SamplesPerPixel, VR.US, samples);
+        attrs.setString(Tag.PhotometricInterpretation, VR.CS, pmi);
+        if (samples > 1) {
+            attrs.setInt(Tag.PlanarConfiguration, VR.US, 0);
+        }
+        attrs.setInt(Tag.Rows, VR.US, raster.getHeight());
+        attrs.setInt(Tag.Columns, VR.US, raster.getWidth());
+        attrs.setInt(Tag.BitsAllocated, VR.US, 8);
+        attrs.setInt(Tag.BitsStored, VR.US, 8);
+        attrs.setInt(Tag.HighBit, VR.US, 7);
+        attrs.setInt(Tag.PixelRepresentation, VR.US, 0);
+        attrs.setBytes(Tag.PixelData, VR.OB, pixelData);
+        return attrs;
     }
 
 }

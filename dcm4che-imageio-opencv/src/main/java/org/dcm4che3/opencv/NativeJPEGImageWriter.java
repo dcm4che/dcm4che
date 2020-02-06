@@ -124,10 +124,9 @@ class NativeJPEGImageWriter extends ImageWriter {
                 mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
 
                 int cvType = mat.type();
-                int elemSize = (int) mat.elemSize1();
                 int channels = CvType.channels(cvType);
-                int dcmFlags = CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED
-                    : Imgcodecs.DICOM_IMREAD_UNSIGNED;
+                boolean signed = desc.isSigned();
+                int dcmFlags = signed ? Imgcodecs.DICOM_FLAG_SIGNED : Imgcodecs.DICOM_FLAG_UNSIGNED;
 
                 int[] params = new int[15];
                 params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
@@ -138,8 +137,6 @@ class NativeJPEGImageWriter extends ImageWriter {
                 params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
                 params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsCompressed(); // Bits per sample
                 params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
-                params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
-                params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = 0; // Allowed lossy error for jpeg-ls
                 params[Imgcodecs.DICOM_PARAM_COLOR_MODEL] = epi; // Photometric interpretation
                 params[Imgcodecs.DICOM_PARAM_JPEG_MODE] = jpegParams.getMode(); // JPEG Codec mode
                 params[Imgcodecs.DICOM_PARAM_JPEG_QUALITY] = (int) (jpegParams.getCompressionQuality() * 100); // JPEG lossy quality

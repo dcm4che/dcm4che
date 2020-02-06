@@ -261,9 +261,9 @@ public class NativeImageReader extends ImageReader implements Closeable {
         ImageDescriptor desc = seg.getImageDescriptor();
 
         int dcmFlags =
-            (canEncodeSigned && desc.isSigned()) ? Imgcodecs.DICOM_IMREAD_SIGNED : Imgcodecs.DICOM_IMREAD_UNSIGNED;
+            (canEncodeSigned && desc.isSigned()) ? Imgcodecs.DICOM_FLAG_SIGNED : Imgcodecs.DICOM_FLAG_UNSIGNED;
         if (ybr2rgb(desc.getPhotometricInterpretation())) {
-            dcmFlags |= Imgcodecs.DICOM_IMREAD_YBR;
+            dcmFlags |= Imgcodecs.DICOM_FLAG_YBR;
         }
 
         if (seg instanceof FileStreamSegment) {

@@ -167,19 +167,19 @@ public class TranscoderTest {
         assertEquals(12, jpegBitsPerSample("MR2_UNC-JPLL.dcm"));
     }
 
-//    @Test - not supported by NativeJLSImageWriter
+    @Test
     public void testCompress12BitsJLSL() throws Exception {
         test("MR2_UNC", "MR2_UNC-JLSL.dcm", UID.JPEGLSLossless, true);
         assertEquals(12, jpegBitsPerSample("MR2_UNC-JLSL.dcm"));
     }
 
-//    @Test - not supported by NativeJ2kImageWriter
+    @Test
     public void testCompress12BitsJ2KR() throws Exception {
         test("MR2_UNC", "MR2_UNC-J2KR.dcm", UID.JPEG2000LosslessOnly, true);
         assertEquals(12, jpegBitsPerSample("MR2_UNC-J2KR.dcm"));
     }
 
-//    @Test - broken
+    @Test
     public void testSigned12BitsJ2KI() throws Exception {
         test("test16signed.dcm", "test16signed-J2KI.dcm", UID.JPEG2000, true);
         assertEquals(1, jpegPixelRepresentation("test16signed-J2KI.dcm"));

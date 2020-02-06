@@ -115,14 +115,15 @@ class NativeJLSImageWriter extends ImageWriter {
                 mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
 
                 int jpeglsNLE = param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0;
+                int bitCompressed = desc.getBitsCompressed();
                 int cvType = mat.type();
-                int elemSize = (int) mat.elemSize1();
                 int channels = CvType.channels(cvType);
-                int dcmFlags = CvType.depth(cvType) == CvType.CV_16S ? Imgcodecs.DICOM_IMREAD_SIGNED
-                    : Imgcodecs.DICOM_IMREAD_UNSIGNED;
-                if((dcmFlags & Imgcodecs.DICOM_IMREAD_SIGNED) == Imgcodecs.DICOM_IMREAD_SIGNED) {
+                boolean signed = desc.isSigned();
+                int dcmFlags = signed ? Imgcodecs.DICOM_FLAG_SIGNED : Imgcodecs.DICOM_FLAG_UNSIGNED;
+                if(signed) {
                     LOGGER.warn("Force compression to JPEG-LS lossless as lossy is not adapted to signed data.");
                     jpeglsNLE = 0;
+                    bitCompressed = 16; // Extend to bit allocated to avoid exception as negative values are treated as large positive values
                 }
 
                 int[] params = new int[15];
@@ -132,10 +133,9 @@ class NativeJLSImageWriter extends ImageWriter {
                 params[Imgcodecs.DICOM_PARAM_HEIGHT] = mat.height(); // Image height
                 params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_JPLS; // Type of compression
                 params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
-                params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsCompressed(); // Bits per sample
+                params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = bitCompressed; // Bits per sample
                 params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
-                params[Imgcodecs.DICOM_PARAM_BYTES_PER_LINE] = mat.width() * elemSize; // Bytes per line
-                params[Imgcodecs.DICOM_PARAM_ALLOWED_LOSSY_ERROR] = jpeglsNLE; // Lossy error for jpeg-ls
+                params[Imgcodecs.DICOM_PARAM_JPEGLS_LOSSY_ERROR] = jpeglsNLE; // Lossy error for jpeg-ls
 
                 dicomParams = new MatOfInt(params);
                 buf = Imgcodecs.dicomJpgWrite(mat, dicomParams, "");

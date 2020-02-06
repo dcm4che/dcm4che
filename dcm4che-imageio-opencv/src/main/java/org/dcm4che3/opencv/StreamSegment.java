@@ -104,6 +104,15 @@ public abstract class StreamSegment {
         }
         throw new IllegalArgumentException("No stream adaptor found for " + iis.getClass().getName() + "!");
     }
+    
+    public static boolean supportsInputStream(ImageInputStream iis) {
+        // This list must reflect getStreamSegment()'s implementation
+        return
+            (iis instanceof ExtendSegmentedInputImageStream) ||
+            (iis instanceof SegmentedInputImageStream) ||
+            (iis instanceof BytesWithImageImageDescriptor)
+        ;
+    }
 
     private static StreamSegment getFileStreamSegment(SegmentedInputImageStream iis) {
         try {

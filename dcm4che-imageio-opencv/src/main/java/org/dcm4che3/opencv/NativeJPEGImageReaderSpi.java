@@ -90,7 +90,14 @@ public class NativeJPEGImageReaderSpi extends ImageReaderSpi {
         if (!(source instanceof ImageInputStream)) {
             return false;
         }
+
         ImageInputStream iis = (ImageInputStream) source;
+        // NativeImageReader.read() eventually instantiates a StreamSegment, 
+        // which does not support all ImageInputStreams
+        if (!StreamSegment.supportsInputStream(iis)) {
+        	return false;
+        }
+
         iis.mark();
         try {
             int byte1 = iis.read();

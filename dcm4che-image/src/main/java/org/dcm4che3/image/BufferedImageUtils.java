@@ -116,7 +116,7 @@ public class BufferedImageUtils {
 
     public static BufferedImage convertPalettetoRGB(BufferedImage src, BufferedImage dst) {
         ColorModel pcm = src.getColorModel();
-        if (!(pcm instanceof PaletteColorModel)) {
+        if (!(pcm instanceof PaletteColorModel || pcm instanceof IndexColorModel)) {
             throw new UnsupportedOperationException(
                 "Cannot convert " + pcm.getClass().getName() + " to RGB");
         }
@@ -170,6 +170,10 @@ public class BufferedImageUtils {
      */
     public static Attributes toImagePixelModule(BufferedImage bi, Attributes attrs) {
         ColorModel cm = bi.getColorModel();
+        if (cm instanceof IndexColorModel || cm instanceof PaletteColorModel) {
+            bi = convertPalettetoRGB(bi, null);
+            cm = bi.getColorModel();
+        }
         ColorSpace cs = cm.getColorSpace();
         Raster raster = bi.getRaster();
         switch (cs.getType()) {

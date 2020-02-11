@@ -43,17 +43,16 @@ package org.dcm4che3.image;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.imageio.IIOImage;
+import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOInvalidTreeException;
-import javax.imageio.metadata.IIOMetadata;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.io.IOException;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -188,10 +187,10 @@ public class BufferedImageUtils {
         int columns = raster.getWidth();
         switch (cs.getType()) {
             case ColorSpace.TYPE_GRAY:
-                return toImagePixelModule(1, "MONOCHROME2", 1, rows, columns,
+                return toImagePixelModule(1, "MONOCHROME2", rows, columns,
                         toMonochrome2PixelData(raster), attrs);
             case ColorSpace.TYPE_RGB:
-                return toImagePixelModule(3, "RGB", 1, rows, columns,
+                return toImagePixelModule(3, "RGB", rows, columns,
                         toRGBPixelData(raster), attrs);
             default:
                 throw new UnsupportedOperationException(toString(cs));
@@ -199,69 +198,124 @@ public class BufferedImageUtils {
     }
 
     /**
-     * Set Image Pixel Module Attributes from animated GIF.
+     * Set Image Pixel Module Attributes from read image. Supports reading animated GIFs and single frame images
+     * with ColorSpace GRAY or RGB and with a DataBuffer containing one bank of unsigned byte data.
      *
-     * @param animatedGIF animated GIF
-     * @param attrs Data Set to supplement with Image Pixel Module Attributes or {@code null}
-     * @return Data Set with included Image Pixel Module Attributes
-     * @throws IIOInvalidTreeException if animatedGIF does not contain an animated GIF
+     * @param reader image reader
+     * @param attrs Data Set to supplement with Image Pixel Module Attributes or {@code null}.
+     * @return Data Set with included Image Pixel Module Attributes.
+     * @throws IOException if an error occurs during reading.
+     * @throws UnsupportedOperationException if the read image is not supported.
      */
-    public static Attributes toImagePixelModule(Iterator<IIOImage> animatedGIF, Attributes attrs)
-            throws IIOInvalidTreeException {
-        BufferedImage bi = (BufferedImage) animatedGIF.next().getRenderedImage();
-        if (!animatedGIF.hasNext()) {
+    public static Attributes toImagePixelModule(ImageReader reader, Attributes attrs) throws IOException {
+        IIOImage firstFrame = reader.readAll(0, null);
+        BufferedImage bi = (BufferedImage) firstFrame.getRenderedImage();
+        IIOImage nextFrame;
+        try {
+            nextFrame = reader.readAll(1, null);
+        } catch (IndexOutOfBoundsException e) {
             return toImagePixelModule(bi, attrs);
         }
+        List<byte[]> frames = new ArrayList<>();
+        List<String> delayTimes = new ArrayList<>();
         BufferedImage rgb = convertPalettetoRGB(bi, null);
-        Raster raster = rgb.getRaster();
-        List<IIOImage> list = new ArrayList<>();
-        while (animatedGIF.hasNext()) {
-            list.add(animatedGIF.next());
-        }
-        int numFrames = list.size() + 1;
-        int rows = raster.getHeight();
-        int columns = raster.getWidth();
-        int frameLength = rows * columns * 3;
-        byte[] pixelData = new byte[numFrames * frameLength];
-        int offset = 0;
-        copyRGBPixelDataTo(raster, pixelData, offset);
+        frames.add(toRGBPixelData(rgb.getRaster()));
+        delayTimes.add(getDelayTime(getMetadata(firstFrame)));
         Graphics graphics = bi.getGraphics();
-        for (IIOImage frame : list) {
-            Node imageDescriptor = getImageDescriptor(frame.getMetadata());
-            NamedNodeMap imageDescriptorAttrs = imageDescriptor.getAttributes();
-            graphics.drawImage((BufferedImage) frame.getRenderedImage(),
-                    getIntAttribute(imageDescriptorAttrs, "imageLeftPosition", imageDescriptor),
-                    getIntAttribute(imageDescriptorAttrs, "imageTopPosition", imageDescriptor),
-                    null);
-            convertPalettetoRGB(bi, rgb);
-            copyRGBPixelDataTo(raster, pixelData, offset += frameLength);
+        try {
+            while (true) {
+                Node metadata = getMetadata(nextFrame);
+                mergeFrame(graphics, (BufferedImage) nextFrame.getRenderedImage(), metadata);
+                frames.add(toRGBPixelData(convertPalettetoRGB(bi, rgb).getRaster()));
+                delayTimes.add(getDelayTime(metadata));
+                nextFrame = reader.readAll(frames.size(), null);
+            }
+        } catch (IndexOutOfBoundsException ignore) {
         }
         graphics.dispose();
-        return toImagePixelModule(3, "RGB", numFrames, rows, columns, pixelData, attrs);
+        attrs = toImagePixelModule(3, "RGB", bi.getHeight(), bi.getWidth(), toPixeldata(frames), attrs);
+        attrs.setInt(Tag.NumberOfFrames, VR.IS, frames.size());
+        setFrameTimeVector(attrs, delayTimes);
+        return attrs;
     }
 
-    private static int getIntAttribute(NamedNodeMap attrs, String name, Node node) throws IIOInvalidTreeException {
-        Node attr = attrs.getNamedItem(name);
+    private static void mergeFrame(Graphics graphics, BufferedImage src, Node metadata)
+            throws IIOInvalidTreeException {
+        Node imageDescriptor = getChildNode(metadata, "ImageDescriptor");
+        graphics.drawImage(src,
+                getIntAttribute(imageDescriptor, "imageLeftPosition"),
+                getIntAttribute(imageDescriptor, "imageTopPosition"),
+                null);
+    }
+
+    private static Node getMetadata(IIOImage iioImage) {
+        return iioImage.getMetadata().getAsTree("javax_imageio_gif_image_1.0");
+    }
+
+    private static String getDelayTime(Node node) throws IIOInvalidTreeException {
+        return getStringAttribute(getChildNode(node, "GraphicControlExtension"), "delayTime");
+    }
+
+
+    private static String getStringAttribute(Node node, String name) throws IIOInvalidTreeException {
+        Node attr = node.getAttributes().getNamedItem(name);
         if (attr == null) {
             throw new IIOInvalidTreeException("Required attribute " + name + " not present!", node);
         }
+        return attr.getNodeValue();
+    }
+
+    private static int getIntAttribute(Node node, String name) throws IIOInvalidTreeException {
         try {
-            return Integer.parseInt(attr.getNodeValue());
+            return Integer.parseInt(getStringAttribute(node, name));
         } catch (NumberFormatException e) {
             throw new IIOInvalidTreeException("Bad value for " + node.getNodeName() + " attribute " + name + "!", node);
         }
     }
 
-    private static Node getImageDescriptor(IIOMetadata metadata) throws IIOInvalidTreeException {
-        Node root = metadata.getAsTree(metadata.getNativeMetadataFormatName());
+    private static Node getChildNode(Node root, String name) throws IIOInvalidTreeException {
         Node child = root.getFirstChild();
         while (child != null) {
-            if ("ImageDescriptor".equals(child.getLocalName())) {
+            if (name.equals(child.getLocalName())) {
                 return child;
             }
             child = child.getNextSibling();
         }
-        throw new IIOInvalidTreeException("Required child ImageDescriptor not present!", root);
+        throw new IIOInvalidTreeException("Required child " + name + " not present!", root);
+    }
+
+    private static byte[] toPixeldata(List<byte[]> frames) {
+        byte[] pixeldata = new byte[frames.get(0).length * frames.size()];
+        int pos = 0;
+        for (byte[] frame : frames) {
+            System.arraycopy(frame, 0, pixeldata, pos, frame.length);
+            pos += frame.length;
+        }
+        return pixeldata;
+    }
+
+    private static void setFrameTimeVector(Attributes attrs, List<String> delayTimes) {
+        String delayTime0 = delayTimes.get(0);
+        for (int i = 1; i < delayTimes.size(); i++) {
+            if (!delayTime0.equals(delayTimes.get(i))) {
+                attrs.setString(Tag.FrameTimeVector, VR.DS, toFrameTimes(delayTimes));
+                attrs.setInt(Tag.FrameIncrementPointer, VR.AT, Tag.FrameTimeVector);
+            }
+        }
+        attrs.setString(Tag.FrameTime, VR.DS, toFrameTime(delayTime0));
+        attrs.setInt(Tag.FrameIncrementPointer, VR.AT, Tag.FrameTimeVector);
+    }
+
+    private static String[] toFrameTimes(List<String> delayTimes) {
+        String[] frameTimes = new String[delayTimes.size()];
+        for (int i = 0; i < frameTimes.length; i++) {
+            frameTimes[i] = toFrameTime(delayTimes.get(i));
+        }
+        return frameTimes;
+    }
+
+    private static String toFrameTime(String delayTime) {
+        return "0".equals(delayTime) ? "0" : (delayTime + "0");
     }
 
     private static String toString(ColorSpace cs) {
@@ -330,18 +384,15 @@ public class BufferedImageUtils {
         return (ComponentSampleModel) sb;
     }
 
-    private static Attributes toImagePixelModule(int samples, String pmi, int numberOfFrames, int rows,  int columns,
+    private static Attributes toImagePixelModule(int samples, String pmi, int rows,  int columns,
             byte[] pixelData, Attributes attrs) {
         if (attrs == null) {
-            attrs = new Attributes(11);
+            attrs = new Attributes(13);
         }
         attrs.setInt(Tag.SamplesPerPixel, VR.US, samples);
         attrs.setString(Tag.PhotometricInterpretation, VR.CS, pmi);
         if (samples > 1) {
             attrs.setInt(Tag.PlanarConfiguration, VR.US, 0);
-        }
-        if (numberOfFrames > 1) {
-            attrs.setInt(Tag.NumberOfFrames, VR.IS, numberOfFrames);
         }
         attrs.setInt(Tag.Rows, VR.US, rows);
         attrs.setInt(Tag.Columns, VR.US, columns);

@@ -213,6 +213,8 @@ public class BufferedImageUtils {
         IIOImage nextFrame;
         try {
             nextFrame = reader.readAll(1, null);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new IOException("JDK-7132728: stringtable overflow in GIFImageReader", e);
         } catch (IndexOutOfBoundsException e) {
             return toImagePixelModule(bi, attrs);
         }
@@ -230,6 +232,8 @@ public class BufferedImageUtils {
                 delayTimes.add(getDelayTime(metadata));
                 nextFrame = reader.readAll(frames.size(), null);
             }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new IOException("JDK-7132728: stringtable overflow in GIFImageReader", e);
         } catch (IndexOutOfBoundsException ignore) {
         }
         graphics.dispose();

@@ -273,13 +273,13 @@ public class SAXWriter implements DicomInputHandler {
     }
 
     private void addAttributes(int tag, VR vr, String privateCreator) {
-        if (privateCreator != null)
-            tag &= 0xffff00ff;
         if (includeKeyword) {
             String keyword = ElementDictionary.keywordOf(tag, privateCreator);
             if (keyword != null && !keyword.isEmpty())
                 addAttribute("keyword", keyword);
         }
+        if (privateCreator != null)
+            tag &= 0xffff00ff;
         addAttribute("tag", TagUtils.toHexString(tag));
         if (privateCreator != null)
             addAttribute("privateCreator", privateCreator);

@@ -799,7 +799,7 @@ public class AttributesTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testAddFromIncompatibleCharacterSet() throws Exception {
+    public void testAddFromIncompatibleCharacterSet() {
         Attributes a = new Attributes();
         a.setString(Tag.SpecificCharacterSet, VR.CS, "ISO_IR 100");
         a.setBytes(Tag.PatientName, VR.PN, "Äneas^Rüdiger".getBytes(StandardCharsets.ISO_8859_1));
@@ -809,7 +809,7 @@ public class AttributesTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testAddIncompatibleCharacterSet() throws Exception {
+    public void testAddIncompatibleCharacterSet() {
         Attributes a = new Attributes();
         a.setNull(Tag.SpecificCharacterSet, VR.CS);
         Attributes b = new Attributes();
@@ -819,7 +819,7 @@ public class AttributesTest {
     }
 
     @Test
-    public void testAddFromCompatibleCharacterSet() throws Exception {
+    public void testAddFromCompatibleCharacterSet() {
         Attributes a = new Attributes();
         a.setBytes(Tag.PatientName, VR.PN, "Aeneas^Ruediger".getBytes(StandardCharsets.US_ASCII));
         Attributes b = new Attributes();
@@ -830,7 +830,7 @@ public class AttributesTest {
     }
 
     @Test
-    public void testAddCompatibleCharacterSet() throws Exception {
+    public void testAddCompatibleCharacterSet() {
         Attributes a = new Attributes();
         a.setString(Tag.SpecificCharacterSet, VR.CS, "ISO_IR 100");
         a.setBytes(Tag.PatientName, VR.PN, "Äneas^Rüdiger".getBytes(StandardCharsets.ISO_8859_1));

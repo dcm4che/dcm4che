@@ -56,6 +56,19 @@ public class IDWithIssuerTest {
     private static final String ISO = "ISO";
 
     @Test
+    public void escapedHL7Separators() {
+        IDWithIssuer pid = new IDWithIssuer("\\F\\\\S\\^^^\\R\\&\\E\\&\\T\\^\\S\\\\F\\");
+        Issuer issuer = pid.getIssuer();
+        assertEquals("|^", pid.getID());
+        assertEquals("~", issuer.getLocalNamespaceEntityID());
+        assertEquals("\\", issuer.getUniversalEntityID());
+        assertEquals("&", issuer.getUniversalEntityIDType());
+        assertEquals("^|", pid.getIdentifierTypeCode());
+        assertEquals("\\R\\&\\E\\&\\T\\", issuer.toString());
+        assertEquals("\\F\\\\S\\^^^\\R\\&\\E\\&\\T\\^\\S\\\\F\\", pid.toString());
+    }
+
+    @Test
     public void rootId_is_not_added_when_matching_id_is_already_there() {
         Attributes rootWithMainId = createIdWithNS(NS);
 

@@ -71,12 +71,12 @@ public class IDWithIssuer {
 
     public IDWithIssuer(String cx) {
         String[] ss = StringUtils.split(cx, '^');
-        this.id = ss[0];
+        this.id = HL7Separator.unescapeAll(ss[0]);
         if (ss.length > 3) {
             if (!ss[3].isEmpty())
                 this.setIssuer(new Issuer(ss[3], '&'));
             if (ss.length > 4 && !ss[4].isEmpty())
-                this.setIdentifierTypeCode(ss[4]);
+                this.setIdentifierTypeCode(HL7Separator.unescapeAll(ss[4]));
         }
     }
 
@@ -115,14 +115,14 @@ public class IDWithIssuer {
     @Override
     public String toString() {
         if (issuer == null && identifierTypeCode == null)
-            return id;
+            return HL7Separator.escapeAll(id);
         
-        StringBuilder sb = new StringBuilder(id);
+        StringBuilder sb = new StringBuilder(HL7Separator.escapeAll(id));
         sb.append("^^^");
         if (issuer != null)
             sb.append(issuer.toString('&'));
         if (identifierTypeCode != null)
-            sb.append('^').append(identifierTypeCode);
+            sb.append('^').append(HL7Separator.escapeAll(identifierTypeCode));
         return sb.toString();
     }
 

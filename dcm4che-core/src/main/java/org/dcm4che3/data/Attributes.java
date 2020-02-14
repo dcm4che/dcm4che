@@ -55,7 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Gunter Zeilinger (gunterze@protonmail.com)
  */
 public class Attributes implements Serializable {
 
@@ -2095,6 +2095,14 @@ public class Attributes implements Serializable {
         if (updatePolicy == UpdatePolicy.REPLACE)
             throw new IllegalArgumentException("updatePolicy:" + updatePolicy);
 
+        if (!isEmpty() &&
+                !isSpecificCharacterSetCompatible(other, include, exclude, fromIndex, toIndex, selection, updatePolicy))
+            throw new IllegalArgumentException("Specific Character Sets " +
+                    Arrays.toString(getSpecificCharacterSet().toCodes()) +
+                    " and " +
+                    Arrays.toString(other.getSpecificCharacterSet().toCodes()) +
+                    " not compatible");
+
         boolean toggleEndian = bigEndian != other.bigEndian;
         boolean modifiedToggleEndian = modified != null
                 && bigEndian != modified.bigEndian;
@@ -2187,6 +2195,38 @@ public class Attributes implements Serializable {
             numAdd++;
        }
         return numAdd != 0;
+    }
+
+    private boolean isSpecificCharacterSetCompatible(Attributes other,
+            int[] include, int[] exclude, int fromIndex, int toIndex,
+            Attributes selection, UpdatePolicy updatePolicy) {
+        return isUpdateSpecificCharacterSet(other, include, exclude, fromIndex, toIndex, selection, updatePolicy)
+                ? other.getSpecificCharacterSet().contains(getSpecificCharacterSet())
+                : getSpecificCharacterSet().contains(other.getSpecificCharacterSet());
+    }
+
+    private boolean isUpdateSpecificCharacterSet(Attributes other,
+            int[] include, int[] exclude, int fromIndex, int toIndex,
+            Attributes selection, UpdatePolicy updatePolicy) {
+        String[] oscs = other.getStrings(Tag.SpecificCharacterSet);
+        if (oscs == null)
+            return false;
+
+        if (updatePolicy != null)
+            switch (updatePolicy) {
+                case PRESERVE:
+                    return false;
+                case SUPPLEMENT:
+                    if (containsValue(Tag.SpecificCharacterSet))
+                        return false;
+                case MERGE:
+                    if (oscs.length == 0)
+                        return false;;
+            }
+
+        return (include == null || Arrays.binarySearch(include, fromIndex, toIndex, Tag.SpecificCharacterSet) >= 0)
+            && (exclude == null || Arrays.binarySearch(exclude, fromIndex, toIndex, Tag.SpecificCharacterSet) < 0)
+            && (selection == null || selection.contains(Tag.SpecificCharacterSet));
     }
 
     private void mergeOriginalAttributesSequence(Sequence src, Sequence dest) {

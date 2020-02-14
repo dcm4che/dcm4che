@@ -90,7 +90,7 @@ import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Gunter Zeilinger (gunterze@protonmail.com)
  */
 public class SpecificCharacterSet {
 
@@ -614,6 +614,10 @@ public class SpecificCharacterSet {
 
     public boolean containsASCII() {
         return codecs[0].containsASCII();
+    }
+
+    public boolean contains(SpecificCharacterSet other) {
+        return Arrays.equals(codecs, other.codecs) || (other.isASCII() || other == DEFAULT) && containsASCII();
     }
 
     public String toText(String s) {

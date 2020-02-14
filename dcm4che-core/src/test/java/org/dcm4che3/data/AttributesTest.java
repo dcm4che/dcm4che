@@ -50,12 +50,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import static org.junit.Assert.*;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Gunter Zeilinger (gunterze@protonmail.com)
  *
  */
 public class AttributesTest {
@@ -795,5 +796,48 @@ public class AttributesTest {
         Attributes attrs = new Attributes();
         attrs.setNull(0x00990010, VR.LO);
         assertTrue(new Attributes(attrs).contains(0x00990010));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddFromIncompatibleCharacterSet() throws Exception {
+        Attributes a = new Attributes();
+        a.setString(Tag.SpecificCharacterSet, VR.CS, "ISO_IR 100");
+        a.setBytes(Tag.PatientName, VR.PN, "Äneas^Rüdiger".getBytes(StandardCharsets.ISO_8859_1));
+        Attributes b = new Attributes();
+        b.setNull(Tag.PatientName, VR.PN);
+        b.addSelected(a, Tag.PatientName);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddIncompatibleCharacterSet() throws Exception {
+        Attributes a = new Attributes();
+        a.setNull(Tag.SpecificCharacterSet, VR.CS);
+        Attributes b = new Attributes();
+        b.setString(Tag.SpecificCharacterSet, VR.CS, "ISO_IR 100");
+        b.setBytes(Tag.PatientName, VR.PN, "Äneas^Rüdiger".getBytes(StandardCharsets.ISO_8859_1));
+        b.addAll(a);
+    }
+
+    @Test
+    public void testAddFromCompatibleCharacterSet() throws Exception {
+        Attributes a = new Attributes();
+        a.setBytes(Tag.PatientName, VR.PN, "Aeneas^Ruediger".getBytes(StandardCharsets.US_ASCII));
+        Attributes b = new Attributes();
+        b.setString(Tag.SpecificCharacterSet, VR.CS, "ISO_IR 100");
+        b.setNull(Tag.PatientName, VR.PN);
+        b.addSelected(a, Tag.PatientName);
+        assertEquals("Aeneas^Ruediger", b.getString(Tag.PatientName));
+    }
+
+    @Test
+    public void testAddCompatibleCharacterSet() throws Exception {
+        Attributes a = new Attributes();
+        a.setString(Tag.SpecificCharacterSet, VR.CS, "ISO_IR 100");
+        a.setBytes(Tag.PatientName, VR.PN, "Äneas^Rüdiger".getBytes(StandardCharsets.ISO_8859_1));
+        Attributes b = new Attributes();
+        b.setNull(Tag.PatientName, VR.PN);
+        b.addAll(a);
+        assertEquals("ISO_IR 100", b.getString(Tag.SpecificCharacterSet));
+        assertEquals("Äneas^Rüdiger", b.getString(Tag.PatientName));
     }
 }

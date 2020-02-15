@@ -2201,8 +2201,26 @@ public class Attributes implements Serializable {
             int[] include, int[] exclude, int fromIndex, int toIndex,
             Attributes selection, UpdatePolicy updatePolicy) {
         return isUpdateSpecificCharacterSet(other, include, exclude, fromIndex, toIndex, selection, updatePolicy)
-                ? other.getSpecificCharacterSet().contains(getSpecificCharacterSet())
-                : getSpecificCharacterSet().contains(other.getSpecificCharacterSet());
+                ? !containsNonASCIIStringValues() ||
+                    other.getSpecificCharacterSet().contains(getSpecificCharacterSet())
+                : !other.containsNonASCIIStringValues() ||
+                    getSpecificCharacterSet().contains(other.getSpecificCharacterSet());
+    }
+
+    private boolean containsNonASCIIStringValues() {
+        for (int i = 0; i < size; i++) {
+            Object val = values[i];
+            if (val instanceof Sequence) {
+                for (Attributes item : ((Sequence) val)) {
+                    if (item.containsNonASCIIStringValues()) {
+                        return true;
+                    }
+                }
+            } else if (val != Value.NULL && vrs[i].useSpecificCharacterSet()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isUpdateSpecificCharacterSet(Attributes other,

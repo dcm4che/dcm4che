@@ -2201,10 +2201,10 @@ public class Attributes implements Serializable {
             int[] include, int[] exclude, int fromIndex, int toIndex,
             Attributes selection, UpdatePolicy updatePolicy) {
         return isUpdateSpecificCharacterSet(other, include, exclude, fromIndex, toIndex, selection, updatePolicy)
-                ? !containsNonASCIIStringValues() ||
-                    other.getSpecificCharacterSet().contains(getSpecificCharacterSet())
-                : !other.containsNonASCIIStringValues() ||
-                    getSpecificCharacterSet().contains(other.getSpecificCharacterSet());
+                ? other.getSpecificCharacterSet().contains(getSpecificCharacterSet())
+                    || !containsNonASCIIStringValues()
+                : getSpecificCharacterSet().contains(other.getSpecificCharacterSet())
+                    || !other.containsNonASCIIStringValues();
     }
 
     private boolean containsNonASCIIStringValues() {

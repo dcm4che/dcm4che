@@ -214,7 +214,6 @@ public class StowRS {
                 && !Files.probeContentType(Paths.get((metadataFile = cl.getOptionValue("f")))).endsWith("xml"))
             throw new IllegalArgumentException("Metadata file extension not supported. Read -f option in stowrs help");
 
-        processFileType(files);
         tsuid = cl.hasOption("tsuid");
         pixelHeader = cl.hasOption("pixel-header");
         noApp = cl.hasOption("no-appn");
@@ -223,6 +222,7 @@ public class StowRS {
         bearer = cl.getOptionValue("bearer");
         vlPhotographicImage = cl.hasOption("xc");
         videoPhotographicImage = cl.hasOption("video");
+        processFileType(files);
         setContentAndAcceptType(cl);
     }
 

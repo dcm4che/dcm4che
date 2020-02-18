@@ -90,6 +90,7 @@ public class StowRS {
     private boolean noApp;
     private boolean pixelHeader;
     private static boolean vlPhotographicImage;
+    private static boolean videoPhotographicImage;
     private static String requestAccept;
     private static String requestContentType;
     private static String metadataFile;
@@ -156,6 +157,10 @@ public class StowRS {
                 .longOpt("xc")
                 .desc(rb.getString("xc"))
                 .build());
+        opts.addOption(Option.builder()
+                .longOpt("video")
+                .desc(rb.getString("video"))
+                .build());
         opts.addOption(Option.builder("a")
                 .longOpt("accept")
                 .hasArg()
@@ -217,6 +222,7 @@ public class StowRS {
         user = cl.getOptionValue("u");
         bearer = cl.getOptionValue("bearer");
         vlPhotographicImage = cl.hasOption("xc");
+        videoPhotographicImage = cl.hasOption("video");
         setContentAndAcceptType(cl);
     }
 
@@ -239,6 +245,18 @@ public class StowRS {
                 Tag.PixelData, 
                 MediaTypes.IMAGE_JP2,
                 vlPhotographicImage ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
+        PNG(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
+                Tag.PixelData,
+                MediaTypes.IMAGE_PNG,
+                vlPhotographicImage ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
+        GIF(videoPhotographicImage
+                ? UID.VideoPhotographicImageStorage
+                : vlPhotographicImage
+                    ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
+                Tag.PixelData,
+                MediaTypes.IMAGE_GIF,
+                vlPhotographicImage || videoPhotographicImage
+                        ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
         MPEG(UID.VideoPhotographicImageStorage, Tag.PixelData, MediaTypes.VIDEO_MPEG,
                 "vlPhotographicImageMetadata.xml"),
         MP4(UID.VideoPhotographicImageStorage, Tag.PixelData, MediaTypes.VIDEO_MP4,
@@ -256,7 +274,7 @@ public class StowRS {
         }
 
         public String getSampleMetadataResourceURL() {
-            return "resource:" + sampleMetadataFile;
+           return "resource:" + sampleMetadataFile;
         }
 
         public int getBulkdataTypeTag() {
@@ -378,6 +396,8 @@ public class StowRS {
                 break;
             case JPEG:
             case JP2:
+            case PNG:
+            case GIF:
             case MPEG:
             case MP4:
             case QUICKTIME:

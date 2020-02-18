@@ -15,8 +15,8 @@
     not send combination of files like pdfs and images in one request.
     Supported content types for bulkdata are application/pdf, text/xml (for
     CDA files), image/jpeg, video/mpeg, video/mp4, video/quicktime, image/jp2,
-    application/sla (for STL files), model/mtl (for MTL files) and model/obj
-    (for OBJ files). File names shall not contain spaces.
+    image/png, image/gif, application/sla (for STL files), model/mtl (for MTL
+    files) and model/obj (for OBJ files). File names shall not contain spaces.
     -
     Options:
      -a,--accept <arg>           Specify the value for Accept header : xml or
@@ -72,6 +72,10 @@
                                  server authentication.
         --url <url>              Specify the request URL.
      -V,--version                output version information and exit
+        --video                  Send gif file as Video Photographic Image
+                                 Storage by generating sample metadata from
+                                 etc/stowrs/vlPhotographicImageMetadata.xml
+                                 file.
         --xc                     Send image files as VL Photographic images by
                                  generating sample metadata from
                                  etc/stowrs/vlPhotographicImageMetadata.xml

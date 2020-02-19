@@ -840,4 +840,21 @@ public class AttributesTest {
         assertEquals("ISO_IR 100", b.getString(Tag.SpecificCharacterSet));
         assertEquals("Äneas^Rüdiger", b.getString(Tag.PatientName));
     }
+
+    @Test
+    public void testGetValuePrivateCreatorSh() {
+        Attributes dataset = new Attributes();
+
+        String shPrivateCreator = "shPrivateCreator";
+        int privateTag = 0x15030003;
+        String privateValue = "some private value";
+
+        int resolvedPrivateCreatorTag = 0x15030010;
+        int resolvedPrivateTag = 0x15031003;
+
+        dataset.setString(resolvedPrivateCreatorTag, VR.SH, shPrivateCreator);
+        dataset.setString(resolvedPrivateTag, VR.LO, privateValue);
+
+        assertEquals(privateValue, dataset.getString(shPrivateCreator, privateTag));
+    }
 }

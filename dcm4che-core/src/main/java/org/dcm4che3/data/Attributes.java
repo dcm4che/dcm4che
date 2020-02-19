@@ -415,7 +415,7 @@ public class Attributes implements Serializable {
             index = -index-1;
         while (index < size && (tags[index] & 0xffffff00) == group) {
             creatorTag = tags[index];
-            if (vrs[index] == VR.LO) {
+            if (vrs[index].isStringType()) {
                 Object creatorID = decodeStringValue(index);
                 if (privateCreator.equals(creatorID))
                     return creatorTag;
@@ -602,7 +602,7 @@ public class Attributes implements Serializable {
 
     private String privateCreatorAt(int index) {
         Object value;
-        return (index < 0 || vrs[index] != VR.LO || (value = decodeStringValue(index)) == Value.NULL)
+        return (index < 0 || !vrs[index].isStringType() || (value = decodeStringValue(index)) == Value.NULL)
             ? null
             : VR.LO.toString(value, false, 0, null);
     }
@@ -3407,7 +3407,7 @@ public class Attributes implements Serializable {
         if (index < 0)
             index = -index-1;
         while (index < size && (tags[index] & 0xffffff00) == group) {
-            if (vrs[index] == VR.LO) {
+            if (vrs[index].isStringType()) {
                 Object creatorID = decodeStringValue(index);
                 if (privateCreator.equals(creatorID))
                     return index;

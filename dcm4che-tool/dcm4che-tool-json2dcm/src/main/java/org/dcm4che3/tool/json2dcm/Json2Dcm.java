@@ -366,7 +366,10 @@ public class Json2Dcm {
         JSONReader reader = parseJSON(fname, dataset);
         Attributes fmi2 = reader.getFileMetaInformation();
         if (fmi2 != null)
-            fmi = fmi2;
+            if (fmi != null)
+                fmi.addAll(fmi2);
+            else
+                fmi = fmi2;
     }
 
     private static JSONReader parseJSON(String fname, Attributes attrs)

@@ -937,3 +937,10 @@ objectclass ( 1.2.40.0.13.1.15.4.4.6 NAME 'dcmCollection'
   SUP top STRUCTURAL
   MUST (
     cn  ))
+
+objectclass ( 1.2.40.0.13.1.15.5.4.1 NAME 'dcmTerminologyRoot'
+   DESC 'Root of the DICOM Devices Hierarchy'
+   SUP top
+   STRUCTURAL
+   MUST ( cn )
+   MAY ( description ) )

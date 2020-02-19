@@ -1516,7 +1516,11 @@ public class AuditLogger extends DeviceExtension {
             if (idleTimeout > 0) {
                 LOG.debug("Start Idle timeout of {} ms for {}", idleTimeout, sock);
                 try {
-                    idleTimer = conn.getDevice().schedule(
+                    Device device = conn.getDevice();
+                    if (device.getScheduledExecutor() == null) {
+                        device.setScheduledExecutor(Executors.newSingleThreadScheduledExecutor());
+                    }
+                    idleTimer = device.schedule(
                             new Runnable() {
                                 @Override
                                 public void run() {

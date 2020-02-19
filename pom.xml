@@ -209,7 +209,7 @@
     <repository>
       <id>www.dcm4che.org</id>
       <name>dcm4che Repository</name>
-      <url>https://maven.dcm4che.org</url>
+      <url>https://www.dcm4che.org/maven2</url>
     </repository>
     <repository>
       <id>nroduit-mvn-repo-master</id>

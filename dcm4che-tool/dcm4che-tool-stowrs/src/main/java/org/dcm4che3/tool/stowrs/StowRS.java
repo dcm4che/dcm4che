@@ -206,8 +206,9 @@ public class StowRS {
 
     private void doNecessaryChecks(CommandLine cl, List<String> files)
             throws Exception {
-        if (files.isEmpty())
-            throw new MissingArgumentException("No pixel data files or dicom files specified");
+        if (files.isEmpty() && !cl.hasOption("f"))
+            throw new MissingArgumentException(
+                    "Neither bulk data / dicom files specified nor metadata file specified for non bulk data type of objects");
         if ((url = cl.getOptionValue("url")) == null)
             throw new MissingOptionException("Missing url.");
         if (cl.hasOption("f")
@@ -303,6 +304,9 @@ public class StowRS {
     }
 
     private void processFileType(List<String> files) throws IOException {
+        if (files.isEmpty())
+            return;
+
         for (String file : files) 
             applyFunctionToFile(file, new StowRSFileFunction<Path>() {
                 @Override
@@ -360,7 +364,7 @@ public class StowRS {
     }
 
     private static void setContentAndAcceptType(CommandLine cl) {
-        if (fileContentType.equals(APPLN_DICOM)) {
+        if (fileContentType != null && fileContentType.equals(APPLN_DICOM)) {
             requestContentType = APPLN_DICOM;
             requestAccept = APPLN_DICOM_XML;
             return;
@@ -378,12 +382,16 @@ public class StowRS {
         throw new IllegalArgumentException("Unsupported type. Read -" + option + " option in stowrs help");
     }
 
-    private Attributes createMetadata(Path bulkdataFilePath, Attributes staticMetadata) throws IOException {
-        LOG.info("Supplementing file specific metadata.");
-        String contentLoc = "bulk" + UIDUtils.createUID();
+    private Attributes createMetadata(Attributes staticMetadata) {
         Attributes metadata = new Attributes(staticMetadata);
         supplementMissingUID(metadata, Tag.SOPInstanceUID);
         supplementType2Tags(metadata);
+        return metadata;
+    }
+
+    private Attributes supplementMetadataFromFile(Path bulkdataFilePath, Attributes metadata) {
+        LOG.info("Supplementing file specific metadata.");
+        String contentLoc = "bulk" + UIDUtils.createUID();
         metadata.setValue(fileType.getBulkdataTypeTag(), VR.OB, new BulkData(null, contentLoc, false));
         switch (fileType) {
             case PDF:
@@ -407,7 +415,7 @@ public class StowRS {
         return metadata;
     }
 
-    private void pixelMetadata(String contentLoc, File bulkdataFile, Attributes metadata) throws IOException {
+    private void pixelMetadata(String contentLoc, File bulkdataFile, Attributes metadata) {
         StowRSBulkdata stowRSBulkdata = new StowRSBulkdata(bulkdataFile.toPath());
         if (pixelHeader || tsuid || noApp) {
             CompressedPixelData compressedPixelData = CompressedPixelData.valueOf();
@@ -417,18 +425,24 @@ public class StowRS {
                 if (pixelHeader)
                     parser.getAttributes(metadata);
                 stowRSBulkdata.setParser(parser);
+            } catch (IOException e) {
+                LOG.info("Exception caught getting pixel data from file {}: {}", bulkdataFile, e.getMessage());
             }
         }
         contentLocBulkdata.put(contentLoc, stowRSBulkdata);
     }
 
-    private static Attributes createStaticMetadata()
-            throws Exception {
+    private static Attributes createStaticMetadata() throws Exception {
         LOG.info("Creating static metadata. Set defaults, if essential attributes are not present.");
-        Attributes metadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataResourceURL()));
-        addAttributesFromFile(metadata);
+        Attributes metadata;
+        if (fileType == null)
+            metadata = SAXReader.parse(StreamUtils.openFileOrURL(Paths.get(metadataFile).toString()));
+        else {
+            metadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataResourceURL()));
+            addAttributesFromFile(metadata);
+            supplementSOPClass(metadata, fileType.getSOPClassUID());
+        }
         CLIUtils.addAttributes(metadata, keys);
-        supplementSOPClass(metadata, fileType.getSOPClassUID());
         supplementMissingUIDs(metadata);
         return metadata;
     }
@@ -607,15 +621,19 @@ public class StowRS {
             throws Exception {
         if (requestContentType.equals(APPLN_DICOM_XML))
             writeXMLMetadataAndBulkdata(out, files, staticMetadata);
+
         else {
             try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
                 try (JsonGenerator gen = Json.createGenerator(bOut)) {
                     gen.writeStartArray();
+                    if (files.isEmpty())
+                        new JSONWriter(gen).write(createMetadata(staticMetadata));
+
                     for (String file : files)
                         applyFunctionToFile(file, new StowRSFileFunction<Path>() {
                             @Override
-                            public void apply(Path path) throws IOException {
-                                new JSONWriter(gen).write(createMetadata(path, staticMetadata));
+                            public void apply(Path path) {
+                                new JSONWriter(gen).write(supplementMetadataFromFile(path, createMetadata(staticMetadata)));
                             }
                         });
                     gen.writeEnd();
@@ -632,6 +650,9 @@ public class StowRS {
 
     private void writeXMLMetadataAndBulkdata(final OutputStream out, List<String> files, final Attributes staticMetadata)
             throws Exception {
+        if (files.isEmpty())
+            writeXMLMetadata(out, staticMetadata);
+
         for (String file : files) 
             applyFunctionToFile(file, new StowRSFileFunction<Path>() {
                 @Override
@@ -643,12 +664,22 @@ public class StowRS {
 
     private void writeXMLMetadataAndBulkdataForEach(OutputStream out, Attributes staticMetadata, Path bulkdataFilePath) {
         try {
-            Attributes metadata = createMetadata(bulkdataFilePath, staticMetadata);
+            Attributes metadata = supplementMetadataFromFile(bulkdataFilePath, createMetadata(staticMetadata));
             try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
                 SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
                 writeMetadata(out, bOut);
             }
             writeFile(((BulkData) metadata.getValue(fileType.getBulkdataTypeTag())).getURI(), out);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void writeXMLMetadata(OutputStream out, Attributes staticMetadata) {
+        Attributes metadata = createMetadata(staticMetadata);
+        try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
+            SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
+            writeMetadata(out, bOut);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

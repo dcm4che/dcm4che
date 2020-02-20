@@ -16,7 +16,11 @@
     Supported content types for bulkdata are application/pdf, text/xml (for
     CDA files), image/jpeg, video/mpeg, video/mp4, video/quicktime, image/jp2,
     image/png, image/gif, application/sla (for STL files), model/mtl (for MTL
-    files) and model/obj (for OBJ files). File names shall not contain spaces.
+    files) and model/obj (for OBJ files).
+    For metadata : Send single non bulkdata type of file by specifying a
+    metadata file for objects like Structured Reports, Presentation States
+    etc.
+    File names shall not contain spaces.
     -
     Options:
      -a,--accept <arg>           Specify the value for Accept header : xml or
@@ -89,6 +93,11 @@
     Example: stowrs --url http://localhost/stow/studies[/{StudyInstanceUID}]
     object1.dcm object2.dcm
     => Send stow request to stowRS Receiver with the given dicom files.
+    -
+    Example: stowrs -f sr-metadata.xml --url
+    http://localhost/stow/studies[/{StudyInstanceUID}]
+    => Send stow request to stowRS Receiver with the given metadata xml file
+    for a Structured Report.
     -
     Example: stowrs -t json -m StudyInstanceUID=1.2.3.4.5.6.7.8.9.10 --url
     http://localhost/stow/studies file1.pdf file2.pdf file3.pdf

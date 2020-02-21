@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Observable;
 import java.util.stream.Collectors;
 
@@ -254,8 +255,13 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                 completed.add(inst);
             else if ((storeStatus & 0xB000) == 0xB000)
                 warning.add(inst);
-            else
+            else {
                 failed.add(inst);
+                if (cmd.contains(Tag.ErrorComment)) {
+                    String errorComment = cmd.getString(Tag.ErrorComment);
+                    lastError = new DicomServiceException(storeStatus, errorComment);
+                }
+            }
 
             synchronized (outstandingRSPLock) {
                 if (--outstandingRSP == 0)
@@ -301,7 +307,9 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                     .map(i -> i.iuid)
                     .collect(Collectors.toList());
             rsp.addFailedUIDs(iuids);
-            rsp.addError(lastError);
+            if (Objects.nonNull(lastError)) {
+                rsp.addError(lastError);
+            }
         }
         if (!completed.isEmpty()) {
             List<String> iuids = completed.stream()

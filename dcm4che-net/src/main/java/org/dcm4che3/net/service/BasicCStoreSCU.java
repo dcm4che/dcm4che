@@ -43,7 +43,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Observable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.dcm4che3.data.Attributes;
@@ -76,7 +78,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     protected List<T> completed = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> warning = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> failed = Collections.synchronizedList(new ArrayList<T>());
-	protected Exception lastError;
+	protected AtomicReference<Exception> lastError = new AtomicReference<>();
     protected int outstandingRSP = 0;
     protected final Object outstandingRSPLock = new Object();
 
@@ -116,7 +118,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
 	
 	@Override
     public Throwable getLastError() {
-        return lastError;
+        return lastError.get();
     }
 
     @Override
@@ -151,7 +153,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                             "Unable to perform sub-operation on association to {}",
                             storeas.getRemoteAET(), e);
                     failed.add(inst);
-                    lastError = e;
+                    lastError.set(e);
                     while (iter.hasNext())
                         failed.add(iter.next());
                 }
@@ -182,7 +184,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                     UID.nameOf(inst.cuid), UID.nameOf(inst.tsuid),
                     storeas.getRemoteAET(), e);
             failed.add(inst);
-            lastError = e;
+            lastError.set(e);
             return;
         }
 
@@ -254,8 +256,13 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                 completed.add(inst);
             else if ((storeStatus & 0xB000) == 0xB000)
                 warning.add(inst);
-            else
+            else {
                 failed.add(inst);
+                if (cmd.contains(Tag.ErrorComment)) {
+                    String errorComment = cmd.getString(Tag.ErrorComment);
+                    lastError.set(new DicomServiceException(storeStatus, errorComment));
+                }
+            }
 
             synchronized (outstandingRSPLock) {
                 if (--outstandingRSP == 0)
@@ -301,7 +308,10 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                     .map(i -> i.iuid)
                     .collect(Collectors.toList());
             rsp.addFailedUIDs(iuids);
-            rsp.addError(lastError);
+            Exception error = lastError.get();
+            if (Objects.nonNull(error)) {
+                rsp.addError(error);
+            }
         }
         if (!completed.isEmpty()) {
             List<String> iuids = completed.stream()

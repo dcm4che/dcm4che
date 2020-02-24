@@ -45,7 +45,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Observable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -75,12 +74,13 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
 
     protected volatile int status = Status.Pending;
     protected int priority = 0;
-    protected int nInstances;
+    protected int nr_instances;
     protected List<T> completed = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> warning = Collections.synchronizedList(new ArrayList<T>());
     protected List<T> failed = Collections.synchronizedList(new ArrayList<T>());
 	protected AtomicReference<Exception> lastError = new AtomicReference<>();
-	protected CountDownLatch remaining;
+    protected int outstandingRSP = 0;
+    protected final Object outstandingRSPLock = new Object();
 
     @Override
     public int getStatus() {
@@ -123,8 +123,8 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
 
     @Override
     public int getRemaining() {
-        return nInstances -
-                (completed.size() + warning.size() + failed.size());
+        return (nr_instances - completed.size() - warning.size() - failed
+                .size());
     }
 
     @Override
@@ -137,10 +137,8 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         if (instances == null)
             throw new IllegalStateException("null Store Instances");
 
-        nInstances = instances.size();
+        nr_instances = instances.size();
 
-        // Initialize latch to the number of expected operations
-        remaining = new CountDownLatch(nInstances);
         try {
             for (Iterator<T> iter = instances.iterator(); iter.hasNext();) {
                 T inst = iter.next();
@@ -156,11 +154,8 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                             storeas.getRemoteAET(), e);
                     failed.add(inst);
                     lastError.set(e);
-                    while (iter.hasNext()) {
+                    while (iter.hasNext())
                         failed.add(iter.next());
-                        // We are not going to wait on these instances anymore
-                        remaining.countDown();
-                    }
                 }
             }
             waitForOutstandingCStoreRSP(storeas);
@@ -190,9 +185,6 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                     storeas.getRemoteAET(), e);
             failed.add(inst);
             lastError.set(e);
-
-            // Woops, we could not queue the operation. Let's not wait on it.
-            remaining.countDown();
             return;
         }
 
@@ -201,9 +193,9 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
 
     private void setFinalStatus() {
         
-        if (status != Status.Cancel) {
-            if (!failed.isEmpty()) {
-                if (failed.size() == nInstances)
+        if (status!=Status.Cancel) {
+            if (failed.size() > 0) {
+                if (failed.size() == nr_instances)
                     status = Status.UnableToPerformSubOperations;
                 else
                     status = Status.OneOrMoreFailures;
@@ -216,7 +208,10 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
 
     private void waitForOutstandingCStoreRSP(Association storeas) {
         try {
-            remaining.await();
+            synchronized (outstandingRSPLock) {
+                while (outstandingRSP > 0)
+                    outstandingRSPLock.wait();
+            }
         } catch (InterruptedException e) {
             LOG.warn("Failed to wait for outstanding RSP on association to {}",
                     storeas.getRemoteAET(), e);
@@ -238,6 +233,9 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         DimseRSPHandler rspHandler = new CStoreRSPHandler(messageID, inst);
         storeas.cstore(inst.cuid, inst.iuid, priority, dataWriter, tsuid,
                 rspHandler);
+        synchronized (outstandingRSPLock) {
+            outstandingRSP++;
+        }
         return messageID;
     }
 
@@ -266,8 +264,11 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                 }
             }
 
-            // One down, N-1 to go...
-            remaining.countDown();
+            synchronized (outstandingRSPLock) {
+                if (--outstandingRSP == 0)
+                    outstandingRSPLock.notify();
+            }
+            
             setChanged();
             notifyObservers(); // notify observers of received rsp
         }
@@ -275,11 +276,9 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         @Override
         public void onClose(Association as) {
             super.onClose(as);
-            // The association was closed. If there were pending transfers
-            // they won't be delivered anymore, so let's release any waiting
-            // threads.
-            while (remaining.getCount() > 0) {
-                remaining.countDown();
+            synchronized (outstandingRSPLock) {
+                outstandingRSP = 0;
+                outstandingRSPLock.notify();
             }
         }
     }

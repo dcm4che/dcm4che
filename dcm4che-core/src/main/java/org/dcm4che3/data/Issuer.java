@@ -157,6 +157,14 @@ public class Issuer implements Serializable {
         return value;
     }
 
+    public String unescapeDelimiters(){
+        return parseAndDeescapeDelimiters(toString());
+    }
+
+    public String escapeDelimiters(){
+        return escapeDelimiters(toString());
+    }
+
     private String emptyToNull(String s) {
         return (s == null || s.trim().isEmpty()) ? null : s;
     }

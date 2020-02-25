@@ -53,11 +53,11 @@ public class HL7SeparatorTest {
 
     @Test
     public void escapeAll() {
-        assertEquals("\\F\\\\S\\\\R\\\\E\\\\T\\", HL7Separator.escapeAll("|^~\\&"));
+        assertEquals("\\F\\\\S\\\\R\\\\T\\", HL7Separator.escapeAll("|^~&"));
     }
 
     @Test
     public void unescapeAll() {
-        assertEquals("|^~\\&", HL7Separator.unescapeAll("\\F\\\\S\\\\R\\\\E\\\\T\\"));
+        assertEquals("|^~&", HL7Separator.unescapeAll("\\F\\\\S\\\\R\\\\T\\"));
     }
 }

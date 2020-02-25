@@ -86,14 +86,11 @@ public class IDWithIssuer {
      * @param s a String value that will be used to initialize the IDWithIssuer class instance.
      */
     public IDWithIssuer(String cx) {
-        String[] ss = StringUtils.split(cx, '^');
-        this.id = HL7Separator.unescapeAll(ss[0]);
-        if (ss.length > 3) {
-            if (!ss[3].isEmpty())
-                this.setIssuer(new Issuer(ss[3], '&'));
-            if (ss.length > 4 && !ss[4].isEmpty())
-                this.setIdentifierTypeCode(HL7Separator.unescapeAll(ss[4]));
-        }
+        String[] ss = StringUtils.split(cx, delimiter);
+        this.id = parseAndDeescapeDelimiters(ss[0]);
+        this.setIdentifierTypeCode(ss.length > 4 ? parseAndDeescapeDelimiters(ss[4]) : null);
+        this.setIssuer(ss.length > 3 ? new Issuer(ss[3]) : null);
+        validate();
     }
 
     public IDWithIssuer withoutIssuer() {

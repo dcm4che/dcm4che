@@ -72,8 +72,7 @@ public enum HL7Separator {
         return FIELD.escape(
                 COMPONENT.escape(
                         SUBCOMPONENT.escape(
-                                REPETITION.escape(
-                                        ESCAPE.escape(s)))));
+                                REPETITION.escape(s))));
     }
 
     public static String unescapeAll(String s) {

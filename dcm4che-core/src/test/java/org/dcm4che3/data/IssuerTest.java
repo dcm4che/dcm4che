@@ -42,7 +42,6 @@ package org.dcm4che3.data;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class IssuerTest {
@@ -158,22 +157,6 @@ public class IssuerTest {
     public void validateNegativeScenario_WhereOnlyEntityIDProvided_ShouldThrowIllegalArgumentException() {
         new Issuer("&" + ENTITY_ID + "&");
         fail("Expected an IllegalArgumentException to be thrown!");
-    }
-
-    @Test
-    public void unescapeDelimitersToAmpersandTest() {
-        Issuer issuer = new Issuer(ALL3_WITHAMPERSANDS_ESCAPED);
-        String issuerUnescaped = issuer.unescapeDelimiters();
-
-        Assert.assertEquals(ALL3_WITHAMPERSANDS_UNESCAPED, issuerUnescaped);
-    }
-
-    @Test
-    public void unEscapeDelimitersFromAmpersandTest() {
-        Issuer issuer = new Issuer(ALL3_WITHAMPERSANDS_UNESCAPED);
-        String issuerEscaped = issuer.escapeDelimiters();
-
-        Assert.assertEquals(ALL3_WITHAMPERSANDS_ESCAPED, issuerEscaped);
     }
 
     private void validate(Issuer issuer, String expectedNamespace, String expectedEntityID,

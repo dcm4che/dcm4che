@@ -86,11 +86,18 @@ public class IDWithIssuer {
      * @param s a String value that will be used to initialize the IDWithIssuer class instance.
      */
     public IDWithIssuer(String cx) {
-        String[] ss = StringUtils.split(cx, delimiter);
-        this.id = parseAndDeescapeDelimiters(ss[0]);
-        this.setIdentifierTypeCode(ss.length > 4 ? parseAndDeescapeDelimiters(ss[4]) : null);
-        this.setIssuer(ss.length > 3 ? new Issuer(ss[3]) : null);
-        validate();
+        String[] ss = StringUtils.split(cx, '^');
+        this.id = HL7Separator.unescapeAll(ss[0]);
+        if (ss.length > 3) {
+            if (!ss[3].isEmpty())
+                this.setIssuer(new Issuer(ss[3], '&'));
+            if (ss.length > 4 && !ss[4].isEmpty())
+                this.setIdentifierTypeCode(HL7Separator.unescapeAll(ss[4]));
+        }
+    }
+
+    public IDWithIssuer withoutIssuer() {
+        return issuer == null ? this : new IDWithIssuer(id, (Issuer) null);
     }
 
     public final String getID() {
@@ -160,13 +167,16 @@ public class IDWithIssuer {
      */
     public String serializeForPersistence(char delim) {
         if (issuer == null && identifierTypeCode == null)
-            return escapeDelimiters(id);
-        StringBuilder sb = new StringBuilder(id);
-        sb.append(delim + delim + delim);
+            return HL7Separator.escapeAll(id);
+
+        StringBuilder sb = new StringBuilder(HL7Separator.escapeAll(id));
+        sb.append(delim).append(delim).append(delim);
+
         if (issuer != null)
             sb.append(issuer.serializeForPersistence());
         if (identifierTypeCode != null)
-            sb.append(delim).append(escapeDelimiters(identifierTypeCode));
+            sb.append(delim).append(HL7Separator.escapeAll(identifierTypeCode));
+
         return sb.toString();
     }
 

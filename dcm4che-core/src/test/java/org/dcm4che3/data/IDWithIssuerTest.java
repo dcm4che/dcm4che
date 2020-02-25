@@ -58,6 +58,18 @@ public class IDWithIssuerTest {
     public static final String IDESCAPED_IDENTIFIERTYPECODE_INCLUDINGISSUERINFO = ID_ESCAPEDDELIMITER_1 + "^^^"
             + IssuerTest.ALL3_WITHAMPERSANDS_UNESCAPED + "^" + IDENTIFIERTYPECODE1;
 
+    public void escapedHL7Separators() {
+        IDWithIssuer pid = new IDWithIssuer("\\F\\\\S\\^^^\\R\\&\\E\\&\\T\\^\\S\\\\F\\");
+        Issuer issuer = pid.getIssuer();
+        assertEquals("|^", pid.getID());
+        assertEquals("~", issuer.getLocalNamespaceEntityID());
+        assertEquals("\\", issuer.getUniversalEntityID());
+        assertEquals("&", issuer.getUniversalEntityIDType());
+        assertEquals("^|", pid.getIdentifierTypeCode());
+        assertEquals("\\R\\&\\E\\&\\T\\", issuer.toString());
+        assertEquals("\\F\\\\S\\^^^\\R\\&\\E\\&\\T\\^\\S\\\\F\\", pid.toString());
+    }
+
     @Test
     public void validatePositiveScenario_IDProvidedOnly_ShouldParseIDValueOnly() {
         IDWithIssuer idWithIssuer = new IDWithIssuer(ID1);

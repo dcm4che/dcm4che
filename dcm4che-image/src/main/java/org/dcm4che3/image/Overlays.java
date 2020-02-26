@@ -238,7 +238,8 @@ public class Overlays {
                 int y = y0 + ovlyIndex / ovlyColumns;
                 int x = x0 + ovlyIndex % ovlyColumns;
                 try {
-                    raster.setSample(x, y, 0, pixelValue);
+                    for ( int b = 0, len = raster.getNumBands() ; b < len ; b++ ) 
+                    	raster.setSample(x, y, b, pixelValue);
                 } catch (ArrayIndexOutOfBoundsException ignore) {}
             }
         }

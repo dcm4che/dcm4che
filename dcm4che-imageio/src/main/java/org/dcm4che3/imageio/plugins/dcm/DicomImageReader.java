@@ -38,7 +38,6 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
@@ -47,8 +46,8 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.io.EOFException;
 import java.io.Closeable;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -453,6 +452,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         checkIndex(frameIndex);
 
         WritableRaster raster;
+        ColorModel cmAfterDecompress = null;
         if (decompressor != null) {
             openiis();
             try {
@@ -463,33 +463,35 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 LOG.debug("Start decompressing frame #{}", (frameIndex + 1));
                 BufferedImage bi = decompressor.read(0, decompressParam(param));
                 LOG.debug("Finished decompressing frame #{}", (frameIndex + 1));
-                if (samples > 1 && bi.getColorModel().getColorSpace().getType() ==
-                        (pmiAfterDecompression.isYBR() ? ColorSpace.TYPE_YCbCr : ColorSpace.TYPE_RGB))
-                    return bi;
                 
                 raster = bi.getRaster();
+                cmAfterDecompress = bi.getColorModel();
             } finally {
                 closeiis();
             }
-        } else
+        } else {
             raster = (WritableRaster) readRaster(frameIndex, param);
-
+        }
         ColorModel cm;
+        int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
+        byte[][] overlayData = new byte[overlayGroupOffsets.length][];
+        for (int i = 0; i < overlayGroupOffsets.length; i++) {
+            overlayData[i] = extractOverlay(overlayGroupOffsets[i], raster);
+        }
         if (pmi.isMonochrome()) {
-            int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
-            byte[][] overlayData = new byte[overlayGroupOffsets.length][];
-            for (int i = 0; i < overlayGroupOffsets.length; i++) {
-                overlayData[i] = extractOverlay(overlayGroupOffsets[i], raster);
-            }
             cm = createColorModel(8, DataBuffer.TYPE_BYTE);
             SampleModel sm = createSampleModel(DataBuffer.TYPE_BYTE, false);
             raster = applyLUTs(raster, frameIndex, param, sm, 8);
-            for (int i = 0; i < overlayGroupOffsets.length; i++) {
-                applyOverlay(overlayGroupOffsets[i], 
-                        raster, frameIndex, param, 8, overlayData[i]);
-            }
         } else {
             cm = createColorModel(bitsStored, dataType);
+        }
+        for (int i = 0; i < overlayGroupOffsets.length; i++) {
+            applyOverlay(overlayGroupOffsets[i], 
+                    raster, frameIndex, param, 8, overlayData[i]);
+        }
+        if (!cm.isCompatibleRaster(raster))
+        {
+        	cm = cmAfterDecompress;
         }
         return new BufferedImage(cm, raster , false, null);
     }

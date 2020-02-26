@@ -28,6 +28,7 @@ public class AuditMessageEventHandler implements WorkHandler<AuditMessageEvent> 
             event.getLogger().write(event.getLogger().timeStamp(),event.getMessage(),clientName);
         } catch (Throwable e) {
             LOG.warn("could not send audit",e);
+            throw new IOException(event.getMessage().toString(), e);
         }
     }
 }

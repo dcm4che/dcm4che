@@ -334,11 +334,11 @@ public class AuditLogger extends DeviceExtension {
     @ConfigurableProperty(name = "dcmAuditMessageSupplement95Schema", defaultValue = "false")
     private boolean supplement95;
 
-    @ConfigurableProperty(name = "dicomInstalled")
-    private Boolean auditLoggerInstalled;
+    @ConfigurableProperty(name = "dicomInstalled", defaultValue = "false")
+    private boolean auditLoggerInstalled = false;
 
     @ConfigurableProperty(name = "dcmAuditIncludeInstanceUID")
-    private Boolean doIncludeInstanceUID = false;
+    private boolean doIncludeInstanceUID = false;
 
     @ConfigurableProperty(name = "dcmAuditLoggerSpoolDirectoryURI")
     private String spoolDirectoryURI;
@@ -637,30 +637,29 @@ public class AuditLogger extends DeviceExtension {
 
     public boolean isInstalled() {
         return device != null && device.isInstalled()
-                && (auditLoggerInstalled == null || auditLoggerInstalled.booleanValue());
+                && auditLoggerInstalled;
     }
 
-    public final Boolean getAuditLoggerInstalled() {
+    public final boolean getAuditLoggerInstalled() {
         return auditLoggerInstalled;
     }
 
-    public void setAuditLoggerInstalled(Boolean installed) {
-        if (installed != null && installed.booleanValue()
-                && device != null && !device.isInstalled())
+    public void setAuditLoggerInstalled(boolean installed) {
+        if (installed && device != null && !device.isInstalled())
             throw new IllegalStateException("owning device not installed");
         this.auditLoggerInstalled = installed;
     }
 
 
-    public Boolean isIncludeInstanceUID() {
+    public boolean isIncludeInstanceUID() {
         return doIncludeInstanceUID;
     }
 
-    public Boolean getDoIncludeInstanceUID() {
+    public boolean getDoIncludeInstanceUID() {
         return doIncludeInstanceUID;
     }
 
-    public void setDoIncludeInstanceUID(Boolean doIncludeInstanceUID) {
+    public void setDoIncludeInstanceUID(boolean doIncludeInstanceUID) {
         this.doIncludeInstanceUID = doIncludeInstanceUID;
     }
 
@@ -1517,7 +1516,11 @@ public class AuditLogger extends DeviceExtension {
             if (idleTimeout > 0) {
                 LOG.debug("Start Idle timeout of {} ms for {}", idleTimeout, sock);
                 try {
-                    idleTimer = conn.getDevice().schedule(
+                    Device device = conn.getDevice();
+                    if (device.getScheduledExecutor() == null) {
+                        device.setScheduledExecutor(Executors.newSingleThreadScheduledExecutor());
+                    }
+                    idleTimer = device.schedule(
                             new Runnable() {
                                 @Override
                                 public void run() {
@@ -1631,6 +1634,9 @@ public class AuditLogger extends DeviceExtension {
                 new AuditMessageEventHandler(PARALLEL_LOGGERS[0]),new AuditMessageEventHandler(PARALLEL_LOGGERS[1])) //
                 // clear payload of event in the ring buffer so the contained message, etc. can be GCed
                 .then(new ClearingObjectHandler());
+
+        // Add an Exception handler so we do not lose any Audit Messages
+        disruptorInstance.setDefaultExceptionHandler(new AuditMessageExceptionHandler());
 
         // Start the Disruptor, starts all threads running
         disruptorInstance.start();

@@ -1211,7 +1211,15 @@ public class Association {
         rspHandler.setPC(pc);
         addDimseRSPHandler(rspHandler);
         startTimeout(rspHandler.getMessageID(), rspTimeout);
-        encoder.writeDIMSE(pc, cmd, data);
+        try {
+            encoder.writeDIMSE(pc, cmd, data);
+        } catch (IOException | RuntimeException e) {
+            // In some scenarios, there might be a zombie thread
+            // waiting forever for a spot to write into the queue
+            // if we don't handle an exception here.
+            removeDimseRSPHandler(rspHandler.getMessageID());
+            throw e;
+        }
     }
 
     static int minZeroAsMax(int i1, int i2) {

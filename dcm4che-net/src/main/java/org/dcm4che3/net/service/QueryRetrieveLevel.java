@@ -38,12 +38,22 @@
 
 package org.dcm4che3.net.service;
 
+import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.IOD;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.ValidationResult;
 import org.dcm4che3.net.Status;
+import org.dcm4che3.util.StringUtils;
+import org.dcm4che3.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.text.MessageFormat;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public enum QueryRetrieveLevel {
     PATIENT,
@@ -74,6 +84,9 @@ public enum QueryRetrieveLevel {
     private static final VR[] UNIQUE_KEYS_VR = { VR.LO, VR.UI, VR.UI, VR.UI };
     private static final int[] UNIQUE_KEYS_VM = { 1, -1, -1, -1 };
 
+    private static final ElementDictionary DICT = ElementDictionary.getStandardElementDictionary();
+    private static final Logger LOG = LoggerFactory.getLogger(QueryRetrieveLevel.class);
+
     public static QueryRetrieveLevel valueOf(Attributes attrs,
             String[] qrLevels) throws DicomServiceException {
         ValidationResult result = new ValidationResult();
@@ -94,6 +107,50 @@ public enum QueryRetrieveLevel {
             QueryRetrieveLevel rootLevel, boolean relational)
             throws DicomServiceException {
         check(attrs.validate(retrieveKeysIOD(rootLevel, relational)));
+    }
+
+    public static QueryRetrieveLevel validateRetrieveIdentifier(Attributes keys, Set<QueryRetrieveLevel> qrLevels,
+            boolean relational, boolean lenient) throws DicomServiceException {
+        return validateIdentifier(keys, qrLevels, relational, lenient);
+    }
+
+    private static QueryRetrieveLevel validateIdentifier(Attributes keys, Set<QueryRetrieveLevel> qrLevels,
+             boolean relational, boolean lenient) throws DicomServiceException {
+        String value = keys.getString(Tag.QueryRetrieveLevel);
+        if (Objects.isNull(value)) {
+            throw missingAttribute(Tag.QueryRetrieveLevel);
+        }
+
+        QueryRetrieveLevel level;
+        try {
+            level = QueryRetrieveLevel.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            throw invalidAttributeValue(Tag.QueryRetrieveLevel, value);
+        }
+
+        if (!qrLevels.contains(level)) {
+            throw invalidAttributeValue(Tag.QueryRetrieveLevel, value);
+        }
+
+        UniqueKeyCheckFailureCollector collector = new UniqueKeyCheckFailureCollector();
+        for (QueryRetrieveLevel it : qrLevels) {
+            int keyIndex = Math.min(it.ordinal(), UNIQUE_KEYS.length - 1);
+            int key = UNIQUE_KEYS[keyIndex];
+            boolean multiple = UNIQUE_KEYS_VM[keyIndex] == -1;
+
+            if (it == level) {
+                checkUniqueKey(key, keys, false, false, multiple)
+                        .ifPresent(collector::add);
+                break;
+            }
+            checkUniqueKey(key, keys, relational, lenient, multiple)
+                    .ifPresent(collector::add);
+        }
+
+        if (!collector.isEmpty()) {
+            throw identifierDoesNotMatchSOPClass(collector.getFailureMessage(), collector.getTags());
+        }
+        return level;
     }
 
     protected IOD queryKeysIOD(QueryRetrieveLevel rootLevel, boolean relational) {
@@ -145,4 +202,41 @@ public enum QueryRetrieveLevel {
                     result.getErrorComment())
                 .setOffendingElements(result.getOffendingElements());
     }
+
+    private static Optional<UniqueKeyCheckFailure> checkUniqueKey(int key, Attributes attributes, boolean optional,
+                                                                  boolean lenient, boolean multiple) {
+        UniqueKeyCheckFailure failure = null;
+        String[] ids = attributes.getStrings(key);
+        if (Objects.isNull(ids) || ids.length == 0) {
+            if (!optional) {
+                if (lenient) {
+                    LOG.info("Missing %s %s in Query/Retrieve Identifier");
+                } else {
+                    failure = new UniqueKeyCheckFailure(UniqueKeyCheckFailure.FailureType.MISSING_ATTRIBUTE, key, null);
+                }
+            }
+        } else if (!multiple && ids.length > 1) {
+            failure = new UniqueKeyCheckFailure(UniqueKeyCheckFailure.FailureType.INVALID_ATTRIBUTE, key,
+                    StringUtils.concat(ids, '\\'));
+        }
+        return Optional.ofNullable(failure);
+    }
+
+    private static DicomServiceException missingAttribute(int missingTag) {
+        final String message = MessageFormat.format("Missing {0} {1}", DICT.keywordOf(missingTag),
+                TagUtils.toString(missingTag));
+        return identifierDoesNotMatchSOPClass(message, missingTag);
+    }
+
+    private static DicomServiceException invalidAttributeValue(int tag, String value) {
+        final String message = MessageFormat.format("Invalid {0} {1} - {2}", DICT.keywordOf(tag),
+                TagUtils.toString(tag), value);
+        return identifierDoesNotMatchSOPClass(message, Tag.QueryRetrieveLevel);
+    }
+
+    private static DicomServiceException identifierDoesNotMatchSOPClass(String comment, int... tags) {
+        return new DicomServiceException(Status.IdentifierDoesNotMatchSOPClass, comment)
+                .setOffendingElements(tags);
+    }
+
 }

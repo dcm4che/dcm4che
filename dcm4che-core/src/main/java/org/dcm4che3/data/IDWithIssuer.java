@@ -168,7 +168,6 @@ public class IDWithIssuer {
 
         StringBuilder sb = new StringBuilder(HL7Separator.escapeAll(id));
         sb.append(delim).append(delim).append(delim);
-
         if (issuer != null)
             sb.append(issuer.serializeForPersistence());
         if (identifierTypeCode != null)

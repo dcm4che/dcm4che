@@ -18,14 +18,16 @@ import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
+import java.nio.channels.ClosedChannelException;
 
 /**
- * Delegate to an underlying ImageInputStream.
+ * ImageInputSteam which delegates to another IIS.  The close() method is purposely not delegated
+ * so that the underlying IIS can be closed directly while the delegates are closed as needed.
  * @author Andrew Cowan (andrew.cowan@agfa.com)
  */
 public class DelegateImageInputStream implements ImageInputStream {
 
-    private final ImageInputStream iis;
+    private ImageInputStream iis;
 
     public DelegateImageInputStream(ImageInputStream iis) {
         this.iis = iis;
@@ -33,232 +35,242 @@ public class DelegateImageInputStream implements ImageInputStream {
 
     @Override
     public void setByteOrder(ByteOrder byteOrder) {
-        iis.setByteOrder(byteOrder);
+        iis().setByteOrder(byteOrder);
     }
 
     @Override
     public ByteOrder getByteOrder() {
-        return iis.getByteOrder();
+        return iis().getByteOrder();
     }
 
     @Override
     public int read() throws IOException {
-        return iis.read();
+        return iis().read();
     }
 
     @Override
     public int read(byte[] b) throws IOException {
-        return iis.read(b);
+        return iis().read(b);
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        return iis.read(b,off,len);
+        return iis().read(b,off,len);
     }
 
     @Override
     public void readBytes(IIOByteBuffer buf, int len) throws IOException {
-        iis.readBytes(buf,len);
+        iis().readBytes(buf,len);
     }
 
     @Override
     public boolean readBoolean() throws IOException {
-        return iis.readBoolean();
+        return iis().readBoolean();
     }
 
     @Override
     public byte readByte() throws IOException {
-        return iis.readByte();
+        return iis().readByte();
     }
 
     @Override
     public int readUnsignedByte() throws IOException {
-        return iis.readUnsignedByte();
+        return iis().readUnsignedByte();
     }
 
     @Override
     public short readShort() throws IOException {
-        return iis.readShort();
+        return iis().readShort();
     }
 
     @Override
     public int readUnsignedShort() throws IOException {
-        return iis.readUnsignedShort();
+        return iis().readUnsignedShort();
     }
 
     @Override
     public char readChar() throws IOException {
-        return iis.readChar();
+        return iis().readChar();
     }
 
     @Override
     public int readInt() throws IOException {
-        return iis.readInt();
+        return iis().readInt();
     }
 
     @Override
     public long readUnsignedInt() throws IOException {
-        return iis.readUnsignedInt();
+        return iis().readUnsignedInt();
     }
 
     @Override
     public long readLong() throws IOException {
-        return iis.readLong();
+        return iis().readLong();
     }
 
     @Override
     public float readFloat() throws IOException {
-        return iis.readFloat();
+        return iis().readFloat();
     }
 
     @Override
     public double readDouble() throws IOException {
-        return iis.readDouble();
+        return iis().readDouble();
     }
 
     @Override
     public String readLine() throws IOException {
-        return iis.readLine();
+        return iis().readLine();
     }
 
     @Override
     public String readUTF() throws IOException {
-        return iis.readUTF();
+        return iis().readUTF();
     }
 
     @Override
     public void readFully(byte[] b, int off, int len) throws IOException {
-        iis.readFully(b,off,len);
+        iis().readFully(b,off,len);
     }
 
     @Override
     public void readFully(byte[] b) throws IOException {
-        iis.readFully(b);
+        iis().readFully(b);
     }
 
     @Override
     public void readFully(short[] s, int off, int len) throws IOException {
-        iis.readFully(s,off,len);
+        iis().readFully(s,off,len);
     }
 
     @Override
     public void readFully(char[] c, int off, int len) throws IOException {
-        iis.readFully(c,off,len);
+        iis().readFully(c,off,len);
     }
 
     @Override
     public void readFully(int[] i, int off, int len) throws IOException {
-        iis.readFully(i,off,len);
+        iis().readFully(i,off,len);
     }
 
     @Override
     public void readFully(long[] l, int off, int len) throws IOException {
-        iis.readFully(l,off,len);
+        iis().readFully(l,off,len);
     }
 
     @Override
     public void readFully(float[] f, int off, int len) throws IOException {
-        iis.readFully(f,off,len);
+        iis().readFully(f,off,len);
     }
 
     @Override
     public void readFully(double[] d, int off, int len) throws IOException {
-        iis.readFully(d,off,len);
+        iis().readFully(d,off,len);
     }
 
     @Override
     public long getStreamPosition() throws IOException {
-        return this.iis.getStreamPosition();
+        return this.iis().getStreamPosition();
     }
 
     @Override
     public int getBitOffset() throws IOException {
-        return iis.getBitOffset();
+        return iis().getBitOffset();
     }
 
     @Override
     public void setBitOffset(int bitOffset) throws IOException {
-        iis.setBitOffset(bitOffset);
+        iis().setBitOffset(bitOffset);
     }
 
     @Override
     public int readBit() throws IOException {
-        return iis.readBit();
+        return iis().readBit();
     }
 
     @Override
     public long readBits(int numBits) throws IOException {
-        return iis.readBits(numBits);
+        return iis().readBits(numBits);
     }
 
     @Override
     public long length() throws IOException {
-        return iis.length();
+        return iis().length();
     }
 
     @Override
     public int skipBytes(int n) throws IOException {
-        return iis.skipBytes(n);
+        return iis().skipBytes(n);
     }
 
     @Override
     public long skipBytes(long n) throws IOException {
-        return iis.skipBytes(n);
+        return iis().skipBytes(n);
     }
 
     @Override
     public void seek(long pos) throws IOException {
-        iis.seek(pos);
+        iis().seek(pos);
     }
 
     @Override
     public void mark() {
-        iis.mark();
+        iis().mark();
     }
 
     @Override
     public void reset() throws IOException {
-        iis.reset();
+        iis().reset();
     }
 
     @Override
     public void flushBefore(long pos) throws IOException {
-        iis.flushBefore(pos);
+        iis().flushBefore(pos);
     }
 
     @Override
     public void flush() throws IOException {
-        iis.flush();
+        iis().flush();
     }
 
     @Override
     public long getFlushedPosition() {
-        return iis.getFlushedPosition();
+        return iis().getFlushedPosition();
     }
 
     @Override
     public boolean isCached() {
-        return iis.isCached();
+        return iis().isCached();
     }
 
     @Override
     public boolean isCachedMemory() {
-        return iis.isCachedMemory();
+        return iis().isCachedMemory();
     }
 
     @Override
     public boolean isCachedFile() {
-        return iis.isCachedFile();
+        return iis().isCachedFile();
     }
 
     @Override
     public void close() throws IOException {
-        // Do nothing:  preserve the underlying class.
+        // Destroy the delegate
+        this.iis = null;
     }
 
     @Override
     public String toString() {
         return "Delegate("+iis+")";
+    }
+
+
+    protected ImageInputStream iis() throws IllegalStateException {
+        if(iis == null) {
+            throw new IllegalStateException("Delegate is already closed.");
+        }
+
+        return this.iis;
     }
 }
 

@@ -48,8 +48,10 @@ import javax.imageio.stream.ImageInputStream;
 /**
  * ImageInputStream which does not close the underlying stream.
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @deprecated ImageInputStreams should always be closed.  If an independant delegate is required then wrap a
+ * DelegateImageInputStream with CLoseableImageInputStreamAdapter.
  */
+@Deprecated
 public class ImageInputStreamAdapter extends CloseableImageInputStreamAdapter {
 
     public ImageInputStreamAdapter(ImageInputStream iis) {

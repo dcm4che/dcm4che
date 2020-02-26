@@ -26,7 +26,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ServiceLoader;
 
 /**
  * Open an image input stream based on the type of the input object.
@@ -42,7 +41,7 @@ public class ServiceImageInputStreamLoader<T> implements ImageInputStreamLoader<
         }
 
         if (!isInputClassHandled(ImageInputStream.class)) {
-            IIORegistry.getDefaultInstance().registerServiceProvider(new DelegateInputStreamSpi());
+            IIORegistry.getDefaultInstance().registerServiceProvider(new DelegateImageInputStreamSpi());
         }
     }
 

@@ -43,7 +43,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- *
+ * InputStream delegate class which properly passes the close() method to the underlying IIS.
+ * This is critical to ensure that we close file channels when using try with resources syntax.
  * @author Andrew Cowan (andrew.cowan@agfa.com)
  */
 public class CloseableImageInputStreamAdapter extends InputStream {

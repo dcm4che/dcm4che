@@ -49,11 +49,11 @@ import java.util.Locale;
  * Wrap an existing image input stream and allow it to be used without closing the underlying input stream.
  * @author Andrew Cowan (andrew.cowan@agfa.com)
  */
-public class DelegateInputStreamSpi extends ImageInputStreamSpi {
+public class DelegateImageInputStreamSpi extends ImageInputStreamSpi {
     private static final String VENDOR = "org.dcm4che";
     private static final String VERSION = Implementation.getVersionName();
 
-    public DelegateInputStreamSpi() {
+    public DelegateImageInputStreamSpi() {
         super(VENDOR, VERSION, ImageInputStream.class);
     }
 

@@ -1,2 +1,2 @@
 org.dcm4che3.io.stream.FileURIImageInputStreamSpi
-org.dcm4che3.io.stream.DelegateInputStreamSpi
+org.dcm4che3.io.stream.DelegateImageInputStreamSpi

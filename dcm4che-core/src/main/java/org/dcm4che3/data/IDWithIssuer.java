@@ -93,6 +93,10 @@ public class IDWithIssuer {
         validate();
     }
 
+    public IDWithIssuer withoutIssuer() {
+        return issuer == null ? this : new IDWithIssuer(id, (Issuer) null);
+    }
+
     public final String getID() {
         return id;
     }
@@ -160,13 +164,15 @@ public class IDWithIssuer {
      */
     public String serializeForPersistence(char delim) {
         if (issuer == null && identifierTypeCode == null)
-            return escapeDelimiters(id);
-        StringBuilder sb = new StringBuilder(id);
+            return HL7Separator.escapeAll(id);
+
+        StringBuilder sb = new StringBuilder(HL7Separator.escapeAll(id));
         sb.append(delim).append(delim).append(delim);
         if (issuer != null)
             sb.append(issuer.serializeForPersistence());
         if (identifierTypeCode != null)
-            sb.append(delim).append(escapeDelimiters(identifierTypeCode));
+            sb.append(delim).append(HL7Separator.escapeAll(identifierTypeCode));
+
         return sb.toString();
     }
 

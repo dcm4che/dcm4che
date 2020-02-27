@@ -42,28 +42,54 @@ import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.DatasetWithFMI;
+import org.dcm4che3.imageio.metadata.BulkDataDicomImageAccessor;
+import org.dcm4che3.imageio.metadata.DicomImageAccessor;
 import org.w3c.dom.Node;
 
 /**
+ * Class that encapsulates the metadata for the imaging data:  this includes the DICOM attributes, as well as providing
+ * access to the pixel data.  Different strategies for loading pixel data can be supported by providing different subclasses.
+ *
+ * <p/>
+ *
+ * The default implementation assumes that the data is already available from the Attributes.  Implementations can
+ * subclass this implementation to provide different strategies for reading bulk data and pixel data.
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class DicomMetaData extends IIOMetadata {
 
-    private final Attributes fileMetaInformation;
-    private final Attributes attributes;
+    private final DicomImageAccessor accessor;
 
-    public DicomMetaData(Attributes fileMetaInformation, Attributes attributes) {
-        this.fileMetaInformation = fileMetaInformation;
-        this.attributes = attributes;
+
+    /**
+     * Generate a DicomMetaData instance which uses the indicated {@link DicomImageAccessor} to read
+     * data for image reading.
+     */
+    public DicomMetaData(DicomImageAccessor dicomImageAccessor) {
+        this.accessor = dicomImageAccessor;
     }
 
+    /**
+     * Generate a DicomMetaData instance which points at a fully defined BulkData object or in-memory data.
+     */
+    public DicomMetaData(Attributes fileMetaInformation, Attributes attributes) {
+        this(new BulkDataDicomImageAccessor(null, new DatasetWithFMI(fileMetaInformation, attributes)));
+    }
+
+
     public final Attributes getFileMetaInformation() {
-        return fileMetaInformation;
+        return this.accessor.getFileMetaInformation();
     }
 
     public final Attributes getAttributes() {
-        return attributes;
+        return this.accessor.getAttributes();
+    }
+
+    public final DicomImageAccessor getAccessor() {
+        return this.accessor;
     }
 
     @Override
@@ -86,5 +112,4 @@ public class DicomMetaData extends IIOMetadata {
     public void reset() {
         throw new UnsupportedOperationException();
     }
-
 }

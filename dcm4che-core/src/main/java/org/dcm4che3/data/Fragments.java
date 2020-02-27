@@ -256,4 +256,21 @@ public class Fragments extends ArrayList<Object> implements Value {
         }
     }
 
+
+
+    /**
+     * Determine the length of an object found in the BulkData
+     */
+    public static long length(Object value) {
+        long length;
+        if(value == Value.NULL) {
+            length = 0;
+        } else if(value instanceof BulkData) {
+            length = ((BulkData) value).length();
+        } else {
+            length = ((byte[]) value).length;
+        }
+        return length;
+    }
+
 }

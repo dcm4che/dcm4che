@@ -39,6 +39,7 @@
 
 package org.dcm4che3.imageio.codec;
 
+import org.dcm4che.test.data.TestData;
 import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
@@ -51,11 +52,11 @@ import static org.junit.Assert.*;
 
 public class StreamDecompressorTest {
 
-    private static final String US_MF_RLE = "src/test/data/US-PAL-8-10x-echo";
+    private static final TestData US_MF_RLE =new TestData("US-PAL-8-10x-echo");
 
     @Test
     public void testDecompress() throws Exception {
-        File srcFile = new File(US_MF_RLE);
+        File srcFile = US_MF_RLE.toFile();
         File outFile = new File("target", srcFile.getName());
         DicomInputStream dis = null;
         DicomOutputStream dos = null;

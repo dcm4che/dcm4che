@@ -44,22 +44,18 @@ import java.util.List;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.VR;
+import org.dcm4che3.data.*;
 import org.dcm4che3.util.ByteUtils;
 
 /**
-  * Treats a specified portion of an image input stream as it's own input stream.  Can handle open-ended
-  * specified sub-regions by specifying a -1 frame, which will treat all fragments as though they are part
-  * of the segment, and will look for new segments in the DICOM original data once the first part
-  * is read past. 
-  * @author Gunter Zeilinger <gunterze@gmail.com>
-  * @author Bill Wallace <wayfarer3130@gmail.com>
-  */
+ * Treats a specified portion of an image input stream as it's own input stream.  Can handle open-ended
+ * specified sub-regions by specifying a -1 frame, which will treat all fragments as though they are part
+ * of the segment, and will look for new segments in the DICOM original data once the first part
+ * is read past.
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Bill Wallace <wayfarer3130@gmail.com>
+ */
 public class SegmentedImageInputStream extends ImageInputStreamImpl {
-
     private final ImageInputStream stream;
     private int curSegment=0;
     private int firstSegment=1, lastSegment=Integer.MAX_VALUE;
@@ -67,19 +63,22 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
     private long curSegmentEnd=-1;
     private final List<Object> fragments;
     private byte[] byteFrag;
-    
+
 
     /** Create a segmented input stream, that updates the bulk data entries as required, frameIndex
      * of -1 means the entire object/value.
      */
-    public SegmentedImageInputStream(ImageInputStream stream,
-            Fragments pixeldataFragments, int frameIndex) throws IOException {
-        if( frameIndex==-1 ) {
-            frameIndex = 0;
-        } else {
-            firstSegment = frameIndex+1;
-            lastSegment = frameIndex+2;
+    public SegmentedImageInputStream(ImageInputStream stream, Fragments pixeldataFragments, int frameIndex) throws IOException {
+        if( frameIndex >= 0 ) {
+            firstSegment = frameIndex + 1;
+            lastSegment = frameIndex + 2;
         }
+
+        if(!isValidOffsetTable(pixeldataFragments)) {
+            firstSegment--;
+            lastSegment--;
+        }
+
         this.fragments = pixeldataFragments;
         this.stream = stream;
         this.curSegment = frameIndex;
@@ -90,10 +89,23 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
         fragments = new Fragments(null, Tag.PixelData, VR.OB, false, 16);
         if( !singleFrame ) {
             lastSegment = 2;
-        } 
+        }
         fragments.add(new byte[0]);
         fragments.add(new BulkData("pixelData://",  streamPosition, length, false));
         stream = iis;
+        seek(0);
+    }
+
+    /** Just read from the raw data segment - this gets converted to an in-memory fragments object,
+     * which is then handled as a single fragment, with no basic offset table. Basically just an easy
+     * way to get an image input stream on a byte array.
+     */
+    public SegmentedImageInputStream(byte[] data) throws IOException {
+        stream = null;
+        fragments = new Fragments(VR.OB,false,2);
+        fragments.add(new byte[0]);
+        fragments.add(data);
+        lastSegment = 2;
         seek(0);
     }
 
@@ -117,7 +129,7 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
                         bulkLength = byteFrag.length;
                         bulkOffset = beforePos;
                     }
-                    
+
                 }
             }
             if( bulkOffset==-1 || bulkLength==-1 ) {
@@ -134,7 +146,7 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
                 return;
             }
             long deltaInEnd = pos-beforePos;
-            beforePos += bulkLength & 0xFFFFFFFFl;            
+            beforePos += bulkLength & 0xFFFFFFFFl;
             if (pos < beforePos) {
                 curSegment = i;
                 curSegmentEnd = beforePos;
@@ -155,6 +167,7 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
             int bulkLength = -1;
             synchronized(fragments) {
                 if( i < fragments.size() ) {
+                    // NOTE:  need to be able handle byte[] ... maybe we need to just have a simple set of tools.
                     bulk = (BulkData) fragments.get(i);
                     bulkOffset = bulk.offset();
                     bulkLength = bulk.length();
@@ -176,7 +189,7 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
 
     BulkData readBulkAt(long testOffset, int at) throws IOException {
         byte[] data = new byte[8];
-        stream.seek(testOffset);        
+        stream.seek(testOffset);
         int size = stream.read(data);
         if( size<8 ) return null;
         int tag =ByteUtils.bytesToTagLE(data, 0);
@@ -222,12 +235,12 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
 
         if (streamPos < curSegmentEnd)
             return true;
-        
+
         seek(streamPos);
 
         if (curSegment < 0 || curSegment >= lastSegment)
             return false;
-        
+
         return true;
     }
 
@@ -257,4 +270,62 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
             return bulk.getSegmentEnd();
         }
     }
+
+    public long getOffsetPostPixelData() throws IOException {
+        long ret = getLastSegmentEnd();
+        if( ret!=-1 ) {
+            return ret+8;
+        }
+        // Support up to 1024 additional fragments of a single image.
+        updateBulkData(fragments.size()+1025);
+        ret = getLastSegmentEnd();
+        return ret+8;
+    }
+
+    /** Gets the position/offsets of the fragments associated with this input, may read/seek to the end of the stream to do so.  Returns null if the fragments are not BulkData instances */
+    public long[] getImageInputStreamOffsetLength() throws IOException {
+        seek(0xFFFFFFFFFFFFl);
+        long[] ret = new long[2*(lastSegment-firstSegment)];
+        for(int seg=firstSegment; seg<lastSegment; seg++) {
+            Object fragment = fragments.get(seg);
+            if( !(fragment instanceof BulkData) ) return null;
+            BulkData bulk = (BulkData) fragment;
+            ret[seg*2] = bulk.offset();
+            ret[seg*2+1] = bulk.longLength();
+        }
+        return ret;
+    }
+
+
+    /**
+     * Determine the length of the total segmented stream.
+     */
+    @Override
+    public long length() {
+        long length = 0;
+        for(int i = firstSegment;i<Math.min(lastSegment,fragments.size());i++) {
+            Object fragment = fragments.get(i);
+            length += Fragments.length(fragment);
+        }
+
+        return length;
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        this.stream.close();
+    }
+
+    /**
+     * Some modalities generate bad data which put pixel data in the first segement of an encapsulated image.  This
+     * situation is easy to spot by checking the size of the first sequence item.
+     */
+    protected boolean isValidOffsetTable(Fragments pixeldataFragments) {
+        if(pixeldataFragments.isEmpty()) return false;
+
+        long length = Fragments.length(pixeldataFragments.get(0));
+        return length == 0 || length == 4 * (pixeldataFragments.size() -1);
+    }
+
 }

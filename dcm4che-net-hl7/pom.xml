@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.3.9-SNAPSHOT</version>
+    <version>3.3.9-METADATA-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-net-hl7</artifactId>

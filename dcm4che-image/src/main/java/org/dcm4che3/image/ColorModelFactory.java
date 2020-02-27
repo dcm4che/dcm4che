@@ -90,7 +90,7 @@ public class ColorModelFactory {
                 dataType);
     }
 
-    public static ColorModel createPaletteColorModel(int bits, int dataType,
+    public static PaletteColorModel createPaletteColorModel(int bits, int dataType,
             Attributes ds) {
         return new PaletteColorModel(bits, dataType, createRGBColorSpace(ds), ds);
     }

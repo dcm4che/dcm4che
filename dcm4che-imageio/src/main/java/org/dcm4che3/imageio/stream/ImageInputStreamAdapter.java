@@ -38,62 +38,28 @@
 
 package org.dcm4che3.imageio.stream;
 
+import org.dcm4che3.io.stream.CloseableImageInputStreamAdapter;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.imageio.stream.ImageInputStream;
 
 /**
+ * ImageInputStream which does not close the underlying stream.
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @deprecated ImageInputStreams should always be closed.  If an independant delegate is required then wrap a
+ * DelegateImageInputStream with CLoseableImageInputStreamAdapter.
  */
-public class ImageInputStreamAdapter extends InputStream {
-
-    private final ImageInputStream iis;
-
-    private long markedPos;
-
-    private IOException markException;
+@Deprecated
+public class ImageInputStreamAdapter extends CloseableImageInputStreamAdapter {
 
     public ImageInputStreamAdapter(ImageInputStream iis) {
-        this.iis = iis;
+        super(iis);
     }
 
     @Override
-    public int read() throws IOException {
-        return iis.read();
+    public void close() throws IOException {
+        // Do nothing:  we want to keep the underlying IIS open.
     }
-
-    @Override
-    public synchronized void mark(int readlimit) {
-        try {
-            this.markedPos = iis.getStreamPosition();
-            this.markException = null;
-        } catch (IOException e) {
-            this.markException = e;
-        }
-    }
-
-    @Override
-    public boolean markSupported() {
-        return true;
-    }
-
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        return iis.read(b, off, len);
-    }
-
-    @Override
-    public synchronized void reset() throws IOException {
-        if (markException != null)
-            throw markException;
-        iis.seek(markedPos);
-    }
-
-    @Override
-    public long skip(long n) throws IOException {
-        return iis.skipBytes((int) n);
-    }
-
 }

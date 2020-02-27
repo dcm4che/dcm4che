@@ -39,26 +39,36 @@
 package org.dcm4che3.data;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.io.stream.BulkURIImageInputStream;
+import org.dcm4che3.io.stream.ImageInputStreamLoader;
+import org.dcm4che3.io.stream.ServiceImageInputStreamLoader;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.stream.ImageInputStream;
 
 /**
+ * Value that references it's content by URI.
+ * @author Andrew Cowan <awcowan@gmail.com>
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Bill Wallace <wayfarer3130@gmail.com>
  */
 public class BulkData implements Value {
+    private static final Logger LOG = LoggerFactory.getLogger(BulkData.class);
+
+    private static final ImageInputStreamLoader LOADER = new ServiceImageInputStreamLoader<>();
 
     public static final int MAGIC_LEN = 0xfbfb;
 
@@ -125,6 +135,15 @@ public class BulkData implements Value {
     public String getURI() {
         return uri;
     }
+
+    public URI toURI() {
+        return URI.create(getURI());
+    }
+
+    public URI toFileURI() {
+        return URI.create(uriWithoutQuery());
+    }
+
 
     /**
      * Returns a {@code BulkData} instance combining all {@code BulkData} instances in {@code bulkDataFragments}.
@@ -256,7 +275,7 @@ public class BulkData implements Value {
 
     private String appendQuery(String uri, long[] offsets, int[] lengths) {
         StringBuilder sb = new StringBuilder(uri);
-        sb.append( "?offsets=");
+        sb.append("?offsets=");
         for (long offset : offsets)
             sb.append(offset).append(',');
         sb.setLength(sb.length()-1);
@@ -333,17 +352,16 @@ public class BulkData implements Value {
         return uri.substring(0, uriPathEnd);
     }
 
-    public InputStream openStream() throws IOException {
+    public ImageInputStream openImageInputStream() throws IOException {
         if (uri == null)
             throw new IllegalStateException("uri: null");
- 
-        if (!uri.startsWith("file:"))
-            return new URL(uri).openStream();
 
-        InputStream in = new FileInputStream(getFile());
-        StreamUtils.skipFully(in, offset);
-        return in;
+        ImageInputStream iis = LOADER.openStream(this.toURI());
+        return new BulkURIImageInputStream(iis, this.offset, this.length);
+    }
 
+    public InputStream openStream() throws IOException {
+        return StreamUtils.toInputStream(openImageInputStream());
     }
 
     @Override
@@ -367,32 +385,31 @@ public class BulkData implements Value {
         if (length == 0)
             return ByteUtils.EMPTY_BYTES;
 
-        InputStream in = openStream();
-        try {
+        try (ImageInputStream iis = openImageInputStream()){
             byte[] b = new byte[length];
-            StreamUtils.readFully(in, b, 0, b.length);
+            iis.readFully(b);
             if (this.bigEndian != bigEndian) {
                 vr.toggleEndian(b, false);
             }
             return b;
-        } finally {
-            in.close();
         }
 
     }
 
     @Override
     public void writeTo(DicomOutputStream out, VR vr) throws IOException {
-        InputStream in = openStream();
-        try {
-            if (this.bigEndian != out.isBigEndian())
+        // Must open the URI properly:
+        try (InputStream in  = openStream()) {
+            if (this.bigEndian != out.isBigEndian()) {
                 StreamUtils.copy(in, out, length, vr.numEndianBytes());
-            else
+            }
+            else {
                 StreamUtils.copy(in, out, length);
-            if ((length & 1) != 0)
+            }
+
+            if ((length & 1) != 0) {
                 out.write(vr.paddingByte());
-        } finally {
-            in.close();
+            }
         }
     }
 

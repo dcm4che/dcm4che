@@ -142,6 +142,10 @@ public class Issuer implements Serializable {
         }
     }
 
+    public String parseAndUnescape(){
+        return parseAndDeescapeDelimiters(toString());
+    }
+
     private String parseAndDeescapeDelimiters(String s) {
         String value = emptyToNull(s);
         if (value != null && value.contains(escapedDelimiter)) {

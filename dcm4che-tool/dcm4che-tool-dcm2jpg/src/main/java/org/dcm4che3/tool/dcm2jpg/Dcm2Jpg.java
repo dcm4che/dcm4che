@@ -38,6 +38,17 @@
 
 package org.dcm4che3.tool.dcm2jpg;
 
+import org.apache.commons.cli.*;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.image.BufferedImageUtils;
+import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.SafeClose;
+
+import javax.imageio.*;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.File;
@@ -48,31 +59,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageOutputStream;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PatternOptionBuilder;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.image.BufferedImageUtils;
-import org.dcm4che3.image.PaletteColorModel;
-import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.SafeClose;
-
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Gunter Zeilinger (gunterze@protonmail.com)
  */
 public class Dcm2Jpg {
 
@@ -94,6 +82,7 @@ public class Dcm2Jpg {
     private ImageWriteParam imageWriteParam;
     private int overlayActivationMask = 0xffff;
     private int overlayGrayscaleValue = 0xffff;
+    private int overlayRGBValue = 0xffffff;
 
     public void initImageWriter(String formatName, String suffix,
             String clazz, String compressionType, Number quality) {
@@ -161,6 +150,10 @@ public class Dcm2Jpg {
 
     public void setOverlayGrayscaleValue(int overlayGrayscaleValue) {
         this.overlayGrayscaleValue = overlayGrayscaleValue;
+    }
+
+    public void setOverlayRGBValue(int overlayRGBValue) {
+        this.overlayRGBValue = overlayRGBValue;
     }
 
     @SuppressWarnings("static-access")
@@ -249,6 +242,12 @@ public class Dcm2Jpg {
                 .desc(rb.getString("ovlygray"))
                 .longOpt("ovlygray")
                 .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("value")
+                .desc(rb.getString("ovlyrgb"))
+                .longOpt("ovlyrgb")
+                .build());
         opts.addOption(null, "uselut", false, rb.getString("uselut"));
         opts.addOption(null, "noauto", false, rb.getString("noauto"));
         opts.addOption(null, "lsE", false, rb.getString("lsencoders"));
@@ -297,6 +296,9 @@ public class Dcm2Jpg {
             if (cl.hasOption("ovlygray"))
                 main.setOverlayGrayscaleValue(
                         parseHex(cl.getOptionValue("ovlygray")));
+            if (cl.hasOption("ovlyrgb"))
+                main.setOverlayRGBValue(
+                        parseHex(cl.getOptionValue("ovlyrgb").substring(1)));
             main.setPreferWindow(!cl.hasOption("uselut"));
             main.setAutoWindowing(!cl.hasOption("noauto"));
             main.setPresentationState(
@@ -396,6 +398,7 @@ public class Dcm2Jpg {
         param.setPresentationState(prState);
         param.setOverlayActivationMask(overlayActivationMask);
         param.setOverlayGrayscaleValue(overlayGrayscaleValue);
+        param.setOverlayRGBValue(overlayRGBValue);
         return param;
     }
 

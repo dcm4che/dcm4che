@@ -38,15 +38,9 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
+import java.awt.*;
 import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.Raster;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
+import java.awt.image.*;
 import java.io.EOFException;
 import java.io.Closeable;
 import java.io.File;
@@ -452,6 +446,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         readMetadata();
         checkIndex(frameIndex);
 
+        BufferedImage bi = null;
         WritableRaster raster;
         if (decompressor != null) {
             openiis();
@@ -461,37 +456,46 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 iisOfFrame.length();
                 decompressor.setInput(iisOfFrame);
                 LOG.debug("Start decompressing frame #{}", (frameIndex + 1));
-                BufferedImage bi = decompressor.read(0, decompressParam(param));
+                bi = decompressor.read(0, decompressParam(param));
                 LOG.debug("Finished decompressing frame #{}", (frameIndex + 1));
-                if (samples > 1 && bi.getColorModel().getColorSpace().getType() ==
-                        (pmiAfterDecompression.isYBR() ? ColorSpace.TYPE_YCbCr : ColorSpace.TYPE_RGB))
-                    return bi;
-                
-                raster = bi.getRaster();
             } finally {
                 closeiis();
             }
-        } else
-            raster = (WritableRaster) readRaster(frameIndex, param);
-
-        ColorModel cm;
-        if (pmi.isMonochrome()) {
-            int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
-            byte[][] overlayData = new byte[overlayGroupOffsets.length][];
-            for (int i = 0; i < overlayGroupOffsets.length; i++) {
-                overlayData[i] = extractOverlay(overlayGroupOffsets[i], raster);
-            }
-            cm = createColorModel(8, DataBuffer.TYPE_BYTE);
-            SampleModel sm = createSampleModel(DataBuffer.TYPE_BYTE, false);
-            raster = applyLUTs(raster, frameIndex, param, sm, 8);
-            for (int i = 0; i < overlayGroupOffsets.length; i++) {
-                applyOverlay(overlayGroupOffsets[i], 
-                        raster, frameIndex, param, 8, overlayData[i]);
+            raster = bi.getRaster();
+            if (samples == 1 || bi.getColorModel().getColorSpace().getType() !=
+                    (pmiAfterDecompression.isYBR() ? ColorSpace.TYPE_YCbCr : ColorSpace.TYPE_RGB)) {
+                bi = null;
             }
         } else {
-            cm = createColorModel(bitsStored, dataType);
+            raster = (WritableRaster) readRaster(frameIndex, param);
         }
-        return new BufferedImage(cm, raster , false, null);
+        int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
+        byte[][] overlayData = new byte[overlayGroupOffsets.length][];
+        if (bi == null) {
+            if (pmi.isMonochrome()) {
+                for (int i = 0; i < overlayGroupOffsets.length; i++) {
+                    overlayData[i] = extractOverlay(overlayGroupOffsets[i], raster);
+                }
+                SampleModel sm = createSampleModel(DataBuffer.TYPE_BYTE, false);
+                raster = applyLUTs(raster, frameIndex, param, sm, 8);
+            }
+            ColorModel cm = createColorModel(8, DataBuffer.TYPE_BYTE);
+            bi = new BufferedImage(cm, raster, false, null);
+        }
+        if (overlayGroupOffsets.length > 0) {
+            if (!(bi.getColorModel() instanceof ComponentColorModel)) {
+                BufferedImage bi2 = new BufferedImage(width, height,
+                        pmi.isMonochrome() ? BufferedImage.TYPE_BYTE_GRAY : BufferedImage.TYPE_INT_RGB);
+                Graphics2D graphics = bi2.createGraphics();
+                graphics.drawImage(bi, 0, 0, null);
+                graphics.dispose();
+                bi = bi2;
+            }
+            for (int i = 0; i < overlayGroupOffsets.length; i++) {
+                applyOverlay(overlayGroupOffsets[i], bi.getRaster(), frameIndex, param, 8, overlayData[i]);
+            }
+        }
+        return bi;
     }
 
     private byte[] extractOverlay(int gg0000, WritableRaster raster) {
@@ -555,20 +559,31 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private void applyOverlay(int gg0000, WritableRaster raster,
             int frameIndex, ImageReadParam param, int outBits, byte[] ovlyData) {
         Attributes ovlyAttrs = metadata.getAttributes();
-        int grayscaleValue = 0xffff;
+        int pixelValue = -1;
+        boolean monochrome = pmi.isMonochrome();
         if (param instanceof DicomImageReadParam) {
             DicomImageReadParam dParam = (DicomImageReadParam) param;
             Attributes psAttrs = dParam.getPresentationState();
             if (psAttrs != null) {
                 if (psAttrs.containsValue(Tag.OverlayData | gg0000))
                     ovlyAttrs = psAttrs;
-                grayscaleValue = Overlays.getRecommendedDisplayGrayscaleValue(
-                        psAttrs, gg0000);
-            } else
-                grayscaleValue = dParam.getOverlayGrayscaleValue();
+                pixelValue = monochrome
+                        ? Overlays.getRecommendedDisplayGrayscaleValue(psAttrs, gg0000)
+                        : Overlays.getRecommendedDisplayRGBValue(psAttrs, gg0000);
+            }
+            if (pixelValue == -1)
+                pixelValue = monochrome
+                        ? dParam.getOverlayGrayscaleValue()
+                        : dParam.getOverlayRGBValue();
+        } else {
+            pixelValue = monochrome ? 0xffff :  0xffffff;
         }
-        Overlays.applyOverlay(ovlyData != null ? 0 : frameIndex, raster,
-                ovlyAttrs, gg0000, grayscaleValue >>> (16-outBits), ovlyData);
+        Overlays.applyOverlay(ovlyData != null ? 0 : frameIndex, raster, ovlyAttrs, gg0000,
+                monochrome ? new int[]{pixelValue >>> (16 - outBits)}
+                    : raster.getNumDataElements() == 1 // TYPE_RGB
+                        ? new int[]{pixelValue}
+                        : new int[]{pixelValue >> 16, (pixelValue >> 8) & 0xff, pixelValue & 0xff},
+                ovlyData);
     }
 
     private int[] getActiveOverlayGroupOffsets(ImageReadParam param) {

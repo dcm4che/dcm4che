@@ -157,8 +157,19 @@ public class Overlays {
         }
     }
 
-    public static int getRecommendedDisplayGrayscaleValue(Attributes psAttrs,
-            int gg0000) {
+    public static int getRecommendedDisplayGrayscaleValue(Attributes psAttrs, int gg0000) {
+        int[] pixelValue = getRecommendedPixelValue(Tag.RecommendedDisplayGrayscaleValue, psAttrs, gg0000);
+        return pixelValue != null && pixelValue.length > 0 ? pixelValue[0] : -1;
+    }
+
+    public static int getRecommendedDisplayRGBValue(Attributes psAttrs, int gg0000) {
+        int[] pixelValue = getRecommendedPixelValue(Tag.RecommendedDisplayGrayscaleValue, psAttrs, gg0000);
+        return pixelValue != null && pixelValue.length == 3
+                ? (((pixelValue[0] & 0xff00) << 8) | (pixelValue[1] & 0xff00) | (pixelValue[2] >> 8))
+                : -1;
+    }
+
+    private static int[] getRecommendedPixelValue(int tag, Attributes psAttrs, int gg0000) {
         int tagOverlayActivationLayer = Tag.OverlayActivationLayer | gg0000;
         String layerName = psAttrs.getString(tagOverlayActivationLayer);
         if (layerName == null)
@@ -173,14 +184,18 @@ public class Overlays {
         
         for (Attributes layer : layers)
             if (layerName.equals(layer.getString(Tag.GraphicLayer)))
-                return layer.getInt(Tag.RecommendedDisplayGrayscaleValue, -1);
+                return layer.getInts(tag);
 
         throw new IllegalArgumentException("No Graphic Layer: " + layerName);
     }
 
     public static void applyOverlay(int frameIndex, WritableRaster raster,
             Attributes attrs, int gg0000, int pixelValue, byte[] ovlyData) {
+        applyOverlay(frameIndex, raster, attrs, gg0000, new int[] { pixelValue }, ovlyData);
+    }
 
+    public static void applyOverlay(int frameIndex, WritableRaster raster,
+            Attributes attrs, int gg0000, int[] pixelValue, byte[] ovlyData) {
         int imageFrameOrigin = attrs.getInt(Tag.ImageFrameOrigin | gg0000, 1);
         int framesInOverlay = attrs.getInt(Tag.NumberOfFramesInOverlay | gg0000, 1);
         int ovlyFrameIndex = frameIndex - imageFrameOrigin  + 1;
@@ -238,7 +253,7 @@ public class Overlays {
                 int y = y0 + ovlyIndex / ovlyColumns;
                 int x = x0 + ovlyIndex % ovlyColumns;
                 try {
-                    raster.setSample(x, y, 0, pixelValue);
+                    raster.setPixel(x, y, pixelValue);
                 } catch (ArrayIndexOutOfBoundsException ignore) {}
             }
         }

@@ -38,8 +38,11 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
@@ -463,7 +466,13 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 LOG.debug("Start decompressing frame #{}", (frameIndex + 1));
                 BufferedImage bi = decompressor.read(0, decompressParam(param));
                 LOG.debug("Finished decompressing frame #{}", (frameIndex + 1));
-                
+                if (pmi.isMonochrome() && !(bi.getColorModel() instanceof ComponentColorModel) ) {
+                    BufferedImage copy = new BufferedImage( bi.getWidth( null ), bi.getHeight( null ), BufferedImage.TYPE_BYTE_GRAY );
+                    Graphics2D g = copy.createGraphics();
+                    g.drawImage( bi, 0, 0, null );
+                    g.dispose();
+                    bi = copy;
+                }
                 raster = bi.getRaster();
                 cmAfterDecompress = bi.getColorModel();
             } finally {

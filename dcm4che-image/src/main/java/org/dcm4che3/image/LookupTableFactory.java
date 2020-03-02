@@ -47,14 +47,23 @@ import java.awt.image.Raster;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class LookupTableFactory {
+
+    private static final String[] XA_XRF_CUIDS = {
+            UID.XRayAngiographicImageStorage,
+            UID.XRayRadiofluoroscopicImageStorage,
+            UID.XRayAngiographicBiPlaneImageStorageRetired
+    };
+    private static final String[] LOG_DISP = { "LOG", "DISP" };
 
     private final StoredValue storedValue;
     private float rescaleSlope = 1;
@@ -69,6 +78,11 @@ public class LookupTableFactory {
 
     public LookupTableFactory(StoredValue storedValue) {
         this.storedValue = storedValue;
+    }
+
+    public static boolean applyModalityLUT(Attributes attrs) {
+        return !(StringUtils.contains(XA_XRF_CUIDS, attrs.getString(Tag.SOPClassUID))
+                && StringUtils.contains(LOG_DISP, attrs.getString(Tag.PixelIntensityRelationship)));
     }
 
     public void setModalityLUT(Attributes attrs) {

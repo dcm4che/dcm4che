@@ -628,9 +628,11 @@ public class DicomImageReader extends ImageReader implements Closeable {
                     Tag.SharedFunctionalGroupsSequence);
             Attributes frameFctGroups = imgAttrs.getNestedDataset(
                     Tag.PerFrameFunctionalGroupsSequence, frameIndex);
-            lutParam.setModalityLUT(
-                    selectFctGroup(imgAttrs, sharedFctGroups, frameFctGroups,
-                            Tag.PixelValueTransformationSequence));
+            if (LookupTableFactory.applyModalityLUT(imgAttrs)) {
+                lutParam.setModalityLUT(
+                        selectFctGroup(imgAttrs, sharedFctGroups, frameFctGroups,
+                                Tag.PixelValueTransformationSequence));
+            }
             if (dParam.getWindowWidth() != 0) {
                 lutParam.setWindowCenter(dParam.getWindowCenter());
                 lutParam.setWindowWidth(dParam.getWindowWidth());

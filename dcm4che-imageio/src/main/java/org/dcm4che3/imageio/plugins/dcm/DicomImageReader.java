@@ -580,9 +580,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         }
         Overlays.applyOverlay(ovlyData != null ? 0 : frameIndex, raster, ovlyAttrs, gg0000,
                 monochrome ? new int[]{pixelValue >>> (16 - outBits)}
-                    : raster.getNumDataElements() == 1 // TYPE_RGB
-                        ? new int[]{pixelValue}
-                        : new int[]{pixelValue >> 16, (pixelValue >> 8) & 0xff, pixelValue & 0xff},
+                    : new int[]{pixelValue >> 16, (pixelValue >> 8) & 0xff, pixelValue & 0xff},
                 ovlyData);
     }
 

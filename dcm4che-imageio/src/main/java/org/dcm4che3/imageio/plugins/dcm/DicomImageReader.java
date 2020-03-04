@@ -478,9 +478,12 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 }
                 SampleModel sm = createSampleModel(DataBuffer.TYPE_BYTE, false);
                 raster = applyLUTs(raster, frameIndex, param, sm, 8);
+                ColorModel cm = createColorModel(8, DataBuffer.TYPE_BYTE);
+                bi = new BufferedImage(cm, raster, false, null);
+            } else {
+                ColorModel cm = createColorModel(bitsStored, dataType);
+                bi = new BufferedImage(cm, raster, false, null);
             }
-            ColorModel cm = createColorModel(8, DataBuffer.TYPE_BYTE);
-            bi = new BufferedImage(cm, raster, false, null);
         }
         if (overlayGroupOffsets.length > 0) {
             if (!(bi.getColorModel() instanceof ComponentColorModel)) {

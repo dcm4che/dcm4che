@@ -570,17 +570,14 @@ public class DicomImageReader extends ImageReader implements Closeable {
             if (psAttrs != null) {
                 if (psAttrs.containsValue(Tag.OverlayData | gg0000))
                     ovlyAttrs = psAttrs;
-                pixelValue = Overlays.getRecommendedPixelValue(
-                        monochrome ? Tag.RecommendedDisplayGrayscaleValue : Tag.RecommendedDisplayCIELabValue,
-                        psAttrs, gg0000);
+                pixelValue = monochrome
+                        ? Overlays.getRecommendedGrayscalePixelValue(psAttrs, gg0000, 8)
+                        : Overlays.getRecommendedRGBPixelValue(psAttrs, gg0000);
             }
             if (pixelValue == null)
                 pixelValue = monochrome
-                        ? new int[] { dParam.getOverlayGrayscaleValue() }
-                        : dParam.getOverlayCIELabValue();
-            for (int i = 0; i < pixelValue.length; i++) {
-                pixelValue[i] >>= 8;
-            }
+                        ? new int[] { dParam.getOverlayGrayscaleValue() >> 8 }
+                        : dParam.getOverlayRGBPixelValue();
         } else {
             pixelValue = monochrome
                     ? new int[] { 0xff }

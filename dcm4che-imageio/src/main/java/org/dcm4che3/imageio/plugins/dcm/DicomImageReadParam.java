@@ -139,11 +139,7 @@ public class DicomImageReadParam extends ImageReadParam {
         this.overlayRGBValue = overlayRGBValue;
     }
 
-    public int[] getOverlayCIELabValue() {
-        int[] ints = {(overlayRGBValue >> 16) & 0xff, (overlayRGBValue >> 8) & 0xff, overlayRGBValue & 0xff};
-        ints[0] |= ints[0] << 8;
-        ints[1] |= ints[1] << 8;
-        ints[2] |= ints[2] << 8;
-        return ints;
+    public int[] getOverlayRGBPixelValue() {
+        return new int[]{(overlayRGBValue >> 16) & 0xff, (overlayRGBValue >> 8) & 0xff, overlayRGBValue & 0xff};
     }
 }

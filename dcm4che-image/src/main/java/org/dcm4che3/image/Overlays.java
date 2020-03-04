@@ -103,7 +103,7 @@ public class Overlays {
         return Arrays.copyOf(result, len);
     }
 
-   public static void extractFromPixeldata(Raster raster, int mask, 
+    public static void extractFromPixeldata(Raster raster, int mask,
             byte[] ovlyData, int off, int length) {
         ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
         int rows = raster.getHeight();
@@ -157,19 +157,41 @@ public class Overlays {
         }
     }
 
-    public static int getRecommendedDisplayGrayscaleValue(Attributes psAttrs, int gg0000) {
-        int[] pixelValue = getRecommendedPixelValue(Tag.RecommendedDisplayGrayscaleValue, psAttrs, gg0000);
-        return pixelValue != null && pixelValue.length > 0 ? pixelValue[0] : -1;
+    public static int[] getRecommendedGrayscalePixelValue(Attributes psAttrs, int gg0000, int bits) {
+        int[] grayscaleValue = getRecommendedPixelValue(Tag.RecommendedDisplayGrayscaleValue, psAttrs, gg0000);
+        return grayscaleValue != null && grayscaleValue.length > 0
+                ? new int[] { grayscaleValue[0] >> (16 - bits) }
+                : null;
     }
 
-    public static int getRecommendedDisplayRGBValue(Attributes psAttrs, int gg0000) {
-        int[] pixelValue = getRecommendedPixelValue(Tag.RecommendedDisplayGrayscaleValue, psAttrs, gg0000);
-        return pixelValue != null && pixelValue.length == 3
-                ? (((pixelValue[0] & 0xff00) << 8) | (pixelValue[1] & 0xff00) | (pixelValue[2] >> 8))
-                : -1;
+    public static int[] getRecommendedRGBPixelValue(Attributes psAttrs, int gg0000) {
+        int[] cieLabValue = getRecommendedPixelValue(Tag.RecommendedDisplayCIELabValue, psAttrs, gg0000);
+        return cieLabValue != null && cieLabValue.length == 3
+                ? cieLab2RGB(cieLabValue)
+                : null;
     }
 
-    public static int[] getRecommendedPixelValue(int tag, Attributes psAttrs, int gg0000) {
+    private static int[] cieLab2RGB(int[] cieLabValue) {
+        float[] rgb = CIELabColorSpace.getInstance().toRGB(new float[]{
+                scaleCIELabL(cieLabValue[0]),
+                scaleCIELabAB(cieLabValue[1]),
+                scaleCIELabAB(cieLabValue[2])});
+        return new int[] { unscaleRGB(rgb[0]), unscaleRGB(rgb[1]), unscaleRGB(rgb[2])};
+    }
+
+    private static int unscaleRGB(float value) {
+        return Math.min((int) (value * 256), 255);
+    }
+
+    private static float scaleCIELabL(int cieLabValue) {
+        return (cieLabValue & 0xffff) / 655.35f;
+    }
+
+    private static float scaleCIELabAB(int cieLabValue) {
+        return ((cieLabValue & 0xffff) - 0x8080) / 257.0f;
+    }
+
+    private static int[] getRecommendedPixelValue(int tag, Attributes psAttrs, int gg0000) {
         int tagOverlayActivationLayer = Tag.OverlayActivationLayer | gg0000;
         String layerName = psAttrs.getString(tagOverlayActivationLayer);
         if (layerName == null)

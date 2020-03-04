@@ -41,6 +41,7 @@ package org.dcm4che3.io;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import org.dcm4che3.data.Attributes;
@@ -53,16 +54,21 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Gunter Zeilinger (gunterze@protonmail.com)
  */
 public class ContentHandlerAdapter extends DefaultHandler {
 
+    private static final Logger LOG =  LoggerFactory.getLogger(ContentHandlerAdapter.class);
+
     private Attributes fmi;
     private final boolean bigEndian;
+    private final boolean lenient;
     private final LinkedList<Attributes> items = new LinkedList<Attributes>();
     private final LinkedList<Sequence> seqs = new LinkedList<Sequence>();
 
@@ -82,10 +88,15 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private boolean inlineBinary;
 
     public ContentHandlerAdapter(Attributes attrs) {
+        this(attrs, false);
+    }
+
+    public ContentHandlerAdapter(Attributes attrs, boolean lenient) {
         if (attrs == null)
             throw new NullPointerException();
         items.add(attrs);
         bigEndian = attrs.bigEndian();
+        this.lenient = lenient;
     }
 
     public Attributes getFileMetaInformation() {
@@ -315,7 +326,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         }
     }
 
-    private void endDicomAttribute() {
+    private void endDicomAttribute() throws SAXException {
         if (vr == VR.SQ) {
             seqs.removeLast().trimToSize();
             return;
@@ -337,8 +348,37 @@ public class ContentHandlerAdapter extends DefaultHandler {
         } else if (inlineBinary) {
             attrs.setBytes(privateCreator, tag, vr, getBytes());
         } else {
-            attrs.setString(privateCreator, tag, vr, getStrings());
+            String[] value = getStrings();
+            try {
+                attrs.setString(privateCreator, tag, vr, value);
+            } catch (RuntimeException e) {
+                String message = String.format("Invalid %s(%04X,%04X) %s %s",
+                        prefix(privateCreator, items.size() - 1),
+                        TagUtils.groupNumber(tag),
+                        TagUtils.elementNumber(tag),
+                        vr,
+                        Arrays.toString(value));
+                if (lenient) {
+                    LOG.info("{} - ignored", message);
+                } else {
+                    throw new SAXException(message, e);
+                }
+            }
         }
+    }
+
+    private static String prefix(String privateCreator, int level) {
+        if (privateCreator == null && level == 0) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        if (privateCreator != null) {
+            sb.append(privateCreator).append(':');
+        }
+        for (int i = 0; i < level; i++) {
+            sb.append('>');
+        }
+        return sb.toString();
     }
 
     private void endItem() {

@@ -169,7 +169,7 @@ public class Overlays {
                 : -1;
     }
 
-    private static int[] getRecommendedPixelValue(int tag, Attributes psAttrs, int gg0000) {
+    public static int[] getRecommendedPixelValue(int tag, Attributes psAttrs, int gg0000) {
         int tagOverlayActivationLayer = Tag.OverlayActivationLayer | gg0000;
         String layerName = psAttrs.getString(tagOverlayActivationLayer);
         if (layerName == null)

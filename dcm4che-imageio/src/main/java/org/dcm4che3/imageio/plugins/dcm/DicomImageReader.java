@@ -562,7 +562,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private void applyOverlay(int gg0000, WritableRaster raster,
             int frameIndex, ImageReadParam param, int outBits, byte[] ovlyData) {
         Attributes ovlyAttrs = metadata.getAttributes();
-        int pixelValue = -1;
+        int[] pixelValue = null;
         boolean monochrome = pmi.isMonochrome();
         if (param instanceof DicomImageReadParam) {
             DicomImageReadParam dParam = (DicomImageReadParam) param;
@@ -570,21 +570,23 @@ public class DicomImageReader extends ImageReader implements Closeable {
             if (psAttrs != null) {
                 if (psAttrs.containsValue(Tag.OverlayData | gg0000))
                     ovlyAttrs = psAttrs;
-                pixelValue = monochrome
-                        ? Overlays.getRecommendedDisplayGrayscaleValue(psAttrs, gg0000)
-                        : Overlays.getRecommendedDisplayRGBValue(psAttrs, gg0000);
+                pixelValue = Overlays.getRecommendedPixelValue(
+                        monochrome ? Tag.RecommendedDisplayGrayscaleValue : Tag.RecommendedDisplayCIELabValue,
+                        psAttrs, gg0000);
             }
-            if (pixelValue == -1)
+            if (pixelValue == null)
                 pixelValue = monochrome
-                        ? dParam.getOverlayGrayscaleValue()
-                        : dParam.getOverlayRGBValue();
+                        ? new int[] { dParam.getOverlayGrayscaleValue() }
+                        : dParam.getOverlayCIELabValue();
+            for (int i = 0; i < pixelValue.length; i++) {
+                pixelValue[i] >>= 8;
+            }
         } else {
-            pixelValue = monochrome ? 0xffff :  0xffffff;
+            pixelValue = monochrome
+                    ? new int[] { 0xff }
+                    : new int[] { 0xff, 0xff, 0xff } ;
         }
-        Overlays.applyOverlay(ovlyData != null ? 0 : frameIndex, raster, ovlyAttrs, gg0000,
-                monochrome ? new int[]{pixelValue >>> (16 - outBits)}
-                    : new int[]{pixelValue >> 16, (pixelValue >> 8) & 0xff, pixelValue & 0xff},
-                ovlyData);
+        Overlays.applyOverlay(ovlyData != null ? 0 : frameIndex, raster, ovlyAttrs, gg0000, pixelValue, ovlyData);
     }
 
     private int[] getActiveOverlayGroupOffsets(ImageReadParam param) {

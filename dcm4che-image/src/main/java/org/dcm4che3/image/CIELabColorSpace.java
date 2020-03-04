@@ -117,19 +117,11 @@ public class CIELabColorSpace extends ColorSpace {
     }
 
     private static double f(double t) {
-        if (t > DELTA_3) {
-            return Math.cbrt(t);
-        } else {
-            return t / THREE_DELTA_2 + D;
-        }
+        return t > DELTA_3 ? Math.cbrt(t) : t / THREE_DELTA_2 + D;
     }
 
     private static double fInv(double t) {
-        if (t > DELTA) {
-            return t * t * t;
-        } else {
-            return THREE_DELTA_2 * (t - D);
-        }
+        return t > DELTA ? t * t * t : THREE_DELTA_2 * (t - D);
     }
 
     private Object readResolve() {

@@ -765,7 +765,7 @@ public class DicomInputStream extends FilterInputStream
         } catch (IOException e) {
 
             throw new IOException(String.format("IOException during read of %s #%d @ %d",
-                    TagUtils.toString(tag), length, tagPos), e);
+                    TagUtils.toString(tag), length, tagPos), e.getCause());
 
         }
 

@@ -3,8 +3,7 @@ package org.dcm4che3.io;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.Collections;
 import java.util.List;
 
@@ -78,4 +77,11 @@ public class DicomInputStreamTest {
         }
     }
 
+    @Test(expected = EOFException.class)
+    public void testNoOutOfMemoryErrorOnInvalidLength() throws IOException {
+        byte[] b = { 8, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 'e', 'v', 'i', 'l', 'l', 'e', 'n', 'g', 'h' };
+        try ( DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b))) {
+            in.readDataset(-1, -1);
+        }
+    }
 }

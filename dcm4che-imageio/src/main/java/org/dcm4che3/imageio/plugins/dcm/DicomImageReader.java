@@ -644,7 +644,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
                     dParam.getVOILUTIndex(),
                     dParam.isPreferWindow());
             if (dParam.isAutoWindowing())
-                lutParam.autoWindowing(imgAttrs, raster);
+                lutParam.autoWindowing(imgAttrs, raster, dParam.isAddAutoWindow());
             lutParam.setPresentationLUT(imgAttrs);
         }
         LookupTable lut = lutParam.createLUT(outBits);

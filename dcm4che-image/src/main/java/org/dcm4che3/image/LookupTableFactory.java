@@ -281,12 +281,20 @@ public class LookupTableFactory {
     }
 
     public boolean autoWindowing(Attributes img, Raster raster) {
+        return autoWindowing(img, raster, false);
+    }
+
+    public boolean autoWindowing(Attributes img, Raster raster, boolean addAutoWindow) {
         if (modalityLUT != null || voiLUT != null || windowWidth != 0)
             return false;
 
         int[] min_max = calcMinMax(raster);
         windowCenter = (min_max[0] + min_max[1] + 1) / 2 * rescaleSlope + rescaleIntercept;
         windowWidth = Math.abs((min_max[1] + 1 - min_max[0]) * rescaleSlope);
+        if (addAutoWindow) {
+            img.setFloat(Tag.WindowCenter, VR.DS, windowCenter);
+            img.setFloat(Tag.WindowWidth, VR.DS, windowWidth);
+        }
         return true;
     }
 

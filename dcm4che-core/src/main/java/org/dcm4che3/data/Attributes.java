@@ -2177,7 +2177,9 @@ public class Attributes implements ReadableAttributes, Serializable {
      * @return same object cast to Attributes
      */
     private Attributes castReadable(ReadableAttributes readableAttributes) {
-        if (readableAttributes instanceof Attributes) {
+        if (readableAttributes == null) {
+            return null;
+        } else if (readableAttributes instanceof Attributes) {
             return (Attributes) readableAttributes;
         } else {
             throw new IllegalArgumentException("Only Attributes implementation is supported here");

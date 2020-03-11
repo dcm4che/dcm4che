@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Gunter Zeilinger (gunterze@protonmail.com)
  */
-public class Attributes implements Serializable {
+public class Attributes implements ReadableAttributes, Serializable {
 
     public interface Visitor {
         boolean visit(Attributes attrs, int tag, VR vr, Object value)
@@ -140,30 +140,33 @@ public class Attributes implements Serializable {
         this.values = new Object[initialCapacity];
     }
 
-    public Attributes(Attributes other) {
-        this(other, other.bigEndian);
+    public Attributes(ReadableAttributes other) {
+        this(other, other.bigEndian());
     }
 
-    public Attributes(Attributes other, boolean bigEndian) {
-        this(bigEndian, other.size);
+    public Attributes(ReadableAttributes readableOther, boolean bigEndian) {
+        this(bigEndian, readableOther.size());
+        Attributes other = castReadable(readableOther);
         if (other.properties != null)
             properties = new HashMap<String, Object>(other.properties);
         addAll(other);
     }
 
-    public Attributes(Attributes other, int... selection) {
-        this(other, other.bigEndian, selection);
+    public Attributes(ReadableAttributes other, int... selection) {
+        this(other, other.bigEndian(), selection);
     }
 
-    public Attributes(Attributes other, boolean bigEndian, int... selection) {
+    public Attributes(ReadableAttributes readableOther, boolean bigEndian, int... selection) {
         this(bigEndian, selection.length);
+        Attributes other = castReadable(readableOther);
         if (other.properties != null)
             properties = new HashMap<String, Object>(other.properties);
         addSelected(other, selection);
     }
 
-    public Attributes(Attributes other, boolean bigEndian, Attributes selection) {
+    public Attributes(ReadableAttributes readableOther, boolean bigEndian, Attributes selection) {
         this(bigEndian, selection.size());
+        Attributes other = castReadable(readableOther);
         if (other.properties != null)
             properties = new HashMap<String, Object>(other.properties);
         addSelected(other, selection);
@@ -177,6 +180,7 @@ public class Attributes implements Serializable {
         this.properties = properties;
     }
 
+    @Override
     public Object getProperty(String key, Object defVal) {
         if (properties == null)
             return defVal;
@@ -195,26 +199,32 @@ public class Attributes implements Serializable {
         return properties != null ? properties.remove(key) : null;
     }
 
+    @Override
     public final boolean isRoot() {
         return parent == null;
     }
 
+    @Override
     public final int getLevel() {
         return isRoot() ? 0 : 1 + parent.getLevel();
     }
 
+    @Override
     public final boolean bigEndian() {
         return bigEndian;
     }
 
+    @Override
     public final Attributes getParent() {
         return parent;
     }
 
+    @Override
     public final Attributes getRoot() {
         return isRoot() ? this : parent.getRoot();
     }
 
+    @Override
     public final int getLength() {
         return length;
     }
@@ -236,6 +246,7 @@ public class Attributes implements Serializable {
         return this;
     }
 
+    @Override
     public final long getItemPosition() {
         return itemPosition;
     }
@@ -244,14 +255,17 @@ public class Attributes implements Serializable {
         this.itemPosition = itemPosition;
     }
 
+    @Override
     public final boolean isEmpty() {
         return size == 0;
     }
 
+    @Override
     public final int size() {
         return size;
     }
 
+    @Override
     public int[] tags() {
         return Arrays.copyOf(tags, size);
     }
@@ -326,18 +340,22 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public Attributes getNestedDataset(int sequenceTag) {
         return getNestedDataset(null, sequenceTag, 0);
     }
 
+    @Override
     public Attributes getNestedDataset(int sequenceTag, int itemIndex) {
         return getNestedDataset(null, sequenceTag, itemIndex);
     }
 
+    @Override
     public Attributes getNestedDataset(String privateCreator, int sequenceTag) {
         return getNestedDataset(privateCreator, sequenceTag, 0);
     }
 
+    @Override
     public Attributes getNestedDataset(String privateCreator, int sequenceTag, int itemIndex) {
         Object value = getValue(privateCreator, sequenceTag);
         if (!(value instanceof Sequence))
@@ -350,10 +368,12 @@ public class Attributes implements Serializable {
         return sq.get(itemIndex);
     }
 
+    @Override
     public Attributes getNestedDataset(ItemPointer... itemPointers) {
         return getNestedDataset(Arrays.asList(itemPointers));
     }
 
+    @Override
     public Attributes getNestedDataset(List<ItemPointer> itemPointers) {
         Attributes item = this;
         for (ItemPointer ip : itemPointers) {
@@ -376,11 +396,13 @@ public class Attributes implements Serializable {
                         : indexOf(tag);
     }
 
-    private int indexOf(int tag) {
+    @Override
+    public int indexOf(int tag) {
         return Arrays.binarySearch(tags, 0, size, tag);
     }
 
-    private int indexOf(String privateCreator, int tag) {
+    @Override
+    public int indexOf(String privateCreator, int tag) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
@@ -394,6 +416,7 @@ public class Attributes implements Serializable {
      * resolves to the actual private tag,
      * given a private tag with placeholers (like 0011,xx13)
      */
+    @Override
     public int tagOf(String privateCreator, int tag) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, false);
@@ -403,6 +426,12 @@ public class Attributes implements Serializable {
         }
         return tag;
     }
+
+    @Override
+    public int creatorTagOf(String privateCreator, int tag) {
+        return creatorTagOf(privateCreator, tag, false);
+    }
+
     private int creatorTagOf(String privateCreator, int tag, boolean reserve) {
         if (!TagUtils.isPrivateGroup(tag))
             throw new IllegalArgumentException(TagUtils.toString(tag)
@@ -460,6 +489,7 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public SpecificCharacterSet getSpecificCharacterSet(VR vr) {
         return vr.useSpecificCharacterSet()
                 ? getSpecificCharacterSet()
@@ -552,18 +582,22 @@ public class Attributes implements Serializable {
         return (value instanceof Value) && ((Value) value).isEmpty();
     }
 
+    @Override
     public boolean contains(int tag) {
         return indexOf(tag) >= 0;
     }
 
+    @Override
     public boolean contains(String privateCreator, int tag) {
         return indexOf(privateCreator, tag) >= 0;
     }
 
+    @Override
     public boolean containsValue(int tag) {
         return containsValue(null, tag);
     }
 
+    @Override
     public boolean containsValue(String privateCreator, int tag) {
         int index = indexOf(privateCreator, tag);
         return index >= 0 
@@ -572,15 +606,7 @@ public class Attributes implements Serializable {
                         : values[index]);
     }
 
-    /**
-     * Test whether at least one tag within the given range is contained.
-     * 
-     * @param firstTag
-     *            first tag (inclusive)
-     * @param lastTag
-     *            last tag (inclusive)
-     * @return whether at least one tag within the given range is contained
-     */
+    @Override
     public boolean containsTagInRange(int firstTag, int lastTag) {
         final int indexFirstTag = indexForInsertOf(firstTag);
         if (indexFirstTag >= 0) {
@@ -591,6 +617,7 @@ public class Attributes implements Serializable {
         return insertIndex < size && tags[insertIndex] <= lastTag;
     }
 
+    @Override
     public String privateCreatorOf(int tag) {
         if (!TagUtils.isPrivateTag(tag))
             return null;
@@ -607,18 +634,22 @@ public class Attributes implements Serializable {
             : VR.LO.toString(value, false, 0, null);
     }
 
+    @Override
     public Object getValue(int tag) {
         return getValue(null, tag, null);
     }
 
+    @Override
     public Object getValue(int tag, VR.Holder vr) {
         return getValue(null, tag, vr);
     }
 
+    @Override
     public Object getValue(String privateCreator, int tag) {
         return getValue(privateCreator, tag, null);
     }
 
+    @Override
     public Object getValue(String privateCreator, int tag, VR.Holder vr) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -629,10 +660,12 @@ public class Attributes implements Serializable {
         return values[index];
     }
 
+    @Override
     public VR getVR(int tag) {
         return getVR(null, tag);
     }
 
+    @Override
     public VR getVR(String privateCreator, int tag) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -641,10 +674,12 @@ public class Attributes implements Serializable {
         return vrs[index];
     }
 
+    @Override
     public Sequence getSequence(int tag) {
         return getSequence(null, tag);
     }
 
+    @Override
     public Sequence getSequence(String privateCreator, int tag) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -656,10 +691,12 @@ public class Attributes implements Serializable {
         return value instanceof Sequence ? (Sequence) value : null;
     }
 
+    @Override
     public byte[] getBytes(int tag) throws IOException {
         return getBytes(null, tag);
     }
 
+    @Override
     public byte[] getBytes(String privateCreator, int tag) throws IOException {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -679,10 +716,12 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public byte[] getSafeBytes(int tag) {
         return getSafeBytes(null, tag);
     }
 
+    @Override
     public byte[] getSafeBytes(String privateCreator, int tag) {
         try {
             return getBytes(privateCreator, tag);
@@ -693,50 +732,62 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public String getString(int tag) {
         return getString(null, tag, null, 0, null);
     }
 
+    @Override
     public String getString(int tag, String defVal) {
         return getString(null, tag, null, 0, defVal);
     }
 
+    @Override
     public String getString(int tag, int valueIndex) {
         return getString(null, tag, null, valueIndex, null);
     }
 
+    @Override
     public String getString(int tag, int valueIndex, String defVal) {
         return getString(null, tag, null, valueIndex, defVal);
     }
 
+    @Override
     public String getString(String privateCreator, int tag) {
         return getString(privateCreator, tag, null, 0, null);
     }
 
+    @Override
     public String getString(String privateCreator, int tag, String defVal) {
         return getString(privateCreator, tag, null, 0, defVal);
     }
 
+    @Override
     public String getString(String privateCreator, int tag, VR vr) {
         return getString(privateCreator, tag, vr, 0, null);
     }
 
+    @Override
     public String getString(String privateCreator, int tag, VR vr, String defVal) {
         return getString(privateCreator, tag, vr, 0, defVal);
     }
 
+    @Override
     public String getString(String privateCreator, int tag, int valueIndex) {
         return getString(privateCreator, tag, null, valueIndex, null);
     }
 
+    @Override
     public String getString(String privateCreator, int tag, int valueIndex, String defVal) {
         return getString(privateCreator, tag, null, valueIndex, defVal);
     }
 
+    @Override
     public String getString(String privateCreator, int tag, VR vr, int valueIndex) {
         return getString(privateCreator, tag, vr, valueIndex, null);
     }
 
+    @Override
     public String getString(String privateCreator, int tag, VR vr, int valueIndex, String defVal) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -764,14 +815,17 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public String[] getStrings(int tag) {
         return getStrings(null, tag, null);
     }
 
+    @Override
     public String[] getStrings(String privateCreator, int tag) {
         return getStrings(privateCreator, tag, null);
     }
 
+    @Override
     public String[] getStrings(String privateCreator, int tag, VR vr) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -805,26 +859,32 @@ public class Attributes implements Serializable {
                 : (String[]) val;
     }
 
+    @Override
     public int getInt(int tag, int defVal) {
         return getInt(null, tag, null, 0, defVal);
     }
 
+    @Override
     public int getInt(int tag, int valueIndex, int defVal) {
         return getInt(null, tag, null, valueIndex, defVal);
     }
 
+    @Override
     public int getInt(String privateCreator, int tag, int defVal) {
         return getInt(privateCreator, tag, null, 0, defVal);
     }
 
+    @Override
     public int getInt(String privateCreator, int tag, VR vr, int defVal) {
         return getInt(privateCreator, tag, vr, 0, defVal);
     }
 
+    @Override
     public int getInt(String privateCreator, int tag, int valueIndex, int defVal) {
         return getInt(privateCreator, tag, null, valueIndex, defVal);
     }
 
+    @Override
     public int getInt(String privateCreator, int tag, VR vr, int valueIndex, int defVal) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -854,14 +914,17 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public int[] getInts(int tag) {
         return getInts(null, tag, null);
     }
 
+    @Override
     public int[] getInts(String privateCreator, int tag) {
         return getInts(privateCreator, tag, null);
     }
 
+    @Override
     public int[] getInts(String privateCreator, int tag, VR vr) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -891,26 +954,32 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public float getFloat(int tag, float defVal) {
         return getFloat(null, tag, null, 0, defVal);
     }
 
+    @Override
     public float getFloat(int tag, int valueIndex, float defVal) {
         return getFloat(null, tag, null, valueIndex, defVal);
     }
 
+    @Override
     public float getFloat(String privateCreator, int tag, float defVal) {
         return getFloat(privateCreator, tag, null, 0, defVal);
     }
 
+    @Override
     public float getFloat(String privateCreator, int tag, VR vr, float defVal) {
         return getFloat(privateCreator, tag, vr, 0, defVal);
     }
 
+    @Override
     public float getFloat(String privateCreator, int tag, int valueIndex, float defVal) {
         return getFloat(privateCreator, tag, null, valueIndex, defVal);
     }
 
+    @Override
     public float getFloat(String privateCreator, int tag, VR vr, int valueIndex, float defVal) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -940,14 +1009,17 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public float[] getFloats(int tag) {
         return getFloats(null, tag, null);
     }
 
+    @Override
     public float[] getFloats(String privateCreator, int tag) {
         return getFloats(privateCreator, tag, null);
     }
 
+    @Override
     public float[] getFloats(String privateCreator, int tag, VR vr) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -977,26 +1049,32 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public double getDouble(int tag, double defVal) {
         return getDouble(null, tag, null, 0, defVal);
     }
 
+    @Override
     public double getDouble(int tag, int valueIndex, double defVal) {
         return getDouble(null, tag, null, valueIndex, defVal);
     }
 
+    @Override
     public double getDouble(String privateCreator, int tag, double defVal) {
         return getDouble(privateCreator, tag, null, 0, defVal);
     }
 
+    @Override
     public double getDouble(String privateCreator, int tag, VR vr, double defVal) {
         return getDouble(privateCreator, tag, vr, 0, defVal);
     }
 
+    @Override
     public double getDouble(String privateCreator, int tag, int valueIndex, double defVal) {
         return getDouble(privateCreator, tag, null, valueIndex, defVal);
     }
 
+    @Override
     public double getDouble(String privateCreator, int tag, VR vr, int valueIndex, double defVal) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -1026,14 +1104,17 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public double[] getDoubles(int tag) {
         return getDoubles(null, tag, null);
     }
 
+    @Override
     public double[] getDoubles(String privateCreator, int tag) {
         return getDoubles(privateCreator, tag, null);
     }
 
+    @Override
     public double[] getDoubles(String privateCreator, int tag, VR vr) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -1063,107 +1144,130 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public Date getDate(int tag) {
         return getDate(null, tag, null, 0, null, new DatePrecision());
     }
 
+    @Override
     public Date getDate(int tag, DatePrecision precision) {
         return getDate(null, tag, null, 0, null, precision);
     }
 
+    @Override
     public Date getDate(int tag, Date defVal) {
         return getDate(null, tag, null, 0, defVal, new DatePrecision());
     }
 
+    @Override
     public Date getDate(int tag, Date defVal, DatePrecision precision) {
         return getDate(null, tag, null, 0, defVal, precision);
     }
 
+    @Override
     public Date getDate(int tag, int valueIndex) {
         return getDate(null, tag, null, valueIndex, null, new DatePrecision());
     }
 
+    @Override
     public Date getDate(int tag, int valueIndex, DatePrecision precision) {
         return getDate(null, tag, null, valueIndex, null, precision);
     }
 
+    @Override
     public Date getDate(int tag, int valueIndex, Date defVal) {
         return getDate(null, tag, null, valueIndex, defVal, new DatePrecision());
     }
 
+    @Override
     public Date getDate(int tag, int valueIndex, Date defVal,
             DatePrecision precision) {
         return getDate(null, tag, null, valueIndex, defVal, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag) {
         return getDate(privateCreator, tag, null, 0, null, new DatePrecision());
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, DatePrecision precision) {
         return getDate(privateCreator, tag, null, 0, null, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, Date defVal,
             DatePrecision precision) {
         return getDate(privateCreator, tag, null, 0, defVal, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, VR vr) {
         return getDate(privateCreator, tag, vr, 0, null, new DatePrecision());
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, VR vr,
             DatePrecision precision) {
         return getDate(privateCreator, tag, vr, 0, null, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, VR vr, Date defVal) {
         return getDate(privateCreator, tag, vr, 0, defVal, new DatePrecision());
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, VR vr, Date defVal,
             DatePrecision precision) {
         return getDate(privateCreator, tag, vr, 0, defVal, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, int valueIndex) {
         return getDate(privateCreator, tag, null, valueIndex, null,
                 new DatePrecision());
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, int valueIndex,
             DatePrecision precision) {
         return getDate(privateCreator, tag, null, valueIndex, null, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, int valueIndex,
             Date defVal) {
         return getDate(privateCreator, tag, null, valueIndex, defVal,
                 new DatePrecision());
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, int valueIndex,
             Date defVal, DatePrecision precision) {
         return getDate(privateCreator, tag, null, valueIndex, defVal, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex) {
         return getDate(privateCreator, tag, vr, valueIndex, null,
                 new DatePrecision());
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
             DatePrecision precision) {
         return getDate(privateCreator, tag, vr, valueIndex, null, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
             Date defVal) {
         return getDate(privateCreator, tag, vr, valueIndex, defVal,
                 new DatePrecision());
     }
 
+    @Override
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
             Date defVal, DatePrecision precision) {
         int index = indexOf(privateCreator, tag);
@@ -1194,34 +1298,42 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public Date getDate(long tag) {
         return getDate(null, tag, null, new DatePrecision());
     }
 
+    @Override
     public Date getDate(long tag, DatePrecision precision) {
         return getDate(null, tag, null, precision);
     }
 
+    @Override
     public Date getDate(long tag, Date defVal) {
         return getDate(null, tag, defVal, new DatePrecision());
     }
 
+    @Override
     public Date getDate(long tag, Date defVal, DatePrecision precision) {
         return getDate(null, tag, defVal, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, long tag) {
         return getDate(privateCreator, tag, null, new DatePrecision());
     }
 
+    @Override
     public Date getDate(String privateCreator, long tag, DatePrecision precision) {
         return getDate(privateCreator, tag, null, precision);
     }
 
+    @Override
     public Date getDate(String privateCreator, long tag, Date defVal) {
         return getDate(privateCreator, tag, defVal, new DatePrecision());
     }
 
+    @Override
     public Date getDate(String privateCreator, long tag, Date defVal,
             DatePrecision precision) {
         int daTag = (int) (tag >>> 32);
@@ -1245,27 +1357,33 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public Date[] getDates(int tag) {
         return getDates(null, tag, null, new DatePrecisions());
     }
 
+    @Override
     public Date[] getDates(int tag, DatePrecisions precisions) {
         return getDates(null, tag, null, precisions);
     }
 
+    @Override
     public Date[] getDates(String privateCreator, int tag) {
         return getDates(privateCreator, tag, null, new DatePrecisions());
     }
 
+    @Override
     public Date[] getDates(String privateCreator, int tag,
             DatePrecisions precisions) {
         return getDates(privateCreator, tag, null, precisions);
     }
 
+    @Override
     public Date[] getDates(String privateCreator, int tag, VR vr) {
         return getDates(privateCreator, tag, vr, new DatePrecisions());
     }
 
+    @Override
     public Date[] getDates(String privateCreator, int tag, VR vr,
             DatePrecisions precisions) {
         int index = indexOf(privateCreator, tag);
@@ -1296,18 +1414,22 @@ public class Attributes implements Serializable {
         }
     }
 
+    @Override
     public Date[] getDates(long tag) {
         return getDates(null, tag, new DatePrecisions());
     }
 
+    @Override
     public Date[] getDates(long tag, DatePrecisions precisions) {
         return getDates(null, tag, precisions);
     }
 
+    @Override
     public Date[] getDates(String privateCreator, long tag) {
         return getDates(privateCreator, tag, new DatePrecisions());
     }
 
+    @Override
     public Date[] getDates(String privateCreator, long tag,
             DatePrecisions precisions) {
         int daTag = (int) (tag >>> 32);
@@ -1341,26 +1463,32 @@ public class Attributes implements Serializable {
         return dates;
     }
 
+    @Override
     public DateRange getDateRange(int tag) {
         return getDateRange(null, tag, null, null);
     }
 
+    @Override
     public DateRange getDateRange(int tag, DateRange defVal) {
         return getDateRange(null, tag, null, defVal);
     }
 
+    @Override
     public DateRange getDateRange(String privateCreator, int tag) {
         return getDateRange(privateCreator, tag, null, null);
     }
 
+    @Override
     public DateRange getDateRange(String privateCreator, int tag, DateRange defVal) {
         return getDateRange(privateCreator, tag, null, defVal);
     }
 
+    @Override
     public DateRange getDateRange(String privateCreator, int tag, VR vr) {
         return getDateRange(privateCreator, tag, vr, null);
     }
 
+    @Override
     public DateRange getDateRange(String privateCreator, int tag, VR vr, DateRange defVal) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
@@ -1416,18 +1544,22 @@ public class Attributes implements Serializable {
         return range;
     }
 
+    @Override
     public DateRange getDateRange(long tag) {
         return getDateRange(null, tag, null);
     }
 
+    @Override
     public DateRange getDateRange(long tag, DateRange defVal) {
         return getDateRange(null, tag, defVal);
     }
 
+    @Override
     public DateRange getDateRange(String privateCreator, long tag) {
         return getDateRange(privateCreator, tag, null);
     }
 
+    @Override
     public DateRange getDateRange(String privateCreator, long tag, DateRange defVal) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
@@ -1477,6 +1609,7 @@ public class Attributes implements Serializable {
         setString(Tag.SpecificCharacterSet, VR.CS, codes);
     }
 
+    @Override
     public SpecificCharacterSet getSpecificCharacterSet() {
         if (cs != null)
             return cs;
@@ -1496,6 +1629,7 @@ public class Attributes implements Serializable {
         defaultTimeZone = tz;
     }
 
+    @Override
     public TimeZone getDefaultTimeZone() {
         if (defaultTimeZone != null)
             return defaultTimeZone;
@@ -1506,6 +1640,7 @@ public class Attributes implements Serializable {
         return TimeZone.getDefault();
     }
 
+    @Override
     public TimeZone getTimeZone() {
         if (tz != null)
             return tz;
@@ -1715,6 +1850,7 @@ public class Attributes implements Serializable {
         return tm;
     }
 
+    @Override
     public String getPrivateCreator(int tag) {
          return TagUtils.isPrivateTag(tag)
                  ? getString(TagUtils.creatorTagOf(tag), null)
@@ -1999,22 +2135,23 @@ public class Attributes implements Serializable {
     }
 
 
-    public boolean addAll(Attributes other) {
+    public boolean addAll(ReadableAttributes other) {
         return add(other, null, null, 0, 0, null, null,
                 false, false, null);
     }
 
-    public boolean addAll(Attributes other, boolean mergeOriginalAttributesSequence) {
+    public boolean addAll(ReadableAttributes other, boolean mergeOriginalAttributesSequence) {
         return add(other, null, null, 0, 0, null, null,
                 mergeOriginalAttributesSequence, false, null);
     }
 
-    public boolean addSelected(Attributes other, Attributes selection) {
+    public boolean addSelected(ReadableAttributes other, ReadableAttributes selection) {
         return add(other, null, null, 0, 0, selection, null,
                 false, false, null);
     }
 
-    public boolean addSelected(Attributes other, String privateCreator, int tag) {
+    public boolean addSelected(ReadableAttributes readableOther, String privateCreator, int tag) {
+        Attributes other = castReadable(readableOther);
         int index = other.indexOf(privateCreator, tag);
         if (index < 0)
             return false;
@@ -2029,6 +2166,22 @@ public class Attributes implements Serializable {
                     toggleEndian(vr, value, bigEndian != other.bigEndian));
         }
         return true;
+    }
+
+    /**
+     * Use this for methods that need the internal state of Attributes, but do
+     * not actually modify the content.
+     * 
+     * @param readableAttributes
+     *            readableAttributes
+     * @return same object cast to Attributes
+     */
+    private Attributes castReadable(ReadableAttributes readableAttributes) {
+        if (readableAttributes instanceof Attributes) {
+            return (Attributes) readableAttributes;
+        } else {
+            throw new IllegalArgumentException("Only Attributes implementation is supported here");
+        }
     }
 
     /**
@@ -2089,9 +2242,11 @@ public class Attributes implements Serializable {
         return add(other, null, selection, fromIndex, toIndex, null, null, false, false, null);
     }
 
-    private boolean add(Attributes other, int[] include, int[] exclude, int fromIndex, int toIndex,
-                        Attributes selection, UpdatePolicy updatePolicy, boolean mergeOriginalAttributesSequence,
+    private boolean add(ReadableAttributes readableOther, int[] include, int[] exclude, int fromIndex, int toIndex,
+                        ReadableAttributes readableSelection, UpdatePolicy updatePolicy, boolean mergeOriginalAttributesSequence,
                         boolean simulate, Attributes modified) {
+        Attributes other = castReadable(readableOther);
+        Attributes selection = castReadable(readableSelection);
         if (updatePolicy == UpdatePolicy.REPLACE)
             throw new IllegalArgumentException("updatePolicy:" + updatePolicy);
 
@@ -2428,17 +2583,21 @@ public class Attributes implements Serializable {
         return true;
     }
 
-    public boolean equalValues(Attributes other, int tag) {
+    @Override
+    public boolean equalValues(ReadableAttributes other, int tag) {
         return equalValues(other, null, tag);
     }
 
-    public boolean equalValues(Attributes other, String privateCreator, int tag) {
-        return equalValues(other, indexOf(privateCreator, tag), other.indexOf(privateCreator, tag));
+    @Override
+    public boolean equalValues(ReadableAttributes readableOther, String privateCreator, int tag) {
+        return equalValues(readableOther, indexOf(privateCreator, tag), readableOther.indexOf(privateCreator, tag));
     }
 
-    private boolean equalValues(Attributes other, int index, int otherIndex) {
+    private boolean equalValues(ReadableAttributes readableOther, int index, int otherIndex) {
         if (index < 0 && otherIndex < 0)
             return true;
+
+        Attributes other = castReadable(readableOther);
 
         VR vr = index < 0 ? other.vrs[otherIndex] : vrs[index];
         if (otherIndex >= 0 && vr != other.vrs[otherIndex])
@@ -2536,15 +2695,18 @@ public class Attributes implements Serializable {
         return toString(TO_STRING_LIMIT, TO_STRING_WIDTH);
     }
     
+    @Override
     public String toString(int limit, int maxWidth) {
         return toStringBuilder(limit, maxWidth, new StringBuilder(1024))
                 .toString();
     }
 
+    @Override
     public StringBuilder toStringBuilder(StringBuilder sb) {
         return toStringBuilder(TO_STRING_LIMIT, TO_STRING_WIDTH, sb);
     }
 
+    @Override
     public StringBuilder toStringBuilder(int limit, int maxWidth, StringBuilder sb) {
         if (appendAttributes(limit, maxWidth, sb, "") > limit)
             sb.append("...\n");
@@ -2663,6 +2825,7 @@ public class Attributes implements Serializable {
         return count;
     }
 
+    @Override
     public void writeTo(DicomOutputStream out)
             throws IOException {
         if (isEmpty())
@@ -2682,7 +2845,8 @@ public class Attributes implements Serializable {
         }
     }
 
-     public void writeItemTo(DicomOutputStream out) throws IOException {
+     @Override
+    public void writeItemTo(DicomOutputStream out) throws IOException {
          DicomEncodingOptions encOpts = out.getEncodingOptions();
          int len = getEncodedItemLength(encOpts, out.isExplicitVR());
          out.writeHeader(Tag.Item, null, len);
@@ -2732,6 +2896,7 @@ public class Attributes implements Serializable {
      *  is also invoked for attributes in nested datasets
      * @return <code>true</code> if the operation was not aborted.
      */
+    @Override
     public boolean accept(Visitor visitor, boolean visitNestedDatasets)
             throws Exception{
         if (isEmpty())
@@ -2767,6 +2932,7 @@ public class Attributes implements Serializable {
         return true;
     }
 
+    @Override
     public void writeGroupTo(DicomOutputStream out, int groupLengthTag)
             throws IOException {
         if (isEmpty())
@@ -2791,6 +2957,7 @@ public class Attributes implements Serializable {
         
     }
 
+    @Override
     public Attributes createFileMetaInformation(String tsuid) {
         return createFileMetaInformation(
                 getString(Tag.SOPInstanceUID, null),
@@ -2820,8 +2987,10 @@ public class Attributes implements Serializable {
         return fmi;
     }
 
-    public boolean matches(Attributes keys, boolean ignorePNCase,
+    @Override
+    public boolean matches(ReadableAttributes readableKeys, boolean ignorePNCase,
             boolean matchNoValue) {
+        Attributes keys = castReadable(readableKeys);
         int[] keyTags = keys.tags;
         VR[] keyVrs = keys.vrs;
         Object[] keyValues = keys.values;
@@ -2969,6 +3138,7 @@ public class Attributes implements Serializable {
         din.readAttributes(this, -1, Tag.ItemDelimitationItem);
     }
 
+    @Override
     public ValidationResult validate(IOD iod) {
         ValidationResult result = new ValidationResult();
         HashMap<String,Boolean> resolvedConditions = new HashMap<String,Boolean>();
@@ -2978,6 +3148,7 @@ public class Attributes implements Serializable {
         return result;
     }
 
+    @Override
     public void validate(DataElement el, ValidationResult result) {
         validate(el, result, null);
     }
@@ -3190,7 +3361,9 @@ public class Attributes implements Serializable {
      *
      * @return result data set.
      */
-    public Attributes getModified(Attributes other, Attributes result) {
+    @Override
+    public Attributes getModified(ReadableAttributes readableOther, Attributes result) {
+        Attributes other = castReadable(readableOther);
         if (result == null)
             result = new Attributes(other.size);
         int creatorTag = -1;
@@ -3255,7 +3428,8 @@ public class Attributes implements Serializable {
      * @return attributes of this data set which were removed or replaced in
      *         the specified other data set.
      */
-    public Attributes getRemovedOrModified(Attributes other) {
+    @Override
+    public Attributes getRemovedOrModified(ReadableAttributes other) {
         Attributes modified = new Attributes(size);
         int creatorTag = -1;
         int prevCreatorTag = -1;
@@ -3278,7 +3452,7 @@ public class Attributes implements Serializable {
                         if (o instanceof String) {
                             privateCreator = (String) o;
                             otherCreatorTag = other.creatorTagOf(
-                                    privateCreator, tag, false);
+                                    privateCreator, tag);
                         }
                     }
                 }
@@ -3313,11 +3487,14 @@ public class Attributes implements Serializable {
         return modified;
     }
 
-    public int diff(Attributes other, int[] selection, Attributes diff) {
+    @Override
+    public int diff(ReadableAttributes other, int[] selection, Attributes diff) {
         return diff(other, selection, diff, false);
     }
 
-    public int diff(Attributes other, int[] selection, Attributes diff, boolean onlyModified) {
+    @Override
+    public int diff(ReadableAttributes readableOther, int[] selection, Attributes diff, boolean onlyModified) {
+        Attributes other = castReadable(readableOther);
         int count = 0;
         for (int tag : selection) {
             int index = indexOf(tag);

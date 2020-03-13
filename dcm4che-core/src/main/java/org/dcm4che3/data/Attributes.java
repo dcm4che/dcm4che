@@ -2097,7 +2097,7 @@ public class Attributes implements Serializable {
 
         if (!isEmpty() &&
                 !isSpecificCharacterSetCompatible(other, include, exclude, fromIndex, toIndex, selection, updatePolicy))
-            throw new IllegalArgumentException("Specific Character Sets " +
+            throw new IncompatibleSpecificCharaterSetException("Specific Character Sets " +
                     Arrays.toString(getSpecificCharacterSet().toCodes()) +
                     " and " +
                     Arrays.toString(other.getSpecificCharacterSet().toCodes()) +
@@ -2257,8 +2257,12 @@ public class Attributes implements Serializable {
             String dt = srcItem.getString(Tag.AttributeModificationDateTime);
             Attributes destItem = sort.get(dt);
             if (destItem != null) {
-                destItem.getNestedDataset(Tag.ModifiedAttributesSequence)
-                        .addAll(srcItem.getNestedDataset(Tag.ModifiedAttributesSequence));
+                try {
+                    destItem.getNestedDataset(Tag.ModifiedAttributesSequence)
+                            .addAll(srcItem.getNestedDataset(Tag.ModifiedAttributesSequence));
+                } catch (IncompatibleSpecificCharaterSetException e) {
+                    LOG.info("Failed to merge original attributes modified at {}: {}", dt, e.getMessage());
+                }
             } else {
                 sort.put(srcItem.getString(Tag.AttributeModificationDateTime), new Attributes(srcItem));
             }

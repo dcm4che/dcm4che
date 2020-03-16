@@ -86,21 +86,25 @@
                                  file.
     -
     Example: stowrs -m PatientName=John^Doe --url
-    http://localhost/stow/studies img.jpeg
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies img.jpeg
     => Send stow request to stowRS Receiver with the attribute given and
     img.jpeg bulkData.
     -
-    Example: stowrs --url http://localhost/stow/studies[/{StudyInstanceUID}]
-    object1.dcm object2.dcm
-    => Send stow request to stowRS Receiver with the given dicom files.
+    Example: stowrs --url
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies[/{StudyInst
+    anceUID}] object1.dcm object2.dcm
+    => Send stow request to stowRS Receiver with the given dicom files to the
+    specified study.
     -
     Example: stowrs -f sr-metadata.xml --url
-    http://localhost/stow/studies[/{StudyInstanceUID}]
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies[/{StudyInst
+    anceUID}]
     => Send stow request to stowRS Receiver with the given metadata xml file
-    for a Structured Report.
+    for a Structured Report to the specified study.
     -
     Example: stowrs -t json -m StudyInstanceUID=1.2.3.4.5.6.7.8.9.10 --url
-    http://localhost/stow/studies file1.pdf file2.pdf file3.pdf
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies file1.pdf
+    file2.pdf file3.pdf
     => Send stow request to stowRS Receiver first generating metadata from
     etc/stowrs/encapsulatedPDFMetadata.xml and then adding
     given StudyInstanceUID for the 3 pdf files.

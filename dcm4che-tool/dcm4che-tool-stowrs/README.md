@@ -91,14 +91,14 @@
     img.jpeg bulkData.
     -
     Example: stowrs --url
-    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies[/{StudyInst
-    anceUID}] object1.dcm object2.dcm
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies/{StudyInsta
+    nceUID} object1.dcm object2.dcm
     => Send stow request to stowRS Receiver with the given dicom files to the
     specified study.
     -
     Example: stowrs -f sr-metadata.xml --url
-    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies[/{StudyInst
-    anceUID}]
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies/{StudyInsta
+    nceUID}
     => Send stow request to stowRS Receiver with the given metadata xml file
     for a Structured Report to the specified study.
     -

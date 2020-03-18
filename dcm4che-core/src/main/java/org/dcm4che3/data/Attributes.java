@@ -109,6 +109,7 @@ public class Attributes implements Serializable {
     private boolean containsTimezoneOffsetFromUTC;
     private Map<String, Object> properties;
     private TimeZone defaultTimeZone;
+    private volatile boolean readOnly;
 
     public Attributes() {
         this(false, INIT_CAPACITY);
@@ -169,11 +170,35 @@ public class Attributes implements Serializable {
         addSelected(other, selection);
     }
 
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        if (this.readOnly != readOnly) {
+            this.readOnly = readOnly;
+            for (int i = 0, n = size; i < n; i++) {
+                Object value = values[i];
+                if (value instanceof Sequence)
+                    ((Sequence) value).setReadOnly(readOnly);
+                else if (value instanceof Fragments)
+                    ((Fragments) value).setReadOnly(readOnly);
+            }
+        }
+    }
+
+    private void ensureModifiable() {
+        if (readOnly) {
+            throw new UnsupportedOperationException("read-only");
+        }
+    }
+
     public Map<String, Object> getProperties() {
         return properties;
     }
 
     public void setProperties(Map<String, Object> properties) {
+        ensureModifiable();
         this.properties = properties;
     }
 
@@ -186,12 +211,14 @@ public class Attributes implements Serializable {
     }
 
     public Object setProperty(String key, Object value) {
+        ensureModifiable();
         if (properties == null)
             properties = new HashMap<String, Object>();
         return properties.put(key, value);
     }
 
     public Object clearProperty(String key) {
+        ensureModifiable();
         return properties != null ? properties.remove(key) : null;
     }
 
@@ -261,6 +288,7 @@ public class Attributes implements Serializable {
     }
 
     public void trimToSize(boolean recursive) {
+        ensureModifiable();
         int oldCapacity = tags.length;
         if (size < oldCapacity) {
             tags = Arrays.copyOf(tags, size);
@@ -277,6 +305,7 @@ public class Attributes implements Serializable {
     }
 
     public void internalizeStringValues(boolean decode) {
+        ensureModifiable();
         SpecificCharacterSet cs = getSpecificCharacterSet();
         for (int i = 0; i < values.length; i++) {
             VR vr = vrs[i];
@@ -339,6 +368,7 @@ public class Attributes implements Serializable {
     }
 
     public Attributes getNestedDataset(String privateCreator, int sequenceTag, int itemIndex) {
+        ensureModifiable();
         Object value = getValue(privateCreator, sequenceTag);
         if (!(value instanceof Sequence))
             return null;
@@ -1473,6 +1503,7 @@ public class Attributes implements Serializable {
      * @param codes new value(s) of Specific Character Set (0008,0005) 
      */
     public void setSpecificCharacterSet(String... codes) {
+        ensureModifiable();
         decodeStringValuesUsingSpecificCharacterSet();
         setString(Tag.SpecificCharacterSet, VR.CS, codes);
     }
@@ -1493,6 +1524,7 @@ public class Attributes implements Serializable {
     }
 
     public void setDefaultTimeZone(TimeZone tz) {
+        ensureModifiable();
         defaultTimeZone = tz;
     }
 
@@ -1533,6 +1565,7 @@ public class Attributes implements Serializable {
      * @param utcOffset offset from UTC as (+|-)HHMM 
      */
     public void setTimezoneOffsetFromUTC(String utcOffset) {
+        ensureModifiable();
         TimeZone tz = DateUtils.timeZone(utcOffset);
         updateTimezone(getTimeZone(), tz);
         setString(Tag.TimezoneOffsetFromUTC, VR.SH, utcOffset);
@@ -1551,6 +1584,7 @@ public class Attributes implements Serializable {
      * @see #setTimezoneOffsetFromUTC(String)
      */
     public void setTimezone(TimeZone tz) {
+        ensureModifiable();
         updateTimezone(getTimeZone(), tz);
         if (tz.useDaylightTime()) {
             remove(Tag.TimezoneOffsetFromUTC);
@@ -1726,6 +1760,7 @@ public class Attributes implements Serializable {
     }
 
     public Object remove(String privateCreator, int tag) {
+        ensureModifiable();
         int index = indexOf(privateCreator, tag);
         if (index < 0)
             return null;
@@ -1760,6 +1795,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setNull(String privateCreator, int tag, VR vr) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, Value.NULL);
     }
 
@@ -1768,6 +1804,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setBytes(String privateCreator, int tag, VR vr, byte[] b) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, vr.toValue(b));
     }
 
@@ -1776,6 +1813,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setString(String privateCreator, int tag, VR vr, String s) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, vr.toValue(s, bigEndian));
     }
 
@@ -1784,6 +1822,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setString(String privateCreator, int tag, VR vr, String... ss) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, vr.toValue(ss, bigEndian));
     }
 
@@ -1792,6 +1831,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setInt(String privateCreator, int tag, VR vr, int... is) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, vr.toValue(is, bigEndian));
     }
 
@@ -1800,6 +1840,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setFloat(String privateCreator, int tag, VR vr, float... fs) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, vr.toValue(fs, bigEndian));
     }
 
@@ -1808,6 +1849,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setDouble(String privateCreator, int tag, VR vr, double... ds) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, vr.toValue(ds, bigEndian));
     }
 
@@ -1826,6 +1868,7 @@ public class Attributes implements Serializable {
 
     public Object setDate(String privateCreator, int tag, VR vr,
             DatePrecision precision, Date... ds) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, vr.toValue(ds, getTimeZone(), precision));
     }
 
@@ -1862,6 +1905,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setDateRange(String privateCreator, int tag, VR vr, DatePrecision precision, DateRange range) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, toString(range, vr, getTimeZone(), precision));
     }
 
@@ -1897,6 +1941,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setValue(String privateCreator, int tag, VR vr, Object value) {
+        ensureModifiable();
         return set(privateCreator, tag, vr, value != null ? value : Value.NULL);
     }
 
@@ -1905,6 +1950,7 @@ public class Attributes implements Serializable {
     }
 
     public Sequence newSequence(String privateCreator, int tag, int initialCapacity) {
+        ensureModifiable();
         Sequence seq = new Sequence(this, initialCapacity);
         set(privateCreator, tag, VR.SQ, seq);
         return seq;
@@ -1915,6 +1961,7 @@ public class Attributes implements Serializable {
     }
 
     public Sequence ensureSequence(String privateCreator, int tag, int initialCapacity) {
+        ensureModifiable();
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, true);
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -1942,6 +1989,7 @@ public class Attributes implements Serializable {
 
     public Fragments newFragments(String privateCreator, int tag, VR vr,
             int initialCapacity) {
+        ensureModifiable();
         Fragments frags = new Fragments(vr, bigEndian, initialCapacity);
         set(privateCreator, tag, vr, frags);
         return frags;
@@ -2000,21 +2048,25 @@ public class Attributes implements Serializable {
 
 
     public boolean addAll(Attributes other) {
+        ensureModifiable();
         return add(other, null, null, 0, 0, null, null,
                 false, false, null);
     }
 
     public boolean addAll(Attributes other, boolean mergeOriginalAttributesSequence) {
+        ensureModifiable();
         return add(other, null, null, 0, 0, null, null,
                 mergeOriginalAttributesSequence, false, null);
     }
 
     public boolean addSelected(Attributes other, Attributes selection) {
+        ensureModifiable();
         return add(other, null, null, 0, 0, selection, null,
                 false, false, null);
     }
 
     public boolean addSelected(Attributes other, String privateCreator, int tag) {
+        ensureModifiable();
         int index = other.indexOf(privateCreator, tag);
         if (index < 0)
             return false;
@@ -2057,6 +2109,7 @@ public class Attributes implements Serializable {
      */
     public boolean addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
+        ensureModifiable();
         return add(other, selection, null, fromIndex, toIndex, null, null, false, false, null);
     }
 
@@ -2086,6 +2139,7 @@ public class Attributes implements Serializable {
      */
     public boolean addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
+        ensureModifiable();
         return add(other, null, selection, fromIndex, toIndex, null, null, false, false, null);
     }
 
@@ -2273,12 +2327,14 @@ public class Attributes implements Serializable {
     }
 
     public boolean update(UpdatePolicy updatePolicy, Attributes newAttrs, Attributes modified) {
+        ensureModifiable();
         return add(newAttrs, null, null, 0, 0, null, updatePolicy,
                 false, false, modified);
     }
 
     public boolean update(UpdatePolicy updatePolicy, boolean mergeOriginalAttributesSequence, Attributes newAttrs,
                           Attributes modified) {
+        ensureModifiable();
         return add(newAttrs, null, null, 0, 0, null, updatePolicy,
                 mergeOriginalAttributesSequence, false, modified);
     }
@@ -2304,6 +2360,7 @@ public class Attributes implements Serializable {
      */
     public boolean updateSelected(UpdatePolicy updatePolicy, Attributes newAttrs,
                                   Attributes modified, int... selection) {
+        ensureModifiable();
         return add(newAttrs, selection, null, 0, selection.length, null, updatePolicy,
                 false, false, modified);
     }
@@ -2341,6 +2398,7 @@ public class Attributes implements Serializable {
      */
     public boolean updateNotSelected(UpdatePolicy updatePolicy, Attributes newAttrs,
                                      Attributes modified, int... selection) {
+        ensureModifiable();
         return add(newAttrs, null, selection, 0, selection.length, null, updatePolicy,
                 false, false, modified);
     }
@@ -2378,6 +2436,7 @@ public class Attributes implements Serializable {
             String reasonForModification,
             String modifyingSystem,
             Attributes originalAttributes) {
+        ensureModifiable();
         if (originalAttributes.isEmpty())
             return this;
 
@@ -3373,6 +3432,7 @@ public class Attributes implements Serializable {
     }
 
     public int removeAllBulkData() {
+        ensureModifiable();
         int removed = 0;
         for (int i = 0; i < size; i++) {
             Object value = values[i];
@@ -3423,6 +3483,7 @@ public class Attributes implements Serializable {
     }
 
     public int removePrivateAttributes(String privateCreator, int groupNumber) {
+        ensureModifiable();
         int privateCreatorIndex = creatorIndexOf(privateCreator, groupNumber);
         if (privateCreatorIndex < 0)
             return 0;
@@ -3462,6 +3523,7 @@ public class Attributes implements Serializable {
     }
 
     public int removePrivateAttributes() {
+        ensureModifiable();
         int size1 = size;
         for (int i = 0; i < size1; i++) {
             int j = i;
@@ -3488,6 +3550,7 @@ public class Attributes implements Serializable {
     }
 
     public void removeSelected(int... selection) {
+        ensureModifiable();
         for (int i = 0; i < size; i++) {
             if (Arrays.binarySearch(selection, tags[i]) >= 0) {
                 int numMoved = size - i - 1;
@@ -3503,6 +3566,7 @@ public class Attributes implements Serializable {
     }
 
     public void replaceSelected(Attributes others, int... selection) {
+        ensureModifiable();
         for (int i = 0; i < size; i++) {
             if (Arrays.binarySearch(selection, tags[i]) >= 0) {
                 values[i] = StringUtils.maskNull(others.getValue(tags[i]), Value.NULL);
@@ -3511,6 +3575,7 @@ public class Attributes implements Serializable {
     }
 
     public void replaceUIDSelected(int... selection) {
+        ensureModifiable();
         for (int i = 0; i < size; i++) {
             if (Arrays.binarySearch(selection, tags[i]) >= 0
                     && values[i] != Value.NULL) {
@@ -3533,10 +3598,12 @@ public class Attributes implements Serializable {
     }
 
     public int removeCurveData() {
+        ensureModifiable();
         return removeRepeatingGroup(0x50000000);
     }
 
     public int removeOverlayData() {
+        ensureModifiable();
         return removeRepeatingGroup(0x60000000);
     }
 

@@ -857,4 +857,31 @@ public class AttributesTest {
 
         assertEquals(privateValue, dataset.getString(shPrivateCreator, privateTag));
     }
+
+    @Test
+    public void testReadOnly() {
+        Attributes attrs = new Attributes();
+        Sequence seq = attrs.newSequence(Tag.OtherPatientIDsSequence, 1);
+        Attributes otherPID = new Attributes();
+        otherPID.setString(Tag.PatientID, VR.LO, "PatientID");
+        otherPID.setString(Tag.IssuerOfPatientID, VR.LO, "IssuerOfPatientID");
+        seq.add(otherPID);
+        attrs.setReadOnly(true);
+        assertTrue(otherPID.isReadOnly());
+        assertEquals("PatientID", otherPID.getString(Tag.PatientID));
+        try {
+            otherPID.setString(Tag.PatientID, VR.LO, "ChangedPatientID");
+            fail("Expected exception: java.lang.UnsupportedOperationException");
+        } catch (UnsupportedOperationException expected) {}
+        try {
+            otherPID.remove(Tag.PatientID);
+            fail("Expected exception: java.lang.UnsupportedOperationException");
+        } catch (UnsupportedOperationException expected) {}
+        try {
+            seq.clear();
+            fail("Expected exception: java.lang.UnsupportedOperationException");
+        } catch (UnsupportedOperationException expected) {}
+        attrs.setReadOnly(false);
+        otherPID.setString(Tag.PatientID, VR.LO, "ChangedPatientID");
+    }
 }

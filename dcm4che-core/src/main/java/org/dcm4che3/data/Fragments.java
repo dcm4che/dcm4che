@@ -85,11 +85,28 @@ public class Fragments extends ArrayList<Object> implements Value {
 
     private final VR vr;
     private final boolean bigEndian;
+    private volatile boolean readOnly;
 
     public Fragments(VR vr, boolean bigEndian, int initialCapacity) {
         super(initialCapacity);
         this.vr = vr;
         this.bigEndian = bigEndian;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        if (this.readOnly != readOnly) {
+            this.readOnly = readOnly;
+        }
+    }
+
+    private void ensureModifiable() {
+        if (readOnly) {
+            throw new UnsupportedOperationException("read-only");
+        }
     }
 
     public final VR vr() {
@@ -113,7 +130,8 @@ public class Fragments extends ArrayList<Object> implements Value {
 
     @Override
     public void add(int index, Object frag) {
-        super.add(index, 
+        ensureModifiable();
+        super.add(index,
                 frag == null || (frag instanceof byte[]) && ((byte[]) frag).length == 0
                     ? Value.NULL
                     : frag);
@@ -126,6 +144,7 @@ public class Fragments extends ArrayList<Object> implements Value {
 
     @Override
     public boolean addAll(int index, Collection<? extends Object> c) {
+        ensureModifiable();
         for (Object o : c)
             add(index++, o);
         return !c.isEmpty();

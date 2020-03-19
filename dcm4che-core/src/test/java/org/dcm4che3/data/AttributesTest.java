@@ -866,7 +866,7 @@ public class AttributesTest {
         otherPID.setString(Tag.PatientID, VR.LO, "PatientID");
         otherPID.setString(Tag.IssuerOfPatientID, VR.LO, "IssuerOfPatientID");
         seq.add(otherPID);
-        attrs.setReadOnly(true);
+        attrs.setReadOnly();
         assertTrue(otherPID.isReadOnly());
         assertEquals("PatientID", otherPID.getString(Tag.PatientID));
         try {
@@ -881,7 +881,5 @@ public class AttributesTest {
             seq.clear();
             fail("Expected exception: java.lang.UnsupportedOperationException");
         } catch (UnsupportedOperationException expected) {}
-        attrs.setReadOnly(false);
-        otherPID.setString(Tag.PatientID, VR.LO, "ChangedPatientID");
     }
 }

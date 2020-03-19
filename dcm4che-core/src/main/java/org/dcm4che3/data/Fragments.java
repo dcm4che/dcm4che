@@ -97,10 +97,8 @@ public class Fragments extends ArrayList<Object> implements Value {
         return readOnly;
     }
 
-    public void setReadOnly(boolean readOnly) {
-        if (this.readOnly != readOnly) {
-            this.readOnly = readOnly;
-        }
+    public void setReadOnly() {
+        this.readOnly = true;
     }
 
     private void ensureModifiable() {

@@ -166,7 +166,7 @@ public class Attributes implements Serializable {
     public Attributes(Attributes other, boolean bigEndian, Attributes selection) {
         this(bigEndian, selection.size());
         if (other.properties != null)
-            properties = new HashMap<String, Object>(other.properties);
+            properties = new HashMap<>(other.properties);
         addSelected(other, selection);
     }
 
@@ -174,16 +174,14 @@ public class Attributes implements Serializable {
         return readOnly;
     }
 
-    public void setReadOnly(boolean readOnly) {
-        if (this.readOnly != readOnly) {
-            this.readOnly = readOnly;
-            for (int i = 0, n = size; i < n; i++) {
-                Object value = values[i];
-                if (value instanceof Sequence)
-                    ((Sequence) value).setReadOnly(readOnly);
-                else if (value instanceof Fragments)
-                    ((Fragments) value).setReadOnly(readOnly);
-            }
+    public void setReadOnly() {
+        this.readOnly = true;
+        for (int i = 0, n = size; i < n; i++) {
+            Object value = values[i];
+            if (value instanceof Sequence)
+                ((Sequence) value).setReadOnly();
+            else if (value instanceof Fragments)
+                ((Fragments) value).setReadOnly();
         }
     }
 

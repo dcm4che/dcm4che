@@ -66,13 +66,11 @@ public class Sequence extends ArrayList<Attributes> implements Value {
         return readOnly;
     }
 
-    public void setReadOnly(boolean readOnly) {
-        if (this.readOnly != readOnly) {
-            this.readOnly = readOnly;
-            for (Attributes attrs : this) {
-                attrs.setReadOnly(readOnly);
-            }
-       }
+    public void setReadOnly() {
+        this.readOnly = true;
+        for (Attributes attrs : this) {
+            attrs.setReadOnly();
+        }
     }
 
     private void ensureModifiable() {

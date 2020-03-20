@@ -842,6 +842,17 @@ public class AttributesTest {
     }
 
     @Test
+    public void testAddCompatibleCharacterSet2() {
+        Attributes a = new Attributes();
+        a.setString(Tag.SpecificCharacterSet, VR.CS, "ISO_IR 100");
+        a.setBytes(Tag.PatientName, VR.PN, "Äneas^Rüdiger".getBytes(StandardCharsets.ISO_8859_1));
+        a.setString(Tag.PatientSex, VR.CS, "M");
+        Attributes b = new Attributes();
+        b.setNull(Tag.PatientName, VR.PN);
+        b.addSelected(a, Tag.PatientSex);
+    }
+
+    @Test
     public void testGetValuePrivateCreatorSh() {
         Attributes dataset = new Attributes();
 

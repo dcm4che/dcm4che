@@ -2254,22 +2254,30 @@ public class Attributes implements Serializable {
             Attributes selection, UpdatePolicy updatePolicy) {
         return isUpdateSpecificCharacterSet(other, include, exclude, fromIndex, toIndex, selection, updatePolicy)
                 ? other.getSpecificCharacterSet().contains(getSpecificCharacterSet())
-                    || !containsNonASCIIStringValues()
+                    || !containsNonASCIIStringValues(null, null, 0, 0, null)
                 : getSpecificCharacterSet().contains(other.getSpecificCharacterSet())
-                    || !other.containsNonASCIIStringValues();
+                    || !other.containsNonASCIIStringValues(include, exclude, fromIndex, toIndex, selection);
     }
 
-    private boolean containsNonASCIIStringValues() {
+    private boolean containsNonASCIIStringValues(int[] include, int[] exclude, int fromIndex, int toIndex,
+            Attributes selection) {
         for (int i = 0; i < size; i++) {
+            int tag = tags[i];
             Object val = values[i];
-            if (val instanceof Sequence) {
-                for (Attributes item : ((Sequence) val)) {
-                    if (item.containsNonASCIIStringValues()) {
-                        return true;
+            if ((include == null || Arrays.binarySearch(include, fromIndex, toIndex, tag) >= 0)
+                    && (exclude == null || Arrays.binarySearch(exclude, fromIndex, toIndex, tag) < 0)
+                    && (selection == null || selection.contains(tag))) {
+                if (val instanceof Sequence) {
+                    Attributes nestedSelection = selection != null ? selection.getNestedDataset(tag) : null;
+                    for (Attributes item : ((Sequence) val)) {
+                        if (item.containsNonASCIIStringValues(
+                                null, null, 0, 0, nestedSelection)) {
+                            return true;
+                        }
                     }
+                } else if (val != Value.NULL && vrs[i].useSpecificCharacterSet()) {
+                    return true;
                 }
-            } else if (val != Value.NULL && vrs[i].useSpecificCharacterSet()) {
-                return true;
             }
         }
         return false;

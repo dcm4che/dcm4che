@@ -2147,7 +2147,7 @@ public class Attributes implements Serializable {
         if (updatePolicy == UpdatePolicy.REPLACE)
             throw new IllegalArgumentException("updatePolicy:" + updatePolicy);
 
-        if (!isEmpty() &&
+        if (updatePolicy != UpdatePolicy.PRESERVE && !isEmpty() &&
                 !isSpecificCharacterSetCompatible(other, include, exclude, fromIndex, toIndex, selection, updatePolicy))
             throw new IncompatibleSpecificCharaterSetException("Specific Character Sets " +
                     Arrays.toString(getSpecificCharacterSet().toCodes()) +

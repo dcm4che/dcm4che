@@ -85,8 +85,8 @@
     <weasis.opencv.native.version>4.2.0-dcm</weasis.opencv.native.version>
     <keycloak.version>9.0.2</keycloak.version>
     <jaxws-tools-maven-plugin.version>1.2.1.Final</jaxws-tools-maven-plugin.version>
-    <jbossws-cxf-client.version>5.3.0.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>3.3.3</apache-cxf.version>
+    <jbossws-cxf-client.version>5.4.1.Final</jbossws-cxf-client.version>
+    <apache-cxf.version>3.3.5</apache-cxf.version>
     <apache-commons-csv.version>1.7</apache-commons-csv.version>
     <jakarta.activation.version>1.2.1</jakarta.activation.version>
     <jakarta.xml.bind.version>2.3.2</jakarta.xml.bind.version>

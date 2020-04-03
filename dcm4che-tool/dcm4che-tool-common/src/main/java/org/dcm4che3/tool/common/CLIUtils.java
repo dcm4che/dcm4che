@@ -759,7 +759,7 @@ public class CLIUtils {
         int tag = tags[tags.length-1];
         VR vr = ElementDictionary.vrOf(tag,
                 item.getPrivateCreator(tag));
-        if (ss.length == 0)
+        if (ss.length == 0 || ss.length == 1 && ss[0].isEmpty())
             if (vr == VR.SQ)
                 item.newSequence(tag, 1).add(new Attributes(0));
             else

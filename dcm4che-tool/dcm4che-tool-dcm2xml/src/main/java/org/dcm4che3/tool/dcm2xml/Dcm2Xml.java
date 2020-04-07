@@ -296,6 +296,9 @@ public class Dcm2Xml {
         TransformerHandler th = getTransformerHandler();
         Transformer t = th.getTransformer();
         t.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+        if (indent) {
+            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+        }
         t.setOutputProperty(OutputKeys.VERSION, xmlVersion);
         th.setResult(new StreamResult(System.out));
         SAXWriter saxWriter = new SAXWriter(th);

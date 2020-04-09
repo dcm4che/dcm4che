@@ -347,6 +347,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             bulkData = null;
         } else if (inlineBinary) {
             attrs.setBytes(privateCreator, tag, vr, getBytes());
+            inlineBinary = false;
         } else {
             String[] value = getStrings();
             try {

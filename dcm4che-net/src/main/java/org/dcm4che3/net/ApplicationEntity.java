@@ -427,7 +427,7 @@ public class ApplicationEntity implements Serializable {
         return roleSelectionNegotiationLenient;
     }
 
-    public void setRoleSelectionNegotiationLenient(Boolean installed) {
+    public void setRoleSelectionNegotiationLenient(Boolean roleSelectionNegotiationLenient) {
         this.roleSelectionNegotiationLenient = roleSelectionNegotiationLenient;
     }
 

@@ -774,6 +774,20 @@ public class AttributesTest {
     }
 
     @Test
+    public void testPreserveDuplicatePrivateCreator() {
+        Attributes original = new Attributes();
+        original.setString(0x00990010, VR.LO, "PrivateCreatorA");
+        original.setString(0x00990020, VR.LO, "PrivateCreatorA");
+        original.setString(0x00991001, VR.LO, "Private1");
+        original.setString(0x00992001, VR.LO, "Private2");
+        Attributes copy = new Attributes(original);
+        assertEquals("PrivateCreatorA", copy.getString(0x00990010));
+        assertEquals("PrivateCreatorA", copy.getString(0x00990020));
+        assertEquals("Private1", copy.getString(0x00991001));
+        assertEquals("Private2", copy.getString(0x00992001));
+    }
+
+    @Test
     public void testRemoveOverlayData() {
         Attributes attrs = new Attributes();
         attrs.setNull(Tag.SpecificCharacterSet, VR.CS);

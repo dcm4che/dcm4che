@@ -620,12 +620,9 @@ public class Attributes implements Serializable {
     }
 
     public String privateCreatorOf(int tag) {
-        if (!TagUtils.isPrivateTag(tag))
-            return null;
-
-        int creatorTag = (tag & 0xffff0000) | ((tag >>> 8) & 0xff);
-        int index = indexOf(creatorTag);
-        return privateCreatorAt(index);
+        return TagUtils.isPrivateTag(tag)
+                ? privateCreatorAt(indexOf(TagUtils.creatorTagOf(tag)))
+                : null;
     }
 
     private String privateCreatorAt(int index) {
@@ -2164,6 +2161,7 @@ public class Attributes implements Serializable {
         final int otherSize = other.size;
         int numAdd = 0;
         String privateCreator = null;
+        String privateCreator0 = null;
         int creatorTag = 0;
         for (int i = 0; i < otherSize; i++) {
             int tag = otherTags[i];
@@ -2178,7 +2176,7 @@ public class Attributes implements Serializable {
             if (TagUtils.isPrivateCreator(tag)
                     && (privateCreator = other.privateCreatorAt(i)) != null) {
                 if ((selection == null || selection.creatorTagOf(privateCreator, tag, false) > 0)
-                        && creatorTagOf(privateCreator, tag, false) < 0
+//                        && creatorTagOf(privateCreator, tag, false) < 0
                         && !contains(tag)) {    // preserve non-conflicting Private Creator ID tag positions
                     setString(tag, VR.LO, privateCreator);
                 }
@@ -2189,7 +2187,11 @@ public class Attributes implements Serializable {
                 int tmp = TagUtils.creatorTagOf(tag);
                 if (creatorTag != tmp) {
                     creatorTag = tmp;
-                    privateCreator = other.privateCreatorOf(tag);
+                    privateCreator = other.privateCreatorAt(other.indexOf(creatorTag));
+                    privateCreator0 = privateCreator == null
+                            || privateCreator.equals(privateCreatorAt(indexOf(creatorTag))) // preserve private tag
+                            ? null
+                            : privateCreator;
                 }
             } else {
                 creatorTag = 0;
@@ -2233,14 +2235,14 @@ public class Attributes implements Serializable {
                             && (dest = getSequence(tag)) != null)
                         mergeOriginalAttributesSequence((Sequence) value, dest);
                     else
-                        set(privateCreator, tag, (Sequence) value,
+                        set(privateCreator0, tag, (Sequence) value,
                             selection != null 
                                 ? selection.getNestedDataset(privateCreator, tag)
                                 : null);
                 } else if (value instanceof Fragments) {
-                    set(privateCreator, tag, (Fragments) value);
+                    set(privateCreator0, tag, (Fragments) value);
                 } else {
-                    set(privateCreator, tag, vr,
+                    set(privateCreator0, tag, vr,
                             toggleEndian(vr, value, toggleEndian));
                 }
             }
@@ -2485,7 +2487,7 @@ public class Attributes implements Serializable {
                 int tmp = TagUtils.creatorTagOf(tag);
                 if (creatorTag != tmp) {
                     creatorTag = tmp;
-                    otherCreatorTag = other.creatorTagOf(privateCreatorOf(tag), tag, false);
+                    otherCreatorTag = other.creatorTagOf(privateCreatorAt(indexOf(creatorTag)), tag, false);
                     if (otherCreatorTag == -1)
                         return false;
                 }

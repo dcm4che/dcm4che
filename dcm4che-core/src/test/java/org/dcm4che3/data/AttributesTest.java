@@ -788,6 +788,23 @@ public class AttributesTest {
     }
 
     @Test
+    public void testMergePrivateGroups() {
+        Attributes attrs = new Attributes();
+        attrs.setString("PrivateCreatorA", 0x00990001, VR.LO, "1A");
+        Attributes other = new Attributes();
+        other.setString("PrivateCreatorB", 0x00990001, VR.LO, "1B");
+        other.setString("PrivateCreatorA", 0x00990002, VR.LO, "2A");
+        attrs.addAll(other);
+        assertEquals(5, attrs.size());
+        assertEquals("PrivateCreatorA", attrs.getString(0x00990010));
+        assertEquals("PrivateCreatorB", attrs.getString(0x00990011));
+        assertEquals("1A", attrs.getString(0x00991001));
+        assertEquals("2A", attrs.getString(0x00991002));
+        assertEquals("PrivateCreatorB", attrs.getString(0x00990011));
+        assertEquals("1B", attrs.getString(0x00991101));
+    }
+
+    @Test
     public void testRemoveOverlayData() {
         Attributes attrs = new Attributes();
         attrs.setNull(Tag.SpecificCharacterSet, VR.CS);

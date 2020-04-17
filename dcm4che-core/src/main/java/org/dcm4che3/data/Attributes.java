@@ -2176,8 +2176,10 @@ public class Attributes implements Serializable {
             if (TagUtils.isPrivateCreator(tag)
                     && (privateCreator = other.privateCreatorAt(i)) != null) {
                 if ((selection == null || selection.creatorTagOf(privateCreator, tag, false) > 0)
-//                        && creatorTagOf(privateCreator, tag, false) < 0
-                        && !contains(tag)) {    // preserve non-conflicting Private Creator ID tag positions
+                        && !contains(tag)
+                        && (creatorTagOf(privateCreator, tag, false) < 0
+                            || other.creatorTagOf(privateCreator, tag, false) != tag)
+                        ) {    // preserve non-conflicting Private Creator ID tag positions
                     setString(tag, VR.LO, privateCreator);
                 }
                 continue;

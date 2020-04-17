@@ -800,7 +800,6 @@ public class AttributesTest {
         assertEquals("PrivateCreatorB", attrs.getString(0x00990011));
         assertEquals("1A", attrs.getString(0x00991001));
         assertEquals("2A", attrs.getString(0x00991002));
-        assertEquals("PrivateCreatorB", attrs.getString(0x00990011));
         assertEquals("1B", attrs.getString(0x00991101));
     }
 

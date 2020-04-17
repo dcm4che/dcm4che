@@ -8,17 +8,16 @@
     </parent>
     <artifactId>dcm4che-imageio-opencv</artifactId>
     <name>dcm4che-imageio-opencv</name>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-imageio</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.weasis.opencv</groupId>
-            <artifactId>weasis-opencv-core</artifactId>
-            <version>${weasis.version}</version>
-        </dependency>
-    </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>org.dcm4che</groupId>
+			<artifactId>dcm4che-imageio</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.weasis.core</groupId>
+			<artifactId>weasis-core-img</artifactId>
+			<version>${weasis.core.img.version}</version>
+		</dependency>
+	</dependencies>
 </project>

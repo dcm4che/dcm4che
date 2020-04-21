@@ -181,12 +181,16 @@ public class SwapPxData {
         if (ifBigEndian) {
             int prev = ByteUtils.bytesToShortBE(b, 0);
             long sumDiffs = 0L;
+            int n = 0;
             for (int off = 2, end = b.length - 1; off < end; off++, off++) {
                 int val = ByteUtils.bytesToShortBE(b, off);
-                sumDiffs += Math.abs(val - prev);
+                if (val != 0 && prev != 0) {
+                    sumDiffs += Math.abs(val - prev);
+                    n++;
+                }
                 prev = val;
             }
-            if (sumDiffs > (((long) b.length) << 7))
+            if (sumDiffs > (((long) n) << 8))
                 return false;
         }
         raf.seek(bulkData.offset());

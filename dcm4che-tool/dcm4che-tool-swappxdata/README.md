@@ -1,5 +1,5 @@
 ```
-usage: swappxdata [--ifBigEndian [--testAll]] <dicom-file>|<directory>...
+usage: swappxdata [--uids] [--ifBigEndian [--testAll]] <file>|<directory>...
 
 The swappxdata utility swaps bytes of uncompressed pixel data with Value
 Representation OW.
@@ -15,6 +15,8 @@ l - little endian encoded pixel data
 is written to stdout.
 
 Options:
+--uids           log SOP Instance UIDs from updated files in file 'uids.log'
+                 in working directory.
 --ifBigEndian    test encoding of pixel data; keep files untouched, if the
                  pixel data is encoded with little endian or 8 bits allocated.
                  By default, bytes of uncompressed pixel data with Value

@@ -47,18 +47,16 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.util.ByteUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Oct 2016
  */
-public class SwapPxData {
+public class SwapPxData implements Closeable {
 
     private static final String[] USAGE = {
-            "usage: swappxdata [--ifBigEndian [--testAll]] <dicom-file>|<directory>...",
+            "usage: swappxdata [--uids] [--ifBigEndian [--testAll]] <file>|<directory>...",
             "",
             "The swappxdata utility swaps bytes of uncompressed pixel data with Value",
             "Representation OW.",
@@ -74,6 +72,8 @@ public class SwapPxData {
             "is written to stdout.",
             "",
             "Options:",
+            "--uids           log SOP Instance UIDs from updated files in file 'uids.log'",
+            "                 in working directory.",
             "--ifBigEndian    test encoding of pixel data; keep files untouched, if the",
             "                 pixel data is encoded with little endian or 8 bits allocated.",
             "                 By default, bytes of uncompressed pixel data with Value",
@@ -83,40 +83,55 @@ public class SwapPxData {
             "                 file of a directory is detected as not big endian encoded,",
             "                 all remaining files of the directory are kept also untouched",
             "                 without loading them in memory for testing." };
+    private final boolean uids;
     private final boolean ifBigEndian;
     private final boolean testAll;
     private String skipDir;
+    private PrintWriter uidslog;
     private char skipChar;
     private int updated;
     private int skipped;
     private int failed;
 
-    public SwapPxData(boolean ifBigEndian, boolean testAll) {
+    public SwapPxData(boolean uids, boolean ifBigEndian, boolean testAll) {
+        this.uids = uids;
         this.ifBigEndian = ifBigEndian;
         this.testAll = testAll;
     }
 
     public static void main(String[] args) {
-        boolean ifBigEndian = args.length > 0 && args[0].equals("--ifBigEndian");
-        boolean testAll = ifBigEndian && args.length > 1 && args[1].equals("--testAll");
-        int firstPath = ifBigEndian ? testAll ? 2 : 1 : 0;
-        if (args.length == firstPath || args[firstPath].startsWith("-")) {
+        boolean uids, ifBigEndian, testAll;
+        int firstArg = 0;
+        if (uids = args.length > 0 && args[0].equals("--uids")) firstArg++;
+        if (ifBigEndian = args.length > firstArg && args[firstArg].equals("--ifBigEndian")) firstArg++;
+        if (testAll = ifBigEndian && args.length > firstArg && args[firstArg].equals("--testAll")) firstArg++;
+        if (args.length == firstArg || args[firstArg].startsWith("-")) {
             for (String line : USAGE) {
                 System.out.println(line);
             }
             System.exit(-1);
         }
-        SwapPxData inst = new SwapPxData(ifBigEndian, testAll);
-        long start = System.currentTimeMillis();
-        for (int i = firstPath; i < args.length; i++) {
-            inst.processFileOrDirectory(new File(args[i]));
+        if (uids && (new File("uids.log").exists())) {
+            System.out.println("uids.log already exists");
+            System.exit(-1);
         }
-        long stop = System.currentTimeMillis();
-        System.out.println();
-        log(inst.updated, " files updated");
-        log(inst.skipped, " files skipped");
-        log(inst.failed, " files failed to update");
-        System.out.println("in " + (stop - start) + " ms");
+        try (SwapPxData inst = new SwapPxData(uids, ifBigEndian, testAll)) {
+            long start = System.currentTimeMillis();
+            for (int i = firstArg; i < args.length; i++) {
+                inst.processFileOrDirectory(new File(args[i]));
+            }
+            long stop = System.currentTimeMillis();
+            System.out.println();
+            log(inst.updated, " files updated");
+            log(inst.skipped, " files skipped");
+            log(inst.failed, " files failed to update");
+            System.out.println("in " + (stop - start) + " ms");
+            if (inst.uidslog != null)
+                System.out.println("created uids.log");
+        } catch (IOException e) {
+            System.err.println("Failed to close uids.log:\n");
+            e.printStackTrace(System.err);
+        }
     }
 
     private static void log(int n, String suffix) {
@@ -161,6 +176,8 @@ public class SwapPxData {
                         return skipChar = 'l';
                     }
                 }
+                if (uids)
+                    uidslog().println(dataset.getString(Tag.SOPInstanceUID));
                 updated++;
                 return '.';
             }
@@ -172,6 +189,12 @@ public class SwapPxData {
             failed++;
         }
         return 'E';
+    }
+
+    private PrintWriter uidslog() throws IOException {
+        if (uidslog == null)
+            uidslog = new PrintWriter("uids.log");
+        return uidslog;
     }
 
     private boolean toggleEndian(RandomAccessFile raf, BulkData bulkData) throws IOException {
@@ -198,4 +221,9 @@ public class SwapPxData {
         return true;
     }
 
+    @Override
+    public void close() throws IOException {
+        if (uidslog != null)
+            uidslog.close();
+    }
 }

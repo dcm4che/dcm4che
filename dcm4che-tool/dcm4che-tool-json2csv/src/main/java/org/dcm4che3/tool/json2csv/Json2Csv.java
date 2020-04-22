@@ -47,7 +47,9 @@ import javax.json.JsonReader;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Gunter Zeilinger (gunterze@protonmail.com)
@@ -55,6 +57,14 @@ import java.util.List;
  */
 public class Json2Csv {
 
+    private static final String[] USAGE = {
+            "usage: json2csv <schema-dir> <csv-dir>",
+            "    or json2csv <schema-dir> <csv-dir> <out-schema-dir>",
+            "",
+            "The json2csv utility converts Archive configuration schema JSON files to CVS",
+            "and vice versa to ease translation of attribute names and descriptions to",
+            "other languages than English."
+    };
     private static final String PROPERTY_TITLE_DESCRIPTION = "\"property\",\"title\",\"description\"";
     private final File schemaDir;
     private final File csvDir;
@@ -73,8 +83,9 @@ public class Json2Csv {
                 csv2json(new File(args[0]), new File(args[1]), new File(args[2]));
                 break;
             default:
-                System.out.println("Usage: json2csv <schema-dir> <csv-dir>");
-                System.out.println("    or json2csv <schema-dir> <csv-dir> <out-schema-dir>");
+                for (String line : USAGE) {
+                    System.out.println(line);
+                }
                 System.exit(-1);
         }
     }
@@ -140,7 +151,7 @@ public class Json2Csv {
 
     private static void csv2json1(File schemaFile, File csvFile, File outFile) throws IOException {
         System.out.println(csvFile.toString() + "=>" + outFile.toString());
-        List<String[]> csv = parseCSV(csvFile);
+        Map<String, String[]> csv = parseCSV(csvFile);
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
                     new FileInputStream(schemaFile),
@@ -150,37 +161,36 @@ public class Json2Csv {
                         new FileOutputStream(outFile),
                         StandardCharsets.UTF_8))) {
                 String line;
-                int field = 0;
-                int index = 0;
                 String indent = "  ";
-                String prefix = null;
+                String[] csvLine = csv.get("\"\"");
+                int field = csvLine != null ? 0 : 3;
+                int fieldAfterDescription = 3;
                 while ((line = reader.readLine()) != null) {
                     switch (field) {
                         case 0:
-                            if (prefix == null || line.startsWith(prefix)) {
-                                field = 1;
-                            }
+                            field = 1;
                             break;
                         case 1:
-                            line = indent + "\"title\": " + csv.get(index)[1] + ',';
+                            line = indent + "\"title\": " + csvLine[1] + ',';
                             field = 2;
                             break;
                         case 2:
-                            line = indent + "\"description\": " + csv.get(index)[2] + ',';
-                            field = 0;
-                            if (index++ == 0) {
-                                indent = "      ";
-                                field = 3;
-                            }
-                            if (index < csv.size()) {
-                                prefix = "    " + csv.get(index)[0];
-                            } else {
-                                field = -1;
-                            }
+                            line = indent + "\"description\": " + csvLine[2] + ',';
+                            field = fieldAfterDescription;
                             break;
                         case 3:
                             if (line.startsWith("  \"properties\"")) {
-                                field = 0;
+                                field = 4;
+                                indent = "      ";
+                                fieldAfterDescription = 4;
+                            }
+                            break;
+                        case 4:
+                            if (line.startsWith("    \"")) {
+                                csvLine = csv.get(line.substring(4, line.length() - 3));
+                                if (csvLine != null) {
+                                    field = 1;
+                                }
                             }
                     }
                     writer.write(line);
@@ -190,8 +200,8 @@ public class Json2Csv {
         }
     }
 
-    private static List<String[]> parseCSV(File csvFile) throws IOException {
-        List<String[]> csv = new ArrayList<>();
+    private static Map<String, String[]> parseCSV(File csvFile) throws IOException {
+        Map<String, String[]> csv = new HashMap<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new FileInputStream(csvFile),
                 StandardCharsets.UTF_8))) {
@@ -200,7 +210,8 @@ public class Json2Csv {
                 throw new IOException("Unexpected CSV header: " + line);
             }
             while ((line = reader.readLine()) != null) {
-                csv.add(split(line));
+                String[] split = split(line);
+                csv.put(split[0], split);
             }
         }
         return csv;

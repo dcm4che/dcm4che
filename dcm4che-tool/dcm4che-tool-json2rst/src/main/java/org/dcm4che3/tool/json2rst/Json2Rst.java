@@ -54,6 +54,13 @@ import java.util.regex.Pattern;
  */
 public class Json2Rst {
 
+    private static final String[] USAGE = {
+            "usage: json2rst <path-to-device.schema.json> <output-dir> [<tabular-columns>]",
+            "",
+            "The json2rst utility generates ReStructuredText files from Archive",
+            "configuration schema JSON files used for documentation of Archive",
+            "configuration attributes in the DICOM Conformance Statement."
+    };
     private static final String UNDERLINE = "===============================================================";
     private final File indir;
     private final File outdir;
@@ -73,7 +80,9 @@ public class Json2Rst {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
-            System.out.println("Usage: json2rst <path-to-device.schema.json> <output-dir> [<tabular-columns>]");
+            for (String line : USAGE) {
+                System.out.println(line);
+            }
             System.exit(-1);
         }
         Json2Rst json2Rst = new Json2Rst(new File(args[0]), new File(args[1]));

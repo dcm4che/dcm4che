@@ -59,6 +59,8 @@ Utilities
 ---------
 - [dcm2dcm][]: Transcode DICOM file according the specified Transfer Syntax
 - [dcm2jpg][]: Convert DICOM image to JPEG or other image formats
+- [dcm2json][]: Convert DICOM file in JSON presentation
+- [dcm2pdf][]: Extract encapsulated PDF, CDA or STL from DICOM file
 - [dcm2str][]: Apply Attributes Format Pattern to dicom file or command line parameters.
 - [dcm2xml][]: Convert DICOM file in XML presentation
 - [dcmdir][]: Dump, create or update DICOMDIR file
@@ -66,6 +68,7 @@ Utilities
 - [dcmldap][]: Insert/remove configuration entries for Network AEs into/from LDAP server
 - [dcmqrscp][]: Simple DICOM archive
 - [dcmvalidate][]: Validate DICOM object according a specified Information Object Definition
+- [deidentify][]: De-identify one or several DICOM files
 - [emf2sf][]: Convert DICOM Enhanced Multi-frame image to legacy DICOM Single-frame images
 - [findscu][]: Invoke DICOM C-FIND Query Request
 - [getscu][]: Invoke DICOM C-GET Retrieve Request
@@ -76,6 +79,8 @@ Utilities
 - [ianscp][]: DICOM Instance Availability Notification receiver 
 - [ianscu][]: Send DICOM Instance Availability Notification
 - [jpg2dcm][]: Convert JPEG images or MPEG videos in DICOM files
+- [json2csv][]: Convert Archive configuration schema JSON files to CVS and vice versa
+- [json2rst][]: Generate ReStructuredText files from Archive configuration schema JSON files
 - [mkkos][]: Make DICOM Key Object Selection Document
 - [modality][]: Simulates DICOM Modality
 - [movescu][]: Invoke DICOM C-MOVE Retrieve request
@@ -86,14 +91,19 @@ Utilities
 - [storescp][]: DICOM Composite Object Receiver
 - [storescu][]: Send DICOM Composite Objects
 - [stowrs][]: Send DICOM Composite Objects or Bulkdata file over Web
+- [swappxdata][]: Swaps bytes of uncompressed pixel data in DICOM files
+- [syslog][]: Send Syslog messages via TCP/TLS or UDP to a Syslog Receiver
+- [syslogd][]: Receives RFC 5424 Syslog messages via TCP/TLS or UDP
+- [upsscu][]: Invokes services of Unified Procedure Step Service Class
 - [wadors][]: Wado RS Client Simulator 
 - [wadows][]: Wado WS Client Simulator 
 - [xml2dcm][]: Create/Update DICOM file from/with XML presentation
 - [xml2hl7][]: Create HL7 v2.x message from XML presentation
-- [xml2prefs][]: Import Java Preferences
 
 [dcm2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2dcm/README.md
 [dcm2jpg]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2jpg/README.md
+[dcm2json]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2json/README.md
+[dcm2jpdf]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2pdf/README.md
 [dcm2str]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2str/README.md
 [dcm2xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2xml/README.md
 [dcmdir]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdir/README.md
@@ -101,6 +111,7 @@ Utilities
 [dcmldap]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmldap/README.md
 [dcmqrscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmqrscp/README.md
 [dcmvalidate]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmvalidate/README.md
+[deidentify]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-deidentify/README.md
 [emf2sf]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-emf2sf/README.md
 [findscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-findscu/README.md
 [getscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-getscu/README.md
@@ -111,6 +122,8 @@ Utilities
 [ianscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscp/README.md
 [ianscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscu/README.md
 [jpg2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-jpg2dcm/README.md
+[json2csv]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-json2csv/README.md
+[json2rst]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-jpg2rst/README.md
 [mkkos]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mkkos/README.md
 [modality]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ihe/dcm4che-tool-ihe-modality/README.md
 [movescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-movescu/README.md
@@ -121,11 +134,14 @@ Utilities
 [storescp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescp/README.md
 [storescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescu/README.md
 [stowrs]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stowrs/README.md
+[swappxdata]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-swappxdata/README.md
+[syslog]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-syslog/README.md
+[syslogd]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-syslogd/README.md
+[upsscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-upsscu/README.md
 [wadors]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-wadors/README.md
 [wadows]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-wadows/README.md
 [xml2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2dcm/README.md
 [xml2hl7]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2hl7/README.md
-[xml2prefs]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2prefs/README.md
 
 License
 -------

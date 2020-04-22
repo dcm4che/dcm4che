@@ -1,3 +1,4 @@
+```
 usage: findscu [options] -c <aet>@<host>:<port> [--]
                [<dicom-file>|<xml-file>...]
 
@@ -291,3 +292,4 @@ Provider DCMQRSCP listening on local port 11112 by applying the
 presentation state stylesheet with query keys provided in
 /etc/findscu/pr.xml file and Modality as PR; concatenate the results to a
 csv file in a specific directory.
+```

@@ -334,11 +334,11 @@ public class AuditLogger extends DeviceExtension {
     @ConfigurableProperty(name = "dcmAuditMessageSupplement95Schema", defaultValue = "false")
     private boolean supplement95;
 
-    @ConfigurableProperty(name = "dicomInstalled", defaultValue = "true")
-    private boolean auditLoggerInstalled = true;
+    @ConfigurableProperty(name = "dicomInstalled")
+    private Boolean auditLoggerInstalled;
 
     @ConfigurableProperty(name = "dcmAuditIncludeInstanceUID")
-    private boolean doIncludeInstanceUID = false;
+    private Boolean doIncludeInstanceUID = false;
 
     @ConfigurableProperty(name = "dcmAuditLoggerSpoolDirectoryURI")
     private String spoolDirectoryURI;
@@ -637,29 +637,30 @@ public class AuditLogger extends DeviceExtension {
 
     public boolean isInstalled() {
         return device != null && device.isInstalled()
-                && auditLoggerInstalled;
+                && (auditLoggerInstalled == null || auditLoggerInstalled.booleanValue());
     }
 
-    public final boolean getAuditLoggerInstalled() {
+    public final Boolean getAuditLoggerInstalled() {
         return auditLoggerInstalled;
     }
 
-    public void setAuditLoggerInstalled(boolean installed) {
-        if (installed && device != null && !device.isInstalled())
+    public void setAuditLoggerInstalled(Boolean installed) {
+        if (installed != null && installed.booleanValue()
+                && device != null && !device.isInstalled())
             throw new IllegalStateException("owning device not installed");
         this.auditLoggerInstalled = installed;
     }
 
 
-    public boolean isIncludeInstanceUID() {
+    public Boolean isIncludeInstanceUID() {
         return doIncludeInstanceUID;
     }
 
-    public boolean getDoIncludeInstanceUID() {
+    public Boolean getDoIncludeInstanceUID() {
         return doIncludeInstanceUID;
     }
 
-    public void setDoIncludeInstanceUID(boolean doIncludeInstanceUID) {
+    public void setDoIncludeInstanceUID(Boolean doIncludeInstanceUID) {
         this.doIncludeInstanceUID = doIncludeInstanceUID;
     }
 

@@ -16,5 +16,6 @@
         <module>dcm4che-conf-api-hl7</module>
         <module>dcm4che-conf-ldap</module>
         <module>dcm4che-conf-dicom</module>
+        <module>dcm4che-conf-test</module>
     </modules>
 </project>

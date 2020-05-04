@@ -356,7 +356,7 @@ public class BulkData implements Value {
         if (uri == null)
             throw new IllegalStateException("uri: null");
 
-        ImageInputStream iis = LOADER.openStream(this.toURI());
+        ImageInputStream iis = LOADER.openStream(this.toFileURI());
         return new BulkURIImageInputStream(iis, this.offset, this.length);
     }
 

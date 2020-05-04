@@ -174,7 +174,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
         <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
-        <include>org.weasis.core:weasis-core-img</include>
+        <include>org.weasis.core:weasis-core-img-jdk7</include>
         <include>com.sun.media:jai_imageio</include>
         <include>com.sun.media:clibwrapper_jiio</include>
         <include>org.slf4j:slf4j-api</include>

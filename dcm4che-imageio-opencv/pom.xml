@@ -16,7 +16,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.weasis.core</groupId>
-			<artifactId>weasis-core-img</artifactId>
+			<artifactId>weasis-core-img-jdk7</artifactId>
 			<version>${weasis.core.img.version}</version>
 		</dependency>
 	</dependencies>

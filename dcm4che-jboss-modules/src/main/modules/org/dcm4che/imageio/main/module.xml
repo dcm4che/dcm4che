@@ -3,7 +3,7 @@
     <resources>
         <resource-root path="dcm4che-imageio-${version}.jar"/>
         <resource-root path="dcm4che-imageio-opencv-${version}.jar"/>
-        <resource-root path="weasis-core-img-${weasis.core.img.version}.jar"/>
+        <resource-root path="weasis-core-img-jdk7-${weasis.core.img.version}.jar"/>
     </resources>
 
     <dependencies>

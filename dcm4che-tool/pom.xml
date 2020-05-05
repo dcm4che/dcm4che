@@ -85,6 +85,7 @@
     <module>dcm4che-tool-mppsscp</module>
     <module>dcm4che-tool-mppsscu</module>
     <module>dcm4che-tool-pdf2dcm</module>
+    <module>dcm4che-tool-planarconfig</module>
     <module>dcm4che-tool-stgcmtscu</module>
     <module>dcm4che-tool-storescp</module>
     <module>dcm4che-tool-storescu</module>

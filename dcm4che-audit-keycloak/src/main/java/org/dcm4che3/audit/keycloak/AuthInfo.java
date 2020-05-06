@@ -45,6 +45,7 @@ import org.keycloak.events.Event;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.AuthDetails;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.UserModel;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -72,9 +73,14 @@ class AuthInfo {
 
     AuthInfo (AdminEvent adminEvent, KeycloakSession keycloakSession) {
         AuthDetails authDetails = adminEvent.getAuthDetails();
+        String userRealmID = adminEvent.getAuthDetails().getRealmId();
+        UserModel userById = keycloakSession.users().getUserById(
+                                authDetails.getUserId(),
+                                userRealmID.equals(keycloakSession.getContext().getRealm().getName())
+                                ? keycloakSession.getContext().getRealm()
+                                : keycloakSession.realms().getRealm(userRealmID));
         fields = new String[] {
-                keycloakSession.users().getUserById(authDetails.getUserId(), keycloakSession.getContext().getRealm())
-                        .getUsername(),
+                userById.getUsername(),
                 authDetails.getIpAddress(),
                 adminEvent.getOperationType() + " " + adminEvent.getResourceType(),
                 adminEvent.getResourcePath(),

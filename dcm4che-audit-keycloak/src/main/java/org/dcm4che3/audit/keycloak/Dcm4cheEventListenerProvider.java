@@ -83,6 +83,15 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(AdminEvent adminEvent, boolean b) {
+        if (keycloakSession.users().getUserById(
+                adminEvent.getAuthDetails().getUserId(), keycloakSession.getContext().getRealm()) == null) {
+            LOG.info("Admin event {} accessed by user {} belonging to realm {} ",
+                    adminEvent.getOperationType() + " " + adminEvent.getResourceType(),
+                    adminEvent.getAuthDetails().getUserId(),
+                    adminEvent.getAuthDetails().getRealmId());
+            return;
+        }
+
         try {
             Collection<AuditLogger> loggers = new AuditLoggerFactory().getAuditLoggers();
             if (loggers != null)

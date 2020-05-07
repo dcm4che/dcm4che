@@ -120,11 +120,17 @@ class AdminEventsAuditService {
                 AuditMessages.ParticipantObjectIDTypeCode.DeviceName,
                 AuditMessages.ParticipantObjectTypeCode.SystemObject,
                 null)
-                .detail(AuditMessages.createParticipantObjectDetail(
-                        "Alert Description",
-                        "Representation: " + info.getField(AuthInfo.REPRESENTATION)
-                                + "\nResourcePath: " + info.getField(AuthInfo.RESOURCE_PATH)))
+                .detail(AuditMessages.createParticipantObjectDetail("Alert Description", alert(info)))
                 .build();
         return AuditMessages.createMessage(eventIdentification, activeParticipants, poi);
+    }
+
+    private static String alert(AuthInfo info) {
+        String alert = "Representation: " + info.getField(AuthInfo.REPRESENTATION)
+                        + "\nResourcePath: " + info.getField(AuthInfo.RESOURCE_PATH);
+        if (info.getField(AuthInfo.REALM) != null)
+            alert += "\nRealm: " + info.getField(AuthInfo.REALM);
+
+        return alert;
     }
 }

@@ -57,6 +57,7 @@ class AuthInfo {
     static final int EVENT = 2;
     static final int RESOURCE_PATH = 3;
     static final int REPRESENTATION = 4;
+    static final int REALM = 5;
     private final String[] fields;
 
     AuthInfo (Event event, KeycloakSession keycloakSession) {
@@ -74,9 +75,10 @@ class AuthInfo {
     AuthInfo (AdminEvent adminEvent, KeycloakSession keycloakSession) {
         AuthDetails authDetails = adminEvent.getAuthDetails();
         String userRealmID = adminEvent.getAuthDetails().getRealmId();
+        boolean realmsMatch = userRealmID.equals(keycloakSession.getContext().getRealm().getName());
         UserModel userById = keycloakSession.users().getUserById(
                                 authDetails.getUserId(),
-                                userRealmID.equals(keycloakSession.getContext().getRealm().getName())
+                                realmsMatch
                                 ? keycloakSession.getContext().getRealm()
                                 : keycloakSession.realms().getRealm(userRealmID));
         fields = new String[] {
@@ -84,7 +86,8 @@ class AuthInfo {
                 authDetails.getIpAddress(),
                 adminEvent.getOperationType() + " " + adminEvent.getResourceType(),
                 adminEvent.getResourcePath(),
-                adminEvent.getRepresentation()
+                adminEvent.getRepresentation(),
+                !realmsMatch ? userRealmID : null
         };
     }
 

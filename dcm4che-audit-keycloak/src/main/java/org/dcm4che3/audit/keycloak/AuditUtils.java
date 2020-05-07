@@ -134,7 +134,11 @@ class AuditUtils {
                 AuditMessages.EventActionCode.Execute,
                 auditLogger.timeStamp(),
                 eventOutcomeIndicator(outcome))
-                .outcomeDesc(adminEventInfo != null ? adminEventInfo + " " + outcome : outcome)
+                .outcomeDesc(adminEventInfo != null
+                        ? outcome != null
+                            ? adminEventInfo + " " + outcome
+                            : adminEventInfo
+                        : outcome)
                 .eventTypeCode(eventType.eventTypeCode)
                 .build();
     }

@@ -83,7 +83,7 @@
     <log4j.version>1.2.17</log4j.version>
     <weasis.version>3.6.0-rc1</weasis.version>
     <weasis.opencv.native.version>4.2.0-dcm</weasis.opencv.native.version>
-    <keycloak.version>9.0.2</keycloak.version>
+    <keycloak.version>10.0.1</keycloak.version>
     <jaxws-tools-maven-plugin.version>1.2.1.Final</jaxws-tools-maven-plugin.version>
     <jbossws-cxf-client.version>5.4.1.Final</jbossws-cxf-client.version>
     <apache-cxf.version>3.3.5</apache-cxf.version>

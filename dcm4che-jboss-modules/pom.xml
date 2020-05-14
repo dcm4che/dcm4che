@@ -150,9 +150,9 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.weasis.opencv</groupId>
-      <artifactId>weasis-opencv-core</artifactId>
-      <version>${weasis.version}</version>
+      <groupId>org.weasis.core</groupId>
+      <artifactId>weasis-core-img-jdk7</artifactId>
+      <version>${weasis.core.img.version}</version>
     </dependency>
     <dependency>
       <groupId>org.weasis.thirdparty.org.opencv</groupId>

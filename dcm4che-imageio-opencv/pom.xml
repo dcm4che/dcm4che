@@ -1,23 +1,23 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.dcm4che</groupId>
-        <artifactId>dcm4che-parent</artifactId>
-        <version>5.22.2</version>
-    </parent>
-    <artifactId>dcm4che-imageio-opencv</artifactId>
-    <name>dcm4che-imageio-opencv</name>
-	<dependencies>
-		<dependency>
-			<groupId>org.dcm4che</groupId>
-			<artifactId>dcm4che-imageio</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.weasis.core</groupId>
-			<artifactId>weasis-core-img-jdk7</artifactId>
-			<version>${weasis.core.img.version}</version>
-		</dependency>
-	</dependencies>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.dcm4che</groupId>
+    <artifactId>dcm4che-parent</artifactId>
+    <version>5.22.2</version>
+  </parent>
+  <artifactId>dcm4che-imageio-opencv</artifactId>
+  <name>dcm4che-imageio-opencv</name>
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-imageio</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.core</groupId>
+      <artifactId>weasis-core-img</artifactId>
+      <version>${weasis.core.img.version}</version>
+    </dependency>
+  </dependencies>
 </project>

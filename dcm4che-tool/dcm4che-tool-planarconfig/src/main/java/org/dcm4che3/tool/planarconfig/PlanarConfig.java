@@ -53,7 +53,7 @@ import java.io.*;
  */
 public class PlanarConfig implements Closeable {
     private static final String[] USAGE = {
-            "usage: planarconfig [--diff|--gray]] [--uids] [--fix[0|1]] <file>|<directory>...",
+            "usage: planarconfig [--uids] [--fix[0|1]] <file>|<directory>...",
             "",
             "The planarconfig utility detects the actual planar configuration of",
             "uncompressed pixel data of color images with Photometric Interpretation",
@@ -77,9 +77,6 @@ public class PlanarConfig implements Closeable {
             "and a stack trace is written to stderr.",
             "",
             "Options:",
-            "--gray   rely on predominance of gray over color pixels",
-            "--diff   rely on (smaller) differences of sample values of adjoining pixels",
-            "         by default apply --diff for Visible Light images, otherwise --gray",
             "--uids   log SOP Instance UIDs of files with not matching value of attribute",
             "         Planar Configuration in file 'uids.log' in working directory.",
             "--fix    fix all files with NOT matching value of attribute Planar Configuration",
@@ -90,7 +87,6 @@ public class PlanarConfig implements Closeable {
     };
     private static final char[] CORRECT_CH = { '0', '1' };
     private static final char[] WRONG_CH = { 'O', 'I' };
-    private final Heuristic heuristic;
     private final boolean uids;
     private final boolean[] fix;
     private PrintWriter uidslog;
@@ -99,26 +95,18 @@ public class PlanarConfig implements Closeable {
     private int skipped;
     private int failed;
 
-    public PlanarConfig(Heuristic heuristic, boolean uids, boolean... fix) {
-        this.heuristic = heuristic;
+    public PlanarConfig(boolean uids, boolean... fix) {
         this.uids = uids;
         this.fix = fix;
     }
 
     public static void main(String[] args) {
-        Heuristic heuristic = Heuristic.DIFFVL;
         boolean uids = false;
         boolean fix0 = false;
         boolean fix1 = false;
         int firstArg = 0;
         for (; args.length > firstArg; firstArg++) {
             switch (args[firstArg]) {
-                case "--gray":
-                    heuristic = Heuristic.GRAY;
-                    continue;
-                case "--diff":
-                    heuristic = Heuristic.DIFF;
-                    continue;
                 case "--uids":
                     uids = true;
                     continue;
@@ -145,7 +133,7 @@ public class PlanarConfig implements Closeable {
             System.out.println("uids.log already exists");
             System.exit(-1);
         }
-        try (PlanarConfig inst = new PlanarConfig(heuristic, uids, fix0, fix1)) {
+        try (PlanarConfig inst = new PlanarConfig(uids, fix0, fix1)) {
             long start = System.currentTimeMillis();
             for (int i = firstArg; i < args.length; i++) {
                 inst.processFileOrDirectory(new File(args[i]));
@@ -249,6 +237,8 @@ public class PlanarConfig implements Closeable {
         raf.seek(bulkData.offset());
         raf.readFully(b);
         long diff = 0L;
+        int grayPerPixel = 0;
+        int grayPerPlane = 0;
         int rows = dataset.getInt(Tag.Rows, 1);
         int cols = dataset.getInt(Tag.Columns, 1);
         int plane = rows * cols;
@@ -257,30 +247,27 @@ public class PlanarConfig implements Closeable {
                 { b[0] & 0xff, b[1] & 0xff, b[2] & 0xff },
                 { b[0] & 0xff, b[plane] & 0xff, b[plane2] & 0xff }
         };
-        boolean testGray = heuristic.testGray(dataset);
-        if (testGray) {
-            if (!colorPMI.isGray(prevSamples[0])) diff++;
-            if (!colorPMI.isGray(prevSamples[1])) diff--;
-        }
+        if (!colorPMI.isGray(prevSamples[0])) grayPerPixel++;
+        if (!colorPMI.isGray(prevSamples[1])) grayPerPlane++;
         for (int i = 1; i < plane; i++) {
             int i3 = i * 3;
             int[] perPixel = { b[i3] & 0xff, b[i3 + 1] & 0xff, b[i3 + 2] & 0xff };
             int[] perPlane= { b[i] & 0xff, b[i + plane] & 0xff, b[i + plane2] & 0xff };
-            if (testGray) {
-                if (!colorPMI.isGray(perPixel)) diff++;
-                if (!colorPMI.isGray(perPlane)) diff--;
-            } else {
-                diff += Math.abs(perPixel[0] - prevSamples[0][0]);
-                diff += Math.abs(perPixel[1] - prevSamples[0][1]);
-                diff += Math.abs(perPixel[2] - prevSamples[0][2]);
-                diff -= Math.abs(perPlane[0] - prevSamples[1][0]);
-                diff -= Math.abs(perPlane[1] - prevSamples[1][1]);
-                diff -= Math.abs(perPlane[2] - prevSamples[1][2]);
-            }
+            if (!colorPMI.isGray(perPixel)) grayPerPixel++;
+            if (!colorPMI.isGray(perPlane)) grayPerPlane++;
+            diff += Math.abs(perPixel[0] - prevSamples[0][0]);
+            diff += Math.abs(perPixel[1] - prevSamples[0][1]);
+            diff += Math.abs(perPixel[2] - prevSamples[0][2]);
+            diff -= Math.abs(perPlane[0] - prevSamples[1][0]);
+            diff -= Math.abs(perPlane[1] - prevSamples[1][1]);
+            diff -= Math.abs(perPlane[2] - prevSamples[1][2]);
             prevSamples[0] = perPixel;
             prevSamples[1] = perPlane;
         }
-        return diff > 0 ? 1 : 0;
+        return (Math.max(grayPerPixel, grayPerPlane) > (plane >> 1)
+                    ? grayPerPlane > grayPerPixel
+                    : diff > 0)
+                ? 1 : 0;
     }
 
     @Override

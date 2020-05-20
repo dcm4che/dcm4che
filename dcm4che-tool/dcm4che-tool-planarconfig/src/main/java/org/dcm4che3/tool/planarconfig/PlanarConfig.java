@@ -53,7 +53,7 @@ import java.io.*;
  */
 public class PlanarConfig implements Closeable {
     private static final String[] USAGE = {
-            "usage: planarconfig [--diff] [--uids] [--fix[0|1]] <file>|<directory>...",
+            "usage: planarconfig [--diff|--gray]] [--uids] [--fix[0|1]] <file>|<directory>...",
             "",
             "The planarconfig utility detects the actual planar configuration of",
             "uncompressed pixel data of color images with Photometric Interpretation",
@@ -77,8 +77,9 @@ public class PlanarConfig implements Closeable {
             "and a stack trace is written to stderr.",
             "",
             "Options:",
+            "--gray   rely on predominance of gray over color pixels",
             "--diff   rely on (smaller) differences of sample values of adjoining pixels",
-            "         otherwise rely on predominance of gray over color pixels",
+            "         by default apply --diff for Visible Light images, otherwise --gray",
             "--uids   log SOP Instance UIDs of files with not matching value of attribute",
             "         Planar Configuration in file 'uids.log' in working directory.",
             "--fix    fix all files with NOT matching value of attribute Planar Configuration",
@@ -89,7 +90,7 @@ public class PlanarConfig implements Closeable {
     };
     private static final char[] CORRECT_CH = { '0', '1' };
     private static final char[] WRONG_CH = { 'O', 'I' };
-    private final boolean testGray;
+    private final Heuristic heuristic;
     private final boolean uids;
     private final boolean[] fix;
     private PrintWriter uidslog;
@@ -98,22 +99,25 @@ public class PlanarConfig implements Closeable {
     private int skipped;
     private int failed;
 
-    public PlanarConfig(boolean testGray, boolean uids, boolean... fix) {
-        this.testGray = testGray;
+    public PlanarConfig(Heuristic heuristic, boolean uids, boolean... fix) {
+        this.heuristic = heuristic;
         this.uids = uids;
         this.fix = fix;
     }
 
     public static void main(String[] args) {
-        boolean testGray = true;
+        Heuristic heuristic = Heuristic.DIFFVL;
         boolean uids = false;
         boolean fix0 = false;
         boolean fix1 = false;
         int firstArg = 0;
         for (; args.length > firstArg; firstArg++) {
             switch (args[firstArg]) {
+                case "--gray":
+                    heuristic = Heuristic.GRAY;
+                    continue;
                 case "--diff":
-                    testGray = false;
+                    heuristic = Heuristic.DIFF;
                     continue;
                 case "--uids":
                     uids = true;
@@ -141,7 +145,7 @@ public class PlanarConfig implements Closeable {
             System.out.println("uids.log already exists");
             System.exit(-1);
         }
-        try (PlanarConfig inst = new PlanarConfig(testGray, uids, fix0, fix1)) {
+        try (PlanarConfig inst = new PlanarConfig(heuristic, uids, fix0, fix1)) {
             long start = System.currentTimeMillis();
             for (int i = firstArg; i < args.length; i++) {
                 inst.processFileOrDirectory(new File(args[i]));
@@ -253,6 +257,7 @@ public class PlanarConfig implements Closeable {
                 { b[0] & 0xff, b[1] & 0xff, b[2] & 0xff },
                 { b[0] & 0xff, b[plane] & 0xff, b[plane2] & 0xff }
         };
+        boolean testGray = heuristic.testGray(dataset);
         if (testGray) {
             if (!colorPMI.isGray(prevSamples[0])) diff++;
             if (!colorPMI.isGray(prevSamples[1])) diff--;
@@ -336,5 +341,47 @@ public class PlanarConfig implements Closeable {
             }
         };
         abstract boolean isGray(int[] samples);
+    }
+
+    private enum Heuristic {
+        GRAY{
+            @Override
+            boolean testGray(Attributes dataset) {
+                return true;
+            }
+        },
+        DIFF {
+            @Override
+            boolean testGray(Attributes dataset) {
+                return false;
+            }
+        },
+        DIFFVL {
+            @Override
+            boolean testGray(Attributes dataset) {
+                switch (dataset.getString(Tag.SOPClassUID)) {
+                    case UID.VLImageStorageTrialRetired:
+                    case UID.VLMultiFrameImageStorageTrialRetired:
+                    case UID.VLEndoscopicImageStorage:
+                    case UID.VideoEndoscopicImageStorage:
+                    case UID.VLMicroscopicImageStorage:
+                    case UID.VideoMicroscopicImageStorage:
+                    case UID.VLSlideCoordinatesMicroscopicImageStorage:
+                    case UID.VLPhotographicImageStorage:
+                    case UID.VideoPhotographicImageStorage:
+                    case UID.OphthalmicPhotography8BitImageStorage:
+                    case UID.OphthalmicPhotography16BitImageStorage:
+                    case UID.OphthalmicTomographyImageStorage:
+                    case UID.WideFieldOphthalmicPhotographyStereographicProjectionImageStorage:
+                    case UID.WideFieldOphthalmicPhotography3DCoordinatesImageStorage:
+                    case UID.OphthalmicOpticalCoherenceTomographyEnFaceImageStorage:
+                    case UID.OphthalmicOpticalCoherenceTomographyBScanVolumeAnalysisStorage:
+                    case UID.VLWholeSlideMicroscopyImageStorage:
+                        return false;
+                }
+                return true;
+            }
+        };
+        abstract boolean testGray(Attributes dataset);
     }
 }

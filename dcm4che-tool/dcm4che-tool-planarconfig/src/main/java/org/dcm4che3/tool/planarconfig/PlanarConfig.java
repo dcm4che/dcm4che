@@ -329,46 +329,4 @@ public class PlanarConfig implements Closeable {
         };
         abstract boolean isGray(int[] samples);
     }
-
-    private enum Heuristic {
-        GRAY{
-            @Override
-            boolean testGray(Attributes dataset) {
-                return true;
-            }
-        },
-        DIFF {
-            @Override
-            boolean testGray(Attributes dataset) {
-                return false;
-            }
-        },
-        DIFFVL {
-            @Override
-            boolean testGray(Attributes dataset) {
-                switch (dataset.getString(Tag.SOPClassUID)) {
-                    case UID.VLImageStorageTrialRetired:
-                    case UID.VLMultiFrameImageStorageTrialRetired:
-                    case UID.VLEndoscopicImageStorage:
-                    case UID.VideoEndoscopicImageStorage:
-                    case UID.VLMicroscopicImageStorage:
-                    case UID.VideoMicroscopicImageStorage:
-                    case UID.VLSlideCoordinatesMicroscopicImageStorage:
-                    case UID.VLPhotographicImageStorage:
-                    case UID.VideoPhotographicImageStorage:
-                    case UID.OphthalmicPhotography8BitImageStorage:
-                    case UID.OphthalmicPhotography16BitImageStorage:
-                    case UID.OphthalmicTomographyImageStorage:
-                    case UID.WideFieldOphthalmicPhotographyStereographicProjectionImageStorage:
-                    case UID.WideFieldOphthalmicPhotography3DCoordinatesImageStorage:
-                    case UID.OphthalmicOpticalCoherenceTomographyEnFaceImageStorage:
-                    case UID.OphthalmicOpticalCoherenceTomographyBScanVolumeAnalysisStorage:
-                    case UID.VLWholeSlideMicroscopyImageStorage:
-                        return false;
-                }
-                return true;
-            }
-        };
-        abstract boolean testGray(Attributes dataset);
-    }
 }

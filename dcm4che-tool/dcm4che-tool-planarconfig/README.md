@@ -1,5 +1,5 @@
 ```
-usage: planarconfig [--uids] [--fix] <file>|<directory>...
+usage: planarconfig [--diff] [--uids] [--fix[0|1]] <file>|<directory>...
 
 The planarconfig utility detects the actual planar configuration of
 uncompressed pixel data of color images with Photometric Interpretation
@@ -23,7 +23,13 @@ If an error occurs on processing a file, an E character is written to stdout
 and a stack trace is written to stderr.
 
 Options:
+--diff   rely on (smaller) differences of sample values of adjoining pixels
+         otherwise rely on predominance of gray over color pixels
 --uids   log SOP Instance UIDs of files with not matching value of attribute
          Planar Configuration in file 'uids.log' in working directory.
---fix    fix files with NOT matching value of attribute Planar Configuration
+--fix    fix all files with NOT matching value of attribute Planar Configuration
+--fix0   fix value of attribute Planar Configuration with detected
+         color-by-pixel planar configuration to 0
+--fix1   fix value of attribute Planar Configuration with detected
+         color-by-plane planar configuration to 1
 ```

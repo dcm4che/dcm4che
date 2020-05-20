@@ -53,7 +53,7 @@ import java.io.*;
  */
 public class PlanarConfig implements Closeable {
     private static final String[] USAGE = {
-            "usage: planarconfig [--uids] [--fix] <file>|<directory>...",
+            "usage: planarconfig [--diff] [--uids] [--fix[0|1]] <file>|<directory>...",
             "",
             "The planarconfig utility detects the actual planar configuration of",
             "uncompressed pixel data of color images with Photometric Interpretation",
@@ -77,30 +77,60 @@ public class PlanarConfig implements Closeable {
             "and a stack trace is written to stderr.",
             "",
             "Options:",
+            "--diff   rely on (smaller) differences of sample values of adjoining pixels",
+            "         otherwise rely on predominance of gray over color pixels",
             "--uids   log SOP Instance UIDs of files with not matching value of attribute",
             "         Planar Configuration in file 'uids.log' in working directory.",
-            "--fix    fix files with NOT matching value of attribute Planar Configuration"
+            "--fix    fix all files with NOT matching value of attribute Planar Configuration",
+            "--fix0   fix value of attribute Planar Configuration with detected",
+            "         color-by-pixel planar configuration to 0",
+            "--fix1   fix value of attribute Planar Configuration with detected",
+            "         color-by-plane planar configuration to 1",
     };
     private static final char[] CORRECT_CH = { '0', '1' };
     private static final char[] WRONG_CH = { 'O', 'I' };
+    private final boolean testGray;
     private final boolean uids;
-    private final boolean fix;
+    private final boolean[] fix;
     private PrintWriter uidslog;
     private int[] correct = new int[2];
     private int[] wrong = new int[2];
     private int skipped;
     private int failed;
 
-    public PlanarConfig(boolean uids, boolean fix) {
+    public PlanarConfig(boolean testGray, boolean uids, boolean... fix) {
+        this.testGray = testGray;
         this.uids = uids;
         this.fix = fix;
     }
 
     public static void main(String[] args) {
-        boolean uids, fix;
+        boolean testGray = true;
+        boolean uids = false;
+        boolean fix0 = false;
+        boolean fix1 = false;
         int firstArg = 0;
-        if (uids = args.length > 0 && args[0].equals("--uids")) firstArg++;
-        if (fix = args.length > firstArg && args[firstArg].equals("--fix")) firstArg++;
+        for (; args.length > firstArg; firstArg++) {
+            switch (args[firstArg]) {
+                case "--diff":
+                    testGray = false;
+                    continue;
+                case "--uids":
+                    uids = true;
+                    continue;
+                case "--fix":
+                    fix0 = true;
+                    fix1 = true;
+                    continue;
+                case "--fix0":
+                    fix0 = true;
+                    continue;
+                case "--fix1":
+                    fix1 = true;
+                    continue;
+            }
+            break;
+        }
         if (args.length == firstArg || args[firstArg].startsWith("-")) {
             for (String line : USAGE) {
                 System.out.println(line);
@@ -111,7 +141,7 @@ public class PlanarConfig implements Closeable {
             System.out.println("uids.log already exists");
             System.exit(-1);
         }
-        try (PlanarConfig inst = new PlanarConfig(uids, fix)) {
+        try (PlanarConfig inst = new PlanarConfig(testGray, uids, fix0, fix1)) {
             long start = System.currentTimeMillis();
             for (int i = firstArg; i < args.length; i++) {
                 inst.processFileOrDirectory(new File(args[i]));
@@ -119,10 +149,16 @@ public class PlanarConfig implements Closeable {
             long stop = System.currentTimeMillis();
             System.out.println();
             System.out.println("Processed");
-            log(inst.correct[0], " files with color-by-pixel Planar Configuration with matching attribute value 0");
-            log(inst.wrong[0], " files with color-by-pixel Planar Configuration with non-matching attribute value 1");
-            log(inst.correct[1], " files with color-by-plane Planar Configuration with matching attribute value 1");
-            log(inst.wrong[1], " files with color-by-plane Planar Configuration with non-matching attribute value 0");
+            log(inst.correct[0],
+                    " files with color-by-pixel Planar Configuration with matching attribute value 0");
+            log(inst.wrong[0],
+                    " files with color-by-pixel Planar Configuration with non-matching attribute value 1 (fixed="
+                            + fix0 + ')');
+            log(inst.correct[1],
+                    " files with color-by-plane Planar Configuration with matching attribute value 1");
+            log(inst.wrong[1],
+                    " files with color-by-plane Planar Configuration with non-matching attribute value 0 (fixed="
+                            + fix1 + ')');
             log(inst.skipped, " files skipped");
             log(inst.failed, " files failed to process");
             System.out.println("in " + (stop - start) + " ms");
@@ -159,25 +195,36 @@ public class PlanarConfig implements Closeable {
             }
             VR.Holder vr = new VR.Holder();
             Object value = dataset.getValue(Tag.PixelData, vr);
-            if ((value instanceof BulkData) && dataset.getInt(Tag.SamplesPerPixel, 1) == 3) {
-                int pc;
-                try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-                    pc = planarConfiguration(raf, (BulkData) value, dataset);
-                    if (pc == dataset.getInt(Tag.PlanarConfiguration, 0)) {
-                        correct[pc]++;
-                        return CORRECT_CH[pc];
-                    }
-                    if (fix) {
-                        writePlanarConfiguration.writeTo(raf, pc);
-                    }
-                }
-                wrong[pc]++;
-                if (uids)
-                    uidslog().println(dataset.getString(Tag.SOPInstanceUID));
-                return WRONG_CH[pc];
+            if (value == null) {
+                skipped++;
+                return 'p';
             }
-            skipped++;
-            return value == null ? 'p' : (value instanceof BulkData) ? 'm' : 'c';
+            ColorPMI colorPMI;
+            try {
+                colorPMI = ColorPMI.valueOf(dataset.getString(Tag.PhotometricInterpretation));
+            } catch (IllegalArgumentException e) {
+                skipped++;
+                return 'm';
+            }
+            if (!(value instanceof BulkData)) {
+                skipped++;
+                return 'c';
+            }
+            int pc;
+            try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
+                pc = planarConfiguration(raf, (BulkData) value, dataset, colorPMI);
+                if (pc == dataset.getInt(Tag.PlanarConfiguration, 0)) {
+                    correct[pc]++;
+                    return CORRECT_CH[pc];
+                }
+                if (fix[pc]) {
+                    writePlanarConfiguration.writeTo(raf, pc);
+                }
+            }
+            wrong[pc]++;
+            if (uids && (fix[pc] || !fix[1-pc]))
+                uidslog().println(dataset.getString(Tag.SOPInstanceUID));
+            return WRONG_CH[pc];
         } catch (IOException e) {
             System.err.println("Failed to update " + file + ':');
             e.printStackTrace(System.err);
@@ -192,7 +239,8 @@ public class PlanarConfig implements Closeable {
         return uidslog;
     }
 
-    private int planarConfiguration(RandomAccessFile raf, BulkData bulkData, Attributes dataset) throws IOException {
+    private int planarConfiguration(RandomAccessFile raf, BulkData bulkData, Attributes dataset, ColorPMI colorPMI)
+            throws IOException {
         byte[] b = new byte[bulkData.length()];
         raf.seek(bulkData.offset());
         raf.readFully(b);
@@ -205,16 +253,25 @@ public class PlanarConfig implements Closeable {
                 { b[0] & 0xff, b[1] & 0xff, b[2] & 0xff },
                 { b[0] & 0xff, b[plane] & 0xff, b[plane2] & 0xff }
         };
+        if (testGray) {
+            if (!colorPMI.isGray(prevSamples[0])) diff++;
+            if (!colorPMI.isGray(prevSamples[1])) diff--;
+        }
         for (int i = 1; i < plane; i++) {
             int i3 = i * 3;
             int[] perPixel = { b[i3] & 0xff, b[i3 + 1] & 0xff, b[i3 + 2] & 0xff };
             int[] perPlane= { b[i] & 0xff, b[i + plane] & 0xff, b[i + plane2] & 0xff };
-            diff += Math.abs(perPixel[0] - prevSamples[0][0]);
-            diff += Math.abs(perPixel[1] - prevSamples[0][1]);
-            diff += Math.abs(perPixel[2] - prevSamples[0][2]);
-            diff -= Math.abs(perPlane[0] - prevSamples[1][0]);
-            diff -= Math.abs(perPlane[1] - prevSamples[1][1]);
-            diff -= Math.abs(perPlane[2] - prevSamples[1][2]);
+            if (testGray) {
+                if (!colorPMI.isGray(perPixel)) diff++;
+                if (!colorPMI.isGray(perPlane)) diff--;
+            } else {
+                diff += Math.abs(perPixel[0] - prevSamples[0][0]);
+                diff += Math.abs(perPixel[1] - prevSamples[0][1]);
+                diff += Math.abs(perPixel[2] - prevSamples[0][2]);
+                diff -= Math.abs(perPlane[0] - prevSamples[1][0]);
+                diff -= Math.abs(perPlane[1] - prevSamples[1][1]);
+                diff -= Math.abs(perPlane[2] - prevSamples[1][2]);
+            }
             prevSamples[0] = perPixel;
             prevSamples[1] = perPlane;
         }
@@ -263,5 +320,21 @@ public class PlanarConfig implements Closeable {
             raf.seek(pcPos);
             raf.writeShort(pc << shift);
         }
+    }
+
+    private enum ColorPMI {
+        RGB {
+            @Override
+            boolean isGray(int[] samples) {
+                return samples[1] == samples[0] && samples[2] == samples[0];
+            }
+        },
+        YBR_FULL {
+            @Override
+            boolean isGray(int[] samples) {
+                return samples[1] == 128 && samples[2] == 128;
+            }
+        };
+        abstract boolean isGray(int[] samples);
     }
 }

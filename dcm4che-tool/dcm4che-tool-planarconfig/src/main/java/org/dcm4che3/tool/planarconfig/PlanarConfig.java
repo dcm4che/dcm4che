@@ -247,14 +247,14 @@ public class PlanarConfig implements Closeable {
                 { b[0] & 0xff, b[1] & 0xff, b[2] & 0xff },
                 { b[0] & 0xff, b[plane] & 0xff, b[plane2] & 0xff }
         };
-        if (!colorPMI.isGray(prevSamples[0])) grayPerPixel++;
-        if (!colorPMI.isGray(prevSamples[1])) grayPerPlane++;
+        if (colorPMI.isGray(prevSamples[0])) grayPerPixel++;
+        if (colorPMI.isGray(prevSamples[1])) grayPerPlane++;
         for (int i = 1; i < plane; i++) {
             int i3 = i * 3;
             int[] perPixel = { b[i3] & 0xff, b[i3 + 1] & 0xff, b[i3 + 2] & 0xff };
             int[] perPlane= { b[i] & 0xff, b[i + plane] & 0xff, b[i + plane2] & 0xff };
-            if (!colorPMI.isGray(perPixel)) grayPerPixel++;
-            if (!colorPMI.isGray(perPlane)) grayPerPlane++;
+            if (colorPMI.isGray(perPixel)) grayPerPixel++;
+            if (colorPMI.isGray(perPlane)) grayPerPlane++;
             diff += Math.abs(perPixel[0] - prevSamples[0][0]);
             diff += Math.abs(perPixel[1] - prevSamples[0][1]);
             diff += Math.abs(perPixel[2] - prevSamples[0][2]);

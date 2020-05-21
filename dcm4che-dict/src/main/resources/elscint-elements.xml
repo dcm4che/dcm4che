@@ -206,7 +206,10 @@
   <el tag="07A1xx5F" keyword="TamarStudyHasBookmark" vr="CS" vm="1">Tamar Study Has Bookmark</el>
   <el tag="07A1xx75" keyword="TamarSourceImageType" vr="LO" vm="2">Tamar Source Image Type</el>
   <el tag="07A1xx85" keyword="TamarTranslateFlags" vr="UL" vm="1">Tamar Translate Flags</el>
+  <el tag="07A1xx88" keyword="_07A1_xx88_" vr="CS" vm="1">_07A1_xx88_</el>
+  <el tag="07A1xx98" keyword="_07A1_xx98_" vr="CS" vm="1">_07A1_xx98_</el>
   <el tag="07A1xx9F" keyword="_07A1_xx9F_" vr="CS" vm="1">_07A1_xx9F_</el>
+  <el tag="07A1xxC3" keyword="_07A1_xxC3_" vr="LO" vm="1">_07A1_xxC3_</el>
   <el tag="07A1xxC5" keyword="TamarExcludeTagsSize" vr="IS" vm="1">Tamar Exclude Tags Size</el>
   <el tag="07A1xxC6" keyword="TamarExcludeTagsTotalSize" vr="IS" vm="1">Tamar Exclude Tags Total Size</el>
   <el tag="07A1xxC7" keyword="TamarIsHcffHeader" vr="CS" vm="1">Tamar Is Hcff Header</el>
@@ -216,6 +219,7 @@
   <el tag="07A3xx06" keyword="TamarOriginalPrModality" vr="CS" vm="1">Tamar Original Pr Modality</el>
   <el tag="07A3xx0F" keyword="TamarOriginalCurveType" vr="CS" vm="1">Tamar Original Curve Type</el>
   <el tag="07A3xx10" keyword="TamarOriginalCurveDesc" vr="LO" vm="1">Tamar Original Curve Desc</el>
+  <el tag="07A3xx13" keyword="_07A3_xx13_" vr="CS" vm="1">_07A3_xx13_</el>
   <el tag="07A3xx14" keyword="TamarProcedureCode" vr="ST" vm="1">Tamar Procedure Code</el>
   <el tag="07A3xx15" keyword="TamarPatientLocation" vr="ST" vm="1">Tamar Patient Location</el>
   <el tag="07A3xx17" keyword="TamarOrderStatus" vr="SH" vm="1">Tamar Order Status</el>
@@ -227,6 +231,8 @@
   <el tag="07A3xx23" keyword="TamarMiscString5" vr="ST" vm="1">Tamar Misc String 5</el>
   <el tag="07A3xx34" keyword="TamarStudyAge" vr="SH" vm="1">Tamar Study Age</el>
   <el tag="07A3xx43" keyword="TamarPanSideDetails" vr="DS" vm="1-n">Tamar Pan Side Details</el>
+  <el tag="07A3xx53" keyword="_07A3xx53_" vr="US" vm="1">_007A3xx53_</el>
+  <el tag="07A3xx54" keyword="_07A3xx54_" vr="US" vm="3">_007A3xx54_</el>
   <el tag="07A3xx55" keyword="TamarStudyHasMammoCad" vr="SH" vm="1">Tamar Study Has Mammo Cad</el>
   <el tag="07A3xx61" keyword="TamarNondicomAnnotations" vr="LT" vm="1">Tamar Nondicom Annotations</el>
   <el tag="07A3xx62" keyword="TamarNondicomAnnotationsSequence" vr="SQ" vm="1">Tamar Nondicom Annotations Sequence</el>
@@ -257,17 +263,16 @@
   <el tag="07A3xxD4" keyword="TamarNestedTextLocationX" vr="SL" vm="1">Tamar Nested Text Location X</el>
   <el tag="07A3xxD5" keyword="TamarNestedTextLocationY" vr="SL" vm="1">Tamar Nested Text Location Y</el>
   <el tag="07A3xxD6" keyword="TamarNestedTypeOfData" vr="CS" vm="1">Tamar Nested Type Of Data</el>
+  <el tag="07A5xx00" keyword="_07A5_xx00_" vr="LO" vm="1">_07A5_xx00_</el>
   <el tag="07A5xx54" keyword="TamarReportsUpdateDate" vr="DT" vm="1">Tamar Reports Update Date</el>
   <el tag="07A5xx56" keyword="TamarReferringPhysiciansStudyRead" vr="CS" vm="1">Tamar Referring Physicians Study Read</el>
   <el tag="07A5xx62" keyword="TamarStudyInstitutionName" vr="LO" vm="1">Tamar Study Institution Name</el>
   <el tag="07A5xx69" keyword="TamarOriginalStoringAE" vr="LO" vm="1">Tamar Original Storing AE</el>
-  <el tag="5001xx70" keyword="_5001_xx70_" vr="SQ" vm="1">_5001_xx70_</el>
-  <el tag="5001xx71" keyword="_5001_xx71_" vr="SH" vm="1">_5001_xx71_</el>
-  <el tag="5001xx80" keyword="_5001_xx80_" vr="SQ" vm="1">_5001_xx80_</el>
-  <el tag="5001xx81" keyword="_5001_xx81_" vr="SH" vm="1">_5001_xx81_</el>
-  <el tag="5001xx82" keyword="_5001_xx82_" vr="US" vm="3">_5001_xx82_</el>
-  <el tag="5001xx83" keyword="_5001_xx83_" vr="FL" vm="1-n">_5001_xx83_</el>
-  <el tag="5001xx84" keyword="_5001_xx84_" vr="SQ" vm="1">_5001_xx84_</el>
+  <el tag="5001xx19" keyword="_5001_xx19_" vr="FL" vm="1-n">_5001_xx19_</el>
+  <el tag="5001xx70" keyword="_5001_xx70_" vr="US" vm="1">_5001_xx70_</el>
+  <el tag="5001xx71" keyword="_5001_xx71_" vr="US" vm="3">_5001_xx71_</el>
+  <el tag="5003xx19" keyword="_5003_xx19_" vr="FL" vm="1-n">_5003_xx19_</el>
+  <el tag="5005xx19" keyword="_5005_xx19_" vr="FL" vm="1-n">_5005_xx19_</el>
   <el tag="6001xx10" keyword="TextOverlayFlag" vr="CS" vm="1">Text Overlay Flag</el>
   <el tag="6001xx30" keyword="_6001_xx30_" vr="FL" vm="4">_6001_xx30_</el>
   <el tag="6001xx90" keyword="_6001_xx90_" vr="LO" vm="1">_6001_xx90_</el>

@@ -53,7 +53,7 @@ import java.io.*;
  */
 public class PlanarConfig implements Closeable {
     private static final String[] USAGE = {
-            "usage: planarconfig [--uids] [--fix[0|1]] <file>|<directory>...",
+            "usage: planarconfig [--diff %] [--uids] [--fix[0|1]] <file>|<directory>...",
             "",
             "The planarconfig utility detects the actual planar configuration of",
             "uncompressed pixel data of color images with Photometric Interpretation",
@@ -77,6 +77,10 @@ public class PlanarConfig implements Closeable {
             "and a stack trace is written to stderr.",
             "",
             "Options:",
+            "--diff % threshold of number of gray pixels in % of all pixels, below the",
+            "         detection of the planar configuration relies on minimizing the",
+            "         differences of samples values of adjoining pixels, instead on",
+            "         minimizing the number of colored (= not gray) pixel. 0 by default.",
             "--uids   log SOP Instance UIDs of files with not matching value of attribute",
             "         Planar Configuration in file 'uids.log' in working directory.",
             "--fix    fix all files with NOT matching value of attribute Planar Configuration",
@@ -87,6 +91,7 @@ public class PlanarConfig implements Closeable {
     };
     private static final char[] CORRECT_CH = { '0', '1' };
     private static final char[] WRONG_CH = { 'O', 'I' };
+    private final int grayThreshold;
     private final boolean uids;
     private final boolean[] fix;
     private PrintWriter uidslog;
@@ -95,7 +100,8 @@ public class PlanarConfig implements Closeable {
     private int skipped;
     private int failed;
 
-    public PlanarConfig(boolean uids, boolean... fix) {
+    public PlanarConfig(int grayThreshold, boolean uids, boolean... fix) {
+        this.grayThreshold = grayThreshold;
         this.uids = uids;
         this.fix = fix;
     }
@@ -104,9 +110,18 @@ public class PlanarConfig implements Closeable {
         boolean uids = false;
         boolean fix0 = false;
         boolean fix1 = false;
+        int grayThreshold = 0;
         int firstArg = 0;
         for (; args.length > firstArg; firstArg++) {
             switch (args[firstArg]) {
+                case "--diff":
+                    try {
+                        grayThreshold = Math.min(100, Integer.parseInt(args[++firstArg]));
+                    } catch (NumberFormatException e) {
+                        grayThreshold = -1;
+                        break;
+                    }
+                    continue;
                 case "--uids":
                     uids = true;
                     continue;
@@ -123,7 +138,7 @@ public class PlanarConfig implements Closeable {
             }
             break;
         }
-        if (args.length == firstArg || args[firstArg].startsWith("-")) {
+        if (grayThreshold < 0 || args.length == firstArg || args[firstArg].startsWith("-")) {
             for (String line : USAGE) {
                 System.out.println(line);
             }
@@ -133,7 +148,7 @@ public class PlanarConfig implements Closeable {
             System.out.println("uids.log already exists");
             System.exit(-1);
         }
-        try (PlanarConfig inst = new PlanarConfig(uids, fix0, fix1)) {
+        try (PlanarConfig inst = new PlanarConfig(grayThreshold, uids, fix0, fix1)) {
             long start = System.currentTimeMillis();
             for (int i = firstArg; i < args.length; i++) {
                 inst.processFileOrDirectory(new File(args[i]));
@@ -264,7 +279,7 @@ public class PlanarConfig implements Closeable {
             prevSamples[0] = perPixel;
             prevSamples[1] = perPlane;
         }
-        return (Math.max(grayPerPixel, grayPerPlane) > (plane >> 1)
+        return (Math.max(grayPerPixel, grayPerPlane) * 100L > plane * (long) this.grayThreshold
                     ? grayPerPlane > grayPerPixel
                     : diff > 0)
                 ? 1 : 0;

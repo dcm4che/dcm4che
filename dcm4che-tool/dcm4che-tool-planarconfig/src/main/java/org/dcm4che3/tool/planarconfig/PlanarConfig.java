@@ -279,7 +279,8 @@ public class PlanarConfig implements Closeable {
             prevSamples[0] = perPixel;
             prevSamples[1] = perPlane;
         }
-        return (Math.max(grayPerPixel, grayPerPlane) * 100L > plane * (long) this.grayThreshold
+        return colorPMI == ColorPMI.RGB
+                && (Math.max(grayPerPixel, grayPerPlane) * 100L > plane * (long) this.grayThreshold
                     ? grayPerPlane > grayPerPixel
                     : diff > 0)
                 ? 1 : 0;

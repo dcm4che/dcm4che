@@ -79,7 +79,7 @@ public class PlanarConfig implements Closeable {
             "Options:",
             "--diff % threshold of number of gray pixels in % of all pixels, below the",
             "         detection of the planar configuration relies on minimizing the",
-            "         differences of samples values of adjoining pixels, instead on",
+            "         differences of sample values of adjoining pixels, instead on",
             "         minimizing the number of colored (= not gray) pixel. 0 by default.",
             "--uids   log SOP Instance UIDs of files with not matching value of attribute",
             "         Planar Configuration in file 'uids.log' in working directory.",

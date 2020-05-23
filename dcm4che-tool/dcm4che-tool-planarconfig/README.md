@@ -42,7 +42,7 @@ Options:
 --fix1   fix value of attribute Planar Configuration with detected
          color-by-plane planar configuration to 1
 -v       displays average chroma and sample differences in format:
-         chroma: [<color-by-pixel>, <color-by-plane>, <significance>],
-         diff: [<color-by-pixel>, <color-by-plane>, <significance>]
+         chroma=[<color-by-pixel>, <color-by-plane>, <significance>],
+         diff=[<color-by-pixel>, <color-by-plane>, <significance>]
          for each processed file.
 ```

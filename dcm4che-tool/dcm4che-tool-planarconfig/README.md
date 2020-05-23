@@ -8,13 +8,13 @@ Planar Configuration of the image.
 
 The average chroma (s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all
 pixels and the sum of absolute differences of sample values of adjoining
-pixels is calculated, and resulting values on assuming color-by-pixel or
+pixels is calculated and resulting values on assuming color-by-pixel or
 color-by-plane planar configuration are compared. If the significance of the
-difference in the average chroma is more significant than the difference in
-the sum of absolute differences of sample values, the planar configuration
-which resulted in the lesser chroma value is selected - otherwise the planar
-configuration which resulted in lesser differences of sample values of
-adjoining pixels.
+difference in the average chroma is greater than the significance of the
+difference in the sum of absolute differences of sample values, the planar
+configuration which resulted in the lesser chroma value is selected -
+otherwise the planar configuration which resulted in lesser differences of
+sample values of adjoining pixels is selected.
 
 For each processed file one of the characters:
 p - no pixel data

@@ -42,10 +42,12 @@
 package org.dcm4che3.tool.planarconfig;
 
 import org.dcm4che3.data.*;
+import org.dcm4che3.image.YBR;
 import org.dcm4che3.io.DicomInputHandler;
 import org.dcm4che3.io.DicomInputStream;
 
 import java.io.*;
+import java.util.Arrays;
 
 /**
  * @author Gunter Zeilinger (gunterze@protonmail.com)
@@ -53,12 +55,22 @@ import java.io.*;
  */
 public class PlanarConfig implements Closeable {
     private static final String[] USAGE = {
-            "usage: planarconfig [--diff %] [--uids] [--fix[0|1]] <file>|<directory>...",
+            "usage: planarconfig [-v] [--uids] [--fix[0|1]] <file>|<directory>...",
             "",
             "The planarconfig utility detects the actual planar configuration of",
             "uncompressed pixel data of color images with Photometric Interpretation",
             "RGB or YBR_FULL and optionally correct non matching values of attribute",
             "Planar Configuration of the image.",
+            "",
+            "The average chroma (s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all",
+            "pixels and the sum of absolute differences of sample values of adjoining",
+            "pixels is calculated, and resulting values on assuming color-by-pixel or",
+            "color-by-plane planar configuration are compared. If the significance of the",
+            "difference in the average chroma is more significant than the difference in",
+            "the sum of absolute differences of sample values, the planar configuration",
+            "which resulted in the lesser chroma value is selected - otherwise the planar",
+            "configuration which resulted in lesser differences of sample values of",
+            "adjoining pixels.",
             "",
             "For each processed file one of the characters:",
             "p - no pixel data",
@@ -77,53 +89,49 @@ public class PlanarConfig implements Closeable {
             "and a stack trace is written to stderr.",
             "",
             "Options:",
-            "--diff % threshold of number of gray pixels in % of all pixels, below the",
-            "         detection of the planar configuration relies on minimizing the",
-            "         differences of sample values of adjoining pixels, instead on",
-            "         minimizing the number of colored (= not gray) pixel. 0 by default.",
             "--uids   log SOP Instance UIDs of files with not matching value of attribute",
             "         Planar Configuration in file 'uids.log' in working directory.",
-            "--fix    fix all files with NOT matching value of attribute Planar Configuration",
+            "--fix    fix all files with NOT matching value of attribute Planar",
+            "         Configuration",
             "--fix0   fix value of attribute Planar Configuration with detected",
             "         color-by-pixel planar configuration to 0",
             "--fix1   fix value of attribute Planar Configuration with detected",
             "         color-by-plane planar configuration to 1",
+            "-v       displays average chroma and sample differences in format:",
+            "         chroma: [<color-by-pixel>, <color-by-plane>, <significance>],",
+            "         diff: [<color-by-pixel>, <color-by-plane>, <significance>]",
+            "         for each processed file."
     };
     private static final char[] CORRECT_CH = { '0', '1' };
     private static final char[] WRONG_CH = { 'O', 'I' };
-    private final int grayThreshold;
     private final boolean uids;
     private final boolean[] fix;
+    private final boolean verbose;
     private PrintWriter uidslog;
     private int[] correct = new int[2];
     private int[] wrong = new int[2];
     private int skipped;
     private int failed;
 
-    public PlanarConfig(int grayThreshold, boolean uids, boolean... fix) {
-        this.grayThreshold = grayThreshold;
+    public PlanarConfig(boolean uids, boolean verbose, boolean... fix) {
         this.uids = uids;
+        this.verbose = verbose;
         this.fix = fix;
     }
 
     public static void main(String[] args) {
         boolean uids = false;
+        boolean verbose = false;
         boolean fix0 = false;
         boolean fix1 = false;
-        int grayThreshold = 0;
         int firstArg = 0;
         for (; args.length > firstArg; firstArg++) {
             switch (args[firstArg]) {
-                case "--diff":
-                    try {
-                        grayThreshold = Math.min(100, Integer.parseInt(args[++firstArg]));
-                    } catch (NumberFormatException e) {
-                        grayThreshold = -1;
-                        break;
-                    }
-                    continue;
                 case "--uids":
                     uids = true;
+                    continue;
+                case "-v":
+                    verbose = true;
                     continue;
                 case "--fix":
                     fix0 = true;
@@ -138,7 +146,7 @@ public class PlanarConfig implements Closeable {
             }
             break;
         }
-        if (grayThreshold < 0 || args.length == firstArg || args[firstArg].startsWith("-")) {
+        if (args.length == firstArg || args[firstArg].startsWith("-")) {
             for (String line : USAGE) {
                 System.out.println(line);
             }
@@ -148,7 +156,7 @@ public class PlanarConfig implements Closeable {
             System.out.println("uids.log already exists");
             System.exit(-1);
         }
-        try (PlanarConfig inst = new PlanarConfig(grayThreshold, uids, fix0, fix1)) {
+        try (PlanarConfig inst = new PlanarConfig(uids, verbose, fix0, fix1)) {
             long start = System.currentTimeMillis();
             for (int i = firstArg; i < args.length; i++) {
                 inst.processFileOrDirectory(new File(args[i]));
@@ -219,7 +227,7 @@ public class PlanarConfig implements Closeable {
             }
             int pc;
             try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-                pc = planarConfiguration(raf, (BulkData) value, dataset, colorPMI);
+                pc = planarConfiguration(file, raf, (BulkData) value, dataset, colorPMI);
                 if (pc == dataset.getInt(Tag.PlanarConfiguration, 0)) {
                     correct[pc]++;
                     return CORRECT_CH[pc];
@@ -246,14 +254,11 @@ public class PlanarConfig implements Closeable {
         return uidslog;
     }
 
-    private int planarConfiguration(RandomAccessFile raf, BulkData bulkData, Attributes dataset, ColorPMI colorPMI)
-            throws IOException {
+    private int planarConfiguration(File file, RandomAccessFile raf, BulkData bulkData, Attributes dataset,
+            ColorPMI colorPMI) throws IOException {
         byte[] b = new byte[bulkData.length()];
         raf.seek(bulkData.offset());
         raf.readFully(b);
-        long diff = 0L;
-        int grayPerPixel = 0;
-        int grayPerPlane = 0;
         int rows = dataset.getInt(Tag.Rows, 1);
         int cols = dataset.getInt(Tag.Columns, 1);
         int plane = rows * cols;
@@ -262,27 +267,51 @@ public class PlanarConfig implements Closeable {
                 { b[0] & 0xff, b[1] & 0xff, b[2] & 0xff },
                 { b[0] & 0xff, b[plane] & 0xff, b[plane2] & 0xff }
         };
-        if (colorPMI.isGray(prevSamples[0])) grayPerPixel++;
-        if (colorPMI.isGray(prevSamples[1])) grayPerPlane++;
+        long chromaPerPixel = colorPMI.chroma(prevSamples[0]);
+        long chromaPerPlane = colorPMI.chroma(prevSamples[1]);
+        long diffPerPixel = 0L;
+        long diffPerPlane = 0L;
         for (int i = 1; i < plane; i++) {
             int i3 = i * 3;
             int[] perPixel = { b[i3] & 0xff, b[i3 + 1] & 0xff, b[i3 + 2] & 0xff };
             int[] perPlane= { b[i] & 0xff, b[i + plane] & 0xff, b[i + plane2] & 0xff };
-            if (colorPMI.isGray(perPixel)) grayPerPixel++;
-            if (colorPMI.isGray(perPlane)) grayPerPlane++;
-            diff += Math.abs(perPixel[0] - prevSamples[0][0]);
-            diff += Math.abs(perPixel[1] - prevSamples[0][1]);
-            diff += Math.abs(perPixel[2] - prevSamples[0][2]);
-            diff -= Math.abs(perPlane[0] - prevSamples[1][0]);
-            diff -= Math.abs(perPlane[1] - prevSamples[1][1]);
-            diff -= Math.abs(perPlane[2] - prevSamples[1][2]);
+            chromaPerPixel += colorPMI.chroma(perPixel);
+            chromaPerPlane += colorPMI.chroma(perPlane);
+            if (!colorPMI.isWhite(prevSamples[0]) && !colorPMI.isWhite(prevSamples[0])) {
+                diffPerPixel += Math.abs(perPixel[0] - prevSamples[0][0]);
+                diffPerPixel += Math.abs(perPixel[1] - prevSamples[0][1]);
+                diffPerPixel += Math.abs(perPixel[2] - prevSamples[0][2]);
+            }
+            if (!colorPMI.isWhite(prevSamples[1]) && !colorPMI.isWhite(prevSamples[1])) {
+                diffPerPlane += Math.abs(perPlane[0] - prevSamples[1][0]);
+                diffPerPlane += Math.abs(perPlane[1] - prevSamples[1][1]);
+                diffPerPlane += Math.abs(perPlane[2] - prevSamples[1][2]);
+            }
             prevSamples[0] = perPixel;
             prevSamples[1] = perPlane;
         }
-        return colorPMI == ColorPMI.RGB
-                && (Math.max(grayPerPixel, grayPerPlane) * 100L > plane * (long) this.grayThreshold
-                    ? grayPerPlane > grayPerPixel
-                    : diff > 0)
+        long minChroma = Math.min(chromaPerPixel, chromaPerPlane);
+        long maxChroma = Math.max(chromaPerPixel, chromaPerPlane);
+        long minDiff = Math.min(diffPerPixel, diffPerPlane);
+        long maxDiff = Math.max(diffPerPixel, diffPerPlane);
+        if (verbose) {
+            float[] chroma = {
+                    chromaPerPixel / (float) plane,
+                    chromaPerPlane / (float) plane,
+                    1 - minChroma / (float) maxChroma
+            };
+            float[] diff = {
+                    diffPerPixel / (float) plane,
+                    diffPerPlane / (float) plane,
+                    1 - minDiff / (float) maxDiff
+            };
+            System.out.println();
+            System.out.print(file + ": chroma=" + Arrays.toString(chroma)
+                    + ", diff=" + Arrays.toString(diff) + " -> ");
+        }
+        return (maxChroma * minDiff > minChroma * maxDiff
+                    ? chromaPerPixel > chromaPerPlane
+                    : diffPerPixel > diffPerPlane)
                 ? 1 : 0;
     }
 
@@ -333,16 +362,30 @@ public class PlanarConfig implements Closeable {
     private enum ColorPMI {
         RGB {
             @Override
-            boolean isGray(int[] samples) {
-                return samples[1] == samples[0] && samples[2] == samples[0];
+            boolean isWhite(int[] samples) {
+                return samples[0] == 255 && samples[1] == 255 && samples[2] == 255;
             }
         },
         YBR_FULL {
             @Override
-            boolean isGray(int[] samples) {
-                return samples[1] == 128 && samples[2] == 128;
+            boolean isWhite(int[] samples) {
+                return samples[0] == 255 && samples[1] == 128 && samples[2] == 128;
+            }
+
+            @Override
+            int chroma(int[] samples) {
+                float[] ybr = { samples[0] / 255f, samples[1] / 255f, samples[2] / 255f};
+                float[] rgb = YBR.FULL.toRGB(ybr);
+                return super.chroma(new int[]{
+                        (int) (rgb[0] * 255),
+                        (int) (rgb[1] * 255),
+                        (int) (rgb[2] * 255)});
             }
         };
-        abstract boolean isGray(int[] samples);
+        abstract boolean isWhite(int[] samples);
+        int chroma(int[] samples) {
+            return Math.max(Math.max(samples[0], samples[1]), samples[2])
+                    - Math.min(Math.min(samples[0], samples[1]), samples[2]);
+        };
     }
 }

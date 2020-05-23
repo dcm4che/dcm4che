@@ -43,6 +43,7 @@ set JAVA=%JAVA_HOME%\bin\java
 set CP=%DCM4CHE_HOME%\etc\planarconfig\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-${slf4j.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-${slf4j.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-${log4j.version}.jar

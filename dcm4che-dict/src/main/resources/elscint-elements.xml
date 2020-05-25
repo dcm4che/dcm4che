@@ -273,8 +273,8 @@
   <el tag="07A3xx23" keyword="_07A3_xx23_" vr="ST" vm="1">_07A3_xx23_</el>
   <el tag="07A3xx34" keyword="TamarStudyAge" vr="SH" vm="1">Tamar Study Age</el>
   <el tag="07A3xx43" keyword="_07A3_xx43_" vr="DS" vm="1-n">_07A3_xx43_</el>
-  <el tag="07A3xx53" keyword="_07A3xx53_" vr="US" vm="1">_007A3xx53_</el>
-  <el tag="07A3xx54" keyword="_07A3xx54_" vr="US" vm="3">_007A3xx54_</el>
+  <el tag="07A3xx53" keyword="_07A3_xx53_" vr="US" vm="1">_007A3_xx53_</el>
+  <el tag="07A3xx54" keyword="_07A3_xx54_" vr="US" vm="3">_007A3_xx54_</el>
   <el tag="07A3xx55" keyword="_07A3_xx55_" vr="SH" vm="1">_07A3_xx55_</el>
   <el tag="07A3xx5C" keyword="_07A3xx5C_" vr="ST" vm="1">_07A3xx5C_</el>
   <el tag="07A3xx61" keyword="_07A3_xx61_" vr="LT" vm="1">_07A3_xx61_</el>

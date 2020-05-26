@@ -221,10 +221,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-adc-compact</value>
+                  <value>agfa_adc_compact</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-adc-compact</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_adc_compact</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -240,14 +240,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-adc-compact</value>
+                  <value>agfa_adc_compact</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>AGFA_ADC_Compact</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-adc-compact</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_adc_compact</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -263,10 +263,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-adc-compact</value>
+                  <value>agfa_adc_compact</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-adc-compact</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_adc_compact</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -282,10 +282,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-adc-nx</value>
+                  <value>agfa_adc_nx</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-adc-nx</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_adc_nx</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -301,14 +301,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-adc-nx</value>
+                  <value>agfa_adc_nx</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>Agfa ADC NX</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-adc-nx</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_adc_nx</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -324,10 +324,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-adc-nx</value>
+                  <value>agfa_adc_nx</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-adc-nx</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_adc_nx</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -343,10 +343,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-ag-hpstate</value>
+                  <value>agfa_ag_hpstate</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-ag-hpstate</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_ag_hpstate</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -362,14 +362,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-ag-hpstate</value>
+                  <value>agfa_ag_hpstate</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>AGFA-AG_HPState</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-ag-hpstate</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_ag_hpstate</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -385,10 +385,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-ag-hpstate</value>
+                  <value>agfa_ag_hpstate</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-ag-hpstate</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_ag_hpstate</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -465,10 +465,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-displayable-images</value>
+                  <value>agfa_displayable_images</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-displayable-images</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_displayable_images</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -484,14 +484,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-displayable-images</value>
+                  <value>agfa_displayable_images</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>agfa/displayableImages</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-displayable-images</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_displayable_images</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -507,10 +507,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-displayable-images</value>
+                  <value>agfa_displayable_images</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-displayable-images</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_displayable_images</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -526,10 +526,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-kosd-1.0</value>
+                  <value>agfa_kosd_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-kosd-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_kosd_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -545,14 +545,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-kosd-1.0</value>
+                  <value>agfa_kosd_1_0</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>AGFA KOSD 1.0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-kosd-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_kosd_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -568,10 +568,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-kosd-1.0</value>
+                  <value>agfa_kosd_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-kosd-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_kosd_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -587,10 +587,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-pacs-archive-mirroring-1.0</value>
+                  <value>agfa_pacs_archive_mirroring_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-pacs-archive-mirroring-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_pacs_archive_mirroring_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -606,14 +606,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-pacs-archive-mirroring-1.0</value>
+                  <value>agfa_pacs_archive_mirroring_1_0</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>AGFA PACS Archive Mirroring 1.0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-pacs-archive-mirroring-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_pacs_archive_mirroring_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -629,10 +629,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-pacs-archive-mirroring-1.0</value>
+                  <value>agfa_pacs_archive_mirroring_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-pacs-archive-mirroring-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_pacs_archive_mirroring_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -648,10 +648,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-xeroverse</value>
+                  <value>agfa_xeroverse</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-xeroverse</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_xeroverse</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -667,14 +667,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-xeroverse</value>
+                  <value>agfa_xeroverse</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>agfa/xeroverse</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-xeroverse</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_xeroverse</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -690,10 +690,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agfa-xeroverse</value>
+                  <value>agfa_xeroverse</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agfa-xeroverse</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agfa_xeroverse</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -709,10 +709,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agility-overlay</value>
+                  <value>agility_overlay</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agility-overlay</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agility_overlay</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -728,14 +728,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agility-overlay</value>
+                  <value>agility_overlay</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>AgilityOverlay</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agility-overlay</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agility_overlay</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -751,10 +751,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agility-overlay</value>
+                  <value>agility_overlay</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agility-overlay</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agility_overlay</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -770,10 +770,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agility-runtime</value>
+                  <value>agility_runtime</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agility-runtime</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agility_runtime</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -789,14 +789,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agility-runtime</value>
+                  <value>agility_runtime</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>AgilityRuntime</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agility-runtime</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agility_runtime</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -812,10 +812,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>agility-runtime</value>
+                  <value>agility_runtime</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/agility-runtime</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/agility_runtime</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -831,10 +831,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-linked-attributes-1.0</value>
+                  <value>mitra_linked_attributes_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-linked-attributes-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_linked_attributes_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -850,14 +850,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-linked-attributes-1.0</value>
+                  <value>mitra_linked_attributes_1_0</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>MITRA LINKED ATTRIBUTES 1.0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-linked-attributes-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_linked_attributes_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -873,10 +873,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-linked-attributes-1.0</value>
+                  <value>mitra_linked_attributes_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-linked-attributes-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_linked_attributes_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -892,10 +892,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-markup-1.0</value>
+                  <value>mitra_markup_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-markup-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_markup_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -911,14 +911,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-markup-1.0</value>
+                  <value>mitra_markup_1_0</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>MITRA MARKUP 1.0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-markup-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_markup_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -934,10 +934,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-markup-1.0</value>
+                  <value>mitra_markup_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-markup-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_markup_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -953,10 +953,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-object-attributes-1.0</value>
+                  <value>mitra_object_attributes_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-object-attributes-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_object_attributes_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -972,14 +972,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-object-attributes-1.0</value>
+                  <value>mitra_object_attributes_1_0</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>MITRA OBJECT ATTRIBUTES 1.0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-object-attributes-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_object_attributes_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -995,10 +995,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-object-attributes-1.0</value>
+                  <value>mitra_object_attributes_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-object-attributes-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_object_attributes_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -1014,10 +1014,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-object-document-1.0</value>
+                  <value>mitra_object_document_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-object-document-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_object_document_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -1033,14 +1033,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-object-document-1.0</value>
+                  <value>mitra_object_document_1_0</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>MITRA OBJECT DOCUMENT 1.0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-object-document-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_object_document_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -1056,10 +1056,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-object-document-1.0</value>
+                  <value>mitra_object_document_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-object-document-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_object_document_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -1075,10 +1075,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-object-utf8-attributes-1.0</value>
+                  <value>mitra_object_utf8_attributes_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-object-utf8-attributes-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_object_utf8_attributes_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -1094,14 +1094,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-object-utf8-attributes-1.0</value>
+                  <value>mitra_object_utf8_attributes_1_0</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>MITRA OBJECT UTF8 ATTRIBUTES 1.0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-object-utf8-attributes-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_object_utf8_attributes_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -1117,10 +1117,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-object-utf8-attributes-1.0</value>
+                  <value>mitra_object_utf8_attributes_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-object-utf8-attributes-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_object_utf8_attributes_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -1136,10 +1136,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-presentation-1.0</value>
+                  <value>mitra_presentation_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-presentation-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_presentation_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -1155,14 +1155,14 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-presentation-1.0</value>
+                  <value>mitra_presentation_1_0</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>MITRA PRESENTATION 1.0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-presentation-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_presentation_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -1178,10 +1178,10 @@
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>mitra-presentation-1.0</value>
+                  <value>mitra_presentation_1_0</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/mitra-presentation-1.0</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/mitra_presentation_1_0</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>

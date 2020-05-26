@@ -5,6 +5,22 @@
   <remoteResources>
     <remoteResource>arcelements.xml</remoteResource>
     <remoteResource>elscint-elements.xml</remoteResource>
+    <remoteResource>agfa-adc-compact-elements.xml</remoteResource>
+    <remoteResource>agfa-adc-nx-elements.xml</remoteResource>
+    <remoteResource>agfa-ag-hpstate-elements.xml</remoteResource>
+    <remoteResource>agfa-displayable-images-elements.xml</remoteResource>
+    <remoteResource>agfa-elements.xml</remoteResource>
+    <remoteResource>agfa-kosd-1.0-elements.xml</remoteResource>
+    <remoteResource>agfa-pacs-archive-mirroring-1.0-elements.xml</remoteResource>
+    <remoteResource>agfa-xeroverse-elements.xml</remoteResource>
+    <remoteResource>agility-overlay-elements.xml</remoteResource>
+    <remoteResource>agility-runtime-elements.xml</remoteResource>
+    <remoteResource>mitra-linked-attributes-1.0-elements.xml</remoteResource>
+    <remoteResource>mitra-markup-1.0-elements.xml</remoteResource>
+    <remoteResource>mitra-object-attributes-1.0-elements.xml</remoteResource>
+    <remoteResource>mitra-object-document-1.0-elements.xml</remoteResource>
+    <remoteResource>mitra-object-utf8-attributes-1.0-elements.xml</remoteResource>
+    <remoteResource>mitra-presentation-1.0-elements.xml</remoteResource>
     <remoteResource>commandelements.xml</remoteResource>
     <remoteResource>elements.xml</remoteResource>
     <remoteResource>dataelements.xml</remoteResource>

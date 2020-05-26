@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+  -->
+
+<elements>
+  <el tag="0071xx01" keyword="_0071_xx01_" vr="ST" vm="1">_0071_xx01_</el>
+  <el tag="0071xx02" keyword="_0071_xx02_" vr="ST" vm="1">_0071_xx02_</el>
+  <el tag="0071xx03" keyword="_0071_xx03_" vr="ST" vm="1">_0071_xx03_</el>
+  <el tag="0071xx05" keyword="_0071_xx05_" vr="ST" vm="1">_0071_xx05_</el>
+  <el tag="0071xx06" keyword="_0071_xx06_" vr="SQ" vm="1">_0071_xx06_</el>
+  <el tag="0071xx07" keyword="_0071_xx07_" vr="ST" vm="1">_0071_xx07_</el>
+  <el tag="0071xx08" keyword="_0071_xx08_" vr="CS" vm="1">_0071_xx08_</el>
+  <el tag="0071xx09" keyword="_0071_xx09_" vr="ST" vm="1">_0071_xx09_</el>
+  <el tag="0071xx0A" keyword="_0071_xx0A_" vr="CS" vm="1">_0071_xx0A_</el>
+  <el tag="0071xx10" keyword="_0071_xx10_" vr="FL" vm="1">_0071_xx10_</el>
+  <el tag="0071xx11" keyword="_0071_xx11_" vr="ST" vm="1">_0071_xx11_</el>
+  <el tag="0071xx12" keyword="_0071_xx12_" vr="CS" vm="1">_0071_xx12_</el>
+  <el tag="0071xx13" keyword="_0071_xx13_" vr="US" vm="1">_0071_xx13_</el>
+  <el tag="0071xx14" keyword="_0071_xx14_" vr="US" vm="1">_0071_xx14_</el>
+  <el tag="0071xx15" keyword="_0071_xx15_" vr="FD" vm="1-n">_0071_xx15_</el>
+  <el tag="0071xx16" keyword="_0071_xx16_" vr="ST" vm="1">_0071_xx16_</el>
+  <el tag="0071xx17" keyword="_0071_xx17_" vr="ST" vm="1">_0071_xx17_</el>
+  <el tag="0071xx18" keyword="_0071_xx18_" vr="CS" vm="1">_0071_xx18_</el>
+  <el tag="0071xx19" keyword="_0071_xx19_" vr="ST" vm="1">_0071_xx19_</el>
+  <el tag="0071xx1B" keyword="_0071_xx1B_" vr="ST" vm="1">_0071_xx1B_</el>
+  <el tag="0071xx1C" keyword="_0071_xx1C_" vr="ST" vm="1">_0071_xx1C_</el>
+  <el tag="0071xx1D" keyword="_0071_xx1D_" vr="ST" vm="1">_0071_xx1D_</el>
+  <el tag="0071xx22" keyword="_0071_xx22_" vr="ST" vm="1">_0071_xx22_</el>
+  <el tag="0071xx2C" keyword="_0071_xx2C_" vr="ST" vm="1">_0071_xx2C_</el>
+  <el tag="0071xx2D" keyword="_0071_xx2D_" vr="SQ" vm="1">_0071_xx2D_</el>
+  <el tag="0071xx2E" keyword="_0071_xx2E_" vr="US" vm="1">_0071_xx2E_</el>
+  <el tag="0071xx50" keyword="_0071_xx50_" vr="CS" vm="1">_0071_xx50_</el>
+  <el tag="0071xx51" keyword="_0071_xx51_" vr="CS" vm="1">_0071_xx51_</el>
+  <el tag="0071xx52" keyword="_0071_xx52_" vr="LT" vm="1">_0071_xx52_</el>
+  <el tag="0071xx53" keyword="_0071_xx53_" vr="CS" vm="1">_0071_xx53_</el>
+  <el tag="0071xx54" keyword="_0071_xx54_" vr="CS" vm="1">_0071_xx54_</el>
+  <el tag="0071xx55" keyword="_0071_xx55_" vr="CS" vm="1">_0071_xx55_</el>
+  <el tag="0071xx56" keyword="_0071_xx56_" vr="CS" vm="1">_0071_xx56_</el>
+  <el tag="0071xx57" keyword="_0071_xx57_" vr="CS" vm="1">_0071_xx57_</el>
+  <el tag="0071xx59" keyword="_0071_xx59_" vr="FL" vm="1">_0071_xx59_</el>
+  <el tag="0071xx5A" keyword="_0071_xx5A_" vr="FL" vm="1">_0071_xx5A_</el>
+  <el tag="0071xx5B" keyword="_0071_xx5B_" vr="FL" vm="2">_0071_xx5B_</el>
+  <el tag="0071xx5C" keyword="_0071_xx5C_" vr="FL" vm="4">_0071_xx5C_</el>
+  <el tag="0071xx5D" keyword="_0071_xx5D_" vr="CS" vm="1">_0071_xx5D_</el>
+  <el tag="0071xx60" keyword="_0071_xx60_" vr="FD" vm="1">_0071_xx60_</el>
+</elements>

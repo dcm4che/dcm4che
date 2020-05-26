@@ -161,6 +161,294 @@
                 </fileMapper>
               </fileMappers>
             </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agfa-ag-hpstate-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>AGFA-AG_HPState</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agfa-ag-hpstate-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agfa-displayable-images-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>agfa/displayableImages</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agfa-displayable-images-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agfa-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>AGFA</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agfa-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agfa-kosd-1.0-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>AGFA KOSD 1.0</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agfa-kosd-1.0-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agfa-pacs-archive-mirroring-1.0-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>AGFA PACS Archive Mirroring 1.0</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agfa-pacs-archive-mirroring-1.0-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agfa-xeroverse-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>agfa/xeroverse</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agfa-xeroverse-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agfa-adc-compact-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>AGFA_ADC_Compact</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agfa-adc-compact-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agfa-adc-nx-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>Agfa ADC NX</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agfa-adc-nx-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agility-overlay-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>AgilityOverlay</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agility-overlay-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>agility-runtime-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>AgilityRuntime</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>agility-runtime-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>mitra-linked-attributes-1.0-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>MITRA LINKED ATTRIBUTES 1.0</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>mitra-linked-attributes-1.0-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>mitra-markup-1.0-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>MITRA MARKUP 1.0</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>mitra-markup-1.0-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>mitra-object-attributes-1.0-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>MITRA OBJECT ATTRIBUTES 1.0</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>mitra-object-attributes-1.0-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>mitra-object-utf8-attributes-1.0-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>MITRA OBJECT UTF8 ATTRIBUTES 1.0</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>mitra-object-utf8-attributes-1.0-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>mitra-object-document-1.0-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>MITRA OBJECT DOCUMENT 1.0</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>mitra-object-document-1.0-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>mitra-presentation-1.0-elements.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>MITRA PRESENTATION 1.0</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>mitra-presentation-1.0-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
           </transformationSets>
         </configuration>
       </plugin>

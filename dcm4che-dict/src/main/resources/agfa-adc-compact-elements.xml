@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+  -->
+
+<elements>
+  <el tag="0019xx30" keyword="DataStreamFromCassette" vr="ST" vm="1">Data stream from cassette</el>
+  <el tag="0019xx40" keyword="SetOfDestinationIds" vr="ST" vm="1">Set of destination Ids</el>
+  <el tag="0019xx50" keyword="SetOfProcessingCodes" vr="ST" vm="1">Set of processing codes</el>
+  <el tag="0019xx60" keyword="NumberOfSeriesInStudy" vr="US" vm="1">Number of series in study</el>
+  <el tag="0019xx61" keyword="SessionNumber" vr="US" vm="1">Session Number</el>
+  <el tag="0019xx62" keyword="IDStationName" vr="SH" vm="1">ID station name</el>
+  <el tag="0019xx70" keyword="NumberOfImagesInSeries" vr="US" vm="1">Number of images in series</el>
+  <el tag="0019xx71" keyword="BreakCondition" vr="US" vm="1">Break condition</el>
+  <el tag="0019xx72" keyword="WaitOrHoldFlag" vr="US" vm="1">Wait (or Hold) flag</el>
+  <el tag="0019xx73" keyword="ScanResFlag" vr="US" vm="1">ScanRes flag</el>
+  <el tag="0019xx74" keyword="OperationCode" vr="SH" vm="1">Operation code</el>
+  <el tag="0019xx95" keyword="ImageQuality" vr="CS" vm="1">Image quality</el>
+</elements>

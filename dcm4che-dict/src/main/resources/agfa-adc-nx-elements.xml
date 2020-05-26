@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+  -->
+
+<elements>
+  <el tag="0019xx07" keyword="_0019_xx07_" vr="CS" vm="1">_0019_xx07_</el>
+  <el tag="0019xx09" keyword="_0019_xx09_" vr="SQ" vm="1">_0019_xx09_</el>
+  <el tag="0019xx21" keyword="_0019_xx21_" vr="FL" vm="1">_0019_xx21_</el>
+  <el tag="0019xx28" keyword="_0019_xx28_" vr="CS" vm="1">_0019_xx28_</el>
+  <el tag="0019xxF0" keyword="UserDefinedField1" vr="LO" vm="1">User Defined field 1</el>
+  <el tag="0019xxF1" keyword="UserDefinedField2" vr="LO" vm="1">User Defined field 2</el>
+  <el tag="0019xxF2" keyword="UserDefinedField3" vr="LO" vm="1">User Defined field 3</el>
+  <el tag="0019xxF3" keyword="UserDefinedField4" vr="LO" vm="1">User Defined field 4</el>
+  <el tag="0019xxF4" keyword="UserDefinedField5" vr="LO" vm="1">User Defined field 5</el>
+  <el tag="0019xxF5" keyword="CassetteOrientation" vr="CS" vm="1">Cassette Orientation</el>
+  <el tag="0019xxF6" keyword="PlateSensitivity" vr="DS" vm="1">Plate Sensitivity</el>
+  <el tag="0019xxF7" keyword="PlateErasability" vr="DS" vm="1">Plate Erasability</el>
+  <el tag="0019xxF8" keyword="_0019_xxF8_" vr="IS" vm="1">_0019_xxF8_</el>
+  <el tag="0019xxFA" keyword="_0019_xxFA_" vr="IS" vm="1">_0019_xxFA_</el>
+  <el tag="0019xxFC" keyword="_0019_xxFC_" vr="IS" vm="1">_0019_xxFC_</el>
+  <el tag="0019xxFD" keyword="_0019_xxFD_" vr="CS" vm="1">_0019_xxFD_</el>
+  <el tag="0019xxFE" keyword="_0019_xxFE_" vr="CS" vm="1">_0019_xxFE_</el>
+</elements>

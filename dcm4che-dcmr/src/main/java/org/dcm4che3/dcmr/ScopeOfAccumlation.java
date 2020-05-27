@@ -78,7 +78,4 @@ public class ScopeOfAccumlation {
             "DCM",
             null,
             "Irradiation Event");
-    // TODO Include CID 9301 Modality PPS Discontinuation Reasons
-    // TODO Include CID 9302 Media Import PPS Discontinuation Reasons
-    // TODO Include CID 60 Imaging Agent Administration Adverse Events
 }

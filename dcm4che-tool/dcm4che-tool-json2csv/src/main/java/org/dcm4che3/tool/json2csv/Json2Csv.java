@@ -213,7 +213,7 @@ public class Json2Csv {
                 String[] split = split(line);
                 csv.put(split[0], split);
             }
-        }
+        } catch (FileNotFoundException e) {}
         return csv;
     }
 

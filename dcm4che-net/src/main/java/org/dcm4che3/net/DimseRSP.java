@@ -73,7 +73,7 @@ public interface DimseRSP {
     Attributes getDataset();
 
     /**
-     * Cancel the operation, if this is a DIMSE action that can be cancelled
+     * Cancel the operation, if this is a DIMSE action that can be canceled
      * (such as C-FIND).
      * 
      * @param a Association The active association object.

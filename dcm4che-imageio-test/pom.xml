@@ -68,6 +68,8 @@
         <skipTests>false</skipTests>
         <os-name>macosx</os-name>
         <cpu-name>x86-64</cpu-name>
+        <lib-file-name>libopencv_java</lib-file-name>
+		<lib-file-ext>jnilib</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -83,6 +85,8 @@
         <skipTests>false</skipTests>
         <os-name>linux</os-name>
         <cpu-name>x86-64</cpu-name>
+        <lib-file-name>libopencv_java</lib-file-name>
+		<lib-file-ext>so</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -98,6 +102,8 @@
         <skipTests>false</skipTests>
         <os-name>linux</os-name>
         <cpu-name>x86-64</cpu-name>
+        <lib-file-name>libopencv_java</lib-file-name>
+		<lib-file-ext>so</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -113,6 +119,8 @@
         <skipTests>false</skipTests>
         <os-name>linux</os-name>
         <cpu-name>x86</cpu-name>
+        <lib-file-name>libopencv_java</lib-file-name>
+		<lib-file-ext>so</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -127,6 +135,8 @@
         <skipTests>false</skipTests>
         <os-name>windows</os-name>
         <cpu-name>x86-64</cpu-name>
+        <lib-file-name>opencv_java</lib-file-name>
+		<lib-file-ext>dll</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -141,6 +151,8 @@
         <skipTests>false</skipTests>
         <os-name>windows</os-name>
         <cpu-name>x86-64</cpu-name>
+        <lib-file-name>opencv_java</lib-file-name>
+		<lib-file-ext>dll</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -155,6 +167,8 @@
         <skipTests>false</skipTests>
         <os-name>windows</os-name>
         <cpu-name>x86</cpu-name>
+        <lib-file-name>opencv_java</lib-file-name>
+		<lib-file-ext>dll</lib-file-ext>
       </properties>
     </profile>
   </profiles>
@@ -170,6 +184,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-install-plugin</artifactId>
+        <version>3.0.0-M1</version>
         <configuration>
           <skip>true</skip>
         </configuration>
@@ -177,6 +192,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
+        <version>3.0.0-M1</version>
         <configuration>
           <skip>true</skip>
         </configuration>
@@ -213,53 +229,13 @@
               <artifactItems>
                 <artifactItem>
                   <groupId>org.weasis.thirdparty.org.opencv</groupId>
-                  <artifactId>libopencv_java</artifactId>
+                  <artifactId>${lib-file-name}</artifactId>
                   <version>${weasis.opencv.native.version}</version>
-                  <type>so</type>
-                  <classifier>linux-x86-64</classifier>
+                  <type>${lib-file-ext}</type>
+                  <classifier>${os-name}-${cpu-name}</classifier>
                   <overWrite>false</overWrite>
-                  <outputDirectory>${project.build.directory}/lib/linux-x86-64</outputDirectory>
-                  <destFileName>libopencv_java.so</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.weasis.thirdparty.org.opencv</groupId>
-                  <artifactId>libopencv_java</artifactId>
-                  <version>${weasis.opencv.native.version}</version>
-                  <type>so</type>
-                  <classifier>linux-x86</classifier>
-                  <overWrite>false</overWrite>
-                  <outputDirectory>${project.build.directory}/lib/linux-x86</outputDirectory>
-                  <destFileName>libopencv_java.so</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.weasis.thirdparty.org.opencv</groupId>
-                  <artifactId>libopencv_java</artifactId>
-                  <version>${weasis.opencv.native.version}</version>
-                  <type>jnilib</type>
-                  <classifier>macosx-x86-64</classifier>
-                  <overWrite>false</overWrite>
-                  <outputDirectory>${project.build.directory}/lib/macosx-x86-64</outputDirectory>
-                  <destFileName>libopencv_java.jnilib</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.weasis.thirdparty.org.opencv</groupId>
-                  <artifactId>opencv_java</artifactId>
-                  <version>${weasis.opencv.native.version}</version>
-                  <type>dll</type>
-                  <classifier>windows-x86</classifier>
-                  <overWrite>false</overWrite>
-                  <outputDirectory>${project.build.directory}/lib/windows-x86</outputDirectory>
-                  <destFileName>opencv_java.dll</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.weasis.thirdparty.org.opencv</groupId>
-                  <artifactId>opencv_java</artifactId>
-                  <version>${weasis.opencv.native.version}</version>
-                  <type>dll</type>
-                  <classifier>windows-x86-64</classifier>
-                  <overWrite>false</overWrite>
-                  <outputDirectory>${project.build.directory}/lib/windows-x86-64</outputDirectory>
-                  <destFileName>opencv_java.dll</destFileName>
+                  <outputDirectory>${project.build.directory}/lib/${os-name}-${cpu-name}</outputDirectory>
+				 <destFileName>${lib-file-name}.${lib-file-ext}</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>

@@ -176,7 +176,8 @@ public class JSONWriter implements DicomInputHandler {
                 } else {
                     byte[] b = dis.readValue();
                     if (tag == Tag.TransferSyntaxUID
-                            || tag == Tag.SpecificCharacterSet)
+                            || tag == Tag.SpecificCharacterSet
+                            || TagUtils.isPrivateCreator(tag))
                         attrs.setBytes(tag, vr, b);
                     writeValue(vr, b, dis.bigEndian(),
                                 attrs.getSpecificCharacterSet(vr), false);

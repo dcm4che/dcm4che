@@ -38,11 +38,14 @@
 
 package org.dcm4che3.data;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 public abstract class ElementDictionary {
     private static final ServiceLoader<ElementDictionary> loader =
             ServiceLoader.load(ElementDictionary.class);
+    private static final Map<String, ElementDictionary> map = new HashMap<>();
     private final String privateCreator;
     private final Class<?> tagClass;
 
@@ -55,14 +58,21 @@ public abstract class ElementDictionary {
         return StandardElementDictionary.INSTANCE;
     }
 
-    public static ElementDictionary getElementDictionary(
-            String privateCreator) {
-        if (privateCreator != null)
-            synchronized (loader) {
-                for (ElementDictionary dict : loader)
-                    if (privateCreator.equals(dict.getPrivateCreator()))
-                        return dict;
-            }
+    public static ElementDictionary getElementDictionary(String privateCreator) {
+        if (privateCreator != null) {
+            ElementDictionary dict1 = map.get(privateCreator);
+            if (dict1 != null)
+                return dict1;
+            if (!map.containsKey(privateCreator))
+                synchronized (loader) {
+                    for (ElementDictionary dict : loader) {
+                        map.putIfAbsent(dict.getPrivateCreator(), dict);
+                        if (privateCreator.equals(dict.getPrivateCreator()))
+                            return dict;
+                    }
+                    map.put(privateCreator, null);
+                }
+        }
         return getStandardElementDictionary();
     }
 

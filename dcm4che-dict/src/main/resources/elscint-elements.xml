@@ -334,8 +334,8 @@
   <el tag="07A5xx56" keyword="TamarReferringPhysiciansStudyRead" vr="CS" vm="1">Tamar Referring Physicians Study Read</el>
   <el tag="07A5xx59" keyword="_07A5_xx59_" vr="IS" vm="1">?</el>
   <el tag="07A5xx62" keyword="TamarStudyInstitutionName" vr="LO" vm="1">Tamar Study Institution Name</el>
-  <el tag="07A5xx63" keyword="_07A5_xx63_" vr="LO" vm="1">?</el>
-  <el tag="07A5xx69" keyword="TamarOriginalStoringAE" vr="LO" vm="1">Tamar Original Storing AE</el>
+  <el tag="07A5xx63" keyword="_07A5_xx63_" vr="CS" vm="1-n">?</el>
+  <el tag="07A5xx69" keyword="TamarOriginalStoringAE" vr="AE" vm="1">Tamar Original Storing AE</el>
   <el tag="07A5xxAE" keyword="_07A5_xxAE_" vr="IS" vm="1">?</el>
   <el tag="07A5xxC8" keyword="_07A5_xxC8_" vr="CS" vm="1">?</el>
 

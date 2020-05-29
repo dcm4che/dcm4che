@@ -41,13 +41,13 @@
   -->
 
 <elements>
-  <el tag="0011xx20" keyword="_0011_xx20_" vr="LO" vm="1">_0011_xx20_</el>
-  <el tag="0011xx21" keyword="_0011_xx21_" vr="LO" vm="1">_0011_xx21_</el>
-  <el tag="0011xx22" keyword="_0011_xx22_" vr="LO" vm="1">_0011_xx22_</el>
+  <el tag="0011xx20" keyword="_0011_xx20_" vr="LO" vm="1">?</el>
+  <el tag="0011xx21" keyword="_0011_xx21_" vr="LO" vm="1">?</el>
+  <el tag="0011xx22" keyword="_0011_xx22_" vr="LO" vm="1">?</el>
 
-  <el tag="0029xx11" keyword="_0029_xx11_" vr="CS" vm="1">_0029_xx11_</el>
-  <el tag="0029xx12" keyword="_0029_xx12_" vr="US" vm="1">_0029_xx12_</el>
-  <el tag="0029xx13" keyword="_0029_xx13_" vr="US" vm="1">_0029_xx13_</el>
-  <el tag="0029xx14" keyword="_0029_xx14_" vr="US" vm="1">_0029_xx14_</el>
-  <el tag="0029xx1F" keyword="_0029_xx1F_" vr="US" vm="1">_0029_xx1F_</el>
+  <el tag="0029xx11" keyword="_0029_xx11_" vr="CS" vm="1">?</el>
+  <el tag="0029xx12" keyword="_0029_xx12_" vr="US" vm="1">?</el>
+  <el tag="0029xx13" keyword="_0029_xx13_" vr="US" vm="1">?</el>
+  <el tag="0029xx14" keyword="_0029_xx14_" vr="US" vm="1">?</el>
+  <el tag="0029xx1F" keyword="_0029_xx1F_" vr="US" vm="1">?</el>
 </elements>

@@ -41,11 +41,11 @@
   -->
 
 <elements>
-  <el tag="0009xx10" keyword="_0009_xx10_" vr="LO" vm="1">_0009_xx10_</el>
-  <el tag="0009xx11" keyword="_0009_xx11_" vr="LO" vm="1">_0009_xx11_</el>
-  <el tag="0009xx13" keyword="_0009_xx13_" vr="LO" vm="1">_0009_xx13_</el>
-  <el tag="0009xx14" keyword="_0009_xx14_" vr="LO" vm="1">_0009_xx14_</el>
-  <el tag="0009xx15" keyword="_0009_xx15_" vr="LO" vm="1">_0009_xx15_</el>
+  <el tag="0009xx10" keyword="_0009_xx10_" vr="LO" vm="1">?</el>
+  <el tag="0009xx11" keyword="_0009_xx11_" vr="LO" vm="1">?</el>
+  <el tag="0009xx13" keyword="_0009_xx13_" vr="LO" vm="1">?</el>
+  <el tag="0009xx14" keyword="_0009_xx14_" vr="LO" vm="1">?</el>
+  <el tag="0009xx15" keyword="_0009_xx15_" vr="LO" vm="1">?</el>
 
   <el tag="0019xx05" keyword="CassetteDataStream" vr="ST" vm="1">Cassette Data Stream</el>
   <el tag="0019xx10" keyword="ImageProcessingParameters" vr="ST" vm="1">Image Processing Parameters</el>

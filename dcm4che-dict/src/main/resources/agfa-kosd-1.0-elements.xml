@@ -41,6 +41,6 @@
   -->
 
 <elements>
-  <el tag="0035xx00" keyword="_0035_xx00_" vr="SH" vm="1">_0035_xx00_</el>
-  <el tag="0035xx03" keyword="_0035_xx03_" vr="LT" vm="1">_0035_xx03_</el>
+  <el tag="0035xx00" keyword="_0035_xx00_" vr="SH" vm="1">?</el>
+  <el tag="0035xx03" keyword="_0035_xx03_" vr="LT" vm="1">?</el>
 </elements>

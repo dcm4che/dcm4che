@@ -41,9 +41,9 @@
   -->
 
 <elements>
-  <el tag="0033xx02" keyword="_0033_xx02_" vr="LO" vm="1">_0033_xx02_</el>
-  <el tag="0033xx04" keyword="_0033_xx04_" vr="LO" vm="1">_0033_xx04_</el>
-  <el tag="0033xx06" keyword="_0033_xx06_" vr="LO" vm="1">_0033_xx06_</el>
-  <el tag="0033xx08" keyword="_0033_xx08_" vr="LO" vm="1">_0033_xx08_</el>
-  <el tag="0033xx0A" keyword="_0033_xx0A_" vr="LO" vm="1">_0033_xx0A_</el>
+  <el tag="0033xx02" keyword="_0033_xx02_" vr="LO" vm="1">?</el>
+  <el tag="0033xx04" keyword="_0033_xx04_" vr="LO" vm="1">?</el>
+  <el tag="0033xx06" keyword="_0033_xx06_" vr="LO" vm="1">?</el>
+  <el tag="0033xx08" keyword="_0033_xx08_" vr="LO" vm="1">?</el>
+  <el tag="0033xx0A" keyword="_0033_xx0A_" vr="LO" vm="1">?</el>
 </elements>

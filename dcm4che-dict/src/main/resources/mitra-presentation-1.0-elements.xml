@@ -47,8 +47,8 @@
   <el tag="0029xx03" keyword="Invert" vr="IS" vm="1">Invert</el>
   <el tag="0029xx04" keyword="HasTabstop" vr="IS" vm="1">Has Tabstop</el>
   <el tag="0029xx05" keyword="SmoothRotation" vr="CS" vm="1">Smooth Rotation</el>
-  <el tag="0029xx10" keyword="_0029_xx10_" vr="CS" vm="1">_0029_xx10_</el>
-  <el tag="0029xx11" keyword="_0029_xx11_" vr="CS" vm="1">_0029_xx11_</el>
-  <el tag="0029xx12" keyword="_0029_xx12_" vr="CS" vm="1">_0029_xx12_</el>
-  <el tag="0029xx13" keyword="_0029_xx13_" vr="CS" vm="1">_0029_xx13_</el>
+  <el tag="0029xx10" keyword="_0029_xx10_" vr="CS" vm="1">?</el>
+  <el tag="0029xx11" keyword="_0029_xx11_" vr="CS" vm="1">?</el>
+  <el tag="0029xx12" keyword="_0029_xx12_" vr="CS" vm="1">?</el>
+  <el tag="0029xx13" keyword="_0029_xx13_" vr="CS" vm="1">?</el>
 </elements>

@@ -81,8 +81,8 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <slf4j.version>1.7.29</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
-    <weasis.core.img.version>4.2.1</weasis.core.img.version>
-    <weasis.opencv.native.version>4.2.0-dcm</weasis.opencv.native.version>
+    <weasis.core.img.version>4.3.0</weasis.core.img.version>
+    <weasis.opencv.native.version>4.3.0-dcm</weasis.opencv.native.version>
     <keycloak.version>10.0.1</keycloak.version>
     <jaxws-tools-maven-plugin.version>1.2.1.Final</jaxws-tools-maven-plugin.version>
     <jbossws-cxf-client.version>5.4.1.Final</jbossws-cxf-client.version>

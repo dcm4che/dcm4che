@@ -55,22 +55,25 @@ import java.util.Arrays;
  */
 public class PlanarConfig implements Closeable {
     private static final String[] USAGE = {
-            "usage: planarconfig [-v] [--uids] [--fix[0|1]] <file>|<directory>...",
+            "usage: planarconfig [-v] [--uids] [--3x3 N] [--fix[0|1]] <file>|<directory>...",
             "",
             "The planarconfig utility detects the actual planar configuration of",
             "uncompressed pixel data of color images with Photometric Interpretation",
             "RGB or YBR_FULL and optionally correct non matching values of attribute",
             "Planar Configuration of the image.",
             "",
-            "The average chroma (s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all",
-            "pixels and the sum of absolute differences of sample values of adjoining",
-            "pixels is calculated and resulting values on assuming color-by-pixel or",
-            "color-by-plane planar configuration are compared. If the significance of the",
-            "difference in the average chroma is greater than the significance of the",
-            "difference in the sum of absolute differences of sample values, the planar",
-            "configuration which resulted in the lesser chroma value is selected -",
-            "otherwise the planar configuration which resulted in lesser differences of",
-            "sample values of adjoining pixels is selected.",
+            "If the average difference of sample values between 3x3 tiles assuming",
+            "color-by-pixel is lesser than the specified threshold, a color-by-plane",
+            "planar configuration is selected. Otherwise the average chroma",
+            "(s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all pixels and the sum of",
+            "absolute differences of sample values of adjoining pixels is calculated and",
+            "resulting values on assuming color-by-pixel or color-by-plane planar",
+            "configuration are compared. If the significance of the difference in the",
+            "average chroma is greater than the significance of the difference in the sum",
+            "of absolute differences of sample values, the planar configuration which",
+            "resulted in the lesser chroma value is selected - otherwise the planar",
+            "configuration which resulted in lesser differences of sample values of",
+            "adjoining pixels is selected.",
             "",
             "For each processed file one of the characters:",
             "p - no pixel data",
@@ -91,13 +94,15 @@ public class PlanarConfig implements Closeable {
             "Options:",
             "--uids   log SOP Instance UIDs of files with not matching value of attribute",
             "         Planar Configuration in file 'uids.log' in working directory.",
+            "--3x3 N  threshold for 3x3 pattern detection; 10 by default, 0 = disabled.",
             "--fix    fix all files with NOT matching value of attribute Planar",
             "         Configuration",
             "--fix0   fix value of attribute Planar Configuration with detected",
             "         color-by-pixel planar configuration to 0",
             "--fix1   fix value of attribute Planar Configuration with detected",
             "         color-by-plane planar configuration to 1",
-            "-v       displays average chroma and sample differences in format:",
+            "-v       displays average sample difference between 3x3 tiles, average chroma",
+            "         and sample differences in format: 3x3=<tile-diffs>,",
             "         chroma=[<color-by-pixel>, <color-by-plane>, <significance>],",
             "         diff=[<color-by-pixel>, <color-by-plane>, <significance>]",
             "         for each processed file."
@@ -107,15 +112,17 @@ public class PlanarConfig implements Closeable {
     private final boolean uids;
     private final boolean[] fix;
     private final boolean verbose;
+    private final float min3x3;
     private PrintWriter uidslog;
     private int[] correct = new int[2];
     private int[] wrong = new int[2];
     private int skipped;
     private int failed;
 
-    public PlanarConfig(boolean uids, boolean verbose, boolean... fix) {
+    public PlanarConfig(boolean uids, boolean verbose, float min3x3, boolean... fix) {
         this.uids = uids;
         this.verbose = verbose;
+        this.min3x3 = min3x3;
         this.fix = fix;
     }
 
@@ -124,6 +131,7 @@ public class PlanarConfig implements Closeable {
         boolean verbose = false;
         boolean fix0 = false;
         boolean fix1 = false;
+        float min3x3 = 10.f;
         int firstArg = 0;
         for (; args.length > firstArg; firstArg++) {
             switch (args[firstArg]) {
@@ -132,6 +140,13 @@ public class PlanarConfig implements Closeable {
                     continue;
                 case "-v":
                     verbose = true;
+                    continue;
+                case "--3x3":
+                    try {
+                        min3x3 = Float.parseFloat(args[++firstArg]);
+                    } catch (Exception e) {
+                        min3x3 = -1.f;
+                    }
                     continue;
                 case "--fix":
                     fix0 = true;
@@ -146,7 +161,7 @@ public class PlanarConfig implements Closeable {
             }
             break;
         }
-        if (args.length == firstArg || args[firstArg].startsWith("-")) {
+        if (min3x3 < 0 || args.length == firstArg || args[firstArg].startsWith("-")) {
             for (String line : USAGE) {
                 System.out.println(line);
             }
@@ -156,7 +171,7 @@ public class PlanarConfig implements Closeable {
             System.out.println("uids.log already exists");
             System.exit(-1);
         }
-        try (PlanarConfig inst = new PlanarConfig(uids, verbose, fix0, fix1)) {
+        try (PlanarConfig inst = new PlanarConfig(uids, verbose, min3x3, fix0, fix1)) {
             long start = System.currentTimeMillis();
             for (int i = firstArg; i < args.length; i++) {
                 inst.processFileOrDirectory(new File(args[i]));
@@ -263,6 +278,28 @@ public class PlanarConfig implements Closeable {
         int cols = dataset.getInt(Tag.Columns, 1);
         int plane = rows * cols;
         int plane2 = plane * 2;
+        int cols2 = cols * 2;
+        int cols3 = cols * 3;
+        long diff9 = 0;
+        int r3 = rows / 3;
+        int c3 = cols / 3;
+        for (int r = 0; r < r3; r++) {
+            for (int c = 0, i1 = r * cols3, i2 = i1 + plane, i3 = i2 + plane; c < c3; c++) {
+                diff9 += diff3(b, i1++, cols, cols2);
+                diff9 += diff3(b, i1++, cols, cols2);
+                diff9 += diff3(b, i1++, cols, cols2);
+                diff9 += diff3(b, i2++, cols, cols2);
+                diff9 += diff3(b, i2++, cols, cols2);
+                diff9 += diff3(b, i2++, cols, cols2);
+                diff9 += diff3(b, i3++, cols, cols2);
+                diff9 += diff3(b, i3++, cols, cols2);
+                diff9 += diff3(b, i3++, cols, cols2);
+            }
+        }
+        float diff9Float = diff9 / ((float) (c3 * r3 * 9));
+        if (!verbose && diff9Float < min3x3) {
+            return 1;
+        }
         int[][] prevSamples = {
                 { b[0] & 0xff, b[1] & 0xff, b[2] & 0xff },
                 { b[0] & 0xff, b[plane] & 0xff, b[plane2] & 0xff }
@@ -306,13 +343,23 @@ public class PlanarConfig implements Closeable {
                     1 - minDiff / (float) maxDiff
             };
             System.out.println();
-            System.out.print(file + ": chroma=" + Arrays.toString(chroma)
-                    + ", diff=" + Arrays.toString(diff) + " -> ");
+            System.out.print(file + ": 3x3=" + diff9Float
+                    + ", chroma=" + Arrays.toString(chroma)
+                    + ", diff=" + Arrays.toString(diff)
+                    + " -> ");
         }
-        return (maxChroma * minDiff > minChroma * maxDiff
-                    ? chromaPerPixel > chromaPerPlane
-                    : diffPerPixel > diffPerPlane)
+        return ((diff9Float < min3x3) || (((maxChroma * minDiff) > (minChroma * maxDiff))
+                ? (chromaPerPixel > chromaPerPlane)
+                : (diffPerPixel > diffPerPlane)))
                 ? 1 : 0;
+    }
+
+    private int diff3(byte[] b, int i, int cols, int cols2) {
+        return diff3(b[i] & 0xff, b[i + cols] & 0xff, b[i + cols2] & 0xff);
+    }
+
+    private static int diff3(int a, int b, int c) {
+        return Math.max(Math.max(a, b), c) - Math.min(Math.min(a, b), c);
     }
 
     @Override
@@ -376,16 +423,15 @@ public class PlanarConfig implements Closeable {
             int chroma(int[] samples) {
                 float[] ybr = { samples[0] / 255f, samples[1] / 255f, samples[2] / 255f};
                 float[] rgb = YBR.FULL.toRGB(ybr);
-                return super.chroma(new int[]{
+                return diff3(
                         (int) (rgb[0] * 255),
                         (int) (rgb[1] * 255),
-                        (int) (rgb[2] * 255)});
+                        (int) (rgb[2] * 255));
             }
         };
         abstract boolean isWhite(int[] samples);
         int chroma(int[] samples) {
-            return Math.max(Math.max(samples[0], samples[1]), samples[2])
-                    - Math.min(Math.min(samples[0], samples[1]), samples[2]);
+            return diff3(samples[0], samples[1], samples[2]);
         };
     }
 }

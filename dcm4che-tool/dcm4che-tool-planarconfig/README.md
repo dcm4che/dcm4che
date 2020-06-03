@@ -1,20 +1,23 @@
 ```
-usage: planarconfig [-v] [--uids] [--fix[0|1]] <file>|<directory>...
+usage: planarconfig [-v] [--uids] [--3x3 N] [--fix[0|1]] <file>|<directory>...
 
 The planarconfig utility detects the actual planar configuration of
 uncompressed pixel data of color images with Photometric Interpretation
 RGB or YBR_FULL and optionally correct non matching values of attribute
 Planar Configuration of the image.
 
-The average chroma (s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all
-pixels and the sum of absolute differences of sample values of adjoining
-pixels is calculated and resulting values on assuming color-by-pixel or
-color-by-plane planar configuration are compared. If the significance of the
-difference in the average chroma is greater than the significance of the
-difference in the sum of absolute differences of sample values, the planar
-configuration which resulted in the lesser chroma value is selected -
-otherwise the planar configuration which resulted in lesser differences of
-sample values of adjoining pixels is selected.
+If the average difference of sample values between 3x3 tiles assuming
+color-by-pixel is lesser than the specified threshold, a color-by-plane
+planar configuration is selected. Otherwise the average chroma
+(s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all pixels and the sum of
+absolute differences of sample values of adjoining pixels is calculated and
+resulting values on assuming color-by-pixel or color-by-plane planar
+configuration are compared. If the significance of the difference in the
+average chroma is greater than the significance of the difference in the sum
+of absolute differences of sample values, the planar configuration which
+resulted in the lesser chroma value is selected - otherwise the planar
+configuration which resulted in lesser differences of sample values of
+adjoining pixels is selected.
 
 For each processed file one of the characters:
 p - no pixel data
@@ -35,13 +38,15 @@ and a stack trace is written to stderr.
 Options:
 --uids   log SOP Instance UIDs of files with not matching value of attribute
          Planar Configuration in file 'uids.log' in working directory.
+--3x3 N  threshold for 3x3 pattern detection; 10 by default, 0 = disabled.
 --fix    fix all files with NOT matching value of attribute Planar
          Configuration
 --fix0   fix value of attribute Planar Configuration with detected
          color-by-pixel planar configuration to 0
 --fix1   fix value of attribute Planar Configuration with detected
          color-by-plane planar configuration to 1
--v       displays average chroma and sample differences in format:
+-v       displays average sample difference between 3x3 tiles, average chroma
+         and sample differences in format: 3x3=<tile-diffs>,
          chroma=[<color-by-pixel>, <color-by-plane>, <significance>],
          diff=[<color-by-pixel>, <color-by-plane>, <significance>]
          for each processed file.

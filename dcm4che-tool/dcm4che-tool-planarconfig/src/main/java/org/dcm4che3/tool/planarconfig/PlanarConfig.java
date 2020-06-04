@@ -105,7 +105,8 @@ public class PlanarConfig implements Closeable {
             "--fix1         fix value of attribute Planar Configuration with detected",
             "               color-by-plane planar configuration to 1",
             "-v             displays average sample difference between 3x3 tiles, average",
-            "               chroma and sample differences in format: 3x3=<tile-diffs>,",
+            "               chroma and sample differences of adjoining pixels in format:",
+            "               3x3=<avg-tile-diff>,",
             "               chroma=[<color-by-pixel>, <color-by-plane>, <significance>],",
             "               diff=[<color-by-pixel>, <color-by-plane>, <significance>]",
             "               for each processed file."

@@ -55,7 +55,8 @@ import java.util.Arrays;
  */
 public class PlanarConfig implements Closeable {
     private static final String[] USAGE = {
-            "usage: planarconfig [-v] [--uids] [--3x3 N] [--fix[0|1]] <file>|<directory>...",
+            "usage: planarconfig [-v] [--uids] [--3x3 MIN MAX] [--fix[0|1]]",
+            "                    <file>|<directory>...",
             "",
             "The planarconfig utility detects the actual planar configuration of",
             "uncompressed pixel data of color images with Photometric Interpretation",
@@ -63,17 +64,19 @@ public class PlanarConfig implements Closeable {
             "Planar Configuration of the image.",
             "",
             "If the average difference of sample values between 3x3 tiles assuming",
-            "color-by-pixel is lesser than the specified threshold, a color-by-plane",
-            "planar configuration is selected. Otherwise the average chroma",
+            "color-by-pixel is lesser than the specified lower threshold (default: 10),",
+            "the detected planar configuration is color-by-plane. If the average difference",
+            "is greater than the specified upper threshold (default: 20), the detected",
+            "planar configuration is color-by-pixel. Otherwise the average chroma",
             "(s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all pixels and the sum of",
             "absolute differences of sample values of adjoining pixels is calculated and",
             "resulting values on assuming color-by-pixel or color-by-plane planar",
             "configuration are compared. If the significance of the difference in the",
             "average chroma is greater than the significance of the difference in the sum",
-            "of absolute differences of sample values, the planar configuration which",
-            "resulted in the lesser chroma value is selected - otherwise the planar",
-            "configuration which resulted in lesser differences of sample values of",
-            "adjoining pixels is selected.",
+            "of absolute differences of sample values, the detected planar configuration is",
+            "which resulted in the lesser chroma value - otherwise the detected planar",
+            "configuration is which resulted in lesser differences of sample values of",
+            "adjoining pixels.",
             "",
             "For each processed file one of the characters:",
             "p - no pixel data",
@@ -92,20 +95,20 @@ public class PlanarConfig implements Closeable {
             "and a stack trace is written to stderr.",
             "",
             "Options:",
-            "--uids   log SOP Instance UIDs of files with not matching value of attribute",
-            "         Planar Configuration in file 'uids.log' in working directory.",
-            "--3x3 N  threshold for 3x3 pattern detection; 10 by default, 0 = disabled.",
-            "--fix    fix all files with NOT matching value of attribute Planar",
-            "         Configuration",
-            "--fix0   fix value of attribute Planar Configuration with detected",
-            "         color-by-pixel planar configuration to 0",
-            "--fix1   fix value of attribute Planar Configuration with detected",
-            "         color-by-plane planar configuration to 1",
-            "-v       displays average sample difference between 3x3 tiles, average chroma",
-            "         and sample differences in format: 3x3=<tile-diffs>,",
-            "         chroma=[<color-by-pixel>, <color-by-plane>, <significance>],",
-            "         diff=[<color-by-pixel>, <color-by-plane>, <significance>]",
-            "         for each processed file."
+            "--uids         log SOP Instance UIDs of files with not matching value of",
+            "               attribute Planar Configuration in file './uids.log'.",
+            "--3x3 MIN MAX  thresholds for 3x3 pattern detection; 10 20 by default",
+            "--fix          fix all files with NOT matching value of attribute Planar",
+            "               Configuration",
+            "--fix0         fix value of attribute Planar Configuration with detected",
+            "               color-by-pixel planar configuration to 0",
+            "--fix1         fix value of attribute Planar Configuration with detected",
+            "               color-by-plane planar configuration to 1",
+            "-v             displays average sample difference between 3x3 tiles, average",
+            "               chroma and sample differences in format: 3x3=<tile-diffs>,",
+            "               chroma=[<color-by-pixel>, <color-by-plane>, <significance>],",
+            "               diff=[<color-by-pixel>, <color-by-plane>, <significance>]",
+            "               for each processed file."
     };
     private static final char[] CORRECT_CH = { '0', '1' };
     private static final char[] WRONG_CH = { 'O', 'I' };
@@ -113,16 +116,18 @@ public class PlanarConfig implements Closeable {
     private final boolean[] fix;
     private final boolean verbose;
     private final float min3x3;
+    private final float max3x3;
     private PrintWriter uidslog;
     private int[] correct = new int[2];
     private int[] wrong = new int[2];
     private int skipped;
     private int failed;
 
-    public PlanarConfig(boolean uids, boolean verbose, float min3x3, boolean... fix) {
+    public PlanarConfig(boolean uids, boolean verbose, float min3x3, float max3x3, boolean... fix) {
         this.uids = uids;
         this.verbose = verbose;
         this.min3x3 = min3x3;
+        this.max3x3 = max3x3;
         this.fix = fix;
     }
 
@@ -132,6 +137,7 @@ public class PlanarConfig implements Closeable {
         boolean fix0 = false;
         boolean fix1 = false;
         float min3x3 = 10.f;
+        float max3x3 = 20.f;
         int firstArg = 0;
         for (; args.length > firstArg; firstArg++) {
             switch (args[firstArg]) {
@@ -144,6 +150,9 @@ public class PlanarConfig implements Closeable {
                 case "--3x3":
                     try {
                         min3x3 = Float.parseFloat(args[++firstArg]);
+                        max3x3 = Float.parseFloat(args[++firstArg]);
+                        if (max3x3 < min3x3)
+                            min3x3 = -1.f;
                     } catch (Exception e) {
                         min3x3 = -1.f;
                     }
@@ -171,7 +180,7 @@ public class PlanarConfig implements Closeable {
             System.out.println("uids.log already exists");
             System.exit(-1);
         }
-        try (PlanarConfig inst = new PlanarConfig(uids, verbose, min3x3, fix0, fix1)) {
+        try (PlanarConfig inst = new PlanarConfig(uids, verbose, min3x3, max3x3, fix0, fix1)) {
             long start = System.currentTimeMillis();
             for (int i = firstArg; i < args.length; i++) {
                 inst.processFileOrDirectory(new File(args[i]));
@@ -297,8 +306,9 @@ public class PlanarConfig implements Closeable {
             }
         }
         float diff9Float = diff9 / ((float) (c3 * r3 * 9));
-        if (!verbose && diff9Float < min3x3) {
-            return 1;
+        if (!verbose) {
+            if (diff9Float < min3x3) return 1;
+            if (diff9Float > max3x3) return 0;
         }
         int[][] prevSamples = {
                 { b[0] & 0xff, b[1] & 0xff, b[2] & 0xff },
@@ -348,9 +358,11 @@ public class PlanarConfig implements Closeable {
                     + ", diff=" + Arrays.toString(diff)
                     + " -> ");
         }
-        return ((diff9Float < min3x3) || (((maxChroma * minDiff) > (minChroma * maxDiff))
-                ? (chromaPerPixel > chromaPerPlane)
-                : (diffPerPixel > diffPerPlane)))
+        if (diff9Float < min3x3) return 1;
+        if (diff9Float > max3x3) return 0;
+        return (maxChroma * minDiff > minChroma * maxDiff
+                ? chromaPerPixel > chromaPerPlane
+                : diffPerPixel > diffPerPlane)
                 ? 1 : 0;
     }
 

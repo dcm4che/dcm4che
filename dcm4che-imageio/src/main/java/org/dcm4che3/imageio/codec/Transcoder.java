@@ -317,7 +317,6 @@ public class Transcoder implements Closeable {
 
     public void setCompressParams(Property... imageWriteParams) {
         if (compressorParam == null) return;
-        int count = 0;
         for (Property property : imageWriteParams) {
             String name = property.getName();
             if (name.equals("maxPixelValueError"))
@@ -327,7 +326,7 @@ public class Transcoder implements Closeable {
             else if (name.equals("bitsCompressed"))
                 this.bitsCompressed = ((Number) property.getValue()).intValue();
             else {
-                if (count++ == 0)
+                if (compressParam.getCompressionMode() != ImageWriteParam.MODE_EXPLICIT)
                     compressParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 property.setAt(compressParam);
             }

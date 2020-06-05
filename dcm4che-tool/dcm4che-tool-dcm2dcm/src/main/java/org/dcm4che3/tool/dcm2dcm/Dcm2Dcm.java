@@ -213,9 +213,9 @@ public class Dcm2Dcm {
                 .build());
         opts.addOption(Option.builder("Q")
                 .hasArg()
-                .argName("encoding-rate")
+                .argName("compression")
                 .type(PatternOptionBuilder.NUMBER_VALUE)
-                .desc(rb.getString("encoding-rate"))
+                .desc(rb.getString("compression"))
                 .build());
         opts.addOption(Option.builder("N")
                 .hasArg()
@@ -265,7 +265,7 @@ public class Dcm2Dcm {
                         cl.getParsedOptionValue("q"));
 
             if (cl.hasOption("Q"))
-                main.addCompressionParam("encodingRate",
+                main.addCompressionParam("compressionRatiofactor",
                         cl.getParsedOptionValue("Q"));
 
             if (cl.hasOption("N"))

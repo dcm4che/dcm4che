@@ -142,7 +142,6 @@ public class Compressor extends Decompressor implements Closeable {
         this.patchJPEGLS = param.patchJPEGLS;
 
         this.compressParam = compressor.getDefaultWriteParam();
-        int count = 0;
         for (Property property : cat(param.getImageWriteParams(), params)) {
             String name = property.getName();
             if (name.equals("maxPixelValueError"))
@@ -152,7 +151,7 @@ public class Compressor extends Decompressor implements Closeable {
             else if (name.equals("bitsCompressed"))
                 this.bitsCompressed = ((Number) property.getValue()).intValue();
             else {
-                if (count++ == 0)
+                if (compressParam.getCompressionMode() != ImageWriteParam.MODE_EXPLICIT)
                     compressParam.setCompressionMode(
                             ImageWriteParam.MODE_EXPLICIT);
                 property.setAt(compressParam);

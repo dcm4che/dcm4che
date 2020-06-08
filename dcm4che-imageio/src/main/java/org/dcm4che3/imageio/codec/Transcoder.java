@@ -123,6 +123,8 @@ public class Transcoder implements Closeable {
 
     private int avgPixelValueBlockSize = 1;
 
+    private Attributes fileMetaInformation;
+
     private DicomOutputStream dos;
 
     private Attributes postPixelData;
@@ -288,6 +290,14 @@ public class Transcoder implements Closeable {
 
     public List<File> getBulkDataFiles() {
         return dis.getBulkDataFiles();
+    }
+
+    /**
+     * Returns {@code Attributes} of File Meta Information written to {@code OutputStream} or {@code null}.
+     * @return {@code Attributes} of File Meta Information written to {@code OutputStream} or {@code null}.
+     */
+    public Attributes getFileMetaInformation() {
+        return fileMetaInformation;
     }
 
     private void initDecompressor() {
@@ -818,6 +828,7 @@ public class Transcoder implements Closeable {
                 fmi.setString(Tag.TransferSyntaxUID, VR.UI, destTransferSyntax);
         }
         dos.writeDataset(fmi, dataset);
+        fileMetaInformation = fmi;
     }
 
     private void initBufferedImage() {

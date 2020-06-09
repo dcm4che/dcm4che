@@ -285,13 +285,23 @@ public class MediaTypes {
             new MediaType("multipart", "related");
 
     /**
-     * "multipart/related;type=application/dicom"
+     * "multipart/related;type=\"application/dicom\""
+     */
+    public final static String MULTIPART_RELATED_APPLICATION_DICOM = "multipart/related;type=\"application/dicom\"";
+
+    /**
+     * "multipart/related;type=\"application/dicom\""
      */
     public final static MediaType MULTIPART_RELATED_APPLICATION_DICOM_TYPE =
             new MediaType("multipart", "related", Collections.singletonMap("type", APPLICATION_DICOM));
 
     /**
-     * "multipart/related;type=application/dicom+xml"
+     * "multipart/related;type=\"application/dicom+xml\""
+     */
+    public final static String MULTIPART_RELATED_APPLICATION_DICOM_XML = "multipart/related;type=\"application/dicom+xml\"";
+
+    /**
+     * "multipart/related;type=\"application/dicom+xml\""
      */
     public final static MediaType MULTIPART_RELATED_APPLICATION_DICOM_XML_TYPE =
             new MediaType("multipart", "related", Collections.singletonMap("type", APPLICATION_DICOM_XML));

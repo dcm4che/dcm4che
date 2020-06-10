@@ -57,8 +57,8 @@ import org.dcm4che3.data.VR;
 public class MultiframeExtractor {
 
     private enum Impl {
-        EnhancedCTImageExtractor(UID.CTImageStorage),
-        EnhancedMRImageExtractor(UID.MRImageStorage) {
+        EnhancedCTImageExtractor(UID.CTImageStorage, true),
+        EnhancedMRImageExtractor(UID.MRImageStorage, true) {
             Attributes extract(MultiframeExtractor mfe, Attributes emf, int frame) {
                 Attributes sf = super.extract(mfe, emf, frame);
                 setEchoTime(sf);
@@ -145,16 +145,28 @@ public class MultiframeExtractor {
             }
 
         },
-        EnhancedPETImageExtractor(UID.PositronEmissionTomographyImageStorage);
+        EnhancedXAImageExtractor(UID.XRayAngiographicImageStorage, true),
+        EnhancedXRFImageExtractor(UID.XRayRadiofluoroscopicImageStorage, true),
+        EnhancedPETImageExtractor(UID.PositronEmissionTomographyImageStorage, true),
+        NuclearMedicineImageExtractor(UID.NuclearMedicineImageStorage, false),
+        UltrasoundMultiFrameImageExtractor(UID.UltrasoundImageStorage, false),
+        MultiFrameGrayscaleByteSecondaryCaptureImageExtractor(UID.SecondaryCaptureImageStorage, false),
+        MultiFrameGrayscaleWordSecondaryCaptureImageExtractor(UID.SecondaryCaptureImageStorage, false),
+        MultiFrameTrueColorSecondaryCaptureImageExtractor(UID.SecondaryCaptureImageStorage, false),
+        XRayAngiographicImageExtractor(UID.XRayAngiographicImageStorage, false),
+        XRayRadiofluoroscopicImageExtractor(UID.XRayRadiofluoroscopicImageStorage, false),
+        RTImageExtractor(UID.RTImageStorage, false);
 
         private final String sfcuid;
+        private final boolean enhanced;
 
-        Impl(String sfcuid) {
+        Impl(String sfcuid, boolean enhanced) {
             this.sfcuid = sfcuid;
+            this.enhanced = enhanced;
         }
 
         Attributes extract(MultiframeExtractor mfe, Attributes emf, int frame) {
-            return mfe.extract(emf, frame, sfcuid);
+            return mfe.extract(emf, frame, sfcuid, enhanced);
         }
     }
 
@@ -162,7 +174,17 @@ public class MultiframeExtractor {
     static {
         impls.put(UID.EnhancedCTImageStorage, Impl.EnhancedCTImageExtractor);
         impls.put(UID.EnhancedMRImageStorage, Impl.EnhancedMRImageExtractor);
+        impls.put(UID.EnhancedXAImageStorage, Impl.EnhancedXAImageExtractor);
+        impls.put(UID.EnhancedXRFImageStorage, Impl.EnhancedXRFImageExtractor);
         impls.put(UID.EnhancedPETImageStorage, Impl.EnhancedPETImageExtractor);
+        impls.put(UID.NuclearMedicineImageStorage, Impl.NuclearMedicineImageExtractor);
+        impls.put(UID.UltrasoundMultiFrameImageStorage, Impl.UltrasoundMultiFrameImageExtractor);
+        impls.put(UID.MultiFrameGrayscaleByteSecondaryCaptureImageStorage, Impl.MultiFrameGrayscaleByteSecondaryCaptureImageExtractor);
+        impls.put(UID.MultiFrameGrayscaleWordSecondaryCaptureImageStorage, Impl.MultiFrameGrayscaleWordSecondaryCaptureImageExtractor);
+        impls.put(UID.MultiFrameTrueColorSecondaryCaptureImageStorage, Impl.MultiFrameTrueColorSecondaryCaptureImageExtractor);
+        impls.put(UID.XRayAngiographicImageStorage, Impl.XRayAngiographicImageExtractor);
+        impls.put(UID.XRayRadiofluoroscopicImageStorage, Impl.XRayRadiofluoroscopicImageExtractor);
+        impls.put(UID.RTImageStorage, Impl.RTImageExtractor);
     }
 
     private static final int[] EXCLUDE_TAGS = {
@@ -246,19 +268,21 @@ public class MultiframeExtractor {
         return impl;
     }
 
-    private Attributes extract(Attributes emf, int frame, String cuid) {
-        Attributes sfgs = emf.getNestedDataset(Tag.SharedFunctionalGroupsSequence);
-        if (sfgs == null)
-            throw new IllegalArgumentException(
-                    "Missing (5200,9229) Shared Functional Groups Sequence");
-        Attributes fgs = emf.getNestedDataset(Tag.PerFrameFunctionalGroupsSequence, frame);
-        if (fgs == null)
-            throw new IllegalArgumentException(
-                    "Missing (5200,9230) Per-frame Functional Groups Sequence Item for frame #" + (frame + 1));
+    private Attributes extract(Attributes emf, int frame, String cuid, boolean enhanced) {
         Attributes dest = new Attributes(emf.size() * 2);
         dest.addNotSelected(emf, EXCLUDE_TAGS);
-        addFunctionGroups(dest, sfgs);
-        addFunctionGroups(dest, fgs);
+        if (enhanced) {
+            Attributes sfgs = emf.getNestedDataset(Tag.SharedFunctionalGroupsSequence);
+            if (sfgs == null)
+                throw new IllegalArgumentException(
+                        "Missing (5200,9229) Shared Functional Groups Sequence");
+            Attributes fgs = emf.getNestedDataset(Tag.PerFrameFunctionalGroupsSequence, frame);
+            if (fgs == null)
+                throw new IllegalArgumentException(
+                        "Missing (5200,9230) Per-frame Functional Groups Sequence Item for frame #" + (frame + 1));
+            addFunctionGroups(dest, sfgs);
+            addFunctionGroups(dest, fgs);
+        }
         addPixelData(dest, emf, frame);
         dest.setString(Tag.SOPClassUID, VR.UI, cuid);
         dest.setString(Tag.SOPInstanceUID, VR.UI, uidMapper.get(

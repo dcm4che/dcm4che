@@ -131,7 +131,6 @@ public class Jpg2Dcm {
         opts.addOption(Option.builder("m")
                 .hasArgs()
                 .argName("[seq/]attr=value")
-                .valueSeparator()
                 .desc(rb.getString("metadata"))
                 .build());
         opts.addOption(Option.builder("f")

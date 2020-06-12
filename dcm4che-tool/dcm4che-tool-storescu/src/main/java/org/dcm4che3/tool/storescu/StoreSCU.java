@@ -205,21 +205,20 @@ public class StoreSCU {
         return CLIUtils.parseComandLine(args, opts, rb, StoreSCU.class);
     }
 
-    @SuppressWarnings("static-access")
     private static void addAttributesOption(Options opts) {
-        opts.addOption(Option.builder("s").hasArgs().argName("[seq/]attr=value")
-                .valueSeparator('=').desc(rb.getString("set"))
+        opts.addOption(Option.builder("s")
+                .hasArgs()
+                .argName("[seq/]attr=value")
+                .desc(rb.getString("set"))
                 .build());
     }
 
-    @SuppressWarnings("static-access")
     public static void addUIDSuffixOption(Options opts) {
         opts.addOption(Option.builder().hasArg().argName("suffix")
                 .desc(rb.getString("uid-suffix"))
                 .longOpt("uid-suffix").build());
     }
 
-    @SuppressWarnings("static-access")
     public static void addTmpFileOptions(Options opts) {
         opts.addOption(Option.builder().hasArg().argName("directory")
                 .desc(rb.getString("tmp-file-dir"))
@@ -232,7 +231,6 @@ public class StoreSCU {
                 .longOpt("tmp-file-suffix").build());
     }
 
-    @SuppressWarnings("static-access")
     private static void addRelatedSOPClassOptions(Options opts) {
         opts.addOption(null, "rel-ext-neg", false, rb.getString("rel-ext-neg"));
         opts.addOption(Option.builder().hasArg().argName("file|url")
@@ -240,7 +238,6 @@ public class StoreSCU {
                 .longOpt("rel-sop-classes").build());
     }
 
-    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         long t1, t2;
         try {

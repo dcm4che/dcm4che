@@ -770,11 +770,17 @@ public class CLIUtils {
 
     public static void addAttributes(Attributes attrs, String[] optVals) {
         if (optVals != null)
-            for (int i = 1; i < optVals.length; i++, i++)
-                addAttributes(attrs,
-                        toTags(
-                                StringUtils.split(optVals[i-1], '/')),
-                                optVals[i]);
+            for (String optVal : optVals) {
+                int delim = optVal.indexOf('=');
+                if (delim < 0) {
+                    addAttributes(attrs,
+                            toTags(StringUtils.split(optVal, '/')));
+                } else {
+                    addAttributes(attrs,
+                            toTags(StringUtils.split(optVal.substring(0, delim), '/')),
+                            optVal.substring(delim + 1));
+                }
+            }
     }
 
     public static void addEmptyAttributes(Attributes attrs, String[] optVals) {

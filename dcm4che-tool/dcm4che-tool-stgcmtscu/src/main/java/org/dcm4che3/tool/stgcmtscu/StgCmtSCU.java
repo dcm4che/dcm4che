@@ -343,7 +343,6 @@ public class StgCmtSCU {
         opts.addOption(Option.builder("s")
                 .hasArgs()
                 .argName("[seq/]attr=value")
-                .valueSeparator('=')
                 .desc(rb.getString("set"))
                 .build());
         opts.addOption(Option.builder()

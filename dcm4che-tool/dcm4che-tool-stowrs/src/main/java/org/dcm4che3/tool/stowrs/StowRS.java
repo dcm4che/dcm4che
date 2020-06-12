@@ -119,7 +119,6 @@ public class StowRS {
         Options opts = new Options();
         opts.addOption(Option.builder("m")
                 .numberOfArgs(2).argName("[seq/]attr=value")
-                .valueSeparator()
                 .desc(rb.getString("metadata"))
                 .build());
         opts.addOption(Option.builder("f")

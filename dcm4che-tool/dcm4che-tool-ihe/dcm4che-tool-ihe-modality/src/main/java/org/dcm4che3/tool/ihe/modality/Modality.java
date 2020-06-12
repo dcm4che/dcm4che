@@ -370,7 +370,6 @@ public class Modality {
         opts.addOption(Option.builder("s")
                 .hasArgs()
                 .argName("[seq/]attr=value")
-                .valueSeparator('=')
                 .desc(rb.getString("set"))
                 .build());
    }

@@ -322,7 +322,6 @@ public class UpsSCU {
         opts.addOption(Option.builder("m")
                 .hasArgs()
                 .argName("[seq/]attr=value")
-                .valueSeparator('=')
                 .desc(rb.getString("match"))
                 .build());
         opts.addOption(Option.builder("O")

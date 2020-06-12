@@ -275,7 +275,6 @@ public class FindSCU {
         opts.addOption(Option.builder("m")
                 .hasArgs()
                 .argName("[seq/]attr=value")
-                .valueSeparator('=')
                 .desc(rb.getString("match"))
                 .build());
         opts.addOption(Option.builder("r")

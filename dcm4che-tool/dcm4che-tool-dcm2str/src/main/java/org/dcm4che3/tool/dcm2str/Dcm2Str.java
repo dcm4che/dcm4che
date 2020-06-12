@@ -103,7 +103,6 @@ public class Dcm2Str extends SimpleFileVisitor<Path> {
         opts.addOption(Option.builder("s")
                 .hasArgs()
                 .argName("[seq/]attr=value")
-                .valueSeparator('=')
                 .desc(rb.getString("str"))
                 .build());
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Dcm2Str.class);

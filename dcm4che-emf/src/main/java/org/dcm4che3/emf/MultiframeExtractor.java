@@ -282,6 +282,8 @@ public class MultiframeExtractor {
                         "Missing (5200,9230) Per-frame Functional Groups Sequence Item for frame #" + (frame + 1));
             addFunctionGroups(dest, sfgs);
             addFunctionGroups(dest, fgs);
+            dest.setString(Tag.ImageType, VR.CS, dest.getStrings(Tag.FrameType));
+            dest.remove(Tag.FrameType);
         }
         addPixelData(dest, emf, frame);
         dest.setString(Tag.SOPClassUID, VR.UI, cuid);
@@ -289,8 +291,6 @@ public class MultiframeExtractor {
                 dest.getString(Tag.SOPInstanceUID)) + '.' + (frame + 1));
         dest.setString(Tag.InstanceNumber, VR.IS,
                 createInstanceNumber(dest.getString(Tag.InstanceNumber, ""), frame));
-        dest.setString(Tag.ImageType, VR.CS, dest.getStrings(Tag.FrameType));
-        dest.remove(Tag.FrameType);
         if (!preserveSeriesInstanceUID)
             dest.setString(Tag.SeriesInstanceUID, VR.UI, uidMapper.get(
                     dest.getString(Tag.SeriesInstanceUID)));

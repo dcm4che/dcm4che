@@ -103,6 +103,8 @@ public class Transcoder implements Closeable {
 
     private boolean includeFileMetaInformation;
 
+    private boolean nullifyPixelData;
+
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
 
     private boolean closeInputStream = true;
@@ -250,6 +252,14 @@ public class Transcoder implements Closeable {
         this.retainFileMetaInformation = retainFileMetaInformation;
     }
 
+    public boolean isNullifyPixelData() {
+        return nullifyPixelData;
+    }
+
+    public void setNullifyPixelData(boolean nullifyPixelData) {
+        this.nullifyPixelData = nullifyPixelData;
+    }
+
     public ImageDescriptor getImageDescriptor() {
         return imageDescriptor;
     }
@@ -393,10 +403,15 @@ public class Transcoder implements Closeable {
         public void readValue(DicomInputStream dis, Attributes attrs) throws IOException {
             int tag = dis.tag();
             if (dis.level() == 0 && tag == Tag.PixelData) {
-                imageDescriptor = new ImageDescriptor(attrs, bitsCompressed);
-                initDicomOutputStream();
-                processPixelData();
-                postPixelData = new Attributes(dis.bigEndian());
+                if (nullifyPixelData) {
+                    dataset.setNull(Tag.PixelData, dis.vr());
+                    skipPixelData();
+                } else {
+                    imageDescriptor = new ImageDescriptor(attrs, bitsCompressed);
+                    initDicomOutputStream();
+                    processPixelData();
+                    postPixelData = new Attributes(dis.bigEndian());
+                }
             } else {
                 dis.readValue(dis, attrs);
                 if (postPixelData != null && dis.level() == 0)
@@ -412,7 +427,10 @@ public class Transcoder implements Closeable {
         @Override
         public void readValue(DicomInputStream dis, Fragments frags) throws IOException {
             if (dos == null) {
-                dis.readValue(dis, frags);
+                if (nullifyPixelData)
+                    StreamUtils.skipFully(dis, dis.length());
+                else
+                    dis.readValue(dis, frags);
             } else {
                 int length = dis.length();
                 dos.writeHeader(Tag.Item, null, length);
@@ -464,6 +482,15 @@ public class Transcoder implements Closeable {
         }
         if (padding != 0)
             dos.write(0);
+    }
+
+    private void skipPixelData() throws IOException {
+        int length = dis.length();
+        if (length == -1) {
+            dis.readValue(dis, dataset);
+        } else {
+            StreamUtils.skipFully(dis, length);
+        }
     }
 
     private void copyPixelData() throws IOException {

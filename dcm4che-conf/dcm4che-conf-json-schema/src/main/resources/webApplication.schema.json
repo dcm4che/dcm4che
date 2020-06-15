@@ -52,7 +52,8 @@
           "REJECT",
           "MOVE",
           "MOVE_MATCHING",
-          "ELASTICSEARCH"
+          "ELASTICSEARCH",
+          "XDS_RS"
         ]
       }
     },

@@ -61,12 +61,13 @@ public class WebApplication {
         QIDO_COUNT,
         DCM4CHEE_ARC,
         DCM4CHEE_ARC_AET,
+        DCM4CHEE_ARC_AET_DIFF,
         PAM,
         REJECT,
         MOVE,
         MOVE_MATCHING,
         ELASTICSEARCH,
-        DCM4CHEE_ARC_AET_DIFF
+        XDS_RS
     }
 
     private Device device;

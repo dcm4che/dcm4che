@@ -7,18 +7,25 @@ uncompressed pixel data of color images with Photometric Interpretation
 RGB or YBR_FULL and optionally correct non matching values of attribute
 Planar Configuration of the image.
 
-If the average difference of sample values between 3x3 tiles assuming
-color-by-pixel is lesser than the specified lower threshold (default: 10),
-the detected planar configuration is color-by-plane. If the average difference
-is greater than the specified upper threshold (default: 20), the detected
-planar configuration is color-by-pixel. Otherwise the average chroma
-(s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all pixels and the sum of
-absolute differences of sample values of adjoining pixels is calculated and
-resulting values on assuming color-by-pixel or color-by-plane planar
-configuration are compared. If the significance of the difference in the
-average chroma is greater than the significance of the difference in the sum
-of absolute differences of sample values, the detected planar configuration is
-which resulted in the lesser chroma value - otherwise the detected planar
+The average chroma (s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all
+pixels and the sum of absolute differences of sample values of adjoining pixels
+is calculated and resulting values on assuming color-by-pixel or color-by-plane
+planar configuration are compared. A lower value for the calculated average
+chroma and for the sum of absolute differences of sample values of adjoining
+indicates that the assumed planar configuration is correct.
+
+If the calculated values of the average chroma and the sum of absolute
+differences of sample values of adjoining pixels indicate contradictory planar
+configurations, the average difference of sample values between 3x3 tiles
+assuming color-by-pixel is calculated additionally. A value lesser than the
+specified lower threshold (default: 10) indicates a color-by-plane, a value
+greater than the specified upper threshold (default: 20) a color-by-pixel
+planar configuration.
+
+Otherwise, if the significance of the difference in the average chroma is
+greater than the significance of the difference in the sum of absolute
+differences of sample values, the detected planar configuration is which
+resulted in the lesser chroma value - otherwise the detected planar
 configuration is which resulted in lesser differences of sample values of
 adjoining pixels.
 

@@ -63,18 +63,25 @@ public class PlanarConfig implements Closeable {
             "RGB or YBR_FULL and optionally correct non matching values of attribute",
             "Planar Configuration of the image.",
             "",
-            "If the average difference of sample values between 3x3 tiles assuming",
-            "color-by-pixel is lesser than the specified lower threshold (default: 10),",
-            "the detected planar configuration is color-by-plane. If the average difference",
-            "is greater than the specified upper threshold (default: 20), the detected",
-            "planar configuration is color-by-pixel. Otherwise the average chroma",
-            "(s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all pixels and the sum of",
-            "absolute differences of sample values of adjoining pixels is calculated and",
-            "resulting values on assuming color-by-pixel or color-by-plane planar",
-            "configuration are compared. If the significance of the difference in the",
-            "average chroma is greater than the significance of the difference in the sum",
-            "of absolute differences of sample values, the detected planar configuration is",
-            "which resulted in the lesser chroma value - otherwise the detected planar",
+            "The average chroma (s. https://en.wikipedia.org/wiki/HSL_and_HSV) over all",
+            "pixels and the sum of absolute differences of sample values of adjoining pixels",
+            "is calculated and resulting values on assuming color-by-pixel or color-by-plane",
+            "planar configuration are compared. A lower value for the calculated average",
+            "chroma and for the sum of absolute differences of sample values of adjoining",
+            "indicates that the assumed planar configuration is correct.",
+            "",
+            "If the calculated values of the average chroma and the sum of absolute",
+            "differences of sample values of adjoining pixels indicate contradictory planar",
+            "configurations, the average difference of sample values between 3x3 tiles",
+            "assuming color-by-pixel is calculated additionally. A value lesser than the",
+            "specified lower threshold (default: 10) indicates a color-by-plane, a value",
+            "greater than the specified upper threshold (default: 20) a color-by-pixel",
+            "planar configuration.",
+            "",
+            "Otherwise, if the significance of the difference in the average chroma is",
+            "greater than the significance of the difference in the sum of absolute",
+            "differences of sample values, the detected planar configuration is which",
+            "resulted in the lesser chroma value - otherwise the detected planar",
             "configuration is which resulted in lesser differences of sample values of",
             "adjoining pixels.",
             "",
@@ -288,29 +295,6 @@ public class PlanarConfig implements Closeable {
         int cols = dataset.getInt(Tag.Columns, 1);
         int plane = rows * cols;
         int plane2 = plane * 2;
-        int cols2 = cols * 2;
-        int cols3 = cols * 3;
-        long diff9 = 0;
-        int r3 = rows / 3;
-        int c3 = cols / 3;
-        for (int r = 0; r < r3; r++) {
-            for (int c = 0, i1 = r * cols3, i2 = i1 + plane, i3 = i2 + plane; c < c3; c++) {
-                diff9 += diff3(b, i1++, cols, cols2);
-                diff9 += diff3(b, i1++, cols, cols2);
-                diff9 += diff3(b, i1++, cols, cols2);
-                diff9 += diff3(b, i2++, cols, cols2);
-                diff9 += diff3(b, i2++, cols, cols2);
-                diff9 += diff3(b, i2++, cols, cols2);
-                diff9 += diff3(b, i3++, cols, cols2);
-                diff9 += diff3(b, i3++, cols, cols2);
-                diff9 += diff3(b, i3++, cols, cols2);
-            }
-        }
-        float diff9Float = diff9 / ((float) (c3 * r3 * 9));
-        if (!verbose) {
-            if (diff9Float < min3x3) return 1;
-            if (diff9Float > max3x3) return 0;
-        }
         int[][] prevSamples = {
                 { b[0] & 0xff, b[1] & 0xff, b[2] & 0xff },
                 { b[0] & 0xff, b[plane] & 0xff, b[plane2] & 0xff }
@@ -338,10 +322,34 @@ public class PlanarConfig implements Closeable {
             prevSamples[0] = perPixel;
             prevSamples[1] = perPlane;
         }
+        int chromaPlanarConfig = chromaPerPixel > chromaPerPlane ? 1 : 0;
+        int diffPlanarConfig = diffPerPixel > diffPerPlane ? 1 : 0;
+        if (!verbose) {
+            if (chromaPlanarConfig == diffPlanarConfig) return diffPlanarConfig;
+        }
         long minChroma = Math.min(chromaPerPixel, chromaPerPlane);
         long maxChroma = Math.max(chromaPerPixel, chromaPerPlane);
         long minDiff = Math.min(diffPerPixel, diffPerPlane);
         long maxDiff = Math.max(diffPerPixel, diffPerPlane);
+        int cols2 = cols * 2;
+        int cols3 = cols * 3;
+        long diff9 = 0;
+        int r3 = rows / 3;
+        int c3 = cols / 3;
+        for (int r = 0; r < r3; r++) {
+            for (int c = 0, i1 = r * cols3, i2 = i1 + plane, i3 = i2 + plane; c < c3; c++) {
+                diff9 += diff3(b, i1++, cols, cols2);
+                diff9 += diff3(b, i1++, cols, cols2);
+                diff9 += diff3(b, i1++, cols, cols2);
+                diff9 += diff3(b, i2++, cols, cols2);
+                diff9 += diff3(b, i2++, cols, cols2);
+                diff9 += diff3(b, i2++, cols, cols2);
+                diff9 += diff3(b, i3++, cols, cols2);
+                diff9 += diff3(b, i3++, cols, cols2);
+                diff9 += diff3(b, i3++, cols, cols2);
+            }
+        }
+        float diff9Float = diff9 / ((float) (c3 * r3 * 9));
         if (verbose) {
             float[] chroma = {
                     chromaPerPixel / (float) plane,
@@ -359,12 +367,10 @@ public class PlanarConfig implements Closeable {
                     + ", diff=" + Arrays.toString(diff)
                     + " -> ");
         }
+        if (chromaPlanarConfig == diffPlanarConfig) return diffPlanarConfig;
         if (diff9Float < min3x3) return 1;
         if (diff9Float > max3x3) return 0;
-        return (maxChroma * minDiff > minChroma * maxDiff
-                ? chromaPerPixel > chromaPerPlane
-                : diffPerPixel > diffPerPlane)
-                ? 1 : 0;
+        return (maxChroma * minDiff > minChroma * maxDiff) ? chromaPlanarConfig : diffPlanarConfig;
     }
 
     private int diff3(byte[] b, int i, int cols, int cols2) {

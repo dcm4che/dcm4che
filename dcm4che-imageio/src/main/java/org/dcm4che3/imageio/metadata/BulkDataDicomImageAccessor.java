@@ -138,7 +138,8 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
         else {
             int frameLength = calculateFrameLength();
             long pixelDataLength = Fragments.length(getPixelDataValue());
-            if(pixelDataLength % frameLength == 0) {
+            if(pixelDataLength % frameLength <= 1) {
+                // Must be within 1 bytes to account for padding
                 frames = (int) pixelDataLength / frameLength;
             }
             else {

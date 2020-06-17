@@ -38,6 +38,8 @@
 
 package org.dcm4che3.data;
 
+import org.dcm4che3.util.TagUtils;
+
 import java.io.Serializable;
 
 /**
@@ -90,5 +92,19 @@ public class ItemPointer implements Serializable {
         result = 31 * result + (privateCreator != null ? privateCreator.hashCode() : 0);
         result = 31 * result + itemIndex;
         return result;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+
+        str.append("/").append(TagUtils.toString(sequenceTag));
+        if(privateCreator!=null) {
+            str.append(":").append(privateCreator);
+        }
+        str.append("[").append(itemIndex).append("]");
+
+        return str.toString();
     }
 }

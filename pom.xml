@@ -79,14 +79,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <slf4j.version>1.7.29</slf4j.version>
+    <slf4j.version>1.7.30</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <weasis.core.img.version>4.3.0</weasis.core.img.version>
     <weasis.opencv.native.version>4.3.0-dcm</weasis.opencv.native.version>
-    <keycloak.version>10.0.1</keycloak.version>
+    <keycloak.version>10.0.2</keycloak.version>
     <jaxws-tools-maven-plugin.version>1.2.1.Final</jaxws-tools-maven-plugin.version>
     <jbossws-cxf-client.version>5.4.1.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>3.3.5</apache-cxf.version>
+    <apache-cxf.version>3.3.6</apache-cxf.version>
     <apache-commons-csv.version>1.7</apache-commons-csv.version>
     <jakarta.activation.version>1.2.1</jakarta.activation.version>
     <jakarta.xml.bind.version>2.3.2</jakarta.xml.bind.version>

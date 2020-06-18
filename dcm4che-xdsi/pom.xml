@@ -97,7 +97,6 @@
       <plugin>
         <groupId>org.jboss.ws.plugins</groupId>
         <artifactId>jaxws-tools-maven-plugin</artifactId>
-        <version>${jaxws-tools-maven-plugin.version}</version>
         <configuration>
           <extension>true</extension>
           <verbose>true</verbose>

@@ -165,6 +165,7 @@ public class Tpl2Xml {
 
     private void convert(String template) throws Exception {
         Path dir = outputDirectory(template);
+        System.out.println(MessageFormat.format(rb.getString("convert-template"), template));
         for (Map.Entry<String, List<DictionaryElement>> entry : privateDictsFrom(template).entrySet()) {
             Path file = Files.createFile(dir.resolve(
                     entry.getKey().toLowerCase().replaceAll(":", "-") + ".xml"));
@@ -263,12 +264,12 @@ public class Tpl2Xml {
             this.keyword = keyword.equals("?")
                     ? "_" + first4 + "_" + last4 + "_"
                     : keyword.contains(" ")
-                    ? keywordWithoutSpaces(keyword) : keyword;
+                        ? keywordWithoutSpaces(keyword) : keyword;
             this.tag = first4 + last4;
         }
 
         private String keywordWithoutSpaces(String keyword) {
-            System.out.println(keyword);
+            System.out.println(MessageFormat.format(rb.getString("keyword-with-space"), keyword));
             return keyword.replaceAll(" ", "");
         }
     }

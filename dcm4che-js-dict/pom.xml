@@ -164,6 +164,78 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
+                <include>acuson-1.2.840.113680.1.0-7ffe.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>ACUSON:1.2.840.113680.1.0:7ffe</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>acuson-1.2.840.113680.1.0-7ffe.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>acuson-1.2.840.113680.1.0-7f10.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>ACUSON:1.2.840.113680.1.0:7f10</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>acuson-1.2.840.113680.1.0-7f10.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>acuson.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>ACUSON</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>acuson.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>acuson-1.2.840.113680.1.0-0910.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>PrivateCreatorID</name>
+                  <value>ACUSON:1.2.840.113680.1.0:0910</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>acuson-1.2.840.113680.1.0-0910.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
                 <include>agfa-ag-hpstate-elements.xml</include>
               </includes>
               <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>

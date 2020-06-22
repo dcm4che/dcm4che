@@ -5,6 +5,10 @@
   <remoteResources>
     <remoteResource>arcelements.xml</remoteResource>
     <remoteResource>elscint-elements.xml</remoteResource>
+    <remoteResource>acuson-1.2.840.113680.1.0-7ffe.xml</remoteResource>
+    <remoteResource>acuson-1.2.840.113680.1.0-7f10.xml</remoteResource>
+    <remoteResource>acuson.xml</remoteResource>
+    <remoteResource>acuson-1.2.840.113680.1.0-0910.xml</remoteResource>
     <remoteResource>agfa-adc-compact-elements.xml</remoteResource>
     <remoteResource>agfa-adc-nx-elements.xml</remoteResource>
     <remoteResource>agfa-ag-hpstate-elements.xml</remoteResource>

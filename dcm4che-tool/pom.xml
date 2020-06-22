@@ -93,6 +93,7 @@
     <module>dcm4che-tool-swappxdata</module>
     <module>dcm4che-tool-syslog</module>
     <module>dcm4che-tool-syslogd</module>
+    <module>dcm4che-tool-tpl2xml</module>
     <module>dcm4che-tool-upsscu</module>
     <module>dcm4che-tool-wadors</module>
     <module>dcm4che-tool-wadows</module>

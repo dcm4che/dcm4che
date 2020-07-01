@@ -294,40 +294,29 @@ public class Tpl2Xml {
         }
 
         private String wordForFirstDigit(String keyword) {
-            String wordForDigit = null;
             switch (keyword.charAt(0)) {
                 case '0':
-                    wordForDigit = "Zero";
-                    break;
+                    return "Zero";
                 case '1':
-                    wordForDigit = "One";
-                    break;
+                    return "One";
                 case '2':
-                    wordForDigit = "Two";
-                    break;
+                    return "Two";
                 case '3':
-                    wordForDigit = "Three";
-                    break;
+                    return "Three";
                 case '4':
-                    wordForDigit = "Four";
-                    break;
+                    return "Four";
                 case '5':
-                    wordForDigit = "Five";
-                    break;
+                    return "Five";
                 case '6':
-                    wordForDigit = "Six";
-                    break;
+                    return "Six";
                 case '7':
-                    wordForDigit = "Seven";
-                    break;
+                    return "Seven";
                 case '8':
-                    wordForDigit = "Eight";
-                    break;
+                    return "Eight";
                 case '9':
-                    wordForDigit = "Nine";
-                    break;
+                    return "Nine";
             }
-            return wordForDigit;
+            return null;
         }
     }
 }

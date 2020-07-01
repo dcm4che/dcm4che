@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="PrivateCreatorVersion" tag="0019xx00" vm="1" vr="SH">Private Creator Version</el>
+  <el keyword="FrameRate" tag="0019xx03" vm="1" vr="FD">Frame Rate</el>
+  <el keyword="BurnedInGraphics" tag="0019xx0C" vm="1" vr="US">Burned in Graphics</el>
+  <el keyword="SieClearIndex" tag="0019xx0D" vm="1" vr="SH">SieClear Index</el>
+  <el keyword="_0019_xx0E_" tag="0019xx0E" vm="1" vr="US">?</el>
+  <el keyword="BModeSubmode" tag="0019xx20" vm="1" vr="SH">B-Mode Submode</el>
+  <el keyword="BModeDynamicRange" tag="0019xx21" vm="1" vr="FD">B-Mode Dynamic Range</el>
+  <el keyword="BModeOverallGain" tag="0019xx22" vm="1" vr="FD">B-Mode Overall Gain</el>
+  <el keyword="BModeResolutionSpeedIndex" tag="0019xx23" vm="1" vr="US">B-Mode Resolution/Speed Index</el>
+  <el keyword="BModeEdgeEnhanceIndex" tag="0019xx24" vm="1" vr="US">B-Mode Edge Enhance Index</el>
+  <el keyword="BModePersistenceIndex" tag="0019xx25" vm="1" vr="US">B-Mode Persistence Index</el>
+  <el keyword="BModeMapIndex" tag="0019xx26" vm="1" vr="US">B-Mode Map Index</el>
+  <el keyword="_0019_xx27_" tag="0019xx27" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx28_" tag="0019xx28" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx29_" tag="0019xx29" vm="1" vr="US">?</el>
+  <el keyword="BModeTintType" tag="0019xx2A" vm="1" vr="US">B-Mode Tint Type</el>
+  <el keyword="BModeTintIndex" tag="0019xx2D" vm="1" vr="US">B-Mode Tint Index</el>
+  <el keyword="ClarifyVEIndex" tag="0019xx2E" vm="1" vr="SH">ClarifyVE Index</el>
+  <el keyword="_0019_xx30_" tag="0019xx30" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx31_" tag="0019xx31" vm="1" vr="US">?</el>
+  <el keyword="ImageFlag" tag="0019xx3A" vm="1" vr="US">Image Flag</el>
+  <el keyword="_0019_xx3B_" tag="0019xx3B" vm="1" vr="LT">?</el>
+  <el keyword="ColorFlowState" tag="0019xx40" vm="1" vr="SH">Color Flow State</el>
+  <el keyword="ColorFlowWallFilterIndex" tag="0019xx41" vm="1" vr="US">Color Flow Wall Filter Index</el>
+  <el keyword="ColorFlowSubmode" tag="0019xx42" vm="1" vr="SH">Color Flow Submode</el>
+  <el keyword="ColorFlowOverallGain" tag="0019xx43" vm="1" vr="FD">Color Flow Overall Gain</el>
+  <el keyword="ColorFlowResolutionSpeedIndex" tag="0019xx44" vm="1" vr="US">Color Flow Resolution/Speed Index</el>
+  <el keyword="ColorFlowSmoothIndex" tag="0019xx46" vm="1" vr="US">Color Flow Smooth Index</el>
+  <el keyword="ColorFlowPersistenceIndex" tag="0019xx47" vm="1" vr="US">Color Flow Persistence Index</el>
+  <el keyword="ColorFlowMapIndex" tag="0019xx48" vm="1" vr="US">Color Flow Map Index</el>
+  <el keyword="ColorFlowPriorityIndex" tag="0019xx49" vm="1" vr="US">Color Flow Priority Index</el>
+  <el keyword="ColorFlowMaximumVelocity" tag="0019xx54" vm="1" vr="FD">Color Flow Maximum Velocity</el>
+  <el keyword="DopplerDynamicRange" tag="0019xx60" vm="1" vr="FD">Doppler Dynamic Range</el>
+  <el keyword="DopplerOverallGain" tag="0019xx61" vm="1" vr="FD">Doppler Overall Gain</el>
+  <el keyword="DopplerWallFilter" tag="0019xx62" vm="1" vr="FD">Doppler Wall Filter</el>
+  <el keyword="DopplerGateSize" tag="0019xx63" vm="1" vr="FD">Doppler Gate Size</el>
+  <el keyword="DopplerMapIndex" tag="0019xx65" vm="1" vr="US">Doppler Map Index</el>
+  <el keyword="DopplerSubmode" tag="0019xx66" vm="1" vr="SH">Doppler Submode</el>
+  <el keyword="_0019_xx67_" tag="0019xx67" vm="1" vr="US">?</el>
+  <el keyword="DopplerTimeFreqResIndex" tag="0019xx69" vm="1" vr="US">Doppler Time/Freq Res Index</el>
+  <el keyword="DopplerTraceInverted" tag="0019xx6A" vm="1" vr="US">Doppler Trace Inverted</el>
+  <el keyword="DopplerTintType" tag="0019xx6C" vm="1" vr="US">Doppler Tint Type</el>
+  <el keyword="DopplerTintIndex" tag="0019xx72" vm="1" vr="US">Doppler Tint Index</el>
+  <el keyword="MModeDynamicRange" tag="0019xx80" vm="1" vr="US">M-Mode Dynamic Range</el>
+  <el keyword="MModeOverallGain" tag="0019xx81" vm="1" vr="US">M-Mode Overall Gain</el>
+  <el keyword="MModeEdgeEnhanceIndex" tag="0019xx82" vm="1" vr="US">M-Mode Edge Enhance Index</el>
+  <el keyword="MModeMapIndex" tag="0019xx83" vm="1" vr="US">M-Mode Map Index</el>
+  <el keyword="MModeTintType" tag="0019xx86" vm="1" vr="US">M-Mode Tint Type</el>
+  <el keyword="MModeSubmode" tag="0019xx87" vm="1" vr="SH">M-Mode Submode</el>
+  <el keyword="MModeTintIndex" tag="0019xx88" vm="1" vr="US">M-Mode Tint Index</el>
+  <el keyword="_0019_xx95_" tag="0019xx95" vm="1" vr="US">?</el>
+</elements>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="SIENETCommandField" tag="0009xx01" vm="1" vr="US">SIENET Command Field</el>
+  <el keyword="ReceiverPLA" tag="0009xx14" vm="1" vr="LO">Receiver PLA</el>
+  <el keyword="TransferPriority" tag="0009xx16" vm="1" vr="US">Transfer Priority</el>
+  <el keyword="ActualUser" tag="0009xx29" vm="1" vr="LO">Actual User</el>
+  <el keyword="_0009_xx70_" tag="0009xx70" vm="1" vr="DS">?</el>
+  <el keyword="_0009_xx71_" tag="0009xx71" vm="1" vr="DS">?</el>
+  <el keyword="_0009_xx72_" tag="0009xx72" vm="1" vr="LO">?</el>
+  <el keyword="_0009_xx73_" tag="0009xx73" vm="1" vr="LO">?</el>
+  <el keyword="_0009_xx74_" tag="0009xx74" vm="1" vr="LO">?</el>
+  <el keyword="_0009_xx75_" tag="0009xx75" vm="1" vr="LO">?</el>
+  <el keyword="RISPatientName" tag="0091xx20" vm="1" vr="PN">RIS Patient Name</el>
+  <el keyword="_0093_xx02_" tag="0093xx02" vm="1" vr="LO">?</el>
+  <el keyword="ExaminationFolderID" tag="0095xx01" vm="1" vr="LO">Examination Folder ID</el>
+  <el keyword="FolderReportedStatus" tag="0095xx04" vm="1" vr="UL">Folder Reported Status</el>
+  <el keyword="FolderReportingRadiologist" tag="0095xx05" vm="1" vr="LO">Folder Reporting Radiologist</el>
+  <el keyword="SIENETISAPLA" tag="0095xx07" vm="1" vr="LO">SIENET ISA PLA</el>
+  <el keyword="_0095_xx0C_" tag="0095xx0C" vm="1" vr="SL">?</el>
+  <el keyword="_0097_xx03_" tag="0097xx03" vm="1" vr="SL">?</el>
+  <el keyword="_0097_xx05_" tag="0097xx05" vm="1" vr="LO">?</el>
+  <el keyword="DataObjectAttributes" tag="0099xx02" vm="1" vr="SL">Data Object Attributes</el>
+  <el keyword="_0099_xx05_" tag="0099xx05" vm="1" vr="SL">?</el>
+  <el keyword="_00A5_xx05_" tag="00A5xx05" vm="1" vr="LO">?</el>
+</elements>

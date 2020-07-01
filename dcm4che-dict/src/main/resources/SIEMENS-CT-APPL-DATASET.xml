@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="DualEnergyAlgorithmParameters" tag="0029xx00" vm="1" vr="LT">Dual Energy Algorithm Parameters</el>
+  <el keyword="ValidCTVolumeMBoxTasks" tag="0029xx01" vm="1" vr="US">Valid CT Volume MBox Tasks</el>
+  <el keyword="ScanOptions" tag="0029xx02" vm="1" vr="LT">Scan Options</el>
+  <el keyword="AcquisitionDateandTime" tag="0029xx03" vm="1" vr="ST">Acquisition Date and Time</el>
+  <el keyword="AcquisitionNumber" tag="0029xx04" vm="1" vr="ST">Acquisition Number</el>
+  <el keyword="DynamicData" tag="0029xx05" vm="1" vr="ST">Dynamic Data</el>
+  <el keyword="ImageOrientationPatient" tag="0029xx06" vm="6" vr="DS">Image Orientation Patient</el>
+  <el keyword="FrameOfReferenceUid" tag="0029xx07" vm="1" vr="LT">Frame Of Reference Uid</el>
+  <el keyword="PatientPosition" tag="0029xx08" vm="1" vr="LT">Patient Position</el>
+  <el keyword="ConvolutionKernel" tag="0029xx09" vm="1" vr="LT">Convolution Kernel</el>
+  <el keyword="Kvp" tag="0029xx10" vm="1" vr="LT">Kvp</el>
+  <el keyword="ReconstructionDiameter" tag="0029xx11" vm="1" vr="LT">Reconstruction Diameter</el>
+  <el keyword="RescaleIntercept" tag="0029xx12" vm="1" vr="LT">Rescale Intercept</el>
+  <el keyword="RescaleSlope" tag="0029xx13" vm="1" vr="LT">Rescale Slope</el>
+  <el keyword="SliceThickness" tag="0029xx14" vm="1" vr="LT">Slice Thickness</el>
+  <el keyword="TableHeight" tag="0029xx15" vm="1" vr="LT">Table Height</el>
+  <el keyword="GantryDetectorTilt" tag="0029xx16" vm="1" vr="LT">Gantry Detector Tilt</el>
+  <el keyword="PixelSpacing" tag="0029xx17" vm="1" vr="LT">Pixel Spacing</el>
+  <el keyword="VolumePatientPositionNotEqual" tag="0029xx18" vm="1" vr="ST">Volume PatientPosition Not Equal</el>
+  <el keyword="VolumeLossyImageCompressionNotEqual" tag="0029xx19" vm="1" vr="ST">Volume LossyImageCompression Not Equal</el>
+  <el keyword="VolumeConvolutionKernelNotEqual" tag="0029xx20" vm="1" vr="ST">Volume ConvolutionKernel Not Equal</el>
+  <el keyword="VolumePixelSpacingNotEqual" tag="0029xx21" vm="1" vr="ST">Volume PixelSpacing Not Equal</el>
+  <el keyword="VolumeKvpNotEqual" tag="0029xx22" vm="1" vr="ST">Volume Kvp Not Equal</el>
+  <el keyword="VolumeReconstructionDiameterNotEqual" tag="0029xx23" vm="1" vr="ST">Volume ReconstructionDiameter Not Equal</el>
+  <el keyword="VolumeTableHeightNotEqual" tag="0029xx24" vm="1" vr="ST">Volume TableHeight Not Equal</el>
+  <el keyword="VolumeHasGaps" tag="0029xx25" vm="1" vr="ST">Volume Has Gaps</el>
+  <el keyword="VolumeNumberOfMissingImages" tag="0029xx26" vm="1" vr="ST">Volume Number Of Missing Images</el>
+  <el keyword="VolumeMaxGap" tag="0029xx27" vm="1" vr="ST">Volume Max Gap</el>
+  <el keyword="VolumePositionOfGaps" tag="0029xx28" vm="1" vr="LT">Volume Position Of Gaps</el>
+  <el keyword="CalibrationFactor" tag="0029xx29" vm="1" vr="FD">Calibration Factor</el>
+  <el keyword="FlashMode" tag="0029xx2A" vm="1" vr="CS">Flash Mode</el>
+  <el keyword="Warnings" tag="0029xx2B" vm="1" vr="LT">Warnings</el>
+  <el keyword="VolumeHighBitNotEqual" tag="0029xx2C" vm="1" vr="ST">Volume HighBit Not Equal</el>
+  <el keyword="VolumeImageTypeNotEqual" tag="0029xx2D" vm="1" vr="ST">Volume ImageType Not Equal</el>
+  <el keyword="ImageType0" tag="0029xx2E" vm="1" vr="ST">ImageType 0</el>
+  <el keyword="ImageType1" tag="0029xx2F" vm="1" vr="ST">ImageType 1</el>
+  <el keyword="ImageType2" tag="0029xx30" vm="1" vr="ST">ImageType 2</el>
+  <el keyword="ImageType3" tag="0029xx31" vm="1" vr="ST">ImageType 3</el>
+  <el keyword="PhotometricInterpretationNotMONOCHROME2" tag="0029xx32" vm="1" vr="ST">PhotometricInterpretation not MONOCHROME2</el>
+  <el keyword="FirstAcquisitionDate" tag="0029xx33" vm="1" vr="DA">First Acquisition Date</el>
+  <el keyword="LastAcquisitionDate" tag="0029xx34" vm="1" vr="DA">Last Acquisition Date</el>
+  <el keyword="FirstAcquisitionTime" tag="0029xx35" vm="1" vr="TM">First Acquisition Time</el>
+  <el keyword="LastAcquisitionTime" tag="0029xx36" vm="1" vr="TM">Last Acquisition Time</el>
+  <el keyword="InternalData" tag="0029xx37" vm="1" vr="ST">Internal Data</el>
+  <el keyword="RangesSOM7" tag="0029xx38" vm="1" vr="ST">Ranges SOM7</el>
+  <el keyword="CalculatedGantryDetectorTilt" tag="0029xx39" vm="1" vr="LT">Calculated Gantry Detector Tilt</el>
+  <el keyword="VolumeSliceDistance" tag="0029xx40" vm="1" vr="ST">Volume Slice Distance</el>
+  <el keyword="FirstSliceZCoordinate" tag="0029xx41" vm="1" vr="DS">First Slice Z Coordinate </el>
+  <el keyword="LastSliceZCoordinate" tag="0029xx42" vm="1" vr="DS">Last Slice Z Coordinate </el>
+  <el keyword="ContentDateTime" tag="0029xx43" vm="1" vr="DS">Content DateTime</el>
+  <el keyword="DeltaTime" tag="0029xx44" vm="1" vr="DS">Delta Time</el>
+  <el keyword="FrameCount" tag="0029xx45" vm="1" vr="DS">Frame Count</el>
+</elements>

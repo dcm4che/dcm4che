@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="ReleaseVersion" tag="0039xx00" vm="1" vr="UN">Release Version</el>
+  <el keyword="VolumeAcquisitionDuration" tag="0039xx03" vm="1" vr="UN">Volume Acquisition Duration</el>
+  <el keyword="VolumeRawDataType" tag="0039xx04" vm="1" vr="UN">Volume Raw Data Type</el>
+  <el keyword="ScanType" tag="0039xx05" vm="1" vr="UN">Scan Type</el>
+  <el keyword="ZlateralMin" tag="0039xx06" vm="1" vr="UN">Z Lateral Min</el>
+  <el keyword="ZlateralSpan" tag="0039xx07" vm="1" vr="UN">Z Lateral Span</el>
+  <el keyword="ZRadiusOfCurvature" tag="0039xx08" vm="1" vr="UN">Z Radius of Curvature</el>
+  <el keyword="WobbleCorrection" tag="0039xx09" vm="1" vr="UN">Wobble Correction</el>
+  <el keyword="ScaleAlongWidth" tag="0039xx10" vm="1" vr="UN">Scale Along Width</el>
+  <el keyword="ScaleAlongHeight" tag="0039xx11" vm="1" vr="UN">Scale Along Height</el>
+  <el keyword="ScaleAlongDepth" tag="0039xx12" vm="1" vr="UN">Scale Along Depth</el>
+  <el keyword="BufferSize" tag="0039xx13" vm="1" vr="UN">Buffer Size</el>
+  <el keyword="AcquisitionRate" tag="0039xx14" vm="1" vr="UN">Acquisition Rate</el>
+  <el keyword="DepthMinCm" tag="0039xx15" vm="1" vr="UN">Depth Min cm</el>
+  <el keyword="IsLeftRightFlippedEn" tag="0039xx16" vm="1" vr="UN">Is Left Right Flipped Enabled</el>
+  <el keyword="IsUpDownFlippedEn" tag="0039xx17" vm="1" vr="UN">Is Up Down Flipped Enabled</el>
+  <el keyword="IsVolumeGeomAccurate" tag="0039xx18" vm="1" vr="UN">Is Volume Geom Accurate</el>
+  <el keyword="BByteMaskOffset" tag="0039xx19" vm="1" vr="UN">BByte Mask Offset</el>
+  <el keyword="BByteMaskSize" tag="0039xx20" vm="1" vr="UN">BByte Mask Size</el>
+  <el keyword="AcqPlaneRotationDeg" tag="0039xx22" vm="1" vr="UN">Acq Plane Rotation Deg</el>
+  <el keyword="BeamAxialSpan" tag="0039xx23" vm="1" vr="UN">Beam Axial Span</el>
+  <el keyword="BeamLateralMin" tag="0039xx24" vm="1" vr="UN">Beam Lateral Min</el>
+  <el keyword="BeamLateralSpan" tag="0039xx25" vm="1" vr="UN">Beam Lateral Span</el>
+  <el keyword="BeamAxialMin" tag="0039xx26" vm="1" vr="UN">Beam Axial Min</el>
+  <el keyword="NumDisplaySamples" tag="0039xx27" vm="1" vr="UN">Num Display Samples</el>
+  <el keyword="DVolumeWidth" tag="0039xx28" vm="1" vr="UN">DVolume Width</el>
+  <el keyword="DVolumeDepth" tag="0039xx29" vm="1" vr="UN">DVolume Depth</el>
+  <el keyword="DVolumeHeight" tag="0039xx30" vm="1" vr="UN">DVolume Height</el>
+  <el keyword="DVolumePosX" tag="0039xx31" vm="1" vr="UN">DVolume Pos X</el>
+  <el keyword="DVolumePosY" tag="0039xx32" vm="1" vr="UN">DVolume Pos Y</el>
+  <el keyword="DVolumePosZ" tag="0039xx33" vm="1" vr="UN">DVolume Pos Z</el>
+  <el keyword="DBeamAxialMin" tag="0039xx34" vm="1" vr="UN">DBeam Axial Min</el>
+  <el keyword="DBeamAxialSpan" tag="0039xx35" vm="1" vr="UN">DBeam Axial Span</el>
+  <el keyword="DBeamLateralSpan" tag="0039xx37" vm="1" vr="UN">DBeam Lateral Span</el>
+  <el keyword="NumOfVolumesInSequence" tag="0039xx38" vm="1" vr="UN">Number of Volumes in Sequence</el>
+  <el keyword="DByteMaskOffset" tag="0039xx39" vm="1" vr="UN">DByte Mask Offset</el>
+  <el keyword="DByteMaskSize" tag="0039xx40" vm="1" vr="UN">DByte Mask Size</el>
+  <el keyword="PrivateCreatorVersionOfBookmark" tag="0039xx50" vm="1" vr="LO">Private Creator Version of Bookmark</el>
+  <el keyword="BCutPlaneEnable" tag="0039xx51" vm="1" vr="US">BCut Plane Enable</el>
+  <el keyword="BMprColorMapIndex" tag="0039xx52" vm="1" vr="US">BMpr Color Map Index</el>
+  <el keyword="BMprDynamicRangeDb" tag="0039xx53" vm="1" vr="US">BMpr Dynamic Range Db</el>
+  <el keyword="BMprGrayMapIndex" tag="0039xx54" vm="1" vr="US">BMpr Gray Map Index</el>
+  <el keyword="BVolumeRenderMode" tag="0039xx55" vm="1" vr="US">BVolume Render Mode</el>
+  <el keyword="BVrBrightness" tag="0039xx56" vm="1" vr="US">BVr Brightness</el>
+  <el keyword="BVrContrast" tag="0039xx57" vm="1" vr="US">BVr Contrast</el>
+  <el keyword="BVrColorMapIndex" tag="0039xx58" vm="1" vr="US">BVr Color Map Index</el>
+  <el keyword="BVrDynamicRangeDb" tag="0039xx59" vm="1" vr="US">BVr Dynamic Range Db</el>
+  <el keyword="BVrGrayMapIndex" tag="0039xx5A" vm="1" vr="US">BVr Gray Map Index</el>
+  <el keyword="BVrThresholdHigh" tag="0039xx5C" vm="1" vr="US">BVr Threshold High</el>
+  <el keyword="BVrThresholdLow" tag="0039xx5D" vm="1" vr="US">BVr Threshold Low</el>
+  <el keyword="BPreProcessFilterMix" tag="0039xx5E" vm="1" vr="US">BPre Process Filter Mix</el>
+  <el keyword="CCutPlaneEnable" tag="0039xx5F" vm="1" vr="US">CCut Plane Enable</el>
+  <el keyword="CFrontClipMode" tag="0039xx60" vm="1" vr="US">CFront Clip Mode</el>
+  <el keyword="CMprColorMapIndex" tag="0039xx61" vm="1" vr="US">CMpr Color Map Index</el>
+  <el keyword="CMprColorFlowPriorityIndex" tag="0039xx62" vm="1" vr="US">CMpr Color Flow Priority Index</el>
+  <el keyword="CVolumeRenderMode" tag="0039xx63" vm="1" vr="US">CVolume Render Mode</el>
+  <el keyword="CVrColorMapIndex" tag="0039xx64" vm="1" vr="US">CVr Color Map Index</el>
+  <el keyword="CVrColorFlowPriorityIndex" tag="0039xx65" vm="1" vr="US">CVr Color Flow Priority Index</el>
+  <el keyword="CVrOpacity" tag="0039xx66" vm="1" vr="US">CVr Opacity</el>
+  <el keyword="CVrThresholdHigh" tag="0039xx67" vm="1" vr="US">CVr Threshold High</el>
+  <el keyword="CVrThresholdLow" tag="0039xx68" vm="1" vr="US">CVr Threshold Low</el>
+  <el keyword="VoiMode" tag="0039xx69" vm="1" vr="US">Voi Mode</el>
+  <el keyword="VoiRotationOffsetDeg" tag="0039xx6A" vm="1" vr="US">Voi Rotation Offset Deg</el>
+  <el keyword="VoiSizeRatioX" tag="0039xx6B" vm="1" vr="FD">Voi Size Ratio X</el>
+  <el keyword="VoiSizeRatioY" tag="0039xx6C" vm="1" vr="FD">Voi Size Ratio Y</el>
+  <el keyword="VoiSizeRatioZ" tag="0039xx6D" vm="1" vr="FD">Voi Size Ratio Z</el>
+  <el keyword="VoiSyncPlane" tag="0039xx6E" vm="1" vr="US">Voi Sync Plane</el>
+  <el keyword="VoiViewMode" tag="0039xx6F" vm="1" vr="US">Voi View Mode</el>
+  <el keyword="VrOrientationA" tag="0039xx70" vm="1-n" vr="FD">Vr Orientation A</el>
+  <el keyword="MprOrientationA" tag="0039xx71" vm="1-n" vr="FD">Mpr Orientation A</el>
+  <el keyword="VrOffsetVector" tag="0039xx72" vm="1" vr="FD">Vr Offset Vector</el>
+  <el keyword="BlendingRatio" tag="0039xx73" vm="1" vr="FD">Blending Ratio</el>
+  <el keyword="FusionBlendMode" tag="0039xx74" vm="1" vr="US">Fusion Blend Mode</el>
+  <el keyword="QualityFactor" tag="0039xx75" vm="1" vr="FD">Quality Factor</el>
+  <el keyword="RendererType" tag="0039xx76" vm="1" vr="US">Renderer Type</el>
+  <el keyword="SliceMode" tag="0039xx77" vm="1" vr="US">Slice Mode</el>
+  <el keyword="ActiveQuad" tag="0039xx78" vm="1" vr="US">Active Quad</el>
+  <el keyword="ScreenMode" tag="0039xx79" vm="1" vr="US">Screen Mode</el>
+  <el keyword="CutPlaneSide" tag="0039xx7A" vm="1" vr="US">Cut Plane Side</el>
+  <el keyword="WireframeMode" tag="0039xx7B" vm="1" vr="US">Wireframe Mode</el>
+  <el keyword="CrossmarkMode" tag="0039xx7C" vm="1" vr="US">Crossmark Mode</el>
+  <el keyword="MprDisplayType" tag="0039xx7D" vm="1" vr="US">Mpr Display Type</el>
+  <el keyword="VolumeDisplayType" tag="0039xx7E" vm="1" vr="US">Volume Display Type</el>
+  <el keyword="LastReset" tag="0039xx7F" vm="1" vr="US">Last Reset</el>
+  <el keyword="LastNonFullScreenMode" tag="0039xx80" vm="1" vr="US">Last Non Full Screen Mode</el>
+  <el keyword="MprToolIndex" tag="0039xx81" vm="1" vr="US">Mpr Tool Index</el>
+  <el keyword="VoiToolIndex" tag="0039xx82" vm="1" vr="US">Voi Tool Index</el>
+  <el keyword="ToolLoopMode" tag="0039xx83" vm="1" vr="US">Tool Loop Mode</el>
+  <el keyword="VolumeArbMode" tag="0039xx84" vm="1" vr="US">Volume Arb Mode</el>
+  <el keyword="MprZoomEn" tag="0039xx85" vm="1" vr="US">Mpr Zoom Enabled</el>
+  <el keyword="IsVolumeZoomEn" tag="0039xx86" vm="1" vr="US">Is Volume Zoom Enabled</el>
+  <el keyword="ZoomLevelMpr" tag="0039xx87" vm="1" vr="SS">Zoom Level Mpr</el>
+  <el keyword="ZoomLevelVolume" tag="0039xx88" vm="1" vr="SS">Zoom Level Volume</el>
+  <el keyword="IsAutoRotateEn" tag="0039xx89" vm="1" vr="US">Is Auto Rotate Enabled</el>
+  <el keyword="AutoRotateAxis" tag="0039xx8A" vm="1" vr="US">Auto Rotate Axis</el>
+  <el keyword="AutoRotateRangeIndex" tag="0039xx8B" vm="1" vr="US">Auto Rotate Range Index</el>
+  <el keyword="AutoRotateSpeedIndex" tag="0039xx8C" vm="1" vr="US">Auto Rotate Speed Index</el>
+  <el keyword="CVrBrightness" tag="0039xx8D" vm="1" vr="US">CVr Brightness</el>
+  <el keyword="CFlowStateIndex" tag="0039xx8E" vm="1" vr="US">CFlow State Index</el>
+  <el keyword="BSubmodeIndex" tag="0039xx8F" vm="1" vr="US">BSubmode Index</el>
+  <el keyword="CSubmodeIndex" tag="0039xx90" vm="1" vr="US">CSubmode Index</el>
+  <el keyword="CutPlane" tag="0039xx91" vm="1" vr="US">Cut Plane</el>
+  <el keyword="BookmarkChunkId" tag="0039xx92" vm="1" vr="US">Bookmark Chunk Id</el>
+  <el keyword="SequenceMinChunkId" tag="0039xx93" vm="1" vr="US">Sequence Min Chunk Id</el>
+  <el keyword="SequenceMaxChunkId" tag="0039xx94" vm="1" vr="US">Sequence Max Chunk Id</el>
+  <el keyword="VolumeRateHz" tag="0039xx95" vm="1" vr="FD">Volume Rate Hz</el>
+  <el keyword="VoiPositionOffsetX" tag="0039xx9A" vm="1" vr="FD">Voi Position Offset X</el>
+  <el keyword="VoiPositionOffsetY" tag="0039xx9B" vm="1" vr="FD">Voi Position Offset Y</el>
+  <el keyword="VoiPositionOffsetZ" tag="0039xx9C" vm="1" vr="FD">Voi Position Offset Z</el>
+  <el keyword="VrToolIndex" tag="0039xx9D" vm="1" vr="US">Vr Tool Index</el>
+  <el keyword="ShadingPercent" tag="0039xx9E" vm="1" vr="US">Shading Percent</el>
+  <el keyword="VolumeType" tag="0039xx9F" vm="1" vr="US">Volume Type</el>
+  <el keyword="VrQuadDisplayType" tag="0039xxA0" vm="1" vr="US">Vr Quad Display Type</el>
+  <el keyword="MprCenterLocation" tag="0039xxA1" vm="1-n" vr="FD">Mpr Center Location</el>
+  <el keyword="SliceRangeType" tag="0039xxE0" vm="1" vr="US">Slice Range Type</el>
+  <el keyword="SliceMPRPlane" tag="0039xxE1" vm="1" vr="US">Slice MPR Plane</el>
+  <el keyword="SliceLayout" tag="0039xxE2" vm="1" vr="US">Slice Layout</el>
+  <el keyword="SliceSpacing" tag="0039xxE3" vm="1" vr="FD">Slice Spacing</el>
+  <el keyword="ThinVrMode" tag="0039xxE4" vm="1" vr="US">Thin Vr Mode</el>
+  <el keyword="ThinVrThickness" tag="0039xxE5" vm="1" vr="US">Thin Vr Thickness</el>
+  <el keyword="VoiPivotX" tag="0039xxE6" vm="1" vr="FD">Curved TOP VOI Pivot X</el>
+  <el keyword="VoiPivotY" tag="0039xxE7" vm="1" vr="FD">Curved TOP VOI Pivot Y</el>
+  <el keyword="VoiPivotZ" tag="0039xxE8" vm="1" vr="FD">Curved TOP VOI Pivot Z</el>
+  <el keyword="CTopVoiQuad" tag="0039xxE9" vm="1" vr="US">Curved TOP VOI Quadrant</el>
+  <el keyword="_0039_xxEA_" tag="0039xxEA" vm="1" vr="US">?</el>
+  <el keyword="_0039_xxED_" tag="0039xxED" vm="1" vr="US">?</el>
+  <el keyword="_0039_xxEE_" tag="0039xxEE" vm="1" vr="US">?</el>
+  <el keyword="_0039_xxEF_" tag="0039xxEF" vm="1" vr="US">?</el>
+  <el keyword="_0039_xxF0_" tag="0039xxF0" vm="1-n" vr="US">?</el>
+  <el keyword="_0039_xxF1_" tag="0039xxF1" vm="1" vr="US">?</el>
+  <el keyword="_0039_xxF2_" tag="0039xxF2" vm="1" vr="US">?</el>
+  <el keyword="_0039_xxF3_" tag="0039xxF3" vm="1" vr="US">?</el>
+  <el keyword="_0039_xxF4_" tag="0039xxF4" vm="1" vr="FD">?</el>
+  <el keyword="_0039_xxF5_" tag="0039xxF5" vm="1" vr="LO">?</el>
+  <el keyword="_0039_xxF6_" tag="0039xxF6" vm="1" vr="LT">?</el>
+</elements>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="SequenceType" tag="0021xx00" vm="1" vr="CS">Sequence Type</el>
+  <el keyword="VectorSizeOriginal" tag="0021xx01" vm="1" vr="IS">Vector Size Original</el>
+  <el keyword="VectorSizeExtended" tag="0021xx02" vm="1" vr="IS">Vector Size Extended</el>
+  <el keyword="AcquiredSpectralRange" tag="0021xx03" vm="1" vr="DS">Acquired Spectral Range</el>
+  <el keyword="VOIPosition" tag="0021xx04" vm="3" vr="DS">VOI Position</el>
+  <el keyword="VOISize" tag="0021xx05" vm="3" vr="DS">VOI Size</el>
+  <el keyword="CSIMatrixSizeOriginal" tag="0021xx06" vm="3" vr="IS">CSI Matrix Size Original</el>
+  <el keyword="CSIMatrixSizeExtended" tag="0021xx07" vm="3" vr="IS">CSI Matrix Size Extended</el>
+  <el keyword="SpatialGridShift" tag="0021xx08" vm="3" vr="DS">Spatial Grid Shift</el>
+  <el keyword="SignalLimitsMinimum" tag="0021xx09" vm="1" vr="DS">Signal Limits Minimum</el>
+  <el keyword="SignalLimitsMaximum" tag="0021xx10" vm="1" vr="DS">Signal Limits Maximum</el>
+  <el keyword="SpecInfoMask" tag="0021xx11" vm="1" vr="DS">Spec Info Mask</el>
+  <el keyword="EPITimeRateOfChangeOfMagnitude" tag="0021xx12" vm="1" vr="DS">EPI Time Rate of Change of Magnitude</el>
+  <el keyword="EPITimeRateOfChangeOfXComponent" tag="0021xx13" vm="1" vr="DS">EPI Time Rate of Change of X Component</el>
+  <el keyword="EPITimeRateOfChangeOfYComponent" tag="0021xx14" vm="1" vr="DS">EPI Time Rate of Change of Y Component</el>
+  <el keyword="EPITimeRateOfChangeOfZComponent" tag="0021xx15" vm="1" vr="DS">EPI Time Rate of Change of Z Component</el>
+  <el keyword="EPITimeRateOfChangeLegalLimit1" tag="0021xx16" vm="1" vr="DS">EPI Time Rate of Change Legal Limit 1</el>
+  <el keyword="EPIOperationModeFlag" tag="0021xx17" vm="1" vr="IS">EPI Operation Mode Flag</el>
+  <el keyword="EPIFieldCalculationSafetyFactor" tag="0021xx18" vm="1" vr="DS">EPI Field Calculation Safety Factor</el>
+  <el keyword="EPILegalLimit1OfChangeValue" tag="0021xx19" vm="1" vr="DS">EPI Legal Limit 1 of Change Value</el>
+  <el keyword="EPILegalLimit2OfChangeValue" tag="0021xx20" vm="1" vr="DS">EPI Legal Limit 2 of Change Value</el>
+  <el keyword="EPIRiseTime" tag="0021xx21" vm="1" vr="DS">EPI Rise Time</el>
+  <el keyword="ArrayCoilADCOffset" tag="0021xx30" vm="16" vr="DS">Array Coil ADC Offset</el>
+  <el keyword="ArrayCoilPreamplifierGain" tag="0021xx31" vm="16" vr="DS">Array Coil Preamplifier Gain</el>
+  <el keyword="SaturationType" tag="0021xx50" vm="1" vr="LO">Saturation Type</el>
+  <el keyword="SaturationNormalVector" tag="0021xx51" vm="3" vr="DS">Saturation Normal Vector</el>
+  <el keyword="SaturationPositionVector" tag="0021xx52" vm="3" vr="DS">Saturation Position Vector</el>
+  <el keyword="SaturationThickness" tag="0021xx53" vm="6" vr="DS">Saturation Thickness</el>
+  <el keyword="SaturationWidth" tag="0021xx54" vm="6" vr="DS">Saturation Width</el>
+  <el keyword="SaturationDistance" tag="0021xx55" vm="6" vr="DS">Saturation Distance</el>
+</elements>

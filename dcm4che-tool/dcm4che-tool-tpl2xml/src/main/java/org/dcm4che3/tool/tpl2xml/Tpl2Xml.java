@@ -57,6 +57,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -280,14 +281,53 @@ public class Tpl2Xml {
             String last4 = "xx" + tag.substring(8,10).toUpperCase();
             this.keyword = keyword.equals("?")
                     ? "_" + first4 + "_" + last4 + "_"
-                    : keyword.contains(" ")
-                        ? keywordWithoutSpaces(keyword) : keyword;
+                    : !Pattern.compile("^[a-zA-Z][a-zA-Z0-9]*$").matcher(keyword).matches()
+                        ? improveInvalidKeyword(keyword) : keyword;
             this.tag = first4 + last4;
         }
 
-        private String keywordWithoutSpaces(String keyword) {
-            System.out.println(MessageFormat.format(rb.getString("keyword-with-space"), keyword));
-            return keyword.replaceAll(" ", "");
+        private String improveInvalidKeyword(String keyword) {
+            System.out.println(MessageFormat.format(rb.getString("invalid-keyword"), keyword));
+            if (Character.isDigit(keyword.charAt(0)))
+                keyword = wordForFirstDigit(keyword) + keyword.substring(1);
+            return keyword.replaceAll("[^A-Za-z0-9]", "");
+        }
+
+        private String wordForFirstDigit(String keyword) {
+            String wordForDigit = null;
+            switch (keyword.charAt(0)) {
+                case '0':
+                    wordForDigit = "Zero";
+                    break;
+                case '1':
+                    wordForDigit = "One";
+                    break;
+                case '2':
+                    wordForDigit = "Two";
+                    break;
+                case '3':
+                    wordForDigit = "Three";
+                    break;
+                case '4':
+                    wordForDigit = "Four";
+                    break;
+                case '5':
+                    wordForDigit = "Five";
+                    break;
+                case '6':
+                    wordForDigit = "Six";
+                    break;
+                case '7':
+                    wordForDigit = "Seven";
+                    break;
+                case '8':
+                    wordForDigit = "Eight";
+                    break;
+                case '9':
+                    wordForDigit = "Nine";
+                    break;
+            }
+            return wordForDigit;
         }
     }
 }

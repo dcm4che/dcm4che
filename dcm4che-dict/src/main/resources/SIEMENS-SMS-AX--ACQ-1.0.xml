@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="AcquisitionType" tag="0021xx00" vm="1" vr="US">Acquisition Type</el>
+  <el keyword="AcquisitionMode" tag="0021xx01" vm="1" vr="US">Acquisition Mode</el>
+  <el keyword="FootswitchIndex" tag="0021xx02" vm="1" vr="US">Footswitch Index</el>
+  <el keyword="AcquisitionRoom" tag="0021xx03" vm="1" vr="US">Acquisition Room</el>
+  <el keyword="CurrentTimeProduct" tag="0021xx04" vm="1" vr="SL">Current Time Product</el>
+  <el keyword="ImagerReceptorDose" tag="0021xx05" vm="1" vr="SL">Imager Receptor Dose</el>
+  <el keyword="SkinDosePercent" tag="0021xx06" vm="1" vr="SL">Skin Dose Percent</el>
+  <el keyword="SkinDoseAccumulation" tag="0021xx07" vm="1" vr="SL">Skin Dose Accumulation</el>
+  <el keyword="SkinDoseRate" tag="0021xx08" vm="1" vr="SL">Skin Dose Rate</el>
+  <el keyword="ImpacFilename" tag="0021xx09" vm="1" vr="UL">Impac Filename</el>
+  <el keyword="CopperFilter" tag="0021xx0A" vm="1" vr="UL">Copper Filter</el>
+  <el keyword="MeasuringField" tag="0021xx0B" vm="1" vr="US">Measuring Field</el>
+  <el keyword="PostBlankingCircle" tag="0021xx0C" vm="3" vr="SS">Post Blanking Circle</el>
+  <el keyword="DynaAngles" tag="0021xx0D" vm="2-2n" vr="SS">Dyna Angles</el>
+  <el keyword="TotalSteps" tag="0021xx0E" vm="1" vr="SS">Total Steps</el>
+  <el keyword="DynaXRayInfo" tag="0021xx0F" vm="4-n" vr="SL">Dyna X-Ray Info</el>
+  <el keyword="ModalityLUTInputGamma" tag="0021xx10" vm="1" vr="US">Modality LUT Input Gamma</el>
+  <el keyword="ModalityLUTOutputGamma" tag="0021xx11" vm="1" vr="US">Modality LUT Output Gamma</el>
+  <el keyword="SHSTPAR" tag="0021xx12" vm="1" vr="OB">SH_STPAR</el>
+  <el keyword="AcquisitionZoom" tag="0021xx13" vm="1" vr="US">Acquisition Zoom</el>
+  <el keyword="DynaAngulationStep" tag="0021xx14" vm="1" vr="SS">Dyna Angulation Step</el>
+  <el keyword="DDOValue" tag="0021xx15" vm="1" vr="US">DDO Value</el>
+  <el keyword="DRSingleFlag" tag="0021xx16" vm="1" vr="US">DR Single Flag</el>
+  <el keyword="SourcetoIsocenter" tag="0021xx17" vm="1" vr="SL">Source to Isocente</el>
+  <el keyword="PressureData" tag="0021xx18" vm="1" vr="US">Pressure Data</el>
+  <el keyword="ECGIndexArray" tag="0021xx19" vm="1" vr="SL">ECG Index Array</el>
+  <el keyword="FDFlag" tag="0021xx1A" vm="1" vr="US">FD Flag</el>
+  <el keyword="SHZOOM" tag="0021xx1B" vm="1" vr="OB">SH_ZOOM</el>
+  <el keyword="SHCOLPAR" tag="0021xx1C" vm="1" vr="OB">SH_COLPAR</el>
+  <el keyword="KFactor" tag="0021xx1D" vm="1" vr="US">K-Factor</el>
+  <el keyword="EVE" tag="0021xx1E" vm="8" vr="US">EVE</el>
+  <el keyword="TotalSceneTime" tag="0021xx1F" vm="1" vr="SL">Total Scene Time</el>
+  <el keyword="RestoreFlag" tag="0021xx20" vm="1" vr="US">Restore Flag</el>
+  <el keyword="StandMovementFlag" tag="0021xx21" vm="1" vr="US">Stand Movement Flag</el>
+  <el keyword="FDRows" tag="0021xx22" vm="1" vr="US">FD Rows</el>
+  <el keyword="FDColumns" tag="0021xx23" vm="1" vr="US">FD Columns</el>
+  <el keyword="TableMovementFlag" tag="0021xx24" vm="1" vr="US">Table Movement Flag</el>
+  <el keyword="CrispyXPIFilterValue" tag="0021xx26" vm="1" vr="DS">Crispy XPI Filter Value</el>
+  <el keyword="ICStentFlag" tag="0021xx27" vm="1" vr="US">IC Stent Flag</el>
+  <el keyword="GammaLUTSequence" tag="0021xx28" vm="1" vr="SQ">Gamma LUT Sequence</el>
+  <el keyword="AcquisitionSceneTime" tag="0021xx29" vm="1" vr="DS">Acquisition Scene Time</el>
+  <el keyword="ThreeDCardiacPhaseCenter" tag="0021xx2A" vm="1" vr="IS">3D Cardiac Phase Center</el>
+  <el keyword="ThreeDCardiacPhaseWidth" tag="0021xx2B" vm="1" vr="IS">3D Cardiac Phase Width</el>
+  <el keyword="OrganProgramInfo" tag="0021xx30" vm="1" vr="OB">Organ Program Info</el>
+  <el keyword="DDOKernelsize" tag="0021xx3A" vm="1" vr="IS">DDO Kernel size</el>
+  <el keyword="mAsModulation" tag="0021xx3B" vm="1" vr="IS">mAs Modulation</el>
+  <el keyword="ThreeDRPeakReferenceTime" tag="0021xx3C" vm="1-n" vr="DT">3D R-Peak Reference Time</el>
+  <el keyword="ECGFrameTimeVector" tag="0021xx3D" vm="1-n" vr="SL">ECG Frame Time Vector</el>
+  <el keyword="ECGStartTimeOfRun" tag="0021xx3E" vm="1" vr="SL">ECG Start Time of Run</el>
+  <el keyword="GammaLUTDescriptor" tag="0021xx40" vm="3" vr="US">Gamma LUT Descriptor</el>
+  <el keyword="GammaLUTType" tag="0021xx41" vm="1" vr="LO">Gamma LUT Type</el>
+  <el keyword="GammaLUTData" tag="0021xx42" vm="1-n" vr="US">Gamma LUT Data</el>
+  <el keyword="GlobalGain" tag="0021xx43" vm="1" vr="US">Global Gain</el>
+  <el keyword="GlobalOffset" tag="0021xx44" vm="1" vr="US">Global Offset</el>
+  <el keyword="DIPPMode" tag="0021xx45" vm="1" vr="US">DIPP Mode</el>
+  <el keyword="ArtisSystemType" tag="0021xx46" vm="1" vr="US">Artis System Type</el>
+  <el keyword="ArtisTableType" tag="0021xx47" vm="1" vr="US">Artis Table Type</el>
+  <el keyword="ArtisTableTopType" tag="0021xx48" vm="1" vr="US">Artis Table Top Type</el>
+  <el keyword="WaterValue" tag="0021xx49" vm="1" vr="US">Water Value</el>
+  <el keyword="ThreeDPositionerPrimaryStartAngle" tag="0021xx51" vm="1" vr="DS">3D Positioner Primary Start Angle</el>
+  <el keyword="ThreeDPositionerSecondaryStartAngle" tag="0021xx52" vm="1" vr="DS">3D Positioner Secondary Start Angle</el>
+  <el keyword="StandPosition" tag="0021xx53" vm="3" vr="SS">Stand Position</el>
+  <el keyword="RotationAngle" tag="0021xx54" vm="1" vr="SS">Rotation Angle</el>
+  <el keyword="ImageRotation" tag="0021xx55" vm="1" vr="US">Image Rotation</el>
+  <el keyword="TableCoordinates" tag="0021xx56" vm="3" vr="SS">Table Coordinates</el>
+  <el keyword="IsocenterTablePosition" tag="0021xx57" vm="3" vr="SS">Isocenter Table Position</el>
+  <el keyword="TableObjectDistance" tag="0021xx58" vm="1" vr="DS">Table Object Distance</el>
+  <el keyword="CarmCoordinateSystem" tag="0021xx59" vm="12-n" vr="FL">Carm Coordinate System</el>
+  <el keyword="RobotAxes" tag="0021xx5A" vm="6-n" vr="FL">Robot Axes</el>
+  <el keyword="TableCoordinateSystem" tag="0021xx5B" vm="12" vr="FL">Table Coordinate System</el>
+  <el keyword="PatientCoordinateSystem" tag="0021xx5C" vm="12" vr="FL">Patient Coordinate System</el>
+  <el keyword="Angulation" tag="0021xx5D" vm="1-n" vr="SS">Angulation</el>
+  <el keyword="Orbital" tag="0021xx5E" vm="1-n" vr="SS">Orbital</el>
+  <el keyword="LargeVolumeOverlap" tag="0021xx61" vm="1" vr="SS">Large Volume Overlap</el>
+  <el keyword="ReconstructionPreset" tag="0021xx62" vm="1" vr="US">Reconstruction Preset</el>
+  <el keyword="ThreeDStartAngle" tag="0021xx63" vm="1" vr="SS">3D Start Angle</el>
+  <el keyword="ThreeDPlannedAngle" tag="0021xx64" vm="1" vr="SL">3D Planned Angle</el>
+  <el keyword="ThreeDRotationPlaneAlpha" tag="0021xx65" vm="1" vr="SL">3D Rotation Plane Alpha</el>
+  <el keyword="ThreeDRotationPlaneBeta" tag="0021xx66" vm="1" vr="SL">3D Rotation Plane Beta</el>
+  <el keyword="ThreeDFirstImageAngle" tag="0021xx67" vm="1" vr="SL">3D First Image Angle</el>
+  <el keyword="ThreeDTriggerAngle" tag="0021xx68" vm="1-n" vr="SS">3D Trigger Angle</el>
+  <el keyword="DetectorRotation" tag="0021xx71" vm="1-n" vr="DS">Detector Rotation</el>
+  <el keyword="PhysicalDetectorRotation" tag="0021xx72" vm="1-n" vr="SS">Physical Detector Rotation</el>
+  <el keyword="TableTilt" tag="0021xx81" vm="1" vr="SS">Table Tilt</el>
+  <el keyword="TableRotation" tag="0021xx82" vm="1" vr="SS">Table Rotation</el>
+  <el keyword="TableCradleTilt" tag="0021xx83" vm="1" vr="SS">Table Cradle Tilt</el>
+  <el keyword="Crispy1Container" tag="0021xxA0" vm="1" vr="OB">Crispy1 Container</el>
+  <el keyword="ThreeDCardiacTriggerSequence" tag="0021xxA3" vm="1" vr="SQ">3D Cardiac Trigger Sequence</el>
+  <el keyword="ThreeDFrameReferenceDateTime" tag="0021xxA4" vm="1" vr="DT">3D Frame Reference Date Time</el>
+  <el keyword="ThreeDCardiacTriggerDelayTime" tag="0021xxA5" vm="1" vr="FD">3D Cardiac Trigger Delay Time</el>
+  <el keyword="ThreeDRRIntervalTimeMeasured" tag="0021xxA6" vm="1" vr="FD">3D R-R Interval Time Measure</el>
+</elements>

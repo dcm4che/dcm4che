@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="PresentationName" tag="0029xx00" vm="1" vr="CS">Presentation Nam</el>
+  <el keyword="PresentationType" tag="0029xx01" vm="1" vr="CS">Presentation Typ</el>
+  <el keyword="AdvancedPresentationSequence" tag="0029xx02" vm="1" vr="SQ">Advanced Presentation Sequenc</el>
+  <el keyword="TimePointSequence" tag="0029xx03" vm="1" vr="SQ">Time Point Sequenc</el>
+  <el keyword="BaseImageSequence" tag="0029xx04" vm="1" vr="SQ">Base Image Sequenc</el>
+  <el keyword="OverlayImageSequence" tag="0029xx05" vm="1" vr="SQ">Overlay Image Sequenc</el>
+  <el keyword="RegistrationInstanceSequence" tag="0029xx06" vm="1" vr="SQ">Registration Instance Sequenc</el>
+  <el keyword="RealWorldValueMappingInstanceSequence" tag="0029xx07" vm="1" vr="SQ">Real World Value Mapping Instance Sequenc</el>
+  <el keyword="MeasurementSequence" tag="0029xx08" vm="1" vr="SQ">Measurement Sequenc</el>
+  <el keyword="MeasurementUID" tag="0029xx09" vm="1" vr="UI">Measurement UI</el>
+  <el keyword="SegmentationSequence" tag="0029xx10" vm="1" vr="SQ">Segmentation Sequence</el>
+  <el keyword="SegmentationUID" tag="0029xx11" vm="1" vr="UI">Segmentation UI</el>
+  <el keyword="NavigationSequence" tag="0029xx12" vm="1" vr="SQ">Navigation Sequenc</el>
+  <el keyword="NavigationName" tag="0029xx13" vm="1" vr="CS">Navigation Nam</el>
+  <el keyword="AutoNavigationDirection" tag="0029xx14" vm="1" vr="CS">Auto Navigation Directio</el>
+  <el keyword="AutoNavigationFrameRate" tag="0029xx15" vm="1" vr="DS">Auto Navigation Frame Rat</el>
+  <el keyword="AutoNavigationMode" tag="0029xx16" vm="1" vr="CS">Auto Navigation Mod</el>
+  <el keyword="AutoNavigationRealtimeSpeed" tag="0029xx17" vm="1" vr="DS">Auto Navigation Realtime Spee</el>
+  <el keyword="AutoNavigationStrategy" tag="0029xx18" vm="1" vr="CS">Auto Navigation Strateg</el>
+  <el keyword="AutoNavigationRealtimeFlag" tag="0029xx19" vm="1" vr="CS">Auto Navigation Realtime Fla</el>
+  <el keyword="IndexNavigationCurrentIndex" tag="0029xx20" vm="1" vr="IS">Index Navigation Current Inde</el>
+  <el keyword="IndexAutoNavigationSkippingDegree" tag="0029xx21" vm="1" vr="IS">Index Auto Navigation Skipping Degre</el>
+  <el keyword="VolumeNavigationMinimumPixelSpacing" tag="0029xx22" vm="1" vr="DS">Volume Navigation Minimum Pixel Spacin</el>
+  <el keyword="VolumeNavigationScrollUnit" tag="0029xx23" vm="1" vr="CS">Volume Navigation Scroll Uni</el>
+  <el keyword="VolumeNavigationStepSize" tag="0029xx24" vm="1" vr="DS">Volume Navigation Step Siz</el>
+  <el keyword="VolumeNavigationJumpSize" tag="0029xx25" vm="1" vr="DS">Volume Navigation Jump Siz</el>
+  <el keyword="ReferencedRegistrationNumber" tag="0029xx26" vm="1" vr="IS">Referenced Registration Numbe</el>
+  <el keyword="RealWorldValueMappingUID" tag="0029xx27" vm="1" vr="UI">Real World Value Mapping UI</el>
+  <el keyword="ChannelAlphaValue" tag="0029xx28" vm="1" vr="DS">Channel Alpha Value</el>
+  <el keyword="MeasurementApplicationName" tag="0029xx30" vm="1" vr="LO">Measurement Application Name</el>
+  <el keyword="MeasurementDataSequence" tag="0029xx31" vm="1" vr="SQ">Measurement Data Sequenc</el>
+  <el keyword="MeasurementType" tag="0029xx32" vm="1" vr="LO">Measurement Typ</el>
+  <el keyword="MeasurementFrameOfReferenceUID" tag="0029xx33" vm="1" vr="UI">Measurement Frame of Reference UI</el>
+  <el keyword="MeasurementUid" tag="0029xx34" vm="1" vr="UI">Measurement UID</el>
+  <el keyword="MeasurementApplicationNumber" tag="0029xx35" vm="1" vr="IS">Measurement Application Numbe</el>
+  <el keyword="MeasurementApplicationNumberPrefixText" tag="0029xx36" vm="1" vr="ST">Measurement Application Number Prefix Tex</el>
+  <el keyword="MeasurementGraphicIsVisibleFlag" tag="0029xx37" vm="1" vr="CS">Measurement Graphic Is Visible Flag</el>
+  <el keyword="ReferencedSyngoUID" tag="0029xx38" vm="4" vr="UI">Referenced Syngo UID</el>
+  <el keyword="ClinicalFindingUID" tag="0029xx39" vm="1" vr="UI">Clinical Finding UID</el>
+  <el keyword="MeasurementEvaluationStringValue" tag="0029xx3A" vm="1" vr="CS">Measurement Evaluation String Value</el>
+  <el keyword="MeasurementEvaluationIntegerValue" tag="0029xx3B" vm="1" vr="IS">Measurement Evaluation Integer Value</el>
+  <el keyword="MeasurementEvaluationDecimalValue" tag="0029xx3C" vm="1" vr="FL">Measurement Evaluation Decimal Value</el>
+  <el keyword="MeasurementLineShowCenterFlag" tag="0029xx3D" vm="1" vr="CS">Measurement Line Show Center Flag</el>
+  <el keyword="MeasurementAngleShowArrowTipFlag" tag="0029xx3E" vm="1" vr="CS">Measurement Angle Show ArrowTip Flag</el>
+  <el keyword="CameraHomeSettingsSequence" tag="0029xx3F" vm="1" vr="SQ">Camera Home Settings Sequence</el>
+  <el keyword="CameraZoom" tag="0029xx40" vm="1" vr="DS">Camera Zoom</el>
+  <el keyword="CameraPosition" tag="0029xx41" vm="3" vr="DS">Camera Positio</el>
+  <el keyword="CameraOrientation" tag="0029xx42" vm="4" vr="DS">Camera Orientatio</el>
+  <el keyword="CameraFarClipPlane" tag="0029xx43" vm="1" vr="DS">Camera Far Clip Plan</el>
+  <el keyword="CameraNearClipPlane" tag="0029xx44" vm="1" vr="DS">Camera Near Clip Plan</el>
+  <el keyword="CameraThickness" tag="0029xx45" vm="1" vr="DS">Camera Thicknes</el>
+  <el keyword="CameraViewPortSize" tag="0029xx46" vm="1" vr="DS">Camera ViewPort Siz</el>
+  <el keyword="CameraAspectRatio" tag="0029xx47" vm="1" vr="DS">Camera Aspect Rati</el>
+  <el keyword="CameraProjectionType" tag="0029xx48" vm="1" vr="LO">Camera Projection Typ</el>
+  <el keyword="CameraFieldOfView" tag="0029xx49" vm="1" vr="DS">Camera Field of Vie</el>
+  <el keyword="CameraImagePlaneDistance" tag="0029xx4A" vm="1" vr="DS">Camera Image Plane Distanc</el>
+  <el keyword="CameraImageMaximumHeight" tag="0029xx4B" vm="1" vr="DS">Camera Image Maximum Heigh</el>
+  <el keyword="CameraImageMinimumHeight" tag="0029xx4C" vm="1" vr="DS">Camera Image Minimum Heigh</el>
+  <el keyword="ParallelShiftIntervalMM" tag="0029xx4D" vm="1" vr="DS">Parallel Shift Interval M</el>
+  <el keyword="ParallelShiftBoundingBoxMinimum" tag="0029xx4E" vm="3" vr="DS">Parallel Shift BoundingBox Minimu</el>
+  <el keyword="ParallelShiftBoundingBoxMaximum" tag="0029xx4F" vm="3" vr="DS">Parallel Shift BoundingBox Maximu</el>
+  <el keyword="RendererVertexIsCharacteristicFlag" tag="0029xx50" vm="1" vr="CS">Renderer Vertex Is Characteristic Flag</el>
+  <el keyword="RendererThicknessUsageFlag" tag="0029xx51" vm="1" vr="CS">Renderer Thickness Usage Fla</el>
+  <el keyword="RendererThreshold" tag="0029xx52" vm="4" vr="DS">Renderer Threshol</el>
+  <el keyword="RendererMaterial" tag="0029xx53" vm="4" vr="DS">Renderer Materia</el>
+  <el keyword="RendererDirectionalLightColor" tag="0029xx54" vm="4" vr="DS">Renderer DirectionalLight Colo</el>
+  <el keyword="RendererDirectionalLightDirection" tag="0029xx55" vm="3" vr="DS">Renderer DirectionalLight Directio</el>
+  <el keyword="RendererDirectionalLightTwoSideUsageFlag" tag="0029xx56" vm="1" vr="CS">Renderer DirectionalLight TwoSide Usage Fla</el>
+  <el keyword="RendererPWLTransferFunctionSequence" tag="0029xx57" vm="1" vr="SQ">Renderer PWL TransferFunction Sequenc</el>
+  <el keyword="RendererPWLVertexIndex" tag="0029xx58" vm="0-n" vr="IS">Renderer PWL Vertex Inde</el>
+  <el keyword="RendererPWLVertexColor" tag="0029xx59" vm="0-n" vr="DS">Renderer PWL Vertex Colo</el>
+  <el keyword="RendererIsCameraRequiredFlag" tag="0029xx5A" vm="1" vr="CS">Renderer Is Camera Required Fla</el>
+  <el keyword="RendererDoDepthTestFlag" tag="0029xx5B" vm="1" vr="CS">Renderer Do Depth Test Flag</el>
+  <el keyword="RendererDirectionalLightUsageFlag" tag="0029xx5C" vm="1" vr="CS">Renderer Directional Light Usage Fla</el>
+  <el keyword="RendererThicknessSequence" tag="0029xx5D" vm="1" vr="SQ">Renderer Thickness Sequenc</el>
+  <el keyword="RendererSliceSpacingSequence" tag="0029xx5E" vm="0-n" vr="SQ">Renderer Slice Spacing Sequence</el>
+  <el keyword="RendererSamplingDistance" tag="0029xx5F" vm="1" vr="DS">Renderer Sampling Distance</el>
+  <el keyword="RendererInitialSamplingDistance" tag="0029xx60" vm="1" vr="DS">Renderer Initial Sampling Distance</el>
+  <el keyword="SegmentationDisplayDataSequence" tag="0029xx61" vm="1" vr="SQ">Segmentation Display Data Sequenc</el>
+  <el keyword="SegmentationDisplayDataUID" tag="0029xx62" vm="0-n" vr="UI">Segmentation Display Data UI</el>
+  <el keyword="SegmentationDisplayParameterSequence" tag="0029xx63" vm="1" vr="SQ">Segmentation Display Parameter Sequenc</el>
+  <el keyword="SegmentationDisplayParameterType" tag="0029xx64" vm="1" vr="LO">Segmentation Display Parameter Typ</el>
+  <el keyword="SegmentationDisplayVisibility" tag="0029xx65" vm="1" vr="LO">Segmentation Display Visibilit</el>
+  <el keyword="SegmentationDisplayColor" tag="0029xx66" vm="4" vr="DS">Segmentation Display Colo</el>
+  <el keyword="SegmentationDisplayIsSelectedFlag" tag="0029xx67" vm="1" vr="CS">Segmentation Display is Selected Flag</el>
+  <el keyword="SegmentationAdditionalInformationBlob" tag="0029xx68" vm="1" vr="OB">Segmentation Additional Information Blob</el>
+  <el keyword="HashCodeValue" tag="0029xx69" vm="1" vr="ST">Hash Code Value</el>
+  <el keyword="SegmentationVersionIdentifier" tag="0029xx6A" vm="1-n" vr="LO">Segmentation Version Identifier</el>
+  <el keyword="SegmentationVolumeSize" tag="0029xx70" vm="3" vr="DS">Segmentation Volume Size</el>
+  <el keyword="RegistrationReferencedFrames" tag="0029xx71" vm="1-n" vr="UI">Registration Referenced Frame</el>
+  <el keyword="RegistrationReferencedRegistrations" tag="0029xx72" vm="1-n" vr="UI">Registration Referenced Registrations</el>
+  <el keyword="RegistrationCreationAlgorithmName" tag="0029xx73" vm="1" vr="LO">Registration Creation Algorithm Name</el>
+  <el keyword="ECGGraphicType" tag="0029xx74" vm="1" vr="CS">ECG Graphic Type</el>
+  <el keyword="SegmentationVolumeStorageDataType" tag="0029xx7A" vm="1" vr="DS">Segmentation Volume Storage Data Type</el>
+  <el keyword="SegmentationVolumeModelMatrix" tag="0029xx7B" vm="16" vr="FL">Segmentation Volume Model Matrix</el>
+  <el keyword="CameraRotationAxis" tag="0029xx80" vm="3" vr="DS">Camera Rotation Axis</el>
+  <el keyword="OverlayHiddenDisplayAttributes" tag="0029xx81" vm="0-n" vr="SL">Overlay Hidden Display Attributes</el>
+  <el keyword="PresentationStateGroupIdentifier" tag="0029xx82" vm="1" vr="LO">Presentation State Group Identifier</el>
+  <el keyword="TemporarySmallestImagePixelValue" tag="0029xx83" vm="1" vr="US">Temporary Smallest Image Pixel Value</el>
+  <el keyword="CameraRotationCenter" tag="0029xx84" vm="3" vr="DS">Camera Rotation Cente</el>
+  <el keyword="CameraRotationCenterUsageFlag" tag="0029xx85" vm="1" vr="CS">Camera Rotation Center Usage Fla</el>
+  <el keyword="CameraParallelEpiped" tag="0029xx86" vm="12" vr="DS">Camera Parallel Epipe</el>
+  <el keyword="CameraMaxZoomInFactor" tag="0029xx87" vm="1" vr="DS">Camera Max Zoom In Factor</el>
+  <el keyword="CameraMinZoomInFactor" tag="0029xx88" vm="1" vr="DS">Camera Min Zoom In Factor</el>
+  <el keyword="TemporaryLargestImagePixelValue" tag="0029xx89" vm="1" vr="US">Temporary Largest Image Pixel Value</el>
+  <el keyword="CameraRotationAxisUsageFlag" tag="0029xx8A" vm="1" vr="CS">Camera Rotation Axis Usage Flag</el>
+  <el keyword="MeasurementSurfaceNormal" tag="0029xx8B" vm="3" vr="DS">Measurement Surface Normal</el>
+  <el keyword="MeasurementEllipsoidModelMatrix" tag="0029xx8C" vm="16" vr="FL">Measurement Ellipsoid Model Matrix</el>
+  <el keyword="MeasurementEvaluationDataRoleID" tag="0029xx8D" vm="1" vr="LO">Measurement Evaluation DataRole ID</el>
+  <el keyword="MeasurementAlgorithmType" tag="0029xx8E" vm="1" vr="LO">Measurement Algorithm Type</el>
+  <el keyword="MeasurementEvaluationDataRoleSequence" tag="0029xx91" vm="1" vr="SQ">Measurement Evaluation DataRole Sequenc</el>
+  <el keyword="MeasurementEvaluationDataRoleItem" tag="0029xx92" vm="1" vr="CS">Measurement Evaluation DataRole Ite</el>
+  <el keyword="MeasurementEvaluationSequence" tag="0029xx93" vm="1" vr="SQ">Measurement Evaluation Sequenc</el>
+  <el keyword="MeasurementEvaluationValue" tag="0029xx94" vm="1" vr="DS">Measurement Evaluation Valu</el>
+  <el keyword="MeasurementEvaluationID" tag="0029xx95" vm="1" vr="CS">Measurement Evaluation I</el>
+  <el keyword="MeasurementDataPoints" tag="0029xx96" vm="0-n" vr="FL">Measurement Data Point</el>
+  <el keyword="MeasurementDataAngles" tag="0029xx97" vm="0-n" vr="FL">Measurement Data Angle</el>
+  <el keyword="MeasurementDataSlice" tag="0029xx98" vm="1" vr="LO">Measurement Data Slic</el>
+  <el keyword="MeasurementDataSliceThickness" tag="0029xx99" vm="1" vr="FL">Measurement Data Slice Thicknes</el>
+  <el keyword="MeasurementReferencedFramesSequence" tag="0029xx9A" vm="1" vr="SQ">Measurement Referenced Frames Sequenc</el>
+  <el keyword="MeasurementEvaluationLongestDistance" tag="0029xx9B" vm="0-n" vr="DS">Measurement Evaluation Longest Distanc</el>
+  <el keyword="MeasurementEvaluationCentroid" tag="0029xx9C" vm="0-n" vr="DS">Measurement Evaluation Centroi</el>
+  <el keyword="MeasurementDataBoundingBox" tag="0029xx9D" vm="6" vr="FL">Measurement Data Bounding Box</el>
+  <el keyword="MeasurementText" tag="0029xx9E" vm="1" vr="LO">Measurement Text</el>
+  <el keyword="MeasurementDiameter" tag="0029xx9F" vm="1" vr="IS">Measurement Diameter</el>
+  <el keyword="ImageRotationFractional" tag="0029xxA0" vm="1" vr="DS">Image Rotation Fractiona</el>
+  <el keyword="PresetName" tag="0029xxA1" vm="1" vr="LO">Preset Name</el>
+  <el keyword="FusionLUTSequence" tag="0029xxA2" vm="1" vr="SQ">Fusion LUT Sequence</el>
+  <el keyword="FusionLUTIsActiveFlag" tag="0029xxA3" vm="1" vr="CS">Fusion LUT Is Active Flag</el>
+  <el keyword="SyngoUID" tag="0029xxA5" vm="1" vr="UI">Syngo UID</el>
+  <el keyword="PresentationVersionIdentifier" tag="0029xxA6" vm="1" vr="UI">Presentation Version Identifie</el>
+  <el keyword="PresentationModuleSequence" tag="0029xxA7" vm="1" vr="SQ">Presentation Module Sequenc</el>
+  <el keyword="PresentationModuleType" tag="0029xxA8" vm="1" vr="LO">Presentation Module Typ</el>
+  <el keyword="PresentationStateSequence" tag="0029xxA9" vm="1" vr="SQ">Presentation State Sequenc</el>
+  <el keyword="LUTInvertedFlag" tag="0029xxAA" vm="1" vr="CS">LUT Inverted Flag</el>
+  <el keyword="SoftcopyVOILUTViewingIndex" tag="0029xxAB" vm="1" vr="IS">Softcopy VOI LUT Viewing Index</el>
+  <el keyword="DisplayedAreaBottomRightHandCornerFractional" tag="0029xxAC" vm="2" vr="FD">Displayed Area Bottom Right Hand Corner Fractional</el>
+  <el keyword="DisplayedAreaTopLeftHandCornerFractional" tag="0029xxAD" vm="2" vr="FD">Displayed Area Top Left Hand Corner Fractional</el>
+  <el keyword="MeasurementAlpha" tag="0029xxAE" vm="1" vr="FL">Measurement Alpha</el>
+  <el keyword="MeasurementBitmap" tag="0029xxAF" vm="1" vr="OB">Measurement Bitmap</el>
+  <el keyword="CurrentFrameNumber" tag="0029xxB0" vm="1" vr="US">Current Frame Number</el>
+  <el keyword="ImageTextViewName" tag="0029xxB1" vm="1" vr="LO">Image Text View Name</el>
+  <el keyword="ImageTextViewContentSequence" tag="0029xxB2" vm="1" vr="SQ">Image Text View Content Sequence</el>
+  <el keyword="ImageTextLineNames" tag="0029xxB3" vm="1-n" vr="LO">Image Text Line Names</el>
+  <el keyword="ImageTextLineValues" tag="0029xxB4" vm="1-n" vr="LO">ImageText Line Values</el>
+  <el keyword="MeasurementEvaluationTextPositionSequence" tag="0029xxB5" vm="1" vr="SQ">Measurement Evaluation Text Position Sequence</el>
+  <el keyword="MeasurementLinkEvaluationTextFlag" tag="0029xxB6" vm="1" vr="CS">Measurement Link Evaluation Text Flag</el>
+  <el keyword="MeasurementEvaluationTextPositionVector" tag="0029xxB7" vm="3" vr="DS">Measurement Evaluation Text Position Vector</el>
+  <el keyword="ImageTextAlphaBlendingLineValue" tag="0029xxB8" vm="1" vr="OB">Image Text Alpha Blending Line Value</el>
+  <el keyword="TaskDataSequence" tag="0029xxC1" vm="1" vr="SQ">Task Data Sequence</el>
+  <el keyword="TaskDataType" tag="0029xxC2" vm="1" vr="CS">Task Data Type</el>
+  <el keyword="TaskDataVersion" tag="0029xxC3" vm="1" vr="LO">Task Data Version</el>
+  <el keyword="TaskDataDescription" tag="0029xxC4" vm="1" vr="ST">Task Data Description</el>
+  <el keyword="TaskData" tag="0029xxC5" vm="1" vr="OB">Task Data</el>
+  <el keyword="TaskDataSize" tag="0029xxC6" vm="1" vr="IS">Task Data Size</el>
+  <el keyword="ClipPlaneSequence" tag="0029xxC9" vm="1" vr="SQ">Clip Plane Sequence</el>
+  <el keyword="ClipPlaneCenter" tag="0029xxCA" vm="3" vr="DS">Clip Plane Center</el>
+  <el keyword="ClipPlaneNormal" tag="0029xxCB" vm="3" vr="DS">Clip Plane Normal</el>
+  <el keyword="ClipPlaneScale" tag="0029xxCC" vm="2" vr="DS">Clip Plane Scale</el>
+  <el keyword="ClipPlaneUseThicknessFlag" tag="0029xxCD" vm="1" vr="CS">Clip Plane Use Thickness Flag</el>
+  <el keyword="ClipPlaneThickness" tag="0029xxCE" vm="1" vr="DS">Clip Plane Thickness</el>
+  <el keyword="ImageSequence" tag="0029xxCF" vm="1" vr="SQ">Image Sequence</el>
+  <el keyword="ClipPlaneEnableClip" tag="0029xxD0" vm="1" vr="CS">Clip Plane Enable Clip</el>
+  <el keyword="ClipPlaneHandleRatio" tag="0029xxD1" vm="1" vr="DS">Clip Plane Handle Ratio</el>
+  <el keyword="ClipPlaneBoundingPoints" tag="0029xxD2" vm="24" vr="DS">Clip Plane Bounding Points</el>
+  <el keyword="ClipPlaneMotionMatrix" tag="0029xxD3" vm="16" vr="DS">Clip Plane Motion Matrix</el>
+  <el keyword="ClipPlaneShiftVelocity" tag="0029xxD4" vm="1" vr="DS">Clip Plane Shift Velocity</el>
+  <el keyword="ClipPlaneEnabledFlag" tag="0029xxD5" vm="1" vr="CS">Clip Plane Enabled Flag</el>
+  <el keyword="ClipPlaneRotateVelocity" tag="0029xxD6" vm="1" vr="DS">Clip Plane Rotate Velocity</el>
+  <el keyword="ClipPlaneShowGraphicsFlag" tag="0029xxD7" vm="1" vr="CS">Clip Plane Show Graphics Flag</el>
+  <el keyword="CropBoxSize" tag="0029xxE0" vm="3" vr="DS">Crop Box Size</el>
+  <el keyword="CropBoxEnabledFlag" tag="0029xxE1" vm="1" vr="CS">Crop Box Enabled Flag</el>
+  <el keyword="CropBoxAbsoluteOrigin" tag="0029xxE2" vm="3" vr="DS">Crop Box Absolute Origin</el>
+  <el keyword="CropBoxShowGraphicsFlag" tag="0029xxE3" vm="1" vr="CS">Crop Box Show Graphics Flag</el>
+  <el keyword="CurvedCameraCoordinates" tag="0029xxF1" vm="0-n" vr="DS">Curved Camera Coordinates</el>
+  <el keyword="CurvedCameraPointOfInterest" tag="0029xxF2" vm="1" vr="DS">Curved Camera Point of Interest</el>
+  <el keyword="CurvedCameraPointOfInterestUsageFlag" tag="0029xxF3" vm="1" vr="CS">Curved Camera Point of Interest Usage Flag</el>
+  <el keyword="CurvedCameraThickness" tag="0029xxF4" vm="1" vr="DS">Curved Camera Thickness</el>
+  <el keyword="CurvedCameraExtrusionLength" tag="0029xxF5" vm="1" vr="DS">Curved Camera Extrusion Length</el>
+  <el keyword="CurvedCameraRotationAxisMode" tag="0029xxF6" vm="1" vr="CS">Curved Camera Rotation Axis Mode</el>
+  <el keyword="CurvedCameraRollRotationAxis" tag="0029xxF7" vm="1" vr="DS">Curved Camera Roll Rotation Axis</el>
+  <el keyword="CurvedCameraViewPortHeight" tag="0029xxF8" vm="1" vr="DS">Curved Camera View Port Height</el>
+  <el keyword="CurvedCameraCutDirection" tag="0029xxF9" vm="1" vr="DS">Curved Camera Cut Direction</el>
+  <el keyword="CurvedCameraPanVector" tag="0029xxFA" vm="1" vr="DS">Curved Camera Pan Vector</el>
+  <el keyword="ClinicalFindingID" tag="0029xxFB" vm="1" vr="LO">Clinical Finding ID</el>
+  <el keyword="MeasurementIsCircleFlag" tag="0029xxFC" vm="1" vr="CS">Measurement Is Circle Flag</el>
+  <el keyword="MeasurementApplicationTypeID" tag="0029xxFD" vm="1" vr="LO">Measurement Application Type ID</el>
+</elements>

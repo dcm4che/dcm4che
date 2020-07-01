@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="PlanType" tag="300Bxx10" vm="1" vr="CS">Plan Type</el>
+  <el keyword="DeliveryWarningDoseComment" tag="300Bxx11" vm="1" vr="LT">Delivery Warning Dose Comment</el>
+  <el keyword="ImagerOrganProgram" tag="300Bxx12" vm="1" vr="LO">Imager Organ Program</el>
+  <el keyword="XAImageSID" tag="300Bxx13" vm="1" vr="DS">XA Image SID</el>
+  <el keyword="XAImageReceptorAngle" tag="300Bxx14" vm="1" vr="DS">XA Image Receptor Angle</el>
+  <el keyword="TargetPrescriptionDoseType" tag="300Bxx15" vm="1" vr="CS">Target Prescription Dose Type</el>
+  <el keyword="ReferencedTargetROINumber" tag="300Bxx16" vm="1" vr="IS">Referenced Target ROI Number</el>
+  <el keyword="RTPrivateData" tag="300Bxx17" vm="1" vr="UT">RT Private Data</el>
+  <el keyword="ReferencedSiemensNonImageSequence" tag="300Bxx18" vm="1" vr="SQ">Referenced Siemens Non Image Sequence</el>
+  <el keyword="VerificationMethod" tag="300Bxx19" vm="1" vr="CS">Verification Method</el>
+  <el keyword="AlternativeTreatmentMachineNameSequence" tag="300Bxx20" vm="1" vr="SQ">Alternative Treatment Machine Name Sequence</el>
+  <el keyword="ImagerAngularAngle" tag="300Bxx24" vm="1" vr="DS">Imager Angular Angle</el>
+  <el keyword="ImagerIsocentricAngle" tag="300Bxx25" vm="1" vr="DS">Imager Isocentric Angle</el>
+  <el keyword="ImagerVerticalPosition" tag="300Bxx26" vm="1" vr="DS">Imager Vertical Position</el>
+  <el keyword="ImagerLongitudinalPosition" tag="300Bxx27" vm="1" vr="DS">Imager Longitudinal Position</el>
+  <el keyword="ImagerLateralPosition" tag="300Bxx28" vm="1" vr="DS">Imager Lateral Position</el>
+  <el keyword="ImagerAngularRotationDirection" tag="300Bxx29" vm="1" vr="CS">Imager Angular Rotation Direction</el>
+  <el keyword="ImagerIsocentricRotationDirection" tag="300Bxx2A" vm="1" vr="CS">Imager Isocentric Rotation Direction</el>
+  <el keyword="RequestedScanningSpotSize" tag="300Bxx2B" vm="1" vr="DS">Requested Scanning Spot Size</el>
+  <el keyword="ImagerOrbitalAngle" tag="300Bxx2C" vm="1" vr="DS">Imager Orbital Angle</el>
+  <el keyword="ImagingTechnique" tag="300Bxx2E" vm="1" vr="CS">Imaging Technique</el>
+  <el keyword="ImagerOrbitalRotationDirection" tag="300Bxx2F" vm="1" vr="CS">Imager Orbital Rotation Direction</el>
+  <el keyword="PatientBarcode" tag="300Bxx30" vm="1" vr="LO">Patient Barcode</el>
+  <el keyword="BeamModifierType" tag="300Bxx31" vm="3" vr="SH">Beam Modifier Type</el>
+  <el keyword="SourceToRangeShifterDistance" tag="300Bxx32" vm="3" vr="FL">Source to Range Shifter Distance</el>
+  <el keyword="TreatmentRoomName" tag="300Bxx33" vm="3" vr="SH">Treatment Room Name</el>
+  <el keyword="OrderedReferencedBeamNumbers" tag="300Bxx60" vm="1-n" vr="IS">Ordered Referenced Beam Numbers</el>
+  <el keyword="FractionDeliveryNotes" tag="300Bxx66" vm="1" vr="LT">Fraction Delivery Notes</el>
+  <el keyword="RecordID" tag="300Bxx67" vm="1" vr="LO">Record ID</el>
+  <el keyword="FractionGroupCode" tag="300Bxx76" vm="1" vr="CS">Fraction Group Code</el>
+  <el keyword="ReferencedTreatmentBeamNumber" tag="300Bxx77" vm="1" vr="IS">Referenced Treatment Beam Number</el>
+  <el keyword="FractionDoseToDoseReference" tag="300Bxx78" vm="1" vr="DS">Fraction Dose to Dose Reference</el>
+  <el keyword="ReferencedTargetROISequence" tag="300Bxx80" vm="1" vr="SQ">Referenced Target ROI Sequence</el>
+  <el keyword="TargetROILateralExpansionMargin" tag="300Bxx82" vm="1" vr="DS">Target ROI Lateral Expansion Margin</el>
+  <el keyword="TargetROIDistalExpansionMargin" tag="300Bxx83" vm="1" vr="DS">Target ROI Distal Expansion Margin</el>
+  <el keyword="TargetROIProximalExpansionMargin" tag="300Bxx84" vm="1" vr="DS">Target ROI Proximal Expansion Margin</el>
+  <el keyword="ScanGridLateralDistance" tag="300Bxx85" vm="2" vr="DS">Scan Grid Lateral Distance</el>
+  <el keyword="ScanGridLongitudinalDistance" tag="300Bxx86" vm="1" vr="DS">Scan Grid Longitudinal Distance</el>
+  <el keyword="BeamWeight" tag="300Bxx87" vm="1" vr="DS">Beam Weight</el>
+  <el keyword="PointOnPlane" tag="300Bxx89" vm="3" vr="DS">Point on Plane</el>
+  <el keyword="NormVectorOfPlane" tag="300Bxx8A" vm="3" vr="DS">Norm Vector of Plane</el>
+  <el keyword="PlaneThickness" tag="300Bxx8B" vm="1" vr="DS">Plane Thickness</el>
+  <el keyword="TreatmentApprovalSequence" tag="300Bxx90" vm="1" vr="SQ">Treatment Approval Sequence</el>
+  <el keyword="TreatmentRoomTemperature" tag="300Bxx98" vm="1" vr="DS">Treatment Room Temperature</el>
+  <el keyword="TreatmentRoomAirPressure" tag="300Bxx99" vm="1" vr="DS">Treatment Room Air Pressure</el>
+  <el keyword="SplitlaneSequence" tag="300Bxx9B" vm="1" vr="SQ">Split Plane Sequence</el>
+  <el keyword="DisplayColor" tag="300Bxx9C" vm="1" vr="IS">Display Color</el>
+  <el keyword="BeamGroupName" tag="300Bxx9D" vm="1" vr="SH">Beam Group Name</el>
+  <el keyword="ExpireDateTime" tag="300BxxA0" vm="1" vr="DT">Expire DateTime</el>
+  <el keyword="ChecksumEncryptionCode" tag="300BxxA1" vm="1" vr="OB">Checksum Encryption Code</el>
+  <el keyword="SetupType" tag="300BxxA2" vm="1" vr="CS">Setup Type</el>
+  <el keyword="NumberofTherapyDetectors" tag="300BxxA3" vm="1" vr="IS">Number of Therapy Detectors</el>
+  <el keyword="TherapyDetectorSequence" tag="300BxxA4" vm="1" vr="SQ">Therapy Detector Sequence</el>
+  <el keyword="TherapyDetectorNumber" tag="300BxxA5" vm="1" vr="IS">Therapy Detector Number</el>
+  <el keyword="TherapyDetectorSetupID" tag="300BxxA6" vm="1" vr="SH">Therapy Detector Setup ID</el>
+  <el keyword="TherapyDetectorSettingsSequence" tag="300BxxA7" vm="1" vr="SQ">Therapy Detector Settings Sequence</el>
+  <el keyword="ReferencedTherapyDetectorNumber" tag="300BxxA8" vm="1" vr="IS">Referenced Therapy Detector Number</el>
+  <el keyword="TherapyDetectorPosition" tag="300BxxA9" vm="1" vr="DS">Therapy Detector Position</el>
+  <el keyword="ScanSpotResumptionIndex" tag="300BxxB0" vm="1" vr="IS">Scan Spot Resumption Index</el>
+  <el keyword="PhantomDetectorMeasurements" tag="300BxxB1" vm="1" vr="OW">Phantom Detector Measurements</el>
+  <el keyword="TreatmentEvents" tag="300BxxB2" vm="1" vr="UT">Treatment Events</el>
+  <el keyword="DoseOptimizationConstraintSequence" tag="300BxxC0" vm="1" vr="SQ">Dose Optimization Constraint Sequence</el>
+  <el keyword="TargetMaximumDoseConstraint" tag="300BxxC8" vm="1" vr="DS">Target Maximum Dose Constraint</el>
+  <el keyword="TargetMaximumDoseConstraintWeight" tag="300BxxC9" vm="1" vr="DS">Target Maximum Dose Constraint Weight</el>
+  <el keyword="TargetMinimumDoseConstraint" tag="300BxxCA" vm="1" vr="DS">Target Minimum Dose Constraint</el>
+  <el keyword="TargetMinimumDoseConstraintWeight" tag="300BxxCB" vm="1" vr="DS">Target Minimum Dose Constraint Weight</el>
+  <el keyword="OrganAtRiskMaximumDoseConstraint" tag="300BxxCC" vm="1" vr="DS">Organ At Risk Maximum Dose Constraint</el>
+  <el keyword="OrganAtRiskMaximumDoseConstraintWeight" tag="300BxxCD" vm="1" vr="DS">Organ At Risk Maximum Dose Constraint Weight</el>
+  <el keyword="DVHConstraintSequence" tag="300BxxCE" vm="1" vr="SQ">DVH Constraint Sequence</el>
+  <el keyword="DVHConstraintVolumeLimit" tag="300BxxCF" vm="1" vr="DS">DVH Constraint Volume Limit</el>
+  <el keyword="DVHConstraintVolumeUnits" tag="300BxxD0" vm="1" vr="CS">DVH Constraint Volume Units</el>
+  <el keyword="DVHConstraintDoseLimit" tag="300BxxD1" vm="1" vr="DS">DVH Constraint Dose Limit</el>
+  <el keyword="DVHConstraintDirection" tag="300BxxD3" vm="1" vr="CS">DVH Constraint Direction</el>
+  <el keyword="DVHConstraintWeight" tag="300BxxD4" vm="1" vr="DS">DVH Constraint Weight</el>
+  <el keyword="OptimizedDoseType" tag="300BxxD5" vm="1" vr="CS">Optimized Dose Type</el>
+  <el keyword="DoseCalculationandOptimizationParameters" tag="300BxxD6" vm="1" vr="UT">Dose Calculation and Optimization Parameters</el>
+  <el keyword="AppliedRenormalizationFactor" tag="300BxxD7" vm="1" vr="DS">Applied Renormalization Factor</el>
+  <el keyword="DoseConstraintStatus" tag="300BxxD8" vm="1" vr="CS">Dose Constraint Status</el>
+  <el keyword="OrganAtRiskMinimumDoseConstraint" tag="300BxxD9" vm="1" vr="DS">Organ At Risk Minimum Dose Constraint</el>
+  <el keyword="OrganAtRiskMinimumDoseConstraintWeight" tag="300BxxDA" vm="1" vr="DS">Organ At Risk Minimum Dose Constraint Weight</el>
+  <el keyword="BaseDataGroupSequence" tag="300BxxE0" vm="1" vr="SQ">Base Data Group Sequence</el>
+  <el keyword="PhysicsBaseDataGroupID" tag="300BxxE1" vm="1" vr="CS">Physics Base Data Group ID</el>
+  <el keyword="BiologicalBaseDataGroupID" tag="300BxxE2" vm="1" vr="CS">Biological Base Data Group ID</el>
+  <el keyword="ImagingBaseDataGroupID" tag="300BxxE3" vm="1" vr="CS">Imaging Base Data Group ID</el>
+  <el keyword="DosimetricBaseDataGroupID" tag="300BxxE4" vm="1" vr="CS">Dosimetric Base Data Group ID</el>
+  <el keyword="ConfigurationBaseline" tag="300BxxE5" vm="1" vr="OB">Configuration Baseline</el>
+  <el keyword="ConfigurationObjects" tag="300BxxE6" vm="1" vr="OB">Configuration Objects</el>
+  <el keyword="ConfidenceMeasureUnits" tag="300BxxE7" vm="1" vr="CS">Confidence Measure Units</el>
+  <el keyword="ConfidenceMeasureValue" tag="300BxxE8" vm="1" vr="DS">Confidence Measure Value</el>
+  <el keyword="ImagerOrganProgramName" tag="300BxxE9" vm="1" vr="LO">Imager Organ Program Name</el>
+  <el keyword="BodyRegion" tag="300BxxEB" vm="1" vr="CS">Body Region</el>
+  <el keyword="PrefinalizedStatus" tag="300BxxEC" vm="1" vr="CS">Prefinalized Status</el>
+  <el keyword="DosimetricChecksumEncryptionCode" tag="300BxxED" vm="1" vr="OB">Dosimetric Checksum Encryption Code</el>
+  <el keyword="ReferencedReportSequence" tag="300BxxEE" vm="1" vr="SQ">Referenced Report Sequence</el>
+  <el keyword="MaintainChecksumCompatibility" tag="300BxxEF" vm="1" vr="CS">Maintain Checksum Compatibility</el>
+  <el keyword="DoseStatisticalUncertainty" tag="300BxxF0" vm="1" vr="DS">Dose Statistical Uncertainty</el>
+  <el keyword="InterpretedRadiationType" tag="300BxxF1" vm="1" vr="CS">Interpreted Radiation Type</el>
+</elements>

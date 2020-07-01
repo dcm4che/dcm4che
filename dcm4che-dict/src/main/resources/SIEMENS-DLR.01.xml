@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="MeasurementMode" tag="0019xx10" vm="1" vr="LO">Measurement Mode</el>
+  <el keyword="ImageType" tag="0019xx11" vm="1" vr="LO">Image Type</el>
+  <el keyword="SoftwareVersion" tag="0019xx15" vm="1" vr="LO">Software Version</el>
+  <el keyword="MPMCode" tag="0019xx20" vm="1" vr="LO">MPM Code</el>
+  <el keyword="Latitude" tag="0019xx21" vm="1" vr="LO">Latitude</el>
+  <el keyword="Sensitivity" tag="0019xx22" vm="1" vr="LO">Sensitivity</el>
+  <el keyword="EDR" tag="0019xx23" vm="1" vr="LO">EDR</el>
+  <el keyword="LFix" tag="0019xx24" vm="1" vr="LO">L Fix</el>
+  <el keyword="SFix" tag="0019xx25" vm="1" vr="LO">S Fix</el>
+  <el keyword="PresetMode" tag="0019xx26" vm="1" vr="LO">Preset Mode</el>
+  <el keyword="Region" tag="0019xx27" vm="1" vr="LO">Region</el>
+  <el keyword="Subregion" tag="0019xx28" vm="1" vr="LO">Subregion</el>
+  <el keyword="Orientation" tag="0019xx30" vm="1" vr="LO">Orientation</el>
+  <el keyword="MarkOnFilm" tag="0019xx31" vm="1" vr="LO">Mark On Film</el>
+  <el keyword="RotationOnDRC" tag="0019xx32" vm="1" vr="LO">Rotation On DRC</el>
+  <el keyword="ReaderType" tag="0019xx40" vm="1" vr="LO">Reader Type</el>
+  <el keyword="SubModality" tag="0019xx41" vm="1" vr="LO">Sub Modality</el>
+  <el keyword="ReaderSerialNumber" tag="0019xx42" vm="1" vr="LO">Reader Serial Number</el>
+  <el keyword="CassetteScale" tag="0019xx50" vm="1" vr="LO">Cassette Scale</el>
+  <el keyword="CassetteMatrix" tag="0019xx51" vm="1" vr="LO">Cassette Matrix</el>
+  <el keyword="CassetteSubmatrix" tag="0019xx52" vm="1" vr="LO">Cassette Submatrix</el>
+  <el keyword="Barcode" tag="0019xx53" vm="1" vr="LO">Barcode</el>
+  <el keyword="ContrastType" tag="0019xx60" vm="1" vr="LO">GT - Contrast Type</el>
+  <el keyword="RotationAmount" tag="0019xx61" vm="1" vr="LO">GA - Rotation Amount</el>
+  <el keyword="RotationCenter" tag="0019xx62" vm="1" vr="LO">GC - Rotation Center</el>
+  <el keyword="DensityShift" tag="0019xx63" vm="1" vr="LO">GS - Density Shift</el>
+  <el keyword="FrequencyRank" tag="0019xx64" vm="1" vr="US">RN - Frequency Rank</el>
+  <el keyword="FrequencyEnhancement" tag="0019xx65" vm="1" vr="LO">RE - Frequency Enhancement</el>
+  <el keyword="FrequencyType" tag="0019xx66" vm="1" vr="LO">RT - Frequency Type</el>
+  <el keyword="KernelLength" tag="0019xx67" vm="1" vr="LO">Kernel Length</el>
+  <el keyword="KernelMode" tag="0019xx68" vm="1" vr="UL">Kernel Mode</el>
+  <el keyword="ConvolutionMode" tag="0019xx69" vm="1" vr="UL">Convolution Mode</el>
+  <el keyword="PLASource" tag="0019xx70" vm="1" vr="LO">PLA Source</el>
+  <el keyword="PLADestination" tag="0019xx71" vm="1" vr="LO">PLA Destination</el>
+  <el keyword="UIDOriginalImage" tag="0019xx75" vm="1" vr="LO">UID Original Image</el>
+  <el keyword="_0019_xx76_" tag="0019xx76" vm="1" vr="LO">?</el>
+  <el keyword="ReaderHeader" tag="0019xx80" vm="1" vr="LT">Reader Header</el>
+  <el keyword="PLAOfSecondaryDestination" tag="0019xx90" vm="1" vr="LO">PLA of Secondary Destination</el>
+  <el keyword="_0019_xxA0_" tag="0019xxA0" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxA1_" tag="0019xxA1" vm="1" vr="DS">?</el>
+  <el keyword="NumberOfHardcopies" tag="0041xx10" vm="1" vr="US">Number of Hardcopies</el>
+  <el keyword="FilmFormat" tag="0041xx20" vm="1" vr="LO">Film Format</el>
+  <el keyword="FilmSize" tag="0041xx30" vm="1" vr="LO">Film Size</el>
+  <el keyword="FullFilmFormat" tag="0041xx31" vm="1" vr="LO">Full Film Format</el>
+</elements>

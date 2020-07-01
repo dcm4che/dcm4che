@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="ViewNative" tag="0025xx00" vm="1" vr="US">View Native</el>
+  <el keyword="OriginalSeriesNumber" tag="0025xx01" vm="1" vr="US">Original Series Number</el>
+  <el keyword="OriginalImageNumber" tag="0025xx02" vm="1" vr="US">Original Image Number</el>
+  <el keyword="WinCenter" tag="0025xx03" vm="1" vr="US">Win Center</el>
+  <el keyword="WinWidth" tag="0025xx04" vm="1" vr="US">Win Width</el>
+  <el keyword="WinBrightness" tag="0025xx05" vm="1" vr="US">Win Brightness</el>
+  <el keyword="WinContrast" tag="0025xx06" vm="1" vr="US">Win Contrast</el>
+  <el keyword="OriginalFrameNumber" tag="0025xx07" vm="1" vr="US">Original Frame Number</el>
+  <el keyword="OriginalMaskFrameNumber" tag="0025xx08" vm="1" vr="US">Original Mask Frame Number</el>
+  <el keyword="Opac" tag="0025xx09" vm="1" vr="US">Opac</el>
+  <el keyword="OriginalNumberofFrames" tag="0025xx0A" vm="1" vr="US">Original Number of Frames</el>
+  <el keyword="OriginalSceneDuration" tag="0025xx0B" vm="1" vr="DS">Original Scene Duration</el>
+  <el keyword="IdentifierLOID" tag="0025xx0C" vm="1" vr="LO">Identifier LOID</el>
+  <el keyword="OriginalSceneVFRInfo" tag="0025xx0D" vm="1-n" vr="SS">Original Scene VFR Info</el>
+  <el keyword="OriginalFrameECGPosition" tag="0025xx0E" vm="1" vr="SS">Original Frame ECG Position</el>
+  <el keyword="OriginalECG1stFrameOffset" tag="0025xx0F" vm="1" vr="SS">Original ECG 1st Frame Offset</el>
+  <el keyword="ZoomFlag" tag="0025xx10" vm="1" vr="SS">Zoom Flag</el>
+  <el keyword="FlexiblePixelShift" tag="0025xx11" vm="1" vr="US">Flexible Pixel Shift</el>
+  <el keyword="NumberOfMaskFrames" tag="0025xx12" vm="1" vr="US">Number of Mask Frames</el>
+  <el keyword="NumberOfFillFrames" tag="0025xx13" vm="1" vr="US">Number of Fill Frames</el>
+  <el keyword="SeriesNumber" tag="0025xx14" vm="1" vr="IS">Series Number</el>
+  <el keyword="ImageNumber" tag="0025xx15" vm="1" vr="IS">Image Number</el>
+  <el keyword="ReadyProcessingStatus" tag="0025xx16" vm="1" vr="IS">Ready Processing Status</el>
+</elements>

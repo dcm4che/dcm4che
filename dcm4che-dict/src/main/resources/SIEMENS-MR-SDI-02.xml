@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="NumberOfImagesInMosaic" tag="0021xx01" vm="1" vr="US">Number of Images in Mosaic</el>
+  <el keyword="SliceNormalVector" tag="0021xx02" vm="3" vr="FD">Slice Normal Vector</el>
+  <el keyword="SliceMeasurementDuration" tag="0021xx03" vm="1" vr="DS">Slice Measurement Duration</el>
+  <el keyword="TimeAfterStart" tag="0021xx04" vm="1" vr="DS">Time After Start</el>
+  <el keyword="BValue" tag="0021xx05" vm="1" vr="IS">B Value</el>
+  <el keyword="ICEDims" tag="0021xx06" vm="1" vr="LO">ICE Dims</el>
+  <el keyword="RFSWDDataType" tag="0021xx1A" vm="1" vr="SH">RF SWD Data Type</el>
+  <el keyword="MoCoQMeasure" tag="0021xx1B" vm="1" vr="US">MoCoQ Measure</el>
+  <el keyword="PhaseEncodingDirectionPositive" tag="0021xx1C" vm="1" vr="IS">Phase Encoding Direction Positive</el>
+  <el keyword="PixelFile" tag="0021xx1D" vm="1" vr="OB">Pixel File</el>
+  <el keyword="FMRIStimulInfo" tag="0021xx1F" vm="1" vr="IS">FMRI Stimul Info</el>
+  <el keyword="VoxelInPlaneRot" tag="0021xx20" vm="1" vr="DS">Voxel in Plane Rot</el>
+  <el keyword="DiffusionDirectionality4MF" tag="0021xx21" vm="1" vr="CS">Diffusion Directionality 4MF</el>
+  <el keyword="VoxelThickness" tag="0021xx22" vm="1" vr="DS">Voxel Thickness</el>
+  <el keyword="BMatrix" tag="0021xx23" vm="6" vr="FD">B Matrix</el>
+  <el keyword="MultistepIndex" tag="0021xx24" vm="1" vr="IS">Multistep Index</el>
+  <el keyword="CompAdjustedParam" tag="0021xx25" vm="1" vr="LT">Comp Adjusted Param</el>
+  <el keyword="CompAlgorithm" tag="0021xx26" vm="1" vr="IS">Comp Algorithm</el>
+  <el keyword="VoxelNormalCor" tag="0021xx27" vm="1" vr="DS">Voxel NormalC or</el>
+  <el keyword="FlowEncodingDirectionString" tag="0021xx29" vm="1" vr="SH">Flow Encoding Direction String</el>
+  <el keyword="VoxelNormalSag" tag="0021xx2A" vm="1" vr="DS">Voxel Normal Sag</el>
+  <el keyword="VoxelPositionSag" tag="0021xx2B" vm="1" vr="DS">Voxel Position Sag</el>
+  <el keyword="VoxelNormalTra" tag="0021xx2C" vm="1" vr="DS">Voxel Normal Tra</el>
+  <el keyword="VoxelPositionTra" tag="0021xx2D" vm="1" vr="DS">Voxel Position Tra</el>
+  <el keyword="UsedChannelMask" tag="0021xx2E" vm="1" vr="UL">Used Channel Mask</el>
+  <el keyword="RepetitionTimeEffective" tag="0021xx2F" vm="1" vr="DS">Repetition Time Effective</el>
+  <el keyword="CSIImageOrientationPatient" tag="0021xx30" vm="6" vr="DS">CSI Image Orientation Patient</el>
+  <el keyword="CSISliceLocation" tag="0021xx32" vm="1" vr="DS">CSI Slice Location</el>
+  <el keyword="EchoColumnPosition" tag="0021xx33" vm="1" vr="IS">Echo Column Position</el>
+  <el keyword="FlowVENC" tag="0021xx34" vm="1" vr="FD">Flow VENC</el>
+  <el keyword="MeasuredFourierLines" tag="0021xx35" vm="1" vr="IS">Measured Fourier Lines</el>
+  <el keyword="LQAlgorithm" tag="0021xx36" vm="1" vr="SH">LQ Algorithm</el>
+  <el keyword="VoxelPositionCor" tag="0021xx37" vm="1" vr="DS">Voxel Position Cor</el>
+  <el keyword="Filter2" tag="0021xx38" vm="1" vr="IS">Filter2</el>
+  <el keyword="FMRIStimulLevel" tag="0021xx39" vm="1" vr="FD">FMRI Stimul Level</el>
+  <el keyword="VoxelReadoutFOV" tag="0021xx3A" vm="1" vr="DS">Voxel Readout FOV</el>
+  <el keyword="NormalizeManipulated" tag="0021xx3B" vm="1" vr="IS">Normalize Manipulated</el>
+  <el keyword="RBMoCoRot" tag="0021xx3C" vm="3" vr="FD">RBMoCoRot</el>
+  <el keyword="CompManualAdjusted" tag="0021xx3D" vm="1" vr="IS">Comp Manual Adjusted</el>
+  <el keyword="SpectrumTextRegionLabel" tag="0021xx3F" vm="1" vr="SH">Spectrum Text Region Label</el>
+  <el keyword="VoxelPhaseFOV" tag="0021xx40" vm="1" vr="DS">Voxel Phase FOV</el>
+  <el keyword="GSWDDataType" tag="0021xx41" vm="1" vr="SH">GSWD Data Type</el>
+  <el keyword="RealDwellTime" tag="0021xx42" vm="1" vr="IS">Real Dwell Time</el>
+  <el keyword="CompJobID" tag="0021xx43" vm="1" vr="LT">Comp Job ID</el>
+  <el keyword="CompBlended" tag="0021xx44" vm="1" vr="IS">Comp Blended</el>
+  <el keyword="ImaAbsTablePosition" tag="0021xx45" vm="3" vr="SL">Ima Abs Table Position</el>
+  <el keyword="DiffusionGradientDirection" tag="0021xx46" vm="3" vr="FD">Diffusion Gradient Direction</el>
+  <el keyword="FlowEncodingDirection" tag="0021xx47" vm="1" vr="IS">Flow Encoding Direction</el>
+  <el keyword="EchoPartitionPosition" tag="0021xx48" vm="1" vr="IS">Echo Partition Position</el>
+  <el keyword="EchoLinePosition" tag="0021xx49" vm="1" vr="IS">Echo Line Position</el>
+  <el keyword="CompAutoParam" tag="0021xx4B" vm="1" vr="LT">Comp Auto Param</el>
+  <el keyword="OriginalImageNumber" tag="0021xx4C" vm="1" vr="IS">Original Image Number</el>
+  <el keyword="OriginalSeriesNumber" tag="0021xx4D" vm="1" vr="IS">Original Series Number</el>
+  <el keyword="Actual3DImaPartNumber" tag="0021xx4E" vm="1" vr="IS">Actual 3D Ima Part Number</el>
+  <el keyword="ImaCoilString" tag="0021xx4F" vm="1" vr="LO">Ima Coil String</el>
+  <el keyword="CSIPixelSpacing" tag="0021xx50" vm="2" vr="DS">CSI Pixel Spacing</el>
+  <el keyword="SequenceMask" tag="0021xx51" vm="1" vr="UL">Sequence Mask</el>
+  <el keyword="ImageGroup" tag="0021xx52" vm="1" vr="US">Image Group</el>
+  <el keyword="BandwidthPerPixelPhaseEncode" tag="0021xx53" vm="1" vr="FD">Bandwidth Per Pixel Phase Encode</el>
+  <el keyword="NonPlanarImage" tag="0021xx54" vm="1" vr="US">Non Planar Image</el>
+  <el keyword="PixelFileName" tag="0021xx55" vm="1" vr="OB">Pixel File Name</el>
+  <el keyword="ImaPATModeText" tag="0021xx56" vm="1" vr="LO">Ima PAT Mode Text</el>
+  <el keyword="CSIImagePositionPatient" tag="0021xx57" vm="3" vr="DS">CSI Image Position Patient</el>
+  <el keyword="AcquisitionMatrixText" tag="0021xx58" vm="1" vr="SH">Acquisition Matrix Text</el>
+  <el keyword="ImaRelTablePosition" tag="0021xx59" vm="3" vr="IS">Ima Rel Table Position</el>
+  <el keyword="RBMoCoTrans" tag="0021xx5A" vm="3" vr="FD">RBMoCoTrans</el>
+  <el keyword="SlicePositionPCS" tag="0021xx5B" vm="3" vr="FD">Slice Position PCS</el>
+  <el keyword="CSISliceThickness" tag="0021xx5C" vm="1" vr="DS">CSI Slice Thickness</el>
+  <el keyword="ProtocolSliceNumber" tag="0021xx5E" vm="1" vr="IS">Protocol Slice Number</el>
+  <el keyword="Filter1" tag="0021xx5F" vm="1" vr="IS">Filter1</el>
+  <el keyword="TransmittingCoil" tag="0021xx60" vm="1" vr="SH">Transmitting Coil</el>
+  <el keyword="NumberOfAveragesN4" tag="0021xx61" vm="1" vr="DS">Number of Averages N4</el>
+  <el keyword="MosaicRefAcqTimes" tag="0021xx62" vm="1-n" vr="FD">Mosaic Ref Acq Times</el>
+  <el keyword="AutoInlineImageFilterEnabled" tag="0021xx63" vm="1" vr="IS">Auto Inline Image Filter Enabled</el>
+  <el keyword="QCData" tag="0021xx65" vm="1-n" vr="FD">QC Data</el>
+  <el keyword="ExamLandmarks" tag="0021xx66" vm="1" vr="LT">Exam Landmarks</el>
+  <el keyword="ExamDataRole" tag="0021xx67" vm="1" vr="ST">Exam Data Role</el>
+  <el keyword="MRDiffusion" tag="0021xx68" vm="1" vr="OB">MR Diffusion</el>
+  <el keyword="RealWorldValueMapping" tag="0021xx69" vm="1" vr="OB">Real World Value Mapping</el>
+  <el keyword="DataSetInfo" tag="0021xx70" vm="1" vr="OB">Data Set Info</el>
+  <el keyword="UsedChannelString" tag="0021xx71" vm="1" vr="UT">Used Channel String</el>
+  <el keyword="PhaseContrastN4" tag="0021xx72" vm="1" vr="CS">Phase ContrastN4</el>
+  <el keyword="MRVelocityEncoding" tag="0021xx73" vm="1" vr="UT">MR Velocity Encoding</el>
+  <el keyword="VelocityEncodingDirectionN4" tag="0021xx74" vm="3" vr="FD">Velocity Encoding Direction N4</el>
+  <el keyword="ImageType4MF" tag="0021xx75" vm="1-n" vr="CS">Image Type 4MF</el>
+  <el keyword="ImageHistory" tag="0021xx76" vm="1-n" vr="LO">Image History</el>
+  <el keyword="SequenceInfo" tag="0021xx77" vm="1" vr="LO">SequenceI nfo</el>
+  <el keyword="ImageTypeVisible" tag="0021xx78" vm="1-n" vr="CS">Image Type Visible</el>
+  <el keyword="DistortionCorrectionType" tag="0021xx79" vm="1" vr="CS">Distortion Correction Type</el>
+  <el keyword="ImageFilterType" tag="0021xx80" vm="1" vr="CS">Image Filter Type</el>
+  <el keyword="SiemensMRSDISequence" tag="0021xxFE" vm="1" vr="SQ">Siemens MR SDI Sequence</el>
+</elements>

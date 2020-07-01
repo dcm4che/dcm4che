@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_0009_xx80_" tag="0009xx80" vm="1" vr="ST">?</el>
+  <el keyword="_0011_xx10_" tag="0011xx10" vm="1" vr="ST">?</el>
+  <el keyword="_0017_xx00_" tag="0017xx00" vm="1" vr="ST">?</el>
+  <el keyword="_0017_xx20_" tag="0017xx20" vm="1" vr="ST">?</el>
+  <el keyword="_0017_xx70_" tag="0017xx70" vm="1" vr="ST">?</el>
+  <el keyword="_0017_xx80_" tag="0017xx80" vm="1" vr="ST">?</el>
+  <el keyword="_0019_xx08_" tag="0019xx08" vm="1" vr="SS">?</el>
+  <el keyword="SiemensICONDataType" tag="0019xx0F" vm="1-n" vr="SL">Siemens ICON Data Type</el>
+  <el keyword="_0019_xx16_" tag="0019xx16" vm="1" vr="SS">?</el>
+  <el keyword="NumberOfRepeatsPerPhase" tag="0019xxA5" vm="1-n" vr="SS">Number of Repeats per Phase</el>
+  <el keyword="CyclesPerRepeat" tag="0019xxA6" vm="1-n" vr="SS">Cycles per Repeat</el>
+  <el keyword="RepeatStartTime" tag="0019xxA7" vm="1-n" vr="SL">Repeat Start Time</el>
+  <el keyword="RepeatStopTime" tag="0019xxA8" vm="1-n" vr="SL">Repeat Stop Time</el>
+  <el keyword="EffectiveRepeatTime" tag="0019xxA9" vm="1-n" vr="SL">Effective Repeat Time</el>
+  <el keyword="AcquiredCyclesPerRepeat" tag="0019xxAA" vm="1-n" vr="SS">Acquired Cycles per Repeat</el>
+  <el keyword="_0019_xx93_" tag="0019xx93" vm="2" vr="SL">?</el>
+  <el keyword="_0019_xxA1_" tag="0019xxA1" vm="1" vr="SS">?</el>
+  <el keyword="_0019_xxA3_" tag="0019xxA3" vm="2" vr="SL">?</el>
+  <el keyword="_0019_xxC3_" tag="0019xxC3" vm="1" vr="ST">?</el>
+  <el keyword="ECATMainHeader" tag="0021xx00" vm="1" vr="OB">ECAT_Main_Header</el>
+  <el keyword="ECATImageSubheader" tag="0021xx01" vm="1" vr="OB">ECAT_Image_Subheader</el>
+  <el keyword="_0021_xx10_" tag="0021xx10" vm="1" vr="ST">?</el>
+  <el keyword="DICOMReaderFlag" tag="0023xx01" vm="1" vr="US">DICOM Reader flag</el>
+  <el keyword="ModalityImageHeaderType" tag="0029xx08" vm="1" vr="CS">Modality Image Header Type</el>
+  <el keyword="ModalityImageHeaderVersion" tag="0029xx09" vm="1" vr="LO">Modality Image Header Version</el>
+  <el keyword="ModalityImageHeaderInfo" tag="0029xx10" vm="1" vr="OB">Modality Image Header Info</el>
+  <el keyword="_0031_xx01_" tag="0031xx01" vm="1" vr="ST">?</el>
+  <el keyword="_0031_xx0C_" tag="0031xx0C" vm="1" vr="SS">?</el>
+  <el keyword="_0031_xx0F_" tag="0031xx0F" vm="1" vr="SL">?</el>
+  <el keyword="_0031_xx10_" tag="0031xx10" vm="1" vr="SL">?</el>
+  <el keyword="_0031_xx12_" tag="0031xx12" vm="1" vr="SS">?</el>
+  <el keyword="_0031_xx13_" tag="0031xx13" vm="1" vr="ST">?</el>
+  <el keyword="_0031_xx14_" tag="0031xx14" vm="1" vr="ST">?</el>
+  <el keyword="_0031_xx15_" tag="0031xx15" vm="1-n" vr="SL">?</el>
+  <el keyword="_0031_xx16_" tag="0031xx16" vm="1-n" vr="SL">?</el>
+  <el keyword="_0031_xx17_" tag="0031xx17" vm="1-n" vr="SS">?</el>
+  <el keyword="_0031_xx20_" tag="0031xx20" vm="1" vr="ST">?</el>
+  <el keyword="_0031_xx21_" tag="0031xx21" vm="1" vr="SS">?</el>
+  <el keyword="FloodCorrectionMatrixDetector1" tag="0033xx00" vm="1-n" vr="FL">Flood Correction Matrix Detector 1</el>
+  <el keyword="FloodCorrectionMatrixDetector2" tag="0033xx01" vm="1-n" vr="FL">Flood Correction Matrix Detector 2</el>
+  <el keyword="CORDataForDetector1" tag="0033xx10" vm="1-n" vr="FL">COR Data for Detector 1</el>
+  <el keyword="CORDataForDetector2" tag="0033xx11" vm="1-n" vr="FL">COR Data for Detector 2</el>
+  <el keyword="MHRDataForDetector1" tag="0033xx14" vm="1" vr="FL">MHR ( Y-Shif</el>
+  <el keyword="MHRDataForDetector2" tag="0033xx15" vm="1" vr="FL">MHR ( Y-Shif</el>
+  <el keyword="NCODataForDetector1" tag="0033xx18" vm="1-n" vr="FL">NCO Data for detector 1</el>
+  <el keyword="NCODataForDetector2" tag="0033xx19" vm="1-n" vr="FL">NCO Data for detector 2</el>
+  <el keyword="_0033_xx1A_" tag="0033xx1A" vm="1-n" vr="FL">?</el>
+  <el keyword="BedCorrectionAngle" tag="0033xx20" vm="1" vr="FL">Bed correction angle</el>
+  <el keyword="GantryCorrectionAngle" tag="0033xx21" vm="1" vr="FL">Gantry correction angle</el>
+  <el keyword="BedUDCorrectionData" tag="0033xx22" vm="1-n" vr="SS">Bed U/D correction data</el>
+  <el keyword="GantryLRCorrectionData" tag="0033xx23" vm="1-n" vr="SS">Gantry L/R Correction Data</el>
+  <el keyword="BackProjectionCorrectionAngleHead1" tag="0033xx24" vm="1" vr="FL">BackProjection Correction angle head 1</el>
+  <el keyword="BackProjectionCorrectionAngleHead2" tag="0033xx25" vm="1" vr="FL">BackProjection Correction angle head 2</el>
+  <el keyword="MHRCalibrations" tag="0033xx28" vm="1" vr="SL">MHR calibrations</el>
+  <el keyword="CrystalThickness" tag="0033xx29" vm="1-n" vr="FL">Crystal thickness</el>
+  <el keyword="PresetNameUsedForAcquisition" tag="0033xx30" vm="1" vr="LO">Preset name used for acquisition</el>
+  <el keyword="CameraConfigAngle" tag="0033xx31" vm="1" vr="FL">Camera Config Angle</el>
+  <el keyword="CrystalType" tag="0033xx32" vm="1" vr="LO">Crystal Type</el>
+  <el keyword="CoinGantryStep" tag="0033xx33" vm="1" vr="SL">Coin Gantry Step</el>
+  <el keyword="WholebodyBedStep" tag="0033xx34" vm="1" vr="FL">Wholebody bed step</el>
+  <el keyword="WeightFactorTableForCoincidenceAcquisitions" tag="0033xx35" vm="1" vr="FL">Weight Factor Table For Coincidence Acquisitions</el>
+  <el keyword="CoincidenceWeightFactorTable" tag="0033xx36" vm="1" vr="FL">Coincidence weight factor table</el>
+  <el keyword="StarburstFlagsAtImageAcqTime" tag="0033xx37" vm="1" vr="SL">Starburst flags at image acq time</el>
+  <el keyword="PixelScaleFactor" tag="0033xx38" vm="1" vr="FL">Pixel Scale factor</el>
+  <el keyword="SpecializedTomoType" tag="0035xx00" vm="1" vr="LO">Specialized Tomo Type</el>
+  <el keyword="EnergyWindowType" tag="0035xx01" vm="1" vr="LO">Energy Window Type</el>
+  <el keyword="StartandEndRowIlluminatedByWindPosition" tag="0035xx02" vm="1" vr="SS">Start and End Row Illuminated By Wind Position</el>
+  <el keyword="BlankScanImageForProfile" tag="0035xx03" vm="1" vr="LO">Blank Scan Image For Profile</el>
+  <el keyword="RepeatNumberOfTheOriginalDynamicSPECT" tag="0035xx04" vm="1" vr="SS">Repeat Number of the Original Dynamic SPECT</el>
+  <el keyword="PhaseNumberOfTheOriginalDynamicSPECT" tag="0035xx05" vm="1" vr="SS">Phase Number of the Original Dynamic SPECT</el>
+  <el keyword="SiemensProfile2ImageSubtype" tag="0035xx06" vm="1" vr="LO">Siemens Profile 2 Image Subtype</el>
+  <el keyword="ToshibaCBFActivityResults" tag="0039xx00" vm="1" vr="LT">Toshiba CBF Activity Results</el>
+  <el keyword="RelatedCTSeriesInstanceUID" tag="0039xx01" vm="1" vr="LT">Related CT Series Instance UID</el>
+  <el keyword="WholeBodyTomoPositionIndex" tag="0041xx01" vm="1" vr="SL">Whole Body Tomo Position Index</el>
+  <el keyword="WholeBodyTomoNumberOfPositions" tag="0041xx02" vm="1" vr="SL">Whole Body Tomo Number of Positions</el>
+  <el keyword="HorizontalTablePositionOfCTScan" tag="0041xx03" vm="1" vr="FL">Horizontal Table Position of CT scan</el>
+  <el keyword="EffectiveEnergyOfCTScan" tag="0041xx04" vm="1" vr="FL">Effective Energy fo CT Scan</el>
+  <el keyword="LongLinearDriveInformationForDetector1" tag="0041xx05" vm="1-n" vr="FD">Long Linear Drive Information for Detector 1</el>
+  <el keyword="LongLinearDriveInformationForDetector2" tag="0041xx06" vm="1-n" vr="FD">Long Linear Drive Information for Detector 2</el>
+  <el keyword="TrunnionInformationForDetector1" tag="0041xx07" vm="1-n" vr="FD">Trunnion Information for Detector 1</el>
+  <el keyword="TrunnionInformationForDetector2" tag="0041xx08" vm="1-n" vr="FD">Trunnion Information for Detector 2</el>
+  <el keyword="BroadBeamFactor" tag="0041xx09" vm="1" vr="FL">Broad Beam Factor</el>
+  <el keyword="OriginalWholebodyPosition" tag="0041xx0A" vm="1" vr="FD">Original Wholebody Position</el>
+  <el keyword="WholebodyScanRange" tag="0041xx0B" vm="1" vr="FD">Wholebody Scan Range</el>
+  <el keyword="EffectiveEmissionEnergy" tag="0041xx10" vm="1-3" vr="FL">Effective Emission Energy</el>
+  <el keyword="GatedFrameDuration" tag="0041xx11" vm="1-n" vr="FL">Gated Frame Duration</el>
+  <el keyword="_0041_xx30_" tag="0041xx30" vm="1" vr="ST">?</el>
+  <el keyword="_0041_xx32_" tag="0041xx32" vm="1" vr="ST">?</el>
+  <el keyword="DetectorViewAngle" tag="0043xx01" vm="1-n" vr="FL">Detector View Angle</el>
+  <el keyword="TransformationMatrix" tag="0043xx02" vm="1-16" vr="FD">Transformation Matrix</el>
+  <el keyword="ViewDependentYShiftMHRForDetector1" tag="0043xx03" vm="1-n" vr="FL">View Dependent Y Shift MHR For Detector 1</el>
+  <el keyword="ViewDependentYShiftMHRForDetector2" tag="0043xx04" vm="1-n" vr="FL">View Dependent Y Shift MHR For Detector 2</el>
+  <el keyword="PlanarProcessingString" tag="0045xx01" vm="1-n" vr="LO">Planar Processing String</el>
+  <el keyword="PromptWindowWidth" tag="0055xx04" vm="1" vr="SS">Prompt Window Width</el>
+  <el keyword="RandomWindowWidth" tag="0055xx05" vm="1" vr="SS">Random Window Width</el>
+  <el keyword="_0055_xx20_" tag="0055xx20" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx22_" tag="0055xx22" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx24_" tag="0055xx24" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx30_" tag="0055xx30" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx32_" tag="0055xx32" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx34_" tag="0055xx34" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx40_" tag="0055xx40" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx42_" tag="0055xx42" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx44_" tag="0055xx44" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx4C_" tag="0055xx4C" vm="1" vr="SL">?</el>
+  <el keyword="_0055_xx4D_" tag="0055xx4D" vm="1" vr="SL">?</el>
+  <el keyword="_0055_xx51_" tag="0055xx51" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx52_" tag="0055xx52" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xx53_" tag="0055xx53" vm="1" vr="ST">?</el>
+  <el keyword="_0055_xx55_" tag="0055xx55" vm="1" vr="SL">?</el>
+  <el keyword="_0055_xx5C_" tag="0055xx5C" vm="1" vr="ST">?</el>
+  <el keyword="_0055_xx6D_" tag="0055xx6D" vm="1" vr="SS">?</el>
+  <el keyword="CollimatorThickness" tag="0055xx7E" vm="2" vr="FL">Collimator Thickness mm</el>
+  <el keyword="CollimatorAngularResolution" tag="0055xx7F" vm="2" vr="FL">Collimator Angular Resolution radians</el>
+  <el keyword="_0055_xxA8_" tag="0055xxA8" vm="1" vr="SS">?</el>
+  <el keyword="UsefulFieldOfView" tag="0055xxC0" vm="1-n" vr="SS">Useful Field of View</el>
+  <el keyword="_0055_xxC2_" tag="0055xxC2" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xxC3_" tag="0055xxC3" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xxC4_" tag="0055xxC4" vm="1" vr="SS">?</el>
+  <el keyword="_0055_xxD0_" tag="0055xxD0" vm="1" vr="SS">?</el>
+  <el keyword="SyngoMIDICOMOriginalImageType" tag="0057xx01" vm="1" vr="LO">Syngo MI DICOM Original Image Type</el>
+  <el keyword="DoseCalibrationFactor" tag="0057xx02" vm="1" vr="FL">Dose Calibration Factor</el>
+  <el keyword="Units" tag="0057xx03" vm="1" vr="LO">Units</el>
+  <el keyword="DecayCorrection" tag="0057xx04" vm="1" vr="LO">Decay Correction</el>
+  <el keyword="RadionuclideHalfLife" tag="0057xx05" vm="1-n" vr="SL">Radionuclide Half Life</el>
+  <el keyword="RescaleIntercept" tag="0057xx06" vm="1" vr="FL">Rescale Intercept</el>
+  <el keyword="RescaleSlope" tag="0057xx07" vm="1" vr="FL">Rescale Slope</el>
+  <el keyword="FrameReferenceTime" tag="0057xx08" vm="1" vr="FL">Frame Reference Time</el>
+  <el keyword="NumberofRadiopharmaceuticalInformationSequence" tag="0057xx09" vm="1" vr="SL">Number of Radiopharmaceutical Information Sequence</el>
+  <el keyword="DecayFactor" tag="0057xx0A" vm="1" vr="FL">Decay Factor</el>
+  <el keyword="CountsSource" tag="0057xx0B" vm="1" vr="LO">Counts Source</el>
+  <el keyword="RadionuclidePositronFraction" tag="0057xx0C" vm="1-n" vr="SL">Radionuclide Positron Fraction</el>
+  <el keyword="TriggerTimeOfCTSlice" tag="0057xx0E" vm="1-n" vr="US">Trigger Time of CT Slice</el>
+  <el keyword="XPrincipalRayOffset" tag="0061xx01" vm="1-n" vr="FL">X Principal Ray Offset</el>
+  <el keyword="YPrincipalRayOffset" tag="0061xx05" vm="1-n" vr="FL">Y Principal Ray Offset</el>
+  <el keyword="XPrincipalRayAngle" tag="0061xx09" vm="1-n" vr="FL">X Principal Ray Angle</el>
+  <el keyword="YPrincipalRayAngle" tag="0061xx0A" vm="1-n" vr="FL">Y Principal Ray Angle</el>
+  <el keyword="XShortFocalLength" tag="0061xx0B" vm="1-n" vr="FL">X Short Focal Length</el>
+  <el keyword="YShortFocalLength" tag="0061xx0C" vm="1-n" vr="FL">Y Short Focal Length</el>
+  <el keyword="XLongFocalLength" tag="0061xx0D" vm="1-n" vr="FL">X Long Focal Length</el>
+  <el keyword="YLongFocalLength" tag="0061xx0E" vm="1-n" vr="FL">Y Long Focal Length</el>
+  <el keyword="XFocalScaling" tag="0061xx0F" vm="1-n" vr="FL">X Focal Scaling</el>
+  <el keyword="YFocalScaling" tag="0061xx10" vm="1-n" vr="FL">Y Focal Scaling</el>
+  <el keyword="XMotionCorrectionShift" tag="0061xx11" vm="1-n" vr="FL">X Motion Correction Shift</el>
+  <el keyword="YMotionCorrectionShift" tag="0061xx15" vm="1-n" vr="FL">Y Motion Correction Shift</el>
+  <el keyword="XHeartCenter" tag="0061xx19" vm="1" vr="FL">X Heart Center</el>
+  <el keyword="YHeartCenter" tag="0061xx1A" vm="1" vr="FL">Y Heart Center</el>
+  <el keyword="ZHeartCenter" tag="0061xx1B" vm="1" vr="FL">Z Heart Center</el>
+  <el keyword="ImagePixelContentType" tag="0061xx1C" vm="1" vr="LO">Image Pixel Content Type</el>
+  <el keyword="AutoSaveCorrectedSeries" tag="0061xx1D" vm="1" vr="SS">Auto Save Corrected Series</el>
+  <el keyword="DistortedSeriesInstanceUID" tag="0061xx1E" vm="1" vr="LT">Distorted Series Instance UID</el>
+  <el keyword="ReconRange" tag="0061xx21" vm="1-n" vr="SS">Recon Range</el>
+  <el keyword="ReconOrientation" tag="0061xx22" vm="1" vr="LO">Recon Orientation</el>
+  <el keyword="ReconSelectedAngularRange" tag="0061xx23" vm="1-n" vr="FL">Recon Selected Angular Range</el>
+  <el keyword="ReconTransverseAngle" tag="0061xx24" vm="1" vr="FL">Recon Transverse Angle</el>
+  <el keyword="ReconSagittalAngle" tag="0061xx25" vm="1" vr="FL">Recon Sagittal Angle</el>
+  <el keyword="ReconXMaskSize" tag="0061xx26" vm="1" vr="FL">Recon X Mask Size</el>
+  <el keyword="ReconYMaskSize" tag="0061xx27" vm="1" vr="FL">Recon Y Mask Size</el>
+  <el keyword="ReconXImageCenter" tag="0061xx28" vm="1" vr="FL">Recon X Image Center</el>
+  <el keyword="ReconYImageCenter" tag="0061xx29" vm="1" vr="FL">Recon Y Image Center</el>
+  <el keyword="ReconZImageCenter" tag="0061xx2A" vm="1" vr="FL">Recon Z Image Center</el>
+  <el keyword="ReconXZoom" tag="0061xx2B" vm="1" vr="FL">Recon X Zoom</el>
+  <el keyword="ReconYZoom" tag="0061xx2C" vm="1" vr="FL">Recon Y Zoom</el>
+  <el keyword="ReconThreshold" tag="0061xx2D" vm="1" vr="FL">Recon Threshold</el>
+  <el keyword="ReconOutputPixelSize" tag="0061xx2E" vm="1" vr="FL">Recon Output Pixel Size</el>
+  <el keyword="ScatterEstimationMethod" tag="0061xx2F" vm="1-n" vr="LO">Scatter Estimation Method</el>
+  <el keyword="ScatterEstimationMethodMode" tag="0061xx30" vm="1-n" vr="LO">Scatter Estimation Method Mode</el>
+  <el keyword="ScatterEstimationLowerWindowWeights" tag="0061xx31" vm="1-n" vr="FL">Scatter Estimation Lower Window Weights</el>
+  <el keyword="ScatterEstimationUpperWindowWeights" tag="0061xx32" vm="1-n" vr="FL">Scatter Estimation Upper Window Weights</el>
+  <el keyword="ScatterEstimationWindowMode" tag="0061xx33" vm="1-n" vr="LO">Scatter Estimation Window Mode</el>
+  <el keyword="ScatterEstimationFilter" tag="0061xx34" vm="1-n" vr="LO">Scatter Estimation Filter</el>
+  <el keyword="ReconRawTomoInputUID" tag="0061xx35" vm="1" vr="LO">Recon RawTomo Input UID</el>
+  <el keyword="ReconCTInputUID" tag="0061xx36" vm="1" vr="LO">Recon CT Input UID</el>
+  <el keyword="ReconZMaskSize" tag="0061xx37" vm="1" vr="FL">Recon Z Mask Size</el>
+  <el keyword="ReconXMaskCenter" tag="0061xx38" vm="1" vr="FL">Recon X Mask Center</el>
+  <el keyword="ReconYMaskCenter" tag="0061xx39" vm="1" vr="FL">Recon Y Mask Center</el>
+  <el keyword="ReconZMaskCenter" tag="0061xx3A" vm="1" vr="FL">Recon Z Mask Center</el>
+  <el keyword="RawTomoSeriesUID" tag="0061xx51" vm="1" vr="LT">Raw Tomo Series UID</el>
+  <el keyword="LowResCTSeriesUID" tag="0061xx52" vm="1" vr="LT">LowRes CT Series UID</el>
+  <el keyword="HighResCTSeriesUID" tag="0061xx53" vm="1" vr="LT">HighRes CT Series UID</el>
+  <el keyword="MinimumPixelInFrame" tag="7FE3xx14" vm="1" vr="OW">Minimum Pixel in Frame</el>
+  <el keyword="MaximumPixelInFrame" tag="7FE3xx15" vm="1" vr="OW">Maximum Pixel in Frame</el>
+  <el keyword="_7FE3_xx16_" tag="7FE3xx16" vm="1" vr="OW">?</el>
+  <el keyword="_7FE3_xx1B_" tag="7FE3xx1B" vm="1" vr="OW">?</el>
+  <el keyword="_7FE3_xx1C_" tag="7FE3xx1C" vm="1" vr="OW">?</el>
+  <el keyword="_7FE3_xx1E_" tag="7FE3xx1E" vm="1" vr="OW">?</el>
+  <el keyword="_7FE3_xx26_" tag="7FE3xx26" vm="1" vr="OW">?</el>
+  <el keyword="_7FE3_xx27_" tag="7FE3xx27" vm="1" vr="OW">?</el>
+  <el keyword="_7FE3_xx28_" tag="7FE3xx28" vm="1" vr="OW">?</el>
+  <el keyword="NumberOfRWavesInFrame" tag="7FE3xx29" vm="1" vr="OW">Number of R-Waves in Frame</el>
+</elements>

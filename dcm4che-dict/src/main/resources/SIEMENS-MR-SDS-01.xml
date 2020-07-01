@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="SiemensMRSDSSequence" tag="0021xxFE" vm="1" vr="SQ">Siemens MR SDS Sequence</el>
+  <el keyword="UsedPatientWeight" tag="0021xx01" vm="1" vr="IS">Used Patient Weight</el>
+  <el keyword="SARWholeBody" tag="0021xx02" vm="3" vr="DS">SAR Whole Body</el>
+  <el keyword="MRProtocol" tag="0021xx03" vm="1" vr="OB">MR Protocol</el>
+  <el keyword="SliceArrayConcatenations" tag="0021xx04" vm="1" vr="DS">Slice Array Concatenations</el>
+  <el keyword="RelTablePosition" tag="0021xx05" vm="3" vr="IS">Rel Table Position</el>
+  <el keyword="CoilForGradient" tag="0021xx06" vm="1" vr="LO">Coil For Gradient</el>
+  <el keyword="LongModelName" tag="0021xx07" vm="1" vr="LO">Long Model Name</el>
+  <el keyword="GradientMode" tag="0021xx08" vm="1" vr="SH">Gradient Mode</el>
+  <el keyword="PATModeText" tag="0021xx09" vm="1" vr="LO">PAT Mode Text</el>
+  <el keyword="SWCorrectionFactor" tag="0021xx0A" vm="1" vr="DS">SW Correction Factor</el>
+  <el keyword="RFPowerErrorIndicator" tag="0021xx0B" vm="1" vr="DS">RF Power Error Indicator</el>
+  <el keyword="PositivePCSDirections" tag="0021xx0C" vm="1" vr="SH">Positive PCS Directions</el>
+  <el keyword="ProtocolChangeHistory" tag="0021xx0D" vm="1" vr="US">Protocol Change History</el>
+  <el keyword="DataFileName" tag="0021xx0E" vm="1" vr="LO">Data File Name</el>
+  <el keyword="Stimlim" tag="0021xx0F" vm="3" vr="DS">Stimlim</el>
+  <el keyword="MRProtocolVersion" tag="0021xx10" vm="1" vr="IS">MR Protocol Version</el>
+  <el keyword="PhaseGradientAmplitude" tag="0021xx11" vm="1" vr="DS">Phase Gradient Amplitude</el>
+  <el keyword="ReadoutOS" tag="0021xx12" vm="1" vr="FD">Readout OS</el>
+  <el keyword="tpulsmax" tag="0021xx13" vm="1" vr="DS">tpuls max</el>
+  <el keyword="NumberOfPrescans" tag="0021xx14" vm="1" vr="IS">Number of Prescans</el>
+  <el keyword="MeasurementIndex" tag="0021xx15" vm="1" vr="FL">Measurement Index</el>
+  <el keyword="dBdtThreshold" tag="0021xx16" vm="1" vr="DS">dBdt Threshold</el>
+  <el keyword="SelectionGradientAmplitude" tag="0021xx17" vm="1" vr="DS">Selection Gradient Amplitude</el>
+  <el keyword="RFSWDMostCriticalAspect" tag="0021xx18" vm="1" vr="SH">RF SWD Most Critical Aspect</el>
+  <el keyword="MRPhoenixProtocol" tag="0021xx19" vm="1" vr="OB">MR Phoenix Protocol</el>
+  <el keyword="CoilString" tag="0021xx1A" vm="1" vr="LO">Coil String</el>
+  <el keyword="SliceResolution" tag="0021xx1B" vm="1" vr="DS">Slice Resolution</el>
+  <el keyword="Stimmaxonline" tag="0021xx1C" vm="3" vr="DS">Stim max online</el>
+  <el keyword="OperationModeFlag" tag="0021xx1D" vm="1" vr="IS">Operation Mode Flag</el>
+  <el keyword="AutoAlignMatrix" tag="0021xx1E" vm="16" vr="FL">Auto Align Matrix</el>
+  <el keyword="CoilTuningReflection" tag="0021xx1F" vm="2" vr="DS">Coil Tuning Reflection</el>
+  <el keyword="RepresentativeImage" tag="0021xx20" vm="1" vr="UI">Representative Image</el>
+  <el keyword="SequenceFileOwner" tag="0021xx22" vm="1" vr="SH">Sequence File Owner</el>
+  <el keyword="RFWatchdogMask" tag="0021xx23" vm="1" vr="IS">RF Watchdog Mask</el>
+  <el keyword="PostProcProtocol" tag="0021xx24" vm="1" vr="LO">Post Proc Protocol</el>
+  <el keyword="TablePositionOrigin" tag="0021xx25" vm="3" vr="SL">Table Position Origin</el>
+  <el keyword="MiscSequenceParam" tag="0021xx26" vm="32" vr="IS">Misc Sequence Param</el>
+  <el keyword="Isocentered" tag="0021xx27" vm="1" vr="US">Isocentered</el>
+  <el keyword="CoilID" tag="0021xx2A" vm="1-n" vr="IS">Coil ID</el>
+  <el keyword="PatReinPattern" tag="0021xx2B" vm="1" vr="ST">Pat Rein Pattern</el>
+  <el keyword="SED" tag="0021xx2C" vm="3" vr="DS">SED</el>
+  <el keyword="SARMostCriticalAspect" tag="0021xx2D" vm="3" vr="DS">SAR Most Critical Aspect</el>
+  <el keyword="StimmOnMode" tag="0021xx2E" vm="1" vr="IS">Stimm on mode</el>
+  <el keyword="GradientDelayTime" tag="0021xx2F" vm="3" vr="DS">Gradient Delay Time</el>
+  <el keyword="ReadoutGradientAmplitude" tag="0021xx30" vm="1" vr="DS">Readout Gradient Amplitude</el>
+  <el keyword="AbsTablePosition" tag="0021xx31" vm="1" vr="IS">Abs Table Position</el>
+  <el keyword="RFSWDOperationMode" tag="0021xx32" vm="1" vr="SS">RF SWD Operation Mode</el>
+  <el keyword="CoilForGradient2" tag="0021xx33" vm="1" vr="SH">Coil for Gradient2</el>
+  <el keyword="StimFactor" tag="0021xx34" vm="1" vr="DS">Stim Factor</el>
+  <el keyword="Stimmaxgesnormonline" tag="0021xx35" vm="1" vr="DS">Stim max ges norm online</el>
+  <el keyword="dBdtmax" tag="0021xx36" vm="1" vr="DS">dBdt max</el>
+  <el keyword="TransmitterCalibration" tag="0021xx38" vm="1" vr="DS">Transmitter Calibration</el>
+  <el keyword="MREVAProtocol" tag="0021xx39" vm="1" vr="OB">MR EVA Protocol</el>
+  <el keyword="dBdtLimit" tag="0021xx3B" vm="1" vr="DS">dBdt Limit</el>
+  <el keyword="VFModelInfo" tag="0021xx3C" vm="1" vr="OB">VF Model Info</el>
+  <el keyword="PhaseSliceOversampling" tag="0021xx3D" vm="1" vr="CS">Phase Slice Oversampling</el>
+  <el keyword="VFSettings" tag="0021xx3E" vm="1" vr="OB">VF Settings</el>
+  <el keyword="AutoAlignData" tag="0021xx3F" vm="1" vr="UT">Auto Align Data</el>
+  <el keyword="FMRIModelParameters" tag="0021xx40" vm="1" vr="UT">FMRI Model Parameters</el>
+  <el keyword="FMRIModelInfo" tag="0021xx41" vm="1" vr="UT">FMRI Model Info</el>
+  <el keyword="FMRIExternalParameters" tag="0021xx42" vm="1" vr="UT">FMRI External Parameters</el>
+  <el keyword="FMRIExternalInfo" tag="0021xx43" vm="1" vr="UT">FMRI External Info</el>
+  <el keyword="B1RMS" tag="0021xx44" vm="2" vr="DS">B1 RMS</el>
+  <el keyword="B1RMSSupervision" tag="0021xx45" vm="1" vr="CS">B1 RMS Supervision</el>
+  <el keyword="TalesReferencePower" tag="0021xx46" vm="1" vr="DS">Tales Reference Power</el>
+  <el keyword="SafetyStandard" tag="0021xx47" vm="1" vr="CS">Safety Standard</el>
+  <el keyword="DICOMImageFlavor" tag="0021xx48" vm="1" vr="CS">DICOM Image Flavor</el>
+  <el keyword="DICOMAcquisitionContrast" tag="0021xx49" vm="1" vr="CS">DICOM Acquisition Contrast</el>
+  <el keyword="RFEchoTrainLength4MF" tag="0021xx50" vm="1" vr="US">RF Echo Train Length 4MF</el>
+  <el keyword="GradientEchoTrainLength4MF" tag="0021xx51" vm="1" vr="US">Gradient Echo Train Length 4MF</el>
+  <el keyword="VersionInfo" tag="0021xx52" vm="1" vr="LO">Version Info</el>
+  <el keyword="Laterality4MF" tag="0021xx53" vm="1" vr="CS">Laterality 4MF</el>
+</elements>

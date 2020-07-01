@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="SourceSideCollimatorAperture" tag="0019xx10" vm="1" vr="DS">Source Side Collimator Aperture</el>
+  <el keyword="DetectorSideCollimatorAperture" tag="0019xx11" vm="1" vr="DS">Detector Side Collimator Aperture</el>
+  <el keyword="ExposureTime" tag="0019xx20" vm="1" vr="IS">Exposure Time</el>
+  <el keyword="ExposureCurrent" tag="0019xx21" vm="1" vr="IS">Exposure Current</el>
+  <el keyword="KVPGeneratorPowerCurrent" tag="0019xx25" vm="1" vr="DS">KVP Generator Power Current</el>
+  <el keyword="GeneratorVoltage" tag="0019xx26" vm="1" vr="DS">Generator Voltage</el>
+  <el keyword="MasterControlMask" tag="0019xx40" vm="1" vr="UL">Master Control Mask</el>
+  <el keyword="ProcessingMask" tag="0019xx42" vm="5" vr="US">Processing Mask</el>
+  <el keyword="_0019_xx44_" tag="0019xx44" vm="1-n" vr="UL">?</el>
+  <el keyword="_0019_xx45_" tag="0019xx45" vm="1-n" vr="UL">?</el>
+  <el keyword="NumberOfVirtuellChannels" tag="0019xx62" vm="1" vr="IS">Number of Virtuell Channels</el>
+  <el keyword="NumberOfReadings" tag="0019xx70" vm="1" vr="IS">Number of Readings</el>
+  <el keyword="_0019_xx71_" tag="0019xx71" vm="1" vr="CS">?</el>
+  <el keyword="NumberOfProjections" tag="0019xx74" vm="1" vr="IS">Number of Projections</el>
+  <el keyword="NumberOfBytes" tag="0019xx75" vm="1" vr="IS">Number of Bytes</el>
+  <el keyword="ReconstructionAlgorithmSet" tag="0019xx80" vm="1" vr="LO">Reconstruction Algorithm Set</el>
+  <el keyword="ReconstructionAlgorithmIndex" tag="0019xx81" vm="1" vr="LO">Reconstruction Algorithm Index</el>
+  <el keyword="RegenerationSoftwareVersion" tag="0019xx82" vm="1" vr="LO">Regeneration Software Version</el>
+  <el keyword="_0019_xx88_" tag="0019xx88" vm="1" vr="IS">?</el>
+  <el keyword="RotationAngle" tag="0021xx10" vm="1" vr="IS">Rotation Angle</el>
+  <el keyword="StartAngle" tag="0021xx11" vm="1" vr="IS">Start Angle</el>
+  <el keyword="_0021_xx20_" tag="0021xx20" vm="1-n" vr="IS">?</el>
+  <el keyword="TopogramTubePosition" tag="0021xx30" vm="1" vr="IS">Topogram Tube Position</el>
+  <el keyword="LengthOfTopogram" tag="0021xx32" vm="1" vr="DS">Length of Topogram</el>
+  <el keyword="TopogramCorrectionFactor" tag="0021xx34" vm="1" vr="DS">Topogram Correction Factor</el>
+  <el keyword="MaximumTablePosition" tag="0021xx36" vm="1" vr="DS">Maximum Table Position</el>
+  <el keyword="TableMoveDirectionCode" tag="0021xx40" vm="1" vr="IS">Table Move Direction Code</el>
+  <el keyword="VOIStartRow" tag="0021xx45" vm="1" vr="IS">VOI Start Row</el>
+  <el keyword="VOIStopRow" tag="0021xx46" vm="1" vr="IS">VOI Stop Row</el>
+  <el keyword="VOIStartColumn" tag="0021xx47" vm="1" vr="IS">VOI Start Column</el>
+  <el keyword="VOIStopColumn" tag="0021xx48" vm="1" vr="IS">VOI Stop Column</el>
+  <el keyword="VOIStartSlice" tag="0021xx49" vm="1" vr="IS">VOI Start Slice</el>
+  <el keyword="VOIStopSlice" tag="0021xx4A" vm="1" vr="IS">VOI Stop Slice</el>
+  <el keyword="VectorStartRow" tag="0021xx50" vm="1" vr="IS">Vector Start Row</el>
+  <el keyword="VectorRowStep" tag="0021xx51" vm="1" vr="IS">Vector Row Step</el>
+  <el keyword="VectorStartColumn" tag="0021xx52" vm="1" vr="IS">Vector Start Column</el>
+  <el keyword="VectorColumnStep" tag="0021xx53" vm="1" vr="IS">Vector Column Step</el>
+  <el keyword="RangeTypeCode" tag="0021xx60" vm="1" vr="IS">Range Type Code</el>
+  <el keyword="ReferenceTypeCode" tag="0021xx62" vm="1" vr="IS">Reference Type Code</el>
+  <el keyword="ObjectOrientation" tag="0021xx70" vm="3" vr="DS">Object Orientation</el>
+  <el keyword="LightOrientation" tag="0021xx72" vm="3" vr="DS">Light Orientation</el>
+  <el keyword="LightBrightness" tag="0021xx75" vm="1" vr="DS">Light Brightness</el>
+  <el keyword="LightContrast" tag="0021xx76" vm="1" vr="DS">Light Contrast</el>
+  <el keyword="OverlayThreshold" tag="0021xx7A" vm="2" vr="IS">Overlay Threshold</el>
+  <el keyword="SurfaceThreshold" tag="0021xx7B" vm="2" vr="IS">Surface Threshold</el>
+  <el keyword="GreyScaleThreshold" tag="0021xx7C" vm="2" vr="IS">Grey Scale Threshold</el>
+  <el keyword="_0021_xxA0_" tag="0021xxA0" vm="1" vr="IS">?</el>
+  <el keyword="_0021_xxA2_" tag="0021xxA2" vm="1" vr="CS">?</el>
+  <el keyword="_0021_xxA7_" tag="0021xxA7" vm="1" vr="LO">?</el>
+</elements>

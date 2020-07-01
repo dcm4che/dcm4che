@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="RawImageAmplification" tag="0025xx00" vm="1" vr="SS">Raw Image Amplification</el>
+  <el keyword="GammaLUT" tag="0025xx01" vm="1" vr="SS">Gamma LUT</el>
+  <el keyword="_0025_xx02_" tag="0025xx02" vm="1" vr="US">?</el>
+  <el keyword="_0025_xx03_" tag="0025xx03" vm="1" vr="FL">?</el>
+  <el keyword="_0025_xx04_" tag="0025xx04" vm="1" vr="FL">?</el>
+  <el keyword="_0025_xx05_" tag="0025xx05" vm="1" vr="FL">?</el>
+  <el keyword="_0025_xx06_" tag="0025xx06" vm="1" vr="FL">?</el>
+  <el keyword="_0025_xx07_" tag="0025xx07" vm="1" vr="FL">?</el>
+  <el keyword="_0025_xx08_" tag="0025xx08" vm="1" vr="FL">?</el>
+  <el keyword="_0025_xx09_" tag="0025xx09" vm="1" vr="FL">?</el>
+  <el keyword="_0025_xx0A_" tag="0025xx0A" vm="1" vr="FL">?</el>
+  <el keyword="_0025_xx0B_" tag="0025xx0B" vm="1" vr="US">?</el>
+  <el keyword="HarmonizationKernel" tag="0025xx0C" vm="1" vr="SS">Harmonization Kernel</el>
+  <el keyword="HarmonizationGain" tag="0025xx0D" vm="1" vr="FL">Harmonization Gain</el>
+  <el keyword="EdgeEnhancementKernel" tag="0025xx0E" vm="1" vr="SS">Edge Enhancement Kernel</el>
+  <el keyword="EdgeEnhancementGain" tag="0025xx0F" vm="1" vr="FL">Edge Enhancement Gain</el>
+  <el keyword="InternalValue" tag="0025xx10" vm="1" vr="LT">Internal Value</el>
+  <el keyword="_0025_xx11_" tag="0025xx11" vm="1" vr="SS">?</el>
+  <el keyword="_0025_xx12_" tag="0025xx12" vm="1" vr="SS">?</el>
+  <el keyword="_0025_xx13_" tag="0025xx13" vm="1" vr="SS">?</el>
+  <el keyword="_0025_xx14_" tag="0025xx14" vm="1" vr="SS">?</el>
+  <el keyword="_0025_xx15_" tag="0025xx15" vm="1" vr="SS">?</el>
+  <el keyword="_0025_xx16_" tag="0025xx16" vm="1" vr="SS">?</el>
+  <el keyword="_0025_xx17_" tag="0025xx17" vm="1" vr="LO">?</el>
+  <el keyword="AutoGain" tag="0025xx18" vm="1" vr="US">Auto Gain</el>
+  <el keyword="OrthoSubsampling" tag="0025xx19" vm="1" vr="US">Ortho Subsampling</el>
+  <el keyword="ImageCropUpperLeft" tag="0025xx1A" vm="2" vr="US">Image Crop Upper Left</el>
+  <el keyword="ImageCropUpperRight" tag="0025xx1B" vm="2" vr="US">Image Crop Upper Right</el>
+  <el keyword="ImageCropLowerLeft" tag="0025xx1C" vm="2" vr="US">Image Crop Lower Left</el>
+  <el keyword="ImageCropLowerRight" tag="0025xx1D" vm="2" vr="US">Image Crop Lower Right</el>
+  <el keyword="ManualCropping" tag="0025xx30" vm="1" vr="US">Manual Cropping</el>
+  <el keyword="GammaLUTParameter1" tag="0025xx31" vm="1" vr="SS">Gamma LUT Parameter 1</el>
+  <el keyword="GammaLUTParameter2" tag="0025xx32" vm="1" vr="DS">Gamma LUT Parameter 2</el>
+  <el keyword="GammaLUTParameter3" tag="0025xx33" vm="1" vr="SS">Gamma LUT Parameter 3</el>
+  <el keyword="GammaLUTParameter4" tag="0025xx34" vm="1" vr="SS">Gamma LUT Parameter 4</el>
+  <el keyword="GammaLUTName" tag="0025xx35" vm="1" vr="LO">Gamma LUT Name</el>
+  <el keyword="_0025_xx36_" tag="0025xx36" vm="1" vr="DS">?</el>
+  <el keyword="_0025_xx37_" tag="0025xx37" vm="1" vr="DS">?</el>
+</elements>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="BackgroundColorDRSequence" tag="0021xx30" vm="1" vr="SQ">Background Color DR Sequence</el>
+  <el keyword="BackgroundColor" tag="0021xx31" vm="3" vr="DS">Background Color</el>
+  <el keyword="FieldMapDRSequence" tag="0021xx36" vm="1" vr="SQ">Field Map DR Sequence</el>
+  <el keyword="Visible" tag="0021xx37" vm="1" vr="CS">Visible</el>
+  <el keyword="TintingColor" tag="0021xx38" vm="3" vr="DS">Tinting Color</el>
+  <el keyword="TintingEnabled" tag="0021xx39" vm="1" vr="CS">Tinting Enabled</el>
+  <el keyword="VolumeID" tag="0021xx3A" vm="1" vr="LO">Volume ID</el>
+  <el keyword="VolumeIDAsBound" tag="0021xx3B" vm="1" vr="LO">Volume ID As Bound</el>
+  <el keyword="FloatingMPRColorLUTDRSequence" tag="0021xx41" vm="1" vr="SQ">Floating MPR Color LUT DR Sequence</el>
+  <el keyword="RGBALUT" tag="0021xx42" vm="1" vr="DS">RGBA LUT</el>
+  <el keyword="BlendFactor" tag="0021xx43" vm="1" vr="DS">Blend Factor</el>
+  <el keyword="RGBALUTDataSequence" tag="0021xx44" vm="1" vr="SQ">RGBA LUT Data Sequence</el>
+  <el keyword="ColorLUT" tag="0021xx45" vm="1" vr="OB">Color LUT</el>
+  <el keyword="OrthoMPRColorLUTDRSequence" tag="0021xx4A" vm="1" vr="SQ">Ortho MPR ColorLUT DR Sequence</el>
+  <el keyword="VRTColorLUTDRSequence" tag="0021xx4B" vm="1" vr="SQ">VRT Color LUT DR Sequence</el>
+  <el keyword="PwlTransferFunctionDataSequence" tag="0021xx4D" vm="1" vr="SQ">Pwl Transfer Function Data Sequence</el>
+  <el keyword="PwlTransferFunctionSequence" tag="0021xx4C" vm="1" vr="SQ">Pwl Transfer Function Sequence</el>
+  <el keyword="PwlVertexIndex" tag="0021xx4E" vm="1" vr="DS">Pwl Vertex Index</el>
+  <el keyword="PwlVertexSequence" tag="0021xx50" vm="1" vr="SQ">Pwl Vertex Sequence</el>
+  <el keyword="FloatingMPRRenderDRSequence" tag="0021xx51" vm="1" vr="SQ">Floating MPR Render DR Sequence</el>
+  <el keyword="PrimaryShowHide" tag="0021xx52" vm="1" vr="CS">Primary Show Hide</el>
+  <el keyword="AlphaDependentFieldmap" tag="0021xx56" vm="1" vr="CS">Alpha Dependent Fieldmap</el>
+  <el keyword="VolumeFilter" tag="0021xx57" vm="1" vr="LO">Volume Filter</el>
+  <el keyword="OrthoMPRRenderDRSequence" tag="0021xx5A" vm="1" vr="SQ">Ortho MPR Render DR Sequence</el>
+  <el keyword="VRTRenderDRSequence" tag="0021xx5B" vm="1" vr="SQ">VRT Render DR Sequence</el>
+  <el keyword="SecondaryShowHide" tag="0021xx53" vm="1" vr="CS">Secondary Show Hide</el>
+  <el keyword="PrimaryShadingIndex" tag="0021xx54" vm="1" vr="LO">Primary Shading Index</el>
+  <el keyword="SecondaryShadingIndex" tag="0021xx55" vm="1" vr="LO">Secondary Shading Index</el>
+  <el keyword="BoundingBoxColor" tag="0021xx58" vm="3" vr="DS">Bounding Box Color</el>
+  <el keyword="SceneInteractionOn" tag="0021xx59" vm="1" vr="CS">Scene Interaction On</el>
+  <el keyword="ClipPlaneDRSequence" tag="0021xx60" vm="6" vr="SQ">Clip Plane DR Sequence</el>
+  <el keyword="PlaneCenter" tag="0021xx61" vm="3" vr="DS">Plane Center</el>
+  <el keyword="PlaneNormal" tag="0021xx62" vm="3" vr="DS">Plane Normal</el>
+  <el keyword="PlaneScale" tag="0021xx63" vm="2" vr="DS">Plane Scale</el>
+  <el keyword="PlaneEnableGLClip" tag="0021xx64" vm="1" vr="CS">Plane Enable GL Clip</el>
+  <el keyword="PlaneHandleRatio" tag="0021xx65" vm="1" vr="DS">Plane Handle Ratio</el>
+  <el keyword="PlaneBoundingPoints" tag="0021xx66" vm="24" vr="DS">Plane Bounding Points</el>
+  <el keyword="PlaneMotionMatrix" tag="0021xx67" vm="16" vr="DS">Plane Motion Matrix</el>
+  <el keyword="PlaneShiftVelocity" tag="0021xx68" vm="1" vr="DS">Plane Shift Velocity</el>
+  <el keyword="PlaneEnabled" tag="0021xx69" vm="1" vr="CS">Plane Enabled</el>
+  <el keyword="PlaneRotateVelocity" tag="0021xx6A" vm="1" vr="DS">Plane Rotate Velocity</el>
+  <el keyword="PlaneShowGraphics" tag="0021xx6B" vm="1" vr="CS">Plane Show Graphics</el>
+  <el keyword="PlaneSingleSelectionMode" tag="0021xx73" vm="1" vr="CS">Plane Single Selection Mode</el>
+  <el keyword="PlaneAlignment" tag="0021xx74" vm="1" vr="CS">Plane Alignment</el>
+  <el keyword="PlaneSelected" tag="0021xx75" vm="1" vr="CS">Plane Selected</el>
+  <el keyword="SplitPlaneDRSequence" tag="0021xx70" vm="1" vr="SQ">Split Plane DR Sequence</el>
+  <el keyword="FloatingMPRDRSequence" tag="0021xx71" vm="3" vr="SQ">Floating MPR DR Sequence</el>
+  <el keyword="PlaneMPRLocked" tag="0021xx6E" vm="1" vr="CS">Plane MPR Locked</el>
+  <el keyword="PlaneScalingDisabled" tag="0021xx6F" vm="1" vr="CS">Plane Scaling Disabled</el>
+  <el keyword="OrthoMPRDRSequence" tag="0021xx72" vm="3" vr="SQ">Ortho MPR DR Sequence</el>
+  <el keyword="Offset" tag="0021xx6C" vm="1" vr="DS">Offset</el>
+  <el keyword="OrthoMPRAtBoundingBox" tag="0021xx6D" vm="1" vr="CS">Ortho MPR At Bounding Box</el>
+  <el keyword="ClusteringDRSequence" tag="0021xx76" vm="1" vr="SQ">Clustering DR Sequence</el>
+  <el keyword="ClusterSize" tag="0021xx77" vm="1" vr="DS">Cluster Size</el>
+  <el keyword="ClusteringEnabled" tag="0021xx78" vm="1" vr="CS">Clustering Enabled</el>
+  <el keyword="ClusterMaskVolID" tag="0021xx79" vm="1" vr="LO">Cluster Mask Vol ID</el>
+  <el keyword="HeadMaskingDRSequence" tag="0021xx80" vm="1" vr="SQ">Head Masking DR Sequence</el>
+  <el keyword="MaskingRange" tag="0021xx81" vm="2" vr="DS">Masking Range</el>
+  <el keyword="MaskEnabled" tag="0021xx82" vm="1" vr="CS">Mask Enabled</el>
+  <el keyword="BrainMaskingDRSequence" tag="0021xx83" vm="1" vr="SQ">Brain Masking DR Sequence</el>
+  <el keyword="MaskingStatusDRSequence" tag="0021xx84" vm="1" vr="SQ">Masking Status DR Sequence</el>
+  <el keyword="VRTMaskingDRSequence" tag="0021xx85" vm="1" vr="SQ">VRT Masking DR Sequence</el>
+  <el keyword="OrthoMPRMaskingDRSequence" tag="0021xx86" vm="1" vr="SQ">Ortho MPR Masking DR Sequence</el>
+  <el keyword="FloatingMPRMaskingDRSequence" tag="0021xx87" vm="1" vr="SQ">Floating MPR Masking DR Sequence</el>
+  <el keyword="AlignDRSequence" tag="0021xx88" vm="1" vr="SQ">Align DR Sequence</el>
+  <el keyword="RegistrationMatrix" tag="0021xx89" vm="16" vr="DS">Registration Matrix</el>
+  <el keyword="FunctionalEvaluationDRSequence" tag="0021xx90" vm="1" vr="SQ">Functional Evaluation DR Sequence</el>
+  <el keyword="FrameAcquitionNumbers" tag="0021xx91" vm="1-n" vr="DS">Frame Acquition Numbers</el>
+  <el keyword="ShowCursor" tag="0021xx92" vm="1" vr="CS">Show Cursor</el>
+  <el keyword="CurrentFrame" tag="0021xx93" vm="1" vr="DS">Current Frame</el>
+  <el keyword="PlotArea" tag="0021xx94" vm="1-n" vr="DS">Plot Area</el>
+  <el keyword="PlotTextPosition" tag="0021xx95" vm="2" vr="DS">Plot Text Position</el>
+  <el keyword="BaseLinePoints" tag="0021xx96" vm="1-n" vr="DS">Base Line Points</el>
+  <el keyword="ActivePoints" tag="0021xx97" vm="1-n" vr="DS">Active Points</el>
+  <el keyword="ShowLabel" tag="0021xx98" vm="1" vr="CS">Show Label</el>
+  <el keyword="MeanPlot" tag="0021xx99" vm="1" vr="CS">Mean Plot</el>
+  <el keyword="MotionPlot" tag="0021xx9A" vm="1" vr="CS">Motion Plot</el>
+  <el keyword="ActivateNormallizedCurve" tag="0021xx9B" vm="1" vr="CS">Activate Normallized Curve</el>
+  <el keyword="PlotSize" tag="0021xx9C" vm="1" vr="DS">Plot Size</el>
+  <el keyword="PlotDRSequence" tag="0021xxA0" vm="4" vr="SQ">PlotDR Sequence</el>
+  <el keyword="Title" tag="0021xxA1" vm="1" vr="LO">Title</el>
+  <el keyword="AutoScale" tag="0021xxA2" vm="1" vr="CS">Auto Scale</el>
+  <el keyword="FixedScale" tag="0021xxA3" vm="1" vr="DS">Fixed Scale</el>
+  <el keyword="LabelX" tag="0021xxA5" vm="1" vr="LO">Label X</el>
+  <el keyword="LabelY" tag="0021xxA6" vm="1" vr="LO">Label Y</el>
+  <el keyword="Legend" tag="0021xxA7" vm="1" vr="CS">Legend</el>
+  <el keyword="ScrollBarX" tag="0021xxA8" vm="1" vr="CS">Scroll Bar X</el>
+  <el keyword="ScrollBarY" tag="0021xxA9" vm="1" vr="CS">Scroll Bar Y</el>
+  <el keyword="ConnectScrollX" tag="0021xxAA" vm="1" vr="LO">Connect Scroll X</el>
+  <el keyword="PlotID" tag="0021xxAB" vm="1" vr="LO">Plot ID</el>
+  <el keyword="PlotPosition" tag="0021xxAC" vm="1" vr="DS">Plot Position</el>
+  <el keyword="CurveDRSequence" tag="0021xxB0" vm="1" vr="SQ">Curve DR Sequence</el>
+  <el keyword="CurveID" tag="0021xxB1" vm="1" vr="LO">Curve ID</el>
+  <el keyword="PlotType" tag="0021xxB2" vm="1" vr="LO">Plot Type</el>
+  <el keyword="CurveValues" tag="0021xxB3" vm="1-n" vr="DS">Curve Values</el>
+  <el keyword="LineColor" tag="0021xxB4" vm="3" vr="DS">Line Color</el>
+  <el keyword="MarkerColor" tag="0021xxB5" vm="3" vr="DS">Marker Color</el>
+  <el keyword="LineFilled" tag="0021xxB6" vm="1" vr="CS">Line Filled</el>
+  <el keyword="Label" tag="0021xxB7" vm="1" vr="LO">Label</el>
+  <el keyword="ShowMarker" tag="0021xxB8" vm="1" vr="CS">Show Marker</el>
+  <el keyword="MarkerShape" tag="0021xxB9" vm="1" vr="LO">Marker Shape</el>
+  <el keyword="SmoothingAlgo" tag="0021xxBA" vm="1" vr="LO">Smoothing Algo</el>
+  <el keyword="MarkerSize" tag="0021xxBB" vm="1" vr="DS">Marker Size</el>
+  <el keyword="LineStyle" tag="0021xxBC" vm="1" vr="LO">Line Style</el>
+  <el keyword="LinePattern" tag="0021xxBD" vm="1" vr="LO">Line Pattern</el>
+  <el keyword="LineWidth" tag="0021xxBE" vm="1" vr="DS">Line Width</el>
+  <el keyword="VRTFilterDRSequence" tag="0021xxC0" vm="1" vr="SQ">VRT Filter DR Sequence</el>
+  <el keyword="FilterType" tag="0021xxC1" vm="1" vr="LO">Filter Type</el>
+  <el keyword="CurrentActivePlane" tag="0021xxC2" vm="1" vr="CS">Current Active Plane</el>
+</elements>

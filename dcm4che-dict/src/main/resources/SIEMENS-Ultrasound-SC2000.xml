@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="BModeTintIndex" tag="0019xx2D" vm="1" vr="US">B-mode Tint Index</el>
+  <el keyword="DopplerTintIndex" tag="0019xx72" vm="1" vr="US">Doppler Tint Index</el>
+  <el keyword="MModeTintIndex" tag="0019xx88" vm="1" vr="US">M-mode Tint Index</el>
+  <el keyword="_0019_xx89_" tag="0019xx89" vm="1" vr="LO">?</el>
+  <el keyword="AcousticMetaInformationVersion" tag="0119xx00" vm="1" vr="LO">Acoustic Meta Information Version</el>
+  <el keyword="CommonAcousticMetaInformation" tag="0119xx01" vm="1" vr="OB">Common Acoustic Meta Information</el>
+  <el keyword="MultiStreamSequence" tag="0119xx02" vm="1" vr="SQ">Multi Stream Sequence</el>
+  <el keyword="AcousticDataSequence" tag="0119xx03" vm="1" vr="SQ">Acoustic Data Sequence</el>
+  <el keyword="PerTransactionAcousticControlInformation" tag="0119xx04" vm="1" vr="OB">Per Transaction Acoustic Control Informatio</el>
+  <el keyword="AcousticDataOffset" tag="0119xx05" vm="1" vr="UL">Acoustic Data Offset</el>
+  <el keyword="AcousticDataLength" tag="0119xx06" vm="1" vr="UL">Acoustic Data Length</el>
+  <el keyword="FooterOffset" tag="0119xx07" vm="1" vr="UL">Footer Offset</el>
+  <el keyword="FooterLength" tag="0119xx08" vm="1" vr="UL">Footer Length</el>
+  <el keyword="AcousticStreamNumber" tag="0119xx09" vm="1" vr="SS">Acoustic Stream Number</el>
+  <el keyword="AcousticStreamType" tag="0119xx10" vm="1" vr="SH">Acoustic Stream Type</el>
+  <el keyword="StageTimerTime" tag="0119xx11" vm="1" vr="UN">Stage Timer Time</el>
+  <el keyword="StopWatchTime" tag="0119xx12" vm="1" vr="UN">Stop Watch Time</el>
+  <el keyword="VolumeRate" tag="0119xx13" vm="1" vr="IS">Volume Rate</el>
+  <el keyword="_0119_xx21_" tag="0119xx21" vm="1" vr="SH">?</el>
+  <el keyword="MPRViewSequence" tag="0129xx00" vm="1" vr="SQ">MPR View Sequence</el>
+  <el keyword="BookmarkUID" tag="0129xx02" vm="1" vr="UI">Bookmark UID</el>
+  <el keyword="PlaneOriginVector" tag="0129xx03" vm="1" vr="UN">Plane Origin Vector</el>
+  <el keyword="RowVector" tag="0129xx04" vm="1" vr="UN">Row Vector</el>
+  <el keyword="ColumnVector" tag="0129xx05" vm="1" vr="UN">Column Vector</el>
+  <el keyword="VisualizationSequence" tag="0129xx06" vm="1" vr="SQ">Visualization Sequence</el>
+  <el keyword="VisualizationInformation" tag="0129xx08" vm="1" vr="OB">Visualization Informatio</el>
+  <el keyword="ApplicationStateSequence" tag="0129xx09" vm="1" vr="SQ">Application State Sequence</el>
+  <el keyword="ApplicationStateInformation" tag="0129xx10" vm="1" vr="OB">Application State Informatio</el>
+  <el keyword="ReferencedBookmarkSequence" tag="0129xx11" vm="1" vr="SQ">Referenced Bookmark Sequence</el>
+  <el keyword="ReferencedBookmarkUID" tag="0129xx12" vm="1" vr="UI">Referenced Bookmark UID</el>
+  <el keyword="CineParametersSequence" tag="0129xx20" vm="1" vr="SQ">Cine Parameters Sequence</el>
+  <el keyword="CineParametersSchema" tag="0129xx21" vm="1" vr="OB">Cine Parameters Schem</el>
+  <el keyword="ValuesOfCineParameters" tag="0129xx22" vm="1" vr="OB">Values of Cine Parameters</el>
+  <el keyword="_0129_xx29_" tag="0129xx29" vm="1" vr="OB"/>
+  <el keyword="RawDataObjectType" tag="0129xx30" vm="1" vr="CS">Raw Data Object Type</el>
+  <el keyword="PhysioCaptureROI" tag="0139xx01" vm="1" vr="SL">Physio Capture ROI</el>
+  <el keyword="VectorOfBROIPoints" tag="0149xx01" vm="1-n" vr="FD">Vector of BROI Points</el>
+  <el keyword="StartEndTimestampsOfStripStream" tag="0149xx02" vm="1-n" vr="FD">Start/End Timestamps of Strip Stream</el>
+  <el keyword="TimestampsOfVisibleRWaves" tag="0149xx03" vm="1-n" vr="FD">Timestamps of Visible R-waves</el>
+  <el keyword="AcousticImageAndFooterData" tag="7FD1xx01" vm="1" vr="OB">Acoustic Image and Footer Data</el>
+  <el keyword="VolumeVersionID" tag="7FD1xx09" vm="1" vr="UI">Volume Version ID</el>
+  <el keyword="VolumePayload" tag="7FD1xx10" vm="1" vr="OB">Volume Payload</el>
+  <el keyword="AfterPayload" tag="7FD1xx11" vm="1" vr="OB">After Payload</el>
+</elements>

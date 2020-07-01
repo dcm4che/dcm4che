@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_0011_xx28_" tag="0011xx28" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xx29_" tag="0011xx29" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xx2A_" tag="0011xx2A" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xx2B_" tag="0011xx2B" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xx2C_" tag="0011xx2C" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx15_" tag="0019xx15" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx18_" tag="0019xx18" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx19_" tag="0019xx19" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx1A_" tag="0019xx1A" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx1B_" tag="0019xx1B" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx1C_" tag="0019xx1C" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx1D_" tag="0019xx1D" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx1E_" tag="0019xx1E" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx1F_" tag="0019xx1F" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx20_" tag="0019xx20" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx22_" tag="0019xx22" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx24_" tag="0019xx24" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx26_" tag="0019xx26" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx28_" tag="0019xx28" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx2A_" tag="0019xx2A" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xx2C_" tag="0019xx2C" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx2E_" tag="0019xx2E" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx30_" tag="0019xx30" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx32_" tag="0019xx32" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx34_" tag="0019xx34" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx36_" tag="0019xx36" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx38_" tag="0019xx38" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx3A_" tag="0019xx3A" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx3C_" tag="0019xx3C" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx3E_" tag="0019xx3E" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx40_" tag="0019xx40" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx42_" tag="0019xx42" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx44_" tag="0019xx44" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx46_" tag="0019xx46" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx48_" tag="0019xx48" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx4A_" tag="0019xx4A" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx4C_" tag="0019xx4C" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx4E_" tag="0019xx4E" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx50_" tag="0019xx50" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx52_" tag="0019xx52" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx54_" tag="0019xx54" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx56_" tag="0019xx56" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx58_" tag="0019xx58" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx5A_" tag="0019xx5A" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx5C_" tag="0019xx5C" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx5E_" tag="0019xx5E" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx60_" tag="0019xx60" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx62_" tag="0019xx62" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx64_" tag="0019xx64" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx66_" tag="0019xx66" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx68_" tag="0019xx68" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx6A_" tag="0019xx6A" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx6C_" tag="0019xx6C" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx6E_" tag="0019xx6E" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx70_" tag="0019xx70" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx72_" tag="0019xx72" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx74_" tag="0019xx74" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx76_" tag="0019xx76" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx78_" tag="0019xx78" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xx7A_" tag="0019xx7A" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx7C_" tag="0019xx7C" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx7E_" tag="0019xx7E" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx80_" tag="0019xx80" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx82_" tag="0019xx82" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx84_" tag="0019xx84" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx86_" tag="0019xx86" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx88_" tag="0019xx88" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx8A_" tag="0019xx8A" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx8C_" tag="0019xx8C" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx8E_" tag="0019xx8E" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx90_" tag="0019xx90" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx92_" tag="0019xx92" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx94_" tag="0019xx94" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx96_" tag="0019xx96" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx98_" tag="0019xx98" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx9A_" tag="0019xx9A" vm="1-n" vr="US">?</el>
+  <el keyword="_0019_xx9C_" tag="0019xx9C" vm="1-n" vr="US">?</el>
+  <el keyword="_0019_xx9E_" tag="0019xx9E" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxA0_" tag="0019xxA0" vm="1-n" vr="US">?</el>
+  <el keyword="_0019_xxA2_" tag="0019xxA2" vm="1-n" vr="US">?</el>
+  <el keyword="_0019_xxA4_" tag="0019xxA4" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxA6_" tag="0019xxA6" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxA8_" tag="0019xxA8" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxAA_" tag="0019xxAA" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxAC_" tag="0019xxAC" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxAE_" tag="0019xxAE" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxB0_" tag="0019xxB0" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxB1_" tag="0019xxB1" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxB2_" tag="0019xxB2" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxB3_" tag="0019xxB3" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxB4_" tag="0019xxB4" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxB5_" tag="0019xxB5" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxB6_" tag="0019xxB6" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxB7_" tag="0019xxB7" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxB8_" tag="0019xxB8" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxB9_" tag="0019xxB9" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxBB_" tag="0019xxBB" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxBC_" tag="0019xxBC" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxBD_" tag="0019xxBD" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxBE_" tag="0019xxBE" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxBF_" tag="0019xxBF" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC0_" tag="0019xxC0" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC1_" tag="0019xxC1" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC2_" tag="0019xxC2" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC3_" tag="0019xxC3" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC4_" tag="0019xxC4" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC5_" tag="0019xxC5" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC6_" tag="0019xxC6" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC7_" tag="0019xxC7" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC8_" tag="0019xxC8" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxC9_" tag="0019xxC9" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxCA_" tag="0019xxCA" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxCB_" tag="0019xxCB" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxCC_" tag="0019xxCC" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxCD_" tag="0019xxCD" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxCE_" tag="0019xxCE" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxCF_" tag="0019xxCF" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxD1_" tag="0019xxD1" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxD2_" tag="0019xxD2" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxD3_" tag="0019xxD3" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxD4_" tag="0019xxD4" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxD5_" tag="0019xxD5" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxD6_" tag="0019xxD6" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxD7_" tag="0019xxD7" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxD8_" tag="0019xxD8" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxD9_" tag="0019xxD9" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxDA_" tag="0019xxDA" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxDB_" tag="0019xxDB" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxDC_" tag="0019xxDC" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxDD_" tag="0019xxDD" vm="1" vr="UL">?</el>
+  <el keyword="_0019_xxDE_" tag="0019xxDE" vm="1-n" vr="UL">?</el>
+  <el keyword="_0019_xxDF_" tag="0019xxDF" vm="1" vr="OB">?</el>
+  <el keyword="_0019_xxE0_" tag="0019xxE0" vm="1" vr="UL">?</el>
+</elements>

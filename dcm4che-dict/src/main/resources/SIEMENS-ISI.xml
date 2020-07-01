@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="ISICommandField" tag="0003xx08" vm="1" vr="US">ISI Command Field</el>
+  <el keyword="AttachIDApplicationCode" tag="0003xx11" vm="1" vr="US">Attach ID Application Code</el>
+  <el keyword="AttachIDMessageCount" tag="0003xx12" vm="1" vr="UL">Attach ID Message Count</el>
+  <el keyword="AttachIDDate" tag="0003xx13" vm="1" vr="DA">Attach ID Date</el>
+  <el keyword="AttachIDTime" tag="0003xx14" vm="1" vr="TM">Attach ID Time</el>
+  <el keyword="MessageType" tag="0003xx20" vm="1" vr="US">Message Type</el>
+  <el keyword="MaxWaitingDate" tag="0003xx30" vm="1" vr="DA">Max Waiting Date</el>
+  <el keyword="MaxWaitingTime" tag="0003xx31" vm="1" vr="TM">Max Waiting Time</el>
+  <el keyword="RISPatientInfoIMGEF" tag="0009xx01" vm="1" vr="UN">RIS Patient Info IMGEF</el>
+  <el keyword="PatientUID" tag="0011xx03" vm="1" vr="LO">Patient UID</el>
+  <el keyword="PatientID" tag="0011xx04" vm="1" vr="LO">Patient ID</el>
+  <el keyword="CaseID" tag="0011xx0A" vm="1" vr="LO">Case ID</el>
+  <el keyword="RequestID" tag="0011xx22" vm="1" vr="LO">Request ID</el>
+  <el keyword="ExaminationUID" tag="0011xx23" vm="1" vr="LO">Examination UID</el>
+  <el keyword="PatientRegistrationDate" tag="0011xxA1" vm="1" vr="DA">Patient Registration Date</el>
+  <el keyword="PatientRegistrationTime" tag="0011xxA2" vm="1" vr="TM">Patient Registration Time</el>
+  <el keyword="PatientLastName" tag="0011xxB0" vm="1" vr="LO">Patient Last Name</el>
+  <el keyword="PatientFirstName" tag="0011xxB2" vm="1" vr="LO">Patient First Name</el>
+  <el keyword="PatientHospitalStatus" tag="0011xxB4" vm="1" vr="LO">Patient Hospital Status</el>
+  <el keyword="CurrentLocationTime" tag="0011xxBC" vm="1" vr="TM">Current Location Time</el>
+  <el keyword="PatientInsuranceStatus" tag="0011xxC0" vm="1" vr="LO">Patient Insurance Status</el>
+  <el keyword="PatientBillingType" tag="0011xxD0" vm="1" vr="LO">Patient Billing Type</el>
+  <el keyword="PatientBillingAddress" tag="0011xxD2" vm="1" vr="LO">Patient Billing Address</el>
+  <el keyword="ExaminationReason" tag="0031xx12" vm="1" vr="LO">Examination Reason</el>
+  <el keyword="RequestedDate" tag="0031xx30" vm="1" vr="DA">Requested Date</el>
+  <el keyword="WorklistRequestStartTime" tag="0031xx32" vm="1" vr="TM">Worklist Request Start Time</el>
+  <el keyword="WorklistRequestEndTime" tag="0031xx33" vm="1" vr="TM">Worklist Request End Time</el>
+  <el keyword="RequestedTime" tag="0031xx4A" vm="1" vr="TM">Requested Time</el>
+  <el keyword="RequestedLocation" tag="0031xx80" vm="1" vr="LO">Requested Location</el>
+  <el keyword="CurrentWard" tag="0055xx46" vm="1" vr="LO">Current Ward</el>
+  <el keyword="RISKey" tag="0193xx02" vm="1" vr="DS">RIS Key</el>
+  <el keyword="RISWorklistIMGEF" tag="0307xx01" vm="1" vr="UN">RIS Worklist IMGEF</el>
+  <el keyword="RISReportIMGEF" tag="0309xx01" vm="1" vr="UN">RIS Report IMGEF</el>
+  <el keyword="ReportID" tag="4009xx01" vm="1" vr="LO">Report ID</el>
+  <el keyword="ReportStatus" tag="4009xx20" vm="1" vr="LO">Report Status</el>
+  <el keyword="ReportCreationDate" tag="4009xx30" vm="1" vr="DA">Report Creation Date</el>
+  <el keyword="ReportApprovingPhysician" tag="4009xx70" vm="1" vr="LO">Report Approving Physician</el>
+  <el keyword="ReportText" tag="4009xxE0" vm="1" vr="LO">Report Text</el>
+  <el keyword="ReportAuthor" tag="4009xxE1" vm="1" vr="LO">Report Author</el>
+  <el keyword="ReportingRadiologist" tag="4009xxE3" vm="1" vr="LO">Reporting Radiologist</el>
+</elements>

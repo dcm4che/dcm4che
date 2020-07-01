@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="InternalPatientUID" tag="0031xx10" vm="1" vr="UI">Internal Patient UID</el>
+  <el keyword="PatientsDeathIndicator" tag="0031xx11" vm="1" vr="SH">Patients Death Indicator</el>
+  <el keyword="PatientsDeathDate" tag="0031xx12" vm="1" vr="DA">Patients Death Date</el>
+  <el keyword="PatientsDeathTime" tag="0031xx13" vm="1" vr="TM">Patients Death Time</el>
+  <el keyword="VIPIndicator" tag="0031xx14" vm="1" vr="SH">VIP Indicator</el>
+  <el keyword="EmergencyFlag" tag="0031xx15" vm="1" vr="US">Emergency Flag</el>
+  <el keyword="InternalVisitUID" tag="0031xx20" vm="1" vr="SH">Internal Visit UID</el>
+  <el keyword="InternalISRUID" tag="0031xx25" vm="1" vr="SH">Internal ISR UID</el>
+  <el keyword="ControlState" tag="0031xx32" vm="1" vr="SH">Control State</el>
+  <el keyword="LocalFlag" tag="0031xx34" vm="1" vr="US">Local Flag</el>
+  <el keyword="ReferencedStudies" tag="0031xx36" vm="1-n" vr="UI">Referenced Studies</el>
+  <el keyword="WorkflowID" tag="0031xx40" vm="1" vr="LO">Workflow ID</el>
+  <el keyword="WorkflowDescription" tag="0031xx41" vm="1" vr="LO">Workflow Description</el>
+  <el keyword="WorkflowControlState" tag="0031xx42" vm="1" vr="LO">Workflow Control State</el>
+  <el keyword="WorkflowAdHocFlag" tag="0031xx43" vm="1" vr="US">Workflow Ad Hoc Flag</el>
+  <el keyword="HybridFlag" tag="0031xx44" vm="1" vr="US">Hybrid Flag</el>
+  <el keyword="WorkitemID" tag="0031xx50" vm="1" vr="LO">Workitem ID</el>
+  <el keyword="WorkitemName" tag="0031xx51" vm="1" vr="LO">Workitem Name</el>
+  <el keyword="WorkitemType" tag="0031xx52" vm="1" vr="LO">Workitem Type</el>
+  <el keyword="WorkitemRoles" tag="0031xx53" vm="1-n" vr="LO">Workitem Roles</el>
+  <el keyword="WorkitemDescription" tag="0031xx54" vm="1" vr="LO">Workitem Description</el>
+  <el keyword="WorkitemControlState" tag="0031xx55" vm="1" vr="LO">Workitem Control State</el>
+  <el keyword="ClaimingUser" tag="0031xx56" vm="1" vr="LO">Claiming User</el>
+  <el keyword="ClaimingHost" tag="0031xx57" vm="1" vr="LO">Claiming Host</el>
+  <el keyword="TaskflowID" tag="0031xx58" vm="1" vr="LO">Taskflow ID</el>
+  <el keyword="TaskflowName" tag="0031xx59" vm="1" vr="LO">Taskflow Name</el>
+  <el keyword="FailedFlag" tag="0031xx5A" vm="1" vr="US">Failed Flag</el>
+  <el keyword="ScheduledTime" tag="0031xx5B" vm="1" vr="DT">Scheduled Time</el>
+  <el keyword="WorkitemAdHocFlag" tag="0031xx5C" vm="1" vr="US">Workitem Ad Hoc Flag</el>
+  <el keyword="PatientUpdatePendingFlag" tag="0031xx5D" vm="1" vr="US">Patient Update Pending Flag</el>
+  <el keyword="PatientMixupFlag" tag="0031xx5E" vm="1" vr="US">Patient Mixup Flag</el>
+  <el keyword="ClientID" tag="0031xx60" vm="1" vr="LO">Client ID</el>
+  <el keyword="TemplateID" tag="0031xx61" vm="1" vr="LO">Template ID</el>
+  <el keyword="InstitutionName" tag="0031xx81" vm="1" vr="LO">Institution Name</el>
+  <el keyword="InstitutionAddress" tag="0031xx82" vm="1" vr="ST">Institution Address</el>
+  <el keyword="InstitutionCodeSequence" tag="0031xx83" vm="1" vr="SQ">Institution Code Sequence</el>
+</elements>

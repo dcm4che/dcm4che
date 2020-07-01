@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="MagneticFieldStrength" tag="0019xx12" vm="1" vr="DS">Magnetic Field Strength</el>
+  <el keyword="ADCVoltage" tag="0019xx14" vm="1" vr="DS">ADC Voltage</el>
+  <el keyword="ADCOffset" tag="0019xx16" vm="2" vr="DS">ADC Offset</el>
+  <el keyword="TransmitterAmplitude" tag="0019xx20" vm="1" vr="DS">Transmitter Amplitude</el>
+  <el keyword="NumberOfTransmitterAmplitudes" tag="0019xx21" vm="1" vr="IS">Number of Transmitter Amplitudes</el>
+  <el keyword="TransmitterAttenuator" tag="0019xx22" vm="1" vr="DS">Transmitter Attenuator</el>
+  <el keyword="TransmitterCalibration" tag="0019xx24" vm="1" vr="DS">Transmitter Calibration</el>
+  <el keyword="TransmitterReference" tag="0019xx26" vm="1" vr="DS">Transmitter Reference</el>
+  <el keyword="ReceiverTotalGain" tag="0019xx50" vm="1" vr="DS">Receiver Total Gain</el>
+  <el keyword="ReceiverAmplifierGain" tag="0019xx51" vm="1" vr="DS">Receiver Amplifier Gain</el>
+  <el keyword="ReceiverPreamplifierGain" tag="0019xx52" vm="1" vr="DS">Receiver Preamplifier Gain</el>
+  <el keyword="ReceiverCableAttenuation" tag="0019xx54" vm="1" vr="DS">Receiver Cable Attenuation</el>
+  <el keyword="ReceiverReferenceGain" tag="0019xx55" vm="1" vr="DS">Receiver Reference Gain</el>
+  <el keyword="ReceiverFilterFrequency" tag="0019xx56" vm="1" vr="DS">Receiver Filter Frequency</el>
+  <el keyword="ReconstructionScaleFactor" tag="0019xx60" vm="1" vr="DS">Reconstruction Scale Factor</el>
+  <el keyword="ReferenceScaleFactor" tag="0019xx62" vm="1" vr="DS">Reference Scale Factor</el>
+  <el keyword="PhaseGradientAmplitude" tag="0019xx70" vm="1" vr="DS">Phase Gradient Amplitude</el>
+  <el keyword="ReadoutGradientAmplitude" tag="0019xx71" vm="1" vr="DS">Readout Gradient Amplitude</el>
+  <el keyword="SelectionGradientAmplitude" tag="0019xx72" vm="1" vr="DS">Selection Gradient Amplitude</el>
+  <el keyword="GradientDelayTime" tag="0019xx80" vm="3" vr="DS">Gradient Delay Time</el>
+  <el keyword="TotalGradientDelayTime" tag="0019xx82" vm="1" vr="DS">Total Gradient Delay Time</el>
+  <el keyword="SensitivityCorrectionLabel" tag="0019xx90" vm="1" vr="LO">Sensitivity Correction Label</el>
+  <el keyword="SaturationPhaseEncodingVectorCoronalComponent" tag="0019xx91" vm="6" vr="DS">Saturation Phase Encoding Vector Coronal Component</el>
+  <el keyword="SaturationReadoutVectorCoronalComponent" tag="0019xx92" vm="6" vr="DS">Saturation Readout Vector Coronal Component</el>
+  <el keyword="RFWatchdogMask" tag="0019xxA0" vm="1" vr="IS">RF Watchdog Mask</el>
+  <el keyword="EPIReconstructionSlope" tag="0019xxA1" vm="1" vr="DS">EPI Reconstruction Slope</el>
+  <el keyword="RFPowerErrorIndicator" tag="0019xxA2" vm="1" vr="DS">RF Power Error Indicator</el>
+  <el keyword="SpecificAbsorptionRateWholeBody" tag="0019xxA5" vm="3" vr="DS">Specific Absorption Rate Whole Body</el>
+  <el keyword="SpecificEnergyDose" tag="0019xxA6" vm="3" vr="DS">Specific Energy Dose</el>
+  <el keyword="AdjustmentStatusMask" tag="0019xxB0" vm="1" vr="UL">Adjustment Status Mask</el>
+  <el keyword="EPICapacity" tag="0019xxC1" vm="6" vr="DS">EPI Capacity</el>
+  <el keyword="EPIInductance" tag="0019xxC2" vm="3" vr="DS">EPI Inductance</el>
+  <el keyword="EPISwitchConfigurationCode" tag="0019xxC3" vm="1-n" vr="IS">EPI Switch Configuration Code</el>
+  <el keyword="EPISwitchHardwareCode" tag="0019xxC4" vm="1-n" vr="IS">EPI Switch Hardware Code</el>
+  <el keyword="EPISwitchDelayTime" tag="0019xxC5" vm="1-n" vr="DS">EPI Switch Delay Time</el>
+  <el keyword="FlowSensitivity" tag="0019xxD1" vm="1" vr="DS">Flow Sensitivity</el>
+  <el keyword="CalculationSubmode" tag="0019xxD2" vm="1" vr="CS">Calculation Submode</el>
+  <el keyword="FieldOfViewRatio" tag="0019xxD3" vm="1" vr="DS">Field of View Ratio</el>
+  <el keyword="BaseRawMatrixSize" tag="0019xxD4" vm="1" vr="IS">Base Raw Matrix Size</el>
+  <el keyword="TwoDOversamplingLines" tag="0019xxD5" vm="1" vr="IS">2D Oversampling Lines</el>
+  <el keyword="ThreeDPhaseOversamplingPartitions" tag="0019xxD6" vm="1" vr="IS">3D Phase Oversampling Partitions</el>
+  <el keyword="EchoLinePosition" tag="0019xxD7" vm="1" vr="IS">Echo Line Position</el>
+  <el keyword="EchoColumnPosition" tag="0019xxD8" vm="1" vr="IS">Echo Column Position</el>
+  <el keyword="LinesPerSegment" tag="0019xxD9" vm="1" vr="IS">Lines Per Segment</el>
+  <el keyword="PhaseCodingDirection" tag="0019xxDA" vm="1" vr="CS">Phase Coding Direction</el>
+</elements>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_0017_xx11_" tag="0017xx11" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx12_" tag="0017xx12" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx14_" tag="0017xx14" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx15_" tag="0017xx15" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx25_" tag="0017xx25" vm="1" vr="IS">?</el>
+  <el keyword="_0017_xx27_" tag="0017xx27" vm="1" vr="IS">?</el>
+  <el keyword="EdgeEnhancement" tag="0017xx29" vm="1" vr="IS">Edge Enhancement </el>
+  <el keyword="Harmonization" tag="0017xx30" vm="1" vr="IS">Harmonization %</el>
+  <el keyword="_0017_xx31_" tag="0017xx31" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx32_" tag="0017xx32" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx33_" tag="0017xx33" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx35_" tag="0017xx35" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx37_" tag="0017xx37" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx38_" tag="0017xx38" vm="1" vr="US">?</el>
+  <el keyword="Landmark" tag="0017xx71" vm="1" vr="IS">Landmark</el>
+  <el keyword="_0017_xx72_" tag="0017xx72" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx73_" tag="0017xx73" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx74_" tag="0017xx74" vm="1" vr="US">?</el>
+  <el keyword="PixelShiftHorizontal" tag="0017xx77" vm="1" vr="DS">Pixel Shift horizonta</el>
+  <el keyword="PixelShiftVertical" tag="0017xx78" vm="1" vr="DS">Pixel Shift vertical</el>
+  <el keyword="_0017_xx79_" tag="0017xx79" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx7A_" tag="0017xx7A" vm="1" vr="US">?</el>
+  <el keyword="_0017_xx80_" tag="0017xx80" vm="1" vr="US">?</el>
+  <el keyword="LeftMarker" tag="0017xx83" vm="1" vr="LO">Left Marker</el>
+  <el keyword="RightMarker" tag="0017xx84" vm="1" vr="LO">Right Marker</el>
+  <el keyword="_0017_xxA1_" tag="0017xxA1" vm="1" vr="SH">?</el>
+  <el keyword="ImageNameExtension1" tag="0017xxA2" vm="1" vr="SH">Image Name Extension 1</el>
+  <el keyword="ImageNameExtension2" tag="0017xxA3" vm="1" vr="SH">Image Name Extension 2</el>
+</elements>

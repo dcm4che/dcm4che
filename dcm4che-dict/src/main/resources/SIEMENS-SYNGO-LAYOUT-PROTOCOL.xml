@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="HangingProtocolExcellenceRank" tag="0073xx02" vm="1" vr="US">Hanging Protocol Excellence Rank</el>
+  <el keyword="TemplateDataRoleID" tag="0073xx04" vm="1" vr="CS">Template Data Role ID</el>
+  <el keyword="DataSharingFlag" tag="0073xx06" vm="1" vr="CS">Data Sharing Flag</el>
+  <el keyword="BaggingOperationsSequence" tag="0073xx08" vm="1" vr="SQ">Bagging Operations Sequence</el>
+  <el keyword="SynchronizationType" tag="0073xx10" vm="1" vr="LO">Synchronization Type</el>
+  <el keyword="CustomFilterType" tag="0073xx12" vm="1" vr="LO">Custom Filter Type</el>
+  <el keyword="CustomSorterType" tag="0073xx14" vm="1" vr="LO">Custom Sorter Type</el>
+  <el keyword="ReferenceTemplateDataRoleID" tag="0073xx16" vm="1" vr="CS">Reference Template Data Role ID</el>
+  <el keyword="ModelTemplateDataRoleID" tag="0073xx18" vm="1" vr="CS">Model Template Data Role ID</el>
+  <el keyword="SelectorDTValue" tag="0073xx20" vm="1-n" vr="DT">Selector DT Value</el>
+  <el keyword="SelectorDAValue" tag="0073xx22" vm="1-n" vr="DA">Selector DA Value</el>
+  <el keyword="SelectorTMValue" tag="0073xx24" vm="1-n" vr="TM">Selector TM Value</el>
+  <el keyword="SelectorUIValue" tag="0073xx26" vm="1-n" vr="UI">Selector UI Value</el>
+  <el keyword="ReferencedTemplateDataRole" tag="0073xx28" vm="1" vr="CS">Referenced Template Data Role</el>
+  <el keyword="CustomPropertySequence" tag="0073xx30" vm="1" vr="SQ">Custom Property Sequence</el>
+  <el keyword="CustomPropertyType" tag="0073xx32" vm="1" vr="CS">Custom Property Type</el>
+  <el keyword="CustomPropertyName" tag="0073xx34" vm="1" vr="LO">Custom Property Name</el>
+  <el keyword="CustomPropertyValue" tag="0073xx36" vm="1" vr="LO">Custom Property Value</el>
+  <el keyword="LayoutPropertySequence" tag="0073xx38" vm="1" vr="SQ">Layout Property Sequence</el>
+  <el keyword="SynchronizationSequence" tag="0073xx40" vm="1" vr="SQ">Synchronization Sequence</el>
+  <el keyword="PresentationCreatorType" tag="0073xx42" vm="1" vr="CS">Presentation Creator Type</el>
+  <el keyword="CineNavigationType" tag="0073xx44" vm="1" vr="CS">Cine Navigation Type</el>
+  <el keyword="SemanticNamingStrategy" tag="0073xx48" vm="1" vr="LO">Semantic Naming Strategy</el>
+  <el keyword="ParameterString" tag="0073xx50" vm="1" vr="LO">Parameter String</el>
+  <el keyword="SortingOrder" tag="0073xx52" vm="1" vr="CS">Sorting Order</el>
+  <el keyword="syngoTemplateType" tag="0073xx54" vm="1" vr="CS">syngo Template Type</el>
+  <el keyword="SorterType" tag="0073xx56" vm="1" vr="CS">Sorter Type</el>
+  <el keyword="DataDisplayProtocolVersion" tag="0073xx58" vm="1" vr="SH">Data Display Protocol Version</el>
+  <el keyword="TimepointValue" tag="0073xx5A" vm="1" vr="CS">Timepoint Value</el>
+  <el keyword="SharingGroupSequence" tag="0073xx5B" vm="1" vr="CS">Sharing Group Sequence</el>
+  <el keyword="TemplateSelectorOperator" tag="0073xx5C" vm="1" vr="CS">Template Selector Operator</el>
+  <el keyword="SharingType" tag="0073xx5D" vm="1" vr="CS">Sharing Type</el>
+  <el keyword="ViewportDefinitionsSequence" tag="0073xx60" vm="1" vr="SQ">Viewport Definitions Sequenc</el>
+  <el keyword="ProtocolType" tag="0073xx62" vm="1" vr="CS">Protocol Type</el>
+  <el keyword="TemplateSelectorSequence" tag="0073xx64" vm="1" vr="SQ">Template Selector Sequence</el>
+  <el keyword="DefaultTemplate" tag="0073xx66" vm="1" vr="CS">Default Template</el>
+  <el keyword="IsPreferred" tag="0073xx68" vm="1" vr="CS">Is Preferred</el>
+  <el keyword="TimepointInitialValueSequence" tag="0073xx6A" vm="1" vr="SQ">Timepoint Initial Value Sequence</el>
+  <el keyword="TimepointVariable" tag="0073xx6C" vm="1" vr="CS">Timepoint Variable</el>
+  <el keyword="DisplayProtocolName" tag="0073xx70" vm="1" vr="SH">Display Protocol Name</el>
+  <el keyword="DisplayProtocolDescription" tag="0073xx72" vm="1" vr="LO">Display Protocol Description</el>
+  <el keyword="DisplayProtocolLevel" tag="0073xx74" vm="1" vr="CS">Display Protocol Level</el>
+  <el keyword="DisplayProtocolCreator" tag="0073xx76" vm="1" vr="LO">Display Protocol Creator</el>
+  <el keyword="DisplayProtocolCreationDatetime" tag="0073xx78" vm="1" vr="DT">Display Protocol Creation Datetime</el>
+  <el keyword="ReferencedDataProtocol" tag="0073xx7A" vm="1" vr="UI">Referenced Data Protocol</el>
+  <el keyword="DisplayProtocolExcellenceRank" tag="0073xx7C" vm="1" vr="US">Display Protocol Excellence Rank</el>
+  <el keyword="LayoutSequence" tag="0073xx7E" vm="1" vr="SQ">Layout Sequence</el>
+  <el keyword="LayoutNumber" tag="0073xx80" vm="1" vr="US">Layout Number</el>
+  <el keyword="LayoutDescription" tag="0073xx82" vm="1" vr="LO">Layout Description</el>
+  <el keyword="SegmentSequence" tag="0073xx84" vm="1" vr="SQ">Segment Sequence</el>
+  <el keyword="SegmentNumber" tag="0073xx86" vm="1" vr="US">Segment Number</el>
+  <el keyword="SegmentDescription" tag="0073xx88" vm="1" vr="LO">Segment Description</el>
+  <el keyword="SegmentType" tag="0073xx8A" vm="1" vr="CS">Segment Type</el>
+  <el keyword="TileHorizontalDimension" tag="0073xx8C" vm="1" vr="US">Tile Horizontal Dimension</el>
+  <el keyword="TileVerticalDimension" tag="0073xx8E" vm="1" vr="US">Tile Vertical Dimension</el>
+  <el keyword="FillOrder" tag="0073xx90" vm="1" vr="CS">Fill Order</el>
+  <el keyword="SegmentSmallScrollType" tag="0073xx92" vm="1" vr="CS">Segment Small Scroll Type</el>
+  <el keyword="SegmentSmallScrollAmount" tag="0073xx94" vm="1" vr="US">Segment Small Scroll Amount</el>
+  <el keyword="SegmentLargeScrollType" tag="0073xx96" vm="1" vr="CS">Segment Large Scroll Type</el>
+  <el keyword="SegmentLargeScrollAmount" tag="0073xx98" vm="1" vr="US">Segment Large Scroll Amount</el>
+  <el keyword="SegmentOverlapPriority" tag="0073xx9A" vm="1" vr="US">Segment Overlap Priority</el>
+  <el keyword="DataRoleViewSequence" tag="0073xx9C" vm="1" vr="SQ">Data Role View Sequence</el>
+  <el keyword="DataRoleViewNumber" tag="0073xx9E" vm="1" vr="US">Data Role View Number</el>
+  <el keyword="ReferencedDataRole" tag="0073xxA2" vm="1" vr="US">Referenced Data Role</el>
+  <el keyword="SharingEnabled" tag="0073xxA4" vm="1" vr="CS">Sharing Enabled</el>
+  <el keyword="ReferencedDataRoleViews" tag="0073xxA8" vm="2-n" vr="US">Referenced Data Role Views</el>
+  <el keyword="DataProtocolName" tag="0073xxB0" vm="1" vr="SH">Data Protocol Nam</el>
+  <el keyword="DataProtocolDescription" tag="0073xxB2" vm="1" vr="LO">Data Protocol Description</el>
+  <el keyword="DataProtocolLevel" tag="0073xxB4" vm="1" vr="CS">Data Protocol Level</el>
+  <el keyword="DataProtocolCreator" tag="0073xxB6" vm="1" vr="LO">Data Protocol Creator</el>
+  <el keyword="DataProtocolCreationDatetime" tag="0073xxB8" vm="1" vr="DT">Data Protocol Creation Datetime</el>
+  <el keyword="DataProtocolExcellenceRank" tag="0073xxBA" vm="1" vr="US">Data Protocol Excellence Rank</el>
+  <el keyword="DataProtocolDefinitionSequence" tag="0073xxBC" vm="1" vr="SQ">Data Protocol Definition Sequence</el>
+  <el keyword="DataRoleSequence" tag="0073xxBE" vm="1" vr="SQ">Data Role Sequence</el>
+  <el keyword="DataRoleNumber" tag="0073xxC0" vm="1" vr="US">Data Role Number</el>
+  <el keyword="DataRoleName" tag="0073xxC2" vm="1" vr="SH">Data Role Name</el>
+  <el keyword="SelectorOperationsSequence" tag="0073xxC6" vm="1" vr="SQ">Selector Operations Sequence</el>
+  <el keyword="SelectorUsageFlag" tag="0073xxC8" vm="1" vr="CS">Selector Usage Flag</el>
+  <el keyword="SelectByAttributePresence" tag="0073xxCA" vm="1" vr="CS">Select by Attribute Presence</el>
+  <el keyword="SelectByCategory" tag="0073xxCC" vm="1" vr="CS">Select by Category</el>
+  <el keyword="SelectByOperator" tag="0073xxCE" vm="1" vr="CS">Select by Operator</el>
+  <el keyword="CustomSelectorType" tag="0073xxD0" vm="1" vr="LO">Custom Selector Type</el>
+  <el keyword="SelectorOperator" tag="0073xxD2" vm="1" vr="CS">Selector Operator</el>
+  <el keyword="ReformattingRequired" tag="0073xxD4" vm="1" vr="CS">Reformatting Require</el>
+  <el keyword="RegistrationDataSequence" tag="0073xxD6" vm="1" vr="SQ">Registration Data Sequence</el>
+  <el keyword="ReferenceDataRoleNumber" tag="0073xxD8" vm="1" vr="US">Reference Data Role Number</el>
+  <el keyword="ModelDataSequence" tag="0073xxDA" vm="1" vr="SQ">Model Data Sequence</el>
+  <el keyword="ModelDataRoleNumber" tag="0073xxDC" vm="1" vr="US">Model Data Role Number</el>
+  <el keyword="FusionDisplaySequence" tag="0073xxDE" vm="1" vr="SQ">Fusion Display Sequence</el>
+  <el keyword="Transparency" tag="0073xxE0" vm="1" vr="FD">Transparency</el>
+  <el keyword="TimePoint" tag="0073xxE2" vm="1" vr="CS">Time Point</el>
+  <el keyword="FirstTimePointToken" tag="0073xxE4" vm="1" vr="LO">First Time Point Token</el>
+  <el keyword="LastTimePointToken" tag="0073xxE6" vm="1" vr="LO">Last Time Point Token</el>
+  <el keyword="IntermediateTimePointToken" tag="0073xxE8" vm="1" vr="LO">Intermediate Time Point Token</el>
+  <el keyword="DataProcessorSequence" tag="0073xxEA" vm="1" vr="SQ">Data Processor Sequence</el>
+  <el keyword="DataProcessorType" tag="0073xxEC" vm="1" vr="LO">Data Processor Type</el>
+  <el keyword="TemplateDataRoleSequence" tag="0073xxEE" vm="1" vr="SQ">Template Data Role Sequence</el>
+  <el keyword="ViewSequence" tag="0073xxF0" vm="1" vr="SQ">View Sequence</el>
+  <el keyword="ViewType" tag="0073xxF4" vm="1" vr="LO">View Type</el>
+  <el keyword="CustomBaggingType" tag="0073xxF6" vm="1" vr="LO">Custom Bagging Type</el>
+  <el keyword="ReferencedDisplaySegmentNumber" tag="0073xxF8" vm="1" vr="US">Referenced Display Segment Number</el>
+  <el keyword="DataRoleType" tag="0073xxFA" vm="1" vr="LO">Data Role Type</el>
+  <el keyword="InternalFlag" tag="0073xx46" vm="1" vr="CS">Internal Flag</el>
+  <el keyword="UnassignedFlag" tag="0073xxFC" vm="1" vr="CS">Unassigned Flag</el>
+  <el keyword="InitialDisplayScrollPosition" tag="0073xxFE" vm="1" vr="CS">Initial Display Scroll Position</el>
+  <el keyword="VRTPreset" tag="0073xxFF" vm="1" vr="LO">VRT Preset</el>
+</elements>

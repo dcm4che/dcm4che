@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_0011_xx20_" tag="0011xx20" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xx24_" tag="0011xx24" vm="1-n" vr="DS">?</el>
+  <el keyword="_0011_xx30_" tag="0011xx30" vm="1" vr="LO">?</el>
+  <el keyword="_0011_xx31_" tag="0011xx31" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xx32_" tag="0011xx32" vm="1" vr="SL">?</el>
+  <el keyword="_0011_xx39_" tag="0011xx39" vm="1" vr="CS">?</el>
+  <el keyword="_0011_xx3A_" tag="0011xx3A" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xxD0_" tag="0011xxD0" vm="1" vr="OB">?</el>
+  <el keyword="_0011_xxE0_" tag="0011xxE0" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xxE1_" tag="0011xxE1" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xxE2_" tag="0011xxE2" vm="1" vr="UL">?</el>
+  <el keyword="_0011_xxE3_" tag="0011xxE3" vm="1" vr="US">?</el>
+  <el keyword="_0011_xxE4_" tag="0011xxE4" vm="1" vr="US">?</el>
+  <el keyword="_0011_xxE5_" tag="0011xxE5" vm="1" vr="CS">?</el>
+  <el keyword="_0063_xx0C_" tag="0063xx0C" vm="1-n" vr="DS">?</el>
+  <el keyword="_0063_xx35_" tag="0063xx35" vm="1" vr="SQ">?</el>
+  <el keyword="_0063_xx20_" tag="0063xx20" vm="1" vr="US">?</el>
+  <el keyword="_0063_xx21_" tag="0063xx21" vm="1" vr="UL">?</el>
+</elements>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="GraphicObjectSequence" tag="0071xx00" vm="1" vr="SQ">Graphic Object Sequence</el>
+  <el keyword="FillStyleVersion" tag="0071xx01" vm="1" vr="SL">Fill Style Version</el>
+  <el keyword="FillBackgroundColor" tag="0071xx02" vm="4" vr="FL">Fill Background Color</el>
+  <el keyword="FillForegroundColor" tag="0071xx03" vm="4" vr="FL">Fill Foreground Color</el>
+  <el keyword="FillMode" tag="0071xx04" vm="1" vr="SL">Fill Mode</el>
+  <el keyword="FillPattern" tag="0071xx05" vm="1" vr="OB">Fill Pattern</el>
+  <el keyword="LineStyleVersion" tag="0071xx06" vm="1" vr="SL">Line Style Version</el>
+  <el keyword="LineBackgroundColor" tag="0071xx07" vm="4" vr="FL">Line Background Color</el>
+  <el keyword="LineForegroundColor" tag="0071xx08" vm="4" vr="FL">Line Foreground Color</el>
+  <el keyword="LineType" tag="0071xx09" vm="1" vr="DS">Line Type</el>
+  <el keyword="LineThickness" tag="0071xx10" vm="1" vr="DS">Line Thickness</el>
+  <el keyword="LineShadowXOffset" tag="0071xx11" vm="1" vr="DS">Line Shadow X Offset</el>
+  <el keyword="LineShadowYOffset" tag="0071xx12" vm="1" vr="DS">Line Shadow Y Offset</el>
+  <el keyword="ShadowStyle" tag="0071xx13" vm="1" vr="DS">Shadow Style</el>
+  <el keyword="ShadowColor" tag="0071xx14" vm="4" vr="FL">Shadow Color</el>
+  <el keyword="StipplePattern" tag="0071xx15" vm="1" vr="DS">Stipple Pattern</el>
+  <el keyword="LineAntiAliasing" tag="0071xx16" vm="1" vr="DS">Line Anti Aliasing</el>
+  <el keyword="LineZBlendFlag" tag="0071xx17" vm="1" vr="CS">Line-Z-Blend Flag</el>
+  <el keyword="TextStyleVersion" tag="0071xx18" vm="1" vr="SL">Text Style Version</el>
+  <el keyword="TextColor" tag="0071xx19" vm="4" vr="FL">Text Color</el>
+  <el keyword="TextHorizontalAlign" tag="0071xx20" vm="1" vr="SL">Text Horizontal Align</el>
+  <el keyword="TextVerticalAlign" tag="0071xx21" vm="1" vr="SL">Text Vertical Align</el>
+  <el keyword="TextShadowXOffset" tag="0071xx22" vm="1" vr="DS">Text Shadow X Offset</el>
+  <el keyword="TextShadowYOffset" tag="0071xx23" vm="1" vr="DS">Text Shadow Y Offset</el>
+  <el keyword="TextShadowStyle" tag="0071xx24" vm="1" vr="SL">Text Shadow Style</el>
+  <el keyword="TextShadowColor" tag="0071xx25" vm="4" vr="FL">Text Shadow Color</el>
+  <el keyword="TextLogFont" tag="0071xx26" vm="1-n" vr="CS">Text Log Font</el>
+  <el keyword="TextZBlendFlag" tag="0071xx27" vm="1" vr="CS">Text-Z-Blend Flag</el>
+  <el keyword="GraphicBitMask" tag="0071xx28" vm="1" vr="OB">Graphic Bit Mask</el>
+  <el keyword="VisiblilityFlag" tag="0071xx29" vm="1" vr="CS">Visiblility Flag</el>
+  <el keyword="GraphicSensitivity" tag="0071xx30" vm="1" vr="SL">Graphic Sensitivity</el>
+  <el keyword="GraphicPickModeType" tag="0071xx31" vm="1" vr="SL">Graphic Pick Mode Type</el>
+  <el keyword="GraphicLayer" tag="0071xx32" vm="1" vr="SL">Graphic Layer</el>
+  <el keyword="GraphicObjectVersion" tag="0071xx33" vm="1" vr="SL">Graphic Object Version</el>
+  <el keyword="GraphicCoordinateSystem" tag="0071xx34" vm="1" vr="SL">Graphic Coordinate System</el>
+  <el keyword="GraphicCustomAttributes" tag="0071xx35" vm="1" vr="CS">Graphic Custom Attributes</el>
+  <el keyword="GraphicCustomAttributesKey" tag="0071xx36" vm="1" vr="CS">Graphic Custom Attributes Key</el>
+  <el keyword="GraphicCustomAttributesValue" tag="0071xx37" vm="1" vr="CS">Graphic Custom Attributes Value</el>
+  <el keyword="GraphicViewName" tag="0071xx38" vm="1" vr="CS">Graphic View Name</el>
+  <el keyword="GraphicData" tag="0071xx39" vm="3" vr="DS">Graphic Data</el>
+  <el keyword="GraphicType" tag="0071xx40" vm="1" vr="CS">Graphic Type</el>
+  <el keyword="NumberOfGraphicPoints" tag="0071xx41" vm="1" vr="US">Number of Graphic Points</el>
+  <el keyword="AxisMainTickLength" tag="0071xx42" vm="1" vr="DS">Axis Main Tick Length</el>
+  <el keyword="AxisDetailTickLength" tag="0071xx43" vm="1" vr="DS">Axis Detail Tick Length</el>
+  <el keyword="AxisMainTickSpacing" tag="0071xx44" vm="1" vr="DS">Axis Main Tick Spacing</el>
+  <el keyword="AxisDetailTickSpacing" tag="0071xx45" vm="1-n" vr="DS">Axis Detail Tick Spacing</el>
+  <el keyword="AxisMainTickCount" tag="0071xx46" vm="1" vr="DS">Axis Main Tick Count</el>
+  <el keyword="AxisDetailTickCount" tag="0071xx47" vm="1" vr="DS">Axis Detail Tick Count</el>
+  <el keyword="AxisTickBehavior" tag="0071xx48" vm="1" vr="SL">Axis Tick Behavior</el>
+  <el keyword="AxisTickAligment" tag="0071xx49" vm="1" vr="SL">Axis Tick Aligment</el>
+  <el keyword="AxisStep" tag="0071xx50" vm="1" vr="DS">Axis Step</el>
+  <el keyword="AxisStepIndex" tag="0071xx51" vm="1" vr="SL">Axis Step Index</el>
+  <el keyword="AxisTextFormat" tag="0071xx52" vm="1" vr="CS">Axis Text Format</el>
+  <el keyword="AxisShowCenterTextFlag" tag="0071xx53" vm="1" vr="CS">Axis Show Center Text Flag</el>
+  <el keyword="AxisShowTickTextFlag" tag="0071xx54" vm="1" vr="CS">Axis Show Tick Text Flag</el>
+  <el keyword="BitmapXOrientation" tag="0071xx55" vm="3" vr="DS">Bitmap X Orientation</el>
+  <el keyword="BitmapYOrientation" tag="0071xx56" vm="3" vr="DS">Bitmap Y Orientation</el>
+  <el keyword="GraphicBlob" tag="0071xx57" vm="1" vr="OB">Graphic Blob</el>
+  <el keyword="GraphicInterpolation" tag="0071xx58" vm="1" vr="CS">Graphic Interpolation</el>
+  <el keyword="GraphicAngle" tag="0071xx59" vm="1" vr="DS">Graphic Angle</el>
+  <el keyword="GraphicSize" tag="0071xx60" vm="1" vr="DS">Graphic Size</el>
+  <el keyword="CutLineSide" tag="0071xx61" vm="1" vr="CS">Cut Line Side</el>
+  <el keyword="GraphicTipLength" tag="0071xx62" vm="1" vr="DS">Graphic Tip Length</el>
+  <el keyword="CutLineArrowLength" tag="0071xx63" vm="1" vr="DS">Cut Line Arrow Length</el>
+  <el keyword="LineGapLength" tag="0071xx64" vm="1" vr="DS">Line Gap Length</el>
+  <el keyword="GraphicCircleRadius" tag="0071xx65" vm="1" vr="DS">Graphic Circle Radius</el>
+  <el keyword="LineDistanceMove" tag="0071xx66" vm="1" vr="DS">Line Distance Move</el>
+  <el keyword="LineMarkerLength" tag="0071xx67" vm="1" vr="DS">Line Marker Length</el>
+  <el keyword="GraphicCenter" tag="0071xx68" vm="3" vr="DS">Graphic Center</el>
+  <el keyword="RangeCenterAreaTopLeft" tag="0071xx69" vm="3" vr="DS">Range Center Area Top Left</el>
+  <el keyword="RangeCenterAreaBottomRight" tag="0071xx70" vm="3" vr="DS">Range Center Area Bottom Right</el>
+  <el keyword="RangeTilt" tag="0071xx71" vm="1" vr="DS">Range Tilt</el>
+  <el keyword="RangeMinimumTilt" tag="0071xx72" vm="1" vr="DS">Range Minimum Tilt</el>
+  <el keyword="RangeMaximumTilt" tag="0071xx73" vm="1" vr="DS">Range Maximum Tilt</el>
+  <el keyword="GraphicWidth" tag="0071xx74" vm="1" vr="DS">Graphic Width</el>
+  <el keyword="RangeMinimumWidth" tag="0071xx75" vm="1" vr="DS">Range Minimum Width</el>
+  <el keyword="RangeMaximumWidth" tag="0071xx76" vm="1" vr="DS">Range Maximum Width</el>
+  <el keyword="GraphicHeight" tag="0071xx77" vm="1" vr="DS">Graphic Height</el>
+  <el keyword="RangeFeed" tag="0071xx78" vm="1" vr="DS">Range Feed</el>
+  <el keyword="RangeDirection" tag="0071xx79" vm="1" vr="CS">Range Direction</el>
+  <el keyword="RangeShowScans" tag="0071xx80" vm="1" vr="CS">Range Show Scans</el>
+  <el keyword="RangeMinimumScanDistance" tag="0071xx81" vm="1" vr="DS">Range Minimum Scan Distance</el>
+  <el keyword="RangeOrthogonalHeight" tag="0071xx82" vm="1" vr="CS">Range Orthogonal Height</el>
+  <el keyword="GraphicPosition" tag="0071xx83" vm="3" vr="DS">Graphic Position</el>
+  <el keyword="GraphicClosedFlag" tag="0071xx84" vm="1" vr="CS">Graphic Closed Flag</el>
+  <el keyword="RangeLineTipMode" tag="0071xx85" vm="1" vr="SL">Range Line Tip Mode</el>
+  <el keyword="GraphicListCount" tag="0071xx86" vm="1" vr="SL">Graphic List Count</el>
+  <el keyword="AxisFlipTextFlag" tag="0071xx87" vm="1" vr="CS">Axis Flip Text Flag</el>
+  <el keyword="CurveDiagramType" tag="0071xx88" vm="1" vr="CS">Curve Diagram Type</el>
+  <el keyword="GraphicStartAngle" tag="0071xx89" vm="1" vr="DS">Graphic Start Angle</el>
+  <el keyword="GraphicEndAngle" tag="0071xx90" vm="1" vr="DS">Graphic End Angle</el>
+  <el keyword="LiveWireSmoothness" tag="0071xx91" vm="1" vr="IS">Live Wire Smoothness</el>
+  <el keyword="LiveWireSplineFlag" tag="0071xx92" vm="1" vr="CS">Live Wire Spline Flag</el>
+  <el keyword="EllipseCircleFlag" tag="0071xx93" vm="1" vr="CS">Ellipse Circle Flag</el>
+  <el keyword="GraphicSquareFlag" tag="0071xx94" vm="1" vr="CS">Graphic Square Flag</el>
+  <el keyword="CurveSectionStartIndex" tag="0071xx95" vm="1" vr="DS">Curve Section Start Index</el>
+  <el keyword="CurveSectionEndIndex" tag="0071xx96" vm="1" vr="DS">Curve Section End Index</el>
+  <el keyword="MarkerAlpha" tag="0071xx97" vm="1" vr="DS">Marker Alpha</el>
+  <el keyword="TableRowCount" tag="0071xx98" vm="1" vr="IS">Table Row Count</el>
+  <el keyword="TableColumnCount" tag="0071xx99" vm="1" vr="IS">Table Column Count</el>
+  <el keyword="TableRowHeight" tag="0071xx9A" vm="1" vr="DS">Table Row Height</el>
+  <el keyword="TableColumnWidth" tag="0071xx9B" vm="1" vr="DS">Table Column Width</el>
+  <el keyword="RectangleSelectionSegmentOffset" tag="0071xx9C" vm="1" vr="IS">Rectangle Selection Segment Offset</el>
+  <el keyword="GraphicText" tag="0071xx9D" vm="1" vr="CS">Graphic Text</el>
+  <el keyword="AxisTickSpacingCoordinateSystem" tag="0071xxA0" vm="1" vr="SL">Axis Tick Spacing Coordinate System</el>
+  <el keyword="AxisDiagramGridType" tag="0071xxA1" vm="1" vr="CS">Axis Diagram Grid Type</el>
+  <el keyword="PolarPlotCircleCount" tag="0071xxA2" vm="1" vr="SL">Polar Plot Circle Count</el>
+  <el keyword="PolarPlotLinesperCircle" tag="0071xxA3" vm="1" vr="SL">Polar Plot Lines-per-Circle</el>
+  <el keyword="PolarPlotCompartmentCount" tag="0071xxA4" vm="1" vr="SL">Polar Plot Compartment Count</el>
+  <el keyword="PolarPlotRadiusWeight" tag="0071xxA5" vm="1" vr="SL">Polar Plot Radius Weight</el>
+  <el keyword="CircleSegmentOuterRadius" tag="0071xxA6" vm="1" vr="DS">Circle Segment Outer Radius</el>
+  <el keyword="CircleSegmentClockwiseFlag" tag="0071xxA7" vm="1" vr="CS">Circle Segment Clockwise Flag</el>
+  <el keyword="AxisDiagramAutoResizeFlag" tag="0071xxA8" vm="1" vr="CS">Axis Diagram Auto Resize Flag</el>
+  <el keyword="AxisDiagramStepStart" tag="0071xxA9" vm="1" vr="DS">Axis Diagram Step Start</el>
+  <el keyword="GroupRoot" tag="0071xxB0" vm="1" vr="CS">Group Root</el>
+  <el keyword="GroupName" tag="0071xxB1" vm="1" vr="ST">Group Name</el>
+  <el keyword="GraphicAnnotationSequence" tag="0071xxB2" vm="1" vr="SQ">Graphic Annotation Sequence</el>
+  <el keyword="TextMinimumHeight" tag="0071xxB3" vm="1" vr="SL">Text Minimum Height</el>
+  <el keyword="TextFontScalingFactor" tag="0071xxB4" vm="1" vr="DS">Text Font Scaling Factor</el>
+  <el keyword="TextMaximumExtensions" tag="0071xxB5" vm="2" vr="SL">Text Maximum Extensions</el>
+  <el keyword="TextSegmentSize" tag="0071xxB6" vm="1" vr="CS">Text Segment Size</el>
+  <el keyword="GraphicObjectReferenceLabel" tag="0071xxB7" vm="1" vr="SL">Graphic Object Reference Label</el>
+</elements>

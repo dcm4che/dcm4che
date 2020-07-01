@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="ReviewMode" tag="0019xx00" vm="1" vr="US">Review Mode</el>
+  <el keyword="AnatomicalBackgroundPercent" tag="0019xx01" vm="1" vr="US">Anatomical Background Percent</el>
+  <el keyword="NumberOfPhases" tag="0019xx02" vm="1" vr="US">Number of Phases</el>
+  <el keyword="ApplyAnatomicalBackground" tag="0019xx03" vm="1" vr="US">Apply Anatomical Background</el>
+  <el keyword="PixelShiftArray" tag="0019xx04" vm="4-4n" vr="SS">Pixel Shift Array</el>
+  <el keyword="Brightness" tag="0019xx05" vm="1" vr="US">Brightness</el>
+  <el keyword="Contrast" tag="0019xx06" vm="1" vr="US">Contrast</el>
+  <el keyword="EnabledShutters" tag="0019xx07" vm="1" vr="US">Enabled Shutters</el>
+  <el keyword="NativeEdgeEnhancementPercentGain" tag="0019xx08" vm="1" vr="US">Native Edge Enhancement Percent Gain</el>
+  <el keyword="NativeEdgeEnhancementLUTIndex" tag="0019xx09" vm="1" vr="SS">Native Edge Enhancement LUT Index</el>
+  <el keyword="NativeEdgeEnhancementKernelSize" tag="0019xx0A" vm="1" vr="SS">Native Edge Enhancement Kernel Size</el>
+  <el keyword="SubtractedEdgeEnhancementPercentGain" tag="0019xx0B" vm="1" vr="US">Subtracted Edge Enhancement Percent Gain</el>
+  <el keyword="SubtractedEdgeEnhancementLUTIndex" tag="0019xx0C" vm="1" vr="SS">Subtracted Edge Enhancement LUT Index</el>
+  <el keyword="SubtractedEdgeEnhancementKernelSize" tag="0019xx0D" vm="1" vr="SS">Subtracted Edge Enhancement Kernel Size</el>
+  <el keyword="FadePercent" tag="0019xx0E" vm="1" vr="US">Fade Percent</el>
+  <el keyword="FlippedBeforeLateralityApplied" tag="0019xx0F" vm="1" vr="US">Flipped Before Laterality Applied</el>
+  <el keyword="ApplyFade" tag="0019xx10" vm="1" vr="US">Apply Fade</el>
+  <el keyword="ReferenceImagesTakenFlag" tag="0019xx11" vm="1" vr="US">Reference Images Taken Flag</el>
+  <el keyword="Zoom" tag="0019xx12" vm="1" vr="US">Zoom</el>
+  <el keyword="PanX" tag="0019xx13" vm="1" vr="SS">Pan X</el>
+  <el keyword="PanY" tag="0019xx14" vm="1" vr="SS">Pan Y</el>
+  <el keyword="NativeEdgeEnhancementAdvPercentGain" tag="0019xx15" vm="1" vr="SS">Native Edge Enhancement Adv Percent Gain</el>
+  <el keyword="SubtractedEdgeEnhancementAdvPercentGain" tag="0019xx16" vm="1" vr="SS">Subtracted Edge Enhancement Adv Percent Gain</el>
+  <el keyword="InvertFlag" tag="0019xx17" vm="1" vr="US">Invert Flag</el>
+  <el keyword="Quant1KOverlay" tag="0019xx1A" vm="1" vr="OB">Quant 1K Overlay</el>
+  <el keyword="OriginalResolution" tag="0019xx1B" vm="1" vr="US">Original Resolution</el>
+  <el keyword="AutoWindowCenter" tag="0019xx1C" vm="1" vr="DS">Auto Window Center</el>
+  <el keyword="AutoWindowWidth" tag="0019xx1D" vm="1" vr="DS">Auto Window Width</el>
+  <el keyword="AutoWindowCorrectValue" tag="0019xx1E" vm="2" vr="IS">Auto Window Correct Value</el>
+  <el keyword="SigmoidWindowParameter" tag="0019xx1F" vm="1" vr="DS">Sigmoid Window Parameter</el>
+  <el keyword="DispayedAreaTopLeftHandCorner" tag="0019xx41" vm="2" vr="SL">Dispayed Area Top Left Hand Corner</el>
+  <el keyword="DispayedAreaBottomRightHandCorner" tag="0019xx42" vm="2" vr="SL">Dispayed Area Bottom Right Hand Corner</el>
+</elements>

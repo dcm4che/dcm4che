@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="NumberOfMeasurements" tag="0009xx00" vm="1" vr="DS">Number of Measurements</el>
+  <el keyword="StorageMode" tag="0009xx10" vm="1" vr="CS">Storage Mode</el>
+  <el keyword="EvaluationMaskImage" tag="0009xx12" vm="1" vr="UL">Evaluation Mask - Image</el>
+  <el keyword="LastMoveDate" tag="0009xx26" vm="1" vr="DA">Last Move Date</el>
+  <el keyword="LastMoveTime" tag="0009xx27" vm="1" vr="TM">Last Move Time</el>
+  <el keyword="_0011_xx0A_" tag="0011xx0A" vm="1" vr="LO">?</el>
+  <el keyword="RegistrationDate" tag="0011xx10" vm="1" vr="DA">Registration Date</el>
+  <el keyword="RegistrationTime" tag="0011xx11" vm="1" vr="TM">Registration Time</el>
+  <el keyword="_0011_xx22_" tag="0011xx22" vm="1" vr="LO">?</el>
+  <el keyword="UsedPatientWeight" tag="0011xx23" vm="1" vr="DS">Used Patient Weight</el>
+  <el keyword="OrganCode" tag="0011xx40" vm="1" vr="IS">Organ Code</el>
+  <el keyword="ModifyingPhysician" tag="0013xx00" vm="1" vr="PN">Modifying Physician</el>
+  <el keyword="ModificationDate" tag="0013xx10" vm="1" vr="DA">Modification Date</el>
+  <el keyword="ModificationTime" tag="0013xx12" vm="1" vr="TM">Modification Time</el>
+  <el keyword="PatientName" tag="0013xx20" vm="1" vr="PN">Patient Name</el>
+  <el keyword="PatientId" tag="0013xx22" vm="1" vr="LO">Patient Id</el>
+  <el keyword="PatientBirthdate" tag="0013xx30" vm="1" vr="DA">Patient Birthdate</el>
+  <el keyword="PatientWeight" tag="0013xx31" vm="1" vr="DS">Patient Weight</el>
+  <el keyword="PatientsMaidenName" tag="0013xx32" vm="1" vr="LO">Patients Maiden Name</el>
+  <el keyword="ReferringPhysician" tag="0013xx33" vm="1" vr="LO">Referring Physician</el>
+  <el keyword="AdmittingDiagnosis" tag="0013xx34" vm="1" vr="LO">Admitting Diagnosis</el>
+  <el keyword="PatientSex" tag="0013xx35" vm="1" vr="LO">Patient Sex</el>
+  <el keyword="ProcedureDescription" tag="0013xx40" vm="1" vr="LO">Procedure Description</el>
+  <el keyword="PatientRestDirection" tag="0013xx42" vm="1" vr="LO">Patient Rest Direction</el>
+  <el keyword="PatientPosition" tag="0013xx44" vm="1" vr="LO">Patient Position</el>
+  <el keyword="ViewDirection" tag="0013xx46" vm="1" vr="LO">View Direction</el>
+  <el keyword="_0013_xx50_" tag="0013xx50" vm="1" vr="LO">?</el>
+  <el keyword="_0013_xx51_" tag="0013xx51" vm="1" vr="LO">?</el>
+  <el keyword="_0013_xx52_" tag="0013xx52" vm="1" vr="LO">?</el>
+  <el keyword="_0013_xx53_" tag="0013xx53" vm="1" vr="LO">?</el>
+  <el keyword="_0013_xx54_" tag="0013xx54" vm="1" vr="LO">?</el>
+  <el keyword="_0013_xx55_" tag="0013xx55" vm="1" vr="LO">?</el>
+  <el keyword="_0013_xx56_" tag="0013xx56" vm="1" vr="LO">?</el>
+  <el keyword="NetFrequency" tag="0019xx10" vm="1" vr="IS">Net Frequency</el>
+  <el keyword="MeasurementMode" tag="0019xx20" vm="1" vr="CS">Measurement Mode</el>
+  <el keyword="CalculationMode" tag="0019xx30" vm="1" vr="CS">Calculation Mode</el>
+  <el keyword="NoiseLevel" tag="0019xx50" vm="1" vr="IS">Noise Level</el>
+  <el keyword="NumberOfDataBytes" tag="0019xx60" vm="1" vr="IS">Number of Data Bytes</el>
+  <el keyword="_0019_xx70_" tag="0019xx70" vm="1-n" vr="DS">?</el>
+  <el keyword="_0019_xx80_" tag="0019xx80" vm="1" vr="LO">?</el>
+  <el keyword="FoV" tag="0021xx20" vm="2" vr="DS">FoV</el>
+  <el keyword="ImageMagnificationFactor" tag="0021xx22" vm="1" vr="DS">Image Magnification Factor</el>
+  <el keyword="ImageScrollOffset" tag="0021xx24" vm="2" vr="DS">Image Scroll Offset</el>
+  <el keyword="ImagePixelOffset" tag="0021xx26" vm="1" vr="IS">Image Pixel Offset</el>
+  <el keyword="ImagePosition" tag="0021xx60" vm="3" vr="DS">Image Position</el>
+  <el keyword="ImageNormal" tag="0021xx61" vm="3" vr="DS">Image Normal</el>
+  <el keyword="ImageDistance" tag="0021xx63" vm="1" vr="DS">Image Distance</el>
+  <el keyword="ImagePositioningHistoryMask" tag="0021xx65" vm="1" vr="US">Image Positioning History Mask</el>
+  <el keyword="ImageRow" tag="0021xx6A" vm="3" vr="DS">Image Row</el>
+  <el keyword="ImageColumn" tag="0021xx6B" vm="3" vr="DS">Image Column</el>
+  <el keyword="PatientOrientationSet1" tag="0021xx70" vm="3" vr="CS">Patient Orientation Set1</el>
+  <el keyword="PatientOrientationSet2" tag="0021xx71" vm="3" vr="CS">Patient Orientation Set2</el>
+  <el keyword="StudyName" tag="0021xx80" vm="1" vr="LO">Study Name</el>
+  <el keyword="StudyType" tag="0021xx82" vm="3" vr="SH">Study Type</el>
+  <el keyword="WindowStyle" tag="0029xx10" vm="1" vr="CS">Window Style</el>
+  <el keyword="_0029_xx11_" tag="0029xx11" vm="1" vr="CS">?</el>
+  <el keyword="_0029_xx13_" tag="0029xx13" vm="1" vr="CS">?</el>
+  <el keyword="PixelQualityCode" tag="0029xx20" vm="3" vr="CS">Pixel Quality Code</el>
+  <el keyword="PixelQualityValue" tag="0029xx22" vm="3" vr="IS">Pixel Quality Value</el>
+  <el keyword="ArchiveCode" tag="0029xx50" vm="1" vr="CS">Archive Code</el>
+  <el keyword="ExposureCode" tag="0029xx51" vm="1" vr="CS">Exposure Code</el>
+  <el keyword="SortCode" tag="0029xx52" vm="1" vr="IS">Sort Code</el>
+  <el keyword="_0029_xx53_" tag="0029xx53" vm="1" vr="CS">?</el>
+  <el keyword="Splash" tag="0029xx60" vm="1" vr="LO">Splash</el>
+  <el keyword="ImageText" tag="0051xx10" vm="1-n" vr="LO">Image Text</el>
+  <el keyword="ImageGraphicsFormatCode" tag="6021xx00" vm="1" vr="LO">Image Graphics Format Code</el>
+  <el keyword="ImageGraphics" tag="6021xx10" vm="1" vr="LO">Image Graphics</el>
+  <el keyword="BinaryData" tag="7FE1xx00" vm="1-n" vr="OB">Binary Data</el>
+</elements>

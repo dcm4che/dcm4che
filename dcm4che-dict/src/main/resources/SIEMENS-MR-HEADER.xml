@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_0019_xx08_" tag="0019xx08" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xx09_" tag="0019xx09" vm="1" vr="LO">?</el>
+  <el keyword="NumberOfImagesInMosaic" tag="0019xx0A" vm="1" vr="US">Number of Images in Mosaic</el>
+  <el keyword="SliceMeasurementDuration" tag="0019xx0B" vm="1" vr="DS">Slice Measurement Duration</el>
+  <el keyword="BValue" tag="0019xx0C" vm="1" vr="IS">B Value</el>
+  <el keyword="DiffusionDirectionality" tag="0019xx0D" vm="1" vr="CS">Diffusion Directionality</el>
+  <el keyword="DiffusionGradientDirection" tag="0019xx0E" vm="3" vr="FD">Diffusion Gradient Direction</el>
+  <el keyword="GradientMode" tag="0019xx0F" vm="1" vr="SH">Gradient Mode</el>
+  <el keyword="FlowCompensation" tag="0019xx11" vm="1" vr="SH">Flow Compensation</el>
+  <el keyword="TablePositionOrigin" tag="0019xx12" vm="3" vr="SL">Table Position Origin</el>
+  <el keyword="ImaAbsTablePosition" tag="0019xx13" vm="3" vr="SL">Ima Abs Table Position</el>
+  <el keyword="ImaRelTablePosition" tag="0019xx14" vm="3" vr="IS">Ima Rel Table Position</el>
+  <el keyword="SlicePosition_PCS" tag="0019xx15" vm="3" vr="FD">Slice Position PCS</el>
+  <el keyword="TimeAfterStart" tag="0019xx16" vm="1" vr="DS">Time After Start</el>
+  <el keyword="SliceResolution" tag="0019xx17" vm="1" vr="DS">Slice Resolution</el>
+  <el keyword="RealDwellTime" tag="0019xx18" vm="1" vr="IS">Real Dwell Time</el>
+  <el keyword="_0019_xx23_" tag="0019xx23" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xx25_" tag="0019xx25" vm="1-n" vr="FD">?</el>
+  <el keyword="_0019_xx26_" tag="0019xx26" vm="1-n" vr="FD">?</el>
+  <el keyword="BMatrix" tag="0019xx27" vm="6" vr="FD">B Matrix</el>
+  <el keyword="BandwidthPerPixelPhaseEncode" tag="0019xx28" vm="1" vr="FD">Bandwidth per Pixel Phase Encode</el>
+  <el keyword="MosaicRefAcqTimes" tag="0019xx29" vm="1-n" vr="FD">Mosaic Ref Acq Times</el>
+  <el keyword="CSAImageHeaderType" tag="0051xx08" vm="1" vr="CS">CSA Image Header Type</el>
+  <el keyword="CSAImageHeaderVersion" tag="0051xx09" vm="1" vr="LO">CSA Image Header Version</el>
+  <el keyword="_0051_xx0A_" tag="0051xx0A" vm="1" vr="LO">?</el>
+  <el keyword="AcquisitionMatrixText" tag="0051xx0B" vm="1" vr="SH">Acquisition Matrix Text</el>
+  <el keyword="_0051_xx0C_" tag="0051xx0C" vm="1" vr="LO">?</el>
+  <el keyword="_0051_xx0D_" tag="0051xx0D" vm="1" vr="SH">?</el>
+  <el keyword="_0051_xx0E_" tag="0051xx0E" vm="1" vr="LO">?</el>
+  <el keyword="CoilString" tag="0051xx0F" vm="1" vr="LO">Coil String</el>
+  <el keyword="_0051_xx11_" tag="0051xx11" vm="1" vr="LO">?</el>
+  <el keyword="_0051_xx12_" tag="0051xx12" vm="1" vr="SH">?</el>
+  <el keyword="PositivePCSDirections" tag="0051xx13" vm="1" vr="SH">Positive PCS Directions</el>
+  <el keyword="_0051_xx15_" tag="0051xx15" vm="1" vr="SH">?</el>
+  <el keyword="_0051_xx16_" tag="0051xx16" vm="1" vr="LO">?</el>
+  <el keyword="_0051_xx17_" tag="0051xx17" vm="1" vr="SH">?</el>
+  <el keyword="_0051_xx18_" tag="0051xx18" vm="1" vr="SH">?</el>
+  <el keyword="_0051_xx19_" tag="0051xx19" vm="1" vr="LO">?</el>
+</elements>

@@ -367,7 +367,6 @@
 (0019,00F9) VERS=""		VR="CS"   VM="1"	Owner="PHILIPS MR/PART"		Keyword="?"			Name="?"	PrivateBlock="0010"
 (0019,00FA) VERS=""		VR="CS"   VM="1"	Owner="PHILIPS MR/PART"		Keyword="?"			Name="?"	PrivateBlock="0010"
 (0019,00FB) VERS=""		VR="CS"   VM="1"	Owner="PHILIPS MR/PART"		Keyword="?"			Name="?"	PrivateBlock="0010"
-(0019,00FC) VERS=""		VR="CS"   VM="1"	Owner="PHILIPS MR/PART"		Keyword="?"			Name="?"	PrivateBlock="0010"
 (0019,00a0) VERS=""		VR="IS"   VM="1"	Owner="PHILIPS MR/PART"		Keyword="?"				Name="?"	PrivateBlock="0010"
 (0019,00a0) VERS=""		VR="US"   VM="1"	Owner="SPI-P Release 1"		Keyword="Angulation"			Name="Angulation"
 (0019,00a0) VERS=""		VR="LO"   VM="1"	Owner="SPI-P-GV-CT Release 1"	Keyword="?"				Name="?"
@@ -1177,7 +1176,7 @@
 (2005,0026) VERS=""		VR="CS"   VM="1"	Owner="Philips MR Imaging DD 001"		Keyword="OverSamplingPhase"			Name="Over Sampling Phase"
 (2005,0026) VERS=""		VR="FL"   VM="1"	Owner="Philips MR Imaging DD 004"		Keyword="SpectroB0EchoTopPosition"	Name="Spectro B0 Echo Top Position"
 (2005,0026) VERS=""		VR="CS"   VM="1"	Owner="Philips MR Imaging DD 005"		Keyword="ViewingHardcopyOnly"		Name="Viewing Hardcopy Only"
-(2005,0027) VERS=""		VR="CS"   VM="1"	Owner="PHILIPS MR IMAGING DD 001"		KKeyword="PackageMode"				Name="Package Mode"
+(2005,0027) VERS=""		VR="CS"   VM="1"	Owner="PHILIPS MR IMAGING DD 001"		Keyword="PackageMode"				Name="Package Mode"
 (2005,0027) VERS=""		VR="CS"   VM="1"	Owner="Philips MR Imaging DD 001"		Keyword="PackageMode"				Name="Package Mode"
 (2005,0027) VERS=""		VR="CS"   VM="1"	Owner="Philips MR Imaging DD 004"		Keyword="SpectroComplexComponent"	Name="Spectro Complex Component"
 (2005,0027) VERS=""		VR="CS"   VM="1"	Owner="Philips MR Imaging DD 005"		Keyword="?"							Name="?"							# not SQ <Private EMR> after all :(

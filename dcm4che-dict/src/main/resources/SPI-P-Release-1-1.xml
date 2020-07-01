@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_0009_xxC0_" tag="0009xxC0" vm="1" vr="LT">?"</el>
+  <el keyword="_0009_xxC1_" tag="0009xxC1" vm="1" vr="LT">?"</el>
+  <el keyword="PhysiologicalDataType" tag="0019xx00" vm="1" vr="UN">Physiological Data Type"</el>
+  <el keyword="PhysiologicalDataChannelAndKind" tag="0019xx01" vm="1" vr="UN">Physiological Data Channel And Kind"</el>
+  <el keyword="SampleBitsAllocated" tag="0019xx02" vm="1" vr="US">Sample Bits Allocated"</el>
+  <el keyword="SampleBitsStored" tag="0019xx03" vm="1" vr="US">Sample Bits Stored"</el>
+  <el keyword="SampleHighBit" tag="0019xx04" vm="1" vr="US">Sample High Bit"</el>
+  <el keyword="SampleRepresentation" tag="0019xx05" vm="1" vr="US">Sample Representation"</el>
+  <el keyword="SmallestSampleValue" tag="0019xx06" vm="1" vr="UN">Smallest Sample Value"</el>
+  <el keyword="LargestSampleValue" tag="0019xx07" vm="1" vr="UN">Largest Sample Value"</el>
+  <el keyword="NumberOfSamples" tag="0019xx08" vm="1" vr="UN">Number Of Samples"</el>
+  <el keyword="SampleData" tag="0019xx09" vm="1" vr="UN">Sample Data"</el>
+  <el keyword="SampleRate" tag="0019xx0A" vm="1" vr="UN">Sample Rate"</el>
+  <el keyword="PhysiologicalDataType2" tag="0019xx10" vm="1" vr="UN">Physiological Data Type 2"</el>
+  <el keyword="PhysiologicalDataChannelAndKind2" tag="0019xx11" vm="1" vr="UN">Physiological Data Channel And Kind 2"</el>
+  <el keyword="SampleBitsAllocated2" tag="0019xx12" vm="1" vr="US">Sample Bits Allocated 2"</el>
+  <el keyword="SampleBitsStored2" tag="0019xx13" vm="1" vr="US">Sample Bits Stored 2"</el>
+  <el keyword="SampleHighBit2" tag="0019xx14" vm="1" vr="US">Sample High Bit 2"</el>
+  <el keyword="SampleRepresentation2" tag="0019xx15" vm="1" vr="US">Sample Representation 2"</el>
+  <el keyword="SmallestSampleValue2" tag="0019xx16" vm="1" vr="UN">Smallest Sample Value 2"</el>
+  <el keyword="LargestSampleValue2" tag="0019xx17" vm="1" vr="UN">Largest Sample Value 2"</el>
+  <el keyword="NumberOfSamples2" tag="0019xx18" vm="1" vr="UN">Number Of Samples 2"</el>
+  <el keyword="SampleData2" tag="0019xx19" vm="1" vr="UN">Sample Data 2"</el>
+  <el keyword="SampleRate2" tag="0019xx1A" vm="1" vr="UN">Sample Rate 2"</el>
+  <el keyword="ZoomID" tag="0029xx00" vm="1" vr="LT">Zoom ID"</el>
+  <el keyword="ZoomRectangle" tag="0029xx01" vm="1-n" vr="DS">Zoom Rectangle"</el>
+  <el keyword="ZoomFactor" tag="0029xx03" vm="1" vr="DS">Zoom Factor"</el>
+  <el keyword="ZoomFunction" tag="0029xx04" vm="1" vr="US">Zoom Function"</el>
+  <el keyword="ZoomEnableStatus" tag="0029xx0E" vm="1" vr="CS">Zoom Enable Status"</el>
+  <el keyword="ZoomSelectStatus" tag="0029xx0F" vm="1" vr="CS">Zoom Select Status"</el>
+  <el keyword="MagnifyingGlassID" tag="0029xx40" vm="1" vr="LT">Magnifying Glass ID"</el>
+  <el keyword="MagnifyingGlassRectangle" tag="0029xx41" vm="1-n" vr="DS">Magnifying Glass Rectangle"</el>
+  <el keyword="MagnifyingGlassFactor" tag="0029xx43" vm="1" vr="DS">Magnifying Glass Factor"</el>
+  <el keyword="MagnifyingGlassFunction" tag="0029xx44" vm="1" vr="US">Magnifying Glass Function"</el>
+  <el keyword="MagnifyingGlassEnableStatus" tag="0029xx4E" vm="1" vr="CS">Magnifying Glass Enable Status"</el>
+  <el keyword="MagnifyingGlassSelectStatus" tag="0029xx4F" vm="1" vr="CS">Magnifying Glass Select Status"</el>
+</elements>

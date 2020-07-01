@@ -168,7 +168,7 @@ public class Tpl2Xml {
         System.out.println(MessageFormat.format(rb.getString("convert-template"), template));
         for (Map.Entry<String, List<DictionaryElement>> entry : privateDictsFrom(template).entrySet()) {
             Path file = Files.createFile(dir.resolve(
-                    entry.getKey().toLowerCase().replaceAll(":", "-") + ".xml"));
+                    entry.getKey().replaceAll("[:;\\s/]", "-") + ".xml"));
             DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
             Document document = documentBuilder.newDocument();
@@ -177,7 +177,12 @@ public class Tpl2Xml {
                     document.getDocumentElement());
             Element root = document.createElement(elements);
             document.appendChild(root);
-            entry.getValue().forEach(dictElement -> {
+            Set<String> keywords = new HashSet<>();
+            Set<String> tags = new HashSet<>();
+            for (DictionaryElement dictElement : entry.getValue()) {
+                if (duplicateTagsOrKeywords(dictElement, keywords, tags))
+                    continue;
+
                 Element el = document.createElement("el");
                 root.appendChild(el);
                 el.setAttribute("tag", dictElement.getTag());
@@ -185,12 +190,24 @@ public class Tpl2Xml {
                 el.setAttribute("vr", dictElement.getVr());
                 el.setAttribute("vm", dictElement.getVm());
                 el.appendChild(document.createTextNode(dictElement.getValue()));
-            });
+            }
             DOMSource domSource = new DOMSource(document);
             StreamResult streamResult = new StreamResult(file.toFile());
             getTransformer().transform(domSource, streamResult);
             System.out.println(MessageFormat.format(rb.getString("converted"), file));
         }
+    }
+
+    private boolean duplicateTagsOrKeywords(DictionaryElement dictElement, Set<String> keywords, Set<String> tags) {
+        if (keywords.add(dictElement.getKeyword()) && tags.add(dictElement.getTag()))
+            return false;
+
+        System.out.println("Ignoring duplicate tag or keyword entry: [tag=" + dictElement.getTag()
+                + ", keyword=" + dictElement.getKeyword()
+                + ", vr=" + dictElement.getVr()
+                + ", vm=" + dictElement.getVm()
+                + ", value=" + dictElement.getValue() + "]");
+        return true;
     }
 
     private Transformer getTransformer() throws TransformerConfigurationException {
@@ -234,7 +251,7 @@ public class Tpl2Xml {
         DictionaryElement(String[] fields) {
             this.vr = fields[2].substring(4);
             this.vm = fields[3].substring(4);
-            this.value = fields[6].substring(6, fields[6].length() - 1);
+            this.value = fields[6].substring(6);
             setTagAndKeyword(fields[0], fields[5].substring(9));;
         }
 
@@ -259,8 +276,8 @@ public class Tpl2Xml {
         }
 
         private void setTagAndKeyword(String tag, String keyword) {
-            String first4 = tag.substring(1, 5);
-            String last4 = "xx" + tag.substring(8,10);
+            String first4 = tag.substring(1, 5).toUpperCase();
+            String last4 = "xx" + tag.substring(8,10).toUpperCase();
             this.keyword = keyword.equals("?")
                     ? "_" + first4 + "_" + last4 + "_"
                     : keyword.contains(" ")

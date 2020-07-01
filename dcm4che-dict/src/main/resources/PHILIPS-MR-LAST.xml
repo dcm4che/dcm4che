@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="MainMagneticField" tag="0019xx09" vm="1" vr="DS">Main Magnetic Field</el>
+  <el keyword="FlowCompensation" tag="0019xx0E" vm="1" vr="IS">Flow Compensation</el>
+  <el keyword="_0019_xxB7_" tag="0019xxB7" vm="1" vr="IS">?"</el>
+  <el keyword="_0019_xxE4_" tag="0019xxE4" vm="1" vr="IS">?"</el>
+  <el keyword="_0019_xxE5_" tag="0019xxE5" vm="1" vr="DS">?"</el>
+  <el keyword="MinimumRRInterval" tag="0019xxB1" vm="1" vr="IS">Minimum RR Interval"</el>
+  <el keyword="MaximumRRInterval" tag="0019xxB2" vm="1" vr="IS">Maximum RR Interval"</el>
+  <el keyword="NumberOfRejections" tag="0019xxB3" vm="1" vr="IS">Number of Rejections"</el>
+  <el keyword="NumberOfRRIntervals" tag="0019xxB4" vm="1-n" vr="IS">Number of RR Intervals"</el>
+  <el keyword="ArrhythmiaRejection" tag="0019xxB5" vm="1" vr="IS">Arrhythmia Rejection"</el>
+  <el keyword="_0019_xxC0_" tag="0019xxC0" vm="1-n" vr="DS">?"</el>
+  <el keyword="CycledMultipleSlice" tag="0019xxC6" vm="1" vr="IS">Cycled Multiple Slice</el>
+  <el keyword="REST" tag="0019xxCE" vm="1" vr="IS">REST</el>
+  <el keyword="_0019_xxD5_" tag="0019xxD5" vm="1" vr="DS">?"</el>
+  <el keyword="FourierInterpolation" tag="0019xxD6" vm="1" vr="IS">Fourier Interpolation</el>
+  <el keyword="_0019_xxD9_" tag="0019xxD9" vm="1-n" vr="IS">?"</el>
+  <el keyword="Prepulse" tag="0019xxE0" vm="1" vr="IS">Prepulse</el>
+  <el keyword="PrepulseDelay" tag="0019xxE1" vm="1" vr="DS">Prepulse Delay"</el>
+  <el keyword="_0019_xxE2_" tag="0019xxE2" vm="1" vr="IS">?"</el>
+  <el keyword="_0019_xxE3_" tag="0019xxE3" vm="1" vr="DS">?"</el>
+  <el keyword="WSProtocolString1" tag="0019xxF0" vm="1" vr="LT">WS Protocol String 1"</el>
+  <el keyword="WSProtocolString2" tag="0019xxF1" vm="1" vr="LT">WS Protocol String 2"</el>
+  <el keyword="WSProtocolString3" tag="0019xxF2" vm="1" vr="LT">WS Protocol String 3"</el>
+  <el keyword="WSProtocolString4" tag="0019xxF3" vm="1" vr="LT">WS Protocol String 4"</el>
+  <el keyword="_0021_xx00_" tag="0021xx00" vm="1" vr="IS">?"</el>
+  <el keyword="_0021_xx10_" tag="0021xx10" vm="1" vr="IS">?"</el>
+  <el keyword="_0021_xx20_" tag="0021xx20" vm="1" vr="IS">?"</el>
+  <el keyword="SliceGap" tag="0021xx21" vm="1" vr="DS">Slice Gap"</el>
+  <el keyword="StackRadialAngle" tag="0021xx22" vm="1" vr="DS">Stack Radial Angle"</el>
+  <el keyword="_0027_xx00_" tag="0027xx00" vm="1" vr="US">?"</el>
+  <el keyword="_0027_xx11_" tag="0027xx11" vm="1-n" vr="US">?"</el>
+  <el keyword="_0027_xx12_" tag="0027xx12" vm="1-n" vr="DS">?"</el>
+  <el keyword="_0027_xx13_" tag="0027xx13" vm="1-n" vr="DS">?"</el>
+  <el keyword="_0027_xx14_" tag="0027xx14" vm="1-n" vr="DS">?"</el>
+  <el keyword="_0027_xx15_" tag="0027xx15" vm="1-n" vr="DS">?"</el>
+  <el keyword="_0027_xx16_" tag="0027xx16" vm="1" vr="LO">?"</el>
+  <el keyword="FPMin" tag="0029xx10" vm="1" vr="DS">FP Min"</el>
+  <el keyword="FPMax" tag="0029xx20" vm="1" vr="DS">FP Max"</el>
+  <el keyword="ScaledMinimum" tag="0029xx30" vm="1" vr="DS">Scaled Minimum"</el>
+  <el keyword="ScaledMaximum" tag="0029xx40" vm="1" vr="DS">Scaled Maximum"</el>
+  <el keyword="WindowMinimum" tag="0029xx50" vm="1" vr="DS">Window Minimum"</el>
+  <el keyword="WindowMaximum" tag="0029xx60" vm="1" vr="DS">Window Maximum"</el>
+  <el keyword="_0029_xx61_" tag="0029xx61" vm="1" vr="IS">?"</el>
+  <el keyword="_0029_xx62_" tag="0029xx62" vm="1" vr="IS">?"</el>
+  <el keyword="_0029_xx70_" tag="0029xx70" vm="1" vr="DS">?"</el>
+  <el keyword="_0029_xx71_" tag="0029xx71" vm="1" vr="DS">?"</el>
+  <el keyword="_0029_xx72_" tag="0029xx72" vm="1" vr="IS">?"</el>
+  <el keyword="ViewCenter" tag="0029xx80" vm="1" vr="IS">View Center"</el>
+  <el keyword="ViewSize" tag="0029xx81" vm="1" vr="IS">View Size"</el>
+  <el keyword="ViewZoom" tag="0029xx82" vm="1" vr="IS">View Zoom"</el>
+  <el keyword="ViewTransform" tag="0029xx83" vm="1" vr="IS">View Transform"</el>
+  <el keyword="_0041_xx07_" tag="0041xx07" vm="1" vr="LO">?"</el>
+  <el keyword="_0041_xx09_" tag="0041xx09" vm="1" vr="DS">?"</el>
+  <el keyword="_6001_xx00_" tag="6001xx00" vm="1" vr="LT">?"</el>
+</elements>

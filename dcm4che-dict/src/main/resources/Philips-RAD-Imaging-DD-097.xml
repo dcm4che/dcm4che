@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_200B_xx00_" tag="200Bxx00" vm="1" vr="ST">?"</el>
+  <el keyword="_200B_xx01_" tag="200Bxx01" vm="1" vr="CS">?"</el>
+  <el keyword="_200B_xx02_" tag="200Bxx02" vm="1" vr="SS">?"</el>
+  <el keyword="_200B_xx50_" tag="200Bxx50" vm="1" vr="SS">?"</el>
+  <el keyword="_200B_xx51_" tag="200Bxx51" vm="1" vr="SS">?"</el>
+  <el keyword="_200B_xx52_" tag="200Bxx52" vm="1" vr="SS">?"</el>
+  <el keyword="_200B_xx53_" tag="200Bxx53" vm="1" vr="SS">?"</el>
+  <el keyword="_200B_xx54_" tag="200Bxx54" vm="1" vr="ST">?"</el>
+  <el keyword="_200B_xx60_" tag="200Bxx60" vm="1" vr="LT">?"</el>
+  <el keyword="_200B_xx63_" tag="200Bxx63" vm="1" vr="LT">?"</el>
+  <el keyword="_200B_xx65_" tag="200Bxx65" vm="1" vr="SS">?"</el>
+  <el keyword="_200B_xx6E_" tag="200Bxx6E" vm="1" vr="US">?"</el>
+  <el keyword="_200B_xx72_" tag="200Bxx72" vm="1" vr="FD">?"</el>
+  <el keyword="_200B_xx73_" tag="200Bxx73" vm="1" vr="SS">?"</el>
+  <el keyword="_200B_xx74_" tag="200Bxx74" vm="1" vr="IS">?"</el>
+  <el keyword="_200B_xx75_" tag="200Bxx75" vm="1" vr="CS">?"</el>
+  <el keyword="_200B_xx76_" tag="200Bxx76" vm="1" vr="SH">?"</el>
+  <el keyword="_200B_xx78_" tag="200Bxx78" vm="1-n" vr="IS">?"</el>
+  <el keyword="_200B_xx79_" tag="200Bxx79" vm="1" vr="IS">?"</el>
+  <el keyword="_200B_xx7A_" tag="200Bxx7A" vm="1" vr="IS">?"</el>
+  <el keyword="_200B_xx7B_" tag="200Bxx7B" vm="1" vr="US">?"</el>
+  <el keyword="_200B_xx7C_" tag="200Bxx7C" vm="1" vr="US">?"</el>
+  <el keyword="_200B_xx7D_" tag="200Bxx7D" vm="1-n" vr="IS">?"</el>
+  <el keyword="_200B_xx7E_" tag="200Bxx7E" vm="1" vr="UI">?"</el>
+  <el keyword="_200B_xx81_" tag="200Bxx81" vm="1" vr="LO">?"</el>
+  <el keyword="_200B_xx82_" tag="200Bxx82" vm="1" vr="LO">?"</el>
+  <el keyword="_200B_xx85_" tag="200Bxx85" vm="1" vr="IS">?"</el>
+  <el keyword="_200B_xx86_" tag="200Bxx86" vm="1" vr="CS">?"</el>
+  <el keyword="_200B_xx88_" tag="200Bxx88" vm="1" vr="CS">?"</el>
+  <el keyword="_200B_xx89_" tag="200Bxx89" vm="1" vr="LT">?"</el>
+  <el keyword="_200B_xx90_" tag="200Bxx90" vm="1" vr="DS">?"</el>
+  <el keyword="_200B_xx96_" tag="200Bxx96" vm="1" vr="SH">?"</el>
+  <el keyword="_200B_xx99_" tag="200Bxx99" vm="1" vr="SH">?"</el>
+  <el keyword="_200B_xx9A_" tag="200Bxx9A" vm="1" vr="FD">?"</el>
+  <el keyword="_200B_xx9B_" tag="200Bxx9B" vm="1" vr="FD">?"</el>
+  <el keyword="_200B_xxA0_" tag="200BxxA0" vm="1" vr="LT">?"</el>
+</elements>

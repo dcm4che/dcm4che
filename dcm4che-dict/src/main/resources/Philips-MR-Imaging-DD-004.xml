@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="SpectrumExtraNumber" tag="2005xx00" vm="1" vr="SS">Spectrum Extra Number"</el>
+  <el keyword="SpectrumKxCoordinate" tag="2005xx01" vm="1" vr="SS">Spectrum Kx Coordinate"</el>
+  <el keyword="SpectrumKyCoordinate" tag="2005xx02" vm="1" vr="SS">Spectrum Ky Coordinate"</el>
+  <el keyword="SpectrumLocationNumber" tag="2005xx03" vm="1" vr="SS">Spectrum Location Number"</el>
+  <el keyword="SpectrumMixNumber" tag="2005xx04" vm="1" vr="SS">Spectrum Mix Number"</el>
+  <el keyword="SpectrumXCoordinate" tag="2005xx05" vm="1" vr="SS">Spectrum X Coordinate"</el>
+  <el keyword="SpectrumYCoordinate" tag="2005xx06" vm="1" vr="SS">Spectrum Y Coordinate"</el>
+  <el keyword="SpectrumDCLevel" tag="2005xx07" vm="1" vr="FL">Spectrum DC Level"</el>
+  <el keyword="SpectrumNoiseLevel" tag="2005xx08" vm="1" vr="FL">Spectrum Noise Level"</el>
+  <el keyword="SpectrumBeginTime" tag="2005xx09" vm="1" vr="FL">Spectrum Begin Time"</el>
+  <el keyword="SpectrumEchoTime" tag="2005xx10" vm="1" vr="FL">Spectrum Echo Time"</el>
+  <el keyword="SpectrumInversionTime" tag="2005xx12" vm="1" vr="FL">Spectrum Inversion Time"</el>
+  <el keyword="SpectrumNumber" tag="2005xx13" vm="1" vr="SS">Spectrum Number"</el>
+  <el keyword="SpectrumNumberOfAverages" tag="2005xx14" vm="1" vr="SS">Spectrum Number of Averages"</el>
+  <el keyword="SpectrumNumberOfSamples" tag="2005xx15" vm="1" vr="SS">Spectrum Number of Samples"</el>
+  <el keyword="SpectrumScanSequenceNumber" tag="2005xx16" vm="1" vr="SS">Spectrum Scan Sequence Number"</el>
+  <el keyword="SpectrumNumberOfPeaks" tag="2005xx17" vm="1" vr="SS">Spectrum Number of Peaks"</el>
+  <el keyword="SpectrumPeak" tag="2005xx18" vm="1" vr="SQ">Spectrum Peak"</el>
+  <el keyword="SpectrumPeakIntensity" tag="2005xx19" vm="1-n" vr="FL">Spectrum Peak Intensity"</el>
+  <el keyword="SpectrumPeakLabel" tag="2005xx20" vm="1-n" vr="LO">Spectrum Peak Label"</el>
+  <el keyword="SpectrumPeakPhase" tag="2005xx21" vm="1-n" vr="FL">Spectrum Peak Phase"</el>
+  <el keyword="SpectrumPeakPosition" tag="2005xx22" vm="1-n" vr="FL">Spectrum Peak Position"</el>
+  <el keyword="SpectrumPeakType" tag="2005xx23" vm="1-n" vr="CS">Spectrum Peak Type"</el>
+  <el keyword="SpectrumPeakWidth" tag="2005xx24" vm="1-n" vr="FL">Spectrum Peak Width"</el>
+  <el keyword="SpectroSIB0Correction" tag="2005xx25" vm="1" vr="CS">Spectro SI B0 Correction"</el>
+  <el keyword="SpectroB0EchoTopPosition" tag="2005xx26" vm="1" vr="FL">Spectro B0 Echo Top Position"</el>
+  <el keyword="SpectroComplexComponent" tag="2005xx27" vm="1" vr="CS">Spectro Complex Component"</el>
+  <el keyword="SpectroDataOrigin" tag="2005xx28" vm="1" vr="CS">Spectro Data Origin"</el>
+  <el keyword="SpectroEchoTopPosition" tag="2005xx29" vm="1" vr="FL">Spectro Echo Top Position"</el>
+  <el keyword="InPlaneTransforms" tag="2005xx30" vm="1-n" vr="CS">InPlane Transforms"</el>
+  <el keyword="NumberOfSpectraAcquired" tag="2005xx31" vm="1" vr="SS">Number of Spectra Acquired"</el>
+  <el keyword="PhaseEncodingEchoTopPositions" tag="2005xx33" vm="1" vr="FL">Phase Encoding Echo Top Positions"</el>
+  <el keyword="PhysicalQuantityForChemicalShift" tag="2005xx34" vm="1" vr="CS">Physical Quantity for Chemical Shift"</el>
+  <el keyword="PhysicalQuantitySpatial" tag="2005xx35" vm="1" vr="CS">Physical Quantity Spatial"</el>
+  <el keyword="ReferenceFrequency" tag="2005xx36" vm="1" vr="FL">Reference Frequency"</el>
+  <el keyword="SampleOffset" tag="2005xx37" vm="1" vr="FL">Sample Offset"</el>
+  <el keyword="SamplePitch" tag="2005xx38" vm="1" vr="FL">Sample Pitch"</el>
+  <el keyword="SearchIntervalForPeaks" tag="2005xx39" vm="2" vr="SS">Search Interval for Peaks"</el>
+  <el keyword="SignalDomainForChemicalShift" tag="2005xx40" vm="1" vr="CS">Signal Domain for Chemical Shift"</el>
+  <el keyword="SignalDomainSpatial" tag="2005xx41" vm="1" vr="CS">Signal Domain Spatial"</el>
+  <el keyword="SignalType" tag="2005xx42" vm="1" vr="CS">Signal Type"</el>
+  <el keyword="SpectroAdditionalRotations" tag="2005xx43" vm="1" vr="CS">Spectro Additional Rotations"</el>
+  <el keyword="SpectroDisplayRanges" tag="2005xx44" vm="1-n" vr="SS">Spectro Display Ranges"</el>
+  <el keyword="SpectroEchoAcquisition" tag="2005xx45" vm="1" vr="CS">Spectro Echo Acquisition"</el>
+  <el keyword="SpectroFrequencyUnit" tag="2005xx46" vm="1" vr="CS">Spectro Frequency Unit"</el>
+  <el keyword="SpectroGamma" tag="2005xx47" vm="1" vr="FL">Spectro Gamma"</el>
+  <el keyword="SpectroHiddenLineRemoval" tag="2005xx48" vm="1" vr="CS">Spectro Hidden Line Removal"</el>
+  <el keyword="SpectroHorizontalShift" tag="2005xx49" vm="1" vr="FL">Spectro Horizontal Shift"</el>
+  <el keyword="SpectroHorizontalWindow" tag="2005xx50" vm="2" vr="FL">Spectro Horizontal Window"</el>
+  <el keyword="SpectroNumberOfDisplayRanges" tag="2005xx51" vm="1" vr="SS">Spectro Number of Display Ranges"</el>
+  <el keyword="SpectroNumberOfEchoPulses" tag="2005xx52" vm="1" vr="SS">Spectro Number of Echo Pulses"</el>
+  <el keyword="SpectroProcessingHistory" tag="2005xx53" vm="1-n" vr="LO">Spectro Processing History"</el>
+  <el keyword="SpectroScanType" tag="2005xx54" vm="1" vr="CS">Spectro Scan Type"</el>
+  <el keyword="SpectroSICSIntervals" tag="2005xx55" vm="1-n" vr="FL">Spectro SI CS Intervals"</el>
+  <el keyword="SpectroSIMode" tag="2005xx56" vm="1" vr="CS">Spectro SI Mode"</el>
+  <el keyword="SpectroSpectralBW" tag="2005xx57" vm="1" vr="SS">Spectro Spectral BW"</el>
+  <el keyword="SpectroTitleLine" tag="2005xx58" vm="1" vr="LO">Spectro Title Line"</el>
+  <el keyword="SpectroTurboEchoSpacing" tag="2005xx59" vm="1" vr="FL">Spectro Turbo Echo Spacing"</el>
+  <el keyword="SpectroVerticalShift" tag="2005xx60" vm="1" vr="FL">Spectro Vertical Shift"</el>
+  <el keyword="SpectroVerticalWindow" tag="2005xx61" vm="2" vr="FL">Spectro Vertical Window"</el>
+  <el keyword="SpectroOffset" tag="2005xx62" vm="1" vr="FL">Spectro Offset"</el>
+  <el keyword="SpectrumPitch" tag="2005xx63" vm="1" vr="FL">Spectrum Pitch"</el>
+  <el keyword="VolumeSelection" tag="2005xx64" vm="1" vr="CS">Volume Selection"</el>
+  <el keyword="NumberMixesSpectro" tag="2005xx70" vm="1" vr="SS">Number Mixes Spectro"</el>
+  <el keyword="SeriesSPMix" tag="2005xx71" vm="1" vr="SQ">Series SP Mix"</el>
+  <el keyword="SPMixTResolution" tag="2005xx72" vm="1-2" vr="SS">SP Mix T Resolution"</el>
+  <el keyword="SPMixKXResolution" tag="2005xx73" vm="1-2" vr="SS">SP Mix KX Resolution"</el>
+  <el keyword="SPMixKYResolution" tag="2005xx74" vm="1-2" vr="SS">SP Mix KY Resolution"</el>
+  <el keyword="SPMixFResolution" tag="2005xx75" vm="1-2" vr="SS">SP Mix F Resolution"</el>
+  <el keyword="SPMixXResolution" tag="2005xx76" vm="1-2" vr="SS">SP Mix X Resolution"</el>
+  <el keyword="SPMixYResolution" tag="2005xx77" vm="1-2" vr="SS">SP Mix Y Resolution"</el>
+  <el keyword="SPMixNumberOfSpectraIntended" tag="2005xx78" vm="1-2" vr="SS">SP Mix Number of Spectra Intended"</el>
+  <el keyword="SPMixNumberOfAverages" tag="2005xx79" vm="1-2" vr="SS">SP Mix Number of Averages"</el>
+  <el keyword="NumberOfMFImageObjects" tag="2005xx80" vm="1" vr="SL">Number of MF Image Objects"</el>
+  <el keyword="ScanoGramSurveyNumberOfImages" tag="2005xx81" vm="1" vr="IS">ScanoGram Survey Number of Images"</el>
+  <el keyword="NumberOfProcedureCodes" tag="2005xx82" vm="1" vr="UL">Number of Procedure Codes"</el>
+  <el keyword="SortAttributes" tag="2005xx83" vm="1-n" vr="CS">Sort Attributes"</el>
+  <el keyword="NumberOfSortAttributes" tag="2005xx84" vm="1" vr="SS">Number of Sort Attributes"</el>
+  <el keyword="ImageDisplayDirection" tag="2005xx85" vm="1" vr="CS">Image Display Direction"</el>
+  <el keyword="InsetScanogram" tag="2005xx86" vm="1" vr="CS">Inset Scanogram"</el>
+  <el keyword="DisplayLayoutNumberOfColumns" tag="2005xx87" vm="1" vr="SS">Display Layout Number of Columns"</el>
+  <el keyword="DisplayLayoutNumberOfRows" tag="2005xx88" vm="1" vr="SS">Display Layout Number of Rows"</el>
+  <el keyword="ViewingProtocol" tag="2005xx89" vm="1" vr="SQ">Viewing Protocol"</el>
+  <el keyword="StackCoilFunction" tag="2005xx90" vm="1" vr="CS">Stack Coil Function"</el>
+  <el keyword="PatientNameJobInParams" tag="2005xx91" vm="1" vr="PN">Patient Name Job In Params"</el>
+  <el keyword="GeolinkID" tag="2005xx92" vm="1" vr="IS">Geolink ID"</el>
+  <el keyword="StationNumber" tag="2005xx93" vm="1" vr="IS">Station Number"</el>
+  <el keyword="ProcessingHistory" tag="2005xx94" vm="1-n" vr="CS">Processing History"</el>
+  <el keyword="ViewProcedureString" tag="2005xx95" vm="1" vr="ST">View Procedure String"</el>
+  <el keyword="FlowImagesPresent" tag="2005xx96" vm="1" vr="CS">Flow Images Present"</el>
+  <el keyword="AnatomicRegionCodeValue" tag="2005xx97" vm="1" vr="LO">Anatomic Region Code Value"</el>
+  <el keyword="MobiviewEnabled" tag="2005xx98" vm="1" vr="CS">Mobiview Enabled"</el>
+  <el keyword="IViewBoldEnabled" tag="2005xx99" vm="1" vr="CS">IViewBold Enabled"</el>
+</elements>

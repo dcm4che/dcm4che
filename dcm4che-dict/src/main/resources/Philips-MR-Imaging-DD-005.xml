@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="VolumeViewEnabled" tag="2005xx00" vm="1" vr="CS">Volume View Enabled"</el>
+  <el keyword="NumberOfStudyReference" tag="2005xx01" vm="1" vr="UL">Number of Study Reference"</el>
+  <el keyword="SPSCode" tag="2005xx02" vm="1" vr="SQ">SPS Code"</el>
+  <el keyword="NumberOfSPSCodes" tag="2005xx03" vm="1" vr="UL">Number of SPS Codes"</el>
+  <el keyword="_2005_xx04_" tag="2005xx04" vm="1" vr="SS">?"</el>
+  <el keyword="NumberOfPSSpecificCharacterSets" tag="2005xx06" vm="1" vr="SS">Number of PS Specific Character Sets"</el>
+  <el keyword="NumberOfSpecificCharacterSet" tag="2005xx07" vm="1" vr="SS">Number of Specific Character Set"</el>
+  <el keyword="RescaleInterceptOriginal" tag="2005xx09" vm="1" vr="DS">Rescale Intercept Original"</el>
+  <el keyword="RescaleSlopeOriginal" tag="2005xx0A" vm="1" vr="DS">Rescale Slope Original"</el>
+  <el keyword="RescaleTypeOriginal" tag="2005xx0B" vm="1" vr="LO">Rescale Type Original"</el>
+  <el keyword="PrivateSharedSequence" tag="2005xx0E" vm="1" vr="SQ">Private Shared Sequence"</el>
+  <el keyword="PrivatePerFrameSequence" tag="2005xx0F" vm="1" vr="SQ">Private Per-Frame Sequence"</el>
+  <el keyword="MFConvTreatSpectroMixNumber" tag="2005xx10" vm="1" vr="IS">MF Conv Treat Spectro Mix Number"</el>
+  <el keyword="MFPrivateReferencedSOPInstanceUID" tag="2005xx11" vm="1" vr="UI">MF Private Referenced SOP Instance UID"</el>
+  <el keyword="DiffusionBValueNumber" tag="2005xx12" vm="1" vr="IS">Diffusion B Value Number"</el>
+  <el keyword="GradientOrientationNumber" tag="2005xx13" vm="1" vr="IS">Gradient Orientation Number"</el>
+  <el keyword="NumberOfDiffusionBValues" tag="2005xx14" vm="1" vr="SL">Number of Diffusion B Values"</el>
+  <el keyword="NumberOfDiffusionGradientOrientations" tag="2005xx15" vm="1" vr="SL">Number of Diffusion Gradient Orientations"</el>
+  <el keyword="PlanMode" tag="2005xx16" vm="1" vr="CS">Plan Mode"</el>
+  <el keyword="DiffusionBMatrix" tag="2005xx17" vm="3" vr="FD">Diffusion B Matrix"</el>
+  <el keyword="OperatingModeType" tag="2005xx18" vm="3" vr="CS">Operating Mode Type"</el>
+  <el keyword="OperatingMode" tag="2005xx19" vm="3" vr="CS">Operating Mode"</el>
+  <el keyword="FatSaturationTechnique" tag="2005xx1A" vm="1" vr="CS">Fat Saturation Technique"</el>
+  <el keyword="VersionNumberDeletedImages" tag="2005xx1B" vm="1" vr="IS">Version Number Deleted Images"</el>
+  <el keyword="VersionNumberDeletedSpectra" tag="2005xx1C" vm="1" vr="IS">Version Number Deleted Spectra"</el>
+  <el keyword="VersionNumberDeletedBlobsets" tag="2005xx1D" vm="1" vr="IS">Version Number Deleted Blobsets"</el>
+  <el keyword="LUT1Offset" tag="2005xx1E" vm="1" vr="UL">LUT1 Offset"</el>
+  <el keyword="LUT1Range" tag="2005xx1F" vm="1" vr="UL">LUT1 Range"</el>
+  <el keyword="LUT1BeginColor" tag="2005xx20" vm="1" vr="UL">LUT1 Begin Color"</el>
+  <el keyword="LUT1EndColor" tag="2005xx21" vm="1" vr="UL">LUT1 End Color"</el>
+  <el keyword="LUT2Offset" tag="2005xx22" vm="1" vr="UL">LUT2 Offset"</el>
+  <el keyword="LUT2Range" tag="2005xx23" vm="1" vr="UL">LUT2 Range"</el>
+  <el keyword="LUT2BeginColor" tag="2005xx24" vm="1" vr="UL">LUT2 Begin Color"</el>
+  <el keyword="LUT2EndColor" tag="2005xx25" vm="1" vr="UL">LUT2 End Color"</el>
+  <el keyword="ViewingHardcopyOnly" tag="2005xx26" vm="1" vr="CS">Viewing Hardcopy Only"</el>
+  <el keyword="_2005_xx27_" tag="2005xx27" vm="1" vr="CS">?</el>
+  <el keyword="NumberOfLabelTypes" tag="2005xx28" vm="1" vr="SL">Number of Label Types"</el>
+  <el keyword="LabelType" tag="2005xx29" vm="1" vr="CS">Label Type"</el>
+  <el keyword="ExamPrintStatus" tag="2005xx2A" vm="1" vr="CS">Exam Print Status"</el>
+  <el keyword="ExamExportStatus" tag="2005xx2B" vm="1" vr="CS">Exam Export Status"</el>
+  <el keyword="ExamStorageCommitStatus" tag="2005xx2C" vm="1" vr="CS">Exam Storage Commit Status"</el>
+  <el keyword="ExamMediaWriteStatus" tag="2005xx2D" vm="1" vr="CS">Exam Media Write Status"</el>
+  <el keyword="DBdt" tag="2005xx2E" vm="1" vr="FL">dBdt"</el>
+  <el keyword="ProtonSAR" tag="2005xx2F" vm="1" vr="FL">Proton SAR"</el>
+  <el keyword="NonProtonSAR" tag="2005xx30" vm="1" vr="FL">Non Proton SAR"</el>
+  <el keyword="LocalSAR" tag="2005xx31" vm="1" vr="FL">Local SAR"</el>
+  <el keyword="SafetyOverrideMode" tag="2005xx32" vm="1" vr="CS">Safety Override Mode"</el>
+  <el keyword="EVDVDJobInParamsDatetime" tag="2005xx33" vm="1" vr="DT">EV DVD Job In Params Datetime"</el>
+  <el keyword="DVDJobInParamsVolumeLabel" tag="2005xx34" vm="1" vr="DT">DVD Job In Params Volume Label"</el>
+  <el keyword="SpectroExamcard" tag="2005xx35" vm="1" vr="CS">Spectro Examcard"</el>
+  <el keyword="ReferencedSeriesInstanceUID" tag="2005xx36" vm="1" vr="UI">Referenced Series Instance UID"</el>
+  <el keyword="ColorLUTType" tag="2005xx37" vm="1" vr="CS">Color LUT Type"</el>
+  <el keyword="_2005_xx38_" tag="2005xx38" vm="1" vr="LT">?"</el>
+  <el keyword="_2005_xx39_" tag="2005xx39" vm="1" vr="LT">?"</el>
+  <el keyword="DataDictionaryContentsVersion" tag="2005xx3A" vm="1" vr="LT">Data Dictionary Contents Version"</el>
+  <el keyword="IsCoilSurvey" tag="2005xx3B" vm="1" vr="CS">Is Coil Survey"</el>
+  <el keyword="StackTablePosLong" tag="2005xx3C" vm="1" vr="FL">Stack Table Position Longitudinal"</el>
+  <el keyword="StackTablePosLat" tag="2005xx3D" vm="1" vr="FL">Stack Table Position Lateral"</el>
+  <el keyword="StackPosteriorCoilPos" tag="2005xx3E" vm="1" vr="FL">Stack Posterior Coil Position"</el>
+  <el keyword="AIMDLimitsApplied" tag="2005xx3F" vm="1" vr="CS">Active Implantable Medical Device Limits Applied"</el>
+  <el keyword="AIMDHeadSARLimit" tag="2005xx40" vm="1" vr="FL">Active Implantable Medical Device Head SAR Limit"</el>
+  <el keyword="AIMDWholeBodySARLimit" tag="2005xx41" vm="1" vr="FL">Active Implantable Medical Device Whole Body SAR Limit"</el>
+  <el keyword="AIMDB1RMSLimit" tag="2005xx42" vm="1" vr="FL">Active Implantable Medical Device B1 RMS Limit"</el>
+  <el keyword="AIMDdbDtLimit" tag="2005xx43" vm="1" vr="FL">Active Implantable Medical Device dbDt Limit"</el>
+  <el keyword="TFEFactor" tag="2005xx44" vm="1" vr="IS">TFE Factor"</el>
+  <el keyword="AttenuationCorrection" tag="2005xx45" vm="1" vr="CS">Attenuation Correction"</el>
+  <el keyword="FWHMShim" tag="2005xx46" vm="1" vr="FL">FWHM Shim"</el>
+  <el keyword="PowerOptimization" tag="2005xx47" vm="1" vr="FL">Power Optimization"</el>
+  <el keyword="CoilQ" tag="2005xx48" vm="1" vr="FL">Coil Q"</el>
+  <el keyword="ReceiverGain" tag="2005xx49" vm="1" vr="FL">Receiver Gain"</el>
+  <el keyword="DataWindowDuration" tag="2005xx4A" vm="1" vr="FL">Data Window Duration"</el>
+  <el keyword="MixingTime" tag="2005xx4B" vm="1" vr="FL">Mixing Time"</el>
+  <el keyword="FirstEchoTime" tag="2005xx4C" vm="1" vr="FL">First Echo Time"</el>
+  <el keyword="IsB0Series" tag="2005xx4D" vm="1" vr="CS">Is B0 Series"</el>
+  <el keyword="IsB1Series" tag="2005xx4E" vm="1" vr="CS">Is B1 Series"</el>
+  <el keyword="VolumeSelect" tag="2005xx4F" vm="1" vr="CS">Volume Select"</el>
+  <el keyword="NumberOfPatientOtherIDs" tag="2005xx50" vm="1" vr="SS">Number of Patient Other IDs"</el>
+  <el keyword="OriginalSeriesNumber" tag="2005xx51" vm="1" vr="IS">Original Series Number"</el>
+  <el keyword="OriginalSeriesInstanceUID" tag="2005xx52" vm="1" vr="UI">Original Series Instance UID"</el>
+  <el keyword="SplitSeriesJobParams" tag="2005xx53" vm="1" vr="CS">Split Series Job Params"</el>
+  <el keyword="PreferredDimensionForSplitting" tag="2005xx54" vm="1" vr="SS">Preferred Dimension for Splitting"</el>
+  <el keyword="VelocityEncodingDirection" tag="2005xx55" vm="3" vr="FD">Velocity Encoding Direction"</el>
+  <el keyword="ContrastBolusNumberOfInjections" tag="2005xx56" vm="1" vr="SS">Contrast/Bolus Number of Injections"</el>
+  <el keyword="ContrastBolusAgentCode" tag="2005xx57" vm="1" vr="LT">Contrast/Bolus Agent Code"</el>
+  <el keyword="ContrastBolusAdminRouteCode" tag="2005xx58" vm="1" vr="LT">Contrast/Bolus Administration Route Code"</el>
+  <el keyword="ContrastBolusVolume" tag="2005xx59" vm="1" vr="DS">Contrast/Bolus Volume"</el>
+  <el keyword="ContrastBolusIngredientConcentration" tag="2005xx5A" vm="1" vr="DS">Contrast/Bolus Ingredient Concentration"</el>
+  <el keyword="ContrastBolusDynamicNumber" tag="2005xx5B" vm="1" vr="IS">Contrast/Bolus Dynamic Number"</el>
+  <el keyword="ContrastBolusSequence" tag="2005xx5C" vm="1" vr="SQ">Contrast/Bolus Sequence"</el>
+  <el keyword="ContrastBolusID" tag="2005xx5D" vm="1" vr="IS">Contrast/Bolus ID"</el>
+  <el keyword="LUTToRGBJobParams" tag="2005xx60" vm="1" vr="CS">LUT to RGB Job Params"</el>
+  <el keyword="OriginalVOILUTSequence" tag="2005xx90" vm="1" vr="SQ">Original VOI LUT Sequence"</el>
+  <el keyword="OriginalModalityLUTSequence" tag="2005xx91" vm="1" vr="SQ">Original Modality LUT Sequence"</el>
+  <el keyword="SpecificEnergyDose" tag="2005xx92" vm="1" vr="FL">Specific Energy Dose"</el>
+</elements>

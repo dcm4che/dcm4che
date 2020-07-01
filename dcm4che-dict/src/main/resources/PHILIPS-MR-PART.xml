@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="FieldOfView" tag="0019xx00" vm="1" vr="DS">Field of View</el>
+  <el keyword="_0019_xx01_" tag="0019xx01" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx02_" tag="0019xx02" vm="1-n" vr="IS">?</el>
+  <el keyword="_0019_xx03_" tag="0019xx03" vm="1" vr="DS">?</el>
+  <el keyword="CCAngulation" tag="0019xx05" vm="1" vr="DS">CC Angulation</el>
+  <el keyword="APAngulation" tag="0019xx06" vm="1" vr="DS">AP Angulation</el>
+  <el keyword="LRAngulation" tag="0019xx07" vm="1" vr="DS">LR Angulation</el>
+  <el keyword="PatientOrientation1" tag="0019xx08" vm="1" vr="IS">Patient Orientation 1</el>
+  <el keyword="PatientOrientation" tag="0019xx09" vm="1" vr="IS">Patient Orientation</el>
+  <el keyword="SliceOrientation" tag="0019xx0A" vm="1" vr="IS">Slice Orientation</el>
+  <el keyword="LROffcenter" tag="0019xx0B" vm="1" vr="DS">LR Offcenter</el>
+  <el keyword="CCOffcenter" tag="0019xx0C" vm="1" vr="DS">CC Offcenter</el>
+  <el keyword="APOffcenter" tag="0019xx0D" vm="1" vr="DS">AP Offcenter</el>
+  <el keyword="_0019_xx0E_" tag="0019xx0E" vm="1" vr="DS">?</el>
+  <el keyword="NumberOfSlices" tag="0019xx0F" vm="1" vr="IS">Number of Slices</el>
+  <el keyword="SliceFactor" tag="0019xx10" vm="1" vr="DS">Slice Factor</el>
+  <el keyword="EchoTimes" tag="0019xx11" vm="1-n" vr="DS">Echo Times</el>
+  <el keyword="_0019_xx14_" tag="0019xx14" vm="1" vr="CS">?</el>
+  <el keyword="DynamicStudy" tag="0019xx15" vm="1" vr="IS">Dynamic Study</el>
+  <el keyword="HeartbeatInterval" tag="0019xx18" vm="1" vr="DS">Heartbeat Interval</el>
+  <el keyword="RepetitionTimeFFE" tag="0019xx19" vm="1" vr="DS">Repetition Time FFE</el>
+  <el keyword="FFEFlipAngle" tag="0019xx1A" vm="1" vr="DS">FFE Flip Angle</el>
+  <el keyword="NumberOfScans" tag="0019xx1B" vm="1" vr="IS">Number of Scans</el>
+  <el keyword="_0019_xx1C_" tag="0019xx1C" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xx1D_" tag="0019xx1D" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xx1E_" tag="0019xx1E" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx21_" tag="0019xx21" vm="1-n" vr="DS">?</el>
+  <el keyword="DynamicScanTimeBegin" tag="0019xx22" vm="1" vr="DS">Dynamic Scan Time Begin</el>
+  <el keyword="_0019_xx23_" tag="0019xx23" vm="1-n" vr="DS">?</el>
+  <el keyword="_0019_xx24_" tag="0019xx24" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xx25_" tag="0019xx25" vm="1-n" vr="DS">?</el>
+  <el keyword="_0019_xx26_" tag="0019xx26" vm="1-n" vr="DS">?</el>
+  <el keyword="_0019_xx27_" tag="0019xx27" vm="1-n" vr="DS">?</el>
+  <el keyword="_0019_xx28_" tag="0019xx28" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xx29_" tag="0019xx29" vm="1-n" vr="DS">?</el>
+  <el keyword="_0019_xx30_" tag="0019xx30" vm="1-n" vr="LO">?</el>
+  <el keyword="_0019_xx31_" tag="0019xx31" vm="1-n" vr="DS">?</el>
+  <el keyword="_0019_xx40_" tag="0019xx40" vm="1" vr="US">?</el>
+  <el keyword="ReconstructionResolution" tag="0019xx45" vm="1" vr="IS">Reconstruction Resolution</el>
+  <el keyword="_0019_xx50_" tag="0019xx50" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xx51_" tag="0019xx51" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx52_" tag="0019xx52" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx53_" tag="0019xx53" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xx54_" tag="0019xx54" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx55_" tag="0019xx55" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx56_" tag="0019xx56" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx57_" tag="0019xx57" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx58_" tag="0019xx58" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx59_" tag="0019xx59" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx60_" tag="0019xx60" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx61_" tag="0019xx61" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx62_" tag="0019xx62" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx63_" tag="0019xx63" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx64_" tag="0019xx64" vm="1" vr="IS">?</el>
+  <el keyword="RepetitionTimeIR" tag="0019xx65" vm="1" vr="DS">Repetition Time IR</el>
+  <el keyword="_0019_xx66_" tag="0019xx66" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx67_" tag="0019xx67" vm="1" vr="US">?</el>
+  <el keyword="NumberOfPhases" tag="0019xx69" vm="1" vr="IS">Number of Phases</el>
+  <el keyword="CardiacFrequency" tag="0019xx6A" vm="1" vr="IS">Cardiac Frequency</el>
+  <el keyword="InversionDelay" tag="0019xx6B" vm="1" vr="DS">Inversion Delay</el>
+  <el keyword="GateDelay" tag="0019xx6C" vm="1" vr="DS">Gate Delay</el>
+  <el keyword="GateWidth" tag="0019xx6D" vm="1" vr="DS">Gate Width</el>
+  <el keyword="TriggerDelayTime" tag="0019xx6E" vm="1" vr="DS">Trigger Delay Time</el>
+  <el keyword="_0019_xx70_" tag="0019xx70" vm="1-n" vr="DS">?</el>
+  <el keyword="NumberOfChemicalShifts" tag="0019xx80" vm="1" vr="IS">Number of Chemical Shifts</el>
+  <el keyword="ChemicalShift" tag="0019xx81" vm="1" vr="DS">Chemical Shift</el>
+  <el keyword="NumberOfRows" tag="0019xx84" vm="1" vr="IS">Number of Rows</el>
+  <el keyword="NumberOfSamples" tag="0019xx85" vm="1" vr="IS">Number of Samples</el>
+  <el keyword="_0019_xx8A_" tag="0019xx8A" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xx8B_" tag="0019xx8B" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xx8C_" tag="0019xx8C" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xx8D_" tag="0019xx8D" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xx8E_" tag="0019xx8E" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xx8F_" tag="0019xx8F" vm="1" vr="CS">?</el>
+  <el keyword="MagnetizationTransferContrast" tag="0019xx94" vm="1" vr="LO">Magnetization Transfer Contrast</el>
+  <el keyword="SpectralPresaturationWithInversionRecovery" tag="0019xx95" vm="1" vr="LO">Spectral Presaturation With Inversion Recovery</el>
+  <el keyword="_0019_xx96_" tag="0019xx96" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xx97_" tag="0019xx97" vm="1" vr="LO">?</el>
+  <el keyword="_0019_xxB4_" tag="0019xxB4" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxB5_" tag="0019xxB5" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxB6_" tag="0019xxB6" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxD1_" tag="0019xxD1" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxD3_" tag="0019xxD3" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxF0_" tag="0019xxF0" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xxF6_" tag="0019xxF6" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xxF7_" tag="0019xxF7" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xxF8_" tag="0019xxF8" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xxF9_" tag="0019xxF9" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xxFA_" tag="0019xxFA" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xxFB_" tag="0019xxFB" vm="1" vr="CS">?</el>
+  <el keyword="_0019_xxA0_" tag="0019xxA0" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xxA1_" tag="0019xxA1" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxA3_" tag="0019xxA3" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxA4_" tag="0019xxA4" vm="1" vr="CS">?</el>
+  <el keyword="TriggerDelayTimes" tag="0019xxC0" vm="1" vr="DS">Trigger Delay Times</el>
+  <el keyword="_0019_xxC8_" tag="0019xxC8" vm="1" vr="IS">?</el>
+  <el keyword="FoldoverDirectionTransverse" tag="0019xxC9" vm="1" vr="IS">Foldover Direction Transverse</el>
+  <el keyword="FoldoverDirectionSagittal" tag="0019xxCA" vm="1" vr="IS">Foldover Direction Sagittal</el>
+  <el keyword="FoldoverDirectionCoronal" tag="0019xxCB" vm="1" vr="IS">Foldover Direction Coronal</el>
+  <el keyword="_0019_xxCC_" tag="0019xxCC" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xxCD_" tag="0019xxCD" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xxCE_" tag="0019xxCE" vm="1" vr="IS">?</el>
+  <el keyword="NumberOfEchoes" tag="0019xxCF" vm="1" vr="IS">Number of Echoes</el>
+  <el keyword="ScanResolution" tag="0019xxD0" vm="1" vr="IS">Scan Resolution</el>
+  <el keyword="WaterFatShift" tag="0019xxD2" vm="2" vr="LO">Water Fat Shift</el>
+  <el keyword="ArtifactReduction" tag="0019xxD4" vm="1" vr="IS">Artifact Reduction</el>
+  <el keyword="_0019_xxD5_" tag="0019xxD5" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xxD6_" tag="0019xxD6" vm="1" vr="IS">?</el>
+  <el keyword="ScanPercentage" tag="0019xxD7" vm="1" vr="DS">Scan Percentage</el>
+  <el keyword="Halfscan" tag="0019xxD8" vm="1" vr="IS">Halfscan</el>
+  <el keyword="EPIFactor" tag="0019xxD9" vm="1" vr="IS">EPI Factor</el>
+  <el keyword="TurboFactor" tag="0019xxDA" vm="1" vr="IS">Turbo Factor</el>
+  <el keyword="_0019_xxDB_" tag="0019xxDB" vm="1" vr="IS">?</el>
+  <el keyword="PercentageOfScanCompleted" tag="0019xxE0" vm="1" vr="IS">Percentage of Scan Completed</el>
+  <el keyword="_0019_xxE1_" tag="0019xxE1" vm="1" vr="IS">?</el>
+  <el keyword="PhaseContrastVelocity" tag="0019xxE3" vm="1" vr="DS">Phase Contrast Velocity</el>
+  <el keyword="ResonanceFrequency" tag="0019xxFC" vm="1" vr="IS">Resonance Frequency</el>
+  <el keyword="ReconstructionNumber" tag="0021xx00" vm="1" vr="IS">Reconstruction Number</el>
+  <el keyword="_0021_xx06_" tag="0021xx06" vm="1" vr="LO">?</el>
+  <el keyword="_0021_xx08_" tag="0021xx08" vm="1" vr="LO">?</el>
+  <el keyword="_0021_xx09_" tag="0021xx09" vm="1" vr="CS">?</el>
+  <el keyword="_0021_xx0A_" tag="0021xx0A" vm="1" vr="CS">?</el>
+  <el keyword="_0021_xx0F_" tag="0021xx0F" vm="1" vr="LO">?</el>
+  <el keyword="ImageType" tag="0021xx10" vm="1" vr="IS">Image Type</el>
+  <el keyword="_0021_xx13_" tag="0021xx13" vm="1" vr="CS">?</el>
+  <el keyword="_0021_xx15_" tag="0021xx15" vm="1" vr="US">?</el>
+  <el keyword="SliceNumber" tag="0021xx20" vm="1" vr="IS">Slice Number</el>
+  <el keyword="SliceGap" tag="0021xx21" vm="1" vr="IS">Slice Gap</el>
+  <el keyword="EchoNumber" tag="0021xx30" vm="1" vr="IS">Echo Number</el>
+  <el keyword="PatientReferenceID" tag="0021xx31" vm="1" vr="DS">Patient Reference ID</el>
+  <el keyword="ChemicalShiftNumber" tag="0021xx35" vm="1" vr="IS">Chemical Shift Number</el>
+  <el keyword="PhaseNumber" tag="0021xx40" vm="1" vr="IS">Phase Number</el>
+  <el keyword="DynamicScanNumber" tag="0021xx50" vm="1" vr="IS">Dynamic Scan Number</el>
+  <el keyword="NumberOfRowsInObject" tag="0021xx60" vm="1" vr="IS">Number of Rows In Object</el>
+  <el keyword="RowNumber" tag="0021xx61" vm="1-n" vr="IS">Row Number</el>
+  <el keyword="_0021_xx62_" tag="0021xx62" vm="1-n" vr="IS">?</el>
+  <el keyword="_0029_xx00_" tag="0029xx00" vm="2" vr="DS">?"</el>
+  <el keyword="_0029_xx04_" tag="0029xx04" vm="1" vr="US">?"</el>
+  <el keyword="_0029_xx10_" tag="0029xx10" vm="1" vr="DS">?"</el>
+  <el keyword="_0029_xx11_" tag="0029xx11" vm="1" vr="DS">?"</el>
+  <el keyword="_0029_xx20_" tag="0029xx20" vm="1" vr="LO">?"</el>
+  <el keyword="_0029_xx31_" tag="0029xx31" vm="2" vr="DS">?"</el>
+  <el keyword="_0029_xx32_" tag="0029xx32" vm="2" vr="DS">?"</el>
+  <el keyword="_0029_xx50_" tag="0029xx50" vm="1" vr="DS">?</el>
+  <el keyword="_0029_xx51_" tag="0029xx51" vm="1" vr="DS">?</el>
+  <el keyword="_0029_xx52_" tag="0029xx52" vm="1" vr="DS">?</el>
+  <el keyword="_0029_xx53_" tag="0029xx53" vm="1" vr="DS">?</el>
+  <el keyword="SliceThickness" tag="0029xxD5" vm="1" vr="LT">Slice Thickness"</el>
+</elements>

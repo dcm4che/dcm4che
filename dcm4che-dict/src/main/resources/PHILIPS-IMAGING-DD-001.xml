@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="ChemicalShift" tag="2001xx01" vm="1" vr="FL">Chemical Shift"</el>
+  <el keyword="ChemicalShiftNumberMR" tag="2001xx02" vm="1" vr="IS">Chemical Shift Number MR"</el>
+  <el keyword="DiffusionBFactor" tag="2001xx03" vm="1" vr="FL">Diffusion B-Factor"</el>
+  <el keyword="DiffusionDirection" tag="2001xx04" vm="1" vr="CS">Diffusion Direction"</el>
+  <el keyword="GraphicAnnotationParentID" tag="2001xx05" vm="1" vr="SS">Graphic Annotation ParentID"</el>
+  <el keyword="ImageEnhanced" tag="2001xx06" vm="1" vr="CS">Image Enhanced"</el>
+  <el keyword="ImageTypeEDES" tag="2001xx07" vm="1" vr="CS">Image Type End Diastole or End Systole"</el>
+  <el keyword="PhaseNumber" tag="2001xx08" vm="1" vr="IS">Phase Number"</el>
+  <el keyword="ImagePrepulseDelay" tag="2001xx09" vm="1" vr="FL">Image Prepulse Delay"</el>
+  <el keyword="ImagePlaneNumber" tag="2001xx0A" vm="1" vr="IS">Image Plane Number"</el>
+  <el keyword="ImageOrientation" tag="2001xx0B" vm="1" vr="CS">Image Orientation"</el>
+  <el keyword="ArrhythmiaRejection" tag="2001xx0C" vm="1" vr="CS">Arrhythmia Rejection"</el>
+  <el keyword="CardiacCycled" tag="2001xx0E" vm="1" vr="CS">Cardiac Cycled"</el>
+  <el keyword="CardiacGateWidth" tag="2001xx0F" vm="1" vr="SS">Cardiac Gate Width"</el>
+  <el keyword="CardiacSync" tag="2001xx10" vm="1" vr="CS">Cardiac Sync"</el>
+  <el keyword="DiffusionEchoTime" tag="2001xx11" vm="1" vr="FL">Diffusion Echo Time"</el>
+  <el keyword="DynamicSeries" tag="2001xx12" vm="1" vr="CS">Dynamic Series"</el>
+  <el keyword="EPIFactor" tag="2001xx13" vm="1" vr="SL">EPI Factor"</el>
+  <el keyword="NumberOfEchoes" tag="2001xx14" vm="1" vr="SL">Number of Echoes"</el>
+  <el keyword="NumberOfLocations" tag="2001xx15" vm="1" vr="SS">Number of Locations"</el>
+  <el keyword="NumberOfPCDirections" tag="2001xx16" vm="1" vr="SS">Number of PC Directions"</el>
+  <el keyword="NumberOfPhases" tag="2001xx17" vm="1" vr="SL">Number of Phases"</el>
+  <el keyword="NumberOfSlices" tag="2001xx18" vm="1" vr="SL">Number of Slices"</el>
+  <el keyword="PartialMatrixScanned" tag="2001xx19" vm="1" vr="CS">Partial Matrix Scanned"</el>
+  <el keyword="PCVelocity" tag="2001xx1A" vm="3" vr="FL">PC Velocity"</el>
+  <el keyword="PrepulseDelay" tag="2001xx1B" vm="1" vr="FL">Prepulse Delay"</el>
+  <el keyword="PrepulseType" tag="2001xx1C" vm="1" vr="CS">Prepulse Type"</el>
+  <el keyword="ReconstructionNumber" tag="2001xx1D" vm="1" vr="IS">Reconstruction Number"</el>
+  <el keyword="ReformatAccuracy" tag="2001xx1E" vm="1" vr="CS">Reformat Accuracy"</el>
+  <el keyword="RespirationSync" tag="2001xx1F" vm="1" vr="CS">Respiration Sync"</el>
+  <el keyword="ScanningTechnique" tag="2001xx20" vm="1" vr="LO">Scanning Technique"</el>
+  <el keyword="SPIR" tag="2001xx21" vm="1" vr="CS">SPIR"</el>
+  <el keyword="WaterFatShift" tag="2001xx22" vm="1" vr="FL">Water-Fat Shift"</el>
+  <el keyword="FlipAngle" tag="2001xx23" vm="1" vr="DS">Flip Angle"</el>
+  <el keyword="SeriesIsInteractive" tag="2001xx24" vm="1" vr="CS">Series is Interactive"</el>
+  <el keyword="EchoTimeDisplay" tag="2001xx25" vm="1" vr="SH">Echo Time Display"</el>
+  <el keyword="PresentationStateSubtractionActive" tag="2001xx26" vm="1" vr="CS">Presentation State Subtraction Active"</el>
+  <el keyword="_2001_xx29_" tag="2001xx29" vm="1" vr="FL">?"</el>
+  <el keyword="_2001_xx2B_" tag="2001xx2B" vm="1" vr="CS">?"</el>
+  <el keyword="NumberOfSlicesInStack" tag="2001xx2D" vm="1" vr="SS">Number of Slices in Stack"</el>
+  <el keyword="StackRadialAngle" tag="2001xx32" vm="1" vr="FL">Stack Radial Angle"</el>
+  <el keyword="StackRadialAxis" tag="2001xx33" vm="1" vr="CS">Stack Radial Axis"</el>
+  <el keyword="StackSliceNumber" tag="2001xx35" vm="1" vr="SS">Stack Slice Number"</el>
+  <el keyword="StackType" tag="2001xx36" vm="1" vr="CS">Stack Type"</el>
+  <el keyword="_2001_xx39_" tag="2001xx39" vm="1" vr="FL">?"</el>
+  <el keyword="ContourFillColor" tag="2001xx3D" vm="1" vr="UL">Contour Fill Color"</el>
+  <el keyword="DisplayedAreaZoomInterpolationMeth" tag="2001xx3F" vm="1" vr="CS">Displayed Area Zoom Interpolation Method"</el>
+  <el keyword="EllipsDisplShutMajorAxFrstEndPnt" tag="2001xx43" vm="2" vr="IS">Ellipse Display Shutter Major Axis First End Point"</el>
+  <el keyword="EllipsDisplShutMajorAxScndEndPnt" tag="2001xx44" vm="2" vr="IS">Ellipse Display Shutter Major Axis Second End Point"</el>
+  <el keyword="EllipsDisplShutOtherAxFrstEndPnt" tag="2001xx45" vm="2" vr="IS">Ellipse Display Shutter Other Axis First End Point"</el>
+  <el keyword="GraphicLineStyle" tag="2001xx46" vm="1" vr="CS">Graphic Line Style"</el>
+  <el keyword="GraphicLineWidth" tag="2001xx47" vm="1" vr="FL">Graphic Line Width"</el>
+  <el keyword="GraphicAnnotationID" tag="2001xx48" vm="1" vr="SS">Graphic Annotation ID"</el>
+  <el keyword="InterpolationMethod" tag="2001xx4B" vm="1" vr="CS">Interpolation Method"</el>
+  <el keyword="PolyLineBeginPointStyle" tag="2001xx4C" vm="1" vr="CS">Poly Line Begin Point Style"</el>
+  <el keyword="PolyLineEndPointStyle" tag="2001xx4D" vm="1" vr="CS">Poly Line End Point Style"</el>
+  <el keyword="WindowSmoothingTaste" tag="2001xx4E" vm="1" vr="CS">Window Smoothing Taste"</el>
+  <el keyword="GraphicMarkerType" tag="2001xx50" vm="1" vr="LO">Graphic Marker Type"</el>
+  <el keyword="OverlayPlaneID" tag="2001xx51" vm="1" vr="IS">Overlay Plane ID"</el>
+  <el keyword="ImagePresentationStateUID" tag="2001xx52" vm="1" vr="UI">Image Presentation State UID"</el>
+  <el keyword="PresentationGLTrafoInvert" tag="2001xx53" vm="1" vr="CS">Presentation GL Transform Invert"</el>
+  <el keyword="ContourFillTransparency" tag="2001xx54" vm="1" vr="FL">Contour Fill Transparency"</el>
+  <el keyword="GraphicLineColor" tag="2001xx55" vm="1" vr="UL">Graphic Line Color"</el>
+  <el keyword="GraphicType" tag="2001xx56" vm="1" vr="CS">Graphic Type"</el>
+  <el keyword="ContrastTransferTaste" tag="2001xx58" vm="1" vr="UL">Contrast Transfer Taste"</el>
+  <el keyword="GraphicAnnotationModel" tag="2001xx5A" vm="1" vr="ST">Graphic Annotation Model"</el>
+  <el keyword="MeasurementTextUnits" tag="2001xx5D" vm="1" vr="ST">Measurement Text Units"</el>
+  <el keyword="MeasurementTextType" tag="2001xx5E" vm="1" vr="ST">Measurement Text Type"</el>
+  <el keyword="StackSequence" tag="2001xx5F" vm="1" vr="SQ">Stack Sequence"</el>
+  <el keyword="NumberOfStacks" tag="2001xx60" vm="1" vr="SL">Number of Stacks"</el>
+  <el keyword="SeriesTransmitted" tag="2001xx61" vm="1" vr="CS">Series Transmitted"</el>
+  <el keyword="SeriesCommitted" tag="2001xx62" vm="1" vr="CS">Series Committed"</el>
+  <el keyword="ExaminationSource" tag="2001xx63" vm="1" vr="CS">Examination Source"</el>
+  <el keyword="TextType" tag="2001xx64" vm="1" vr="SH">Text Type"</el>
+  <el keyword="GraphicOverlayPlane" tag="2001xx65" vm="1" vr="SQ">Graphic Overlay Plane"</el>
+  <el keyword="LinearPresentationGLTrafoShapeSub" tag="2001xx67" vm="1" vr="CS">Linear Presentation GL Transform Shape Sub"</el>
+  <el keyword="LinearModalityGLTrafo" tag="2001xx68" vm="1" vr="SQ">Linear Modality GL Transform"</el>
+  <el keyword="DisplayShutter" tag="2001xx69" vm="1" vr="SQ">Display Shutter"</el>
+  <el keyword="SpatialTransformation" tag="2001xx6A" vm="1" vr="SQ">Spatial Transformation"</el>
+  <el keyword="_2001_xx6B_" tag="2001xx6B" vm="1" vr="SQ">?"</el>
+  <el keyword="TextFont" tag="2001xx6D" vm="1" vr="LO">Text Font"</el>
+  <el keyword="SeriesType" tag="2001xx6E" vm="1" vr="SH">Series Type"</el>
+  <el keyword="GraphicConstraint" tag="2001xx71" vm="1" vr="CS">Graphic Constraint"</el>
+  <el keyword="EllipsDisplShutOtherAxScndEndPnt" tag="2001xx72" vm="1" vr="IS">Ellipse Display Shutter Other Axis Second End Point"</el>
+  <el keyword="_2001_xx74_" tag="2001xx74" vm="1" vr="DS">?"</el>
+  <el keyword="_2001_xx75_" tag="2001xx75" vm="1" vr="DS">?"</el>
+  <el keyword="NumberOfFrames" tag="2001xx76" vm="1" vr="UL">Number of Frames"</el>
+  <el keyword="GLTrafoType" tag="2001xx77" vm="1" vr="CS">GL Transform Type"</el>
+  <el keyword="WindowRoundingFactor" tag="2001xx7A" vm="1" vr="FL">Window Rounding Factor"</el>
+  <el keyword="AcquisitionNumber" tag="2001xx7B" vm="1" vr="IS">Acquisition Number"</el>
+  <el keyword="FrameNumber" tag="2001xx7C" vm="1" vr="US">Frame Number"</el>
+  <el keyword="_2001_xx80_" tag="2001xx80" vm="1" vr="LO">?"</el>
+  <el keyword="NumberOfDynamicScans" tag="2001xx81" vm="1" vr="IS">Number of Dynamic Scans"</el>
+  <el keyword="EchoTrainLength" tag="2001xx82" vm="1" vr="IS">Echo Train Length"</el>
+  <el keyword="ImagingFrequency" tag="2001xx83" vm="1" vr="DS">Imaging Frequency"</el>
+  <el keyword="InversionTime" tag="2001xx84" vm="1" vr="DS">Inversion Time"</el>
+  <el keyword="MagneticFieldStrength" tag="2001xx85" vm="1" vr="DS">Magnetic Field Strength"</el>
+  <el keyword="NrOfPhaseEncodingSteps" tag="2001xx86" vm="1" vr="IS">Number of Phase Encoding Steps"</el>
+  <el keyword="ImagedNucleus" tag="2001xx87" vm="1" vr="SH">Imaged Nucleus"</el>
+  <el keyword="NumberOfAverages" tag="2001xx88" vm="1" vr="DS">Number of Averages"</el>
+  <el keyword="PhaseFOVPercent" tag="2001xx89" vm="1" vr="DS">Phase FOV Percent"</el>
+  <el keyword="SamplingPercent" tag="2001xx8A" vm="1" vr="DS">Sampling Percent"</el>
+  <el keyword="TransmittingCoil" tag="2001xx8B" vm="1" vr="SH">Transmitting Coil"</el>
+  <el keyword="TextForegroundColor" tag="2001xx90" vm="1" vr="LO">Text Foreground Color"</el>
+  <el keyword="TextBackgroundColor" tag="2001xx91" vm="1" vr="LO">Text Background Color"</el>
+  <el keyword="TextShadowColor" tag="2001xx92" vm="1" vr="LO">Text Shadow Color"</el>
+  <el keyword="TextStyle" tag="2001xx93" vm="1" vr="LO">Text Style"</el>
+  <el keyword="_2001_xx9A_" tag="2001xx9A" vm="1" vr="SQ">?"</el>
+  <el keyword="GraphicNumber" tag="2001xx9B" vm="1" vr="UL">Graphic Number"</el>
+  <el keyword="GraphicAnnotationLabel" tag="2001xx9C" vm="1" vr="LO">Graphic Annotation Label"</el>
+  <el keyword="PixelProcessingKernelSize" tag="2001xx9F" vm="2" vr="US">Pixel Processing Kernel Size"</el>
+  <el keyword="IsRawImage" tag="2001xxA1" vm="1" vr="CS">Is Raw Image"</el>
+  <el keyword="TextColorForeground" tag="2001xxA3" vm="1" vr="UL">Text Color Foreground"</el>
+  <el keyword="TextColorBackground" tag="2001xxA4" vm="1" vr="UL">Text Color Background"</el>
+  <el keyword="TextColorShadow" tag="2001xxA5" vm="1" vr="UL">Text Color Shadow"</el>
+  <el keyword="ExamCardName" tag="2001xxC8" vm="1" vr="LO">Exam Card Name"</el>
+  <el keyword="DerivationDescription" tag="2001xxCC" vm="1" vr="ST">Derivation Description"</el>
+  <el keyword="_2001_xxDA_" tag="2001xxDA" vm="1" vr="CS">?"</el>
+  <el keyword="ProspectiveMotionCorrection" tag="2001xxF1" vm="1-n" vr="FL">Prospective Motion Correction"</el>
+  <el keyword="RetrospectiveMotionCorrection" tag="2001xxF2" vm="1-n" vr="FL">Retrospective Motion Correction"</el>
+</elements>

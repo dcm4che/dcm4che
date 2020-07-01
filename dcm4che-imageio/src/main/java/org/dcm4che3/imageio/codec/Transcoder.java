@@ -794,9 +794,25 @@ public class Transcoder implements Closeable {
         int stride = csm.getScanlineStride();
         if (csm.getBandOffsets()[0] != 0)
             bgr2rgb(bankData[0]);
-        for (byte[] b : bankData)
-            for (int y = 0, off = 0; y < h; ++y, off += stride)
-                dos.write(b, off, len);
+        if (imageDescriptor.getBitsAllocated() == 16) {
+            byte[] buf = new byte[len << 1];
+            int j0 = dos.isBigEndian() ? 1 : 0;
+            for (byte[] b : bankData)
+                for (int y = 0, off = 0; y < h; ++y, off += stride) {
+                    dos.write(to16BitsAllocated(b, off, len, buf, j0));
+                }
+        } else {
+            for (byte[] b : bankData)
+                for (int y = 0, off = 0; y < h; ++y, off += stride)
+                    dos.write(b, off, len);
+        }
+    }
+
+    private static byte[] to16BitsAllocated(byte[] b, int off, int len, byte[] buf, int j0) {
+        for (int i = 0, j = j0; i < len; i++, j++, j++) {
+            buf[j] = b[off + i];
+        }
+        return buf;
     }
 
     private static void bgr2rgb(byte[] bs) {

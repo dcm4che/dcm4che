@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="DigitalSenographConfiguration" tag="0045xx01" vm="1" vr="LO">Digital Senograph Configuration</el>
+  <el keyword="SystemSeriesDescription" tag="0045xx02" vm="1" vr="LT">System Series Description</el>
+  <el keyword="Track" tag="0045xx03" vm="1" vr="CS">Track</el>
+  <el keyword="AES" tag="0045xx04" vm="1" vr="CS">AES</el>
+  <el keyword="Angulation" tag="0045xx06" vm="1" vr="DS">Angulation</el>
+  <el keyword="CompressionThickness" tag="0045xx07" vm="1" vr="DS">Compression Thickness</el>
+  <el keyword="CompressionForce" tag="0045xx08" vm="1" vr="DS">Compression Force</el>
+  <el keyword="RealMagnificationFactor" tag="0045xx09" vm="1" vr="DS">Real Magnification Factor</el>
+  <el keyword="DisplayedMagnificationFactor" tag="0045xx0A" vm="1" vr="DS">Displayed Magnification Factor</el>
+  <el keyword="SenographType" tag="0045xx0B" vm="1" vr="CS">Senograph Type</el>
+  <el keyword="IntegrationTime" tag="0045xx0C" vm="1" vr="DS">Integration Time</el>
+  <el keyword="ROIOriginXY" tag="0045xx0D" vm="1" vr="DS">ROI Origin X and Y</el>
+  <el keyword="CorrectionType" tag="0045xx0E" vm="1" vr="CS">Correction Type</el>
+  <el keyword="AcquisitionType" tag="0045xx0F" vm="1" vr="CS">Acquisition Type</el>
+  <el keyword="CCDTemperature" tag="0045xx10" vm="2" vr="DS">CCD Temperature</el>
+  <el keyword="ReceptorSizeCmXY" tag="0045xx11" vm="2" vr="DS">Receptor Size cm X and Y</el>
+  <el keyword="ReceptorSizePixelsXY" tag="0045xx12" vm="2" vr="IS">Receptor Size Pixels X and Y</el>
+  <el keyword="Screen" tag="0045xx13" vm="1" vr="ST">Screen</el>
+  <el keyword="PixelPitchMicrons" tag="0045xx14" vm="1" vr="DS">Pixel Pitch Microns</el>
+  <el keyword="PixelDepthBits" tag="0045xx15" vm="1" vr="IS">Pixel Depth Bits</el>
+  <el keyword="BinningFactorXY" tag="0045xx16" vm="2" vr="IS">Binning Factor X and Y</el>
+  <el keyword="QuantumGain" tag="0045xx17" vm="1" vr="DS">Quantum Gain</el>
+  <el keyword="ElectronEDURatio" tag="0045xx18" vm="1" vr="DS">Electron/EDU Ratio</el>
+  <el keyword="ElectronicGain" tag="0045xx19" vm="1" vr="DS">Electronic Gain</el>
+  <el keyword="IDSDataBuffer" tag="0045xx1A" vm="1" vr="OB">IDS Data Buffer</el>
+  <el keyword="ClinicalView" tag="0045xx1B" vm="1" vr="LO">Clinical View</el>
+  <el keyword="BreastLaterality" tag="0045xx1C" vm="1" vr="CS">Breast Laterality</el>
+  <el keyword="MeanOfRawGrayLevels" tag="0045xx1D" vm="1" vr="DS">Mean Of Raw Gray Levels</el>
+  <el keyword="MeanOfOffsetGrayLevels" tag="0045xx1E" vm="1" vr="DS">Mean Of Offset Gray Levels</el>
+  <el keyword="MeanOfCorrectedGrayLevels" tag="0045xx1F" vm="1" vr="DS">Mean Of Corrected Gray Levels</el>
+  <el keyword="MeanOfRegionGrayLevels" tag="0045xx20" vm="1" vr="DS">Mean Of Region Gray Levels</el>
+  <el keyword="MeanOfLogRegionGrayLevels" tag="0045xx21" vm="1" vr="DS">Mean Of Log Region Gray Levels</el>
+  <el keyword="StandardDeviationOfRawGrayLevels" tag="0045xx22" vm="1" vr="DS">Standard Deviation Of Raw Gray Levels</el>
+  <el keyword="StandardDeviationOfCorrectedGrayLevels" tag="0045xx23" vm="1" vr="DS">Standard Deviation Of Corrected Gray Levels</el>
+  <el keyword="StandardDeviationOfRegionGrayLevels" tag="0045xx24" vm="1" vr="DS">Standard Deviation Of Region Gray Levels</el>
+  <el keyword="StandardDeviationOfLogRegionGrayLevels" tag="0045xx25" vm="1" vr="DS">Standard Deviation Of Log Region Gray Levels</el>
+  <el keyword="MAOBuffer" tag="0045xx26" vm="1" vr="OB">MAO Buffer</el>
+  <el keyword="SetNumber" tag="0045xx27" vm="1" vr="IS">Set Number</el>
+  <el keyword="WindowingType" tag="0045xx28" vm="1" vr="CS">WindowingType (LINEAR or GAMMA)</el>
+  <el keyword="WindowingParameters" tag="0045xx29" vm="1-n" vr="DS">WindowingParameters</el>
+  <el keyword="CrosshairCursorXCoordinates" tag="0045xx2A" vm="1" vr="IS">Crosshair Cursor X Coordinates</el>
+  <el keyword="CrosshairCursorYCoordinates" tag="0045xx2B" vm="1" vr="IS">Crosshair Cursor Y Coordinates</el>
+  <el keyword="ReferenceLandmarkAX3DCoordinates" tag="0045xx2C" vm="1" vr="DS">Reference Landmark A X 3D Coordinates</el>
+  <el keyword="ReferenceLandmarkAY3DCoordinates" tag="0045xx2D" vm="1" vr="DS">Reference Landmark A Y 3D Coordinates</el>
+  <el keyword="ReferenceLandmarkAZ3DCoordinates" tag="0045xx2E" vm="1" vr="DS">Reference Landmark A Z 3D Coordinates</el>
+  <el keyword="ReferenceLandmarkAXImageCoordinates" tag="0045xx2F" vm="1" vr="IS">Reference Landmark A X Image Coordinates</el>
+  <el keyword="ReferenceLandmarkAYImageCoordinates" tag="0045xx30" vm="1" vr="IS">Reference Landmark A Y Image Coordinates</el>
+  <el keyword="ReferenceLandmarkBX3DCoordinates" tag="0045xx31" vm="1" vr="DS">Reference Landmark B X 3D Coordinates</el>
+  <el keyword="ReferenceLandmarkBY3DCoordinates" tag="0045xx32" vm="1" vr="DS">Reference Landmark B Y 3D Coordinates</el>
+  <el keyword="ReferenceLandmarkBZ3DCoordinates" tag="0045xx33" vm="1" vr="DS">Reference Landmark B Z 3D Coordinates</el>
+  <el keyword="ReferenceLandmarkBXImageCoordinates" tag="0045xx34" vm="1" vr="IS">Reference Landmark B X Image Coordinates</el>
+  <el keyword="ReferenceLandmarkBYImageCoordinates" tag="0045xx35" vm="1" vr="IS">Reference Landmark B Y Image Coordinates</el>
+  <el keyword="XRaySourceXLocation" tag="0045xx36" vm="1" vr="DS">X-Ray Source X Location</el>
+  <el keyword="XRaySourceYLocation" tag="0045xx37" vm="1" vr="DS">X-Ray Source Y Locatio</el>
+  <el keyword="XRaySourceZLocation" tag="0045xx38" vm="1" vr="DS">X-Ray Source Z Locatio</el>
+  <el keyword="VignetteRows" tag="0045xx39" vm="1" vr="US">Vignette Rows</el>
+  <el keyword="VignetteColumns" tag="0045xx3A" vm="1" vr="US">Vignette Columns</el>
+  <el keyword="VignetteBitsAllocated" tag="0045xx3B" vm="1" vr="US">Vignette Bits Allocated</el>
+  <el keyword="VignetteBitsStored" tag="0045xx3C" vm="1" vr="US">Vignette Bits Stored</el>
+  <el keyword="VignetteHighBit" tag="0045xx3D" vm="1" vr="US">Vignette High Bit</el>
+  <el keyword="VignettePixelRepresentation" tag="0045xx3E" vm="1" vr="US">Vignette Pixel Representation</el>
+  <el keyword="VignettePixelData" tag="0045xx3F" vm="1" vr="OB">Vignette Pixel Data</el>
+  <el keyword="RadiologicalThickness" tag="0045xx49" vm="1" vr="DS">Radiological Thickness</el>
+  <el keyword="FallbackInstanceUID" tag="0045xx50" vm="1" vr="UI">Fallback Instance UID (CR or SC)</el>
+  <el keyword="FallbackSeriesUID" tag="0045xx51" vm="1" vr="UI">Fallback Series UID (CR or SC)</el>
+  <el keyword="RawDiagnosticLow" tag="0045xx52" vm="1" vr="IS">Raw Diagnostic Low</el>
+  <el keyword="RawDiagnosticHigh" tag="0045xx53" vm="1" vr="IS">Raw Diagnostic High</el>
+  <el keyword="Exponent" tag="0045xx54" vm="1" vr="DS">Exponent</el>
+  <el keyword="ACoefficients" tag="0045xx55" vm="1" vr="IS">A Coefficients</el>
+  <el keyword="NoiseReductionSensitivity" tag="0045xx56" vm="1" vr="DS">Noise Reduction Sensitivity</el>
+  <el keyword="NoiseReductionThreshold" tag="0045xx57" vm="1" vr="DS">Noise Reduction Threshold</el>
+  <el keyword="Mu" tag="0045xx58" vm="1" vr="DS">Mu</el>
+  <el keyword="Threshold" tag="0045xx59" vm="1" vr="IS">Threshold</el>
+  <el keyword="BreastROIX" tag="0045xx60" vm="4" vr="IS">Breast ROI X</el>
+  <el keyword="BreastROIY" tag="0045xx61" vm="4" vr="IS">Breast ROI Y</el>
+  <el keyword="UserWindowCenter" tag="0045xx62" vm="1" vr="IS">User Window Center</el>
+  <el keyword="UserWindowWidth" tag="0045xx63" vm="1" vr="IS">User Window Width</el>
+  <el keyword="SegmentationThreshold" tag="0045xx64" vm="1" vr="IS">Segmentation Threshold</el>
+  <el keyword="DetectorEntranceDose" tag="0045xx65" vm="1" vr="IS">Detector Entrance Dose</el>
+  <el keyword="AsymmetricalCollimationInformation" tag="0045xx66" vm="1" vr="IS">Asymmetrical Collimation Information</el>
+  <el keyword="STXBuffer" tag="0045xx71" vm="1" vr="OB">STX Buffer</el>
+  <el keyword="ImageCropPoint" tag="0045xx72" vm="2" vr="DS">Image Crop Point</el>
+  <el keyword="PremiumViewBeta" tag="0045xx90" vm="1" vr="SH">Premium View Beta</el>
+  <el keyword="SignalAverageFactor" tag="0045xxA0" vm="1" vr="DS">Signal Average Factor</el>
+  <el keyword="OrganDoseForSourceImages" tag="0045xxA1" vm="2-n" vr="DS">Organ Dose for Source Images</el>
+  <el keyword="EntranceDoseInmGyForSourceImages" tag="0045xxA2" vm="2-n" vr="DS">Entrance dose in mGy for Source Images</el>
+  <el keyword="OrganDoseIndGyForCompleteDBTSequence" tag="0045xxA4" vm="1" vr="DS">Organ Dose in dGy for Complete DBT Sequence</el>
+  <el keyword="SOPInstanceUIDForLossyCompression" tag="0045xxA6" vm="1" vr="UI">SOP Instance UID for Lossy Compression</el>
+  <el keyword="ReconstructionParameters" tag="0045xxA7" vm="1" vr="LT">Reconstruction Parameters</el>
+  <el keyword="EntranceDoseIndGyForCompleteDBTSequence" tag="0045xxA8" vm="1" vr="DS">Entrance Dose in dGy for Complete DBT Sequence</el>
+  <el keyword="ReplacementImage" tag="0045xxA9" vm="1" vr="DS">Replacement Image</el>
+  <el keyword="ReplacemeImageSequence" tag="0045xxAA" vm="1" vr="SQ">Replaced Image Sequence</el>
+  <el keyword="CumulativeOrganDoseIndGy" tag="0045xxAB" vm="1" vr="DS">Cumulative Organ Dose in dGy</el>
+  <el keyword="CumulativeEntranceDoseInmGy" tag="0045xxAC" vm="1" vr="DS">Cumulative Entrance dose in mGy</el>
+  <el keyword="PaddleProperties" tag="0045xxAD" vm="1-n" vr="LO">Paddle Properties</el>
+</elements>

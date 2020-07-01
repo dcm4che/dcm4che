@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="AngleValueLArm" tag="0019xx01" vm="1" vr="DS">Angle Value L Arm</el>
+  <el keyword="AngleValuePArm" tag="0019xx02" vm="1" vr="DS">Angle Value P Arm</el>
+  <el keyword="AngleValueCArm" tag="0019xx03" vm="1" vr="DS">Angle Value C Arm</el>
+  <el keyword="AngleLabelLArm" tag="0019xx04" vm="1" vr="CS">Angle Label L Arm</el>
+  <el keyword="AngleLabelPArm" tag="0019xx05" vm="1" vr="CS">Angle Label P Arm</el>
+  <el keyword="AngleLabelCArm" tag="0019xx06" vm="1" vr="CS">Angle Label C Arm</el>
+  <el keyword="ProcedureName" tag="0019xx07" vm="1" vr="ST">Procedure Name</el>
+  <el keyword="ExamName" tag="0019xx08" vm="1" vr="ST">Exam Name</el>
+  <el keyword="PatientSize" tag="0019xx09" vm="1" vr="SH">Patient Size</el>
+  <el keyword="RecordView" tag="0019xx0A" vm="1" vr="IS">Record View</el>
+  <el keyword="InjectorDelay" tag="0019xx10" vm="1" vr="DS">Injector Delay</el>
+  <el keyword="AutoInject" tag="0019xx11" vm="1" vr="CS">Auto Inject</el>
+  <el keyword="AcquisitionMode" tag="0019xx14" vm="1" vr="IS">Acquisition Mode</el>
+  <el keyword="CameraRotationEnabled" tag="0019xx15" vm="1" vr="CS">Camera Rotation Enabled</el>
+  <el keyword="ReverseSweep" tag="0019xx16" vm="1" vr="CS">Reverse Sweep</el>
+  <el keyword="UserSpatialFilterStrength" tag="0019xx17" vm="1" vr="IS">User Spatial Filter Strength</el>
+  <el keyword="UserZoomFactor" tag="0019xx18" vm="1" vr="IS">User Zoom Factor</el>
+  <el keyword="XZoomCenter" tag="0019xx19" vm="1" vr="IS">X Zoom Center</el>
+  <el keyword="YZoomCenter" tag="0019xx1A" vm="1" vr="IS">Y Zoom Center</el>
+  <el keyword="Focus" tag="0019xx1B" vm="1" vr="DS">Focus</el>
+  <el keyword="Dose" tag="0019xx1C" vm="1" vr="CS">Dose</el>
+  <el keyword="SideMark" tag="0019xx1D" vm="1" vr="IS">Side Mark</el>
+  <el keyword="PercentageLandscape" tag="0019xx1E" vm="1" vr="IS">Percentage Landscape</el>
+  <el keyword="ExposureDuration" tag="0019xx1F" vm="1" vr="DS">Exposure Duration</el>
+  <el keyword="IpAddress" tag="0019xx20" vm="1" vr="LO">Ip Address</el>
+  <el keyword="TablePositionZ" tag="0019xx21" vm="1" vr="DS">Table position Z (vertica</el>
+  <el keyword="TablePositionX" tag="0019xx22" vm="1" vr="DS">Table position X (longitudina</el>
+  <el keyword="TablePositionY" tag="0019xx23" vm="1" vr="DS">Table position Y (latera</el>
+  <el keyword="Lambda" tag="0019xx24" vm="1" vr="DS">Lambda cm Pincushion Distortion</el>
+  <el keyword="RegressionSlope" tag="0019xx25" vm="1" vr="DS">LV Regression Slope Coefficient</el>
+  <el keyword="RegressionIntercept" tag="0019xx26" vm="1" vr="DS">LV Regression Intercept Coefficient</el>
+  <el keyword="ImageChainFWHMPsfMmMin" tag="0019xx27" vm="1" vr="DS">Image chain FWHM psf mm min</el>
+  <el keyword="ImageChainFWHMPsfMmMax" tag="0019xx28" vm="1" vr="DS">Image chain FWHM psf mm max</el>
+</elements>

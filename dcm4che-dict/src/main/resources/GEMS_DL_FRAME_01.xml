@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="FrameID" tag="0025xx02" vm="1" vr="IS">Frame ID</el>
+  <el keyword="DistanceSourceToDetector" tag="0025xx03" vm="1" vr="DS">Distance Source to Detector</el>
+  <el keyword="DistanceSourceToPatient" tag="0025xx04" vm="1" vr="DS">Distance Source to Patient</el>
+  <el keyword="DistanceSourceToSkin" tag="0025xx05" vm="1" vr="DS">Distance Source to Skin</el>
+  <el keyword="PositionerPrimaryAngle" tag="0025xx06" vm="1" vr="DS">Positioner Primary Angle</el>
+  <el keyword="PositionerSecondaryAngle" tag="0025xx07" vm="1" vr="DS">Positioner Secondary Angle</el>
+  <el keyword="BeamOrientation" tag="0025xx08" vm="1" vr="IS">Beam Orientation</el>
+  <el keyword="LArmAngle" tag="0025xx09" vm="1" vr="DS">L Arm Angle</el>
+  <el keyword="FrameSequence" tag="0025xx0A" vm="1" vr="SQ">Frame Sequence</el>
+  <el keyword="PivotAngle" tag="0025xx10" vm="1" vr="DS">Pivot Angle</el>
+  <el keyword="ArcAngle" tag="0025xx1A" vm="1" vr="DS">Arc Angle</el>
+  <el keyword="TableVerticalPosition" tag="0025xx1B" vm="1" vr="DS">Table Vertical Position</el>
+  <el keyword="TableLongitudinalPosition" tag="0025xx1C" vm="1" vr="DS">Table Longitudinal Position</el>
+  <el keyword="TableLateralPosition" tag="0025xx1D" vm="1" vr="DS">Table Lateral Position</el>
+  <el keyword="BeamCoverArea" tag="0025xx1E" vm="1" vr="IS">Beam Cover Area</el>
+  <el keyword="kVPActual" tag="0025xx1F" vm="1" vr="DS">kVP Actual</el>
+  <el keyword="mASActual" tag="0025xx20" vm="1" vr="DS">mAS Actual</el>
+  <el keyword="PWActual" tag="0025xx21" vm="1" vr="DS">PW Actual</el>
+  <el keyword="KvpCommanded" tag="0025xx22" vm="1" vr="DS">Kvp Commanded</el>
+  <el keyword="MasCommanded" tag="0025xx23" vm="1" vr="DS">Mas Commanded</el>
+  <el keyword="PwCommanded" tag="0025xx24" vm="1" vr="DS">Pw Commanded</el>
+  <el keyword="Grid" tag="0025xx25" vm="1" vr="CS">Grid</el>
+  <el keyword="SensorFeedback" tag="0025xx26" vm="1" vr="DS">Sensor Feedback</el>
+  <el keyword="TargetEntranceDose" tag="0025xx27" vm="1" vr="DS">Target Entrance Dose</el>
+  <el keyword="CnrCommanded" tag="0025xx28" vm="1" vr="DS">Cnr Commanded</el>
+  <el keyword="ContrastCommanded" tag="0025xx29" vm="1" vr="DS">Contrast Commanded</el>
+  <el keyword="EPTActual" tag="0025xx2A" vm="1" vr="DS">EPT Actual</el>
+  <el keyword="SpectralFilterZnb" tag="0025xx2B" vm="1" vr="IS">Spectral Filter Znb</el>
+  <el keyword="SpectralFilterWeight" tag="0025xx2C" vm="1" vr="DS">Spectral Filter Weight</el>
+  <el keyword="SpectralFilterDensity" tag="0025xx2D" vm="1" vr="DS">Spectral Filter Density</el>
+  <el keyword="SpectralFilterThickness" tag="0025xx2E" vm="1" vr="IS">Spectral Filter Thickness</el>
+  <el keyword="SpectralFilterStatus" tag="0025xx2F" vm="1" vr="IS">Spectral Filter Status</el>
+  <el keyword="FOVDimension" tag="0025xx30" vm="2" vr="IS">FOV Dimension</el>
+  <el keyword="FOVOrigin" tag="0025xx33" vm="2" vr="IS">FOV Origin</el>
+  <el keyword="CollimatorLeftVerticalEdge" tag="0025xx34" vm="1" vr="IS">Collimator Left Vertical Edge</el>
+  <el keyword="CollimatorRightVerticalEdge" tag="0025xx35" vm="1" vr="IS">Collimator Right Vertical Edge</el>
+  <el keyword="CollimatorUpHorizontalEdge" tag="0025xx36" vm="1" vr="IS">Collimator Up Horizontal Edge</el>
+  <el keyword="CollimatorLowHorizontalEdge" tag="0025xx37" vm="1" vr="IS">Collimator Low Horizontal Edge</el>
+  <el keyword="VerticesPolygonalCollimator" tag="0025xx38" vm="1" vr="IS">Vertices Polygonal Collimator</el>
+  <el keyword="ContourFilterDistance" tag="0025xx39" vm="1" vr="IS">Contour Filter Distance</el>
+  <el keyword="ContourFilterAngle" tag="0025xx3A" vm="1" vr="UL">Contour Filter Angle</el>
+  <el keyword="TableRotationStatus" tag="0025xx3B" vm="1" vr="CS">Table Rotation Status</el>
+  <el keyword="InternalLabelFrame" tag="0025xx3C" vm="1" vr="CS">Internal Label Frame</el>
+</elements>

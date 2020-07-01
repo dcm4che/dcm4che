@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="CTCardiacSequence" tag="0049xx01" vm="1" vr="SQ">CT Cardiac Sequence</el>
+  <el keyword="HeartRateAtConfirm" tag="0049xx02" vm="1" vr="CS">Heart Rate At Confirm</el>
+  <el keyword="AvgHeartRatePriorToConfirm" tag="0049xx03" vm="1" vr="FL">Avg Heart Rate Prior To Confirm</el>
+  <el keyword="MinHeartRatePriorToConfirm" tag="0049xx04" vm="1" vr="CS">Min Heart Rate Prior To Confirm</el>
+  <el keyword="MaxHeartRatePriorToConfirm" tag="0049xx05" vm="1" vr="CS">Max Heart Rate Prior To Confirm</el>
+  <el keyword="StdDevHeartRatePriorToConfirm" tag="0049xx06" vm="1" vr="FL">Std Dev Heart Rate Prior To Confirm</el>
+  <el keyword="NumHeartRateSamplesPriorToConfirm" tag="0049xx07" vm="1" vr="US">Num Heart Rate Samples Prior To Confirm</el>
+  <el keyword="AutoHeartRateDetectPredict" tag="0049xx08" vm="1" vr="CS">Auto Heart Rate Detect Predict</el>
+  <el keyword="SystemOptimizedHeartRate" tag="0049xx09" vm="1" vr="CS">System Optimized Heart Rate</el>
+  <el keyword="EkgMonitorType" tag="0049xx0A" vm="1" vr="ST">Ekg Monitor Type</el>
+  <el keyword="NumReconSectors" tag="0049xx0B" vm="1" vr="CS">Num Recon Sectors</el>
+  <el keyword="RpeakTimeStamps" tag="0049xx0C" vm="256" vr="FL">Rpeak Time Stamps</el>
+  <el keyword="EkgGatingType" tag="0049xx16" vm="1" vr="SH">Ekg Gating Type</el>
+  <el keyword="EkgWaveTimeOffFirstDataPoint" tag="0049xx1B" vm="1" vr="FL">Ekg Wave Time Off First Data Point</el>
+  <el keyword="TemporalAlg" tag="0049xx22" vm="1" vr="CS">Temporal Alg</el>
+  <el keyword="PhaseLocation" tag="0049xx23" vm="1" vr="CS">Phase Location</el>
+  <el keyword="PreBlendedCycle1" tag="0049xx24" vm="1" vr="OW">Pre Blended Cycle 1</el>
+  <el keyword="PreBlendedCycle2" tag="0049xx25" vm="1" vr="OW">Pre Blended Cycle 2</el>
+  <el keyword="CompressionAlg" tag="0049xx26" vm="1" vr="CS">Compression Alg</el>
+</elements>

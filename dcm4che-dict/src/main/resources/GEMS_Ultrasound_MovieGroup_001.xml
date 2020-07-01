@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_7FE1_xx01_" tag="7FE1xx01" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx02_" tag="7FE1xx02" vm="1" vr="LO">?</el>
+  <el keyword="_7FE1_xx03_" tag="7FE1xx03" vm="1" vr="UL">?</el>
+  <el keyword="_7FE1_xx08_" tag="7FE1xx08" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx10_" tag="7FE1xx10" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx12_" tag="7FE1xx12" vm="1" vr="LO">?</el>
+  <el keyword="_7FE1_xx18_" tag="7FE1xx18" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx20_" tag="7FE1xx20" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx24_" tag="7FE1xx24" vm="1" vr="SH">?</el>
+  <el keyword="_7FE1_xx26_" tag="7FE1xx26" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx30_" tag="7FE1xx30" vm="1" vr="LO">?</el>
+  <el keyword="_7FE1_xx32_" tag="7FE1xx32" vm="1" vr="UL">?</el>
+  <el keyword="_7FE1_xx36_" tag="7FE1xx36" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx37_" tag="7FE1xx37" vm="1" vr="UL">?</el>
+  <el keyword="_7FE1_xx3A_" tag="7FE1xx3A" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx3C_" tag="7FE1xx3C" vm="1" vr="FD">?</el>
+  <el keyword="_7FE1_xx43_" tag="7FE1xx43" vm="1" vr="OB">?</el>
+  <el keyword="_7FE1_xx48_" tag="7FE1xx48" vm="1" vr="FD">?</el>
+  <el keyword="_7FE1_xx49_" tag="7FE1xx49" vm="1" vr="UL">?</el>
+  <el keyword="_7FE1_xx51_" tag="7FE1xx51" vm="1" vr="FL">?</el>
+  <el keyword="_7FE1_xx52_" tag="7FE1xx52" vm="1" vr="FD">?</el>
+  <el keyword="_7FE1_xx53_" tag="7FE1xx53" vm="1" vr="UL">?</el>
+  <el keyword="_7FE1_xx54_" tag="7FE1xx54" vm="1" vr="SL">?</el>
+  <el keyword="_7FE1_xx55_" tag="7FE1xx55" vm="1" vr="OB">?</el>
+  <el keyword="_7FE1_xx57_" tag="7FE1xx57" vm="1" vr="LT">?</el>
+  <el keyword="_7FE1_xx60_" tag="7FE1xx60" vm="1" vr="OB">?</el>
+  <el keyword="_7FE1_xx61_" tag="7FE1xx61" vm="1" vr="OW">?</el>
+  <el keyword="_7FE1_xx62_" tag="7FE1xx62" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx69_" tag="7FE1xx69" vm="1" vr="OW">?</el>
+  <el keyword="_7FE1_xx70_" tag="7FE1xx70" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx71_" tag="7FE1xx71" vm="1" vr="UL">?</el>
+  <el keyword="_7FE1_xx72_" tag="7FE1xx72" vm="1" vr="LO">?</el>
+  <el keyword="_7FE1_xx73_" tag="7FE1xx73" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx74_" tag="7FE1xx74" vm="1" vr="LO">?</el>
+  <el keyword="_7FE1_xx75_" tag="7FE1xx75" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx77_" tag="7FE1xx77" vm="1" vr="FD">?</el>
+  <el keyword="_7FE1_xx79_" tag="7FE1xx79" vm="1" vr="SL">?</el>
+  <el keyword="_7FE1_xx83_" tag="7FE1xx83" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx84_" tag="7FE1xx84" vm="1" vr="LO">?</el>
+  <el keyword="_7FE1_xx85_" tag="7FE1xx85" vm="1" vr="SQ">?</el>
+  <el keyword="_7FE1_xx86_" tag="7FE1xx86" vm="1" vr="SL">?</el>
+  <el keyword="_7FE1_xx87_" tag="7FE1xx87" vm="1" vr="FD">?</el>
+  <el keyword="_7FE1_xx88_" tag="7FE1xx88" vm="1" vr="FD">?</el>
+</elements>

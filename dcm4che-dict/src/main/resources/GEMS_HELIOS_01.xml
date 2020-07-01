@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="NumberOfMacroRowsInDetector" tag="0045xx01" vm="1" vr="SS">Number of Macro Rows in Detector</el>
+  <el keyword="MacroWidthAtISOCenter" tag="0045xx02" vm="1" vr="FL">Macro width at ISO Center</el>
+  <el keyword="DASType" tag="0045xx03" vm="1" vr="SS">DAS type</el>
+  <el keyword="DASGain" tag="0045xx04" vm="1" vr="SS">DAS gain</el>
+  <el keyword="DASTemprature" tag="0045xx05" vm="1" vr="SS">DAS Temprature</el>
+  <el keyword="TableDirection" tag="0045xx06" vm="1" vr="CS">Table Direction</el>
+  <el keyword="ZSmoothingFactor" tag="0045xx07" vm="1" vr="FL">Z smoothing Factor</el>
+  <el keyword="ViewWeightingMode" tag="0045xx08" vm="1" vr="SS">View Weighting Mode</el>
+  <el keyword="SigmaRowNumber" tag="0045xx09" vm="1" vr="SS">Sigma Row number</el>
+  <el keyword="MinimumDASValue" tag="0045xx0A" vm="1" vr="FL">Minimum DAS value</el>
+  <el keyword="MaximumOffsetValue" tag="0045xx0B" vm="1" vr="FL">Maximum Offset Value</el>
+  <el keyword="NumberOfViewsShifted" tag="0045xx0C" vm="1" vr="SS">Number of Views shifted</el>
+  <el keyword="ZTrackingFlag" tag="0045xx0D" vm="1" vr="SS">Z tracking Flag</el>
+  <el keyword="MeanZError" tag="0045xx0E" vm="1" vr="FL">Mean Z error</el>
+  <el keyword="ZTrackingError" tag="0045xx0F" vm="1" vr="FL">Z tracking Error</el>
+  <el keyword="StartView2A" tag="0045xx10" vm="1" vr="SS">Start View 2A</el>
+  <el keyword="NumberOfViews2A" tag="0045xx11" vm="1" vr="SS">Number of Views 2A</el>
+  <el keyword="StartView1A" tag="0045xx12" vm="1" vr="SS">Start View 1A</el>
+  <el keyword="SigmaMode" tag="0045xx13" vm="1" vr="SS">Sigma Mode</el>
+  <el keyword="NumberOfViews1A" tag="0045xx14" vm="1" vr="SS">Number of Views 1A</el>
+  <el keyword="StartView2B" tag="0045xx15" vm="1" vr="SS">Start View 2B</el>
+  <el keyword="NumberViews2B" tag="0045xx16" vm="1" vr="SS">Number Views 2B</el>
+  <el keyword="StartView1B" tag="0045xx17" vm="1" vr="SS">Start View 1B</el>
+  <el keyword="NumberOfViews1B" tag="0045xx18" vm="1" vr="SS">Number of Views 1B</el>
+  <el keyword="IterboneFlag" tag="0045xx21" vm="1" vr="SS">Iterbone Flag</el>
+  <el keyword="PeristalticFlag" tag="0045xx22" vm="1" vr="SS">Peristaltic Flag</el>
+  <el keyword="CardiacReconAlgorithm" tag="0045xx30" vm="1" vr="CS">Cardiac Recon Algorithm</el>
+  <el keyword="AvgHeartRateForImage" tag="0045xx31" vm="1" vr="CS">Avg Heart Rate For Image</el>
+  <el keyword="TemporalResolution" tag="0045xx32" vm="1" vr="FL">Temporal Resolution</el>
+  <el keyword="PctRpeakDelay" tag="0045xx33" vm="1" vr="CS">Pct Rpeak Delay</el>
+  <el keyword="_0045_xx34_" tag="0045xx34" vm="1" vr="CS">?</el>
+  <el keyword="EkgFullMaStartPhase" tag="0045xx36" vm="1" vr="CS">Ekg Full Ma Start Phase</el>
+  <el keyword="EkgFullMaEndPhase" tag="0045xx37" vm="1" vr="CS">Ekg Full Ma End Phase</el>
+  <el keyword="EkgModulationMaxMa" tag="0045xx38" vm="1" vr="CS">Ekg Modulation Max Ma</el>
+  <el keyword="EkgModulationMinMa" tag="0045xx39" vm="1" vr="CS">Ekg Modulation Min Ma</el>
+  <el keyword="NoiseReductionImageFilterDesc" tag="0045xx3B" vm="1" vr="LO">Noise Reduction Image Filter Desc</el>
+  <el keyword="TemporalCenterViewAngle" tag="0045xx50" vm="1" vr="FD">Temporal Center View Angle</el>
+  <el keyword="ReconCenterViewAngle" tag="0045xx51" vm="1" vr="FD">Recon Center View Angle</el>
+  <el keyword="WideConeMasking" tag="0045xx52" vm="1" vr="CS">WideCone Masking</el>
+  <el keyword="WideConeCornerBlendingRadius" tag="0045xx53" vm="1" vr="FD">WideCone Corner Blending Radius</el>
+  <el keyword="WideConeCornerBlendingRadiusOffset" tag="0045xx54" vm="1" vr="FD">WideCone Corner Blending Radius Offset</el>
+  <el keyword="InternalReconAlgorithm" tag="0045xx55" vm="1" vr="CS">Internal Recon Algorithm</el>
+  <el keyword="PatientCentering" tag="0045xx60" vm="1-n" vr="FL">Patient Centering</el>
+  <el keyword="PatientAttenuation" tag="0045xx61" vm="1-n" vr="FL">Patient Attenuation</el>
+  <el keyword="WaterEquivalentDiameter" tag="0045xx62" vm="1-n" vr="FL">Water Equivalent Diameter</el>
+  <el keyword="ProjectionMeasure" tag="0045xx63" vm="1-n" vr="FL">Projection Measure</el>
+  <el keyword="OvalRatio" tag="0045xx64" vm="1-n" vr="FL">Oval Ratio</el>
+  <el keyword="EllipseOrientation" tag="0045xx65" vm="1-n" vr="FL">Ellipse Orientation</el>
+</elements>

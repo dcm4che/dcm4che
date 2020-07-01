@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="WorklistFilename" tag="3109xx01" vm="1" vr="ST">Worklist Filename</el>
+  <el keyword="NewSeenStatus" tag="3109xx02" vm="1" vr="SH">NEW/SEEN Status</el>
+  <el keyword="DeleteLock" tag="3109xx03" vm="1" vr="CS">Delete Lock</el>
+  <el keyword="_3109_xx04_" tag="3109xx04" vm="1" vr="CS">?</el>
+  <el keyword="_3109_xx05_" tag="3109xx05" vm="1" vr="CS">?</el>
+  <el keyword="_3109_xx06_" tag="3109xx06" vm="1" vr="CS">?</el>
+  <el keyword="_3109_xx07_" tag="3109xx07" vm="1" vr="UL">?</el>
+  <el keyword="ReceiveOrigin" tag="3109xx08" vm="1" vr="LO">Receive Origin</el>
+  <el keyword="Folder" tag="3109xx09" vm="1" vr="LO">Folder</el>
+  <el keyword="ReceiveDate" tag="3109xx0A" vm="1" vr="DA">Receive Date</el>
+  <el keyword="ReceiveTime" tag="3109xx0B" vm="1" vr="TM">Receive Time</el>
+  <el keyword="Prior" tag="3109xx0C" vm="1" vr="CS">Prior</el>
+  <el keyword="StatStudy" tag="3109xx0D" vm="1" vr="CS">STAT Study</el>
+  <el keyword="Key" tag="3109xx0E" vm="1" vr="CS">Is Key Image Or Study</el>
+  <el keyword="LocalStudy" tag="3109xx10" vm="1" vr="CS">Local Study</el>
+  <el keyword="ResultMessage" tag="3109xx11" vm="1" vr="LO">Result Message</el>
+  <el keyword="CurrentUser" tag="3109xx12" vm="1" vr="LO">Current User</el>
+  <el keyword="SystemDate" tag="3109xx13" vm="1" vr="DA">System Date</el>
+  <el keyword="SystemTime" tag="3109xx14" vm="1" vr="TM">System Time</el>
+  <el keyword="WorklistName" tag="3109xx19" vm="1" vr="LO">Worklist Name</el>
+  <el keyword="WorklistUID" tag="3109xx20" vm="1" vr="UI">Worklist UID</el>
+  <el keyword="Hostname" tag="3109xx21" vm="1" vr="CS">Hostname</el>
+  <el keyword="DICOMAETitle" tag="3109xx22" vm="1" vr="AE">DICOM AE Title</el>
+  <el keyword="DICOMPortNumber" tag="3109xx23" vm="1" vr="US">DICOM Port Number</el>
+  <el keyword="DestinationName" tag="3109xx24" vm="1" vr="LO">Destination Name</el>
+  <el keyword="OriginName" tag="3109xx25" vm="1" vr="LO">Origin Name</el>
+  <el keyword="ModalityStudyInstanceUID" tag="3109xx26" vm="1" vr="UI">Modality Study Instance UID</el>
+  <el keyword="ExamRouting" tag="3109xx27" vm="1" vr="SQ">Exam Routing</el>
+  <el keyword="NotificationComments" tag="3109xx28" vm="1" vr="LO">Notification Comments</el>
+  <el keyword="TransactionComments" tag="3109xx29" vm="1" vr="LO">Transaction Comments</el>
+  <el keyword="SendFlag" tag="3109xx2A" vm="1" vr="LO">Send Flag</el>
+  <el keyword="PrintFlag" tag="3109xx2B" vm="1" vr="LO">Print Flag</el>
+  <el keyword="ArchiveFlag" tag="3109xx2C" vm="1" vr="LO">Archive Flag</el>
+  <el keyword="RequestingFacilityName" tag="3109xx30" vm="1" vr="LO">Requesting Facility Name</el>
+  <el keyword="RequestingProcedureName" tag="3109xx31" vm="1" vr="CS">Requesting Procedure Name</el>
+  <el keyword="RequestingProcedureCode" tag="3109xx32" vm="1" vr="CS">Requesting Procedure Code</el>
+  <el keyword="RequestStorageommitment" tag="3109xx33" vm="1" vr="CS">Request Storage Commitment</el>
+  <el keyword="RequestedCompression" tag="3109xx34" vm="1" vr="CS">Requested Compression</el>
+  <el keyword="StudySequence" tag="3109xx35" vm="1" vr="SQ">Study Sequence</el>
+  <el keyword="ReplacedStudyUID" tag="3109xx37" vm="1" vr="UI">Replaced Study UID</el>
+  <el keyword="TeachingACRCode" tag="3109xx38" vm="1" vr="SH">Teaching ACR Code</el>
+  <el keyword="TeachingSpecialInterestCode" tag="3109xx39" vm="1" vr="SH">Teaching Special Interest Code</el>
+  <el keyword="NumberOfStudyRelatedImages" tag="3109xx40" vm="1" vr="IS">Number of Study Related Images</el>
+  <el keyword="StudyLocked" tag="3109xx41" vm="1" vr="CS">Study Locked</el>
+  <el keyword="WorkstationName" tag="3109xx42" vm="1" vr="CS">Workstation Name</el>
+  <el keyword="ArchiveStatus" tag="3109xx43" vm="1" vr="CS">Archive Status</el>
+  <el keyword="InternalListUID" tag="3109xxEE" vm="1" vr="UI">Internal List UID</el>
+  <el keyword="Action" tag="3109xxEF" vm="1" vr="CS">Action (Add,Remove,Change)</el>
+</elements>

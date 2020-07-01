@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="ProcessedSeriesUID" tag="0011xx03" vm="1" vr="UI">Processed Series UID</el>
+  <el keyword="AcquisitionType" tag="0011xx04" vm="1" vr="CS">Acquisition Type</el>
+  <el keyword="AcquisitionUID" tag="0011xx05" vm="1" vr="UI">Acquisition UID</el>
+  <el keyword="ImageDose" tag="0011xx06" vm="1" vr="DS">Image Dose</el>
+  <el keyword="StudyDose" tag="0011xx07" vm="1" vr="FL">Study Dose</el>
+  <el keyword="StudyDAP" tag="0011xx08" vm="1" vr="FL">Study DAP</el>
+  <el keyword="NonDigitalExposures" tag="0011xx09" vm="1" vr="SL">Non-Digital Exposures</el>
+  <el keyword="TotalExposures" tag="0011xx10" vm="1" vr="SL">Total Exposures</el>
+  <el keyword="ROI" tag="0011xx11" vm="1" vr="LT">ROI</el>
+  <el keyword="PatientSizeString" tag="0011xx12" vm="1" vr="LT">Patient Size String</el>
+  <el keyword="SPSUID" tag="0011xx13" vm="1" vr="UI">SPS UID</el>
+  <el keyword="_0011_xx14_" tag="0011xx14" vm="1" vr="UI">?</el>
+  <el keyword="DetectorARCGain" tag="0011xx15" vm="1" vr="DS">Detector ARC Gain</el>
+  <el keyword="ProcessingDebugInfo" tag="0011xx16" vm="1" vr="LT">Processing Debug Info</el>
+  <el keyword="OverrideMode" tag="0011xx17" vm="1" vr="CS">Override Mode</el>
+  <el keyword="FilmSpeedSelection" tag="0011xx19" vm="1" vr="DS">Film Speed Selection</el>
+  <el keyword="_0011_xx27_" tag="0011xx27" vm="1" vr="UN">?</el>
+  <el keyword="_0011_xx28_" tag="0011xx28" vm="1" vr="UN">?</el>
+  <el keyword="_0011_xx29_" tag="0011xx29" vm="1" vr="UN">?</el>
+  <el keyword="_0011_xx30_" tag="0011xx30" vm="1" vr="UN">?</el>
+  <el keyword="DetectedFieldOfView" tag="0011xx31" vm="1-n" vr="IS">Detected Field of View</el>
+  <el keyword="AdjustedFieldOfView" tag="0011xx32" vm="1-n" vr="IS">Adjusted Field of View</el>
+  <el keyword="DetectorExposureIndex" tag="0011xx33" vm="1" vr="DS">Detector Exposure Index</el>
+  <el keyword="CompensatedDetectorExposure" tag="0011xx34" vm="1" vr="DS">Compensated Detector Exposure</el>
+  <el keyword="UncompensatedDetectorExposure" tag="0011xx35" vm="1" vr="DS">Uncompensated Detector Exposure</el>
+  <el keyword="MedianAnatomyCountValue" tag="0011xx36" vm="1" vr="DS">Median Anatomy Count Value</el>
+  <el keyword="DEILowerAndUpperLimitValues" tag="0011xx37" vm="2" vr="DS">DEI Lower &amp; Upper Limit Values</el>
+  <el keyword="ShiftVectorForPasting" tag="0011xx38" vm="6" vr="SL">Shift Vector for Pasting</el>
+  <el keyword="ImageNumberInPasting" tag="0011xx39" vm="6" vr="CS">Image Number in Pasting</el>
+  <el keyword="PastingOverlap" tag="0011xx40" vm="1" vr="SL">Pasting Overlap</el>
+  <el keyword="SubImageCollimatorVertices" tag="0011xx41" vm="24" vr="IS">Sub-image Collimator Vertices</el>
+  <el keyword="ViewIP" tag="0011xx42" vm="1" vr="LO">View IP</el>
+  <el keyword="KeystoneCoordinates" tag="0011xx43" vm="24" vr="IS">Keystone Coordinates</el>
+  <el keyword="ReceptorType" tag="0011xx44" vm="1" vr="CS">Receptor Type</el>
+  <el keyword="_0011_xx46_" tag="0011xx46" vm="1-n" vr="LO">?</el>
+  <el keyword="_0011_xx47_" tag="0011xx47" vm="1" vr="DS">?</el>
+  <el keyword="_0011_xx59_" tag="0011xx59" vm="1" vr="CS">?</el>
+  <el keyword="_0011_xx60_" tag="0011xx60" vm="1" vr="CS">?</el>
+  <el keyword="_0011_xx6D_" tag="0011xx6D" vm="1" vr="DS">?</el>
+</elements>

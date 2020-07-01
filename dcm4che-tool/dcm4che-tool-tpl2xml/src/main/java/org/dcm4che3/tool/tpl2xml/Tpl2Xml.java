@@ -277,13 +277,13 @@ public class Tpl2Xml {
         }
 
         private void setTagAndKeyword(String tag, String keyword) {
-            String first4 = tag.substring(1, 5).toUpperCase();
-            String last4 = "xx" + tag.substring(8,10).toUpperCase();
+            String groupTag = tag.substring(1, 5).toUpperCase();
+            String elementTag = "xx" + tag.substring(8,10).toUpperCase();
             this.keyword = keyword.equals("?")
-                    ? "_" + first4 + "_" + last4 + "_"
+                    ? "_" + groupTag + "_" + elementTag + "_"
                     : !Pattern.compile("^[a-zA-Z][a-zA-Z0-9]*$").matcher(keyword).matches()
                         ? improveInvalidKeyword(keyword) : keyword;
-            this.tag = first4 + last4;
+            this.tag = groupTag + elementTag;
         }
 
         private String improveInvalidKeyword(String keyword) {

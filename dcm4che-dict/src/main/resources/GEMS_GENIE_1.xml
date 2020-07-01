@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_0009_xx01_" tag="0009xx01" vm="1" vr="SH">?</el>
+  <el keyword="StudyName" tag="0009xx10" vm="1" vr="LO">Study Name</el>
+  <el keyword="StudyFlags" tag="0009xx11" vm="1" vr="SL">Study Flags</el>
+  <el keyword="StudyType" tag="0009xx12" vm="1" vr="SL">Study Type</el>
+  <el keyword="DatasetUID" tag="0009xx1E" vm="1" vr="UI">Dataset UID</el>
+  <el keyword="SeriesObjectName" tag="0009xx20" vm="1" vr="LO">Series Object Name</el>
+  <el keyword="SeriesFlags" tag="0009xx21" vm="1" vr="SL">Series Flags</el>
+  <el keyword="UserOrientation" tag="0009xx22" vm="1" vr="SH">User Orientation</el>
+  <el keyword="InitiationType" tag="0009xx23" vm="1" vr="SL">Initiation Type</el>
+  <el keyword="InitiationDelay" tag="0009xx24" vm="1" vr="SL">Initiation Delay</el>
+  <el keyword="InitiationCountRate" tag="0009xx25" vm="1" vr="SL">Initiation Count Rate</el>
+  <el keyword="NumberEnergySets" tag="0009xx26" vm="1" vr="SL">Number Energy Sets</el>
+  <el keyword="NumberDetectors" tag="0009xx27" vm="1" vr="SL">Number Detectors</el>
+  <el keyword="NumberRRWindows" tag="0009xx28" vm="1" vr="SL">Number RR Windows</el>
+  <el keyword="NumberMGTimeSlots" tag="0009xx29" vm="1" vr="SL">Number MG Time Slots</el>
+  <el keyword="NumberViewSets" tag="0009xx2A" vm="1" vr="SL">Number View Sets</el>
+  <el keyword="TriggerHistoryUID" tag="0009xx2B" vm="1" vr="LO">Trigger History UID</el>
+  <el keyword="SeriesComments" tag="0009xx2C" vm="1" vr="LO">Series Comments</el>
+  <el keyword="TrackBeatAverage" tag="0009xx2D" vm="1" vr="SL">Track Beat Average</el>
+  <el keyword="DistancePrescribed" tag="0009xx2E" vm="1" vr="FD">Distance Prescribed</el>
+  <el keyword="TableDirection" tag="0009xx2F" vm="1" vr="SL">Table Direction</el>
+  <el keyword="_0009_xx30_" tag="0009xx30" vm="1" vr="LO">?</el>
+  <el keyword="RotationalContinuousSpeed" tag="0009xx33" vm="1" vr="FD">Rotational Continuous Speed</el>
+  <el keyword="GantryMotionTypeRetired" tag="0009xx34" vm="1" vr="SL">Gantry Motion Type (Retired)</el>
+  <el keyword="GantryLocusType" tag="0009xx35" vm="1" vr="SL">Gantry Locus Type</el>
+  <el keyword="StartingHeartRate" tag="0009xx37" vm="1" vr="SL">Starting Heart Rate</el>
+  <el keyword="RRWindowWidth" tag="0009xx38" vm="1" vr="SL">RR Window Width</el>
+  <el keyword="RRWindowOffset" tag="0009xx39" vm="1" vr="SL">RR Window Offset</el>
+  <el keyword="PercentCycleImaged" tag="0009xx3A" vm="1" vr="SL">Percent Cycle Imaged</el>
+  <el keyword="PatientObjectName" tag="0009xx40" vm="1" vr="PN">Patient Object Name</el>
+  <el keyword="PatientFlags" tag="0009xx41" vm="1" vr="SL">Patient Flags</el>
+  <el keyword="PatientCreationDate" tag="0009xx42" vm="1" vr="DA">Patient Creation Date</el>
+  <el keyword="PatientCreationTime" tag="0009xx43" vm="1" vr="TM">Patient Creation Time</el>
+  <el keyword="NumViewsAcquiredRetired" tag="0009xx44" vm="1" vr="SL">Num Views Acquired (Retired)</el>
+  <el keyword="_0009_xx45_" tag="0009xx45" vm="1" vr="LT">?</el>
+  <el keyword="_0009_xx46_" tag="0009xx46" vm="1" vr="UI">?</el>
+  <el keyword="SeriesType" tag="0011xx0A" vm="1" vr="SL">Series Type</el>
+  <el keyword="EffectiveSeriesDuration" tag="0011xx0B" vm="1" vr="SL">Effective Series Duration</el>
+  <el keyword="NumBeats" tag="0011xx0C" vm="1" vr="SL">Num Beats</el>
+  <el keyword="RadioNuclideName" tag="0011xx0D" vm="1" vr="LO">Radio Nuclide Name</el>
+  <el keyword="DatasetObjectName" tag="0011xx10" vm="1" vr="LO">Dataset Object Name</el>
+  <el keyword="DatasetModified" tag="0011xx11" vm="1" vr="SL">Dataset Modified</el>
+  <el keyword="DatasetName" tag="0011xx12" vm="1" vr="LO">Dataset Name</el>
+  <el keyword="DatasetType" tag="0011xx13" vm="1" vr="SL">Dataset Type</el>
+  <el keyword="CompletionTime" tag="0011xx14" vm="1" vr="LO">Completion Time</el>
+  <el keyword="DetectorNumber" tag="0011xx15" vm="1" vr="SL">Detector Number</el>
+  <el keyword="EnergyNumber" tag="0011xx16" vm="1" vr="SL">Energy Number</el>
+  <el keyword="RRIntervalWindowNumber" tag="0011xx17" vm="1" vr="SL">RR Interval Window Number</el>
+  <el keyword="MGBinNumber" tag="0011xx18" vm="1" vr="SL">MG Bin Number</el>
+  <el keyword="RadiusOfRotation" tag="0011xx19" vm="1" vr="FD">Radius Of Rotation</el>
+  <el keyword="DetectorCountZone" tag="0011xx1A" vm="1" vr="SL">Detector Count Zone</el>
+  <el keyword="NumEnergyWindows" tag="0011xx1B" vm="1" vr="SL">Num Energy Windows</el>
+  <el keyword="EnergyOffset" tag="0011xx1C" vm="4" vr="SL">Energy Offset</el>
+  <el keyword="EnergyRange" tag="0011xx1D" vm="1" vr="SL">Energy Range</el>
+  <el keyword="EnergyWidthRetired" tag="0011xx1E" vm="4" vr="SL">Energy Width (Retired)</el>
+  <el keyword="ImageOrientation" tag="0011xx1F" vm="1" vr="SL">Image Orientation</el>
+  <el keyword="AcqZoomRetired" tag="0011xx21" vm="1" vr="DS">Acq Zoom (Retired)</el>
+  <el keyword="AcqPanRetired" tag="0011xx22" vm="1" vr="DS">Acq Pan (Retired)</el>
+  <el keyword="UseFOVMask" tag="0011xx23" vm="1" vr="SL">Use FOV Mask</el>
+  <el keyword="FOVMaskYCutoffAngle" tag="0011xx24" vm="1" vr="SL">FOV Mask Y Cutoff Angle</el>
+  <el keyword="FOVMaskCutoffAngle" tag="0011xx25" vm="1" vr="SL">FOV Mask Cutoff Angle</el>
+  <el keyword="TableOrientation" tag="0011xx26" vm="1" vr="SL">Table Orientation</el>
+  <el keyword="ROITopLeft" tag="0011xx27" vm="2" vr="SL">ROI Top Left</el>
+  <el keyword="ROIBottomRight" tag="0011xx28" vm="2" vr="SL">ROI Bottom Right</el>
+  <el keyword="UniformityMean" tag="0011xx29" vm="1" vr="SL">Uniformity Mean</el>
+  <el keyword="PhaseDurationRetired" tag="0011xx2A" vm="1" vr="FD">Phase Duration (Retired)</el>
+  <el keyword="ViewXAdjustment" tag="0011xx2C" vm="1" vr="FD">View X Adjustment</el>
+  <el keyword="ViewYAdjustment" tag="0011xx2D" vm="1" vr="FD">View Y Adjustment</el>
+  <el keyword="PixelOverflowFlag" tag="0011xx2E" vm="1" vr="SL">Pixel Overflow Flag</el>
+  <el keyword="OverflowLevel" tag="0011xx2F" vm="1" vr="SL">Overflow Level</el>
+  <el keyword="PictureObjectName" tag="0011xx30" vm="1" vr="LO">Picture Object Name</el>
+  <el keyword="AcquisitionParentUID" tag="0011xx31" vm="1" vr="LO">Acquisition Parent UID</el>
+  <el keyword="ProcessingParentUID" tag="0011xx32" vm="1" vr="LO">Processing Parent UID</el>
+  <el keyword="EnergyCorrectName" tag="0011xx33" vm="1" vr="LO">Energy Correct Name</el>
+  <el keyword="SpatialCorrectName" tag="0011xx34" vm="1" vr="LO">Spatial Correct Name</el>
+  <el keyword="TuningCalibName" tag="0011xx35" vm="1" vr="LO">Tuning Calib Name</el>
+  <el keyword="UniformityCorrectName" tag="0011xx36" vm="1" vr="LO">Uniformity Correct Name</el>
+  <el keyword="AcquisitionSpecificCorrectName" tag="0011xx37" vm="1" vr="LT">Acquisition Specific Correct Name</el>
+  <el keyword="ByteOrder" tag="0011xx38" vm="1" vr="SL">Byte Order</el>
+  <el keyword="CompressionType" tag="0011xx39" vm="1" vr="SL">Compression Type</el>
+  <el keyword="PictureFormat" tag="0011xx3A" vm="1" vr="SL">Picture Format</el>
+  <el keyword="PixelScale" tag="0011xx3B" vm="1" vr="FD">Pixel Scale</el>
+  <el keyword="PixelOffset" tag="0011xx3C" vm="1" vr="FD">Pixel Offset</el>
+  <el keyword="EnergyPeakRetired" tag="0011xx3D" vm="4" vr="SL">Energy Peak (Retired)</el>
+  <el keyword="FOVShape" tag="0011xx3E" vm="1" vr="SL">FOV Shape</el>
+  <el keyword="DatasetFlags" tag="0011xx3F" vm="1" vr="SL">Dataset Flags</el>
+  <el keyword="ViewingObjectName" tag="0011xx40" vm="1" vr="LO">Viewing Object Name</el>
+  <el keyword="OrientationAngle" tag="0011xx41" vm="1" vr="SL">Orientation Angle</el>
+  <el keyword="RotationAngle" tag="0011xx42" vm="1" vr="FD">Rotation Angle</el>
+  <el keyword="WindowInverseFlag" tag="0011xx43" vm="1" vr="SL">Window Inverse Flag</el>
+  <el keyword="ThresholdCenter" tag="0011xx44" vm="1" vr="FD">Threshold Center</el>
+  <el keyword="ThresholdWidth" tag="0011xx45" vm="1" vr="FD">Threshold Width</el>
+  <el keyword="InterpolationType" tag="0011xx46" vm="1" vr="SL">Interpolation Type</el>
+  <el keyword="WhereObjectName" tag="0011xx50" vm="1" vr="LO">Where Object Name</el>
+  <el keyword="Period" tag="0011xx55" vm="1" vr="FD">Period</el>
+  <el keyword="ElapsedTime" tag="0011xx56" vm="1" vr="FD">ElapsedTime</el>
+  <el keyword="FOV" tag="0011xx57" vm="2" vr="FD">FOV</el>
+  <el keyword="ImageSize" tag="0011xx61" vm="1" vr="SL">Image Size</el>
+  <el keyword="LinearFOV" tag="0011xx62" vm="1" vr="FD">Linear FOV</el>
+  <el keyword="SpatialOffset" tag="0011xx63" vm="1" vr="FD">Spatial Offset</el>
+  <el keyword="SpatialOrientation" tag="0011xx64" vm="1" vr="FD">Spatial Orientation</el>
+  <el keyword="ReferenceDatasetUID" tag="0011xx65" vm="1" vr="LO">Reference Dataset UID</el>
+  <el keyword="StarcamReferenceDataset" tag="0011xx66" vm="1" vr="SH">Starcam Reference Dataset</el>
+  <el keyword="ReferenceFrameNumber" tag="0011xx67" vm="1" vr="SL">Reference Frame Number</el>
+  <el keyword="CursorLength" tag="0011xx68" vm="1" vr="SL">Cursor Length</el>
+  <el keyword="NumberOfCursors" tag="0011xx69" vm="1" vr="SL">Number of Cursors</el>
+  <el keyword="CursorCoordinates" tag="0011xx6A" vm="1" vr="SL">Cursor Coordinates</el>
+  <el keyword="ReconOptionsFlag" tag="0011xx6B" vm="1" vr="SL">Recon Options Flag</el>
+  <el keyword="MotionThreshold" tag="0011xx6C" vm="1" vr="FD">Motion Threshold</el>
+  <el keyword="MotionCurveUID" tag="0011xx6D" vm="1" vr="UI">Motion Curve UID</el>
+  <el keyword="ReconType" tag="0011xx6E" vm="1" vr="SL">Recon Type</el>
+  <el keyword="PreFilterType" tag="0011xx6F" vm="1" vr="SL">Pre Filter Type</el>
+  <el keyword="BackProjFilterType" tag="0011xx71" vm="1" vr="SL">Back Proj Filter Type</el>
+  <el keyword="ReconArc" tag="0011xx72" vm="1" vr="SL">Recon Arc</el>
+  <el keyword="ReconPanAPOffset" tag="0011xx73" vm="1" vr="FD">Recon Pan AP Offset</el>
+  <el keyword="ReconPanLROffset" tag="0011xx74" vm="1" vr="FD">Recon Pan LR Offset</el>
+  <el keyword="ReconArea" tag="0011xx75" vm="1" vr="FD">Recon Area</el>
+  <el keyword="StartView" tag="0011xx76" vm="1" vr="SL">Start View</el>
+  <el keyword="AttenuationType" tag="0011xx77" vm="1" vr="SL">Attenuation Type</el>
+  <el keyword="DualEnergyProcessing" tag="0011xx78" vm="1" vr="SL">Dua lEnergy Processing</el>
+  <el keyword="PreFilterParam" tag="0011xx79" vm="1" vr="SH">Pre Filter Param</el>
+  <el keyword="PreFilterParam2" tag="0011xx7A" vm="1" vr="SH">Pre Filter Param 2</el>
+  <el keyword="BackProjFilterParam" tag="0011xx7B" vm="1" vr="SH">Back Proj Filter Param</el>
+  <el keyword="BackProjFilterParam2" tag="0011xx7C" vm="1" vr="SH">Back Proj Filter Param 2</el>
+  <el keyword="AttenuationCoef" tag="0011xx7D" vm="1" vr="SH">Attenuation Coef</el>
+  <el keyword="RefSliceWidth" tag="0011xx7E" vm="1" vr="SL">Ref Slice Width</el>
+  <el keyword="RefTransPixelVolume" tag="0011xx7F" vm="1" vr="FD">Ref Trans Pixel Volume</el>
+  <el keyword="AttenuationThreshold" tag="0011xx81" vm="1" vr="SH">Attenuation Threshold</el>
+  <el keyword="InterpolationDistance" tag="0011xx82" vm="1" vr="FD">Interpolation Distance</el>
+  <el keyword="InterpolationCenterX" tag="0011xx83" vm="1" vr="FD">Interpolation Center X</el>
+  <el keyword="InterpolationCenterY" tag="0011xx84" vm="1" vr="FD">Interpolation Center Y</el>
+  <el keyword="QuantFilterFlag" tag="0011xx85" vm="1" vr="SL">Quant Filter Flag</el>
+  <el keyword="HeadConversion" tag="0011xx86" vm="1" vr="SL">Head Conversion</el>
+  <el keyword="SliceWidthPixels" tag="0011xx87" vm="1" vr="SL">Slice Width Pixels</el>
+  <el keyword="RfmtrTransRef" tag="0011xx88" vm="1" vr="SL">Rfmtr Trans Ref</el>
+  <el keyword="RfmtrTransRefmm" tag="0011xx89" vm="1" vr="FD">Rfmtr Trans Ref mm</el>
+  <el keyword="TwoLineTransRef" tag="0011xx8A" vm="1" vr="SL">Two Line Trans Ref</el>
+  <el keyword="ThreeDZero" tag="0011xx8B" vm="1" vr="SL">Three-D Zero</el>
+  <el keyword="ThreeDZeroLength" tag="0011xx8C" vm="1" vr="SL">Three-D Zero Length</el>
+  <el keyword="ThreeDZeroIn" tag="0011xx8D" vm="1" vr="SL">Three-D Zero In</el>
+  <el keyword="DigitalFOV" tag="0013xx10" vm="2" vr="FD">Digital FOV</el>
+  <el keyword="SourceTranslator" tag="0013xx11" vm="1" vr="SL">Source Translator</el>
+  <el keyword="RALFlags" tag="0013xx12" vm="1" vr="SL">RAL Flags</el>
+  <el keyword="eNTEGRAFrameSequence" tag="0013xx13" vm="1" vr="SQ">eNTEGRA Frame Sequence</el>
+  <el keyword="OriginalImageNumber" tag="0013xx14" vm="1" vr="SL">Original Image Number</el>
+  <el keyword="Fscalar" tag="0013xx15" vm="1" vr="FD">Fscalar</el>
+  <el keyword="AutoTrackPeak" tag="0013xx16" vm="1" vr="SL">AutoTrack Peak</el>
+  <el keyword="AutoTrackWidth" tag="0013xx17" vm="1" vr="SL">AutoTrack Width</el>
+  <el keyword="TransmissionScanTime" tag="0013xx18" vm="1" vr="FD">Transmission Scan Time</el>
+  <el keyword="TransmissionMaskWidth" tag="0013xx19" vm="1" vr="FD">Transmission Mask Width</el>
+  <el keyword="CopperAttenuatorThickness" tag="0013xx1A" vm="1" vr="FD">Copper Attenuator Thickness</el>
+  <el keyword="DetAngSeparation" tag="0013xx1B" vm="1" vr="FD">Det Ang Separation</el>
+  <el keyword="AxialAcceptanceAngle" tag="0013xx1C" vm="1" vr="SL">Axial Acceptance Angle</el>
+  <el keyword="ThetaAcceptanceValue" tag="0013xx1D" vm="1" vr="SL">Theta Acceptance Value</el>
+  <el keyword="TomoViewOffset" tag="0013xx1E" vm="1-n" vr="FD">Tomo View Offset</el>
+  <el keyword="AcceptedBeatsTime" tag="0013xx20" vm="1" vr="FD">Accepted Beats Time</el>
+  <el keyword="Threshold" tag="0013xx21" vm="2" vr="FD">Threshold</el>
+  <el keyword="LinearDepth" tag="0013xx22" vm="2" vr="FD">Linear Depth</el>
+  <el keyword="UnifDateTime" tag="0013xx23" vm="1" vr="LO">Unif Date Time</el>
+  <el keyword="SeriesAcceptedBeats" tag="0013xx24" vm="1" vr="SL">Series Accepted Beats</el>
+  <el keyword="SeriesRejectedBeats" tag="0013xx25" vm="1" vr="SL">Series Rejected Beats</el>
+  <el keyword="StudyComments" tag="0013xx26" vm="1" vr="LT">Study Comments</el>
+  <el keyword="FrameTerminationCondition" tag="0015xx10" vm="1" vr="SL">Frame Termination Condition</el>
+  <el keyword="FrameTerminationValue" tag="0015xx11" vm="1" vr="SL">Frame Termination Value</el>
+  <el keyword="NumECTPhases" tag="0015xx12" vm="1" vr="SL">Num ECT Phases</el>
+  <el keyword="NumWBScans" tag="0015xx13" vm="1" vr="SL">Num WB Scans</el>
+  <el keyword="ECTPhaseNum" tag="0015xx14" vm="1" vr="SL">ECT Phase Num</el>
+  <el keyword="WBScanNum" tag="0015xx15" vm="1" vr="SL">WB Scan Num</el>
+  <el keyword="CombHeadNumber" tag="0015xx16" vm="1" vr="SL">Comb Head Number</el>
+  <el keyword="PrecedingBeat" tag="0015xx17" vm="1" vr="UL">Preceding Beat</el>
+  <el keyword="_0019_xx5F_" tag="0019xx5F" vm="1" vr="SQ">?</el>
+  <el keyword="OriginalSOPInstanceUID" tag="0033xx07" vm="1-n" vr="LO">Original SOP Instance UID</el>
+  <el keyword="eNTEGRADataObjectType" tag="0033xx08" vm="1" vr="CS">eNTEGRA Data Object Type</el>
+  <el keyword="Modified" tag="0033xx10" vm="1" vr="SL">Modified</el>
+  <el keyword="Name" tag="0033xx11" vm="1" vr="LO">Name</el>
+  <el keyword="ProtocolDataUID" tag="0033xx16" vm="1" vr="LO">Protocol Data UID</el>
+  <el keyword="Date" tag="0033xx17" vm="1" vr="SH">Date</el>
+  <el keyword="Time" tag="0033xx18" vm="1" vr="SH">Time</el>
+  <el keyword="ProtocolDataFlags" tag="0033xx19" vm="1" vr="UL">Protocol Data Flags</el>
+  <el keyword="ProtocolName" tag="0033xx1A" vm="1" vr="UL">Protocol Name</el>
+  <el keyword="RelevantDataUID" tag="0033xx1B" vm="1" vr="LO">Relevant Data UID</el>
+  <el keyword="BulkData" tag="0033xx1C" vm="1" vr="LO">Bulk Data</el>
+  <el keyword="IntData" tag="0033xx1D" vm="1-n" vr="SL">Int Data</el>
+  <el keyword="DoubleData" tag="0033xx1E" vm="1-n" vr="FD">Double Data</el>
+  <el keyword="StringData" tag="0033xx1F" vm="1" vr="OB">String Data</el>
+  <el keyword="BulkDataFormat" tag="0033xx20" vm="1-n" vr="LT">Bulk Data Format</el>
+  <el keyword="IntDataFormat" tag="0033xx21" vm="1-n" vr="LT">Int Data Format</el>
+  <el keyword="DoubleDataFormat" tag="0033xx22" vm="1-n" vr="LT">Double Data Format</el>
+  <el keyword="StringDataFormat" tag="0033xx23" vm="1-n" vr="LT">String Data Format</el>
+  <el keyword="Description" tag="0033xx24" vm="1" vr="LT">Description</el>
+  <el keyword="AllocateTriggerBuffer" tag="0033xx30" vm="1" vr="UL">Allocate Trigger Buffer</el>
+  <el keyword="NumberOfTriggers" tag="0033xx33" vm="1" vr="UL">Number of Triggers</el>
+  <el keyword="TriggerSize" tag="0033xx34" vm="1" vr="UL">Trigger Size</el>
+  <el keyword="TriggerDataSize" tag="0033xx35" vm="1" vr="UL">Trigger Data Size</el>
+  <el keyword="TriggerData" tag="0033xx36" vm="1" vr="OB">Trigger Data</el>
+  <el keyword="StartAngle" tag="0035xx01" vm="1-n" vr="FD">Start Angle</el>
+  <el keyword="eNTEGRAEnergyWindowInformationSequence" tag="0055xx12" vm="1" vr="SQ">eNTEGRA Energy Window Information Sequence</el>
+  <el keyword="eNTEGRAEnergyWindowRangeSequence" tag="0055xx13" vm="1" vr="SQ">eNTEGRA Energy Window Range Sequence</el>
+  <el keyword="eNTEGRADetectorInformationSequence" tag="0055xx22" vm="1" vr="SQ">eNTEGRA Detector Information Sequence</el>
+  <el keyword="eNTEGRARotationInformationSequence" tag="0055xx52" vm="1" vr="SQ">eNTEGRA Rotation Information Sequence</el>
+  <el keyword="eNTEGRAGatedInformationSequence" tag="0055xx62" vm="1" vr="SQ">eNTEGRA Gated Information Sequence</el>
+  <el keyword="eNTEGRADataInformationSequence" tag="0055xx63" vm="1" vr="SQ">eNTEGRA Data Information Sequence</el>
+  <el keyword="SDODoubleDataSequence" tag="0055xx64" vm="1" vr="SQ">SDO Double Data Sequence</el>
+  <el keyword="_0055_xx65_" tag="0055xx65" vm="1" vr="SQ">?</el>
+  <el keyword="Cid" tag="5001xx03" vm="1" vr="SL">Cid</el>
+  <el keyword="Srid" tag="5001xx04" vm="1" vr="SL">Srid</el>
+  <el keyword="SOPClassUID" tag="5001xx05" vm="1" vr="LO">SOP Class UID</el>
+  <el keyword="SOPInstanceUID" tag="5001xx06" vm="1" vr="LO">SOP Instance UID</el>
+  <el keyword="CurveType" tag="5001xx07" vm="1" vr="SL">Curve Type</el>
+  <el keyword="GraphType" tag="5001xx08" vm="1" vr="SL">Graph Type</el>
+  <el keyword="Legend" tag="5001xx09" vm="1" vr="LO">Legend</el>
+  <el keyword="XUnits" tag="5001xx0A" vm="1" vr="LO">X Units</el>
+  <el keyword="YUnits" tag="5001xx0B" vm="1" vr="LO">Y Units</el>
+  <el keyword="Edit" tag="5001xx0C" vm="1" vr="SL">Edit</el>
+  <el keyword="Suspend" tag="5001xx0D" vm="1" vr="SL">Suspend</el>
+  <el keyword="StyleLine" tag="5001xx0E" vm="1" vr="SL">Style Line</el>
+  <el keyword="StyleFill" tag="5001xx0F" vm="1" vr="SL">Style Fill</el>
+  <el keyword="StyleColour" tag="5001xx10" vm="1" vr="LO">Style Colour</el>
+  <el keyword="StyleWidth" tag="5001xx11" vm="1" vr="SL">Style Width</el>
+  <el keyword="StylePoint" tag="5001xx12" vm="1" vr="SL">Style Point</el>
+  <el keyword="StylePColour" tag="5001xx13" vm="1" vr="LO">Style P Colour</el>
+  <el keyword="StylePSize" tag="5001xx14" vm="1" vr="SL">Style P Size</el>
+  <el keyword="Segments" tag="5001xx15" vm="1" vr="SL">Segments</el>
+  <el keyword="SegType" tag="5001xx16" vm="1" vr="SL">Seg Type</el>
+  <el keyword="SegStart" tag="5001xx17" vm="1-n" vr="FD">Seg Start</el>
+  <el keyword="SegEnd" tag="5001xx18" vm="1-n" vr="FD">Seg End</el>
+  <el keyword="SegStyleLine" tag="5001xx19" vm="1-n" vr="SL">Seg Style Line</el>
+  <el keyword="SegStyleFill" tag="5001xx1A" vm="1-n" vr="SL">SegStyleFill</el>
+  <el keyword="SegStyleColour" tag="5001xx1B" vm="1" vr="LO">Seg Style Colour</el>
+  <el keyword="SegStyleWidth" tag="5001xx1C" vm="1-n" vr="SL">Seg Style Width</el>
+  <el keyword="SegStylePoint" tag="5001xx1D" vm="1-n" vr="SL">Seg Style Point</el>
+  <el keyword="SegStylePColour" tag="5001xx1E" vm="1" vr="SL">Seg Style P Colour</el>
+  <el keyword="SegStylePSize" tag="5001xx1F" vm="1" vr="SL">Seg Style P Size</el>
+  <el keyword="SegName" tag="5001xx20" vm="1" vr="LO">Seg Name</el>
+  <el keyword="SegAllowDirInt" tag="5001xx21" vm="1-n" vr="SL">Seg Allow Dir Int</el>
+  <el keyword="TextAnnots" tag="5001xx22" vm="1" vr="SL">Text Annots</el>
+  <el keyword="TxtX" tag="5001xx23" vm="1-n" vr="FD">Txt X</el>
+  <el keyword="TxtY" tag="5001xx24" vm="1-n" vr="FD">Txt Y</el>
+  <el keyword="TxtText" tag="5001xx25" vm="1" vr="LO">Txt Text</el>
+  <el keyword="TxtName" tag="5001xx26" vm="1" vr="LO">Txt Name</el>
+  <el keyword="ROIName" tag="5001xx30" vm="1" vr="LO">ROI Name</el>
+  <el keyword="DerivedFromImageUID" tag="5001xx31" vm="1" vr="LO">Derived From Image UID</el>
+  <el keyword="DerivedFromImages" tag="5001xx32" vm="1-n" vr="SL">Derived From Images</el>
+  <el keyword="CurveFlags" tag="5001xx33" vm="1" vr="UL">Curve Flags</el>
+  <el keyword="CurveName" tag="5001xx34" vm="1" vr="LO">Curve Name</el>
+  <el keyword="CurveUID" tag="5001xx36" vm="1" vr="LO">Curve UID</el>
+  <el keyword="ROIArea" tag="5001xx37" vm="1" vr="FD">ROI Area</el>
+  <el keyword="SoftwareVersion" tag="5001xx3A" vm="1" vr="LO">Software Version</el>
+  <el keyword="StartDate" tag="5001xx3B" vm="1" vr="SH">Start Date</el>
+  <el keyword="CompletionDate" tag="5001xx3C" vm="1" vr="SH">Completion Date</el>
+  <el keyword="DetectorName" tag="5001xx3D" vm="1" vr="LO">Detector Name</el>
+  <el keyword="NormalColor" tag="5001xx47" vm="1" vr="LO">Normal Color</el>
+  <el keyword="NameFont" tag="5001xx48" vm="1" vr="LT">Name Font</el>
+  <el keyword="FillPattern" tag="5001xx49" vm="1" vr="SL">Fill Pattern</el>
+  <el keyword="LineStyle" tag="5001xx4A" vm="1" vr="SL">Line Style</el>
+  <el keyword="LineDashLength" tag="5001xx4B" vm="1" vr="SL">Line Dash Length</el>
+  <el keyword="LineThickness" tag="5001xx4C" vm="1" vr="SL">Line Thickness</el>
+  <el keyword="Interactivity" tag="5001xx4D" vm="1" vr="SL">Interactivity</el>
+  <el keyword="NamePos" tag="5001xx4E" vm="1" vr="SL">Name Pos</el>
+  <el keyword="NameDisplay" tag="5001xx4F" vm="1" vr="SL">Name Display</el>
+  <el keyword="Label" tag="5001xx50" vm="1" vr="LO">Label</el>
+  <el keyword="BpSeg" tag="5001xx51" vm="1-n" vr="SL">Bp Seg</el>
+  <el keyword="BpSegPairs" tag="5001xx52" vm="1-n" vr="US">Bp Seg Pairs</el>
+  <el keyword="SeedSpace" tag="5001xx53" vm="1" vr="SL">Seed Space</el>
+  <el keyword="Seeds" tag="5001xx54" vm="1-n" vr="FD">Seeds</el>
+  <el keyword="Shape" tag="5001xx55" vm="1-n" vr="SL">Shape</el>
+  <el keyword="ShapeTilt" tag="5001xx56" vm="1-n" vr="FD">Shape Tilt</el>
+  <el keyword="ShapePtsSpace" tag="5001xx59" vm="1-n" vr="SL">Shape Pts Space</el>
+  <el keyword="ShapeCtrlPtsCounts" tag="5001xx5A" vm="1-n" vr="SL">Shape Ctrl Pts Counts</el>
+  <el keyword="ShapeCtrlPts" tag="5001xx5B" vm="1-n" vr="FD">Shape Ctrl Pts</el>
+  <el keyword="ShapeCtrlPSpace" tag="5001xx5C" vm="1" vr="SL">Shape Ctrl P Space</el>
+  <el keyword="ROIFlags" tag="5001xx5D" vm="1" vr="SL">ROI Flags</el>
+  <el keyword="FrameNumber" tag="5001xx5E" vm="1" vr="SL">Frame Number</el>
+  <el keyword="ID" tag="5001xx5F" vm="1" vr="SL">ID</el>
+  <el keyword="DatasetROIMapping" tag="5001xx60" vm="1-n" vr="LO">Dataset ROI Mapping</el>
+</elements>

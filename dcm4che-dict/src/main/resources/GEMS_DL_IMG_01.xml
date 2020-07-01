@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="FOVDimensionDouble" tag="0019xx0B" vm="1-2" vr="DS">FOV Dimension Double</el>
+  <el keyword="DistanceToTableTop" tag="0019xx2B" vm="1" vr="FL">Distance to table top</el>
+  <el keyword="ImageFileName" tag="0019xx30" vm="1" vr="LO">Image File Name</el>
+  <el keyword="DefaultSpatialFilterFamily" tag="0019xx31" vm="1" vr="IS">Default Spatial Filter Family</el>
+  <el keyword="DefaultSpatialFilterStrength" tag="0019xx32" vm="1" vr="IS">Default Spatial Filter Strength</el>
+  <el keyword="MinSaturationDose" tag="0019xx33" vm="1" vr="DS">Min Saturation Dose</el>
+  <el keyword="DetectorGain" tag="0019xx34" vm="1" vr="DS">Detector Gain</el>
+  <el keyword="PatientDoseLimit" tag="0019xx35" vm="1" vr="DS">Patient Dose Limit</el>
+  <el keyword="PreprocImageRateMax" tag="0019xx36" vm="1" vr="DS">Preproc Image Rate Max</el>
+  <el keyword="SensorRoiShape" tag="0019xx37" vm="1" vr="CS">Sensor Roi Shape</el>
+  <el keyword="SensorRoixPosition" tag="0019xx38" vm="1" vr="DS">Sensor Roi x Position</el>
+  <el keyword="SensorRoiyPosition" tag="0019xx39" vm="1" vr="DS">Sensor Roi y Position</el>
+  <el keyword="SensorRoixSize" tag="0019xx3A" vm="1" vr="DS">Sensor Roi x Size</el>
+  <el keyword="SensorRoiySize" tag="0019xx3B" vm="1" vr="DS">Sensor Roi y Size</el>
+  <el keyword="NoiseSensitivity" tag="0019xx3D" vm="1" vr="DS">Noise Sensitivity</el>
+  <el keyword="SharpSensitivity" tag="0019xx3E" vm="1" vr="DS">Sharp Sensitivity</el>
+  <el keyword="ContrastSensitivity" tag="0019xx3F" vm="1" vr="DS">Contrast Sensitivity</el>
+  <el keyword="LagSensitivity" tag="0019xx40" vm="1" vr="DS">Lag Sensitivity</el>
+  <el keyword="Tube" tag="0019xx41" vm="1" vr="CS">Tube</el>
+  <el keyword="DetectorSizeRows" tag="0019xx42" vm="1" vr="US">Detector Size Rows</el>
+  <el keyword="DetectorSizeColumns" tag="0019xx43" vm="1" vr="US">Detector Size Columns</el>
+  <el keyword="MinObjectSize" tag="0019xx44" vm="1" vr="DS">Min Object Size</el>
+  <el keyword="MaxObjectSize" tag="0019xx45" vm="1" vr="DS">Max Object Size</el>
+  <el keyword="MaxObjectSpeed" tag="0019xx46" vm="1" vr="DS">Max Object Speed</el>
+  <el keyword="ObjectBackMotion" tag="0019xx47" vm="1" vr="CS">Object Back Motion</el>
+  <el keyword="ExposureTrajectoryFamily" tag="0019xx48" vm="1" vr="UL">Exposure Trajectory Family</el>
+  <el keyword="WindowTimeDuration" tag="0019xx49" vm="1" vr="DS">Window Time Duration</el>
+  <el keyword="PositionerAngleDisplayMode" tag="0019xx4A" vm="1" vr="CS">Positioner Angle Display Mode</el>
+  <el keyword="DetectorOrigin" tag="0019xx4B" vm="2" vr="IS">Detector Origin</el>
+  <el keyword="_0019_xx4C_" tag="0019xx4C" vm="1" vr="CS">?</el>
+  <el keyword="DefaultBrightnessContrast" tag="0019xx4E" vm="2" vr="DS">Default Brightness and Contrast</el>
+  <el keyword="UserBrightnessContrast" tag="0019xx4F" vm="2" vr="DS">User Brightness and Contrast</el>
+  <el keyword="SourceSeriesNumber" tag="0019xx50" vm="1" vr="IS">Source Series Number</el>
+  <el keyword="SourceImageNumber" tag="0019xx51" vm="1" vr="IS">Source Image Number</el>
+  <el keyword="SourceFrameNumber" tag="0019xx52" vm="1" vr="IS">Source Frame Number</el>
+  <el keyword="SourceSeriesItemId" tag="0019xx53" vm="1" vr="UI">Source Series Item Id</el>
+  <el keyword="SourceImageItemId" tag="0019xx54" vm="1" vr="UI">Source Image Item Id</el>
+  <el keyword="SourceFrameItemId" tag="0019xx55" vm="1" vr="UI">Source Frame Item Id</el>
+  <el keyword="NumberOfPointsBeforeAcquisition" tag="0019xx60" vm="1" vr="US">Number of Points Before Acquisition</el>
+  <el keyword="CurveDataBeforeAcquisition" tag="0019xx61" vm="1" vr="OW">Curve Data Before Acquisition</el>
+  <el keyword="NumberOfPointsTrigger" tag="0019xx62" vm="1" vr="US">Number of Points Trigger</el>
+  <el keyword="CurveDataTrigger" tag="0019xx63" vm="1" vr="OW">Curve Data Trigger</el>
+  <el keyword="ECGSynchronization" tag="0019xx64" vm="1" vr="SH">ECG Synchronization</el>
+  <el keyword="ECGDelayMode" tag="0019xx65" vm="1" vr="SH">ECG Delay Mode</el>
+  <el keyword="ECGDelayVector" tag="0019xx66" vm="1-n" vr="IS">ECG Delay Vector</el>
+  <el keyword="_0019_xx67_" tag="0019xx67" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx68_" tag="0019xx68" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx69_" tag="0019xx69" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx7A_" tag="0019xx7A" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx7B_" tag="0019xx7B" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx7C_" tag="0019xx7C" vm="1" vr="DS">?</el>
+  <el keyword="ImageDose" tag="0019xx80" vm="1" vr="DS">Image Dose</el>
+  <el keyword="CalibrationFrame" tag="0019xx81" vm="1" vr="US">Calibration Frame</el>
+  <el keyword="CalibrationObject" tag="0019xx82" vm="1" vr="CS">Calibration Object</el>
+  <el keyword="CalibrationObjectSize" tag="0019xx83" vm="1" vr="DS">Calibration Object Size mm</el>
+  <el keyword="CalibrationFactor" tag="0019xx84" vm="1" vr="FL">Calibration Factor</el>
+  <el keyword="CalibrationDate" tag="0019xx85" vm="1" vr="DA">Calibration Date</el>
+  <el keyword="CalibrationTime" tag="0019xx86" vm="1" vr="TM">Calibration Time</el>
+  <el keyword="CalibrationAccuracy" tag="0019xx87" vm="1" vr="US">Calibration Accuracy</el>
+  <el keyword="CalibrationExtended" tag="0019xx88" vm="1" vr="CS">Calibration Extended</el>
+  <el keyword="CalibrationImageOriginal" tag="0019xx89" vm="1" vr="US">Calibration Image Original</el>
+  <el keyword="CalibrationFrameOriginal" tag="0019xx8A" vm="1" vr="US">Calibration Frame Original</el>
+  <el keyword="CalibrationNbPointsUif" tag="0019xx8B" vm="1" vr="US">Calibration nb points uif</el>
+  <el keyword="CalibrationPointsRow" tag="0019xx8C" vm="1-n" vr="US">Calibration Points Row</el>
+  <el keyword="CalibrationPointsColumn" tag="0019xx8D" vm="1-n" vr="US">Calibration Points Column</el>
+  <el keyword="CalibrationMagnificationRatio" tag="0019xx8E" vm="1" vr="FL">Calibration Magnification Ratio</el>
+  <el keyword="CalibrationSoftwareVersion" tag="0019xx8F" vm="1" vr="LO">Calibration Software Version</el>
+  <el keyword="ExtendedCalibrationSoftwareVersion" tag="0019xx90" vm="1" vr="LO">Extended Calibration Software Version</el>
+  <el keyword="CalibrationReturnCode" tag="0019xx91" vm="1" vr="IS">Calibration Return Code</el>
+  <el keyword="DetectorRotationAngle" tag="0019xx92" vm="1" vr="DS">Detector Rotation Angle</el>
+  <el keyword="SpatialChange" tag="0019xx93" vm="1" vr="CS">Spatial Change</el>
+  <el keyword="InconsistentFlag" tag="0019xx94" vm="1" vr="CS">Inconsistent Flag</el>
+  <el keyword="HorizontalAndVerticalImageFlip" tag="0019xx95" vm="2" vr="CS">Horizontal and Vertical Image Flip</el>
+  <el keyword="InternalLabelImage" tag="0019xx96" vm="1" vr="CS">Internal Label Image</el>
+  <el keyword="Angle1Increment" tag="0019xx97" vm="1-n" vr="DS">Angle 1 increment</el>
+  <el keyword="Angle2Increment" tag="0019xx98" vm="1-n" vr="DS">Angle 2 increment</el>
+  <el keyword="Angle3Increment" tag="0019xx99" vm="1-n" vr="DS">Angle 3 increment</el>
+  <el keyword="SensorFeedback" tag="0019xx9A" vm="1-n" vr="DS">Sensor Feedback</el>
+  <el keyword="Grid" tag="0019xx9B" vm="1" vr="CS">Grid</el>
+  <el keyword="DefaultMaskPixelShift" tag="0019xx9C" vm="1" vr="FL">Default Mask Pixel Shift</el>
+  <el keyword="ApplicableReviewMode" tag="0019xx9D" vm="1" vr="CS">Applicable Review Mode</el>
+  <el keyword="LogLUTControlPoints" tag="0019xx9E" vm="1-n" vr="DS">Log LUT Control Points</el>
+  <el keyword="ExpLUTSUBControlPoints" tag="0019xx9F" vm="1-n" vr="DS">Exp LUT SUB Control Points</el>
+  <el keyword="ABDValue" tag="0019xxA0" vm="1" vr="DS">ABD Value</el>
+  <el keyword="SubtractionWindowCenter" tag="0019xxA1" vm="1" vr="DS">Subtraction Window Center</el>
+  <el keyword="SubtractionWindowWidth" tag="0019xxA2" vm="1" vr="DS">Subtraction Window Width</el>
+  <el keyword="ImageRotation" tag="0019xxA3" vm="1" vr="DS">Image Rotation</el>
+  <el keyword="AutoInjectionEnabled" tag="0019xxA4" vm="1" vr="CS">Auto Injection Enabled</el>
+  <el keyword="InjectionPhase" tag="0019xxA5" vm="1" vr="CS">Injection Phase</el>
+  <el keyword="InjectionDelay" tag="0019xxA6" vm="1" vr="DS">Injection Delay</el>
+  <el keyword="ReferenceInjectionFrameNumber" tag="0019xxA7" vm="1" vr="IS">Reference Injection Frame Number</el>
+  <el keyword="InjectionDuration" tag="0019xxA8" vm="1" vr="DS">Injection Duration</el>
+  <el keyword="EPT" tag="0019xxA9" vm="1-n" vr="DS">EPT</el>
+  <el keyword="CanDownscan512" tag="0019xxAA" vm="1" vr="CS">Can Downscan 512</el>
+  <el keyword="CurrentSpatialFilterStrength" tag="0019xxAB" vm="1" vr="IS">Current Spatial Filter Strength</el>
+  <el keyword="BrightnessSensitivity" tag="0019xxAC" vm="1" vr="DS">Brightness Sensitivity</el>
+  <el keyword="ExpLUTNOSUBControlPoints" tag="0019xxAD" vm="1-n" vr="DS">Exp LUT NOSUB Control Points</el>
+  <el keyword="_0019_xxAF_" tag="0019xxAF" vm="1-n" vr="DS">?</el>
+  <el keyword="_0019_xxB0_" tag="0019xxB0" vm="1-n" vr="DS">?</el>
+  <el keyword="AcquisitionModeDescription" tag="0019xxB1" vm="1" vr="LO">Acquisition Mode Description</el>
+  <el keyword="AcquisitionModeDescriptionLabel" tag="0019xxB2" vm="1" vr="LO">Acquisition Mode Description Label</el>
+  <el keyword="_0019_xxB3_" tag="0019xxB3" vm="1" vr="LO">?</el>
+  <el keyword="_0019_xxB8_" tag="0019xxB8" vm="1" vr="FL">?</el>
+  <el keyword="AcquisitionRegion" tag="0019xxBA" vm="1" vr="CS">Acquisition Region</el>
+  <el keyword="AcquisitionSUBMode" tag="0019xxBB" vm="1" vr="CS">Acquisition SUB Mode</el>
+  <el keyword="TableCradleAngle" tag="0019xxBC" vm="1" vr="FL">Table Cradle Angle</el>
+  <el keyword="TableRotationStatusVector" tag="0019xxBD" vm="1-n" vr="CS">Table Rotation Status Vector</el>
+  <el keyword="SourceToImageDistancePerFrameVector" tag="0019xxBE" vm="1-n" vr="FL">Source to Image Distance per Frame Vector</el>
+  <el keyword="_0019_xxC2_" tag="0019xxC2" vm="1-n" vr="DS">?</el>
+  <el keyword="TableRotationAngleIncrement" tag="0019xxC3" vm="1-n" vr="FL">Table Rotation Angle Increment</el>
+  <el keyword="_0019_xxC4_" tag="0019xxC4" vm="1" vr="IS">?</el>
+  <el keyword="PatientPositionPerImage" tag="0019xxC7" vm="1" vr="CS">Patient Position per Image</el>
+  <el keyword="TableXPositionToIsocenterIncrement" tag="0019xxD7" vm="1-n" vr="FL">Table X Position to Iso‐center Increment</el>
+  <el keyword="TableYPositionToIsocenterIncrement" tag="0019xxD8" vm="1-n" vr="FL">Table Y Position to Iso‐center Increment</el>
+  <el keyword="TableZPositionToIsocenterIncrement" tag="0019xxD9" vm="1-n" vr="FL">Table Z Position to Iso‐center Increment</el>
+  <el keyword="TableHeadTiltAngleIncrement" tag="0019xxDA" vm="1-n" vr="FL">Table Head Tilt Angle Increment</el>
+  <el keyword="_0019_xxDC_" tag="0019xxDC" vm="1" vr="LO">?</el>
+  <el keyword="AcquisitionPlane" tag="0019xxDE" vm="1" vr="CS">Acquisition Plane</el>
+  <el keyword="_0019_xxDD_" tag="0019xxDD" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxE0_" tag="0019xxE0" vm="1" vr="FL">?</el>
+  <el keyword="SourceToDetectorDistancePerFrameVector" tag="0019xxE9" vm="1-n" vr="FL">Source to Detector Distance per Frame Vector</el>
+  <el keyword="TableRotationAngle" tag="0019xxEA" vm="1" vr="FL">Table Rotation Angle</el>
+  <el keyword="TableXPositionToIsocenter" tag="0019xxEB" vm="1" vr="FL">Table X Position to Iso‐center</el>
+  <el keyword="TableYPositionToIsocenter" tag="0019xxEC" vm="1" vr="FL">Table Y Position to Iso‐center</el>
+  <el keyword="TableZPositionToIsocenter" tag="0019xxED" vm="1" vr="FL">Table Z Position to Iso‐center</el>
+  <el keyword="TableHeadTiltAngle" tag="0019xxEE" vm="1" vr="FL">Table Head Tilt Angle</el>
+  <el keyword="_0019_xxEF_" tag="0019xxEF" vm="1" vr="FL">?</el>
+</elements>

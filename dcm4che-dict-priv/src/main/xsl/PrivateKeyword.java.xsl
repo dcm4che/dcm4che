@@ -43,6 +43,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="text"></xsl:output>
   <xsl:param name="package"/>
+  <xsl:param name="PrivateCreatorID"/>
   <xsl:template match="/elements">
     <xsl:text>/* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
@@ -90,9 +91,26 @@ package org.dcm4che3.dict.</xsl:text><xsl:value-of select="$package"/><xsl:text>
  */
 public class PrivateKeyword {
 
+    public static final String PrivateCreator = "</xsl:text><xsl:value-of select="$PrivateCreatorID"/><xsl:text>";
+
     public static String valueOf(int tag) {
+    </xsl:text>
+    <xsl:choose>
+      <xsl:when test="$PrivateCreatorID = 'DLX_LKUP_01' or $PrivateCreatorID = 'DLX_ANNOT_01'">
+        <xsl:text>
+        int tmp = tag &amp; 0xFFE00000;
+        tag &amp;= tmp == 0x60000000 || tmp == 0x70000000
+                   ? 0xFFE0FFFF
+                   : 0xFFFF00FF;
+        switch (tag) {
+        </xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>
         switch (tag &amp; 0xFFFF00FF) {
-</xsl:text>
+        </xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
     <xsl:apply-templates 
       select="//el" />
     <xsl:text>        }

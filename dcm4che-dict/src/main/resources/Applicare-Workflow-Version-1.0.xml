@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="OrderControl" tag="3113xx01" vm="1" vr="CS">Order Control</el>
+  <el keyword="ScheduledActionItemCodeValue" tag="3113xx10" vm="1" vr="SH">Scheduled Action Item Code Value</el>
+  <el keyword="ScheduledActionItemCodingSchemeDesignator" tag="3113xx11" vm="1" vr="SH">Scheduled Action Item Coding Scheme Designator</el>
+  <el keyword="ScheduledActionItemCodeMeaning" tag="3113xx12" vm="1" vr="LO">Scheduled Action Item Code Meaning</el>
+  <el keyword="RequestedActionItemCodeValue" tag="3113xx15" vm="1" vr="SH">Requested Action Item Code Value</el>
+  <el keyword="RequestedActionItemCodingSchemeDesignator" tag="3113xx16" vm="1" vr="SH">Requested Action Item Coding Scheme Designator</el>
+  <el keyword="RequestedActionItemCodeMeaning" tag="3113xx17" vm="1" vr="LO">Requested Action Item Code Meaning</el>
+  <el keyword="PerformedActionItemCodeValue" tag="3113xx20" vm="1" vr="SH">Performed Action Item Code Value</el>
+  <el keyword="PerformedActionItemCodingSchemeDesignator" tag="3113xx21" vm="1" vr="SH">Performed Action Item Coding Scheme Designator</el>
+  <el keyword="PerformedActionItemCodeMeaning" tag="3113xx22" vm="1" vr="LO">Performed Action Item Code Meaning</el>
+  <el keyword="PerformedProcedureCodeValue" tag="3113xx25" vm="1" vr="SH">Performed Procedure Code Value</el>
+  <el keyword="PerformedProcedureCodingSchemeDesignator" tag="3113xx26" vm="1" vr="SH">Performed Procedure Coding Scheme Designator</el>
+  <el keyword="PerformedProcedureCodeMeaning" tag="3113xx27" vm="1" vr="LO">Performed Procedure Code Meaning</el>
+  <el keyword="ReferencedImageSOPClassUID" tag="3113xx30" vm="1" vr="UI">Referenced Image SOP Class UID</el>
+  <el keyword="ReferencedImageSOPInstanceUID" tag="3113xx31" vm="1" vr="UI">Referenced Image SOP Instance UID</el>
+  <el keyword="LockedByHostname" tag="3113xxE0" vm="1" vr="CS">Locked By Hostname</el>
+  <el keyword="LockedByUser" tag="3113xxE1" vm="1" vr="CS">Locked By User</el>
+  <el keyword="KfEditLockUser" tag="3113xxE2" vm="1" vr="CS">KfEdit Lock User</el>
+</elements>

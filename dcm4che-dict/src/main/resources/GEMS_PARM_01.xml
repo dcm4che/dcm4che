@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="BitmapOfPrescanOptions" tag="0043xx01" vm="1" vr="SS">Bitmap Of Prescan Options</el>
+  <el keyword="GradientOffsetInX" tag="0043xx02" vm="1" vr="SS">Gradient Offset In X</el>
+  <el keyword="GradientOffsetInY" tag="0043xx03" vm="1" vr="SS">Gradient Offset In Y</el>
+  <el keyword="GradientOffsetInZ" tag="0043xx04" vm="1" vr="SS">Gradient Offset In Z</el>
+  <el keyword="ImageIsOriginalOrUnoriginal" tag="0043xx05" vm="1" vr="SS">Image Is Original Or Unoriginal</el>
+  <el keyword="NumberOfEPIShots" tag="0043xx06" vm="1" vr="SS">Number Of EPI Shots</el>
+  <el keyword="ViewsPerSegment" tag="0043xx07" vm="1" vr="SS">Views Per Segment</el>
+  <el keyword="RespiratoryRateInBPM" tag="0043xx08" vm="1" vr="SS">Respiratory Rate In BPM</el>
+  <el keyword="RespiratoryTriggerPoint" tag="0043xx09" vm="1" vr="SS">Respiratory Trigger Point</el>
+  <el keyword="TypeOfReceiverUsed" tag="0043xx0A" vm="1" vr="SS">Type Of Receiver Used</el>
+  <el keyword="PeakRateOfChangeOfGradientField" tag="0043xx0B" vm="1" vr="DS">dB/dt Peak Rate Of Change Of Gradient Field</el>
+  <el keyword="LimitsInUnitsOfPercent" tag="0043xx0C" vm="1" vr="DS">dB/dt Limits In Units Of Percent</el>
+  <el keyword="PSDEstimatedLimit" tag="0043xx0D" vm="1" vr="DS">PSD Estimated Limit</el>
+  <el keyword="PSDEstimatedLimitInTeslaPerSecond" tag="0043xx0E" vm="1" vr="DS">PSD Estimated Limit In Tesla Per Second</el>
+  <el keyword="SARAvgHead" tag="0043xx0F" vm="1" vr="DS">SAR Avg Head</el>
+  <el keyword="WindowValue" tag="0043xx10" vm="1" vr="US">Window Value</el>
+  <el keyword="TotalInputViews" tag="0043xx11" vm="1" vr="US">Total Input Views</el>
+  <el keyword="XrayChain" tag="0043xx12" vm="3" vr="SS">Xray Chain</el>
+  <el keyword="ReconKernelParameters" tag="0043xx13" vm="5" vr="SS">Recon Kernel Parameters</el>
+  <el keyword="CalibrationParameters" tag="0043xx14" vm="3" vr="SS">Calibration Parameters</el>
+  <el keyword="TotalOutputViews" tag="0043xx15" vm="3" vr="SS">Total Output Views</el>
+  <el keyword="NumberOfOverranges" tag="0043xx16" vm="5" vr="SS">Number Of Overranges</el>
+  <el keyword="IBHImageScaleFactors" tag="0043xx17" vm="1" vr="DS">IBH Image Scale Factors</el>
+  <el keyword="BBHCoefficients" tag="0043xx18" vm="3" vr="DS">BBH Coefficients</el>
+  <el keyword="NumberOfBBHChainsToBlend" tag="0043xx19" vm="1" vr="SS">Number Of BBH Chains To Blend</el>
+  <el keyword="StartingChannelNumber" tag="0043xx1A" vm="1" vr="SL">Starting Channel Number</el>
+  <el keyword="PPScanParameters" tag="0043xx1B" vm="1" vr="SS">PPScan Parameters</el>
+  <el keyword="GEImageIntegrity" tag="0043xx1C" vm="1" vr="SS">GE Image Integrity</el>
+  <el keyword="LevelValue" tag="0043xx1D" vm="1" vr="SS">Level Value</el>
+  <el keyword="DeltaStartTime" tag="0043xx1E" vm="1" vr="DS">Delta Start Time</el>
+  <el keyword="MaxOverrangesInAView" tag="0043xx1F" vm="1" vr="SL">Max Overranges In A View</el>
+  <el keyword="AvgOverrangesAllViews" tag="0043xx20" vm="1" vr="DS">Avg Overranges All Views</el>
+  <el keyword="CorrectedAfterglowTerms" tag="0043xx21" vm="1" vr="SS">Corrected Afterglow Terms</el>
+  <el keyword="ReferenceChannels" tag="0043xx25" vm="6" vr="SS">Reference Channels</el>
+  <el keyword="NoViewsRefChannelsBlocked" tag="0043xx26" vm="6" vr="US">No Views Ref Channels Blocked</el>
+  <el keyword="ScanPitchRatio" tag="0043xx27" vm="1" vr="SH">Scan Pitch Ratio</el>
+  <el keyword="UniqueImageIdentifier" tag="0043xx28" vm="1" vr="OB">Unique Image Identifier</el>
+  <el keyword="HistogramTables" tag="0043xx29" vm="1" vr="OB">Histogram Tables</el>
+  <el keyword="UserDefinedData" tag="0043xx2A" vm="1" vr="OB">User Defined Data</el>
+  <el keyword="PrivateScanOptions" tag="0043xx2B" vm="4" vr="SS">Private Scan Options</el>
+  <el keyword="EffectiveEchoSpacing" tag="0043xx2C" vm="1" vr="SS">Effective Echo Spacing</el>
+  <el keyword="FilterMode" tag="0043xx2D" vm="1" vr="SH">Filter Mode</el>
+  <el keyword="StringSlopField2" tag="0043xx2E" vm="1" vr="SH">String Slop Field 2</el>
+  <el keyword="ImageType" tag="0043xx2F" vm="1" vr="SS">Image Type (Real,Imaginary,Phase,Magnitude)</el>
+  <el keyword="VasCollapseFlag" tag="0043xx30" vm="1" vr="SS">Vas Collapse Flag</el>
+  <el keyword="ReconCenterCoordinates" tag="0043xx31" vm="2" vr="DS">Recon Center Coordinates</el>
+  <el keyword="VasFlags" tag="0043xx32" vm="1" vr="SS">Vas Flags</el>
+  <el keyword="NegScanSpacing" tag="0043xx33" vm="1" vr="FL">Neg Scan Spacing</el>
+  <el keyword="OffsetFrequency" tag="0043xx34" vm="1" vr="IS">Offset Frequency</el>
+  <el keyword="UserUsageTag" tag="0043xx35" vm="1" vr="UL">User Usage Tag</el>
+  <el keyword="UserFillMapMSW" tag="0043xx36" vm="1" vr="UL">User Fill Map MSW</el>
+  <el keyword="UserFillMapLSW" tag="0043xx37" vm="1" vr="UL">User Fill Map LSW</el>
+  <el keyword="User25ToUser48" tag="0043xx38" vm="24" vr="FL">User 25 To User 48</el>
+  <el keyword="SlopInteger6ToSlopInteger9" tag="0043xx39" vm="4" vr="IS">Slop Integer 6 To Slop Integer 9</el>
+  <el keyword="TriggerOnPosition" tag="0043xx40" vm="4" vr="FL">Trigger On Position</el>
+  <el keyword="DegreeOfRotation" tag="0043xx41" vm="4" vr="FL">Degree Of Rotation</el>
+  <el keyword="DASTriggerSource" tag="0043xx42" vm="4" vr="SL">DAS Trigger Source</el>
+  <el keyword="DASFpaGain" tag="0043xx43" vm="4" vr="SL">DAS Fpa Gain</el>
+  <el keyword="DASOutputSource" tag="0043xx44" vm="4" vr="SL">DAS Output Source</el>
+  <el keyword="DASAdInput" tag="0043xx45" vm="4" vr="SL">DAS Ad Input</el>
+  <el keyword="DASCalMode" tag="0043xx46" vm="4" vr="SL">DAS Cal Mode</el>
+  <el keyword="DASCalFrequency" tag="0043xx47" vm="4" vr="SL">DAS Cal Frequency</el>
+  <el keyword="DASRegXm" tag="0043xx48" vm="4" vr="SL">DAS Reg Xm</el>
+  <el keyword="DASAutoZero" tag="0043xx49" vm="4" vr="SL">DAS Auto Zero</el>
+  <el keyword="StartingChannelOfView" tag="0043xx4A" vm="4" vr="SS">Starting Channel Of View</el>
+  <el keyword="DASXmPattern" tag="0043xx4B" vm="4" vr="SL">DAS Xm Pattern</el>
+  <el keyword="TGGCTriggerMode" tag="0043xx4C" vm="4" vr="SS">TGGC Trigger Mode</el>
+  <el keyword="StartScanToXrayOnDelay" tag="0043xx4D" vm="4" vr="FL">Start Scan To Xray On Delay</el>
+  <el keyword="DurationOfXrayOn" tag="0043xx4E" vm="4" vr="FL">Duration Of Xray On</el>
+  <el keyword="SlopInteger10ToSlopInteger17" tag="0043xx60" vm="8" vr="IS">Slop Integer 10 To Slop Integer 17</el>
+  <el keyword="ScannerStudyEntityUID" tag="0043xx61" vm="1" vr="UI">Scanner Study Entity UID</el>
+  <el keyword="ScannerStudyID" tag="0043xx62" vm="1" vr="SH">Scanner Study ID</el>
+  <el keyword="RawDataID" tag="0043xx63" vm="1" vr="SH">Raw Data ID</el>
+  <el keyword="ReconFilter" tag="0043xx64" vm="1-n" vr="CS">Recon Filter</el>
+  <el keyword="MotionCorrectionIndicator" tag="0043xx65" vm="1" vr="US">Motion Correction Indicator</el>
+  <el keyword="HelicalCorrectionIndicator" tag="0043xx66" vm="1" vr="US">Helical Correction Indicator</el>
+  <el keyword="IBOCorrectionIndicator" tag="0043xx67" vm="1" vr="US">IBO Correction Indicator</el>
+  <el keyword="IXTCorrectionIndicator" tag="0043xx68" vm="1" vr="US">XT Correction Indicator</el>
+  <el keyword="QcalCorrectionIndicator" tag="0043xx69" vm="1" vr="US">Q-cal Correction Indicator</el>
+  <el keyword="AVCorrectionIndicator" tag="0043xx6A" vm="1" vr="US">AV Correction Indicator</el>
+  <el keyword="LMDKCorrectionIndicator" tag="0043xx6B" vm="1" vr="US">L-MDK Correction Indicator</el>
+  <el keyword="DetectorRow" tag="0043xx6C" vm="1" vr="IS">Detector Row</el>
+  <el keyword="AreaSize" tag="0043xx6D" vm="1" vr="US">Area Size</el>
+  <el keyword="AutoMAMode" tag="0043xx6E" vm="1" vr="SH">Auto mA Mode</el>
+  <el keyword="ScannerTableEntry" tag="0043xx6F" vm="3-4" vr="DS">Scanner Table Entry + Gradient Coil Selected</el>
+  <el keyword="ParadigmName" tag="0043xx70" vm="1" vr="LO">Paradigm Name</el>
+  <el keyword="ParadigmDescription" tag="0043xx71" vm="1" vr="ST">Paradigm Description</el>
+  <el keyword="ParadigmUID" tag="0043xx72" vm="1" vr="UI">Paradigm UID</el>
+  <el keyword="ExperimentType" tag="0043xx73" vm="1" vr="US">Experiment Type</el>
+  <el keyword="NumberOfRestVolumes" tag="0043xx74" vm="1" vr="US">Number of Rest Volumes</el>
+  <el keyword="NumberOfActiveVolumes" tag="0043xx75" vm="1" vr="US">Number of Active Volumes</el>
+  <el keyword="NumberOfDummyScans" tag="0043xx76" vm="1" vr="US">Number of Dummy Scans</el>
+  <el keyword="ApplicationName" tag="0043xx77" vm="1" vr="SH">Application Name</el>
+  <el keyword="ApplicationVersion" tag="0043xx78" vm="1" vr="SH">Application Version</el>
+  <el keyword="SlicesPerVolume" tag="0043xx79" vm="1" vr="US">Slices Per Volume</el>
+  <el keyword="ExpectedTimePoints" tag="0043xx7A" vm="1" vr="US">Expected Time Points</el>
+  <el keyword="RegressorValues" tag="0043xx7B" vm="1-n" vr="FL">Regressor Values</el>
+  <el keyword="DelayAfterSliceGroup" tag="0043xx7C" vm="1" vr="FL">Delay After Slice Group</el>
+  <el keyword="ReconModeFlagWord" tag="0043xx7D" vm="1" vr="US">Recon Mode Flag Word</el>
+  <el keyword="PACCSpecificInformation" tag="0043xx7E" vm="1-n" vr="LO">PACC Specific Information</el>
+  <el keyword="Reserved" tag="0043xx7F" vm="1-n" vr="DS">Reserved</el>
+  <el keyword="CoilIDData" tag="0043xx80" vm="1-n" vr="LO">Coil ID Data</el>
+  <el keyword="GECoilName" tag="0043xx81" vm="1" vr="LO">GE Coil Name</el>
+  <el keyword="SystemConfigurationInformation" tag="0043xx82" vm="1-n" vr="LO">System Configuration Information</el>
+  <el keyword="AssetRFactors" tag="0043xx83" vm="1-2" vr="DS">Asset R Factors</el>
+  <el keyword="AdditionalAssetData" tag="0043xx84" vm="5" vr="LO">Additional Asset Data</el>
+  <el keyword="DebugDataTextFormat" tag="0043xx85" vm="1" vr="UT">Debug Data (Text Format)</el>
+  <el keyword="DebugDataBinaryFormat" tag="0043xx86" vm="1" vr="OB">Debug Data (Binary Format)</el>
+  <el keyword="PUREAcquisitionCalibrationSeriesUID" tag="0043xx88" vm="1" vr="UI">PURE Acquisition Calibration Series UID</el>
+  <el keyword="GoverningBodyDBdtSARDefinition" tag="0043xx89" vm="3" vr="LO">Governing Body, dB/dt, and SAR definition</el>
+  <el keyword="PrivateInPlanePhaseEncodingDirection" tag="0043xx8A" vm="1" vr="CS">Private In-Plane Phase Encoding Direction</el>
+  <el keyword="FMRIBinaryDataBlock" tag="0043xx8B" vm="1" vr="OB">FMRI Binary Data Block</el>
+  <el keyword="VoxelLocation" tag="0043xx8C" vm="1" vr="DS">Voxel Location</el>
+  <el keyword="SATBandLocations" tag="0043xx8D" vm="1-n" vr="DS">SAT Band Locations</el>
+  <el keyword="SpectroPrescanValues" tag="0043xx8E" vm="3" vr="DS">Spectro Prescan Values</el>
+  <el keyword="SpectroParameters" tag="0043xx8F" vm="3" vr="DS">Spectro Parameters</el>
+  <el keyword="SARDefinition" tag="0043xx90" vm="1-n" vr="LO">SAR Definition</el>
+  <el keyword="SARValue" tag="0043xx91" vm="1-n" vr="DS">SAR Value</el>
+  <el keyword="ImageErrorText" tag="0043xx92" vm="1" vr="LO">Image Error Text</el>
+  <el keyword="SpectroQuantitationValues" tag="0043xx93" vm="1-n" vr="DS">Spectro Quantitation Values</el>
+  <el keyword="SpectroRatioValues" tag="0043xx94" vm="1-n" vr="DS">Spectro Ratio Values</el>
+  <el keyword="PrescanReuseString" tag="0043xx95" vm="1" vr="LO">Prescan Reuse String</el>
+  <el keyword="ContentQualification" tag="0043xx96" vm="1" vr="CS">Content Qualification</el>
+  <el keyword="ImageFilteringParameters" tag="0043xx97" vm="8" vr="LO">Image Filtering Parameters</el>
+  <el keyword="ASSETAcquisitionCalibrationSeriesUID" tag="0043xx98" vm="1" vr="UI">ASSET Acquisition Calibration Series UID</el>
+  <el keyword="ExtendedOptions" tag="0043xx99" vm="1-n" vr="LO">Extended Options</el>
+  <el keyword="RxStackIdentification" tag="0043xx9A" vm="1" vr="IS">Rx Stack Identification</el>
+</elements>

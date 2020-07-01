@@ -3,8 +3,10 @@
     Convert private dictionaries present in template file(s) to xml file(s).
     Converted xml file(s) shall be written to the same directory as template
     file(s), if not out-dir is specified. The xml file(s) names shall be that
-    of the Owner of the dictionary. A single template file may contain
-    dictionaries belonging to different owners
+    of the Private Creator ID (owner) of the dictionary. A single template
+    file may contain dictionaries belonging to different owners. Invalid
+    keywords shall be improved whereas any duplicate tags or keywords for a
+    particular Private Creator ID (owner) shall be ignored and only logged.
     -
     Options:
      -h,--help                  display this help and exit

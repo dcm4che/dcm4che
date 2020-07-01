@@ -117,7 +117,7 @@ public class PrivateTag {
     public static final int </xsl:text>
     <xsl:value-of select="@keyword" />
     <xsl:text> = 0x</xsl:text>
-    <xsl:value-of select="translate(@tag,'x','0')" />
+    <xsl:value-of select="translate(@tag,'xX','00')" />
     <xsl:text>;
 </xsl:text>
   </xsl:template>

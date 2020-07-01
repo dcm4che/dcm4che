@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_3113_xx01_" tag="3113xx01" vm="1" vr="SL">?</el>
+  <el keyword="Id1" tag="3113xx02" vm="1" vr="SL">Internal Id of Study</el>
+  <el keyword="Id2" tag="3113xx03" vm="1" vr="SL">Internal Id of Series</el>
+  <el keyword="Id3" tag="3113xx04" vm="1" vr="SL">Internal Id of Instance</el>
+  <el keyword="_3113_xx11_" tag="3113xx11" vm="1" vr="LO">?</el>
+  <el keyword="InstanceState" tag="3113xx12" vm="1" vr="CS">Instance State</el>
+  <el keyword="DateLastModified" tag="3113xx13" vm="1" vr="DT">Date Last Modified</el>
+  <el keyword="DateLastAccessed" tag="3113xx14" vm="1" vr="DT">Date Last Accessed</el>
+  <el keyword="_3113_xx15_" tag="3113xx15" vm="1" vr="CS">?</el>
+  <el keyword="InstanceSizeInBytes" tag="3113xx16" vm="1" vr="FD">Instance Size in Bytes</el>
+  <el keyword="LibraryId" tag="3113xx17" vm="1" vr="LO">Library Id</el>
+  <el keyword="Pathnames" tag="3113xx18" vm="1" vr="LO">Pathnames</el>
+  <el keyword="DriverPath" tag="3113xx19" vm="1" vr="LO">Driver Path</el>
+  <el keyword="Source" tag="3113xx1A" vm="1" vr="LO">Source</el>
+  <el keyword="Destination" tag="3113xx1B" vm="1" vr="LO">Destination</el>
+  <el keyword="MediumId" tag="3113xx1C" vm="1" vr="SL">Medium Id</el>
+  <el keyword="ArchiveId" tag="3113xx1D" vm="1" vr="LO">Archive Id</el>
+  <el keyword="InstanceOrigin" tag="3113xx1E" vm="1" vr="LO">Instance Origin</el>
+  <el keyword="InstanceVersion" tag="3113xx21" vm="1" vr="SL">Instance Version</el>
+  <el keyword="_3113_xx22_" tag="3113xx22" vm="1" vr="SL">?</el>
+  <el keyword="InstanceFileLocation" tag="3113xx23" vm="1" vr="ST">Instance File Location</el>
+  <el keyword="_3113_xx31_" tag="3113xx31" vm="1" vr="IS">?</el>
+  <el keyword="_3113_xx32_" tag="3113xx32" vm="1" vr="IS">?</el>
+  <el keyword="_3113_xx33_" tag="3113xx33" vm="1" vr="IS">?</el>
+  <el keyword="ImageMediumLocation" tag="3113xx35" vm="1" vr="LO">Image Medium Location</el>
+  <el keyword="ImageMediumLabel" tag="3113xx36" vm="1" vr="LO">Image Medium Label</el>
+  <el keyword="ImageMediumState" tag="3113xx37" vm="1" vr="CS">Image Medium State</el>
+  <el keyword="SeriesMediumLocation" tag="3113xx38" vm="1" vr="LO">Series Medium Location</el>
+  <el keyword="SeriesMediumLabel" tag="3113xx39" vm="1" vr="LO">Series Medium Label</el>
+  <el keyword="SeriesMediumState" tag="3113xx3A" vm="1" vr="CS">Series Medium State</el>
+  <el keyword="StudyMediumLocation" tag="3113xx3B" vm="1" vr="LO">Study Medium Location</el>
+  <el keyword="StudyMediumLabel" tag="3113xx3C" vm="1" vr="LO">Study Medium Label</el>
+  <el keyword="StudyMediumState" tag="3113xx3D" vm="1" vr="CS">Study Medium State</el>
+  <el keyword="StudyState" tag="3113xx52" vm="1" vr="CS">Study State</el>
+  <el keyword="SeriesState" tag="3113xx53" vm="1" vr="CS">Series State</el>
+  <el keyword="ImageStateText" tag="3113xx55" vm="1" vr="CS">Image State Text</el>
+  <el keyword="SeriesStateText" tag="3113xx56" vm="1" vr="CS">Series State Text</el>
+  <el keyword="StudyStateText" tag="3113xx57" vm="1" vr="CS">Study State Text</el>
+  <el keyword="Expiration" tag="3113xx60" vm="1" vr="DT">Expiration</el>
+  <el keyword="DeletedTags" tag="3113xx69" vm="1-n" vr="AT">Deleted Tags</el>
+</elements>

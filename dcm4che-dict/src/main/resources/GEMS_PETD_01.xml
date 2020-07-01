@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="ImplementationVersionName" tag="0009xx01" vm="2" vr="LO">Implementation Version Name</el>
+  <el keyword="PatientID" tag="0009xx02" vm="1" vr="LO">Patient ID</el>
+  <el keyword="PatientCompatibleVersion" tag="0009xx03" vm="1" vr="SH">Patient Compatible Version</el>
+  <el keyword="PatientSoftwareVersion" tag="0009xx04" vm="1" vr="SH">Patient Software Version</el>
+  <el keyword="PatientDateTime" tag="0009xx05" vm="1" vr="DT">Patient DateTime</el>
+  <el keyword="PatientType" tag="0009xx06" vm="1" vr="SL">Patient Type</el>
+  <el keyword="ExamID" tag="0009xx07" vm="1" vr="UI">Exam ID</el>
+  <el keyword="ExamCompatibleVersion" tag="0009xx08" vm="1" vr="SH">Exam Compatible Version</el>
+  <el keyword="ExamSoftwareVersion" tag="0009xx09" vm="1" vr="SH">Exam Software Version</el>
+  <el keyword="ScanID" tag="0009xx0A" vm="1" vr="UI">Scan ID</el>
+  <el keyword="ScanCompatibleVersion" tag="0009xx0B" vm="1" vr="SH">Scan Compatible Version</el>
+  <el keyword="ScanSoftwareVersion" tag="0009xx0C" vm="1" vr="SH">Scan Software Version</el>
+  <el keyword="ScanDateTime" tag="0009xx0D" vm="1" vr="DT">Scan Date Time</el>
+  <el keyword="ScanReady" tag="0009xx0E" vm="1" vr="DT">Scan Ready</el>
+  <el keyword="ScanDescription" tag="0009xx0F" vm="1" vr="ST">Scan Description</el>
+  <el keyword="HospitalName" tag="0009xx10" vm="1" vr="LO">Hospital Name</el>
+  <el keyword="ScannerDescription" tag="0009xx11" vm="1" vr="LO">Scanner Description</el>
+  <el keyword="Manufacturer" tag="0009xx12" vm="1" vr="LO">Manufacturer</el>
+  <el keyword="FORIdentifier" tag="0009xx13" vm="1" vr="UI">FOR Identifier</el>
+  <el keyword="LandmarkName" tag="0009xx14" vm="1" vr="LO">Landmark Name</el>
+  <el keyword="LandmarkAbbrev" tag="0009xx15" vm="1" vr="SH">Landmark Abbrev</el>
+  <el keyword="PatientPosition" tag="0009xx16" vm="1" vr="SL">Patient Position</el>
+  <el keyword="ScanPerspective" tag="0009xx17" vm="1" vr="SL">Scan Perspective</el>
+  <el keyword="ScanType" tag="0009xx18" vm="1" vr="SL">Scan Type</el>
+  <el keyword="ScanMode" tag="0009xx19" vm="1" vr="SL">Scan Mode</el>
+  <el keyword="StartCondition" tag="0009xx1A" vm="1" vr="SL">Start Condition</el>
+  <el keyword="StartConditionData" tag="0009xx1B" vm="1" vr="SL">Start Condition Data</el>
+  <el keyword="SelStopCondition" tag="0009xx1C" vm="1" vr="SL">Sel Stop Condition</el>
+  <el keyword="SelStopConditionData" tag="0009xx1D" vm="1" vr="SL">Sel Stop Condition Data</el>
+  <el keyword="CollectDeadtime" tag="0009xx1E" vm="1" vr="SL">Collect Deadtime</el>
+  <el keyword="CollectSingles" tag="0009xx1F" vm="1" vr="SL">Collect Singles</el>
+  <el keyword="CollectCountRate" tag="0009xx20" vm="1" vr="SL">Collect Count Rate</el>
+  <el keyword="CountRatePeriod" tag="0009xx21" vm="1" vr="SL">Count Rate Period</el>
+  <el keyword="DelayedEvents" tag="0009xx22" vm="1" vr="SL">Delayed Events</el>
+  <el keyword="DelayedBias" tag="0009xx23" vm="1" vr="SL">Delayed Bias</el>
+  <el keyword="WordSize" tag="0009xx24" vm="1" vr="SL">Word Size</el>
+  <el keyword="AxialAcceptance" tag="0009xx25" vm="1" vr="SL">Axial Acceptance</el>
+  <el keyword="AxialAngle3D" tag="0009xx26" vm="1" vr="SL">Axial Angle 3D</el>
+  <el keyword="ThetaCompression" tag="0009xx27" vm="1" vr="SL">Theta Compression</el>
+  <el keyword="AxialCompression" tag="0009xx28" vm="1" vr="SL">Axial Compression</el>
+  <el keyword="GantryTiltAngle" tag="0009xx29" vm="1" vr="FL">Gantry Tilt Angle</el>
+  <el keyword="Collimation" tag="0009xx2A" vm="1" vr="SL">Collimation</el>
+  <el keyword="ScanFOV" tag="0009xx2B" vm="1" vr="SL">Scan FOV</el>
+  <el keyword="AxialFOV" tag="0009xx2C" vm="1" vr="SL">Axial FOV</el>
+  <el keyword="EventSeparation" tag="0009xx2D" vm="1" vr="SL">Event Separation</el>
+  <el keyword="MaskWidth" tag="0009xx2E" vm="1" vr="SL">Mask Width</el>
+  <el keyword="BinningMode" tag="0009xx2F" vm="1" vr="SL">Binning Mode</el>
+  <el keyword="TrigRejMethod" tag="0009xx30" vm="1" vr="SL">Trig Rej Method</el>
+  <el keyword="NumberForReject" tag="0009xx31" vm="1" vr="SL">Number For Reject</el>
+  <el keyword="LowerRejectLimit" tag="0009xx32" vm="1" vr="SL">Lower Reject Limit</el>
+  <el keyword="UpperRejectLimit" tag="0009xx33" vm="1" vr="SL">Upper Reject Limit</el>
+  <el keyword="TriggersAcquired" tag="0009xx34" vm="1" vr="SL">Triggers Acquired</el>
+  <el keyword="TriggersRejected" tag="0009xx35" vm="1" vr="SL">Triggers Rejected</el>
+  <el keyword="TracerName" tag="0009xx36" vm="1" vr="LO">Tracer Name</el>
+  <el keyword="BatchDescription" tag="0009xx37" vm="1" vr="LO">Batch Description</el>
+  <el keyword="TracerActivity" tag="0009xx38" vm="1" vr="FL">Tracer Activity</el>
+  <el keyword="MeasuredDateTime" tag="0009xx39" vm="1" vr="DT">Measured Date Time</el>
+  <el keyword="PreInjVolume" tag="0009xx3A" vm="1" vr="FL">Pre Inj Volume</el>
+  <el keyword="AdministeredDateTime" tag="0009xx3B" vm="1" vr="DT">Administered Date Time</el>
+  <el keyword="PostInjectedActivity" tag="0009xx3C" vm="1" vr="FL">Post Injected Activity</el>
+  <el keyword="PostInjectedDateTime" tag="0009xx3D" vm="1" vr="DT">Post Injected Date Time</el>
+  <el keyword="RadioNuclideName" tag="0009xx3E" vm="1" vr="SH">Radio Nuclide Name</el>
+  <el keyword="HalfLife" tag="0009xx3F" vm="1" vr="FL">Half Life</el>
+  <el keyword="PositronFraction" tag="0009xx40" vm="1" vr="FL">Positron Fraction</el>
+  <el keyword="Source1Holder" tag="0009xx41" vm="1" vr="SL">Source 1 Holder</el>
+  <el keyword="Source1Activity" tag="0009xx42" vm="1" vr="FL">Source 1 Activity</el>
+  <el keyword="Source1MeasDT" tag="0009xx43" vm="1" vr="DT">Source 1 Meas DT</el>
+  <el keyword="Source1RadioNuclide" tag="0009xx44" vm="1" vr="SH">Source 1 Radio Nuclide</el>
+  <el keyword="Source1HalfLife" tag="0009xx45" vm="1" vr="FL">Source 1 Half Life</el>
+  <el keyword="Source2Holder" tag="0009xx46" vm="1" vr="SL">Source 2 Holder</el>
+  <el keyword="Source2Activity" tag="0009xx47" vm="1" vr="FL">Source 2 Activity</el>
+  <el keyword="Source2MeasDT" tag="0009xx48" vm="1" vr="DT">Source 2 Meas DT</el>
+  <el keyword="Source2RadioNuclide" tag="0009xx49" vm="1" vr="SH">Source 2 Radio Nuclide</el>
+  <el keyword="Source2HalfLife" tag="0009xx4A" vm="1" vr="FL">Source 2 Half Life</el>
+  <el keyword="SourceSpeed" tag="0009xx4B" vm="1" vr="SL">Source Speed</el>
+  <el keyword="SourceLocation" tag="0009xx4C" vm="1" vr="FL">Source Location</el>
+  <el keyword="EmissionPresent" tag="0009xx4D" vm="1" vr="SL">Emission Present</el>
+  <el keyword="LowerAxialAcc" tag="0009xx4E" vm="1" vr="SL">Lower Axial Acc</el>
+  <el keyword="UpperAxialAcc" tag="0009xx4F" vm="1" vr="SL">Upper Axial Acc</el>
+  <el keyword="LowerCoincLimit" tag="0009xx50" vm="1" vr="SL">Lower Coinc Limit</el>
+  <el keyword="UpperCoincLimit" tag="0009xx51" vm="1" vr="SL">Upper Coinc Limit</el>
+  <el keyword="CoincDelayOffset" tag="0009xx52" vm="1" vr="SL">Coinc Delay Offset</el>
+  <el keyword="CoincOutputMode" tag="0009xx53" vm="1" vr="SL">Coinc Output Mode</el>
+  <el keyword="UpperEnergyLimit" tag="0009xx54" vm="1" vr="SL">Upper Energy Limit</el>
+  <el keyword="LowerEnergyLimit" tag="0009xx55" vm="1" vr="SL">Lower Energy Limit</el>
+  <el keyword="NormalCalID" tag="0009xx56" vm="1" vr="UI">Normal Cal ID</el>
+  <el keyword="Normal2DCalID" tag="0009xx57" vm="1" vr="UI">Normal 2D Cal ID</el>
+  <el keyword="BlankCalID" tag="0009xx58" vm="1" vr="UI">Blank Cal ID</el>
+  <el keyword="WCCalID" tag="0009xx59" vm="1" vr="UI">WC Cal ID</el>
+  <el keyword="Derived" tag="0009xx5A" vm="1" vr="SL">Derived</el>
+  <el keyword="ContrastAgent" tag="0009xx5B" vm="1" vr="LO">Contrast Agent</el>
+  <el keyword="frameid" tag="0009xx5C" vm="1" vr="UI">frame_id</el>
+  <el keyword="scanid" tag="0009xx5D" vm="1" vr="UI">scan_id</el>
+  <el keyword="examid" tag="0009xx5E" vm="1" vr="UI">exam_id</el>
+  <el keyword="patientid" tag="0009xx5F" vm="1" vr="LO">patient_id</el>
+  <el keyword="compatibleversion" tag="0009xx60" vm="1" vr="SH">compatible_version</el>
+  <el keyword="softwareversion" tag="0009xx61" vm="1" vr="SH">software_version</el>
+  <el keyword="whereisframe" tag="0009xx62" vm="1" vr="ST">where_is_frame</el>
+  <el keyword="framesize" tag="0009xx63" vm="1" vr="SL">frame_size</el>
+  <el keyword="fileexists" tag="0009xx64" vm="1" vr="SL">file_exists</el>
+  <el keyword="patiententry" tag="0009xx65" vm="1" vr="SL">patient_entry</el>
+  <el keyword="tableheight" tag="0009xx66" vm="1" vr="FL">table_height</el>
+  <el keyword="tablezposition" tag="0009xx67" vm="1" vr="FL">table_z_position</el>
+  <el keyword="landmarkdatetime" tag="0009xx68" vm="1" vr="DT">landmark_datetime</el>
+  <el keyword="slicecount" tag="0009xx69" vm="1" vr="SL">slice_count</el>
+  <el keyword="startlocation" tag="0009xx6A" vm="1" vr="FL">start_location</el>
+  <el keyword="acqdelay" tag="0009xx6B" vm="1" vr="SL">acq_delay</el>
+  <el keyword="acqstart" tag="0009xx6C" vm="1" vr="DT">acq_start</el>
+  <el keyword="acqduration" tag="0009xx6D" vm="1" vr="SL">acq_duration</el>
+  <el keyword="acqbindur" tag="0009xx6E" vm="1" vr="SL">acq_bin_dur</el>
+  <el keyword="acqbinstart" tag="0009xx6F" vm="1" vr="SL">acq_bin_start</el>
+  <el keyword="actualstopcond" tag="0009xx70" vm="1" vr="SL">actual_stop_cond</el>
+  <el keyword="totalprompts" tag="0009xx71" vm="1" vr="FD">total_prompts</el>
+  <el keyword="totaldelays" tag="0009xx72" vm="1" vr="FD">total_delays</el>
+  <el keyword="framevalid" tag="0009xx73" vm="1" vr="SL">frame_valid</el>
+  <el keyword="validityinfo" tag="0009xx74" vm="1" vr="SL">validity_info</el>
+  <el keyword="archived" tag="0009xx75" vm="1" vr="SL">archived</el>
+  <el keyword="compression" tag="0009xx76" vm="1" vr="SL">compression</el>
+  <el keyword="uncompressedsize" tag="0009xx77" vm="1" vr="SL">uncompressed_size</el>
+  <el keyword="accumbindur" tag="0009xx78" vm="1" vr="SL">accum_bin_dur</el>
+  <el keyword="ImageSetCompatibleVersion" tag="0009xx79" vm="1" vr="SH">Image Set Compatible Version</el>
+  <el keyword="ImageSetSoftwareVersion" tag="0009xx7A" vm="1" vr="SH">Image Set Software Version</el>
+  <el keyword="ImageSetDateTime" tag="0009xx7B" vm="1" vr="DT">Image Set Date Time</el>
+  <el keyword="ImageSetSource" tag="0009xx7C" vm="1" vr="SL">Image Set Source</el>
+  <el keyword="ImageSetContents" tag="0009xx7D" vm="1" vr="SL">Image Set Contents</el>
+  <el keyword="ImageSetType" tag="0009xx7E" vm="1" vr="SL">Image Set Type</el>
+  <el keyword="ImageSetReference" tag="0009xx7F" vm="1" vr="DS">Image Set Reference</el>
+  <el keyword="MultiPatient" tag="0009xx80" vm="1" vr="SL">Multi Patient</el>
+  <el keyword="NumberOfNormals" tag="0009xx81" vm="1" vr="SL">Number of Normals</el>
+  <el keyword="ColorMapID" tag="0009xx82" vm="1" vr="UI">Color Map ID</el>
+  <el keyword="WindowLevelType" tag="0009xx83" vm="1" vr="SL">Window Level Type</el>
+  <el keyword="Rotate" tag="0009xx84" vm="1" vr="FL">Rotate</el>
+  <el keyword="Flip" tag="0009xx85" vm="1" vr="SL">Flip</el>
+  <el keyword="Zoom" tag="0009xx86" vm="1" vr="FL">Zoom</el>
+  <el keyword="PanX" tag="0009xx87" vm="1" vr="SL">PanX</el>
+  <el keyword="PanY" tag="0009xx88" vm="1" vr="SL">PanY</el>
+  <el keyword="WindowLevelMin" tag="0009xx89" vm="1" vr="FL">Window Level Min</el>
+  <el keyword="WindowLevelMax" tag="0009xx8A" vm="1" vr="FL">Window Level Max</el>
+  <el keyword="ReconMethod" tag="0009xx8B" vm="1" vr="SL">ReconMethod</el>
+  <el keyword="Attenuation" tag="0009xx8C" vm="1" vr="SL">Attenuation</el>
+  <el keyword="AttenuationCoefficient" tag="0009xx8D" vm="1" vr="FL">Attenuation Coefficient</el>
+  <el keyword="BPFilter" tag="0009xx8E" vm="1" vr="SL">BP Filter</el>
+  <el keyword="BPFilterCutoff" tag="0009xx8F" vm="1" vr="FL">BP Filter Cutoff</el>
+  <el keyword="BPFilterOrder" tag="0009xx90" vm="1" vr="SL">BP Filter Order</el>
+  <el keyword="BPFilterCenterI" tag="0009xx91" vm="1" vr="FL">BP Filter Center I</el>
+  <el keyword="BPFilterCenterP" tag="0009xx92" vm="1" vr="FL">BP Filter Center P</el>
+  <el keyword="AttenSmooth" tag="0009xx93" vm="1" vr="SL">Atten Smooth</el>
+  <el keyword="AttenSmoothParam" tag="0009xx94" vm="1" vr="SL">Atten Smooth Param</el>
+  <el keyword="AngleSmoothParam" tag="0009xx95" vm="1" vr="SL">Angle Smooth Param</el>
+  <el keyword="WellCounterCalID" tag="0009xx96" vm="1" vr="UI">Well CounterCal ID</el>
+  <el keyword="TransScanID" tag="0009xx97" vm="1" vr="UI">Trans Scan ID</el>
+  <el keyword="NormCalID" tag="0009xx98" vm="1" vr="UI">Norm Cal ID</el>
+  <el keyword="BlnkCalID" tag="0009xx99" vm="1" vr="UI">Blnk Cal ID</el>
+  <el keyword="CACEdgeThreshold" tag="0009xx9A" vm="1" vr="FL">CAC Edge Threshold</el>
+  <el keyword="CACSkullOffset" tag="0009xx9B" vm="1" vr="FL">CAC Skull Offset</el>
+  <el keyword="EmissSubID" tag="0009xx9C" vm="1" vr="UI">Emiss Sub ID</el>
+  <el keyword="RadialFilter3D" tag="0009xx9D" vm="1" vr="SS">Radial Filter 3D</el>
+  <el keyword="RadialCutoff3D" tag="0009xx9E" vm="1" vr="FL">Radial Cutoff 3D</el>
+  <el keyword="AxialFilter3D" tag="0009xx9F" vm="1" vr="SL">Axial Filter 3D</el>
+  <el keyword="AxialCutoff3D" tag="0009xxA0" vm="1" vr="FL">Axial Cutoff 3D</el>
+  <el keyword="AxialStart" tag="0009xxA1" vm="1" vr="FL">Axial Start</el>
+  <el keyword="AxialSpacing" tag="0009xxA2" vm="1" vr="FL">Axial Spacing</el>
+  <el keyword="AxialAnglesUsed" tag="0009xxA3" vm="1" vr="SL">Axial Angles Used</el>
+  <el keyword="slicenumber" tag="0009xxA6" vm="1" vr="SL">slice_number</el>
+  <el keyword="totalcounts" tag="0009xxA7" vm="1" vr="FL">total_counts</el>
+  <el keyword="otheratts" tag="0009xxA8" vm="1" vr="OB">other_atts</el>
+  <el keyword="otherattssize" tag="0009xxA9" vm="1" vr="SL">other_atts_size</el>
+  <el keyword="bpcenterx" tag="0009xxAB" vm="1" vr="FL">bp_center_x</el>
+  <el keyword="bpcentery" tag="0009xxAC" vm="1" vr="FL">bp_center_y</el>
+  <el keyword="transframeid" tag="0009xxAD" vm="1" vr="UI">trans_frame_id</el>
+  <el keyword="tpluseframeid" tag="0009xxAE" vm="1" vr="UI">tpluse_frame_id</el>
+  <el keyword="profilespacing" tag="0009xxB1" vm="1" vr="FL">profile_spacing</el>
+  <el keyword="IRNumIterations" tag="0009xxB2" vm="1" vr="SS">IR Num Iterations</el>
+  <el keyword="IRNumSubsets" tag="0009xxB3" vm="1" vr="SS">IR Num Subsets</el>
+  <el keyword="IRReconFOV" tag="0009xxB4" vm="1" vr="FL">IR Recon FOV</el>
+  <el keyword="IRCorrModel" tag="0009xxB5" vm="1" vr="SS">IR Corr Model</el>
+  <el keyword="IRLoopFilter" tag="0009xxB6" vm="1" vr="SS">IR Loop Filter</el>
+  <el keyword="IRPreFiltParam" tag="0009xxB7" vm="1" vr="FL">IR Pre Filt Param</el>
+  <el keyword="IRLoopFiltParam" tag="0009xxB8" vm="1" vr="FL">IR Loop Filt Param</el>
+  <el keyword="ResponseFiltParam" tag="0009xxB9" vm="1" vr="FL">Response Filt Param</el>
+  <el keyword="PostFilter" tag="0009xxBA" vm="1" vr="SS">Post Filter</el>
+  <el keyword="PostFilterParam" tag="0009xxBB" vm="1" vr="FL">Post Filter Param</el>
+  <el keyword="IRRegularize" tag="0009xxBC" vm="1" vr="SS">IR Regularize</el>
+  <el keyword="IRRegularizeParam" tag="0009xxBD" vm="1" vr="FL">IR Regularize Param</el>
+  <el keyword="ACBPFilter" tag="0009xxBE" vm="1" vr="SS">AC BP Filter</el>
+  <el keyword="ACBPFiltCutoff" tag="0009xxBF" vm="1" vr="FL">AC BP Filt Cutoff</el>
+  <el keyword="ACBPFiltOrder" tag="0009xxC0" vm="1" vr="SL">AC BP Filt Order</el>
+  <el keyword="ACImgSmooth" tag="0009xxC1" vm="1" vr="SS">AC Img Smooth</el>
+  <el keyword="ACImgSmoothParm" tag="0009xxC2" vm="1" vr="FL">AC Img Smooth Parm</el>
+  <el keyword="ScatterMethod" tag="0009xxC3" vm="1" vr="SL">Scatter Method</el>
+  <el keyword="ScatterNumIter" tag="0009xxC4" vm="1" vr="SS">Scatter Num Iter</el>
+  <el keyword="ScatterParm" tag="0009xxC5" vm="1" vr="FL">Scatter Parm</el>
+  <el keyword="segqcparm" tag="0009xxC6" vm="1" vr="FL">seg_qc_parm</el>
+  <el keyword="overlap" tag="0009xxC7" vm="1" vr="SL">overlap</el>
+  <el keyword="ovlpfrmid" tag="0009xxC8" vm="1" vr="UI">ovlp_frm_id</el>
+  <el keyword="ovlptransfrmid" tag="0009xxC9" vm="1" vr="UI">ovlp_trans_frm_id</el>
+  <el keyword="ovlptpulsefrmid" tag="0009xxCA" vm="1" vr="UI">ovlp_tpulse_frm_id</el>
+  <el keyword="vqcxaxistrans" tag="0009xxCB" vm="1" vr="FL">vqc_x_axis_trans</el>
+  <el keyword="vqcxaxistilt" tag="0009xxCC" vm="1" vr="FL">vqc_x_axis_tilt</el>
+  <el keyword="vqcyaxistrans" tag="0009xxCD" vm="1" vr="FL">vqc_y_axis_trans</el>
+  <el keyword="vqcyaxisswivel" tag="0009xxCE" vm="1" vr="FL">vqc_y_axis_swivel</el>
+  <el keyword="vqczaxistrans" tag="0009xxCF" vm="1" vr="FL">vqc_z_axis_trans</el>
+  <el keyword="vqczaxisroll" tag="0009xxD0" vm="1" vr="FL">vqc_z_axis_roll</el>
+  <el keyword="ctacconvscale" tag="0009xxD1" vm="1" vr="LO">ctac_conv_scale</el>
+  <el keyword="imagesetid" tag="0009xxD2" vm="1" vr="UI">image_set_id</el>
+  <el keyword="contrastroute" tag="0009xxD3" vm="1" vr="SL">contrast_route</el>
+  <el keyword="loopfilterparm" tag="0009xxD5" vm="1" vr="FL">loop_filter_parm</el>
+  <el keyword="imageoneloc" tag="0009xxD6" vm="1" vr="FL">image_one_loc</el>
+  <el keyword="imageindexloc" tag="0009xxD7" vm="1" vr="FL">image_index_loc</el>
+  <el keyword="framenumber" tag="0009xxD8" vm="1" vr="SL">frame_number</el>
+  <el keyword="listfileexists" tag="0009xxD9" vm="1" vr="SL">list_file_exists</el>
+  <el keyword="whereislistframe" tag="0009xxDA" vm="1" vr="ST">where_is_list_frame</el>
+  <el keyword="irzfilterflag" tag="0009xxDB" vm="1" vr="SL">ir_z_filter_flag</el>
+  <el keyword="irzfilterratio" tag="0009xxDC" vm="1" vr="FL">ir_z_filter_ratio</el>
+  <el keyword="numofrrinterval" tag="0009xxDD" vm="1" vr="US">num_of_rr_interval</el>
+  <el keyword="numoftimeslots" tag="0009xxDE" vm="1" vr="US">num_of_time_slots</el>
+  <el keyword="numofslices" tag="0009xxDF" vm="1" vr="US">num_of_slices</el>
+  <el keyword="numoftimeslices" tag="0009xxE0" vm="1" vr="US">num_of_time_slices</el>
+  <el keyword="unlistedscan" tag="0009xxE1" vm="1" vr="SL">unlisted_scan</el>
+  <el keyword="reststress" tag="0009xxE2" vm="1" vr="SL">rest_stress</el>
+  <el keyword="phasepercentage" tag="0009xxE3" vm="1" vr="FL">phase percentage</el>
+  <el keyword="_0009_xxE4_" tag="0009xxE4" vm="1" vr="ST">?</el>
+  <el keyword="leftshift" tag="0009xxE5" vm="1" vr="FL">left shift</el>
+  <el keyword="posteriorshift" tag="0009xxE6" vm="1" vr="FL">posterior shift</el>
+  <el keyword="superiorshift" tag="0009xxE7" vm="1" vr="FL">superior shift</el>
+  <el keyword="acqbinnum" tag="0009xxE8" vm="1" vr="SL">acq_bin_num</el>
+  <el keyword="acqbindurpercent" tag="0009xxE9" vm="1" vr="FL">acq_bin_dur_percent</el>
+  <el keyword="_0009_xxEA_" tag="0009xxEA" vm="1" vr="SL">?</el>
+  <el keyword="_0009_xxEB_" tag="0009xxEB" vm="1" vr="FL">?</el>
+  <el keyword="_0009_xxEC_" tag="0009xxEC" vm="1" vr="SL">?</el>
+  <el keyword="_0011_xx01_" tag="0011xx01" vm="1" vr="SQ">?</el>
+  <el keyword="_0011_xx18_" tag="0011xx18" vm="1" vr="OB">?</el>
+  <el keyword="_0013_xx01_" tag="0013xx01" vm="1" vr="SQ">?</el>
+  <el keyword="correctioncalid" tag="0017xx01" vm="1" vr="UI">correction_cal_id</el>
+  <el keyword="caldatetime" tag="0017xx04" vm="1" vr="DT">cal_datetime</el>
+  <el keyword="caldescription" tag="0017xx05" vm="1" vr="LO">cal_datetime</el>
+  <el keyword="caltype" tag="0017xx06" vm="1" vr="SL">cal_type</el>
+  <el keyword="whereiscorr" tag="0017xx07" vm="1" vr="ST">where_is_corr</el>
+  <el keyword="corrfilesize" tag="0017xx08" vm="1" vr="SL">corr_file_size</el>
+  <el keyword="scandatetime" tag="0017xx0A" vm="1" vr="DT">scan_datetime</el>
+  <el keyword="norm2dcalid" tag="0017xx0B" vm="1" vr="LO">norm_2d_cal_id</el>
+  <el keyword="hospidentifier" tag="0017xx0C" vm="1" vr="SH">hosp_identifier</el>
+  <el keyword="wccalid" tag="0019xx01" vm="1" vr="UI">wc_cal_id</el>
+  <el keyword="calhardware" tag="0019xx07" vm="1" vr="LO">cal_hardware</el>
+  <el keyword="coefficients" tag="0019xx08" vm="1" vr="OB">coefficients</el>
+  <el keyword="activityfactorhr" tag="0019xx09" vm="1" vr="FL">activity_factor_hr</el>
+  <el keyword="activityfactorhs" tag="0019xx0A" vm="1" vr="FL">activity_factor_hs</el>
+  <el keyword="activityfactor3d" tag="0019xx0B" vm="1" vr="FL">activity_factor_3d</el>
+  <el keyword="measactivity" tag="0019xx0F" vm="1" vr="FL">meas_activity</el>
+  <el keyword="measdatetime" tag="0019xx10" vm="1" vr="DT">meas_datetime</el>
+  <el keyword="axialfilter3d" tag="0019xx11" vm="1" vr="SL">axial_filter_3d</el>
+  <el keyword="axialcutoff3d" tag="0019xx12" vm="1" vr="FL">axial_cutoff_3d</el>
+  <el keyword="defaultflag" tag="0019xx13" vm="1" vr="SL">default_flag</el>
+  <el keyword="wccalrecmethod" tag="0019xx15" vm="1" vr="SL">wc_cal_rec_method</el>
+  <el keyword="activityfactor2d" tag="0019xx16" vm="1" vr="SL">activity_factor_2d</el>
+  <el keyword="isotope" tag="0019xx17" vm="1" vr="SL">isotope</el>
+  <el keyword="rawdatatype" tag="0021xx01" vm="1" vr="US">raw_data_type</el>
+  <el keyword="rawdatasize" tag="0021xx02" vm="1" vr="UL">raw_data_size</el>
+  <el keyword="rawdatablob" tag="0023xx01" vm="1" vr="OB">raw_data_blob</el>
+  <el keyword="CurveID" tag="5001xx01" vm="1" vr="UI">Curve ID</el>
+  <el keyword="CurveCompatibleVersion" tag="5001xx02" vm="1" vr="SH">Curve Compatible Version</el>
+  <el keyword="CurveSoftwareVersion" tag="5001xx03" vm="1" vr="SH">Curve Software Version</el>
+  <el keyword="StatisticsType" tag="5001xx04" vm="1" vr="SL">Statistics Type</el>
+  <el keyword="HowDerived" tag="5001xx05" vm="1" vr="LT">How Derived</el>
+  <el keyword="HowDerivedSize" tag="5001xx06" vm="1" vr="SL">How Derived Size</el>
+  <el keyword="Deadtime" tag="5001xx08" vm="1" vr="SL">Deadtime</el>
+  <el keyword="GraphSequence" tag="5003xx01" vm="1" vr="SQ">Graph Sequence</el>
+  <el keyword="GraphID" tag="5003xx02" vm="1" vr="UI">Graph ID</el>
+  <el keyword="GraphCompatibleVersion" tag="5003xx03" vm="1" vr="SH">Graph Compatible Version</el>
+  <el keyword="GraphSoftwareVersion" tag="5003xx04" vm="1" vr="SH">Graph Software Version</el>
+  <el keyword="Title" tag="5003xx05" vm="1" vr="LO">Title</el>
+  <el keyword="GraphDateTime" tag="5003xx06" vm="1" vr="DT">Graph Date Time</el>
+  <el keyword="GraphDescription" tag="5003xx07" vm="1" vr="ST">Graph Description</el>
+  <el keyword="TitleFontName" tag="5003xx08" vm="1" vr="LO">Title Font Name</el>
+  <el keyword="TitleFontSize" tag="5003xx09" vm="1" vr="SH">Title Font Size</el>
+  <el keyword="Footer" tag="5003xx0A" vm="1" vr="LO">Footer</el>
+  <el keyword="FooterFontSize" tag="5003xx0B" vm="1" vr="SH">Footer Font Size</el>
+  <el keyword="ForegroundColor" tag="5003xx0C" vm="1" vr="LO">Foreground Color</el>
+  <el keyword="BackgroundColor" tag="5003xx0D" vm="1" vr="LO">Background Color</el>
+  <el keyword="GraphBorder" tag="5003xx0E" vm="1" vr="SL">Graph Border</el>
+  <el keyword="GraphWidth" tag="5003xx0F" vm="1" vr="SL">Graph Width</el>
+  <el keyword="GraphHeight" tag="5003xx10" vm="1" vr="SL">Graph Height</el>
+  <el keyword="Grid" tag="5003xx11" vm="1" vr="SL">Grid</el>
+  <el keyword="LabelFontName" tag="5003xx12" vm="1" vr="LO">Label Font Name</el>
+  <el keyword="LabelFontSize" tag="5003xx13" vm="1" vr="SH">Label Font Size</el>
+  <el keyword="AxesColor" tag="5003xx14" vm="1" vr="LO">Axes Color</el>
+  <el keyword="XAxisLabel" tag="5003xx15" vm="1" vr="LO">X Axis Label</el>
+  <el keyword="XAxisUnits" tag="5003xx16" vm="1" vr="SL">X Axis Units</el>
+  <el keyword="XMajorTics" tag="5003xx17" vm="1" vr="FL">X Major Tics</el>
+  <el keyword="XAxisMin" tag="5003xx18" vm="1" vr="FL">X Axis Min</el>
+  <el keyword="XAxisMax" tag="5003xx19" vm="1" vr="FL">X Axis Max</el>
+  <el keyword="YAxisLabel" tag="5003xx1A" vm="1" vr="LO">Y Axis Label</el>
+  <el keyword="YAxisUnits" tag="5003xx1B" vm="1" vr="SL">Y Axis Units</el>
+  <el keyword="YMajorTics" tag="5003xx1C" vm="1" vr="FL">Y Major Tics</el>
+  <el keyword="YAxisMin" tag="5003xx1D" vm="1" vr="FL">Y Axis Min</el>
+  <el keyword="YAxisMax" tag="5003xx1E" vm="1" vr="FL">Y Axis Max</el>
+  <el keyword="LegendFontName" tag="5003xx1F" vm="1" vr="LO">Legend Font Name</el>
+  <el keyword="LegendFontSize" tag="5003xx20" vm="1" vr="SH">Legend Font Size</el>
+  <el keyword="LegendLocationX" tag="5003xx21" vm="1" vr="SL">Legend Location X</el>
+  <el keyword="LegendLocationY" tag="5003xx22" vm="1" vr="SL">Legend Location Y</el>
+  <el keyword="LegendWidth" tag="5003xx23" vm="1" vr="SL">Legend Width</el>
+  <el keyword="LegendHeight" tag="5003xx24" vm="1" vr="SL">Legend Height</el>
+  <el keyword="LegendBorder" tag="5003xx25" vm="1" vr="SL">Legend Border</el>
+  <el keyword="CurvePresentationSequence" tag="5005xx01" vm="1" vr="SQ">Curve Presentation Sequence</el>
+  <el keyword="CurvePresentationID" tag="5005xx02" vm="1" vr="UI">Curve Presentation ID</el>
+  <el keyword="CurvePresentationCompatibleVersion" tag="5005xx05" vm="1" vr="SH">Curve Presentation Compatible Version</el>
+  <el keyword="CurvePresentationSoftwareVersion" tag="5005xx06" vm="1" vr="SH">Curve Presentation Software Version</el>
+  <el keyword="CurveLabel" tag="5005xx07" vm="1" vr="LO">Curve Label</el>
+  <el keyword="Color" tag="5005xx08" vm="1" vr="LO">Color</el>
+  <el keyword="LineType" tag="5005xx09" vm="1" vr="SL">Line Type</el>
+  <el keyword="LineWidth" tag="5005xx0A" vm="1" vr="SL">Line Width</el>
+  <el keyword="PointSymbol" tag="5005xx0B" vm="1" vr="SL">Point Symbol</el>
+  <el keyword="PointSymbolDim" tag="5005xx0C" vm="1" vr="SL">Point Symbol Dim</el>
+  <el keyword="PointColor" tag="5005xx0D" vm="1" vr="LO">Point Color</el>
+</elements>

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+~ ***** BEGIN LICENSE BLOCK *****
+  ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+  ~
+  ~ The contents of this file are subject to the Mozilla Public License Version
+  ~ 1.1 (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.mozilla.org/MPL/
+  ~
+  ~ Software distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+  ~ Java(TM), hosted at https://github.com/dcm4che.
+  ~
+  ~ The Initial Developer of the Original Code is
+  ~ J4Care.
+  ~ Portions created by the Initial Developer are Copyright (C) 2015-2019
+  ~ the Initial Developer. All Rights Reserved.
+  ~
+  ~ Contributor(s):
+  ~ See @authors listed below
+  ~
+  ~ Alternatively, the contents of this file may be used under the terms of
+  ~ either the GNU General Public License Version 2 or later (the "GPL"), or
+  ~ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+  ~ in which case the provisions of the GPL or the LGPL are applicable instead
+  ~ of those above. If you wish to allow use of your version of this file only
+  ~ under the terms of either the GPL or the LGPL, and not to allow others to
+  ~ use your version of this file under the terms of the MPL, indicate your
+  ~ decision by deleting the provisions above and replace them with the notice
+  ~ and other provisions required by the GPL or the LGPL. If you do not delete
+  ~ the provisions above, a recipient may use your version of this file under
+  ~ the terms of any one of the MPL, the GPL or the LGPL.
+  ~
+  ~ ***** END LICENSE BLOCK *****
+  ~
+--><elements>
+  <el keyword="_0009_xx24_" tag="0009xx24" vm="1" vr="DS">?</el>
+  <el keyword="_0009_xx25_" tag="0009xx25" vm="1" vr="US">?</el>
+  <el keyword="_0009_xx3E_" tag="0009xx3E" vm="1" vr="US">?</el>
+  <el keyword="_0009_xx3F_" tag="0009xx3F" vm="1" vr="US">?</el>
+  <el keyword="_0009_xx42_" tag="0009xx42" vm="1" vr="US">?</el>
+  <el keyword="_0009_xx43_" tag="0009xx43" vm="1" vr="US">?</el>
+  <el keyword="_0009_xxF8_" tag="0009xxF8" vm="1" vr="US">?</el>
+  <el keyword="_0009_xxFB_" tag="0009xxFB" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xx01_" tag="0019xx01" vm="1" vr="LT">?</el>
+  <el keyword="NumberOfCellsInDetector" tag="0019xx02" vm="1" vr="SL">Number Of Cells In Detector</el>
+  <el keyword="CellNumberAtTheta" tag="0019xx03" vm="1" vr="DS">Cell Number At Theta</el>
+  <el keyword="CellSpacing" tag="0019xx04" vm="1" vr="DS">Cell Spacing</el>
+  <el keyword="_0019_xx05_" tag="0019xx05" vm="1" vr="LT">?</el>
+  <el keyword="_0019_xx06_" tag="0019xx06" vm="1" vr="UN">?</el>
+  <el keyword="_0019_xx0E_" tag="0019xx0E" vm="1" vr="US">?</el>
+  <el keyword="HorizontalFrameOfReference" tag="0019xx0F" vm="1" vr="DS">Horizontal Frame Of Reference</el>
+  <el keyword="SeriesContrast" tag="0019xx11" vm="1" vr="SS">Series Contrast</el>
+  <el keyword="LastPseq" tag="0019xx12" vm="1" vr="SS">Last Pseq</el>
+  <el keyword="StartNumberForBaseline" tag="0019xx13" vm="1" vr="SS">Start Number For Baseline</el>
+  <el keyword="EndNumberForBaseline" tag="0019xx14" vm="1" vr="SS">End Number For Baseline</el>
+  <el keyword="StartNumberForEnhancedScans" tag="0019xx15" vm="1" vr="SS">Start Number For Enhanced Scans</el>
+  <el keyword="EndNumberForEnhancedScans" tag="0019xx16" vm="1" vr="SS">End Number For Enhanced Scans</el>
+  <el keyword="SeriesPlane" tag="0019xx17" vm="1" vr="SS">Series Plane</el>
+  <el keyword="FirstScanRAS" tag="0019xx18" vm="1" vr="LO">First Scan RAS</el>
+  <el keyword="FirstScanLocation" tag="0019xx19" vm="1" vr="DS">First Scan Location</el>
+  <el keyword="LastScanRAS" tag="0019xx1A" vm="1" vr="LO">Last Scan RAS</el>
+  <el keyword="LastScanLocation" tag="0019xx1B" vm="1" vr="DS">Last Scan Location</el>
+  <el keyword="DisplayFieldOfView" tag="0019xx1E" vm="1" vr="DS">Display Field Of View</el>
+  <el keyword="_0019_xx20_" tag="0019xx20" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xx22_" tag="0019xx22" vm="1" vr="DS">?</el>
+  <el keyword="TableSpeed" tag="0019xx23" vm="1" vr="DS">Table Speed [mm/rotation]</el>
+  <el keyword="MidScanTime" tag="0019xx24" vm="1" vr="DS">Mid Scan Time [sec]</el>
+  <el keyword="MidScanFlag" tag="0019xx25" vm="1" vr="SS">Mid Scan Flag</el>
+  <el keyword="TubeAzimuth" tag="0019xx26" vm="1" vr="SL">Tube Azimuth [degrees]</el>
+  <el keyword="RotationSpeed" tag="0019xx27" vm="1" vr="DS">Rotation Speed (Gantry Period)</el>
+  <el keyword="XrayOnPosition" tag="0019xx2A" vm="1" vr="DS">Xray On Position</el>
+  <el keyword="XrayOffPosition" tag="0019xx2B" vm="1" vr="DS">Xray Off Position</el>
+  <el keyword="NumberOfTriggers" tag="0019xx2C" vm="1" vr="SL">Number of Triggers</el>
+  <el keyword="_0019_xx2D_" tag="0019xx2D" vm="1" vr="US">?</el>
+  <el keyword="AngleOfFirstView" tag="0019xx2E" vm="1" vr="DS">Angle Of First View</el>
+  <el keyword="TriggerFrequency" tag="0019xx2F" vm="1" vr="DS">Trigger Frequency</el>
+  <el keyword="ScanFOVType" tag="0019xx39" vm="1" vr="SS">Scan FOV Type</el>
+  <el keyword="_0019_xx3A_" tag="0019xx3A" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xx3B_" tag="0019xx3B" vm="1" vr="LT">?</el>
+  <el keyword="_0019_xx3C_" tag="0019xx3C" vm="1" vr="UN">?</el>
+  <el keyword="_0019_xx3E_" tag="0019xx3E" vm="1" vr="UN">?</el>
+  <el keyword="_0019_xx3F_" tag="0019xx3F" vm="1" vr="UN">?</el>
+  <el keyword="StatReconFlag" tag="0019xx40" vm="1" vr="SS">Stat Recon Flag</el>
+  <el keyword="ComputeType" tag="0019xx41" vm="1" vr="SS">Compute Type</el>
+  <el keyword="SegmentNumber" tag="0019xx42" vm="1" vr="SS">Segment Number</el>
+  <el keyword="TotalSegmentsRequired" tag="0019xx43" vm="1" vr="SS">Total Segments Required</el>
+  <el keyword="InterscanDelay" tag="0019xx44" vm="1" vr="DS">Interscan Delay</el>
+  <el keyword="ViewCompressionFactor" tag="0019xx47" vm="1" vr="SS">View Compression Factor</el>
+  <el keyword="_0019_xx48_" tag="0019xx48" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx49_" tag="0019xx49" vm="1" vr="US">?</el>
+  <el keyword="TotalNumberOfRefChannels" tag="0019xx4A" vm="1" vr="SS">Total Number Of Ref Channels</el>
+  <el keyword="DataSizeForScanData" tag="0019xx4B" vm="1" vr="SL">Data Size For Scan Data</el>
+  <el keyword="ReconPostProcessingFlag" tag="0019xx52" vm="1" vr="SS">Recon Post Processing Flag</el>
+  <el keyword="_0019_xx54_" tag="0019xx54" vm="1" vr="UN">?</el>
+  <el keyword="CTWaterNumber" tag="0019xx57" vm="1" vr="SS">CT Water Number</el>
+  <el keyword="CTBoneNumber" tag="0019xx58" vm="1" vr="SS">CT Bone Number</el>
+  <el keyword="AcquisitionDuration" tag="0019xx5A" vm="1" vr="FL">Acquisition Duration</el>
+  <el keyword="_0019_xx5D_" tag="0019xx5D" vm="1" vr="US">?</el>
+  <el keyword="NumberOfChannels1To512" tag="0019xx5E" vm="1" vr="SL">Number Of Channels 1 To 512</el>
+  <el keyword="IncrementBetweenChannels" tag="0019xx5F" vm="1" vr="SL">Increment Between Channels</el>
+  <el keyword="StartingView" tag="0019xx60" vm="1" vr="SL">Starting View</el>
+  <el keyword="NumberOfViews" tag="0019xx61" vm="1" vr="SL">Number Of Views</el>
+  <el keyword="IncrementBetweenViews" tag="0019xx62" vm="1" vr="SL">Increment Between Views</el>
+  <el keyword="DependantOnNumberOfViewsProcessed" tag="0019xx6A" vm="1" vr="SS">Dependant On Number Of Views Processed</el>
+  <el keyword="FieldOfViewInDetectorCells" tag="0019xx6B" vm="1" vr="SS">Field Of View In Detector Cells</el>
+  <el keyword="ValueOfBackProjectionButton" tag="0019xx70" vm="1" vr="SS">Value Of Back Projection Button</el>
+  <el keyword="SetIfFatqEstimatesWereUsed" tag="0019xx71" vm="1" vr="SS">Set If Fatq Estimates Were Used</el>
+  <el keyword="ZChannelAvgOverViews" tag="0019xx72" vm="1" vr="DS">Z Channel Avg Over Views</el>
+  <el keyword="AvgOfLeftRefChannelsOverViews" tag="0019xx73" vm="1" vr="DS">Avg Of Left Ref Channels Over Views</el>
+  <el keyword="MaxLeftChannelOverViews" tag="0019xx74" vm="1" vr="DS">Max Left Channel Over Views</el>
+  <el keyword="AvgOfRightRefChannelsOverViews" tag="0019xx75" vm="1" vr="DS">Avg Of Right Ref Channels Over Views</el>
+  <el keyword="MaxRightChannelOverViews" tag="0019xx76" vm="1" vr="DS">Max Right Channel Over Views</el>
+  <el keyword="SecondEcho" tag="0019xx7D" vm="1" vr="DS">Second Echo</el>
+  <el keyword="NumberOfEchos" tag="0019xx7E" vm="1" vr="SS">Number Of Echos</el>
+  <el keyword="TableDelta" tag="0019xx7F" vm="1" vr="DS">Table Delta</el>
+  <el keyword="Contiguous" tag="0019xx81" vm="1" vr="SS">Contiguous</el>
+  <el keyword="_0019_xx82_" tag="0019xx82" vm="1" vr="US">?</el>
+  <el keyword="_0019_xx83_" tag="0019xx83" vm="1" vr="DS">?</el>
+  <el keyword="PeakSAR" tag="0019xx84" vm="1" vr="DS">Peak SAR</el>
+  <el keyword="MonitorSAR" tag="0019xx85" vm="1" vr="SS">Monitor SAR</el>
+  <el keyword="_0019_xx86_" tag="0019xx86" vm="1" vr="US">?</el>
+  <el keyword="CardiacRepetitionTime" tag="0019xx87" vm="1" vr="DS">Cardiac Repetition Time</el>
+  <el keyword="ImagesPerCardiacCycle" tag="0019xx88" vm="1" vr="SS">Images Per Cardiac Cycle</el>
+  <el keyword="ActualReceiveGainAnalog" tag="0019xx8A" vm="1" vr="SS">Actual Receive Gain Analog</el>
+  <el keyword="ActualReceiveGainDigital" tag="0019xx8B" vm="1" vr="SS">Actual Receive Gain Digital</el>
+  <el keyword="DelayAfterTrigger" tag="0019xx8D" vm="1" vr="DS">Delay After Trigger</el>
+  <el keyword="SwapPhaseFrequency" tag="0019xx8F" vm="1" vr="SS">Swap Phase Frequency</el>
+  <el keyword="PauseInterval" tag="0019xx90" vm="1" vr="SS">Pause Interval</el>
+  <el keyword="PauseTime" tag="0019xx91" vm="1" vr="DS">Pause Time</el>
+  <el keyword="SliceOffsetOnFrequencyAxis" tag="0019xx92" vm="1" vr="SL">Slice Offset On Frequency Axis</el>
+  <el keyword="AutoPrescanCenterFrequency" tag="0019xx93" vm="1" vr="DS">Auto Prescan Center Frequency</el>
+  <el keyword="AutoPrescanTransmitGain" tag="0019xx94" vm="1" vr="SS">Auto Prescan Transmit Gain</el>
+  <el keyword="AutoPrescanAnalogReceiverGain" tag="0019xx95" vm="1" vr="SS">Auto Prescan Analog Receiver Gain</el>
+  <el keyword="AutoPrescanDigitalReceiverGain" tag="0019xx96" vm="1" vr="SS">Auto Prescan Digital Receiver Gain</el>
+  <el keyword="BitmapDefiningCVs" tag="0019xx97" vm="1" vr="SL">Bitmap Defining CVs</el>
+  <el keyword="CenterFrequencyMethod" tag="0019xx98" vm="1" vr="SS">Center Frequency Method</el>
+  <el keyword="_0019_xx99_" tag="0019xx99" vm="1" vr="US">?</el>
+  <el keyword="PulseSequenceMode" tag="0019xx9B" vm="1" vr="SS">Pulse Sequence Mode</el>
+  <el keyword="PulseSequenceName" tag="0019xx9C" vm="1" vr="LO">Pulse Sequence Name</el>
+  <el keyword="PulseSequenceDate" tag="0019xx9D" vm="1" vr="DT">Pulse Sequence Date</el>
+  <el keyword="InternalPulseSequenceName" tag="0019xx9E" vm="1" vr="LO">Internal Pulse Sequence Name</el>
+  <el keyword="TransmittingCoil" tag="0019xx9F" vm="1" vr="SS">Transmitting Coil</el>
+  <el keyword="SurfaceCoilType" tag="0019xxA0" vm="1" vr="SS">Surface Coil Type</el>
+  <el keyword="ExtremityCoilFlag" tag="0019xxA1" vm="1" vr="SS">Extremity Coil Flag</el>
+  <el keyword="RawDataRunNumber" tag="0019xxA2" vm="1" vr="SL">Raw Data Run Number</el>
+  <el keyword="CalibratedFieldStrength" tag="0019xxA3" vm="1" vr="UL">Calibrated Field Strength</el>
+  <el keyword="SATFatWaterBone" tag="0019xxA4" vm="1" vr="SS">SAT Fat Water Bone</el>
+  <el keyword="ReceiveBandwidth" tag="0019xxA5" vm="1" vr="DS">Receive Bandwidth</el>
+  <el keyword="UserData0" tag="0019xxA7" vm="1" vr="DS">User Data 0</el>
+  <el keyword="UserData1" tag="0019xxA8" vm="1" vr="DS">User Data 1</el>
+  <el keyword="UserData2" tag="0019xxA9" vm="1" vr="DS">User Data 2</el>
+  <el keyword="UserData3" tag="0019xxAA" vm="1" vr="DS">User Data 3</el>
+  <el keyword="UserData4" tag="0019xxAB" vm="1" vr="DS">User Data 4</el>
+  <el keyword="UserData5" tag="0019xxAC" vm="1" vr="DS">User Data 5</el>
+  <el keyword="UserData6" tag="0019xxAD" vm="1" vr="DS">User Data 6</el>
+  <el keyword="UserData7" tag="0019xxAE" vm="1" vr="DS">User Data 7</el>
+  <el keyword="UserData8" tag="0019xxAF" vm="1" vr="DS">User Data 8</el>
+  <el keyword="UserData9" tag="0019xxB0" vm="1" vr="DS">User Data 9</el>
+  <el keyword="UserData10" tag="0019xxB1" vm="1" vr="DS">User Data 10</el>
+  <el keyword="UserData11" tag="0019xxB2" vm="1" vr="DS">User Data 11</el>
+  <el keyword="UserData12" tag="0019xxB3" vm="1" vr="DS">User Data 12</el>
+  <el keyword="UserData13" tag="0019xxB4" vm="1" vr="DS">User Data 13</el>
+  <el keyword="UserData14" tag="0019xxB5" vm="1" vr="DS">User Data 14</el>
+  <el keyword="UserData15" tag="0019xxB6" vm="1" vr="DS">User Data 15</el>
+  <el keyword="UserData16" tag="0019xxB7" vm="1" vr="DS">User Data 16</el>
+  <el keyword="UserData17" tag="0019xxB8" vm="1" vr="DS">User Data 17</el>
+  <el keyword="UserData18" tag="0019xxB9" vm="1" vr="DS">User Data 18</el>
+  <el keyword="UserData19" tag="0019xxBA" vm="1" vr="DS">User Data 19</el>
+  <el keyword="UserData20" tag="0019xxBB" vm="1" vr="DS">User Data 20</el>
+  <el keyword="UserData21" tag="0019xxBC" vm="1" vr="DS">User Data 21</el>
+  <el keyword="UserData22" tag="0019xxBD" vm="1" vr="DS">User Data 22</el>
+  <el keyword="ProjectionAngle" tag="0019xxBE" vm="1" vr="DS">Projection Angle</el>
+  <el keyword="SaturationPlanes" tag="0019xxC0" vm="1" vr="SS">Saturation Planes</el>
+  <el keyword="SurfaceCoilIntensityCorrectionFlag" tag="0019xxC1" vm="1" vr="SS">Surface Coil Intensity Correction Flag</el>
+  <el keyword="SATLocationR" tag="0019xxC2" vm="1" vr="SS">SAT Location R</el>
+  <el keyword="SATLocationL" tag="0019xxC3" vm="1" vr="SS">SAT Location L</el>
+  <el keyword="SATLocationA" tag="0019xxC4" vm="1" vr="SS">SAT Location A</el>
+  <el keyword="SATLocationP" tag="0019xxC5" vm="1" vr="SS">SAT Location P</el>
+  <el keyword="SATLocationH" tag="0019xxC6" vm="1" vr="SS">SAT Location H</el>
+  <el keyword="SATLocationF" tag="0019xxC7" vm="1" vr="SS">SAT Location F</el>
+  <el keyword="SATThicknessRL" tag="0019xxC8" vm="1" vr="SS">SAT Thickness R L</el>
+  <el keyword="SATThicknessAP" tag="0019xxC9" vm="1" vr="SS">SAT Thickness A P</el>
+  <el keyword="SATThicknessHF" tag="0019xxCA" vm="1" vr="SS">SAT Thickness H F</el>
+  <el keyword="PhaseContrastFlowAxis" tag="0019xxCB" vm="1" vr="SS">PhaseContrast Flow Axis</el>
+  <el keyword="VelocityEncoding" tag="0019xxCC" vm="1" vr="SS">Velocity Encoding</el>
+  <el keyword="ThicknessDisclaimer" tag="0019xxCD" vm="1" vr="SS">Thickness Disclaimer</el>
+  <el keyword="PrescanType" tag="0019xxCE" vm="1" vr="SS">Prescan Type</el>
+  <el keyword="PrescanStatus" tag="0019xxCF" vm="1" vr="SS">Prescan Status</el>
+  <el keyword="RawDataType" tag="0019xxD0" vm="1" vr="SH">Raw Data Type</el>
+  <el keyword="ProjectionAlgorithm" tag="0019xxD2" vm="1" vr="SS">Projection Algorithm</el>
+  <el keyword="ProjectionAlgorithmName" tag="0019xxD3" vm="1" vr="SH">Projection Algorithm Name</el>
+  <el keyword="_0019_xxD4_" tag="0019xxD4" vm="1" vr="US">?</el>
+  <el keyword="FractionalEcho" tag="0019xxD5" vm="1" vr="SS">Fractional Echo</el>
+  <el keyword="PrepPulse" tag="0019xxD6" vm="1" vr="SS">Prep Pulse</el>
+  <el keyword="CardiacPhases" tag="0019xxD7" vm="1" vr="SS">Cardiac Phases</el>
+  <el keyword="VariableEchoFlag" tag="0019xxD8" vm="1" vr="SS">Variable Echo Flag</el>
+  <el keyword="ConcatenatedSatOrDTIDiffusionDirection" tag="0019xxD9" vm="1" vr="DS">Concatenated Sat or DTI Diffusion Direction</el>
+  <el keyword="ReferenceChannelUsed" tag="0019xxDA" vm="1" vr="SS">Reference Channel Used</el>
+  <el keyword="BackProjectorCoefficient" tag="0019xxDB" vm="1" vr="DS">Back Projector Coefficient</el>
+  <el keyword="PrimarySpeedCorrectionUsed" tag="0019xxDC" vm="1" vr="SS">Primary Speed Correction Used</el>
+  <el keyword="OverrangeCorrectionUsed" tag="0019xxDD" vm="1" vr="SS">Overrange Correction Used</el>
+  <el keyword="DynamicZAlphaValue" tag="0019xxDE" vm="1" vr="DS">Dynamic Z Alpha Value</el>
+  <el keyword="UserData23" tag="0019xxDF" vm="1" vr="DS">User Data 23 or DTI Diffusion Direction</el>
+  <el keyword="UserData24" tag="0019xxE0" vm="1" vr="DS">User Data 24 or DTI Diffusion Direction</el>
+  <el keyword="_0019_xxE1_" tag="0019xxE1" vm="1" vr="DS">?</el>
+  <el keyword="VelocityEncodeScale" tag="0019xxE2" vm="1" vr="DS">Velocity Encode Scale</el>
+  <el keyword="_0019_xxE3_" tag="0019xxE3" vm="1" vr="LT">?</el>
+  <el keyword="_0019_xxE4_" tag="0019xxE4" vm="1" vr="LT">?</el>
+  <el keyword="_0019_xxE5_" tag="0019xxE5" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xxE6_" tag="0019xxE6" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxE8_" tag="0019xxE8" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxE9_" tag="0019xxE9" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxEB_" tag="0019xxEB" vm="1" vr="DS">?</el>
+  <el keyword="_0019_xxEC_" tag="0019xxEC" vm="1" vr="US">?</el>
+  <el keyword="_0019_xxF0_" tag="0019xxF0" vm="1" vr="UN">?</el>
+  <el keyword="_0019_xxF1_" tag="0019xxF1" vm="1" vr="LT">?</el>
+  <el keyword="FastPhases" tag="0019xxF2" vm="1" vr="SS">Fast Phases</el>
+  <el keyword="_0019_xxF3_" tag="0019xxF3" vm="1" vr="LT">?</el>
+  <el keyword="_0019_xxF4_" tag="0019xxF4" vm="1" vr="LT">?</el>
+  <el keyword="TransmitGain" tag="0019xxF9" vm="1" vr="DS">Transmit Gain</el>
+</elements>

@@ -1,5 +1,9 @@
 org.dcm4che3.dict.archive.PrivateElementDictionary
 org.dcm4che3.dict.elscint.PrivateElementDictionary
+org.dcm4che3.dict.acuson.PrivateElementDictionary
+org.dcm4che3.dict.acuson_1_2_840_113680_1_0_0910.PrivateElementDictionary
+org.dcm4che3.dict.acuson_1_2_840_113680_1_0_7f10.PrivateElementDictionary
+org.dcm4che3.dict.acuson_1_2_840_113680_1_0_7ffe.PrivateElementDictionary
 org.dcm4che3.dict.CARDIO_D_R__1_0.PrivateElementDictionary
 org.dcm4che3.dict.DIDI_TO_PCR_1_1.PrivateElementDictionary
 org.dcm4che3.dict.PHILIPS_IMAGING_DD_001.PrivateElementDictionary

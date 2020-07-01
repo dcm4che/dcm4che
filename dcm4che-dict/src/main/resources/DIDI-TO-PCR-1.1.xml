@@ -39,46 +39,46 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="RouteAET" tag="0019xx22" vm="1" vr="LO">Route AET"</el>
-  <el keyword="PCRPrintScale" tag="0019xx23" vm="1" vr="DS">PCR Print Scale"</el>
-  <el keyword="PCRPrintJobEnd" tag="0019xx24" vm="1" vr="ST">PCR Print Job End"</el>
-  <el keyword="PCRNoFilmCopies" tag="0019xx25" vm="1" vr="IS">PCR No Film Copies"</el>
-  <el keyword="PCRFilmLayoutPosition" tag="0019xx26" vm="1" vr="IS">PCR Film Layout Position"</el>
-  <el keyword="PCRPrintReportName" tag="0019xx27" vm="1" vr="ST">PCR Print Report Name"</el>
-  <el keyword="RADProtocolPrinter" tag="0019xx70" vm="1" vr="ST">RAD Protocol Printer"</el>
-  <el keyword="RADProtocolMedium" tag="0019xx71" vm="1" vr="ST">RAD Protocol Medium"</el>
-  <el keyword="ExposureIndex" tag="0019xx89" vm="1" vr="IS">Exposure Index"</el>
-  <el keyword="CollimatorX" tag="0019xx8A" vm="1" vr="IS">Collimator X"</el>
-  <el keyword="CollimatorY" tag="0019xx8B" vm="1" vr="IS">Collimator Y"</el>
-  <el keyword="PrintMarker" tag="0019xx8C" vm="1" vr="LO">Print Marker"</el>
-  <el keyword="RGDVName" tag="0019xx8D" vm="1" vr="LO">RGDV Name"</el>
-  <el keyword="AcqdSensitivity" tag="0019xx8E" vm="1" vr="LO">Acqd Sensitivity"</el>
-  <el keyword="ProcessingCategory" tag="0019xx8F" vm="1" vr="LO">Processing Category"</el>
-  <el keyword="UnprocessedFlag" tag="0019xx90" vm="1" vr="LO">Unprocessed Flag"</el>
-  <el keyword="KeyValues" tag="0019xx91" vm="1-n" vr="DS">Key Values"</el>
-  <el keyword="DestinationPostprocessingFunction" tag="0019xx92" vm="1" vr="LO">Destination Postprocessing Function"</el>
-  <el keyword="Version" tag="0019xxA0" vm="1" vr="LO">Version"</el>
-  <el keyword="RangingMode" tag="0019xxA1" vm="1" vr="LO">Ranging Mode"</el>
-  <el keyword="AbdomenBrightness" tag="0019xxA2" vm="1" vr="DS">Abdomen Brightness"</el>
-  <el keyword="FixedBrightness" tag="0019xxA3" vm="1" vr="DS">Fixed Brightness"</el>
-  <el keyword="DetailContrast" tag="0019xxA4" vm="1" vr="DS">Detail Contrast"</el>
-  <el keyword="ContrastBalance" tag="0019xxA5" vm="1" vr="DS">Contrast Balance"</el>
-  <el keyword="StructureBoost" tag="0019xxA6" vm="1" vr="DS">Structure Boost"</el>
-  <el keyword="StructurePreference" tag="0019xxA7" vm="1" vr="DS">Structure Preference"</el>
-  <el keyword="NoiseRobustness" tag="0019xxA8" vm="1" vr="DS">Noise Robustness"</el>
-  <el keyword="NoiseDoseLimit" tag="0019xxA9" vm="1" vr="DS">Noise Dose Limit"</el>
-  <el keyword="NoiseDoseStep" tag="0019xxAA" vm="1" vr="DS">Noise Dose Step"</el>
-  <el keyword="NoiseFrequencyLimit" tag="0019xxAB" vm="1" vr="DS">Noise Frequency Limit"</el>
-  <el keyword="WeakContrastLimit" tag="0019xxAC" vm="1" vr="DS">Weak Contrast Limit"</el>
-  <el keyword="StrongContrastLimit" tag="0019xxAD" vm="1" vr="DS">Strong Contrast Limit"</el>
-  <el keyword="StructureBoostOffset" tag="0019xxAE" vm="1" vr="DS">Structure Boost Offset"</el>
-  <el keyword="SmoothGain" tag="0019xxAF" vm="1" vr="LO">Smooth Gain"</el>
-  <el keyword="MeasureField1" tag="0019xxB0" vm="1" vr="LO">Measure Field 1"</el>
-  <el keyword="MeasureField2" tag="0019xxB1" vm="1" vr="LO">Measure Field 2"</el>
-  <el keyword="KeyPercentile1" tag="0019xxB2" vm="1" vr="IS">Key Percentile 1"</el>
-  <el keyword="KeyPercentile2" tag="0019xxB3" vm="1" vr="IS">Key Percentile 2"</el>
-  <el keyword="DensityLUT" tag="0019xxB4" vm="1" vr="IS">Density LUT"</el>
-  <el keyword="Brightness" tag="0019xxB5" vm="1" vr="DS">Brightness"</el>
-  <el keyword="Gamma" tag="0019xxB6" vm="1" vr="DS">Gamma"</el>
-  <el keyword="StampImageSequence" tag="0089xx10" vm="1" vr="SQ">Stamp Image Sequence"</el>
+  <el keyword="RouteAET" tag="0019xx22" vm="1" vr="LO">Route AET</el>
+  <el keyword="PCRPrintScale" tag="0019xx23" vm="1" vr="DS">PCR Print Scale</el>
+  <el keyword="PCRPrintJobEnd" tag="0019xx24" vm="1" vr="ST">PCR Print Job End</el>
+  <el keyword="PCRNoFilmCopies" tag="0019xx25" vm="1" vr="IS">PCR No Film Copies</el>
+  <el keyword="PCRFilmLayoutPosition" tag="0019xx26" vm="1" vr="IS">PCR Film Layout Position</el>
+  <el keyword="PCRPrintReportName" tag="0019xx27" vm="1" vr="ST">PCR Print Report Name</el>
+  <el keyword="RADProtocolPrinter" tag="0019xx70" vm="1" vr="ST">RAD Protocol Printer</el>
+  <el keyword="RADProtocolMedium" tag="0019xx71" vm="1" vr="ST">RAD Protocol Medium</el>
+  <el keyword="ExposureIndex" tag="0019xx89" vm="1" vr="IS">Exposure Index</el>
+  <el keyword="CollimatorX" tag="0019xx8A" vm="1" vr="IS">Collimator X</el>
+  <el keyword="CollimatorY" tag="0019xx8B" vm="1" vr="IS">Collimator Y</el>
+  <el keyword="PrintMarker" tag="0019xx8C" vm="1" vr="LO">Print Marker</el>
+  <el keyword="RGDVName" tag="0019xx8D" vm="1" vr="LO">RGDV Name</el>
+  <el keyword="AcqdSensitivity" tag="0019xx8E" vm="1" vr="LO">Acqd Sensitivity</el>
+  <el keyword="ProcessingCategory" tag="0019xx8F" vm="1" vr="LO">Processing Category</el>
+  <el keyword="UnprocessedFlag" tag="0019xx90" vm="1" vr="LO">Unprocessed Flag</el>
+  <el keyword="KeyValues" tag="0019xx91" vm="1-n" vr="DS">Key Values</el>
+  <el keyword="DestinationPostprocessingFunction" tag="0019xx92" vm="1" vr="LO">Destination Postprocessing Function</el>
+  <el keyword="Version" tag="0019xxA0" vm="1" vr="LO">Version</el>
+  <el keyword="RangingMode" tag="0019xxA1" vm="1" vr="LO">Ranging Mode</el>
+  <el keyword="AbdomenBrightness" tag="0019xxA2" vm="1" vr="DS">Abdomen Brightness</el>
+  <el keyword="FixedBrightness" tag="0019xxA3" vm="1" vr="DS">Fixed Brightness</el>
+  <el keyword="DetailContrast" tag="0019xxA4" vm="1" vr="DS">Detail Contrast</el>
+  <el keyword="ContrastBalance" tag="0019xxA5" vm="1" vr="DS">Contrast Balance</el>
+  <el keyword="StructureBoost" tag="0019xxA6" vm="1" vr="DS">Structure Boost</el>
+  <el keyword="StructurePreference" tag="0019xxA7" vm="1" vr="DS">Structure Preference</el>
+  <el keyword="NoiseRobustness" tag="0019xxA8" vm="1" vr="DS">Noise Robustness</el>
+  <el keyword="NoiseDoseLimit" tag="0019xxA9" vm="1" vr="DS">Noise Dose Limit</el>
+  <el keyword="NoiseDoseStep" tag="0019xxAA" vm="1" vr="DS">Noise Dose Step</el>
+  <el keyword="NoiseFrequencyLimit" tag="0019xxAB" vm="1" vr="DS">Noise Frequency Limit</el>
+  <el keyword="WeakContrastLimit" tag="0019xxAC" vm="1" vr="DS">Weak Contrast Limit</el>
+  <el keyword="StrongContrastLimit" tag="0019xxAD" vm="1" vr="DS">Strong Contrast Limit</el>
+  <el keyword="StructureBoostOffset" tag="0019xxAE" vm="1" vr="DS">Structure Boost Offset</el>
+  <el keyword="SmoothGain" tag="0019xxAF" vm="1" vr="LO">Smooth Gain</el>
+  <el keyword="MeasureField1" tag="0019xxB0" vm="1" vr="LO">Measure Field 1</el>
+  <el keyword="MeasureField2" tag="0019xxB1" vm="1" vr="LO">Measure Field 2</el>
+  <el keyword="KeyPercentile1" tag="0019xxB2" vm="1" vr="IS">Key Percentile 1</el>
+  <el keyword="KeyPercentile2" tag="0019xxB3" vm="1" vr="IS">Key Percentile 2</el>
+  <el keyword="DensityLUT" tag="0019xxB4" vm="1" vr="IS">Density LUT</el>
+  <el keyword="Brightness" tag="0019xxB5" vm="1" vr="DS">Brightness</el>
+  <el keyword="Gamma" tag="0019xxB6" vm="1" vr="DS">Gamma</el>
+  <el keyword="StampImageSequence" tag="0089xx10" vm="1" vr="SQ">Stamp Image Sequence</el>
 </elements>

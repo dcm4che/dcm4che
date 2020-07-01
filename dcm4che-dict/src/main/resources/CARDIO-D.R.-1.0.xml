@@ -39,20 +39,20 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="FileLocation" tag="0009xx00" vm="1" vr="UL">File Location"</el>
-  <el keyword="FileSize" tag="0009xx01" vm="1" vr="UL">File Size"</el>
-  <el keyword="AlternateImageSequence" tag="0009xx40" vm="1" vr="SQ">Alternate Image Sequence"</el>
-  <el keyword="ImageBlankingShape" tag="0019xx00" vm="1" vr="CS">Image Blanking Shape"</el>
-  <el keyword="ImageBlankingLeftVerticalEdge" tag="0019xx02" vm="1" vr="IS">Image Blanking Left Vertical Edge"</el>
-  <el keyword="ImageBlankingRightVerticalEdge" tag="0019xx04" vm="1" vr="IS">Image Blanking Right Vertical Edge"</el>
-  <el keyword="ImageBlankingUpperHorizontalEdge" tag="0019xx06" vm="1" vr="IS">Image Blanking Upper Horizontal Edge"</el>
-  <el keyword="ImageBlankingLowerHorizontalEdge" tag="0019xx08" vm="1" vr="IS">Image Blanking Lower Horizontal Edge"</el>
-  <el keyword="CenterOfCircularImageBlanking" tag="0019xx10" vm="1" vr="IS">Center of Circular Image Blanking"</el>
-  <el keyword="RadiusOfCircularImageBlanking" tag="0019xx12" vm="1" vr="IS">Radius of Circular Image Blanking"</el>
-  <el keyword="MaximumImageFrameSize" tag="0019xx30" vm="1" vr="UL">Maximum Image Frame Size"</el>
-  <el keyword="ImageSequenceNumber" tag="0021xx13" vm="1" vr="IS">Image Sequence Number"</el>
-  <el keyword="EdgeEnhancementSequence" tag="0029xx00" vm="1" vr="SQ">Edge Enhancement Sequence"</el>
-  <el keyword="ConvolutionKernelSize" tag="0029xx01" vm="2" vr="US">Convolution Kernel Size"</el>
-  <el keyword="ConvolutionKernelCoefficients" tag="0029xx02" vm="1-n" vr="US">Convolution Kernel Coefficients"</el>
-  <el keyword="EdgeEnhancementGain" tag="0029xx03" vm="1" vr="FL">Edge Enhancement Gain"</el>
+  <el keyword="FileLocation" tag="0009xx00" vm="1" vr="UL">File Location</el>
+  <el keyword="FileSize" tag="0009xx01" vm="1" vr="UL">File Size</el>
+  <el keyword="AlternateImageSequence" tag="0009xx40" vm="1" vr="SQ">Alternate Image Sequence</el>
+  <el keyword="ImageBlankingShape" tag="0019xx00" vm="1" vr="CS">Image Blanking Shape</el>
+  <el keyword="ImageBlankingLeftVerticalEdge" tag="0019xx02" vm="1" vr="IS">Image Blanking Left Vertical Edge</el>
+  <el keyword="ImageBlankingRightVerticalEdge" tag="0019xx04" vm="1" vr="IS">Image Blanking Right Vertical Edge</el>
+  <el keyword="ImageBlankingUpperHorizontalEdge" tag="0019xx06" vm="1" vr="IS">Image Blanking Upper Horizontal Edge</el>
+  <el keyword="ImageBlankingLowerHorizontalEdge" tag="0019xx08" vm="1" vr="IS">Image Blanking Lower Horizontal Edge</el>
+  <el keyword="CenterOfCircularImageBlanking" tag="0019xx10" vm="1" vr="IS">Center of Circular Image Blanking</el>
+  <el keyword="RadiusOfCircularImageBlanking" tag="0019xx12" vm="1" vr="IS">Radius of Circular Image Blanking</el>
+  <el keyword="MaximumImageFrameSize" tag="0019xx30" vm="1" vr="UL">Maximum Image Frame Size</el>
+  <el keyword="ImageSequenceNumber" tag="0021xx13" vm="1" vr="IS">Image Sequence Number</el>
+  <el keyword="EdgeEnhancementSequence" tag="0029xx00" vm="1" vr="SQ">Edge Enhancement Sequence</el>
+  <el keyword="ConvolutionKernelSize" tag="0029xx01" vm="2" vr="US">Convolution Kernel Size</el>
+  <el keyword="ConvolutionKernelCoefficients" tag="0029xx02" vm="1-n" vr="US">Convolution Kernel Coefficients</el>
+  <el keyword="EdgeEnhancementGain" tag="0029xx03" vm="1" vr="FL">Edge Enhancement Gain</el>
 </elements>

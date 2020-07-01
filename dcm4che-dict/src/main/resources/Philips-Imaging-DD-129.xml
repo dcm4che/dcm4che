@@ -39,5 +39,5 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="PresentationStateSequence" tag="2001xx00" vm="1" vr="SQ">Presentation State Sequence"</el>
+  <el keyword="PresentationStateSequence" tag="2001xx00" vm="1" vr="SQ">Presentation State Sequence</el>
 </elements>

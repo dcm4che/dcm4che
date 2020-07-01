@@ -39,25 +39,25 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="NumberOfSOPCommon" tag="2005xx00" vm="1" vr="UL">Number of SOP Common"</el>
-  <el keyword="NoOfFilmConsumption" tag="2005xx01" vm="1" vr="UL">Number of Film Consumption"</el>
-  <el keyword="NumberOfCodes" tag="2005xx13" vm="1" vr="UL">Number of Codes"</el>
-  <el keyword="NumberOfImagePerSeriesRef" tag="2005xx34" vm="1" vr="SL">Number of Image Per Series Ref"</el>
-  <el keyword="NoDateOfLastCalibration" tag="2005xx43" vm="1" vr="SS">No Date of Last Calibration"</el>
-  <el keyword="NoTimeOfLastCalibration" tag="2005xx44" vm="1" vr="SS">No Time of Last Calibration"</el>
-  <el keyword="NrOfSoftwareVersion" tag="2005xx45" vm="1" vr="SS">Number of Software Version"</el>
-  <el keyword="NrOfPatientOtherNames" tag="2005xx47" vm="1" vr="SS">Number of Patient Other Names"</el>
-  <el keyword="NrOfReqRecipeOfResults" tag="2005xx48" vm="1" vr="SS">Number of Req Recipe of Results"</el>
-  <el keyword="NrOfSeriesOperatorsName" tag="2005xx49" vm="1" vr="SS">Number of Series Operators Name"</el>
-  <el keyword="NrOfSeriesPerfPhysiName" tag="2005xx50" vm="1" vr="SS">Number of Series Performing Physicians Name"</el>
-  <el keyword="NrOfStudyAdmittingDiagnosticDescr" tag="2005xx51" vm="1" vr="SS">Number of Study Admitting Diagnostic Description"</el>
-  <el keyword="NrOfStudyPatientContrastAllergies" tag="2005xx52" vm="1" vr="SS">Number of Study Patient Contrast Allergies"</el>
-  <el keyword="NrOfStudyPatientMedicalAlerts" tag="2005xx53" vm="1" vr="SS">Number of Study Patient Medical Alerts"</el>
-  <el keyword="NrOfStudyPhysiciansOfRecord" tag="2005xx54" vm="1" vr="SS">Number of Study Physicians of Record"</el>
-  <el keyword="NrOfStudyPhysiReadingStudy" tag="2005xx55" vm="1" vr="SS">Number of Study Physicians Reading Study"</el>
-  <el keyword="NrSCSoftwareVersions" tag="2005xx56" vm="1" vr="SS">Number of SC Software Versions"</el>
-  <el keyword="NrRunningAttributes" tag="2005xx57" vm="1" vr="SS">Number of Running Attributes"</el>
-  <el keyword="SpectrumPixelData" tag="2005xx70" vm="1" vr="OW">Spectrum Pixel Data"</el>
-  <el keyword="DefaultImageUID" tag="2005xx81" vm="1" vr="UI">Default Image UID"</el>
-  <el keyword="RunningAttributes" tag="2005xx82" vm="1-n" vr="CS">Running Attributes"</el>
+  <el keyword="NumberOfSOPCommon" tag="2005xx00" vm="1" vr="UL">Number of SOP Common</el>
+  <el keyword="NoOfFilmConsumption" tag="2005xx01" vm="1" vr="UL">Number of Film Consumption</el>
+  <el keyword="NumberOfCodes" tag="2005xx13" vm="1" vr="UL">Number of Codes</el>
+  <el keyword="NumberOfImagePerSeriesRef" tag="2005xx34" vm="1" vr="SL">Number of Image Per Series Ref</el>
+  <el keyword="NoDateOfLastCalibration" tag="2005xx43" vm="1" vr="SS">No Date of Last Calibration</el>
+  <el keyword="NoTimeOfLastCalibration" tag="2005xx44" vm="1" vr="SS">No Time of Last Calibration</el>
+  <el keyword="NrOfSoftwareVersion" tag="2005xx45" vm="1" vr="SS">Number of Software Version</el>
+  <el keyword="NrOfPatientOtherNames" tag="2005xx47" vm="1" vr="SS">Number of Patient Other Names</el>
+  <el keyword="NrOfReqRecipeOfResults" tag="2005xx48" vm="1" vr="SS">Number of Req Recipe of Results</el>
+  <el keyword="NrOfSeriesOperatorsName" tag="2005xx49" vm="1" vr="SS">Number of Series Operators Name</el>
+  <el keyword="NrOfSeriesPerfPhysiName" tag="2005xx50" vm="1" vr="SS">Number of Series Performing Physicians Name</el>
+  <el keyword="NrOfStudyAdmittingDiagnosticDescr" tag="2005xx51" vm="1" vr="SS">Number of Study Admitting Diagnostic Description</el>
+  <el keyword="NrOfStudyPatientContrastAllergies" tag="2005xx52" vm="1" vr="SS">Number of Study Patient Contrast Allergies</el>
+  <el keyword="NrOfStudyPatientMedicalAlerts" tag="2005xx53" vm="1" vr="SS">Number of Study Patient Medical Alerts</el>
+  <el keyword="NrOfStudyPhysiciansOfRecord" tag="2005xx54" vm="1" vr="SS">Number of Study Physicians of Record</el>
+  <el keyword="NrOfStudyPhysiReadingStudy" tag="2005xx55" vm="1" vr="SS">Number of Study Physicians Reading Study</el>
+  <el keyword="NrSCSoftwareVersions" tag="2005xx56" vm="1" vr="SS">Number of SC Software Versions</el>
+  <el keyword="NrRunningAttributes" tag="2005xx57" vm="1" vr="SS">Number of Running Attributes</el>
+  <el keyword="SpectrumPixelData" tag="2005xx70" vm="1" vr="OW">Spectrum Pixel Data</el>
+  <el keyword="DefaultImageUID" tag="2005xx81" vm="1" vr="UI">Default Image UID</el>
+  <el keyword="RunningAttributes" tag="2005xx82" vm="1-n" vr="CS">Running Attributes</el>
 </elements>

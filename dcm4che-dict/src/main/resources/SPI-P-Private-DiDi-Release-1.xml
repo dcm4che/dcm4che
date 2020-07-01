@@ -39,7 +39,7 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="PostModeString" tag="0019xx00" vm="1" vr="LT">Post Mode String"</el>
-  <el keyword="PostData" tag="0019xx01" vm="1" vr="LT">Post Data"</el>
-  <el keyword="ImageHeader" tag="0019xx10" vm="1" vr="LT">Image Header"</el>
+  <el keyword="PostModeString" tag="0019xx00" vm="1" vr="LT">Post Mode String</el>
+  <el keyword="PostData" tag="0019xx01" vm="1" vr="LT">Post Data</el>
+  <el keyword="ImageHeader" tag="0019xx10" vm="1" vr="LT">Image Header</el>
 </elements>

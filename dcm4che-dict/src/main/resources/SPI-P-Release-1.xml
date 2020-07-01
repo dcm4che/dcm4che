@@ -39,94 +39,94 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="DataObjectRecognitionCode" tag="0009xx00" vm="1" vr="LT">Data Object Recognition Code"</el>
-  <el keyword="ImageDataConsistency" tag="0009xx04" vm="1" vr="LO">Image Data Consistency"</el>
-  <el keyword="_0009_xx08_" tag="0009xx08" vm="1" vr="US">?"</el>
-  <el keyword="_0009_xx10_" tag="0009xx10" vm="1" vr="LO">?"</el>
-  <el keyword="_0009_xx12_" tag="0009xx12" vm="1" vr="LO">?"</el>
-  <el keyword="UniqueIdentifier" tag="0009xx15" vm="1" vr="LO">Unique Identifier"</el>
-  <el keyword="_0009_xx16_" tag="0009xx16" vm="1" vr="LO">?"</el>
-  <el keyword="_0009_xx18_" tag="0009xx18" vm="1" vr="LO">?"</el>
-  <el keyword="_0009_xx21_" tag="0009xx21" vm="1" vr="LT">?"</el>
-  <el keyword="PACSUniqueIdentifier" tag="0009xx31" vm="1" vr="LT">PACS Unique Identifier"</el>
-  <el keyword="ClusterUniqueIdentifier" tag="0009xx34" vm="1" vr="LT">Cluster Unique Identifier"</el>
-  <el keyword="SystemUniqueIdentifier" tag="0009xx38" vm="1" vr="LT">System Unique Identifier"</el>
-  <el keyword="_0009_xx39_" tag="0009xx39" vm="1" vr="LT">?"</el>
-  <el keyword="StudyUniqueIdentifier" tag="0009xx51" vm="1" vr="LT">Study Unique Identifier"</el>
-  <el keyword="SeriesUniqueIdentifier" tag="0009xx61" vm="1" vr="LT">Series Unique Identifier"</el>
-  <el keyword="_0009_xx91_" tag="0009xx91" vm="1" vr="LT">?"</el>
-  <el keyword="_0009_xxA0_" tag="0009xxA0" vm="1" vr="UN">?"</el>
-  <el keyword="_0009_xxF2_" tag="0009xxF2" vm="1" vr="LT">?"</el>
-  <el keyword="_0009_xxF3_" tag="0009xxF3" vm="1" vr="UN">?"</el>
-  <el keyword="_0009_xxF4_" tag="0009xxF4" vm="1" vr="LT">?"</el>
-  <el keyword="_0009_xxF5_" tag="0009xxF5" vm="1" vr="UN">?"</el>
-  <el keyword="_0009_xxF7_" tag="0009xxF7" vm="1" vr="LT">?"</el>
-  <el keyword="PatientEntryID" tag="0011xx10" vm="1" vr="LT">Patient Entry ID"</el>
-  <el keyword="_0011_xx20_" tag="0011xx20" vm="1" vr="UN">?"</el>
-  <el keyword="_0011_xx21_" tag="0011xx21" vm="1" vr="UN">?"</el>
-  <el keyword="_0011_xx22_" tag="0011xx22" vm="1" vr="UN">?"</el>
-  <el keyword="_0011_xx30_" tag="0011xx30" vm="1" vr="UN">?"</el>
-  <el keyword="_0011_xx31_" tag="0011xx31" vm="1" vr="UN">?"</el>
-  <el keyword="_0011_xx32_" tag="0011xx32" vm="1" vr="UN">?"</el>
-  <el keyword="_0019_xx00_" tag="0019xx00" vm="1" vr="LO">?"</el>
-  <el keyword="_0019_xx01_" tag="0019xx01" vm="1" vr="LO">?"</el>
-  <el keyword="_0019_xx02_" tag="0019xx02" vm="1" vr="UN">?"</el>
-  <el keyword="MainsFrequency" tag="0019xx10" vm="1" vr="US">Mains Frequency"</el>
-  <el keyword="OriginalPixelDataQuality" tag="0019xx25" vm="1-n" vr="LO">Original Pixel Data Quality"</el>
-  <el keyword="ECGTriggering" tag="0019xx30" vm="1" vr="US">ECG Triggering"</el>
-  <el keyword="ECG1Offset" tag="0019xx31" vm="1" vr="UN">ECG 1 Offset"</el>
-  <el keyword="ECG2Offset1" tag="0019xx32" vm="1" vr="UN">ECG 2 Offset 1"</el>
-  <el keyword="ECG2Offset2" tag="0019xx33" vm="1" vr="UN">ECG 2 Offset 2"</el>
-  <el keyword="VideoScanMode" tag="0019xx50" vm="1" vr="US">Video Scan Mode"</el>
-  <el keyword="VideoLineRate" tag="0019xx51" vm="1" vr="US">Video LineRate"</el>
-  <el keyword="XrayTechnique" tag="0019xx60" vm="1" vr="US">Xray Technique"</el>
-  <el keyword="ImageIdentifierFromat" tag="0019xx61" vm="1" vr="DS">Image Identifier Fromat"</el>
-  <el keyword="IrisDiaphragm" tag="0019xx62" vm="1" vr="US">Iris Diaphragm"</el>
-  <el keyword="Filter" tag="0019xx63" vm="1" vr="CS">Filter"</el>
-  <el keyword="CineParallel" tag="0019xx64" vm="1" vr="CS">Cine Parallel"</el>
-  <el keyword="CineMaster" tag="0019xx65" vm="1" vr="CS">Cine Master"</el>
-  <el keyword="ExposureChannel" tag="0019xx70" vm="1" vr="US">Exposure Channel"</el>
-  <el keyword="ExposureChannelFirstImage" tag="0019xx71" vm="1" vr="UN">Exposure Channel First Image"</el>
-  <el keyword="ProcessingChannel" tag="0019xx72" vm="1" vr="US">Processing Channel"</el>
-  <el keyword="AcquisitionDelay" tag="0019xx80" vm="1" vr="DS">Acquisition Delay"</el>
-  <el keyword="RelativeImageTime" tag="0019xx81" vm="1" vr="UN">Relative Image Time"</el>
-  <el keyword="VideoWhiteCompression" tag="0019xx90" vm="1" vr="CS">Video White Compression"</el>
-  <el keyword="Angulation" tag="0019xxA0" vm="1" vr="US">Angulation"</el>
-  <el keyword="Rotation" tag="0019xxA1" vm="1" vr="US">Rotation"</el>
-  <el keyword="_0021_xx14_" tag="0021xx14" vm="1" vr="LT">?"</el>
-  <el keyword="_0029_xx00_" tag="0029xx00" vm="4" vr="DS">?"</el>
-  <el keyword="PixelAspectRatio" tag="0029xx20" vm="1" vr="DS">Pixel Aspect Ratio"</el>
-  <el keyword="ProcessedPixelDataQuality" tag="0029xx25" vm="1-n" vr="LO">Processed Pixel Data Quality"</el>
-  <el keyword="_0029_xx30_" tag="0029xx30" vm="1" vr="LT">?"</el>
-  <el keyword="_0029_xx38_" tag="0029xx38" vm="1" vr="US">?"</el>
-  <el keyword="_0029_xx60_" tag="0029xx60" vm="1" vr="LT">?"</el>
-  <el keyword="_0029_xx61_" tag="0029xx61" vm="1" vr="LT">?"</el>
-  <el keyword="_0029_xx67_" tag="0029xx67" vm="1" vr="LT">?"</el>
-  <el keyword="WindowID" tag="0029xx70" vm="1" vr="LT">Window ID"</el>
-  <el keyword="VideoInvertSubtracted" tag="0029xx71" vm="1" vr="CS">Video Invert Subtracted"</el>
-  <el keyword="VideoInvertNonsubtracted" tag="0029xx72" vm="1" vr="CS">Video Invert Nonsubtracted"</el>
-  <el keyword="WindowSelectStatus" tag="0029xx77" vm="1" vr="CS">Window Select Status"</el>
-  <el keyword="ECGDisplayPrintingID" tag="0029xx78" vm="1" vr="LT">ECG Display Printing ID"</el>
-  <el keyword="ECGDisplayPrinting" tag="0029xx79" vm="1" vr="CS">ECG Display Printing"</el>
-  <el keyword="ECGDisplayPrintingEnableStatus" tag="0029xx7E" vm="1" vr="CS">ECG Display Printing Enable Status"</el>
-  <el keyword="ECGDisplayPrintingSelectStatus" tag="0029xx7F" vm="1" vr="CS">ECG Display Printing Select Status"</el>
-  <el keyword="PhysiologicalDisplayID" tag="0029xx80" vm="1" vr="LT">Physiological Display ID"</el>
-  <el keyword="PreferredPhysiologicalChannelDisplay" tag="0029xx81" vm="1" vr="US">Preferred Physiological Channel Display"</el>
-  <el keyword="PhysiologicalDisplayEnableStatus" tag="0029xx8E" vm="1" vr="CS">Physiological Display Enable Status"</el>
-  <el keyword="PhysiologicalDisplaySelectStatus" tag="0029xx8F" vm="1" vr="CS">Physiological Display Select Status"</el>
-  <el keyword="_0029_xx90_" tag="0029xx90" vm="1-n" vr="DS">?"</el>
-  <el keyword="_0029_xx91_" tag="0029xx91" vm="1" vr="US">?"</el>
-  <el keyword="_0029_xx9F_" tag="0029xx9F" vm="1" vr="CS">?"</el>
-  <el keyword="_0029_xxA0_" tag="0029xxA0" vm="1-n" vr="DS">?"</el>
-  <el keyword="_0029_xxA1_" tag="0029xxA1" vm="1" vr="US">?"</el>
-  <el keyword="_0029_xxAF_" tag="0029xxAF" vm="1" vr="CS">?"</el>
-  <el keyword="_0029_xxB0_" tag="0029xxB0" vm="1-n" vr="DS">?"</el>
-  <el keyword="_0029_xxB1_" tag="0029xxB1" vm="1" vr="US">?"</el>
-  <el keyword="_0029_xxBF_" tag="0029xxBF" vm="1" vr="CS">?"</el>
-  <el keyword="FunctionalShutterID" tag="0029xxC0" vm="1" vr="LT">Functional Shutter ID"</el>
-  <el keyword="FieldOfShutter" tag="0029xxC1" vm="1" vr="US">Field Of Shutter"</el>
-  <el keyword="FieldOfShutterRectangle" tag="0029xxC5" vm="1" vr="LT">Field Of Shutter Rectangle"</el>
-  <el keyword="ShutterEnableStatus" tag="0029xxCE" vm="1" vr="CS">Shutter Enable Status"</el>
-  <el keyword="ShutterSelectStatus" tag="0029xxCF" vm="1" vr="CS">Shutter Select Status"</el>
-  <el keyword="PixelData" tag="7FE1xx10" vm="1" vr="OW/OB">Pixel Data"</el>
+  <el keyword="DataObjectRecognitionCode" tag="0009xx00" vm="1" vr="LT">Data Object Recognition Code</el>
+  <el keyword="ImageDataConsistency" tag="0009xx04" vm="1" vr="LO">Image Data Consistency</el>
+  <el keyword="_0009_xx08_" tag="0009xx08" vm="1" vr="US">?</el>
+  <el keyword="_0009_xx10_" tag="0009xx10" vm="1" vr="LO">?</el>
+  <el keyword="_0009_xx12_" tag="0009xx12" vm="1" vr="LO">?</el>
+  <el keyword="UniqueIdentifier" tag="0009xx15" vm="1" vr="LO">Unique Identifier</el>
+  <el keyword="_0009_xx16_" tag="0009xx16" vm="1" vr="LO">?</el>
+  <el keyword="_0009_xx18_" tag="0009xx18" vm="1" vr="LO">?</el>
+  <el keyword="_0009_xx21_" tag="0009xx21" vm="1" vr="LT">?</el>
+  <el keyword="PACSUniqueIdentifier" tag="0009xx31" vm="1" vr="LT">PACS Unique Identifier</el>
+  <el keyword="ClusterUniqueIdentifier" tag="0009xx34" vm="1" vr="LT">Cluster Unique Identifier</el>
+  <el keyword="SystemUniqueIdentifier" tag="0009xx38" vm="1" vr="LT">System Unique Identifier</el>
+  <el keyword="_0009_xx39_" tag="0009xx39" vm="1" vr="LT">?</el>
+  <el keyword="StudyUniqueIdentifier" tag="0009xx51" vm="1" vr="LT">Study Unique Identifier</el>
+  <el keyword="SeriesUniqueIdentifier" tag="0009xx61" vm="1" vr="LT">Series Unique Identifier</el>
+  <el keyword="_0009_xx91_" tag="0009xx91" vm="1" vr="LT">?</el>
+  <el keyword="_0009_xxA0_" tag="0009xxA0" vm="1" vr="UN">?</el>
+  <el keyword="_0009_xxF2_" tag="0009xxF2" vm="1" vr="LT">?</el>
+  <el keyword="_0009_xxF3_" tag="0009xxF3" vm="1" vr="UN">?</el>
+  <el keyword="_0009_xxF4_" tag="0009xxF4" vm="1" vr="LT">?</el>
+  <el keyword="_0009_xxF5_" tag="0009xxF5" vm="1" vr="UN">?</el>
+  <el keyword="_0009_xxF7_" tag="0009xxF7" vm="1" vr="LT">?</el>
+  <el keyword="PatientEntryID" tag="0011xx10" vm="1" vr="LT">Patient Entry ID</el>
+  <el keyword="_0011_xx20_" tag="0011xx20" vm="1" vr="UN">?</el>
+  <el keyword="_0011_xx21_" tag="0011xx21" vm="1" vr="UN">?</el>
+  <el keyword="_0011_xx22_" tag="0011xx22" vm="1" vr="UN">?</el>
+  <el keyword="_0011_xx30_" tag="0011xx30" vm="1" vr="UN">?</el>
+  <el keyword="_0011_xx31_" tag="0011xx31" vm="1" vr="UN">?</el>
+  <el keyword="_0011_xx32_" tag="0011xx32" vm="1" vr="UN">?</el>
+  <el keyword="_0019_xx00_" tag="0019xx00" vm="1" vr="LO">?</el>
+  <el keyword="_0019_xx01_" tag="0019xx01" vm="1" vr="LO">?</el>
+  <el keyword="_0019_xx02_" tag="0019xx02" vm="1" vr="UN">?</el>
+  <el keyword="MainsFrequency" tag="0019xx10" vm="1" vr="US">Mains Frequency</el>
+  <el keyword="OriginalPixelDataQuality" tag="0019xx25" vm="1-n" vr="LO">Original Pixel Data Quality</el>
+  <el keyword="ECGTriggering" tag="0019xx30" vm="1" vr="US">ECG Triggering</el>
+  <el keyword="ECG1Offset" tag="0019xx31" vm="1" vr="UN">ECG 1 Offset</el>
+  <el keyword="ECG2Offset1" tag="0019xx32" vm="1" vr="UN">ECG 2 Offset 1</el>
+  <el keyword="ECG2Offset2" tag="0019xx33" vm="1" vr="UN">ECG 2 Offset 2</el>
+  <el keyword="VideoScanMode" tag="0019xx50" vm="1" vr="US">Video Scan Mode</el>
+  <el keyword="VideoLineRate" tag="0019xx51" vm="1" vr="US">Video LineRate</el>
+  <el keyword="XrayTechnique" tag="0019xx60" vm="1" vr="US">Xray Technique</el>
+  <el keyword="ImageIdentifierFromat" tag="0019xx61" vm="1" vr="DS">Image Identifier Fromat</el>
+  <el keyword="IrisDiaphragm" tag="0019xx62" vm="1" vr="US">Iris Diaphragm</el>
+  <el keyword="Filter" tag="0019xx63" vm="1" vr="CS">Filter</el>
+  <el keyword="CineParallel" tag="0019xx64" vm="1" vr="CS">Cine Parallel</el>
+  <el keyword="CineMaster" tag="0019xx65" vm="1" vr="CS">Cine Master</el>
+  <el keyword="ExposureChannel" tag="0019xx70" vm="1" vr="US">Exposure Channel</el>
+  <el keyword="ExposureChannelFirstImage" tag="0019xx71" vm="1" vr="UN">Exposure Channel First Image</el>
+  <el keyword="ProcessingChannel" tag="0019xx72" vm="1" vr="US">Processing Channel</el>
+  <el keyword="AcquisitionDelay" tag="0019xx80" vm="1" vr="DS">Acquisition Delay</el>
+  <el keyword="RelativeImageTime" tag="0019xx81" vm="1" vr="UN">Relative Image Time</el>
+  <el keyword="VideoWhiteCompression" tag="0019xx90" vm="1" vr="CS">Video White Compression</el>
+  <el keyword="Angulation" tag="0019xxA0" vm="1" vr="US">Angulation</el>
+  <el keyword="Rotation" tag="0019xxA1" vm="1" vr="US">Rotation</el>
+  <el keyword="_0021_xx14_" tag="0021xx14" vm="1" vr="LT">?</el>
+  <el keyword="_0029_xx00_" tag="0029xx00" vm="4" vr="DS">?</el>
+  <el keyword="PixelAspectRatio" tag="0029xx20" vm="1" vr="DS">Pixel Aspect Ratio</el>
+  <el keyword="ProcessedPixelDataQuality" tag="0029xx25" vm="1-n" vr="LO">Processed Pixel Data Quality</el>
+  <el keyword="_0029_xx30_" tag="0029xx30" vm="1" vr="LT">?</el>
+  <el keyword="_0029_xx38_" tag="0029xx38" vm="1" vr="US">?</el>
+  <el keyword="_0029_xx60_" tag="0029xx60" vm="1" vr="LT">?</el>
+  <el keyword="_0029_xx61_" tag="0029xx61" vm="1" vr="LT">?</el>
+  <el keyword="_0029_xx67_" tag="0029xx67" vm="1" vr="LT">?</el>
+  <el keyword="WindowID" tag="0029xx70" vm="1" vr="LT">Window ID</el>
+  <el keyword="VideoInvertSubtracted" tag="0029xx71" vm="1" vr="CS">Video Invert Subtracted</el>
+  <el keyword="VideoInvertNonsubtracted" tag="0029xx72" vm="1" vr="CS">Video Invert Nonsubtracted</el>
+  <el keyword="WindowSelectStatus" tag="0029xx77" vm="1" vr="CS">Window Select Status</el>
+  <el keyword="ECGDisplayPrintingID" tag="0029xx78" vm="1" vr="LT">ECG Display Printing ID</el>
+  <el keyword="ECGDisplayPrinting" tag="0029xx79" vm="1" vr="CS">ECG Display Printing</el>
+  <el keyword="ECGDisplayPrintingEnableStatus" tag="0029xx7E" vm="1" vr="CS">ECG Display Printing Enable Status</el>
+  <el keyword="ECGDisplayPrintingSelectStatus" tag="0029xx7F" vm="1" vr="CS">ECG Display Printing Select Status</el>
+  <el keyword="PhysiologicalDisplayID" tag="0029xx80" vm="1" vr="LT">Physiological Display ID</el>
+  <el keyword="PreferredPhysiologicalChannelDisplay" tag="0029xx81" vm="1" vr="US">Preferred Physiological Channel Display</el>
+  <el keyword="PhysiologicalDisplayEnableStatus" tag="0029xx8E" vm="1" vr="CS">Physiological Display Enable Status</el>
+  <el keyword="PhysiologicalDisplaySelectStatus" tag="0029xx8F" vm="1" vr="CS">Physiological Display Select Status</el>
+  <el keyword="_0029_xx90_" tag="0029xx90" vm="1-n" vr="DS">?</el>
+  <el keyword="_0029_xx91_" tag="0029xx91" vm="1" vr="US">?</el>
+  <el keyword="_0029_xx9F_" tag="0029xx9F" vm="1" vr="CS">?</el>
+  <el keyword="_0029_xxA0_" tag="0029xxA0" vm="1-n" vr="DS">?</el>
+  <el keyword="_0029_xxA1_" tag="0029xxA1" vm="1" vr="US">?</el>
+  <el keyword="_0029_xxAF_" tag="0029xxAF" vm="1" vr="CS">?</el>
+  <el keyword="_0029_xxB0_" tag="0029xxB0" vm="1-n" vr="DS">?</el>
+  <el keyword="_0029_xxB1_" tag="0029xxB1" vm="1" vr="US">?</el>
+  <el keyword="_0029_xxBF_" tag="0029xxBF" vm="1" vr="CS">?</el>
+  <el keyword="FunctionalShutterID" tag="0029xxC0" vm="1" vr="LT">Functional Shutter ID</el>
+  <el keyword="FieldOfShutter" tag="0029xxC1" vm="1" vr="US">Field Of Shutter</el>
+  <el keyword="FieldOfShutterRectangle" tag="0029xxC5" vm="1" vr="LT">Field Of Shutter Rectangle</el>
+  <el keyword="ShutterEnableStatus" tag="0029xxCE" vm="1" vr="CS">Shutter Enable Status</el>
+  <el keyword="ShutterSelectStatus" tag="0029xxCF" vm="1" vr="CS">Shutter Select Status</el>
+  <el keyword="PixelData" tag="7FE1xx10" vm="1" vr="OW/OB">Pixel Data</el>
 </elements>

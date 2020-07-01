@@ -39,9 +39,9 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="VideoBeamBoost" tag="0019xx10" vm="1" vr="LT">Video Beam Boost"</el>
-  <el keyword="ChannelGeneratingVideoSync" tag="0019xx11" vm="1" vr="US">Channel Generating Video Sync"</el>
-  <el keyword="VideoGain" tag="0019xx12" vm="1" vr="US">Video Gain"</el>
-  <el keyword="VideoOffset" tag="0019xx13" vm="1" vr="US">Video Offset"</el>
-  <el keyword="RTDDataCompressionFactor" tag="0019xx20" vm="1" vr="DS">RTD Data Compression Factor"</el>
+  <el keyword="VideoBeamBoost" tag="0019xx10" vm="1" vr="LT">Video Beam Boost</el>
+  <el keyword="ChannelGeneratingVideoSync" tag="0019xx11" vm="1" vr="US">Channel Generating Video Sync</el>
+  <el keyword="VideoGain" tag="0019xx12" vm="1" vr="US">Video Gain</el>
+  <el keyword="VideoOffset" tag="0019xx13" vm="1" vr="US">Video Offset</el>
+  <el keyword="RTDDataCompressionFactor" tag="0019xx20" vm="1" vr="DS">RTD Data Compression Factor</el>
 </elements>

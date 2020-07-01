@@ -39,7 +39,7 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="WindowOfImagesID" tag="0021xx00" vm="1" vr="LT">Window Of Images ID"</el>
-  <el keyword="WindowOfImagesType" tag="0021xx01" vm="1" vr="CS">Window Of Images Type"</el>
-  <el keyword="WindowOfImagesScope" tag="0021xx02" vm="1-n" vr="IS">WindowOfImagesScope"</el>
+  <el keyword="WindowOfImagesID" tag="0021xx00" vm="1" vr="LT">Window Of Images ID</el>
+  <el keyword="WindowOfImagesType" tag="0021xx01" vm="1" vr="CS">Window Of Images Type</el>
+  <el keyword="WindowOfImagesScope" tag="0021xx02" vm="1-n" vr="IS">WindowOfImagesScope</el>
 </elements>

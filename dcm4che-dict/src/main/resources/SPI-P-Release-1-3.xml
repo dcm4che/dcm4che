@@ -39,14 +39,14 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="ImageEnhancementID" tag="0029xx00" vm="1" vr="LT">Image Enhancement ID"</el>
-  <el keyword="ImageEnhancement" tag="0029xx01" vm="1" vr="LT">Image Enhancement"</el>
-  <el keyword="ConvolutionID" tag="0029xx02" vm="1" vr="LT">Convolution ID"</el>
-  <el keyword="ConvolutionType" tag="0029xx03" vm="1" vr="LT">Convolution Type"</el>
-  <el keyword="ConvolutionKernelSizeID" tag="0029xx04" vm="1" vr="LT">Convolution Kernel Size ID"</el>
-  <el keyword="ConvolutionKernelSize" tag="0029xx05" vm="2" vr="US">Convolution Kernel Size"</el>
-  <el keyword="ConvolutionKernel" tag="0029xx06" vm="1-n" vr="US">Convolution Kernel"</el>
-  <el keyword="EnhancementGain" tag="0029xx0C" vm="1" vr="DS">Enhancement Gain"</el>
-  <el keyword="ImageEnhancementEnableStatus" tag="0029xx1E" vm="1" vr="CS">Image Enhancement Enable Status"</el>
-  <el keyword="ImageEnhancementSelectStatus" tag="0029xx1F" vm="1" vr="CS">Image Enhancement Select Status"</el>
+  <el keyword="ImageEnhancementID" tag="0029xx00" vm="1" vr="LT">Image Enhancement ID</el>
+  <el keyword="ImageEnhancement" tag="0029xx01" vm="1" vr="LT">Image Enhancement</el>
+  <el keyword="ConvolutionID" tag="0029xx02" vm="1" vr="LT">Convolution ID</el>
+  <el keyword="ConvolutionType" tag="0029xx03" vm="1" vr="LT">Convolution Type</el>
+  <el keyword="ConvolutionKernelSizeID" tag="0029xx04" vm="1" vr="LT">Convolution Kernel Size ID</el>
+  <el keyword="ConvolutionKernelSize" tag="0029xx05" vm="2" vr="US">Convolution Kernel Size</el>
+  <el keyword="ConvolutionKernel" tag="0029xx06" vm="1-n" vr="US">Convolution Kernel</el>
+  <el keyword="EnhancementGain" tag="0029xx0C" vm="1" vr="DS">Enhancement Gain</el>
+  <el keyword="ImageEnhancementEnableStatus" tag="0029xx1E" vm="1" vr="CS">Image Enhancement Enable Status</el>
+  <el keyword="ImageEnhancementSelectStatus" tag="0029xx1F" vm="1" vr="CS">Image Enhancement Select Status</el>
 </elements>

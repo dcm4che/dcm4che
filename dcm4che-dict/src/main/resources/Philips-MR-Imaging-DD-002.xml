@@ -39,27 +39,27 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="UserName" tag="2005xx15" vm="1" vr="LO">User Name"</el>
-  <el keyword="PassWord" tag="2005xx16" vm="1" vr="LO">Pass Word"</el>
-  <el keyword="ServerName" tag="2005xx17" vm="1" vr="LO">Server Name"</el>
-  <el keyword="DataBaseName" tag="2005xx18" vm="1" vr="LO">Data Base Name"</el>
-  <el keyword="RootName" tag="2005xx19" vm="1" vr="LO">RootName"</el>
-  <el keyword="DMIApplicationName" tag="2005xx20" vm="1" vr="LO">DMI Application Name"</el>
-  <el keyword="RootId" tag="2005xx2D" vm="1" vr="LO">Root Id"</el>
-  <el keyword="BlobDataObjectArray" tag="2005xx32" vm="1" vr="SQ">Blob Data Object Array"</el>
-  <el keyword="SeriesTransactionUID" tag="2005xx34" vm="1" vr="LT">Series Transaction UID"</el>
-  <el keyword="ParentID" tag="2005xx35" vm="1" vr="IS">Parent ID"</el>
-  <el keyword="ParentType" tag="2005xx36" vm="1" vr="LO">Parent Type"</el>
-  <el keyword="BlobName" tag="2005xx37" vm="1" vr="LO">Blob Name"</el>
-  <el keyword="ApplicationName" tag="2005xx38" vm="1" vr="LO">Application Name"</el>
-  <el keyword="TypeName" tag="2005xx39" vm="1" vr="LO">Type Name"</el>
-  <el keyword="VersionStr" tag="2005xx40" vm="1" vr="LO">Version String"</el>
-  <el keyword="CommentStr" tag="2005xx41" vm="1" vr="LO">Comment String"</el>
-  <el keyword="BlobInFile" tag="2005xx42" vm="1" vr="CS">Blob In File"</el>
-  <el keyword="ActualBlobSize" tag="2005xx43" vm="1" vr="SL">Actual Blob Size"</el>
-  <el keyword="BlobData" tag="2005xx44" vm="1" vr="OW">Blob Data"</el>
-  <el keyword="BlobFilename" tag="2005xx45" vm="1" vr="LO">Blob Filename"</el>
-  <el keyword="BlobOffset" tag="2005xx46" vm="1" vr="SL">Blob Offset"</el>
-  <el keyword="BlobFlag" tag="2005xx47" vm="1" vr="CS">Blob Flag"</el>
-  <el keyword="NumberOfRequestExcerpts" tag="2005xx99" vm="1" vr="UL">Number of Request Excerpts"</el>
+  <el keyword="UserName" tag="2005xx15" vm="1" vr="LO">User Name</el>
+  <el keyword="PassWord" tag="2005xx16" vm="1" vr="LO">Pass Word</el>
+  <el keyword="ServerName" tag="2005xx17" vm="1" vr="LO">Server Name</el>
+  <el keyword="DataBaseName" tag="2005xx18" vm="1" vr="LO">Data Base Name</el>
+  <el keyword="RootName" tag="2005xx19" vm="1" vr="LO">RootName</el>
+  <el keyword="DMIApplicationName" tag="2005xx20" vm="1" vr="LO">DMI Application Name</el>
+  <el keyword="RootId" tag="2005xx2D" vm="1" vr="LO">Root Id</el>
+  <el keyword="BlobDataObjectArray" tag="2005xx32" vm="1" vr="SQ">Blob Data Object Array</el>
+  <el keyword="SeriesTransactionUID" tag="2005xx34" vm="1" vr="LT">Series Transaction UID</el>
+  <el keyword="ParentID" tag="2005xx35" vm="1" vr="IS">Parent ID</el>
+  <el keyword="ParentType" tag="2005xx36" vm="1" vr="LO">Parent Type</el>
+  <el keyword="BlobName" tag="2005xx37" vm="1" vr="LO">Blob Name</el>
+  <el keyword="ApplicationName" tag="2005xx38" vm="1" vr="LO">Application Name</el>
+  <el keyword="TypeName" tag="2005xx39" vm="1" vr="LO">Type Name</el>
+  <el keyword="VersionStr" tag="2005xx40" vm="1" vr="LO">Version String</el>
+  <el keyword="CommentStr" tag="2005xx41" vm="1" vr="LO">Comment String</el>
+  <el keyword="BlobInFile" tag="2005xx42" vm="1" vr="CS">Blob In File</el>
+  <el keyword="ActualBlobSize" tag="2005xx43" vm="1" vr="SL">Actual Blob Size</el>
+  <el keyword="BlobData" tag="2005xx44" vm="1" vr="OW">Blob Data</el>
+  <el keyword="BlobFilename" tag="2005xx45" vm="1" vr="LO">Blob Filename</el>
+  <el keyword="BlobOffset" tag="2005xx46" vm="1" vr="SL">Blob Offset</el>
+  <el keyword="BlobFlag" tag="2005xx47" vm="1" vr="CS">Blob Flag</el>
+  <el keyword="NumberOfRequestExcerpts" tag="2005xx99" vm="1" vr="UL">Number of Request Excerpts</el>
 </elements>

@@ -39,12 +39,12 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="ECGTimeMapDataBitsAllocated" tag="0019xx10" vm="1" vr="UN">?"</el>
-  <el keyword="ECGTimeMapDataBitsStored" tag="0019xx11" vm="1" vr="UN">?"</el>
-  <el keyword="ECGTimeMapDataHighBit" tag="0019xx12" vm="1" vr="UN">?"</el>
-  <el keyword="ECGTimeMapDataRepresentation" tag="0019xx13" vm="1" vr="UN">?"</el>
-  <el keyword="ECGTimeMapDataSmallestDataValue" tag="0019xx14" vm="1" vr="UN">?"</el>
-  <el keyword="ECGTimeMapDataLargestDataValue" tag="0019xx15" vm="1" vr="UN">?"</el>
-  <el keyword="ECGTimeMapDataNumberOfDataValues" tag="0019xx16" vm="1" vr="UN">?"</el>
-  <el keyword="ECGTimeMapData" tag="0019xx17" vm="1" vr="UN">?"</el>
+  <el keyword="ECGTimeMapDataBitsAllocated" tag="0019xx10" vm="1" vr="UN">?</el>
+  <el keyword="ECGTimeMapDataBitsStored" tag="0019xx11" vm="1" vr="UN">?</el>
+  <el keyword="ECGTimeMapDataHighBit" tag="0019xx12" vm="1" vr="UN">?</el>
+  <el keyword="ECGTimeMapDataRepresentation" tag="0019xx13" vm="1" vr="UN">?</el>
+  <el keyword="ECGTimeMapDataSmallestDataValue" tag="0019xx14" vm="1" vr="UN">?</el>
+  <el keyword="ECGTimeMapDataLargestDataValue" tag="0019xx15" vm="1" vr="UN">?</el>
+  <el keyword="ECGTimeMapDataNumberOfDataValues" tag="0019xx16" vm="1" vr="UN">?</el>
+  <el keyword="ECGTimeMapData" tag="0019xx17" vm="1" vr="UN">?</el>
 </elements>

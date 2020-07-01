@@ -39,170 +39,170 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="ImageAngulationAP" tag="2005xx00" vm="1" vr="FL">Image Angulation AP"</el>
-  <el keyword="ImageAngulationFH" tag="2005xx01" vm="1" vr="FL">Image Angulation FH"</el>
-  <el keyword="ImageAngulationRL" tag="2005xx02" vm="1" vr="FL">Image Angulation RL"</el>
-  <el keyword="ImageAnnotationCount" tag="2005xx03" vm="1" vr="IS">Image Annotation Count"</el>
-  <el keyword="ImageDisplayOrientation" tag="2005xx04" vm="1" vr="CS">Image Display Orientation"</el>
-  <el keyword="SynergyReconstructionType" tag="2005xx05" vm="1" vr="CS">Synergy Reconstruction Type"</el>
-  <el keyword="ImageLineCount" tag="2005xx07" vm="1" vr="IS">Image Line Count"</el>
-  <el keyword="ImageOffcenterAP" tag="2005xx08" vm="1" vr="FL">Image Offcenter AP"</el>
-  <el keyword="ImageOffcenterFH" tag="2005xx09" vm="1" vr="FL">Image Offcenter FH"</el>
-  <el keyword="ImageOffCentreRL" tag="2005xx0A" vm="1" vr="FL">Image OffCentre RL"</el>
-  <el keyword="MaxFP" tag="2005xx0B" vm="1" vr="FL">Max FP"</el>
-  <el keyword="MinFP" tag="2005xx0C" vm="1" vr="FL">Min FP"</el>
-  <el keyword="ScaleIntercept" tag="2005xx0D" vm="1" vr="FL">Scale Intercept"</el>
-  <el keyword="ScaleSlope" tag="2005xx0E" vm="1" vr="FL">Scale Slope"</el>
-  <el keyword="WindowCenter" tag="2005xx0F" vm="1" vr="DS">Window Center"</el>
-  <el keyword="WindowWidth" tag="2005xx10" vm="1" vr="DS">Window Width"</el>
-  <el keyword="ImageType" tag="2005xx11" vm="1-n" vr="CS">Image Type"</el>
-  <el keyword="CardiacGating" tag="2005xx12" vm="1" vr="CS">Cardiac Gating"</el>
-  <el keyword="DevelopmentMode" tag="2005xx13" vm="1" vr="CS">Development Mode"</el>
-  <el keyword="Diffusion" tag="2005xx14" vm="1" vr="CS">Diffusion"</el>
-  <el keyword="FatSaturation" tag="2005xx15" vm="1" vr="CS">Fat Saturation"</el>
-  <el keyword="FlowCompensation" tag="2005xx16" vm="1" vr="CS">Flow Compensation"</el>
-  <el keyword="FourierInterpolation" tag="2005xx17" vm="1" vr="CS">Fourier Interpolation"</el>
-  <el keyword="HardcopyProtocol" tag="2005xx18" vm="1" vr="LO">Hardcopy Protocol"</el>
-  <el keyword="InverseReconstructed" tag="2005xx19" vm="1" vr="CS">Inverse Reconstructed"</el>
-  <el keyword="LabelSyntax" tag="2005xx1A" vm="1" vr="SS">Label Syntax"</el>
-  <el keyword="MagnetizationPrepared" tag="2005xx1B" vm="1" vr="CS">Magnetization Prepared"</el>
-  <el keyword="MagnetizationTransferContrast" tag="2005xx1C" vm="1" vr="CS">Magnetization Transfer Contrast"</el>
-  <el keyword="MeasurementScanResolution" tag="2005xx1D" vm="1" vr="SS">Measurement Scan Resolution"</el>
-  <el keyword="MIPProtocol" tag="2005xx1E" vm="1" vr="SH">MIP Protocol"</el>
-  <el keyword="MPRProtocol" tag="2005xx1F" vm="1" vr="SH">MPR Protocol"</el>
-  <el keyword="NumberOfChemicalShifts" tag="2005xx20" vm="1" vr="SL">Number of Chemical Shifts"</el>
-  <el keyword="NumberOfMixes" tag="2005xx21" vm="1" vr="SS">Number of Mixes"</el>
-  <el keyword="NumberOfReferences" tag="2005xx22" vm="1" vr="IS">Number of References"</el>
-  <el keyword="NumberOfSlabs" tag="2005xx23" vm="1" vr="SS">Number of Slabs"</el>
-  <el keyword="NumberOfVolumes" tag="2005xx25" vm="1" vr="SS">Number of Volumes"</el>
-  <el keyword="OverSamplingPhase" tag="2005xx26" vm="1" vr="CS">Over Sampling Phase"</el>
-  <el keyword="PackageMode" tag="2005xx27" vm="1" vr="CS">Package Mode"</el>
-  <el keyword="PartialFourierFrequency" tag="2005xx28" vm="1" vr="CS">Partial Fourier Frequency"</el>
-  <el keyword="PartialFourierPhase" tag="2005xx29" vm="1" vr="CS">PartialFourierPhase"</el>
-  <el keyword="PatientReferenceID" tag="2005xx2A" vm="1" vr="IS">Patient Reference ID"</el>
-  <el keyword="PercentScanComplete" tag="2005xx2B" vm="1" vr="SS">Percent Scan Complete"</el>
-  <el keyword="PhaseEncodeReordering" tag="2005xx2C" vm="1" vr="CS">Phase Encode Reordering"</el>
-  <el keyword="PlanScanSurveyNumberOfImages" tag="2005xx2D" vm="1" vr="IS">PlanScan Survey Number of Images"</el>
-  <el keyword="PPGPPUGating" tag="2005xx2E" vm="1" vr="CS">PPG PPU Gating"</el>
-  <el keyword="SpatialPresaturation" tag="2005xx2F" vm="1" vr="CS">Spatial Presaturation"</el>
-  <el keyword="RepetitionTime" tag="2005xx30" vm="1-n" vr="FL">Repetition Time"</el>
-  <el keyword="RespiratoryGating" tag="2005xx31" vm="1" vr="CS">Respiratory Gating"</el>
-  <el keyword="SampleRepresentation" tag="2005xx32" vm="1" vr="CS">Sample Representation"</el>
-  <el keyword="AcquisitionDuration" tag="2005xx33" vm="1" vr="FL">Acquisition Duration"</el>
-  <el keyword="SegmentedKSpace" tag="2005xx34" vm="1" vr="CS">Segmented KSpace"</el>
-  <el keyword="DataType" tag="2005xx35" vm="1" vr="CS">Data Type"</el>
-  <el keyword="IsCardiac" tag="2005xx36" vm="1" vr="CS">Is Cardiac"</el>
-  <el keyword="IsSpectro" tag="2005xx37" vm="1" vr="CS">Is Spectro"</el>
-  <el keyword="Spoiled" tag="2005xx38" vm="1" vr="CS">Spoiled"</el>
-  <el keyword="SteadyState" tag="2005xx39" vm="1" vr="CS">Steady State"</el>
-  <el keyword="SubAnatomy" tag="2005xx3A" vm="1" vr="SH">Sub Anatomy"</el>
-  <el keyword="TimeReversedSteadyState" tag="2005xx3B" vm="1" vr="CS">Time Reversed Steady State"</el>
-  <el keyword="TiltOptimizedNonsaturatedExcitation" tag="2005xx3C" vm="1" vr="CS">Tilt Optimized Nonsaturated Excitation"</el>
-  <el keyword="NumberOfRRIntervalRanges" tag="2005xx3D" vm="1" vr="SS">Number of RR Interval Ranges"</el>
-  <el keyword="RRIntervalsDistribution" tag="2005xx3E" vm="1-n" vr="SL">RR Intervals Distribution"</el>
-  <el keyword="PlanScanAcquisitionNumber" tag="2005xx3F" vm="1" vr="SL">PlanScan Acquisition Number"</el>
-  <el keyword="PlanScanSurveyChemicalShiftNumber" tag="2005xx40" vm="1-n" vr="SL">PlanScan Survey Chemical Shift Number"</el>
-  <el keyword="PlanScanSurveyDynamicScanNumber" tag="2005xx41" vm="1-n" vr="SL">PlanScan Survey Dynamic Scan Number"</el>
-  <el keyword="PlanScanSurveyEchoNumber" tag="2005xx42" vm="1-n" vr="SL">PlanScan Survey Echo Number"</el>
-  <el keyword="PlanScanSurveyImageType" tag="2005xx43" vm="1-n" vr="CS">PlanScan Survey Image Type"</el>
-  <el keyword="PlanScanSurveyPhaseNumber" tag="2005xx44" vm="1-n" vr="SL">PlanScan Survey Phase Number"</el>
-  <el keyword="PlanScanSurveyReconstructionNumber" tag="2005xx45" vm="1-n" vr="SL">PlanScan Survey Reconstruction Number"</el>
-  <el keyword="PlanScanSurveyScanningSequence" tag="2005xx46" vm="1-n" vr="CS">PlanScan Survey Scanning Sequence"</el>
-  <el keyword="PlanScanSurveyCSliceNumber" tag="2005xx47" vm="1-n" vr="SL">PlanScan Survey Slice Number"</el>
-  <el keyword="ReferencedAcquisitionNumber" tag="2005xx48" vm="1-n" vr="IS">Referenced Acquisition Number"</el>
-  <el keyword="ReferencedChemicalShiftNumber" tag="2005xx49" vm="1-n" vr="IS">Referenced Chemical Shift Number"</el>
-  <el keyword="ReferenceDynamicScanNumber" tag="2005xx4A" vm="1-n" vr="IS">Referenced Dynamic Scan Number"</el>
-  <el keyword="ReferencedEchoNumber" tag="2005xx4B" vm="1-n" vr="IS">Referenced Echo Number"</el>
-  <el keyword="ReferencedEntity" tag="2005xx4C" vm="1-n" vr="CS">Referenced Entity"</el>
-  <el keyword="ReferencedImageType" tag="2005xx4D" vm="1-n" vr="CS">Referenced Image Type"</el>
-  <el keyword="SlabFOVRL" tag="2005xx4E" vm="1-n" vr="FL">Slab FOV RL"</el>
-  <el keyword="SlabOffcentreAP" tag="2005xx4F" vm="1-n" vr="FL">Slab Offcentre AP"</el>
-  <el keyword="SlabOffcentreFH" tag="2005xx50" vm="1-n" vr="FL">Slab Offcentre FH"</el>
-  <el keyword="SlabOffcentreRL" tag="2005xx51" vm="1-n" vr="FL">Slab Offcentre RL"</el>
-  <el keyword="SlabType" tag="2005xx52" vm="1-n" vr="CS">Slab Type"</el>
-  <el keyword="SlabViewAxis" tag="2005xx53" vm="1-n" vr="CS">Slab View Axis"</el>
-  <el keyword="VolumeAngulationAP" tag="2005xx54" vm="1-n" vr="FL">Volume Angulation AP"</el>
-  <el keyword="VolumeAngulationFH" tag="2005xx55" vm="1-n" vr="FL">Volume Angulation FH"</el>
-  <el keyword="VolumeAngulationRL" tag="2005xx56" vm="1-n" vr="FL">Volume Angulation RL"</el>
-  <el keyword="VolumeFOVAP" tag="2005xx57" vm="1-n" vr="FL">Volume FOV AP"</el>
-  <el keyword="VolumeFOVFH" tag="2005xx58" vm="1-n" vr="FL">Volume FOV FH"</el>
-  <el keyword="VolumeFOVRL" tag="2005xx59" vm="1-n" vr="FL">Volume FOV RL"</el>
-  <el keyword="VolumeOffcentreAP" tag="2005xx5A" vm="1-n" vr="FL">Volume Offcentre AP"</el>
-  <el keyword="VolumeOffcentreFH" tag="2005xx5B" vm="1-n" vr="FL">Volume Offcentre FH"</el>
-  <el keyword="VolumeOffcentreRL" tag="2005xx5C" vm="1-n" vr="FL">Volume Offcentre RL"</el>
-  <el keyword="VolumeType" tag="2005xx5D" vm="1-n" vr="CS">Volume Type"</el>
-  <el keyword="VolumeViewAxis" tag="2005xx5E" vm="1-n" vr="CS">Volume View Axis"</el>
-  <el keyword="StudyOrigin" tag="2005xx5F" vm="1" vr="CS">Study Origin"</el>
-  <el keyword="StudySequenceNumber" tag="2005xx60" vm="1" vr="IS">Study Sequence Number"</el>
-  <el keyword="PrepulseType" tag="2005xx61" vm="1" vr="CS">Prepulse Type"</el>
-  <el keyword="fMRIStatusIndication" tag="2005xx63" vm="1" vr="SS">fMRI Status Indication"</el>
-  <el keyword="ReferencePhaseNumber" tag="2005xx64" vm="1-n" vr="IS">Reference Phase Number"</el>
-  <el keyword="ReferenceReconstructionNumber" tag="2005xx65" vm="1-n" vr="IS">Reference Reconstruction Number"</el>
-  <el keyword="ReferenceScanningSequence" tag="2005xx66" vm="1-n" vr="CS">Reference Scanning Sequence"</el>
-  <el keyword="ReferenceSliceNumber" tag="2005xx67" vm="1-n" vr="IS">Reference Slice Number"</el>
-  <el keyword="ReferenceType" tag="2005xx68" vm="1-n" vr="CS">Reference Type"</el>
-  <el keyword="SlabAngulationAP" tag="2005xx69" vm="1-n" vr="FL">Slab Angulation AP"</el>
-  <el keyword="SlabAngulationFH" tag="2005xx6A" vm="1-n" vr="FL">Slab Angulation FH"</el>
-  <el keyword="SlabAngulationRL" tag="2005xx6B" vm="1-n" vr="FL">Slab Angulation RL"</el>
-  <el keyword="SlabFOVAP" tag="2005xx6C" vm="1-n" vr="FL">Slab FOV AP"</el>
-  <el keyword="SlabFOVFH" tag="2005xx6D" vm="1-n" vr="FL">Slab FOV FH"</el>
-  <el keyword="ScanningSequence" tag="2005xx6E" vm="1-n" vr="CS">Scanning Sequence"</el>
-  <el keyword="AcquisitionType" tag="2005xx6F" vm="1" vr="CS">Acquisition Type"</el>
-  <el keyword="HardcopyProtocolEV" tag="2005xx70" vm="1" vr="LO">Hardcopy Protocol EasyVision"</el>
-  <el keyword="StackAngulationAP" tag="2005xx71" vm="1-n" vr="FL">Stack Angulation AP"</el>
-  <el keyword="StackAngulationFH" tag="2005xx72" vm="1-n" vr="FL">Stack Angulation FH"</el>
-  <el keyword="StackAngulationRL" tag="2005xx73" vm="1-n" vr="FL">Stack Angulation RL"</el>
-  <el keyword="StackFOVAP" tag="2005xx74" vm="1-n" vr="FL">Stack FOV AP"</el>
-  <el keyword="StackFOVFH" tag="2005xx75" vm="1-n" vr="FL">Stack FOV FH"</el>
-  <el keyword="StackFOVRL" tag="2005xx76" vm="1-n" vr="FL">Stack FOV RL"</el>
-  <el keyword="StackOffcentreAP" tag="2005xx78" vm="1-n" vr="FL">Stack Offcentre AP"</el>
-  <el keyword="StackOffcentreFH" tag="2005xx79" vm="1-n" vr="FL">Stack Offcentre FH"</el>
-  <el keyword="StackOffcentreRL" tag="2005xx7A" vm="1-n" vr="FL">Stack Offcentre RL"</el>
-  <el keyword="StackPreparationDirection" tag="2005xx7B" vm="1-n" vr="CS">Stack Preparation Direction"</el>
-  <el keyword="StackSliceDistance" tag="2005xx7E" vm="1-n" vr="FL">Stack Slice Distance"</el>
-  <el keyword="SeriesPlanScan" tag="2005xx80" vm="1" vr="SQ">Series PlanScan"</el>
-  <el keyword="StackViewAxis" tag="2005xx81" vm="1-n" vr="CS">Stack View Axis"</el>
-  <el keyword="SeriesSlab" tag="2005xx83" vm="1" vr="SQ">Series Slab"</el>
-  <el keyword="SeriesReference" tag="2005xx84" vm="1" vr="SQ">Series Reference"</el>
-  <el keyword="SeriesVolume" tag="2005xx85" vm="1" vr="SQ">Series Volume"</el>
-  <el keyword="NumberOfGeometry" tag="2005xx86" vm="1" vr="SS">Number of Geometry"</el>
-  <el keyword="NumberOfGeometrySlices" tag="2005xx87" vm="1-n" vr="SL">Number of Geometry Slices"</el>
-  <el keyword="GeomAngulationAP" tag="2005xx88" vm="1-n" vr="FL">Geom Angulation AP"</el>
-  <el keyword="GeomAngulationFH" tag="2005xx89" vm="1-n" vr="FL">Geom Angulation FH"</el>
-  <el keyword="GeomAngulationRL" tag="2005xx8A" vm="1-n" vr="FL">Geom Angulation RL"</el>
-  <el keyword="GeomFOVAP" tag="2005xx8B" vm="1-n" vr="FL">Geom FOV AP"</el>
-  <el keyword="GeomFOVFH" tag="2005xx8C" vm="1-n" vr="FL">Geom FOV FH"</el>
-  <el keyword="GeomFOVRL" tag="2005xx8D" vm="1-n" vr="FL">Geom FOV RL"</el>
-  <el keyword="GeomOffCentreAP" tag="2005xx8E" vm="1-n" vr="FL">Geom OffCentre AP"</el>
-  <el keyword="GeomOffCentreFH" tag="2005xx8F" vm="1-n" vr="FL">Geom OffCentre FH"</el>
-  <el keyword="GeomOffCentreRL" tag="2005xx90" vm="1-n" vr="FL">Geom OffCentre RL"</el>
-  <el keyword="GeomPreparationDirect" tag="2005xx91" vm="1-n" vr="CS">Geom Preparation Direct"</el>
-  <el keyword="GeomRadialAngle" tag="2005xx92" vm="1-n" vr="FL">Geom Radial Angle"</el>
-  <el keyword="GeomRadialAxis" tag="2005xx93" vm="1-n" vr="CS">Geom Radial Axis"</el>
-  <el keyword="GeomSliceDistance" tag="2005xx94" vm="1-n" vr="FL">Geom Slice Distance"</el>
-  <el keyword="GeomSliceNumber" tag="2005xx95" vm="1-n" vr="SL">Geom Slice Number"</el>
-  <el keyword="GeomType" tag="2005xx96" vm="1-n" vr="CS">Geom Type"</el>
-  <el keyword="GeomViewAxis" tag="2005xx97" vm="1-n" vr="CS">Geom ViewA xis"</el>
-  <el keyword="GeomColour" tag="2005xx98" vm="1-n" vr="CS">Geom Colour"</el>
-  <el keyword="GeomApplicationType" tag="2005xx99" vm="1-n" vr="CS">Geom Application Type"</el>
-  <el keyword="GeomId" tag="2005xx9A" vm="1-n" vr="SL">Geom Id"</el>
-  <el keyword="GeomApplicationName" tag="2005xx9B" vm="1-n" vr="SH">Geom Application Name"</el>
-  <el keyword="GeomLabelName" tag="2005xx9C" vm="1-n" vr="SH">Geom Label Name"</el>
-  <el keyword="GeomLineStyle" tag="2005xx9D" vm="1-n" vr="CS">Geom Line Style"</el>
-  <el keyword="SeriesGeometry" tag="2005xx9E" vm="1" vr="SQ">Series Geometry"</el>
-  <el keyword="SpectralSelectiveExcitationPulse" tag="2005xx9F" vm="1" vr="CS">SeriesSpectral Selective Excitation Pulse"</el>
-  <el keyword="DynamicScanBeginTime" tag="2005xxA0" vm="1" vr="FL">Dynamic Scan Begin Time"</el>
-  <el keyword="SyncraScanType" tag="2005xxA1" vm="1" vr="CS">Syncra Scan Type"</el>
-  <el keyword="IsCOCA" tag="2005xxA2" vm="1" vr="CS">Is COCA"</el>
-  <el keyword="StackCoilID" tag="2005xxA3" vm="1" vr="IS">Stack Coil ID"</el>
-  <el keyword="StackCBBCoil1" tag="2005xxA4" vm="1" vr="IS">Stack CBB Coil 1"</el>
-  <el keyword="StackCBBCoil2" tag="2005xxA5" vm="1" vr="IS">Stack CBB Coil 2"</el>
-  <el keyword="StackChannelCombi" tag="2005xxA6" vm="1" vr="IS">Stack Channel Combination Bitmask"</el>
-  <el keyword="StackCoilConnection" tag="2005xxA7" vm="1" vr="CS">Stack Coil Connection"</el>
-  <el keyword="InversionTime" tag="2005xxA8" vm="1" vr="DS">Inversion Time"</el>
-  <el keyword="GeometryCorrection" tag="2005xxA9" vm="1" vr="CS">Geometry Correction"</el>
-  <el keyword="DiffusionDirectionRL" tag="2005xxB0" vm="1" vr="FL">Diffusion Direction RL"</el>
-  <el keyword="DiffusionDirectionAP" tag="2005xxB1" vm="1" vr="FL">Diffusion Direction AP"</el>
-  <el keyword="DiffusionDirectionFH" tag="2005xxB2" vm="1" vr="FL">Diffusion Direction FH"</el>
-  <el keyword="ScanSequence" tag="2005xxC0" vm="1" vr="CS">Scan Sequence"</el>
+  <el keyword="ImageAngulationAP" tag="2005xx00" vm="1" vr="FL">Image Angulation AP</el>
+  <el keyword="ImageAngulationFH" tag="2005xx01" vm="1" vr="FL">Image Angulation FH</el>
+  <el keyword="ImageAngulationRL" tag="2005xx02" vm="1" vr="FL">Image Angulation RL</el>
+  <el keyword="ImageAnnotationCount" tag="2005xx03" vm="1" vr="IS">Image Annotation Count</el>
+  <el keyword="ImageDisplayOrientation" tag="2005xx04" vm="1" vr="CS">Image Display Orientation</el>
+  <el keyword="SynergyReconstructionType" tag="2005xx05" vm="1" vr="CS">Synergy Reconstruction Type</el>
+  <el keyword="ImageLineCount" tag="2005xx07" vm="1" vr="IS">Image Line Count</el>
+  <el keyword="ImageOffcenterAP" tag="2005xx08" vm="1" vr="FL">Image Offcenter AP</el>
+  <el keyword="ImageOffcenterFH" tag="2005xx09" vm="1" vr="FL">Image Offcenter FH</el>
+  <el keyword="ImageOffCentreRL" tag="2005xx0A" vm="1" vr="FL">Image OffCentre RL</el>
+  <el keyword="MaxFP" tag="2005xx0B" vm="1" vr="FL">Max FP</el>
+  <el keyword="MinFP" tag="2005xx0C" vm="1" vr="FL">Min FP</el>
+  <el keyword="ScaleIntercept" tag="2005xx0D" vm="1" vr="FL">Scale Intercept</el>
+  <el keyword="ScaleSlope" tag="2005xx0E" vm="1" vr="FL">Scale Slope</el>
+  <el keyword="WindowCenter" tag="2005xx0F" vm="1" vr="DS">Window Center</el>
+  <el keyword="WindowWidth" tag="2005xx10" vm="1" vr="DS">Window Width</el>
+  <el keyword="ImageType" tag="2005xx11" vm="1-n" vr="CS">Image Type</el>
+  <el keyword="CardiacGating" tag="2005xx12" vm="1" vr="CS">Cardiac Gating</el>
+  <el keyword="DevelopmentMode" tag="2005xx13" vm="1" vr="CS">Development Mode</el>
+  <el keyword="Diffusion" tag="2005xx14" vm="1" vr="CS">Diffusion</el>
+  <el keyword="FatSaturation" tag="2005xx15" vm="1" vr="CS">Fat Saturation</el>
+  <el keyword="FlowCompensation" tag="2005xx16" vm="1" vr="CS">Flow Compensation</el>
+  <el keyword="FourierInterpolation" tag="2005xx17" vm="1" vr="CS">Fourier Interpolation</el>
+  <el keyword="HardcopyProtocol" tag="2005xx18" vm="1" vr="LO">Hardcopy Protocol</el>
+  <el keyword="InverseReconstructed" tag="2005xx19" vm="1" vr="CS">Inverse Reconstructed</el>
+  <el keyword="LabelSyntax" tag="2005xx1A" vm="1" vr="SS">Label Syntax</el>
+  <el keyword="MagnetizationPrepared" tag="2005xx1B" vm="1" vr="CS">Magnetization Prepared</el>
+  <el keyword="MagnetizationTransferContrast" tag="2005xx1C" vm="1" vr="CS">Magnetization Transfer Contrast</el>
+  <el keyword="MeasurementScanResolution" tag="2005xx1D" vm="1" vr="SS">Measurement Scan Resolution</el>
+  <el keyword="MIPProtocol" tag="2005xx1E" vm="1" vr="SH">MIP Protocol</el>
+  <el keyword="MPRProtocol" tag="2005xx1F" vm="1" vr="SH">MPR Protocol</el>
+  <el keyword="NumberOfChemicalShifts" tag="2005xx20" vm="1" vr="SL">Number of Chemical Shifts</el>
+  <el keyword="NumberOfMixes" tag="2005xx21" vm="1" vr="SS">Number of Mixes</el>
+  <el keyword="NumberOfReferences" tag="2005xx22" vm="1" vr="IS">Number of References</el>
+  <el keyword="NumberOfSlabs" tag="2005xx23" vm="1" vr="SS">Number of Slabs</el>
+  <el keyword="NumberOfVolumes" tag="2005xx25" vm="1" vr="SS">Number of Volumes</el>
+  <el keyword="OverSamplingPhase" tag="2005xx26" vm="1" vr="CS">Over Sampling Phase</el>
+  <el keyword="PackageMode" tag="2005xx27" vm="1" vr="CS">Package Mode</el>
+  <el keyword="PartialFourierFrequency" tag="2005xx28" vm="1" vr="CS">Partial Fourier Frequency</el>
+  <el keyword="PartialFourierPhase" tag="2005xx29" vm="1" vr="CS">PartialFourierPhase</el>
+  <el keyword="PatientReferenceID" tag="2005xx2A" vm="1" vr="IS">Patient Reference ID</el>
+  <el keyword="PercentScanComplete" tag="2005xx2B" vm="1" vr="SS">Percent Scan Complete</el>
+  <el keyword="PhaseEncodeReordering" tag="2005xx2C" vm="1" vr="CS">Phase Encode Reordering</el>
+  <el keyword="PlanScanSurveyNumberOfImages" tag="2005xx2D" vm="1" vr="IS">PlanScan Survey Number of Images</el>
+  <el keyword="PPGPPUGating" tag="2005xx2E" vm="1" vr="CS">PPG PPU Gating</el>
+  <el keyword="SpatialPresaturation" tag="2005xx2F" vm="1" vr="CS">Spatial Presaturation</el>
+  <el keyword="RepetitionTime" tag="2005xx30" vm="1-n" vr="FL">Repetition Time</el>
+  <el keyword="RespiratoryGating" tag="2005xx31" vm="1" vr="CS">Respiratory Gating</el>
+  <el keyword="SampleRepresentation" tag="2005xx32" vm="1" vr="CS">Sample Representation</el>
+  <el keyword="AcquisitionDuration" tag="2005xx33" vm="1" vr="FL">Acquisition Duration</el>
+  <el keyword="SegmentedKSpace" tag="2005xx34" vm="1" vr="CS">Segmented KSpace</el>
+  <el keyword="DataType" tag="2005xx35" vm="1" vr="CS">Data Type</el>
+  <el keyword="IsCardiac" tag="2005xx36" vm="1" vr="CS">Is Cardiac</el>
+  <el keyword="IsSpectro" tag="2005xx37" vm="1" vr="CS">Is Spectro</el>
+  <el keyword="Spoiled" tag="2005xx38" vm="1" vr="CS">Spoiled</el>
+  <el keyword="SteadyState" tag="2005xx39" vm="1" vr="CS">Steady State</el>
+  <el keyword="SubAnatomy" tag="2005xx3A" vm="1" vr="SH">Sub Anatomy</el>
+  <el keyword="TimeReversedSteadyState" tag="2005xx3B" vm="1" vr="CS">Time Reversed Steady State</el>
+  <el keyword="TiltOptimizedNonsaturatedExcitation" tag="2005xx3C" vm="1" vr="CS">Tilt Optimized Nonsaturated Excitation</el>
+  <el keyword="NumberOfRRIntervalRanges" tag="2005xx3D" vm="1" vr="SS">Number of RR Interval Ranges</el>
+  <el keyword="RRIntervalsDistribution" tag="2005xx3E" vm="1-n" vr="SL">RR Intervals Distribution</el>
+  <el keyword="PlanScanAcquisitionNumber" tag="2005xx3F" vm="1" vr="SL">PlanScan Acquisition Number</el>
+  <el keyword="PlanScanSurveyChemicalShiftNumber" tag="2005xx40" vm="1-n" vr="SL">PlanScan Survey Chemical Shift Number</el>
+  <el keyword="PlanScanSurveyDynamicScanNumber" tag="2005xx41" vm="1-n" vr="SL">PlanScan Survey Dynamic Scan Number</el>
+  <el keyword="PlanScanSurveyEchoNumber" tag="2005xx42" vm="1-n" vr="SL">PlanScan Survey Echo Number</el>
+  <el keyword="PlanScanSurveyImageType" tag="2005xx43" vm="1-n" vr="CS">PlanScan Survey Image Type</el>
+  <el keyword="PlanScanSurveyPhaseNumber" tag="2005xx44" vm="1-n" vr="SL">PlanScan Survey Phase Number</el>
+  <el keyword="PlanScanSurveyReconstructionNumber" tag="2005xx45" vm="1-n" vr="SL">PlanScan Survey Reconstruction Number</el>
+  <el keyword="PlanScanSurveyScanningSequence" tag="2005xx46" vm="1-n" vr="CS">PlanScan Survey Scanning Sequence</el>
+  <el keyword="PlanScanSurveyCSliceNumber" tag="2005xx47" vm="1-n" vr="SL">PlanScan Survey Slice Number</el>
+  <el keyword="ReferencedAcquisitionNumber" tag="2005xx48" vm="1-n" vr="IS">Referenced Acquisition Number</el>
+  <el keyword="ReferencedChemicalShiftNumber" tag="2005xx49" vm="1-n" vr="IS">Referenced Chemical Shift Number</el>
+  <el keyword="ReferenceDynamicScanNumber" tag="2005xx4A" vm="1-n" vr="IS">Referenced Dynamic Scan Number</el>
+  <el keyword="ReferencedEchoNumber" tag="2005xx4B" vm="1-n" vr="IS">Referenced Echo Number</el>
+  <el keyword="ReferencedEntity" tag="2005xx4C" vm="1-n" vr="CS">Referenced Entity</el>
+  <el keyword="ReferencedImageType" tag="2005xx4D" vm="1-n" vr="CS">Referenced Image Type</el>
+  <el keyword="SlabFOVRL" tag="2005xx4E" vm="1-n" vr="FL">Slab FOV RL</el>
+  <el keyword="SlabOffcentreAP" tag="2005xx4F" vm="1-n" vr="FL">Slab Offcentre AP</el>
+  <el keyword="SlabOffcentreFH" tag="2005xx50" vm="1-n" vr="FL">Slab Offcentre FH</el>
+  <el keyword="SlabOffcentreRL" tag="2005xx51" vm="1-n" vr="FL">Slab Offcentre RL</el>
+  <el keyword="SlabType" tag="2005xx52" vm="1-n" vr="CS">Slab Type</el>
+  <el keyword="SlabViewAxis" tag="2005xx53" vm="1-n" vr="CS">Slab View Axis</el>
+  <el keyword="VolumeAngulationAP" tag="2005xx54" vm="1-n" vr="FL">Volume Angulation AP</el>
+  <el keyword="VolumeAngulationFH" tag="2005xx55" vm="1-n" vr="FL">Volume Angulation FH</el>
+  <el keyword="VolumeAngulationRL" tag="2005xx56" vm="1-n" vr="FL">Volume Angulation RL</el>
+  <el keyword="VolumeFOVAP" tag="2005xx57" vm="1-n" vr="FL">Volume FOV AP</el>
+  <el keyword="VolumeFOVFH" tag="2005xx58" vm="1-n" vr="FL">Volume FOV FH</el>
+  <el keyword="VolumeFOVRL" tag="2005xx59" vm="1-n" vr="FL">Volume FOV RL</el>
+  <el keyword="VolumeOffcentreAP" tag="2005xx5A" vm="1-n" vr="FL">Volume Offcentre AP</el>
+  <el keyword="VolumeOffcentreFH" tag="2005xx5B" vm="1-n" vr="FL">Volume Offcentre FH</el>
+  <el keyword="VolumeOffcentreRL" tag="2005xx5C" vm="1-n" vr="FL">Volume Offcentre RL</el>
+  <el keyword="VolumeType" tag="2005xx5D" vm="1-n" vr="CS">Volume Type</el>
+  <el keyword="VolumeViewAxis" tag="2005xx5E" vm="1-n" vr="CS">Volume View Axis</el>
+  <el keyword="StudyOrigin" tag="2005xx5F" vm="1" vr="CS">Study Origin</el>
+  <el keyword="StudySequenceNumber" tag="2005xx60" vm="1" vr="IS">Study Sequence Number</el>
+  <el keyword="PrepulseType" tag="2005xx61" vm="1" vr="CS">Prepulse Type</el>
+  <el keyword="fMRIStatusIndication" tag="2005xx63" vm="1" vr="SS">fMRI Status Indication</el>
+  <el keyword="ReferencePhaseNumber" tag="2005xx64" vm="1-n" vr="IS">Reference Phase Number</el>
+  <el keyword="ReferenceReconstructionNumber" tag="2005xx65" vm="1-n" vr="IS">Reference Reconstruction Number</el>
+  <el keyword="ReferenceScanningSequence" tag="2005xx66" vm="1-n" vr="CS">Reference Scanning Sequence</el>
+  <el keyword="ReferenceSliceNumber" tag="2005xx67" vm="1-n" vr="IS">Reference Slice Number</el>
+  <el keyword="ReferenceType" tag="2005xx68" vm="1-n" vr="CS">Reference Type</el>
+  <el keyword="SlabAngulationAP" tag="2005xx69" vm="1-n" vr="FL">Slab Angulation AP</el>
+  <el keyword="SlabAngulationFH" tag="2005xx6A" vm="1-n" vr="FL">Slab Angulation FH</el>
+  <el keyword="SlabAngulationRL" tag="2005xx6B" vm="1-n" vr="FL">Slab Angulation RL</el>
+  <el keyword="SlabFOVAP" tag="2005xx6C" vm="1-n" vr="FL">Slab FOV AP</el>
+  <el keyword="SlabFOVFH" tag="2005xx6D" vm="1-n" vr="FL">Slab FOV FH</el>
+  <el keyword="ScanningSequence" tag="2005xx6E" vm="1-n" vr="CS">Scanning Sequence</el>
+  <el keyword="AcquisitionType" tag="2005xx6F" vm="1" vr="CS">Acquisition Type</el>
+  <el keyword="HardcopyProtocolEV" tag="2005xx70" vm="1" vr="LO">Hardcopy Protocol EasyVision</el>
+  <el keyword="StackAngulationAP" tag="2005xx71" vm="1-n" vr="FL">Stack Angulation AP</el>
+  <el keyword="StackAngulationFH" tag="2005xx72" vm="1-n" vr="FL">Stack Angulation FH</el>
+  <el keyword="StackAngulationRL" tag="2005xx73" vm="1-n" vr="FL">Stack Angulation RL</el>
+  <el keyword="StackFOVAP" tag="2005xx74" vm="1-n" vr="FL">Stack FOV AP</el>
+  <el keyword="StackFOVFH" tag="2005xx75" vm="1-n" vr="FL">Stack FOV FH</el>
+  <el keyword="StackFOVRL" tag="2005xx76" vm="1-n" vr="FL">Stack FOV RL</el>
+  <el keyword="StackOffcentreAP" tag="2005xx78" vm="1-n" vr="FL">Stack Offcentre AP</el>
+  <el keyword="StackOffcentreFH" tag="2005xx79" vm="1-n" vr="FL">Stack Offcentre FH</el>
+  <el keyword="StackOffcentreRL" tag="2005xx7A" vm="1-n" vr="FL">Stack Offcentre RL</el>
+  <el keyword="StackPreparationDirection" tag="2005xx7B" vm="1-n" vr="CS">Stack Preparation Direction</el>
+  <el keyword="StackSliceDistance" tag="2005xx7E" vm="1-n" vr="FL">Stack Slice Distance</el>
+  <el keyword="SeriesPlanScan" tag="2005xx80" vm="1" vr="SQ">Series PlanScan</el>
+  <el keyword="StackViewAxis" tag="2005xx81" vm="1-n" vr="CS">Stack View Axis</el>
+  <el keyword="SeriesSlab" tag="2005xx83" vm="1" vr="SQ">Series Slab</el>
+  <el keyword="SeriesReference" tag="2005xx84" vm="1" vr="SQ">Series Reference</el>
+  <el keyword="SeriesVolume" tag="2005xx85" vm="1" vr="SQ">Series Volume</el>
+  <el keyword="NumberOfGeometry" tag="2005xx86" vm="1" vr="SS">Number of Geometry</el>
+  <el keyword="NumberOfGeometrySlices" tag="2005xx87" vm="1-n" vr="SL">Number of Geometry Slices</el>
+  <el keyword="GeomAngulationAP" tag="2005xx88" vm="1-n" vr="FL">Geom Angulation AP</el>
+  <el keyword="GeomAngulationFH" tag="2005xx89" vm="1-n" vr="FL">Geom Angulation FH</el>
+  <el keyword="GeomAngulationRL" tag="2005xx8A" vm="1-n" vr="FL">Geom Angulation RL</el>
+  <el keyword="GeomFOVAP" tag="2005xx8B" vm="1-n" vr="FL">Geom FOV AP</el>
+  <el keyword="GeomFOVFH" tag="2005xx8C" vm="1-n" vr="FL">Geom FOV FH</el>
+  <el keyword="GeomFOVRL" tag="2005xx8D" vm="1-n" vr="FL">Geom FOV RL</el>
+  <el keyword="GeomOffCentreAP" tag="2005xx8E" vm="1-n" vr="FL">Geom OffCentre AP</el>
+  <el keyword="GeomOffCentreFH" tag="2005xx8F" vm="1-n" vr="FL">Geom OffCentre FH</el>
+  <el keyword="GeomOffCentreRL" tag="2005xx90" vm="1-n" vr="FL">Geom OffCentre RL</el>
+  <el keyword="GeomPreparationDirect" tag="2005xx91" vm="1-n" vr="CS">Geom Preparation Direct</el>
+  <el keyword="GeomRadialAngle" tag="2005xx92" vm="1-n" vr="FL">Geom Radial Angle</el>
+  <el keyword="GeomRadialAxis" tag="2005xx93" vm="1-n" vr="CS">Geom Radial Axis</el>
+  <el keyword="GeomSliceDistance" tag="2005xx94" vm="1-n" vr="FL">Geom Slice Distance</el>
+  <el keyword="GeomSliceNumber" tag="2005xx95" vm="1-n" vr="SL">Geom Slice Number</el>
+  <el keyword="GeomType" tag="2005xx96" vm="1-n" vr="CS">Geom Type</el>
+  <el keyword="GeomViewAxis" tag="2005xx97" vm="1-n" vr="CS">Geom ViewA xis</el>
+  <el keyword="GeomColour" tag="2005xx98" vm="1-n" vr="CS">Geom Colour</el>
+  <el keyword="GeomApplicationType" tag="2005xx99" vm="1-n" vr="CS">Geom Application Type</el>
+  <el keyword="GeomId" tag="2005xx9A" vm="1-n" vr="SL">Geom Id</el>
+  <el keyword="GeomApplicationName" tag="2005xx9B" vm="1-n" vr="SH">Geom Application Name</el>
+  <el keyword="GeomLabelName" tag="2005xx9C" vm="1-n" vr="SH">Geom Label Name</el>
+  <el keyword="GeomLineStyle" tag="2005xx9D" vm="1-n" vr="CS">Geom Line Style</el>
+  <el keyword="SeriesGeometry" tag="2005xx9E" vm="1" vr="SQ">Series Geometry</el>
+  <el keyword="SpectralSelectiveExcitationPulse" tag="2005xx9F" vm="1" vr="CS">SeriesSpectral Selective Excitation Pulse</el>
+  <el keyword="DynamicScanBeginTime" tag="2005xxA0" vm="1" vr="FL">Dynamic Scan Begin Time</el>
+  <el keyword="SyncraScanType" tag="2005xxA1" vm="1" vr="CS">Syncra Scan Type</el>
+  <el keyword="IsCOCA" tag="2005xxA2" vm="1" vr="CS">Is COCA</el>
+  <el keyword="StackCoilID" tag="2005xxA3" vm="1" vr="IS">Stack Coil ID</el>
+  <el keyword="StackCBBCoil1" tag="2005xxA4" vm="1" vr="IS">Stack CBB Coil 1</el>
+  <el keyword="StackCBBCoil2" tag="2005xxA5" vm="1" vr="IS">Stack CBB Coil 2</el>
+  <el keyword="StackChannelCombi" tag="2005xxA6" vm="1" vr="IS">Stack Channel Combination Bitmask</el>
+  <el keyword="StackCoilConnection" tag="2005xxA7" vm="1" vr="CS">Stack Coil Connection</el>
+  <el keyword="InversionTime" tag="2005xxA8" vm="1" vr="DS">Inversion Time</el>
+  <el keyword="GeometryCorrection" tag="2005xxA9" vm="1" vr="CS">Geometry Correction</el>
+  <el keyword="DiffusionDirectionRL" tag="2005xxB0" vm="1" vr="FL">Diffusion Direction RL</el>
+  <el keyword="DiffusionDirectionAP" tag="2005xxB1" vm="1" vr="FL">Diffusion Direction AP</el>
+  <el keyword="DiffusionDirectionFH" tag="2005xxB2" vm="1" vr="FL">Diffusion Direction FH</el>
+  <el keyword="ScanSequence" tag="2005xxC0" vm="1" vr="CS">Scan Sequence</el>
 </elements>

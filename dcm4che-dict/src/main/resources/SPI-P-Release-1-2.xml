@@ -39,9 +39,9 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="SubtractionMaskID" tag="0029xx00" vm="1" vr="LT">Subtraction Mask ID"</el>
-  <el keyword="MaskingFunction" tag="0029xx04" vm="1" vr="UN">Masking Function"</el>
-  <el keyword="ProprietaryMaskingParameters" tag="0029xx0C" vm="1" vr="UN">Proprietary Masking Parameters"</el>
-  <el keyword="SubtractionMaskEnableStatus" tag="0029xx1E" vm="1" vr="CS">Subtraction Mask Enable Status"</el>
-  <el keyword="SubtractionMaskSelectStatus" tag="0029xx1F" vm="1" vr="CS">Subtraction Mask Select Status"</el>
+  <el keyword="SubtractionMaskID" tag="0029xx00" vm="1" vr="LT">Subtraction Mask ID</el>
+  <el keyword="MaskingFunction" tag="0029xx04" vm="1" vr="UN">Masking Function</el>
+  <el keyword="ProprietaryMaskingParameters" tag="0029xx0C" vm="1" vr="UN">Proprietary Masking Parameters</el>
+  <el keyword="SubtractionMaskEnableStatus" tag="0029xx1E" vm="1" vr="CS">Subtraction Mask Enable Status</el>
+  <el keyword="SubtractionMaskSelectStatus" tag="0029xx1F" vm="1" vr="CS">Subtraction Mask Select Status</el>
 </elements>

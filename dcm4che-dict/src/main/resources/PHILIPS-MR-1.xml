@@ -39,8 +39,8 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="ChemicalShiftNumber" tag="0019xx11" vm="1" vr="IS">Chemical Shift Number"</el>
-  <el keyword="PhaseNumber" tag="0019xx12" vm="1" vr="IS">Phase Number"</el>
-  <el keyword="ReconstructionNumber" tag="0021xx01" vm="1" vr="IS">Reconstruction Number"</el>
-  <el keyword="SliceNumber" tag="0021xx02" vm="1" vr="IS">Slice Number"</el>
+  <el keyword="ChemicalShiftNumber" tag="0019xx11" vm="1" vr="IS">Chemical Shift Number</el>
+  <el keyword="PhaseNumber" tag="0019xx12" vm="1" vr="IS">Phase Number</el>
+  <el keyword="ReconstructionNumber" tag="0021xx01" vm="1" vr="IS">Reconstruction Number</el>
+  <el keyword="SliceNumber" tag="0021xx02" vm="1" vr="IS">Slice Number</el>
 </elements>

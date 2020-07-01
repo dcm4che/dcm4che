@@ -39,6 +39,6 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="_0009_xx08_" tag="0009xx08" vm="1" vr="CS">?"</el>
-  <el keyword="_0009_xx10_" tag="0009xx10" vm="1" vr="LO">?"</el>
+  <el keyword="_0009_xx08_" tag="0009xx08" vm="1" vr="CS">?</el>
+  <el keyword="_0009_xx10_" tag="0009xx10" vm="1" vr="LO">?</el>
 </elements>

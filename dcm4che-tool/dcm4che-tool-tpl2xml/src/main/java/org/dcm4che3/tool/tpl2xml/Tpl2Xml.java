@@ -251,8 +251,8 @@ public class Tpl2Xml {
         DictionaryElement(String[] fields) {
             this.vr = fields[2].substring(4);
             this.vm = fields[3].substring(4);
-            this.value = fields[6].substring(6);
-            setTagAndKeyword(fields[0], fields[5].substring(9));;
+            this.value = fields[6].substring(6, fields[6].length() - 1);
+            setTagAndKeyword(fields[0], fields[5].substring(9));
         }
 
         String getVr() {

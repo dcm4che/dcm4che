@@ -39,8 +39,8 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="_4001_xx00_" tag="4001xx00" vm="1" vr="SQ">?</el>
-  <el keyword="_4001_xx01_" tag="4001xx01" vm="1" vr="CS">?"</el>
-  <el keyword="_4001_xx08_" tag="4001xx08" vm="1" vr="CS">?"</el>
-  <el keyword="_4001_xx09_" tag="4001xx09" vm="1" vr="CS">?"</el>
+  <el keyword="_4001_xx00_" tag="4001xx00" vm="1" vr="SQ"/>
+  <el keyword="_4001_xx01_" tag="4001xx01" vm="1" vr="CS">?</el>
+  <el keyword="_4001_xx08_" tag="4001xx08" vm="1" vr="CS">?</el>
+  <el keyword="_4001_xx09_" tag="4001xx09" vm="1" vr="CS">?</el>
 </elements>

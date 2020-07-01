@@ -39,6 +39,6 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="AttenuationThreshold" tag="7051xx01" vm="1" vr="DS">Attenuation Threshold"</el>
-  <el keyword="DLPEstimate" tag="7051xx02" vm="1" vr="DS">DLPEstimate"</el>
+  <el keyword="AttenuationThreshold" tag="7051xx01" vm="1" vr="DS">Attenuation Threshold</el>
+  <el keyword="DLPEstimate" tag="7051xx02" vm="1" vr="DS">DLPEstimate</el>
 </elements>

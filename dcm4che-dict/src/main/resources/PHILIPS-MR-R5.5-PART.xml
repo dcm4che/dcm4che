@@ -39,5 +39,5 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="FieldOfView" tag="0019xx00" vm="1" vr="DS">Field of View</el>
+  <el keyword="FieldOfView" tag="0019xx00" vm="1" vr="DS">Field of Vie</el>
 </elements>

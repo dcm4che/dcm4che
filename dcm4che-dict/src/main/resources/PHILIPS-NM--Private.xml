@@ -39,21 +39,21 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="CurrentSegment" tag="7051xx00" vm="1" vr="US">Current Segment"</el>
-  <el keyword="NumberOfSegments" tag="7051xx01" vm="1" vr="US">Number of Segments"</el>
-  <el keyword="SegmentStartPosition" tag="7051xx02" vm="1" vr="FL">Segment Start Position"</el>
-  <el keyword="SegmentStopPosition" tag="7051xx03" vm="1" vr="FL">Segment Stop Position"</el>
-  <el keyword="RelativeCOROffsetXDirection" tag="7051xx04" vm="1" vr="FL">Relative COR offset - X direction"</el>
-  <el keyword="RelativeCOROffsetZDirection" tag="7051xx05" vm="1" vr="FL">Relative COR offset - Z direction"</el>
-  <el keyword="CurrentRotationNumber" tag="7051xx06" vm="1" vr="US">Current Rotation Number"</el>
-  <el keyword="NumberOfRotations" tag="7051xx07" vm="1" vr="US">Number of Rotations"</el>
-  <el keyword="AlignmentTranslations" tag="7051xx10" vm="1-n" vr="DS">Alignment Translations"</el>
-  <el keyword="AlignmentRotations" tag="7051xx11" vm="1-n" vr="DS">Alignment Rotations"</el>
-  <el keyword="AlignmentTimestamp" tag="7051xx12" vm="1" vr="DS">Alignment Timestamp"</el>
-  <el keyword="RelatedXraySeriesInstanceUID" tag="7051xx15" vm="1" vr="UI">Related Xray Series Instance UID"</el>
-  <el keyword="_7051_xx25_" tag="7051xx25" vm="1" vr="LO">?"</el>
-  <el keyword="_7051_xx26_" tag="7051xx26" vm="1" vr="DS">?"</el>
-  <el keyword="_7051_xx27_" tag="7051xx27" vm="1" vr="IS">?"</el>
-  <el keyword="_7051_xx28_" tag="7051xx28" vm="1" vr="IS">?"</el>
-  <el keyword="_7051_xx29_" tag="7051xx29" vm="1" vr="IS">?"</el>
+  <el keyword="CurrentSegment" tag="7051xx00" vm="1" vr="US">Current Segment</el>
+  <el keyword="NumberOfSegments" tag="7051xx01" vm="1" vr="US">Number of Segments</el>
+  <el keyword="SegmentStartPosition" tag="7051xx02" vm="1" vr="FL">Segment Start Position</el>
+  <el keyword="SegmentStopPosition" tag="7051xx03" vm="1" vr="FL">Segment Stop Position</el>
+  <el keyword="RelativeCOROffsetXDirection" tag="7051xx04" vm="1" vr="FL">Relative COR offset - X direction</el>
+  <el keyword="RelativeCOROffsetZDirection" tag="7051xx05" vm="1" vr="FL">Relative COR offset - Z direction</el>
+  <el keyword="CurrentRotationNumber" tag="7051xx06" vm="1" vr="US">Current Rotation Number</el>
+  <el keyword="NumberOfRotations" tag="7051xx07" vm="1" vr="US">Number of Rotations</el>
+  <el keyword="AlignmentTranslations" tag="7051xx10" vm="1-n" vr="DS">Alignment Translations</el>
+  <el keyword="AlignmentRotations" tag="7051xx11" vm="1-n" vr="DS">Alignment Rotations</el>
+  <el keyword="AlignmentTimestamp" tag="7051xx12" vm="1" vr="DS">Alignment Timestamp</el>
+  <el keyword="RelatedXraySeriesInstanceUID" tag="7051xx15" vm="1" vr="UI">Related Xray Series Instance UID</el>
+  <el keyword="_7051_xx25_" tag="7051xx25" vm="1" vr="LO">?</el>
+  <el keyword="_7051_xx26_" tag="7051xx26" vm="1" vr="DS">?</el>
+  <el keyword="_7051_xx27_" tag="7051xx27" vm="1" vr="IS">?</el>
+  <el keyword="_7051_xx28_" tag="7051xx28" vm="1" vr="IS">?</el>
+  <el keyword="_7051_xx29_" tag="7051xx29" vm="1" vr="IS">?</el>
 </elements>

@@ -12,44 +12,6 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
- *
- * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2010
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
-
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
@@ -99,56 +61,90 @@ public class SpecificCharacterSet {
     public static final SpecificCharacterSet ASCII = new SpecificCharacterSet(new Codec[]{Codec.ISO_646});
 
     private static SpecificCharacterSet DEFAULT = ASCII;
-    private static ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = new ThreadLocal<SoftReference<Encoder>>();
-    private static ThreadLocal<SoftReference<Encoder>> cachedEncoder2 = new ThreadLocal<SoftReference<Encoder>>();
+    private static final ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = new ThreadLocal<SoftReference<Encoder>>();
+    private static final ThreadLocal<SoftReference<Encoder>> cachedEncoder2 = new ThreadLocal<SoftReference<Encoder>>();
 
     protected final Codec[] codecs;
     protected final String[] dicomCodes;
 
     private enum Codec {
-        ISO_646("US-ASCII", true, 0x2842, 0, 1),
-        ISO_8859_1("ISO-8859-1", true, 0x2842, 0x2d41, 1),
-        ISO_8859_2("ISO-8859-2", true, 0x2842, 0x2d42, 1),
-        ISO_8859_3("ISO-8859-3", true, 0x2842, 0x2d43, 1),
-        ISO_8859_4("ISO-8859-4", true, 0x2842, 0x2d44, 1),
-        ISO_8859_5("ISO-8859-5", true, 0x2842, 0x2d4c, 1),
-        ISO_8859_6("ISO-8859-6", true, 0x2842, 0x2d47, 1),
-        ISO_8859_7("ISO-8859-7", true, 0x2842, 0x2d46, 1),
-        ISO_8859_8("ISO-8859-8", true, 0x2842, 0x2d48, 1),
-        ISO_8859_9("ISO-8859-9", true, 0x2842, 0x2d4d, 1),
-        JIS_X_201("JIS_X0201", true, 0x284a, 0x2949, 1) {
+        ISO_646(true, 0x2842, 0, 1),
+        ISO_8859_1(true, 0x2842, 0x2d41, 1),
+        ISO_8859_2(true, 0x2842, 0x2d42, 1),
+        ISO_8859_3(true, 0x2842, 0x2d43, 1),
+        ISO_8859_4(true, 0x2842, 0x2d44, 1),
+        ISO_8859_5(true, 0x2842, 0x2d4c, 1),
+        ISO_8859_6(true, 0x2842, 0x2d47, 1),
+        ISO_8859_7(true, 0x2842, 0x2d46, 1),
+        ISO_8859_8(true, 0x2842, 0x2d48, 1),
+        ISO_8859_9(true, 0x2842, 0x2d4d, 1),
+        JIS_X_201(true, 0x284a, 0x2949, 1) {
             @Override
             public String toText(String s) {
                 return s.replace('\\', '¥');
             }
         },
-        TIS_620("TIS-620", true, 0x2842, 0x2d54, 1),
-        JIS_X_208("x-JIS0208", false, 0x2442, 0, 1),
-        JIS_X_212("JIS_X0212-1990", false, 0x242844, 0, 2),
-        KS_X_1001("EUC-KR", false, 0x2842, 0x242943, -1),
-        GB2312("GB2312", false, 0x2842, 0x242941, -1),
-        UTF_8("UTF-8", true, 0, 0, -1),
-        GB18030("GB18030", false, 0, 0, -1);
+        TIS_620(true, 0x2842, 0x2d54, 1),
+        JIS_X_208(false, 0x2442, 0, 1),
+        JIS_X_212(false, 0x242844, 0, 2),
+        KS_X_1001(false, 0x2842, 0x242943, -1),
+        GB2312(false, 0x2842, 0x242941, -1),
+        UTF_8(true, 0, 0, -1),
+        GB18030(false, 0, 0, -1);
 
-        private final String charsetName;
+        private static final String[] charsetNames = resetCharsetNames(new String[18]);
         private final boolean containsASCII;
         private final int escSeq0;
         private final int escSeq1;
         private final int bytesPerChar;
 
-        Codec(String charsetName, boolean containsASCII, int escSeq0, int escSeq1, int bytesPerChar) {
-            this.charsetName = charsetName;
+        Codec(boolean containsASCII, int escSeq0, int escSeq1, int bytesPerChar) {
             this.containsASCII = containsASCII;
             this.escSeq0 = escSeq0;
             this.escSeq1 = escSeq1;
             this.bytesPerChar = bytesPerChar;
         }
 
-        public static Codec forCode(String code) {
-            if (code == null)
-                return SpecificCharacterSet.DEFAULT.codecs[0];
+        private static void resetCharsetNames() {
+            resetCharsetNames(charsetNames);
+        }
 
-            switch(code) {
+        private static String[] resetCharsetNames(String[] charsetNames) {
+            charsetNames[0] = "US-ASCII";
+            charsetNames[1] = "ISO-8859-1";
+            charsetNames[2] = "ISO-8859-2";
+            charsetNames[3] = "ISO-8859-3";
+            charsetNames[4] = "ISO-8859-4";
+            charsetNames[5] = "ISO-8859-5";
+            charsetNames[6] = "ISO-8859-6";
+            charsetNames[7] = "ISO-8859-7";
+            charsetNames[8] = "ISO-8859-8";
+            charsetNames[9] = "ISO-8859-9";
+            charsetNames[10] = "JIS_X0201";
+            charsetNames[11] = "TIS-620";
+            charsetNames[12] = "x-JIS0208";
+            charsetNames[13] = "JIS_X0212-1990";
+            charsetNames[14] = "EUC-KR";
+            charsetNames[15] = "GB2312";
+            charsetNames[16] = "UTF-8";
+            charsetNames[17] = "GB18030";
+            return charsetNames;
+        }
+
+        public static Codec forCode(String code) {
+            return forCode(code, SpecificCharacterSet.DEFAULT.codecs[0]);
+        }
+
+        private static Codec forCodeChecked(String code) {
+            Codec codec = forCode(code, null);
+            if (codec == null)
+                throw new IllegalArgumentException("No such Specific Character Set Code: " + code);
+            return codec;
+        }
+
+        private static Codec forCode(String code, Codec defCodec) {
+            switch(code != null ? code : "") {
+                case "":
                 case "ISO 2022 IR 6":
                     return SpecificCharacterSet.DEFAULT.codecs[0];
                 case "ISO_IR 100":
@@ -198,20 +194,28 @@ public class SpecificCharacterSet {
                 case "GBK":
                     return Codec.GB18030;
             }
-            return SpecificCharacterSet.DEFAULT.codecs[0];
+            return defCodec;
         }
 
         public byte[] encode(String val) {
             try {
-                return val.getBytes(charsetName);
+                return val.getBytes(charsetName());
             } catch (UnsupportedEncodingException e) {
                 throw new AssertionError(e);
             }
         }
 
+        private String charsetName() {
+            return charsetNames[ordinal()];
+        }
+
+        private void setCharsetName(String charsetName) {
+            charsetNames[ordinal()] = charsetName;
+        }
+
         public String decode(byte[] b, int off, int len) {
             try {
-                return new String(b, off, len, charsetName);
+                return new String(b, off, len, charsetName());
             } catch (UnsupportedEncodingException e) {
                 throw new AssertionError(e);
             }
@@ -244,7 +248,7 @@ public class SpecificCharacterSet {
  
         public Encoder(Codec codec) {
             this.codec = codec;
-            this.encoder = Charset.forName(codec.charsetName).newEncoder();
+            this.encoder = Charset.forName(codec.charsetName()).newEncoder();
         }
 
         public boolean encode(CharBuffer cb, ByteBuffer bb, int escSeq,
@@ -500,6 +504,101 @@ public class SpecificCharacterSet {
         DEFAULT = cs;
     }
 
+    /**
+     * Overwrites mapping of value of DICOM Specific Character Set (0008,0005) to named charset.
+     *
+     * For example, {@code SpecificCharacterSet.setCharsetNameMapping("ISO_IR 100", "ISO-8859-15")} associates
+     * ISO-8859-15 (Latin-9), {@code SpecificCharacterSet.setCharsetNameMapping("ISO_IR 100", "windows-1252")}
+     * Windows-1252 (CP-1252), with DICOM Specific Character Set (0008,0005) code value {@code ISO_IR 100} -
+     * replacing the default mapping to ISO-8859-1 (Latin-1) - were both (ISO-8859-15 and Windows-1252)
+     * containing characters Š/š and Ž/ž not included in Latin-1, but used in Estonian and Finnish for
+     * transcribing foreign names.
+     *
+     * @param  code
+     *         value of DICOM Specific Character Set (0008,0005)
+     * @param  charsetName
+     *         The name of the mapped charset
+     *
+     * @throws  IllegalCharsetNameException
+     *          If the given code or charset name is illegal
+     *
+     * @throws  IllegalArgumentException
+     *          If the given {@code charsetName} is null
+     *
+     * @throws  UnsupportedCharsetException
+     *          If no support for the named charset is available
+     *          in this instance of the Java virtual machine
+     */
+    public static void setCharsetNameMapping(String code, String charsetName) {
+        Codec.forCodeChecked(code).setCharsetName(checkCharsetName(charsetName));
+    }
+
+    /**
+     * Reset mapping of DICOM Specific Character Set (0008,0005) values to named charsets as specified by
+     * <a href="http://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.12.html#table_C.12-2">
+     * DICOM PS 3.3 Table C.12-2</a>.
+     *
+     * <table>
+     * <tr>
+     * <th>Code String</th>
+     * <th>Charset Name</th>
+     * </tr>
+     * </thead>
+     * <tbody>
+     * <tr><td>_empty_</td>
+     *     <td>{@code US-ASCII}</td></tr>
+     * <tr><td>{@code ISO_IR 100}</td>
+     *     <td>{@code ISO-8859-1}</td></tr>
+     * <tr><td>{@code ISO_IR 101}</td>
+     *     <td>{@code ISO-8859-2}</td></tr>
+     * <tr><td>{@code ISO_IR 109}</td>
+     *     <td>{@code ISO-8859-3}</td></tr>
+     * <tr><td>{@code ISO_IR 110}</td>
+     *     <td>{@code ISO-8859-4}</td></tr>
+     * <tr><td>{@code ISO_IR 144}</td>
+     *     <td>{@code ISO-8859-5}</td></tr>
+     * <tr><td>{@code ISO_IR 127}</td>
+     *     <td>{@code ISO-8859-6}</td></tr>
+     * <tr><td>{@code ISO_IR 126}</td>
+     *     <td>{@code ISO-8859-7}</td></tr>
+     * <tr><td>{@code ISO_IR 138}</td>
+     *     <td>{@code ISO-8859-8}</td></tr>
+     * <tr><td>{@code ISO_IR 148}</td>
+     *     <td>{@code ISO-8859-9}</td></tr>
+     * <tr><td>{@code ISO_IR 13}</td>
+     *     <td>{@code JIS_X0201}</td></tr>
+     * <tr><td>{@code ISO_IR 166}</td>
+     *     <td>{@code TIS-620}</td></tr>
+     * <tr><td>{@code ISO 2022 IR 87}</td>
+     *     <td>{@code x-JIS0208}</td></tr>
+     * <tr><td>{@code ISO 2022 IR 159}</td>
+     *     <td>{@code JIS_X0212-1990}</td></tr>
+     * <tr><td>{@codeISO 2022 IR 149 }</td>
+     *     <td>{@code EUC-KR}</td></tr>
+     * <tr><td>{@code ISO 2022 IR 58}</td>
+     *     <td>{@code GB2312}</td></tr>
+     * <tr><td>{@code ISO_IR 192}</td>
+     *     <td>{@code UTF-8}</td></tr>
+     * <tr><td>{@code GB18030}</td>
+     *     <td>{@code GB18030}</td></tr>
+     * </tbody>
+     * </table>
+     */
+    public static void resetCharsetNameMappings() {
+        Codec.resetCharsetNames();
+    }
+
+    public static String checkSpecificCharacterSet(String code) {
+        Codec.forCodeChecked(code);
+        return code;
+    }
+
+    public static String checkCharsetName(String charsetName) {
+        if (!Charset.isSupported(charsetName))
+            throw new UnsupportedCharsetException(charsetName);
+        return charsetName;
+    }
+
     public static SpecificCharacterSet valueOf(String... codes) {
         if (codes == null || codes.length == 0)
             return DEFAULT;
@@ -617,7 +716,7 @@ public class SpecificCharacterSet {
     }
 
     public boolean contains(SpecificCharacterSet other) {
-        return Arrays.equals(codecs, other.codecs) || (other.isASCII() || other == DEFAULT) && containsASCII();
+        return Arrays.equals(codecs, other.codecs) || (other.isASCII() || other == ASCII) && containsASCII();
     }
 
     public String toText(String s) {

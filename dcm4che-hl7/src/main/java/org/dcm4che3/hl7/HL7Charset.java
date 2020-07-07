@@ -38,134 +38,186 @@
 
 package org.dcm4che3.hl7;
 
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public abstract class HL7Charset {
+public class HL7Charset {
+
+    private static final Map<String, String> CHARSET_NAMES_MAP = new HashMap<>();
+
+    private HL7Charset() {}
+
+    /**
+     * Extend/override mapping of field MSH-18-character to named charset specified by
+     * <a href="http://www.hl7.eu/HL7v2x/v251/hl7v251tab0211.htm">
+     * "HL7 table 0211 - Alternate character sets</a>..
+     *
+     * For example, {@code HL7Charset.setCharsetNameMapping("Windows-1252", "windows-1252")} associate
+     * proprietary field MSH-18-character value {@code Windows-1252} with Windows-1252 (CP-1252) charset,
+     * containing characters Š/š and Ž/ž not included in ISO-8859-1 (Latin-1), but used in Estonian and
+     * Finnish for transcribing foreign names.
+     *
+     * @param  code
+     *         value field MSH-18-character
+     * @param  charsetName
+     *         The name of the mapped charset
+     *
+     * @throws IllegalCharsetNameException
+     *          If the given {@code charsetName} is illegal
+     *
+     * @throws  IllegalArgumentException
+     *          If the given {@code charsetName} is null
+     *
+     * @throws  UnsupportedCharsetException
+     *          If no support for the named charset is available
+     *          in this instance of the Java virtual machine
+     */
+    public static void setCharsetNameMapping(String code, String charsetName) {
+        if (!Charset.isSupported(charsetName))
+            throw new UnsupportedCharsetException(charsetName);
+        CHARSET_NAMES_MAP.put(code, charsetName);
+    }
+
+    /**
+     * Reset mapping of field MSH-18-character to named charsets as specified by
+     * <a href="http://www.hl7.eu/HL7v2x/v251/hl7v251tab0211.htm">
+     * "HL7 table 0211 - Alternate character sets</a>.
+     *
+     * <table>
+     * <tr>
+     * <th>MSH-18 Value</th>
+     * <th>Charset Name</th>
+     * </tr>
+     * </thead>
+     * <tbody>
+     * <tr><td>{@code ASCII}</td>
+     *     <td>{@code US-ASCII}</td></tr>
+     * <tr><td>{@code 8859/1}</td>
+     *     <td>{@code ISO-8859-1}</td></tr>
+     * <tr><td>{@code 8859/2}</td>
+     *     <td>{@code ISO-8859-2}</td></tr>
+     * <tr><td>{@code 8859/3}</td>
+     *     <td>{@code ISO-8859-3}</td></tr>
+     * <tr><td>{@code 8859/4}</td>
+     *     <td>{@code ISO-8859-4}</td></tr>
+     * <tr><td>{@code 8859/5}</td>
+     *     <td>{@code ISO-8859-5}</td></tr>
+     * <tr><td>{@code 8859/6}</td>
+     *     <td>{@code ISO-8859-6}</td></tr>
+     * <tr><td>{@code 8859/7}</td>
+     *     <td>{@code ISO-8859-7}</td></tr>
+     * <tr><td>{@code 8859/8}</td>
+     *     <td>{@code ISO-8859-8}</td></tr>
+     * <tr><td>{@code I8859/9}</td>
+     *     <td>{@code ISO-8859-9}</td></tr>
+     * <tr><td>{@code ISO IR14}</td>
+     *     <td>{@code JIS_X0201}</td></tr>
+     * <tr><td>{@code ISO IR87}</td>
+     *     <td>{@code x-JIS0208}</td></tr>
+     * <tr><td>{@code ISO IR159}</td>
+     *     <td>{@code JIS_X0212-1990}</td></tr>
+     * <tr><td>{@code GB18030-2000}</td>
+     *     <td>{@code GB18030}</td></tr>
+     * <tr><td>{@code KS X 1001}</td>
+     *     <td>{@code EUC-KR}</td></tr>
+     * <tr><td>{@code CNS 11643-1992}</td>
+     *     <td>{@code TIS-620}</td></tr>
+     * <tr><td>{@code UNICODE}</td>
+     *     <td>{@code UTF-8}</td></tr>
+     * <tr><td>{@code UNICODE UTF-8"}</td>
+     *     <td>{@code UTF-8}</td></tr>
+     * </tbody>
+     * </table>
+     */
+    public static void resetCharsetNameMappings() {
+        CHARSET_NAMES_MAP.clear();
+    }
 
     public static String toCharsetName(String code) {
-        if (code != null && !code.isEmpty())
-            switch (code.charAt(code.length()-1)) {
-            case '0':
-                if (code.equals("GB 18030-2000"))
-                    return "GB18030";
-                break;
-            case '1':
-                if (code.equals("8859/1"))
-                    return "ISO-8859-1";
-                if (code.equals("KS X 1001"))
-                    return "EUC-KR";
-                break;
-            case '2':
-                if (code.equals("8859/2"))
-                    return "ISO-8859-2";
-                if (code.equals("CNS 11643-1992"))
-                    return "TIS-620";
-                break;
-            case '3':
-                if (code.equals("8859/3"))
-                    return "ISO-8859-3";
-                break;
-            case '4':
-                if (code.equals("8859/4"))
-                    return "ISO-8859-4";
-                if (code.equals("ISO IR14"))
-                    return "JIS_X0201";
-                break;
-            case '5':
-                if (code.equals("8859/5"))
-                    return "ISO-8859-5";
-                break;
-            case '6':
-                if (code.equals("8859/6"))
-                    return "ISO-8859-6";
-                break;
-            case '7':
-                if (code.equals("8859/7"))
-                    return "ISO-8859-7";
-                if (code.equals("ISO IR87"))
-                    return "x-JIS0208";
-                break;
-            case '8':
-                if (code.equals("8859/8"))
-                    return "ISO-8859-8";
-                if (code.equals("UNICODE UTF-8"))
-                    return "UTF-8";
-                break;
-            case '9':
-                if (code.equals("8859/9"))
-                    return "ISO-8859-9";
-                if (code.equals("ISO IR159"))
-                    return "JIS_X0212-1990";
-                break;
-            case 'E':
-                if (code.equals("UNICODE"))
-                    return "UTF-8";
-                break;
-            }
+        if (code == null) code = "";
+        String value = CHARSET_NAMES_MAP.get(code);
+        if (value != null) return value;
+        switch (code) {
+            case "8859/1":
+                return "ISO-8859-1";
+            case "8859/2":
+                return "ISO-8859-2";
+            case "8859/3":
+                return "ISO-8859-3";
+            case "8859/4":
+                return "ISO-8859-4";
+            case "8859/5":
+                return "ISO-8859-5";
+            case "8859/6":
+                return "ISO-8859-6";
+            case "8859/7":
+                return "ISO-8859-7";
+            case "8859/8":
+                return "ISO-8859-8";
+            case "8859/9":
+                return "ISO-8859-9";
+            case "ISO IR14":
+                return "JIS_X0201";
+            case "ISO IR87":
+                return "x-JIS0208";
+            case "ISO IR159":
+                return "JIS_X0212-1990";
+            case "GB 18030-2000":
+                return "GB18030";
+            case "KS X 1001":
+                return "EUC-KR";
+            case "CNS 11643-1992":
+                return "TIS-620";
+            case "UNICODE":
+            case "UNICODE UTF-8":
+                return "UTF-8";
+        }
         return "US-ASCII";
     }
 
     public static String toDicomCharacterSetCode(String code) {
         if (code != null && !code.isEmpty())
-            switch (code.charAt(code.length()-1)) {
-            case '0':
-                if (code.equals("GB 18030-2000"))
-                    return "GB18030";
-                break;
-            case '1':
-                if (code.equals("8859/1"))
+            switch (code) {
+                case "8859/1":
                     return "ISO_IR 100";
-                if (code.equals("KS X 1001"))
-                    return "ISO 2022 IR 149";
-                break;
-            case '2':
-                if (code.equals("8859/2"))
+                case "8859/2":
                     return "ISO_IR 101";
-                if (code.equals("CNS 11643-1992"))
-                    return "ISO_IR 166";
-                break;
-            case '3':
-                if (code.equals("8859/3"))
+                case "8859/3":
                     return "ISO_IR 109";
-                break;
-            case '4':
-                if (code.equals("8859/4"))
+                case "8859/4":
                     return "ISO_IR 110";
-                if (code.equals("ISO IR14"))
-                    return "ISO_IR 13";
-                break;
-            case '5':
-                if (code.equals("8859/5"))
+                case "8859/5":
                     return "ISO_IR 144";
-                break;
-            case '6':
-                if (code.equals("8859/6"))
+                case "8859/6":
                     return "ISO_IR 127";
-                break;
-            case '7':
-                if (code.equals("8859/7"))
+                case "8859/7":
                     return "ISO_IR 126";
-                if (code.equals("ISO IR87"))
-                    return "ISO 2022 IR 87";
-                break;
-            case '8':
-                if (code.equals("8859/8"))
+                case "8859/8":
                     return "ISO_IR 138";
-                if (code.equals("UNICODE UTF-8"))
-                    return "ISO_IR 192";
-                break;
-            case '9':
-                if (code.equals("8859/9"))
+                case "8859/9":
                     return "ISO_IR 148";
-                if (code.equals("ISO IR159"))
+                case "ISO IR14":
+                    return "ISO_IR 13";
+                case "ISO IR87":
+                    return "ISO 2022 IR 87";
+                case "ISO IR159":
                     return "ISO 2022 IR 159";
-                break;
-            case 'E':
-                if (code.equals("UNICODE"))
+                case "GB 18030-2000":
+                    return "GB18030";
+                case "KS X 1001":
+                    return "ISO 2022 IR 149";
+                case "CNS 11643-1992":
+                    return "ISO_IR 166";
+                case "UNICODE":
+                case "UNICODE UTF-8":
                     return "ISO_IR 192";
-                break;
             }
         return null;
     }

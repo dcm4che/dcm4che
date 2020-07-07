@@ -41,10 +41,7 @@ package org.dcm4che3.data;
 
 import static org.junit.Assert.*;
 
-import org.dcm4che3.data.SpecificCharacterSet;
 import org.junit.Test;
-
-import java.nio.charset.Charset;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -79,6 +76,7 @@ public class SpecificCharacterSetTest {
             "Wang^XiaoDong=王^小東=";
     private static final String CHINESE_PERSON_NAME_GB18030 =
             "Wang^XiaoDong=王^小东=";
+    private static final String FINNISH_PERSON_NAME = "Šiškino^Žuža";
 
     private static final byte[] GERMAN_PERSON_NAME_BYTE = {
             (byte) 0xc4, (byte) 0x6e, (byte) 0x65, (byte) 0x61, (byte) 0x73,
@@ -200,6 +198,16 @@ public class SpecificCharacterSetTest {
             (byte) 0x6f, (byte) 0x6e, (byte) 0x67, (byte) 0x3d, (byte) 0xcd,
             (byte) 0xf5, (byte) 0x5e, (byte) 0xd0, (byte) 0xa1, (byte) 0xb6,
             (byte) 0xab, (byte) 0x3d };
+
+    private static final byte[] FINNISH_PERSON_NAME_8859_15_BYTES = {
+            (byte) 0xa6, (byte) 0x69, (byte) 0xa8, (byte) 0x6b, (byte) 0x69,
+            (byte) 0x6e, (byte) 0x6f, (byte) 0x5e, (byte) 0xb4, (byte) 0x75,
+            (byte) 0xb8, (byte) 0x61 };
+
+    private static final byte[] FINNISH_PERSON_NAME_WINDOWS_1252_BYTE = {
+            (byte) 0x8a, (byte) 0x69, (byte) 0x9a, (byte) 0x6b, (byte) 0x69,
+            (byte) 0x6e, (byte) 0x6f, (byte) 0x5e, (byte) 0x8e, (byte) 0x75,
+            (byte) 0x9e, (byte) 0x61 };
 
     private SpecificCharacterSet iso8859_1() {
         return SpecificCharacterSet.valueOf(new String[] { "ISO_IR 100" });
@@ -478,6 +486,50 @@ public class SpecificCharacterSetTest {
         for ( int i = 0; i < edgeCases.length; ++i ) {
             assertEquals( "Unexpected value for the sequence with the index " + i, expectedStrings[ i ],
                           jisX0201().decode( edgeCases[ i ] ) );
+        }
+    }
+
+    @Test
+    public void testEncodeFinnishPersonName8859_15() {
+        SpecificCharacterSet.setCharsetNameMapping("ISO_IR 100", "ISO-8859-15");
+        try {
+            assertArrayEquals(FINNISH_PERSON_NAME_8859_15_BYTES,
+                    iso8859_1().encode(FINNISH_PERSON_NAME, PN_DELIMS));
+        } finally {
+            SpecificCharacterSet.resetCharsetNameMappings();
+        }
+    }
+
+    @Test
+    public void testDecodeFinnishPersonName8859_15() {
+        SpecificCharacterSet.setCharsetNameMapping("ISO_IR 100", "ISO-8859-15");
+        try {
+            assertEquals(FINNISH_PERSON_NAME,
+                    iso8859_1().decode(FINNISH_PERSON_NAME_8859_15_BYTES));
+        } finally {
+            SpecificCharacterSet.resetCharsetNameMappings();
+        }
+    }
+
+    @Test
+    public void testEncodeFinnishPersonNameWindows1252() {
+        SpecificCharacterSet.setCharsetNameMapping("ISO_IR 100", "windows-1252");
+        try {
+            assertArrayEquals(FINNISH_PERSON_NAME_WINDOWS_1252_BYTE,
+                    iso8859_1().encode(FINNISH_PERSON_NAME, PN_DELIMS));
+        } finally {
+            SpecificCharacterSet.resetCharsetNameMappings();
+        }
+    }
+
+    @Test
+    public void testDecodeFinnishPersonNameWindows1252() {
+        SpecificCharacterSet.setCharsetNameMapping("ISO_IR 100", "windows-1252");
+        try {
+            assertEquals(FINNISH_PERSON_NAME,
+                    iso8859_1().decode(FINNISH_PERSON_NAME_WINDOWS_1252_BYTE));
+        } finally {
+            SpecificCharacterSet.resetCharsetNameMappings();
         }
     }
 }

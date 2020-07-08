@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che.tool</groupId>
     <artifactId>dcm4che-tool</artifactId>
-    <version>5.22.3</version>
+    <version>5.22.4</version>
   </parent>
   <artifactId>dcm4che-tool-syslog</artifactId>
   <dependencies>

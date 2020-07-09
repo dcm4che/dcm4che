@@ -91,7 +91,7 @@ public class Attributes implements Serializable {
 
     private static final int INIT_CAPACITY = 16;
     private static final int TO_STRING_LIMIT = 50;
-    private static final int TO_STRING_WIDTH = 78;
+    private static final int TO_STRING_WIDTH = 120;
     private transient Attributes parent;
     private transient int[] tags;
     private transient VR[] vrs;

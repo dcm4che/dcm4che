@@ -4664,7 +4664,7 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
-                <include>GE-???-From-Adantage-Review-CS.xml</include>
+                <include>GE-----From-Adantage-Review-CS.xml</include>
               </includes>
               <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
               <parameters>
@@ -4675,7 +4675,7 @@
               </parameters>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>GE-???-From-Adantage-Review-CS.js</targetName>
+                  <targetName>GE-----From-Adantage-Review-CS.js</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>

@@ -169,7 +169,7 @@ public class Tpl2Xml {
         System.out.println(MessageFormat.format(rb.getString("convert-template"), template));
         for (Map.Entry<String, List<DictionaryElement>> entry : privateDictsFrom(template).entrySet()) {
             Path file = Files.createFile(dir.resolve(
-                    entry.getKey().replaceAll("[:;\\s/]", "-") + ".xml"));
+                    entry.getKey().replaceAll("[:;?\\s/]", "-") + ".xml"));
             DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
             Document document = documentBuilder.newDocument();

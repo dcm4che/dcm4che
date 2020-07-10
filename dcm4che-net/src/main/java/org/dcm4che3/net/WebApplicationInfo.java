@@ -143,8 +143,12 @@ public class WebApplicationInfo {
     }
 
     public void setServiceClasses(WebApplication.ServiceClass... serviceClasses) {
+        setServiceClasses(Arrays.asList(serviceClasses));
+    }
+
+    public void setServiceClasses(List<WebApplication.ServiceClass> serviceClasses) {
         this.serviceClasses.clear();
-        this.serviceClasses.addAll(Arrays.asList(serviceClasses));
+        this.serviceClasses.addAll(serviceClasses);
     }
 
     public void setProperty(String name, String value) {

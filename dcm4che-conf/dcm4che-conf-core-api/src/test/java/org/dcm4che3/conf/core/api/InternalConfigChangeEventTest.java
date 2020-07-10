@@ -1,4 +1,3 @@
-//
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -13,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at https://github.com/gunterze/dcm4che.
+ * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2020
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,34 +38,41 @@
 
 package org.dcm4che3.conf.core.api;
 
-import java.io.Serializable;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.Assert.fail;
 
 /**
- * Event to inform about configuration changes.
- * <p>
- * This is an "internal" version of the {@link ConfigChangeEvent} which should only be used for very specific use cases
- * (i.e. updating the Device itself). It is always fired before the "normal" ConfigChangeEvent, so that code that
- * listens for the "normal" ConfigChangeEvent will always already see the reconfigured Device.
- *
- * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
+ * @author Stephen Frederick <stephen.frederick@agfa.com>
  */
-public class InternalConfigChangeEvent implements Serializable {
-	private static final long serialVersionUID = -7690181293743297960L;
+public class InternalConfigChangeEventTest {
 
-	private final List<String> changedPaths;
-  
-    public InternalConfigChangeEvent() {
-    	changedPaths = new ArrayList<>();
-    }
-    
-    public InternalConfigChangeEvent(List<String> changedPaths) {
-        this.changedPaths = changedPaths;
+    @Test
+    public void testDefaultConstructor() {
+        Assert.assertTrue(new InternalConfigChangeEvent().getChangedPaths().isEmpty());
     }
 
-    public List<String> getChangedPaths() {
-        return changedPaths;
+    @Test
+    public void testConstructorWithExpectedPaths() {
+    	List<String> expectedChangedPaths = new ArrayList<>();
+    	expectedChangedPaths.add("path1");
+    	expectedChangedPaths.add("path2");
+    	List<String> argChangedPaths = new ArrayList<>();
+    	argChangedPaths.add("path1");
+    	argChangedPaths.add("path2");
+    	List<String> actualChangedPaths = new InternalConfigChangeEvent(argChangedPaths).getChangedPaths();
+        Assert.assertEquals(2, actualChangedPaths.size());
+        Assert.assertEquals(expectedChangedPaths.get(0), actualChangedPaths.get(0));
+        Assert.assertEquals(expectedChangedPaths.get(1), actualChangedPaths.get(1));
     }
 
 }

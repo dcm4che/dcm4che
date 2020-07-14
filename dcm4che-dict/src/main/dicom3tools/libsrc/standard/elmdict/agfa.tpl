@@ -24,7 +24,7 @@
 (0019,0015) VERS="AGFA"	VR="LO"   VM="1"	Owner="AGFA"		Keyword="DoseMonitoring"						Name="Dose Monitoring"
 (0019,0016) VERS="AGFA"	VR="LO"   VM="1"	Owner="AGFA"		Keyword="OtherInfo"								Name="Other Info"
 (0019,001a) VERS="AGFA"	VR="LO"   VM="1"	Owner="AGFA"		Keyword="ClippedExposureDeviation"				Name="Clipped Exposure Deviation"
-(0019,001b) VERS="AGFA"	VR="LO"   VM="1"	Owner="AGFA"		Keyword="Logarithmic PLT Full Scale"			Name="Logarithmic PLT Full Scale"
+(0019,001b) VERS="AGFA"	VR="LO"   VM="1"	Owner="AGFA"		Keyword="LogarithmicPLTFullScale"			Name="Logarithmic PLT Full Scale"
 (0019,0060) VERS="AGFA"	VR="US"   VM="1"	Owner="AGFA"		Keyword="TotalNumberSeries"						Name="Total Number Series"
 (0019,0061) VERS="AGFA"	VR="SH"   VM="1"	Owner="AGFA"		Keyword="SessionNumber"							Name="Session Number"
 (0019,0062) VERS="AGFA"	VR="SH"   VM="1"	Owner="AGFA"		Keyword="IDStationName"							Name="ID Station Name"
@@ -36,7 +36,6 @@
 (0019,0093) VERS="AGFA"	VR="CS"   VM="1"	Owner="AGFA"		Keyword="Status"								Name="Status"
 
 (0019,0030) VERS="AGFA"	VR="ST"   VM="1"	Owner="AGFA_ADC_Compact"	Keyword="DataStreamFromCassette"	Name="Data stream from cassette"
-(0019,0030) VERS="AGFA"	VR="ST"   VM="1"	Owner="AGFA_ADC_Compact"	Keyword="SetOfDestinationTypes"		Name="Set of destination types"
 (0019,0040) VERS="AGFA"	VR="ST"   VM="1"	Owner="AGFA_ADC_Compact"	Keyword="SetOfDestinationIds"		Name="Set of destination Ids"
 (0019,0050) VERS="AGFA"	VR="ST"   VM="1"	Owner="AGFA_ADC_Compact"	Keyword="SetOfProcessingCodes"		Name="Set of processing codes"
 (0019,0060) VERS="AGFA"	VR="US"   VM="1"	Owner="AGFA_ADC_Compact"	Keyword="NumberOfSeriesInStudy"		Name="Number of series in study"
@@ -105,8 +104,6 @@
 (0029,0013) VERS="AGFA"    VR="US"   VM="1"	Owner="AgilityRuntime"			Keyword="?"							Name="?"
 (0029,0014) VERS="AGFA"    VR="US"   VM="1"	Owner="AgilityRuntime"			Keyword="?"							Name="?"
 (0029,001f) VERS="AGFA"    VR="US"   VM="1"	Owner="AgilityRuntime"			Keyword="?"							Name="?"
-
-(0029,001f) VERS="AGFA"	VR="US"   VM="1"	Owner="AgilityRuntime"		Keyword="?"				Name="?"
 
 (0031,0020) VERS="MIT"  VR="IS"   VM="1"	Owner="MITRA LINKED ATTRIBUTES 1.0"	Keyword="?"		Name="?"
 

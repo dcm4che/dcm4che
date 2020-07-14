@@ -63,13 +63,13 @@ public class InternalConfigChangeEventTest {
 
     @Test
     public void testConstructorWithExpectedPaths() {
-    	List<String> expectedChangedPaths = new ArrayList<>();
-    	expectedChangedPaths.add("path1");
-    	expectedChangedPaths.add("path2");
-    	List<String> argChangedPaths = new ArrayList<>();
-    	argChangedPaths.add("path1");
-    	argChangedPaths.add("path2");
-    	List<String> actualChangedPaths = new InternalConfigChangeEvent(argChangedPaths).getChangedPaths();
+        List<String> expectedChangedPaths = new ArrayList<>();
+        expectedChangedPaths.add("path1");
+        expectedChangedPaths.add("path2");
+        List<String> argChangedPaths = new ArrayList<>();
+        argChangedPaths.add("path1");
+        argChangedPaths.add("path2");
+        List<String> actualChangedPaths = new InternalConfigChangeEvent(argChangedPaths).getChangedPaths();
         Assert.assertEquals(2, actualChangedPaths.size());
         Assert.assertEquals(expectedChangedPaths.get(0), actualChangedPaths.get(0));
         Assert.assertEquals(expectedChangedPaths.get(1), actualChangedPaths.get(1));

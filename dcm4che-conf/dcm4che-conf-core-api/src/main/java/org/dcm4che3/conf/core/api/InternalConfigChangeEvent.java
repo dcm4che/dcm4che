@@ -53,12 +53,12 @@ import java.util.List;
  * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
  */
 public class InternalConfigChangeEvent implements Serializable {
-	private static final long serialVersionUID = -7690181293743297960L;
+    private static final long serialVersionUID = -7690181293743297960L;
 
-	private final List<String> changedPaths;
+    private final List<String> changedPaths;
   
     public InternalConfigChangeEvent() {
-    	changedPaths = new ArrayList<>();
+        changedPaths = new ArrayList<>();
     }
     
     public InternalConfigChangeEvent(List<String> changedPaths) {

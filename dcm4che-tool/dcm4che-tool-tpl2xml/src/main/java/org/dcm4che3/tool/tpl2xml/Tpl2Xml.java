@@ -234,7 +234,7 @@ public class Tpl2Xml {
                 .stream()
                 .filter(line -> line.length() > 0)
                 .forEach(line -> {
-                    String[] fields = line.split("[)\"][ \t\n]+");
+                    String[] fields = line.split("[)\"][\\s\t\n]+");
                     privateDictionaries.computeIfAbsent(
                             fields[4].substring(7), dictionaryElement -> new ArrayList<>())
                             .add(new DictionaryElement(fields));
@@ -252,7 +252,9 @@ public class Tpl2Xml {
         DictionaryElement(String[] fields) {
             this.vr = fields[2].substring(4);
             this.vm = fields[3].substring(4);
-            this.value = fields[6].substring(6, fields[6].length() - 1);
+            this.value = fields[6].endsWith("\"")
+                    ? fields[6].substring(6, fields[6].length() - 1)
+                    : fields[6].substring(6);
             setTagAndKeyword(fields[0], fields[5].substring(9));
         }
 

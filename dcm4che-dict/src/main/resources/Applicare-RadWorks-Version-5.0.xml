@@ -75,7 +75,7 @@
   <el keyword="RequestingFacilityName" tag="3109xx30" vm="1" vr="LO">Requesting Facility Name</el>
   <el keyword="RequestingProcedureName" tag="3109xx31" vm="1" vr="CS">Requesting Procedure Name</el>
   <el keyword="RequestingProcedureCode" tag="3109xx32" vm="1" vr="CS">Requesting Procedure Code</el>
-  <el keyword="RequestStorageommitment" tag="3109xx33" vm="1" vr="CS">Request Storage Commitment</el>
+  <el keyword="RequestStorageCommitment" tag="3109xx33" vm="1" vr="CS">Request Storage Commitment</el>
   <el keyword="RequestedCompression" tag="3109xx34" vm="1" vr="CS">Requested Compression</el>
   <el keyword="StudySequence" tag="3109xx35" vm="1" vr="SQ">Study Sequence</el>
   <el keyword="ReplacedStudyUID" tag="3109xx37" vm="1" vr="UI">Replaced Study UID</el>

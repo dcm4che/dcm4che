@@ -97,7 +97,9 @@
   <el keyword="MIPStartRow" tag="0021xx45" vm="1" vr="IS">MIP Start Row</el>
   <el keyword="MIPStopRow" tag="0021xx46" vm="1" vr="IS">MIP Stop Row</el>
   <el keyword="MIPStartColumn" tag="0021xx47" vm="1" vr="IS">MIP Start Column</el>
+  <el keyword="MIPStopColumn" tag="0021xx48" vm="1" vr="IS">MIP Stop Column</el>
   <el keyword="MIPStartSlice" tag="0021xx49" vm="1" vr="IS">MIP Start Slice</el>
+  <el keyword="MIPStopSlice" tag="0021xx4A" vm="1" vr="IS">MIP Stop Slice</el>
   <el keyword="OrderofSlices" tag="0021xx4F" vm="1" vr="CS">Order of Slices</el>
   <el keyword="SignalMask" tag="0021xx50" vm="1-n" vr="UL">Signal Mask</el>
   <el keyword="DelayAfterTrigger" tag="0021xx52" vm="1" vr="IS">Delay After Trigger</el>
@@ -110,6 +112,7 @@
   <el keyword="NumberOfInterpolatedImages" tag="0021xx60" vm="1" vr="IS">Number of Interpolated Images</el>
   <el keyword="NumberOfEchoes" tag="0021xx70" vm="1" vr="IS">Number of Echoes</el>
   <el keyword="SecondEchoTime" tag="0021xx72" vm="1" vr="DS">Second Echo Time</el>
+  <el keyword="SecondRepetitionTime" tag="0021xx73" vm="1" vr="DS">Second Repetition Time</el>
   <el keyword="CardiacCode" tag="0021xx80" vm="1" vr="IS">Cardiac Code</el>
   <el keyword="SaturationPhaseEncodingVectorTransverseComponent" tag="0021xx91" vm="6" vr="DS">Saturation Phase Encoding Vector Transverse Component</el>
   <el keyword="SaturationReadoutVectorTransverseComponent" tag="0021xx92" vm="6" vr="DS">Saturation Readout Vector Transverse Component</el>

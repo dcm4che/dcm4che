@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!--
+<?xml version="1.0" encoding="UTF-8"?><!--
 ~ ***** BEGIN LICENSE BLOCK *****
   ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
   ~
@@ -39,30 +38,30 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="MainMagneticField" tag="0019xx09" vm="1" vr="DS">Main Magnetic Fiel</el>
-  <el keyword="FlowCompensation" tag="0019xx0E" vm="1" vr="IS">Flow Compensatio</el>
+  <el keyword="MainMagneticField" tag="0019xx09" vm="1" vr="DS">Main Magnetic Field</el>
+  <el keyword="FlowCompensation" tag="0019xx0e" vm="1" vr="IS">Flow Compensation</el>
   <el keyword="_0019_xxB7_" tag="0019xxB7" vm="1" vr="IS">?</el>
   <el keyword="_0019_xxE4_" tag="0019xxE4" vm="1" vr="IS">?</el>
   <el keyword="_0019_xxE5_" tag="0019xxE5" vm="1" vr="DS">?</el>
-  <el keyword="MinimumRRInterval" tag="0019xxB1" vm="1" vr="IS">Minimum RR Interval</el>
-  <el keyword="MaximumRRInterval" tag="0019xxB2" vm="1" vr="IS">Maximum RR Interval</el>
-  <el keyword="NumberOfRejections" tag="0019xxB3" vm="1" vr="IS">Number of Rejections</el>
-  <el keyword="NumberOfRRIntervals" tag="0019xxB4" vm="1-n" vr="IS">Number of RR Intervals</el>
-  <el keyword="ArrhythmiaRejection" tag="0019xxB5" vm="1" vr="IS">Arrhythmia Rejection</el>
-  <el keyword="_0019_xxC0_" tag="0019xxC0" vm="1-n" vr="DS">?</el>
-  <el keyword="CycledMultipleSlice" tag="0019xxC6" vm="1" vr="IS">Cycled Multiple Slic</el>
-  <el keyword="REST" tag="0019xxCE" vm="1" vr="IS">RES</el>
-  <el keyword="_0019_xxD5_" tag="0019xxD5" vm="1" vr="DS">?</el>
-  <el keyword="FourierInterpolation" tag="0019xxD6" vm="1" vr="IS">Fourier Interpolatio</el>
-  <el keyword="_0019_xxD9_" tag="0019xxD9" vm="1-n" vr="IS">?</el>
-  <el keyword="Prepulse" tag="0019xxE0" vm="1" vr="IS">Prepuls</el>
-  <el keyword="PrepulseDelay" tag="0019xxE1" vm="1" vr="DS">Prepulse Delay</el>
-  <el keyword="_0019_xxE2_" tag="0019xxE2" vm="1" vr="IS">?</el>
-  <el keyword="_0019_xxE3_" tag="0019xxE3" vm="1" vr="DS">?</el>
-  <el keyword="WSProtocolString1" tag="0019xxF0" vm="1" vr="LT">WS Protocol String 1</el>
-  <el keyword="WSProtocolString2" tag="0019xxF1" vm="1" vr="LT">WS Protocol String 2</el>
-  <el keyword="WSProtocolString3" tag="0019xxF2" vm="1" vr="LT">WS Protocol String 3</el>
-  <el keyword="WSProtocolString4" tag="0019xxF3" vm="1" vr="LT">WS Protocol String 4</el>
+  <el keyword="MinimumRRInterval" tag="0019xxb1" vm="1" vr="IS">Minimum RR Interval</el>
+  <el keyword="MaximumRRInterval" tag="0019xxb2" vm="1" vr="IS">Maximum RR Interval</el>
+  <el keyword="NumberOfRejections" tag="0019xxb3" vm="1" vr="IS">Number of Rejections</el>
+  <el keyword="NumberOfRRIntervals" tag="0019xxb4" vm="1-n" vr="IS">Number of RR Intervals</el>
+  <el keyword="ArrhythmiaRejection" tag="0019xxb5" vm="1" vr="IS">Arrhythmia Rejection</el>
+  <el keyword="_0019_xxc0_" tag="0019xxc0" vm="1-n" vr="DS">?</el>
+  <el keyword="CycledMultipleSlice" tag="0019xxc6" vm="1" vr="IS">Cycled Multiple Slice</el>
+  <el keyword="REST" tag="0019xxce" vm="1" vr="IS">REST</el>
+  <el keyword="_0019_xxd5_" tag="0019xxd5" vm="1" vr="DS">?</el>
+  <el keyword="FourierInterpolation" tag="0019xxd6" vm="1" vr="IS">Fourier Interpolation</el>
+  <el keyword="_0019_xxd9_" tag="0019xxd9" vm="1-n" vr="IS">?</el>
+  <el keyword="Prepulse" tag="0019xxe0" vm="1" vr="IS">Prepulse</el>
+  <el keyword="PrepulseDelay" tag="0019xxe1" vm="1" vr="DS">Prepulse Delay</el>
+  <el keyword="_0019_xxe2_" tag="0019xxe2" vm="1" vr="IS">?</el>
+  <el keyword="_0019_xxe3_" tag="0019xxe3" vm="1" vr="DS">?</el>
+  <el keyword="WSProtocolString1" tag="0019xxf0" vm="1" vr="LT">WS Protocol String 1</el>
+  <el keyword="WSProtocolString2" tag="0019xxf1" vm="1" vr="LT">WS Protocol String 2</el>
+  <el keyword="WSProtocolString3" tag="0019xxf2" vm="1" vr="LT">WS Protocol String 3</el>
+  <el keyword="WSProtocolString4" tag="0019xxf3" vm="1" vr="LT">WS Protocol String 4</el>
   <el keyword="_0021_xx00_" tag="0021xx00" vm="1" vr="IS">?</el>
   <el keyword="_0021_xx10_" tag="0021xx10" vm="1" vr="IS">?</el>
   <el keyword="_0021_xx20_" tag="0021xx20" vm="1" vr="IS">?</el>

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!--
+<?xml version="1.0" encoding="UTF-8"?><!--
 ~ ***** BEGIN LICENSE BLOCK *****
   ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
   ~
@@ -39,5 +38,5 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="_0009_xx10_" tag="0009xx10" vm="1" vr="US"/>
+  <el keyword="_0009_xx10_" tag="0009xx10" vm="1" vr="US">?</el>
 </elements>

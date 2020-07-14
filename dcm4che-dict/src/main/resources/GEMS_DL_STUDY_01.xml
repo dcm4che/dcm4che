@@ -42,7 +42,7 @@
   <el keyword="StudyDose" tag="0015xx80" vm="1" vr="DS">Study Dose</el>
   <el keyword="StudyTotalDap" tag="0015xx81" vm="1" vr="DS">Study Total Dap</el>
   <el keyword="FluoroDoseAreaProduct" tag="0015xx82" vm="1" vr="DS">Fluoro Dose Area Product</el>
-  <el keyword="StudyluoroTime" tag="0015xx83" vm="1" vr="IS">Study Fluoro Time</el>
+  <el keyword="StudyFluoroTime" tag="0015xx83" vm="1" vr="IS">Study Fluoro Time</el>
   <el keyword="CineDoseAreaProduct" tag="0015xx84" vm="1" vr="DS">Cine Dose Area Product</el>
   <el keyword="StudyRecordTime" tag="0015xx85" vm="1" vr="IS">Study Record Time</el>
   <el keyword="LastXANumber" tag="0015xx86" vm="1" vr="IS">Last XA Number</el>

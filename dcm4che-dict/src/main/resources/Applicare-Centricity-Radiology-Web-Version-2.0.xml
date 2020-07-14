@@ -39,6 +39,6 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="SecondarypineLabel" tag="4111xx01" vm="1" vr="CS">Secondary Spine Label</el>
+  <el keyword="SecondarySpineLabel" tag="4111xx01" vm="1" vr="CS">Secondary Spine Label</el>
   <el keyword="AdditionalTagsForPresentationState" tag="4111xx02" vm="1" vr="IS">Additional tags for Presentation State</el>
 </elements>

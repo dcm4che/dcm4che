@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!--
+<?xml version="1.0" encoding="UTF-8"?><!--
 ~ ***** BEGIN LICENSE BLOCK *****
   ~ Version: MPL 1.1/GPL 2.0/LGPL 2.1
   ~
@@ -39,5 +38,5 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="FieldOfView" tag="0019xx00" vm="1" vr="DS">Field of Vie</el>
+  <el keyword="FieldOfView" tag="0019xx00" vm="1" vr="DS">Field of View</el>
 </elements>

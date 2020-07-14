@@ -39,7 +39,7 @@
   ~ ***** END LICENSE BLOCK *****
   ~
 --><elements>
-  <el keyword="_3115_xx01_" tag="3115xx01" vm="1" vr="UT">?</el>
-  <el keyword="Referencetopacsimage" tag="3115xx02" vm="1" vr="UT">Reference to pacs image</el>
-  <el keyword="Pacsexamnotesflag" tag="3115xx03" vm="1" vr="CS">Pacs examnotes flag</el>
+  <el keyword="ReferenceToPacsStudy" tag="3115xx01" vm="1" vr="UT">Reference to pacs study</el>
+  <el keyword="ReferenceToPacsImage" tag="3115xx02" vm="1" vr="UT">Reference to pacs image</el>
+  <el keyword="PacsExamnotesFlag" tag="3115xx03" vm="1" vr="CS">Pacs examnotes flag</el>
 </elements>

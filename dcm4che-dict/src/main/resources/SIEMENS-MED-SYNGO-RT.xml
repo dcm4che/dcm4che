@@ -84,7 +84,7 @@
   <el keyword="TreatmentApprovalSequence" tag="300Bxx90" vm="1" vr="SQ">Treatment Approval Sequence</el>
   <el keyword="TreatmentRoomTemperature" tag="300Bxx98" vm="1" vr="DS">Treatment Room Temperature</el>
   <el keyword="TreatmentRoomAirPressure" tag="300Bxx99" vm="1" vr="DS">Treatment Room Air Pressure</el>
-  <el keyword="SplitlaneSequence" tag="300Bxx9B" vm="1" vr="SQ">Split Plane Sequence</el>
+  <el keyword="SplitPlaneSequence" tag="300Bxx9B" vm="1" vr="SQ">Split Plane Sequence</el>
   <el keyword="DisplayColor" tag="300Bxx9C" vm="1" vr="IS">Display Color</el>
   <el keyword="BeamGroupName" tag="300Bxx9D" vm="1" vr="SH">Beam Group Name</el>
   <el keyword="ExpireDateTime" tag="300BxxA0" vm="1" vr="DT">Expire DateTime</el>

@@ -47,5 +47,5 @@
   <el keyword="Quality" tag="3109xx60" vm="1" vr="CS">Quality</el>
   <el keyword="ViewportAnnotationLevel" tag="3109xx70" vm="1" vr="CS">Viewport Annotation Level</el>
   <el keyword="ShowImageAnnotation" tag="3109xx80" vm="1" vr="CS">Show Image Annotation</el>
-  <el keyword="ShowmageOverlay" tag="3109xx90" vm="1" vr="CS">Show Image Overlay</el>
+  <el keyword="ShowImageOverlay" tag="3109xx90" vm="1" vr="CS">Show Image Overlay</el>
 </elements>

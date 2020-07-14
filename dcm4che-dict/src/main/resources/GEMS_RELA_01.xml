@@ -63,6 +63,7 @@
   <el keyword="ImageFiltering" tag="0021xx59" vm="1" vr="SL">Image Filtering 0.5/0.2T</el>
   <el keyword="DiffusionDirection" tag="0021xx5A" vm="1" vr="SL">Diffusion direction</el>
   <el keyword="TaggingFlipAngle" tag="0021xx5B" vm="1" vr="DS">Tagging Flip Angle</el>
+  <el keyword="TaggingOrientation" tag="0021xx5C" vm="1" vr="DS">Tagging Orientation</el>
   <el keyword="TagSpacing" tag="0021xx5D" vm="1" vr="DS">Tag Spacing</el>
   <el keyword="RTIATimer" tag="0021xx5E" vm="1" vr="DS">RTIA_timer</el>
   <el keyword="Fps" tag="0021xx5F" vm="1" vr="DS">Fps</el>

@@ -146,7 +146,7 @@
   <el keyword="AxisTickSpacingCoordinateSystem" tag="0071xxA0" vm="1" vr="SL">Axis Tick Spacing Coordinate System</el>
   <el keyword="AxisDiagramGridType" tag="0071xxA1" vm="1" vr="CS">Axis Diagram Grid Type</el>
   <el keyword="PolarPlotCircleCount" tag="0071xxA2" vm="1" vr="SL">Polar Plot Circle Count</el>
-  <el keyword="PolarPlotLinesperCircle" tag="0071xxA3" vm="1" vr="SL">Polar Plot Lines-per-Circle</el>
+  <el keyword="PolarPlotLinesPerCircle" tag="0071xxA3" vm="1" vr="SL">Polar Plot Lines-per-Circle</el>
   <el keyword="PolarPlotCompartmentCount" tag="0071xxA4" vm="1" vr="SL">Polar Plot Compartment Count</el>
   <el keyword="PolarPlotRadiusWeight" tag="0071xxA5" vm="1" vr="SL">Polar Plot Radius Weight</el>
   <el keyword="CircleSegmentOuterRadius" tag="0071xxA6" vm="1" vr="DS">Circle Segment Outer Radius</el>

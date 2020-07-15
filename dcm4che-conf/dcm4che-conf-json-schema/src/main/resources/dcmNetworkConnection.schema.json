@@ -60,14 +60,14 @@
     },
     "dcmTCPBacklog": {
       "title": "TCP Backlog",
-      "description": "Maximum queue length for incoming TCP connections. 0 = unlimited",
+      "description": "Maximum queue length for incoming TCP connections.",
       "type": "integer",
       "default": 50,
-      "minimum": 0
+      "minimum": 1
     },
     "dcmTCPConnectTimeout": {
       "title": "TCP Connect Timeout",
-      "description": "TCP connect timeout in ms; no timeout if absent",
+      "description": "TCP connect timeout in ms; no timeout if absent.",
       "type": "integer",
       "minimum": 100
     },

@@ -114,26 +114,22 @@ public class JsonConfiguration {
     }
 
     public void writeTo(WebApplicationInfo webappInfo, JsonGenerator gen) {
-        writeTo(webappInfo, gen, webappInfo.getKeycloakClient());
+        writeTo(webappInfo, gen, webappInfo.getKeycloakClientID());
     }
 
-    public void writeTo(WebApplicationInfo webappInfo, JsonGenerator gen, KeycloakClient keycloakClient) {
+    public void writeTo(WebApplicationInfo webappInfo, JsonGenerator gen, String keycloakClientID) {
         JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();
         writer.writeNotNullOrDef("dicomDeviceName", webappInfo.getDeviceName(), null);
         writer.writeNotNullOrDef("dcmWebAppName", webappInfo.getApplicationName(), null);
         writer.writeNotNullOrDef("dicomDescription", webappInfo.getDescription(), null);
         writer.writeNotNullOrDef("dcmWebServicePath", webappInfo.getServicePath(), null);
+        writer.writeNotNullOrDef("dcmKeycloakClientID", keycloakClientID, null);
         writer.writeNotEmpty("dcmWebServiceClass", webappInfo.getServiceClasses());
         writer.writeNotNullOrDef("dicomAETitle", webappInfo.getAETitle(), null);
         writer.writeNotEmpty("dicomApplicationCluster", webappInfo.getApplicationClusters());
         writer.writeNotEmpty("dcmProperty", webappInfo.getProperties());
         writer.writeNotNull("dicomInstalled", webappInfo.getInstalled());
-        if (keycloakClient != null) {
-            writer.writeNotNullOrDef("dcmKeycloakClientID", keycloakClient.getKeycloakClientID(), null);
-            writer.writeNotNullOrDef("realm", keycloakClient.getKeycloakRealm(), null);
-            writer.writeNotNullOrDef("auth-server-url", keycloakClient.getKeycloakServerURL(), null);
-        }
         writeNotExtendedConns(webappInfo.getConnections(), writer);
         gen.writeEnd();
     }

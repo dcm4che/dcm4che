@@ -208,4 +208,17 @@ public class DicomOutputStreamTest {
                             UID.CTImageStorage, UID.DeflatedExplicitVRLittleEndian));
         }
     }
+
+
+    @Test
+    public void testWriteDeflatedEvenLength() throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (DicomOutputStream dos = new DicomOutputStream(
+                out, UID.DeflatedExplicitVRLittleEndian)) {
+            Attributes attrs = new Attributes();
+            attrs.setString(Tag.SOPClassUID, VR.UI, UID.CTImageStorage);
+            dos.writeDataset(null, attrs);
+        }
+        assertEquals("odd number of bytes", 0, out.size() & 1);
+    }
 }

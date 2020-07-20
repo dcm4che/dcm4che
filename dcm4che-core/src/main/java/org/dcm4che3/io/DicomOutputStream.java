@@ -56,6 +56,7 @@ import org.dcm4che3.data.SpecificCharacterSet;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.Value;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.CountingOutputStream;
 import org.dcm4che3.util.TagUtils;
 
 /**
@@ -69,7 +70,7 @@ public class DicomOutputStream extends FilterOutputStream {
 
     private boolean explicitVR;
     private boolean bigEndian;
-    private boolean deflated;
+    private CountingOutputStream countingOutputStream;
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
 
     private final byte[] buf = new byte[12];
@@ -123,10 +124,10 @@ public class DicomOutputStream extends FilterOutputStream {
     }
 
     public void writeFileMetaInformation(Attributes fmi) throws IOException {
-        if (!explicitVR || bigEndian || deflated)
+        if (!explicitVR || bigEndian || countingOutputStream != null)
             throw new IllegalStateException("explicitVR=" + explicitVR
                     + ", bigEndian=" + bigEndian
-                    + ", deflated=" + deflated);
+                    + ", deflated=" + (countingOutputStream != null));
         write(preamble);
         write(DICM);
         fmi.writeGroupTo(this, Tag.FileMetaInformationGroupLength);
@@ -153,9 +154,9 @@ public class DicomOutputStream extends FilterOutputStream {
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
                         || tsuid.equals(UID.JPIPReferencedDeflate)) {
-                super.out = new DeflaterOutputStream(super.out,
+                this.countingOutputStream = new CountingOutputStream(super.out);
+                super.out = new DeflaterOutputStream(countingOutputStream,
                         new Deflater(Deflater.DEFAULT_COMPRESSION, true));
-                this.deflated = true;
         }
     }
 
@@ -228,8 +229,10 @@ public class DicomOutputStream extends FilterOutputStream {
     }
 
     public void finish() throws IOException {
-        if( out instanceof DeflaterOutputStream ) {
+        if (countingOutputStream != null) {
             ((DeflaterOutputStream) out).finish();
+            if ((countingOutputStream.getCount() & 1) != 0)
+                countingOutputStream.write(0);
         }
     }
 

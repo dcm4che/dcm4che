@@ -81,6 +81,9 @@ DCM4CHE.elementName = (function (dictionary) {
           return value;
       }
     }
+    if(tag === "all"){
+      return dictionary;
+    }
     return undefined;
   }
   return {

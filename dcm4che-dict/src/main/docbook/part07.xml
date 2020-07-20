@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2020b - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2020c - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -13316,7 +13316,7 @@
       </td>
     </tr>
     <tr valign="top">
-      <td align="left" colspan="1" rowspan="1">
+        <td align="center" colspan="1" rowspan="1">
         <para xml:id="para_c10f8178-8054-4be8-9409-ab736c53f734">n+1-n+2</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
@@ -13327,7 +13327,7 @@
       </td>
     </tr>
     <tr valign="top">
-      <td align="left" colspan="1" rowspan="1">
+        <td align="center" colspan="1" rowspan="1">
         <para xml:id="para_97dec233-6693-4624-83f2-c7f727786604">n+3-m</para>
       </td>
       <td align="left" colspan="1" rowspan="1">

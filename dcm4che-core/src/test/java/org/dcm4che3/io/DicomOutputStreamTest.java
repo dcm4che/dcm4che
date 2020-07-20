@@ -1,13 +1,9 @@
 package org.dcm4che3.io;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -18,6 +14,7 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.util.UIDUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -202,4 +199,13 @@ public class DicomOutputStreamTest {
         return item;
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testWriteFMIDeflated() throws IOException {
+        try (DicomOutputStream out = new DicomOutputStream(
+                new ByteArrayOutputStream(), UID.DeflatedExplicitVRLittleEndian)) {
+            out.writeFileMetaInformation(
+                    Attributes.createFileMetaInformation(UIDUtils.createUID(),
+                            UID.CTImageStorage, UID.DeflatedExplicitVRLittleEndian));
+        }
+    }
 }

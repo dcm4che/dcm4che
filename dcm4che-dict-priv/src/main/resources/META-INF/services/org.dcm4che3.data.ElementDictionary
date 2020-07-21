@@ -22,9 +22,9 @@ org.dcm4che3.dict.agfa_displayable_images.PrivateElementDictionary
 org.dcm4che3.dict.agfa_xeroverse.PrivateElementDictionary
 org.dcm4che3.dict.CARDIO_D_R__1_0.PrivateElementDictionary
 org.dcm4che3.dict.DIDI_TO_PCR_1_1.PrivateElementDictionary
-org.dcm4che3.dict.PHILIPS_IMAGING_DD_001.PrivateElementDictionary
+org.dcm4che3.dict.PHILIPS_IMAGING_DD_001_1.PrivateElementDictionary
 org.dcm4che3.dict.PHILIPS_MR.PrivateElementDictionary
-org.dcm4che3.dict.PHILIPS_MR_IMAGING_DD_001.PrivateElementDictionary
+org.dcm4che3.dict.PHILIPS_MR_IMAGING_DD_001_1.PrivateElementDictionary
 org.dcm4che3.dict.PHILIPS_MR_R5_5_PART.PrivateElementDictionary
 org.dcm4che3.dict.PHILIPS_MR_R5_6_PART.PrivateElementDictionary
 org.dcm4che3.dict.PHILIPS_MR_SPECTRO_1.PrivateElementDictionary

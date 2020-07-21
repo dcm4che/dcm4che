@@ -200,7 +200,7 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
-                <include>PHILIPS-IMAGING-DD-001.xml</include>
+                <include>PHILIPS-IMAGING-DD-001-1.xml</include>
               </includes>
               <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
               <parameters>
@@ -211,7 +211,7 @@
               </parameters>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>PHILIPS-IMAGING-DD-001.js</targetName>
+                  <targetName>PHILIPS-IMAGING-DD-001-1.js</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>
@@ -236,7 +236,7 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
-                <include>PHILIPS-MR-IMAGING-DD-001.xml</include>
+                <include>PHILIPS-MR-IMAGING-DD-001-1.xml</include>
               </includes>
               <stylesheet>src/main/xsl/private-dict-names.xsl</stylesheet>
               <parameters>
@@ -247,7 +247,7 @@
               </parameters>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>PHILIPS-MR-IMAGING-DD-001.js</targetName>
+                  <targetName>PHILIPS-MR-IMAGING-DD-001-1.js</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>

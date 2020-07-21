@@ -27,9 +27,9 @@
     <remoteResource>mitra-presentation-1.0-elements.xml</remoteResource>
     <remoteResource>CARDIO-D.R.-1.0.xml</remoteResource>
     <remoteResource>DIDI-TO-PCR-1.1.xml</remoteResource>
-    <remoteResource>PHILIPS-IMAGING-DD-001.xml</remoteResource>
+    <remoteResource>PHILIPS-IMAGING-DD-001-1.xml</remoteResource>
     <remoteResource>PHILIPS-MR.xml</remoteResource>
-    <remoteResource>PHILIPS-MR-IMAGING-DD-001.xml</remoteResource>
+    <remoteResource>PHILIPS-MR-IMAGING-DD-001-1.xml</remoteResource>
     <remoteResource>PHILIPS-MR-R5.5-PART.xml</remoteResource>
     <remoteResource>PHILIPS-MR-R5.6-PART.xml</remoteResource>
     <remoteResource>PHILIPS-MR-SPECTRO-1.xml</remoteResource>

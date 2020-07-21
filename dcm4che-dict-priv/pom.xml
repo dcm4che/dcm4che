@@ -1557,16 +1557,16 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
-                <include>PHILIPS-IMAGING-DD-001.xml</include>
+                <include>PHILIPS-IMAGING-DD-001-1.xml</include>
               </includes>
               <stylesheet>src/main/xsl/PrivateKeyword.java.xsl</stylesheet>
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>PHILIPS_IMAGING_DD_001</value>
+                  <value>PHILIPS_IMAGING_DD_001_1</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_IMAGING_DD_001</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_IMAGING_DD_001_1</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -1576,20 +1576,20 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
-                <include>PHILIPS-IMAGING-DD-001.xml</include>
+                <include>PHILIPS-IMAGING-DD-001-1.xml</include>
               </includes>
               <stylesheet>src/main/xsl/PrivateTag.java.xsl</stylesheet>
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>PHILIPS_IMAGING_DD_001</value>
+                  <value>PHILIPS_IMAGING_DD_001_1</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>PHILIPS IMAGING DD 001</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_IMAGING_DD_001</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_IMAGING_DD_001_1</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -1599,16 +1599,16 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
-                <include>PHILIPS-IMAGING-DD-001.xml</include>
+                <include>PHILIPS-IMAGING-DD-001-1.xml</include>
               </includes>
               <stylesheet>src/main/xsl/PrivateElementDictionary.java.xsl</stylesheet>
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>PHILIPS_IMAGING_DD_001</value>
+                  <value>PHILIPS_IMAGING_DD_001_1</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_IMAGING_DD_001</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_IMAGING_DD_001_1</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>
@@ -1679,16 +1679,16 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
-                <include>PHILIPS-MR-IMAGING-DD-001.xml</include>
+                <include>PHILIPS-MR-IMAGING-DD-001-1.xml</include>
               </includes>
               <stylesheet>src/main/xsl/PrivateKeyword.java.xsl</stylesheet>
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>PHILIPS_MR_IMAGING_DD_001</value>
+                  <value>PHILIPS_MR_IMAGING_DD_001_1</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_MR_IMAGING_DD_001</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_MR_IMAGING_DD_001_1</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateKeyword.java</targetName>
@@ -1698,20 +1698,20 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
-                <include>PHILIPS-MR-IMAGING-DD-001.xml</include>
+                <include>PHILIPS-MR-IMAGING-DD-001-1.xml</include>
               </includes>
               <stylesheet>src/main/xsl/PrivateTag.java.xsl</stylesheet>
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>PHILIPS_MR_IMAGING_DD_001</value>
+                  <value>PHILIPS_MR_IMAGING_DD_001_1</value>
                 </parameter>
                 <parameter>
                   <name>PrivateCreatorID</name>
                   <value>PHILIPS MR IMAGING DD 001</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_MR_IMAGING_DD_001</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_MR_IMAGING_DD_001_1</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateTag.java</targetName>
@@ -1721,16 +1721,16 @@
             <transformationSet>
               <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
-                <include>PHILIPS-MR-IMAGING-DD-001.xml</include>
+                <include>PHILIPS-MR-IMAGING-DD-001-1.xml</include>
               </includes>
               <stylesheet>src/main/xsl/PrivateElementDictionary.java.xsl</stylesheet>
               <parameters>
                 <parameter>
                   <name>package</name>
-                  <value>PHILIPS_MR_IMAGING_DD_001</value>
+                  <value>PHILIPS_MR_IMAGING_DD_001_1</value>
                 </parameter>
               </parameters>
-              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_MR_IMAGING_DD_001</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/dict/PHILIPS_MR_IMAGING_DD_001_1</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>PrivateElementDictionary.java</targetName>

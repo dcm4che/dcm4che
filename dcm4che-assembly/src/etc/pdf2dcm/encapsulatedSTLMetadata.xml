@@ -42,13 +42,13 @@
     <DicomAttribute keyword="MeasurementUnitsCodeSequence" tag="004008EA" vr="SQ">
         <Item number="1">
             <DicomAttribute keyword="CodeValue" tag="00080100" vr="SH">
-                <Value number="1">m</Value>
+                <Value number="1">mm</Value>
             </DicomAttribute>
             <DicomAttribute keyword="CodingSchemeDesignator" tag="00080102" vr="SH">
                 <Value number="1">UCUM</Value>
             </DicomAttribute>
             <DicomAttribute keyword="CodeMeaning" tag="00080104" vr="LO">
-                <Value number="1">m</Value>
+                <Value number="1">mm</Value>
             </DicomAttribute>
         </Item>
     </DicomAttribute>

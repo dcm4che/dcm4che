@@ -318,6 +318,28 @@ public class MediaTypes {
             new MediaType("model", "stl");
 
     /**
+     * "model/x.stl-binary"
+     */
+    public final static String MODEL_X_STL_BINARY = "model/x.stl-binary";
+
+    /**
+     * "model/x.stl-binary"
+     */
+    public final static MediaType MODEL_X_STL_BINARY_TYPE =
+            new MediaType("model", "x.stl-binary");
+
+    /**
+     * "application/sla"
+     */
+    public final static String APPLICATION_SLA = "application/sla";
+
+    /**
+     * "application/sla"
+     */
+    public final static MediaType APPLICATION_SLA_TYPE =
+            new MediaType("application", "sla");
+
+    /**
      * "model/obj"
      */
     public final static String MODEL_OBJ = "model/obj";
@@ -417,10 +439,22 @@ public class MediaTypes {
                 : type.equals("video") ? UID.VideoPhotographicImageStorage
                 : equalsIgnoreParameters(bulkdataMediaType, APPLICATION_PDF_TYPE) ? UID.EncapsulatedPDFStorage
                 : equalsIgnoreParameters(bulkdataMediaType, MediaType.APPLICATION_XML_TYPE) ? UID.EncapsulatedCDAStorage
-                : equalsIgnoreParameters(bulkdataMediaType, MODEL_STL_TYPE) ? UID.EncapsulatedSTLStorage
+                : isSTLType(bulkdataMediaType) ? UID.EncapsulatedSTLStorage
                 : equalsIgnoreParameters(bulkdataMediaType, MODEL_OBJ_TYPE) ? UID.EncapsulatedOBJStorage
                 : equalsIgnoreParameters(bulkdataMediaType, MODEL_MTL_TYPE) ? UID.EncapsulatedMTLStorage
                 : null;
+    }
+
+    public static boolean isSTLType(MediaType mediaType) {
+        return equalsIgnoreParameters(mediaType, MODEL_STL_TYPE)
+                || equalsIgnoreParameters(mediaType, MODEL_X_STL_BINARY_TYPE)
+                || equalsIgnoreParameters(mediaType, APPLICATION_SLA_TYPE);
+    }
+
+    public static boolean isSTLType(String type) {
+        return MODEL_STL.equalsIgnoreCase(type)
+                || MODEL_X_STL_BINARY.equalsIgnoreCase(type)
+                || APPLICATION_SLA.equalsIgnoreCase(type);
     }
 
     public static boolean equalsIgnoreParameters(MediaType type1, MediaType type2) {

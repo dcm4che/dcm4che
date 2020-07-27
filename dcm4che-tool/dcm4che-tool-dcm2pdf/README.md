@@ -5,12 +5,14 @@
     Convert DICOM file(s) to PDF (file extension pdf), CDA (file extension
     xml) or STL (file extension stl) file(s). By default DICOM file(s) will be
     checked for Encapsulated PDF Storage SOP Class and converted to PDF
-    file(s). To convert Encapsulated CDA or Encapsulated STL DICOM file(s)
-    specify options --cda or --stl respectively.
+    file(s). To convert Encapsulated CDA / MTL / OBJ / STL DICOM file(s)
+    specify corresponding options as provided.
     -
     Options:
         --cda       Convert DICOM object(s) into CDA file(s)
      -h,--help      display this help and exit
+        --mtl       Convert DICOM object(s) into MTL file(s)
+        --obj       Convert DICOM object(s) into OBJ file(s)
         --stl       Convert DICOM object(s) into STL file(s)
      -V,--version   output version information and exit
     -

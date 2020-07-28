@@ -154,35 +154,28 @@ public class Pdf2Dcm {
     }
 
     private static FileContentType fileContentType(String s) {
-        FileContentType fileContentType;
-        switch (s) {
+        switch (s.toLowerCase()) {
             case "stl":
             case "model/stl":
             case "model/x.stl-binary":
             case "application/sla":
-                fileContentType = FileContentType.STL;
-                break;
+                return FileContentType.STL;
             case "pdf":
             case "application/pdf":
-                fileContentType = FileContentType.PDF;
-                break;
+                return FileContentType.PDF;
             case "xml":
             case "application/xml":
-                fileContentType = FileContentType.CDA;
-                break;
+                return FileContentType.CDA;
             case "mtl":
             case "model/mtl":
-                fileContentType = FileContentType.MTL;
-                break;
+                return FileContentType.MTL;
             case "obj":
             case "model/obj":
-                fileContentType = FileContentType.OBJ;
-                break;
+                return FileContentType.OBJ;
             default:
                 throw new IllegalArgumentException(
                         MessageFormat.format(rb.getString("content-type-undetermined"), s));
         }
-        return fileContentType;
     }
 
     private static void initialize(CommandLine cl) throws Exception {

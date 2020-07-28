@@ -258,68 +258,52 @@ public class StowRS {
     }
 
     private static FileContentType fileContentType(String s) {
-        FileContentType fileContentType;
-        switch (s) {
+        switch (s.toLowerCase()) {
             case "stl":
             case "model/stl":
-                fileContentType = FileContentType.STL;
-                break;
+                return FileContentType.STL;
             case "model/x.stl-binary":
-                fileContentType = FileContentType.STL_BINARY;
-                break;
+                return FileContentType.STL_BINARY;
             case "application/sla":
-                fileContentType = FileContentType.SLA;
-                break;
+                return FileContentType.SLA;
             case "pdf":
             case "application/pdf":
-                fileContentType = FileContentType.PDF;
-                break;
+                return FileContentType.PDF;
             case "xml":
             case "application/xml":
-                fileContentType = FileContentType.CDA;
-                break;
+                return FileContentType.CDA;
             case "mtl":
             case "model/mtl":
-                fileContentType = FileContentType.MTL;
-                break;
+                return FileContentType.MTL;
             case "obj":
             case "model/obj":
-                fileContentType = FileContentType.OBJ;
-                break;
+                return FileContentType.OBJ;
             case "jpg":
             case "jpeg":
             case "image/jpeg":
-                fileContentType = FileContentType.JPEG;
-                break;
+                return FileContentType.JPEG;
             case "jp2":
             case "image/jp2":
-                fileContentType = FileContentType.JP2;
-                break;
+                return FileContentType.JP2;
             case "png":
             case "image/png":
-                fileContentType = FileContentType.PNG;
-                break;
+                return FileContentType.PNG;
             case "gif":
             case "image/gif":
-                fileContentType = FileContentType.GIF;
-                break;
+                return FileContentType.GIF;
             case "mpeg":
             case "video/mpeg":
-                fileContentType = FileContentType.MPEG;
-                break;
+                return FileContentType.MPEG;
             case "mp4":
             case "video/mp4":
-                fileContentType = FileContentType.MP4;
-                break;
+                return FileContentType.MP4;
             case "mov":
             case "video/quicktime":
-                fileContentType = FileContentType.QUICKTIME;
-                break;
+                return FileContentType.QUICKTIME;
             default:
                 throw new IllegalArgumentException(
                         MessageFormat.format(rb.getString("bulkdata-file-not-supported"), s));
         }
-        return fileContentType;
     }
 
     enum FileContentType {

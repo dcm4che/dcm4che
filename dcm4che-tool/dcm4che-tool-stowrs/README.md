@@ -23,67 +23,76 @@
     File names shall not contain spaces.
     -
     Options:
-     -a,--accept <arg>           Specify the value for Accept header : xml or
-                                 json. The value of Accept header will then be
-                                 sent in request header as
-                                 application/dicom+xml or
-                                 application/dicom+json. Note that for DICOM
-                                 objects application/dicom+xml will always be
-                                 used by default. If this flag is absent, for
-                                 bulkdata type of objects the value specified
-                                 in -t option will be used to determine
-                                 application/dicom+xml or
-                                 application/dicom+json. If -t option is
-                                 absent as well then application/dicom+xml
-                                 will be used by default.
-        --bearer <bearer>        Specify the bearer token to be used in
-                                 Authorization header for server
-                                 authentication.
-     -f,--file <file>            Specify the file containing the metadata (in
-                                 XML format).
-     -h,--help                   display this help and exit
-     -m <[seq/]attr=value>       Specify metadata attributes. attr can be
-                                 specified by keyword or tag value (in hex),
-                                 e.g. PatientName or 00100010. Attributes in
-                                 nested Datasets can be specified by including
-                                 the keyword/tag value of the sequence
-                                 attribute, e.g. 00400275/00400009 for
-                                 Scheduled Procedure Step ID in the Request.
-        --no-app                 Application segments APPn are to be excluded
-                                 from JPEG stream. If absent JPEG stream
-                                 verbatim encapsulated by default.
-        --pixel-header           If this option is specified, then the
-                                 metadata information shall be extracted from
-                                 header of pixel data for jpeg images, mpeg,
-                                 mp4 and quicktime videos in addition to the
-                                 metadata generation as explained above in
-                                 description.
-     -t,--type <type>            Specify the value for Content-type header :
-                                 xml or json. The value of Content-type will
-                                 then be sent in request header as
-                                 application/dicom+xml or
-                                 application/dicom+json. If this flag is
-                                 absent, for bulkdata type of objects
-                                 application/dicom+xml will be used by
-                                 default. Note that for DICOM objects, tool
-                                 will always send Content-type as
-                                 application/dicom.
-        --tsuid                  Specify if the Transfer Syntax UID shall be
-                                 sent in multipart request for content types
-                                 image/jpeg, video/mpeg, video/mp4 or
-                                 video/quicktime files.
-     -u,--user <user:password>   Specify the user name and password to use for
-                                 server authentication.
-        --url <url>              Specify the request URL.
-     -V,--version                output version information and exit
-        --video                  Send gif file as Video Photographic Image
-                                 Storage by generating sample metadata from
-                                 etc/stowrs/vlPhotographicImageMetadata.xml
-                                 file.
-        --xc                     Send image files as VL Photographic images by
-                                 generating sample metadata from
-                                 etc/stowrs/vlPhotographicImageMetadata.xml
-                                 file.
+     -a,--accept <arg>                Specify the value for Accept header :
+                                      xml or json. The value of Accept header
+                                      will then be sent in request header as
+                                      application/dicom+xml or
+                                      application/dicom+json. Note that for
+                                      DICOM objects application/dicom+xml will
+                                      always be used by default. If this flag
+                                      is absent, for bulkdata type of objects
+                                      the value specified in -t option will be
+                                      used to determine application/dicom+xml
+                                      or application/dicom+json. If -t option
+                                      is absent as well then
+                                      application/dicom+xml will be used by
+                                      default.
+        --bearer <bearer>             Specify the bearer token to be used in
+                                      Authorization header for server
+                                      authentication.
+        --contentType <contentType>   Specify MIME type of bulkdata file(s).
+                                      If specified, content type of individual
+                                      bulkdata file(s) (and/or in
+                                      directory(-ies)) shall not be probed.
+     -f,--file <file>                 Specify the file containing the metadata
+                                      (in XML format).
+     -h,--help                        display this help and exit
+     -m <[seq/]attr=value>            Specify metadata attributes. attr can be
+                                      specified by keyword or tag value (in
+                                      hex), e.g. PatientName or 00100010.
+                                      Attributes in nested Datasets can be
+                                      specified by including the keyword/tag
+                                      value of the sequence attribute, e.g.
+                                      00400275/00400009 for Scheduled
+                                      Procedure Step ID in the Request.
+        --no-app                      Application segments APPn are to be
+                                      excluded from JPEG stream. If absent
+                                      JPEG stream verbatim encapsulated by
+                                      default.
+        --pixel-header                If this option is specified, then the
+                                      metadata information shall be extracted
+                                      from header of pixel data for jpeg
+                                      images, mpeg, mp4 and quicktime videos
+                                      in addition to the metadata generation
+                                      as explained above in description.
+     -t,--type <type>                 Specify the value for Content-type
+                                      header : xml or json. The value of
+                                      Content-type will then be sent in
+                                      request header as application/dicom+xml
+                                      or application/dicom+json. If this flag
+                                      is absent, for bulkdata type of objects
+                                      application/dicom+xml will be used by
+                                      default. Note that for DICOM objects,
+                                      tool will always send Content-type as
+                                      application/dicom.
+        --tsuid                       Specify if the Transfer Syntax UID shall
+                                      be sent in multipart request for content
+                                      types image/jpeg, video/mpeg, video/mp4
+                                      or video/quicktime files.
+     -u,--user <user:password>        Specify the user name and password to
+                                      use for server authentication.
+        --url <url>                   Specify the request URL.
+     -V,--version                     output version information and exit
+        --video                       Send gif file as Video Photographic
+                                      Image Storage by generating sample
+                                      metadata from
+                                      etc/stowrs/vlPhotographicImageMetadata.x
+                                      ml file.
+        --xc                          Send image files as VL Photographic
+                                      images by generating sample metadata
+                                      from
+                                      etc/stowrs/vlPhotographicImageMetadata.x
+                                      ml file.
     -
     Example: stowrs -m PatientName=John^Doe --url
     http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies img.jpeg
@@ -101,6 +110,14 @@
     nceUID}
     => Send stow request to stowRS Receiver with the given metadata xml file
     for a Structured Report to the specified study.
+    -
+    Example: stowrs --contentType model/stl --url
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies/{StudyInsta
+    nceUID} file.stl
+    => Send stow request to stowRS Receiver for specified STL file to the
+    specified study. Additionally content type of the
+    file returned by system will be ignored and instead specified content type
+    shall be considered in multipart request.
     -
     Example: stowrs -t json -m StudyInstanceUID=1.2.3.4.5.6.7.8.9.10 --url
     http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies file1.pdf

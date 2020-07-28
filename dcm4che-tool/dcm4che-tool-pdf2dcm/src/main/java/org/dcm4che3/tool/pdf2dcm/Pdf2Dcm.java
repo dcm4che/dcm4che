@@ -78,6 +78,7 @@ public class Pdf2Dcm {
     };
 
     private static Attributes staticMetadata;
+    private static FileContentType fileContentType;
 
     public static void main(String[] args) {
         try {
@@ -92,7 +93,7 @@ public class Pdf2Dcm {
                     && !dest.isDirectory())
                 throw new ParseException(
                         MessageFormat.format(rb.getString("nodestdir"), dest));
-            createStaticMetadata(cl);
+            initialize(cl);
             pdf2Dcm.convert(cl.getArgList());
         } catch (ParseException e) {
             System.err.println("pdf2dcm: " + e.getMessage());
@@ -118,52 +119,76 @@ public class Pdf2Dcm {
                 .argName("xml-file")
                 .desc(rb.getString("file"))
                 .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("contentType")
+                .longOpt("contentType")
+                .desc(rb.getString("contentType"))
+                .build());
         return CLIUtils.parseComandLine(args, opts, rb, Pdf2Dcm.class);
     }
 
-    enum FileType {
+    enum FileContentType {
         PDF("resource:encapsulatedPDFMetadata.xml"),
-        XML("resource:encapsulatedCDAMetadata.xml"),
-        SLA("resource:encapsulatedSTLMetadata.xml"),
+        CDA("resource:encapsulatedCDAMetadata.xml"),
+        STL("resource:encapsulatedSTLMetadata.xml"),
         MTL("resource:encapsulatedMTLMetadata.xml"),
         OBJ("resource:encapsulatedOBJMetadata.xml");
 
-        private String sampleMetadataFile;
+        private final String sampleMetadataFile;
 
         public String getSampleMetadataFile() {
             return sampleMetadataFile;
         }
 
-        FileType(String sampleMetadataFile) {
+        FileContentType(String sampleMetadataFile) {
             this.sampleMetadataFile = sampleMetadataFile;
         }
 
-        static FileType valueOf(Path path) throws IOException {
-            String contentType = contentTypeOfFile(path);
-            if (contentType == null)
-                throw new IllegalArgumentException(
-                        MessageFormat.format(rb.getString("content-type-undetermined"), path));
-
-            try {
-                return valueOf(contentType.substring(contentType.indexOf("/") + 1).toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(
-                        MessageFormat.format(rb.getString("invalid-content-type"), contentType, path));
-            }
+        static FileContentType valueOf(Path path) throws IOException {
+            String fileName = path.toFile().getName();
+            String ext = fileName.substring(fileName.lastIndexOf('.') + 1);
+            String contentType = Files.probeContentType(path);
+            return fileContentType(contentType != null ? contentType : ext);
         }
     }
 
-    private static String contentTypeOfFile(Path path) throws IOException {
-        String contentType = Files.probeContentType(path);
-        if (contentType != null)
-            return contentType;
+    private static FileContentType fileContentType(String s) {
+        FileContentType fileContentType;
+        switch (s) {
+            case "stl":
+            case "model/stl":
+            case "model/x.stl-binary":
+            case "application/sla":
+                fileContentType = FileContentType.STL;
+                break;
+            case "pdf":
+            case "application/pdf":
+                fileContentType = FileContentType.PDF;
+                break;
+            case "xml":
+            case "application/xml":
+                fileContentType = FileContentType.CDA;
+                break;
+            case "mtl":
+            case "model/mtl":
+                fileContentType = FileContentType.MTL;
+                break;
+            case "obj":
+            case "model/obj":
+                fileContentType = FileContentType.OBJ;
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        MessageFormat.format(rb.getString("content-type-undetermined"), s));
+        }
+        return fileContentType;
+    }
 
-        String fileName = path.toFile().getName();
-        String ext = fileName.substring(fileName.lastIndexOf('.') + 1);
-        return ext.equalsIgnoreCase("obj")
-                ? "model/obj"
-                : ext.equalsIgnoreCase("mtl")
-                    ? "model/mtl" : null;
+    private static void initialize(CommandLine cl) throws Exception {
+        createStaticMetadata(cl);
+        if (cl.hasOption("contentType"))
+            fileContentType = fileContentType(cl.getOptionValue("contentType"));
     }
 
     private static void createStaticMetadata(CommandLine cl) throws Exception {
@@ -176,10 +201,12 @@ public class Pdf2Dcm {
         supplementType2Tags(staticMetadata);
     }
 
-    private Attributes createMetadata(FileType fileType) throws Exception {
-        Attributes fileMetadata = SAXReader.parse(StreamUtils.openFileOrURL(fileType.getSampleMetadataFile()));
+    private Attributes createMetadata(FileContentType fileContentType) throws Exception {
+        Attributes fileMetadata = SAXReader.parse(StreamUtils.openFileOrURL(fileContentType.getSampleMetadataFile()));
         fileMetadata.addAll(staticMetadata);
-        if ((fileType == FileType.SLA || fileType == FileType.OBJ) && !fileMetadata.containsValue(Tag.FrameOfReferenceUID))
+        if ((fileContentType == FileContentType.STL
+                || fileContentType == FileContentType.OBJ)
+                && !fileMetadata.containsValue(Tag.FrameOfReferenceUID))
             fileMetadata.setString(Tag.FrameOfReferenceUID, VR.UI, UIDUtils.createUID());
         return fileMetadata;
     }
@@ -199,8 +226,8 @@ public class Pdf2Dcm {
     }
 
     class Pdf2DcmFileVisitor extends SimpleFileVisitor<Path> {
-        private Path srcPath;
-        private Path destPath;
+        private final Path srcPath;
+        private final Path destPath;
 
         Pdf2DcmFileVisitor(Path srcPath, Path destPath) {
             this.srcPath = srcPath;
@@ -236,8 +263,9 @@ public class Pdf2Dcm {
     }
 
     private void convert(Path srcFilePath, Path destFilePath) throws Exception {
-        FileType fileType = FileType.valueOf(srcFilePath);
-        Attributes fileMetadata = createMetadata(fileType);
+        FileContentType fileContentType1 = fileContentType != null
+                                            ? fileContentType : FileContentType.valueOf(srcFilePath);
+        Attributes fileMetadata = createMetadata(fileContentType1);
         File srcFile = srcFilePath.toFile();
         File destFile = destFilePath.toFile();
         long fileLength = srcFile.length();

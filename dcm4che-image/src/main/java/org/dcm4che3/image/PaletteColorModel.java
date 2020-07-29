@@ -49,6 +49,9 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
@@ -131,6 +134,7 @@ public class PaletteColorModel extends ColorModel {
 
     private void inflateSegmentedLut(int[] in, byte[] out) {
         int x = 0;
+        int y = 0;
         try {
             for (int i = 0; i < in.length;) {
                 int op = in[i++];
@@ -138,10 +142,10 @@ public class PaletteColorModel extends ColorModel {
                 switch (op) {
                 case 0:
                     while (n-- > 0)
-                        out[x++] = (byte) in[i++];
+                        out[x++] = (byte) ((y = in[i++] & 0xffff) >> 8);
                     break;
                 case 1:
-                     x = linearSegment(in[i++], out, x, n);
+                     x = linearSegment(y, y = in[i++] & 0xffff, out, x, n);
                     break;
                 case 2: {
                     int i2 = (in[i++] & 0xffff) | (in[i++] << 16);
@@ -151,10 +155,10 @@ public class PaletteColorModel extends ColorModel {
                         switch (op2) {
                         case 0:
                             while (n2-- > 0)
-                                out[x++] = (byte) in[i2++];
+                                out[x++] = (byte) ((y = in[i2++] & 0xffff) >> 8);
                             break;
                         case 1:
-                            x = linearSegment(in[i2++], out, x, n);
+                            x = linearSegment(y, y = in[i2++] & 0xffff, out, x, n);
                             break;
                         default:
                             illegalOpcode(op, i2-2);
@@ -180,13 +184,12 @@ public class PaletteColorModel extends ColorModel {
                 "Running out of data inflating segmented LUT");
     }
 
-    private static int linearSegment(int y1, byte[] out, int x, int n) {
+    private static int linearSegment(int y0, int y1, byte[] out, int x, int n) {
         if (x == 0)
             throw new IllegalArgumentException(
                     "Linear segment cannot be the first segment");
 
         try {
-            int y0 = out[x-1];
             int dy = y1-y0;
             for (int j = 1; j <= n; j++)
                 out[x++] = (byte)((y0 + dy*j/n)>>8);

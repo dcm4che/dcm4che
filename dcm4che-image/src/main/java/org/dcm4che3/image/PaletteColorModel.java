@@ -49,9 +49,6 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;

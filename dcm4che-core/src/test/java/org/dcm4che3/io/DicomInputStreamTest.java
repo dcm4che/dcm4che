@@ -57,11 +57,11 @@ public class DicomInputStreamTest {
             assertTrue(pixeldata instanceof Fragments);
             Fragments fragments = (Fragments) pixeldata;
             assertEquals(11, fragments.size());
-            assertEquals(11, bulkDataFiles.size());
+            assertEquals(14, bulkDataFiles.size());
             for (int i = 0; i < 10; i++) {
                 Object fragment = fragments.get(++i);
                 assertTrue(fragment instanceof BulkData);
-                assertEquals(bulkDataFiles.get(i), ((BulkData)fragment).getFile());
+                assertEquals(bulkDataFiles.get(i + 3), ((BulkData)fragment).getFile());
             }
         } finally {
             for (File bulkDataFile : bulkDataFiles) {

@@ -167,7 +167,7 @@ public class PaletteColorModel extends ColorModel {
                         break;
                     default:
                         throw new IllegalArgumentException(
-                                "illegal op code " + segm[segPos] + " at index" + segPos);
+                                "illegal op code " + op + " at index" + segPos);
                 }
             }
             return y0;

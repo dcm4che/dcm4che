@@ -1,4 +1,5 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ * **** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -15,8 +16,8 @@
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,13 +35,16 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * **** END LICENSE BLOCK *****
+ *
+ */
 
 package org.dcm4che3.net;
 
 import org.dcm4che3.net.pdu.AAssociateRJ;
 import org.dcm4che3.net.pdu.UserIdentityAC;
 import org.dcm4che3.net.pdu.UserIdentityRQ;
+import org.dcm4che3.util.ByteUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -48,7 +52,13 @@ import org.dcm4che3.net.pdu.UserIdentityRQ;
  */
 public interface UserIdentityNegotiator {
 
-    UserIdentityAC negotiate(Association as, UserIdentityRQ userIdentity)
-            throws AAssociateRJ;
+    default UserIdentityAC negotiate(Association as, UserIdentityRQ userIdentity)
+            throws AAssociateRJ {
+        return userIdentity != null && userIdentity.isPositiveResponseRequested()
+                ? new UserIdentityAC(userIdentity.getType() > 2
+                    ? userIdentity.getPrimaryField()
+                    : ByteUtils.EMPTY_BYTES)
+                : null;
+    }
 
 }

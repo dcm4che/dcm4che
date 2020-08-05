@@ -52,13 +52,15 @@ public class UserIdentityRQ {
     public static final int USERNAME_PASSCODE = 2;
     public static final int KERBEROS = 3;
     public static final int SAML = 4;
+    public static final int JWT = 5;
 
     private static final String[] TYPES = {
         "0",
         "1 - Username",
         "2 - Username and passcode",
         "3 - Kerberos Service ticket",
-        "4 - SAML Assertion"
+        "4 - SAML Assertion",
+        "5 - JSON Web Token (JWT)"
     };
 
     private final int type;

@@ -40,13 +40,13 @@ public class AAssociateRJ extends IOException {
 
     private static final String[] SERVICE_USER_REASONS = {
         "0",
-        "1 - no-reason-given]",
+        "1 - no-reason-given",
         "2 - application-context-name-not-supported",
         "3 - calling-AE-title-not-recognized",
         "4",
         "5",
         "6",
-        "7 - called-AE-title-not-recognized]",
+        "7 - called-AE-title-not-recognized",
     };
 
     private static final String[] SERVICE_PROVIDER_ACSE_REASONS = {
@@ -57,8 +57,8 @@ public class AAssociateRJ extends IOException {
 
     private static final String[] SERVICE_PROVIDER_PRES_REASONS = {
         "0",
-        "1 - temporary-congestion]",
-        "2 - local-limit-exceeded]",
+        "1 - temporary-congestion",
+        "2 - local-limit-exceeded",
     };
 
     private static final String[][] REASONS = {

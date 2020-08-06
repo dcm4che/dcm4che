@@ -1,4 +1,3 @@
-```
 usage: stgcmtscu [options] [-b <aet>[:<port>] -c <aet>@<host>:<port>
                  [<file>..][<directory>..]
 
@@ -217,10 +216,14 @@ Options:
                                           object(s).
     --user <name>                         negotiate user identity with
                                           specified user name
+    --user-jwt <token>                    negotiate user identity with
+                                          specified JSON Web Token
     --user-pass <password>                negotiate user identity with
                                           specified password
     --user-rsp                            negotiate user identity with
                                           positive response requested
+    --user-saml <assertion>               negotiate user identity with
+                                          specified SAML Assertion
  -V,--version                             output version information and
                                           exit
 -
@@ -231,4 +234,3 @@ with STGCMTSCU as called AE title, for receiving Storage Commitment
 Results, before sending a Storage Commitment Request for SOP Instances in
 directory path/to/study to Storage Service Class Provider DCMQRSCP,
 listening on local port 11112.
-```

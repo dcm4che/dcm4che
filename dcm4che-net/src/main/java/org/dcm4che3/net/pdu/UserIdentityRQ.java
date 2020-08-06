@@ -38,7 +38,7 @@
 
 package org.dcm4che3.net.pdu;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.dcm4che3.util.StringUtils;
 
@@ -82,13 +82,41 @@ public class UserIdentityRQ {
         this(type, rspReq, primaryField, null);
     }
 
+    /**
+     * @deprecated use {@link #usernamePasscode}
+     */
+    @Deprecated
     public UserIdentityRQ(String username, char[] passcode) {
         this(USERNAME_PASSCODE, true, toBytes(username),
                 toBytes(new String(passcode)));
     }
 
+    /**
+     * @deprecated use {@link #username}
+     */
+    @Deprecated
     public UserIdentityRQ(String username, boolean rspReq) {
         this(USERNAME, rspReq, toBytes(username));
+    }
+
+    public static UserIdentityRQ username(String username, boolean rspReq) {
+        return new UserIdentityRQ(USERNAME, rspReq, toBytes(username));
+    }
+
+    public static UserIdentityRQ usernamePasscode(String username, char[] passcode, boolean rspReq) {
+        return new UserIdentityRQ(USERNAME, rspReq, toBytes(username), toBytes(new String(passcode)));
+    }
+
+    public static UserIdentityRQ kerberos(byte[] ticket, boolean rspReq) {
+        return new UserIdentityRQ(KERBEROS, rspReq, ticket);
+    }
+
+    public static UserIdentityRQ saml(String assertion, boolean rspReq) {
+        return new UserIdentityRQ(SAML, rspReq, toBytes(assertion));
+    }
+
+    public static UserIdentityRQ jwt(String token, boolean rspReq) {
+        return new UserIdentityRQ(JWT, rspReq, toBytes(token));
     }
 
     private static String typeAsString(int type) {
@@ -124,19 +152,11 @@ public class UserIdentityRQ {
     }
 
     private static byte[] toBytes(String s) {
-        try {
-            return s.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
-        }
+        return s.getBytes(StandardCharsets.UTF_8);
     }
 
     private static String toString(byte[] b) {
-        try {
-            return new String(b, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
-        }
+        return new String(b, StandardCharsets.UTF_8);
     }
 
     public int length() {

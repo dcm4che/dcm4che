@@ -1,4 +1,3 @@
-```
 usage: storescu [options] -c <aet>@<host>:<port> [<file>..][<directory>..]
 
 The storescu application implements a Service Class User (SCU) for the
@@ -207,14 +206,17 @@ Options:
                                           object(s).
     --user <name>                         negotiate user identity with
                                           specified user name
+    --user-jwt <token>                    negotiate user identity with
+                                          specified JSON Web Token
     --user-pass <password>                negotiate user identity with
                                           specified password
     --user-rsp                            negotiate user identity with
                                           positive response requested
+    --user-saml <assertion>               negotiate user identity with
+                                          specified SAML Assertion
  -V,--version                             output version information and
                                           exit
 -
 Example: storescu -c STORESCP@localhost:11112 image.dcm
 => Send DICOM image image.dcm to Storage Service Class Provider STORESCP,
 listening on local port 11112.
-```

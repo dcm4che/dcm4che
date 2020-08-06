@@ -41,6 +41,7 @@ package org.dcm4che3.tool.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.EnumMap;
@@ -99,16 +100,6 @@ public class CLIUtils {
                 .build());
     }
 
-    public static void addBindServerOption(Options opts) {
-        opts.addOption(Option.builder("b")
-                .hasArg()
-                .argName("[aet[@ip]:]port")
-                .desc(rb.getString("bind-server"))
-                .longOpt("bind")
-                .build());
-        addRequestTimeoutOption(opts);
-    }
-
     public static void addConnectOption(Options opts) {
         opts.addOption(Option.builder("c")
                 .hasArg()
@@ -122,7 +113,24 @@ public class CLIUtils {
                 .desc(rb.getString("proxy"))
                 .longOpt("proxy")
                 .build());
-        opts.addOption(Option.builder()
+        addUserIdentityOptions(opts);
+        addConnectTimeoutOption(opts);
+        addAcceptTimeoutOption(opts);
+    }
+
+    public static void addBindServerOption(Options opts) {
+        opts.addOption(Option.builder("b")
+                .hasArg()
+                .argName("[aet[@ip]:]port")
+                .desc(rb.getString("bind-server"))
+                .longOpt("bind")
+                .build());
+        addRequestTimeoutOption(opts);
+    }
+
+    private static void addUserIdentityOptions(Options opts) {
+        OptionGroup group = new OptionGroup();
+        group.addOption(Option.builder()
                 .hasArg()
                 .argName("name")
                 .desc(rb.getString("user"))
@@ -130,13 +138,24 @@ public class CLIUtils {
                 .build());
         opts.addOption(Option.builder()
                 .hasArg()
+                .argName("assertion")
+                .desc(rb.getString("user-saml"))
+                .longOpt("user-saml")
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("token")
+                .desc(rb.getString("user-jwt"))
+                .longOpt("user-jwt")
+                .build());
+        opts.addOptionGroup(group);
+        opts.addOption(Option.builder()
+                .hasArg()
                 .argName("password")
                 .desc(rb.getString("user-pass"))
                 .longOpt("user-pass")
                 .build());
         opts.addOption(null, "user-rsp", false, rb.getString("user-rsp"));
-        addConnectTimeoutOption(opts);
-        addAcceptTimeoutOption(opts);
     }
 
     public static void addAEOptions(Options opts) {
@@ -412,10 +431,21 @@ public class CLIUtils {
 
         if (cl.hasOption("user"))
             rq.setUserIdentityRQ(cl.hasOption("user-pass")
-                    ? new UserIdentityRQ(cl.getOptionValue("user"),
-                            cl.getOptionValue("user-pass").toCharArray())
-                    : new UserIdentityRQ(cl.getOptionValue("user"),
+                    ? UserIdentityRQ.usernamePasscode(
+                            cl.getOptionValue("user"),
+                            cl.getOptionValue("user-pass").toCharArray(),
+                            cl.hasOption("user-rsp"))
+                    : UserIdentityRQ.username(
+                            cl.getOptionValue("user"),
                             cl.hasOption("user-rsp")));
+        else if (cl.hasOption("user-saml"))
+            rq.setUserIdentityRQ(UserIdentityRQ.saml(
+                    cl.getOptionValue("user-saml"),
+                    cl.hasOption("user-rsp")));
+        else if (cl.hasOption("user-jwt"))
+            rq.setUserIdentityRQ(UserIdentityRQ.jwt(
+                    cl.getOptionValue("user-jwt"),
+                    cl.hasOption("user-rsp")));
     }
 
     public static void configureBind(Connection conn,

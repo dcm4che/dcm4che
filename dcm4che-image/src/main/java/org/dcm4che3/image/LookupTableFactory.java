@@ -289,6 +289,8 @@ public class LookupTableFactory {
             return false;
 
         int[] min_max = calcMinMax(raster);
+        if (min_max[0] == min_max[1])
+        	return false;
         windowCenter = (min_max[0] + min_max[1] + 1) / 2 * rescaleSlope + rescaleIntercept;
         windowWidth = Math.abs((min_max[1] + 1 - min_max[0]) * rescaleSlope);
         if (addAutoWindow) {

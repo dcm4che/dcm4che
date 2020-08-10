@@ -104,7 +104,7 @@ public class UserIdentityRQ {
     }
 
     public static UserIdentityRQ usernamePasscode(String username, char[] passcode, boolean rspReq) {
-        return new UserIdentityRQ(USERNAME, rspReq, toBytes(username), toBytes(new String(passcode)));
+        return new UserIdentityRQ(USERNAME_PASSCODE, rspReq, toBytes(username), toBytes(new String(passcode)));
     }
 
     public static UserIdentityRQ kerberos(byte[] ticket, boolean rspReq) {

@@ -66,6 +66,7 @@ public class WebApplication {
         REJECT,
         MOVE,
         MOVE_MATCHING,
+        UPS_MATCHING,
         ELASTICSEARCH,
         XDS_RS
     }

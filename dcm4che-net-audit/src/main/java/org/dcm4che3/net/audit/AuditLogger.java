@@ -71,6 +71,7 @@ import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -93,6 +94,8 @@ public class AuditLogger extends DeviceExtension {
     private static final long GRACEFUL_CLOSE_PERIOD_MS = 250;
 
     private static Disruptor<AuditMessageEvent> disruptor;
+
+    private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(null));
 
     public enum SendStatus {
         SENT, QUEUED, SUPPRESSED
@@ -1518,7 +1521,7 @@ public class AuditLogger extends DeviceExtension {
                 try {
                     Device device = conn.getDevice();
                     if (device.getScheduledExecutor() == null) {
-                        device.setScheduledExecutor(Executors.newSingleThreadScheduledExecutor());
+                        device.setScheduledExecutor(scheduledExecutor);
                     }
                     idleTimer = device.schedule(
                             new Runnable() {

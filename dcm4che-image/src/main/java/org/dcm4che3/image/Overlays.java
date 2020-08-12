@@ -261,8 +261,12 @@ public class Overlays {
 
         int ovlyLen = ovlyRows * ovlyColumns;
         int ovlyOff = ovlyLen * ovlyFrameIndex;
-        for (int i = ovlyOff >>> 3,
-               end = (ovlyOff + ovlyLen + 7) >>> 3; i < end; i++) {
+        int end = (ovlyOff + ovlyLen + 7) >>> 3;
+        if (end > ovlyData.length) {
+        	LOG.warn("OverlayData to small ({} vs. {})! Skip this overlay:{}", ovlyData.length, end, TagUtils.toString(tagOverlayData));
+        	return;
+        }
+        for (int i = ovlyOff >>> 3; i < end; i++) {
             int ovlyBits = ovlyData[i] & 0xff;
             for (int j = 0; (ovlyBits>>>j) != 0; j++) {
                 if ((ovlyBits & (1<<j)) == 0)

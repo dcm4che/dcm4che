@@ -53,18 +53,18 @@ public class ItemPointer implements Serializable {
     public final int itemIndex;
 
     public ItemPointer(int sequenceTag) {
-        this(sequenceTag, null, -1);
+        this(null, sequenceTag, -1);
     }
 
     public ItemPointer(int sequenceTag, int itemIndex) {
-        this(sequenceTag, null, itemIndex);
+        this(null, sequenceTag, itemIndex);
     }
 
-    public ItemPointer(int sequenceTag, String privateCreator) {
-        this(sequenceTag, privateCreator, -1);
+    public ItemPointer(String privateCreator, int sequenceTag) {
+        this(privateCreator, sequenceTag, -1);
     }
 
-    public ItemPointer(int sequenceTag, String privateCreator, int itemIndex) {
+    public ItemPointer(String privateCreator, int sequenceTag, int itemIndex) {
         this.sequenceTag = sequenceTag;
         this.privateCreator = privateCreator;
         this.itemIndex = itemIndex;
@@ -83,6 +83,15 @@ public class ItemPointer implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(sequenceTag, privateCreator, itemIndex);
+    }
+
+    @Override
+    public String toString() {
+        return "ItemPointer{" +
+                "sequenceTag=" + sequenceTag +
+                ", privateCreator='" + privateCreator + '\'' +
+                ", itemIndex=" + itemIndex +
+                '}';
     }
 
     public boolean equalsIgnoreItemIndex(ItemPointer that) {

@@ -41,6 +41,7 @@ package org.dcm4che3.data;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ListIterator;
 
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
@@ -54,12 +55,16 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     private static final long serialVersionUID = 7062970085409148066L;
 
     private final Attributes parent;
-    private int length = -1;
+    private final String privateCreator;
+    private final int tag;
+    private volatile int length = -1;
     private volatile boolean readOnly;
 
-    Sequence(Attributes parent, int initialCapacity) {
+    Sequence(Attributes parent, String privateCreator, int tag, int initialCapacity) {
         super(initialCapacity);
         this.parent = parent;
+        this.privateCreator = privateCreator;
+        this.tag = tag;
     }
 
     public boolean isReadOnly() {
@@ -92,15 +97,24 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     }
 
     @Override
+    public int indexOf(Object o) {
+        ListIterator<Attributes> it = listIterator();
+            while (it.hasNext())
+                if (it.next() == o)
+                    return it.previousIndex();
+        return -1;
+    }
+
+    @Override
     public boolean add(Attributes attrs) {
         ensureModifiable();
-        return super.add(attrs.setParent(parent));
+        return super.add(attrs.setParent(parent, privateCreator, tag));
     }
 
     @Override
     public void add(int index, Attributes attrs) {
         ensureModifiable();
-        super.add(index, attrs.setParent(parent));
+        super.add(index, attrs.setParent(parent, privateCreator, tag));
     }
 
     @Override
@@ -121,7 +135,7 @@ public class Sequence extends ArrayList<Attributes> implements Value {
                     "Item already contained by Sequence");
         }
         for (Attributes attrs : c)
-            attrs.setParent(parent);
+            attrs.setParent(parent, privateCreator, tag);
     }
 
     @Override
@@ -135,21 +149,21 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     public void clear() {
         ensureModifiable();
         for (Attributes attrs: this)
-            attrs.setParent(null);
+            attrs.setParent(null, null, 0);
         super.clear();
     }
 
     @Override
     public Attributes remove(int index) {
         ensureModifiable();
-        return super.remove(index).setParent(null);
+        return super.remove(index).setParent(null, null, 0);
     }
 
     @Override
     public boolean remove(Object o) {
         ensureModifiable();
         if (o instanceof Attributes && super.remove(o)) {
-            ((Attributes) o).setParent(null);
+            ((Attributes) o).setParent(null, null, 0);
             return true;
         }
         return false;
@@ -158,7 +172,7 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     @Override
     public Attributes set(int index, Attributes attrs) {
         ensureModifiable();
-        return super.set(index, attrs.setParent(parent));
+        return super.set(index, attrs.setParent(parent, privateCreator, tag));
     }
 
     @Override

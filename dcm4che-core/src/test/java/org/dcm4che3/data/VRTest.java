@@ -104,7 +104,7 @@ public class VRTest {
         ByteUtils.doubleToBytesBE(DOUBLES[1], DOUBLES_AS_FD_BE, 8);
     }
 
-    private static final Sequence SEQUENCE = new Sequence(null, 0);
+    private static final Sequence SEQUENCE = new Sequence(null, null, 0, 0);
     private static final Fragments FRAGMENTS = new Fragments(VR.OB, false, 0);
 
     @Test

@@ -736,7 +736,7 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private void addItemPointer(int sqtag, String privateCreator, int itemIndex) {
-        itemPointers.add(new ItemPointer(sqtag, privateCreator, itemIndex));
+        itemPointers.add(new ItemPointer(privateCreator, sqtag, itemIndex));
     }
 
     private void removeItemPointer() {

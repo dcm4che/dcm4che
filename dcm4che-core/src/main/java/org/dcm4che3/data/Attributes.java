@@ -93,6 +93,8 @@ public class Attributes implements Serializable {
     private static final int TO_STRING_LIMIT = 50;
     private static final int TO_STRING_WIDTH = 78;
     private transient Attributes parent;
+    private transient String parentSequencePrivateCreator;
+    private transient int parentSequenceTag;
     private transient int[] tags;
     private transient VR[] vrs;
     private transient Object[] values;
@@ -224,6 +226,10 @@ public class Attributes implements Serializable {
         return parent == null;
     }
 
+    public final Attributes getRoot() {
+        return isRoot() ? this : parent.getRoot();
+    }
+
     public final int getLevel() {
         return isRoot() ? 0 : 1 + parent.getLevel();
     }
@@ -236,15 +242,19 @@ public class Attributes implements Serializable {
         return parent;
     }
 
-    public final Attributes getRoot() {
-        return isRoot() ? this : parent.getRoot();
+    public String getParentSequencePrivateCreator() {
+        return parentSequencePrivateCreator;
+    }
+
+    public int getParentSequenceTag() {
+        return parentSequenceTag;
     }
 
     public final int getLength() {
         return length;
     }
 
-    Attributes setParent(Attributes parent) {
+    Attributes setParent(Attributes parent, String parentSequencePrivateCreator, int parentSequenceTag) {
         if (parent != null) {
             if (parent.bigEndian != bigEndian)
                 throw new IllegalArgumentException(
@@ -258,6 +268,8 @@ public class Attributes implements Serializable {
                 tz = null;
         }
         this.parent = parent;
+        this.parentSequencePrivateCreator = parentSequencePrivateCreator;
+        this.parentSequenceTag = parentSequenceTag;
         return this;
     }
 
@@ -275,6 +287,31 @@ public class Attributes implements Serializable {
 
     public final int size() {
         return size;
+    }
+
+    public ItemPointer[] itemPointers() {
+        return itemPointers(0);
+    }
+
+    private ItemPointer[] itemPointers(int n) {
+        if (parent == null)
+            return new ItemPointer[n];
+
+        ItemPointer[] itemPointers = parent.itemPointers(n + 1);
+        itemPointers[itemPointers.length - n - 1] =
+                new ItemPointer(parentSequencePrivateCreator, parentSequenceTag, itemIndex());
+        return itemPointers;
+    }
+
+    public int itemIndex() {
+        if (parent == null)
+            return -1;
+
+        Sequence seq = parent.getSequence(parentSequencePrivateCreator, parentSequenceTag);
+        if (seq == null)
+            return -1;
+
+        return seq.indexOf(this);
     }
 
     public int[] tags() {
@@ -431,6 +468,7 @@ public class Attributes implements Serializable {
         }
         return tag;
     }
+
     private int creatorTagOf(String privateCreator, int tag, boolean reserve) {
         if (!TagUtils.isPrivateGroup(tag))
             throw new IllegalArgumentException(TagUtils.toString(tag)
@@ -677,7 +715,7 @@ public class Attributes implements Serializable {
         
         Object value = values[index];
         if (value == Value.NULL)
-            return (Sequence) (values[index] = new Sequence(this, 0));
+            return (Sequence) (values[index] = new Sequence(this, privateCreator, tag, 0));
         return value instanceof Sequence ? (Sequence) value : null;
     }
 
@@ -1763,7 +1801,7 @@ public class Attributes implements Serializable {
         Object value = values[index];
         if (value instanceof Sequence) {
             for (Attributes attrs : ((Sequence) value)) {
-                    attrs.setParent(null);
+                    attrs.setParent(null, null, 0);
             }
         }
         int numMoved = size - index - 1;
@@ -1946,7 +1984,7 @@ public class Attributes implements Serializable {
 
     public Sequence newSequence(String privateCreator, int tag, int initialCapacity) {
         ensureModifiable();
-        Sequence seq = new Sequence(this, initialCapacity);
+        Sequence seq = new Sequence(this, privateCreator, tag, initialCapacity);
         set(privateCreator, tag, VR.SQ, seq);
         return seq;
     }
@@ -1969,9 +2007,9 @@ public class Attributes implements Serializable {
             if (oldValue instanceof Sequence)
                 seq = (Sequence) oldValue;
             else
-                values[index] = seq = new Sequence(this, initialCapacity);
+                values[index] = seq = new Sequence(this, null, 0, initialCapacity);
         } else {
-            seq = new Sequence(this, initialCapacity);
+            seq = new Sequence(this, null, 0, initialCapacity);
             insert(-index-1, tag, VR.SQ, seq);
         }
         return seq;

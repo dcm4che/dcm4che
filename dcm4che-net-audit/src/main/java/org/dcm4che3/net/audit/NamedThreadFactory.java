@@ -42,7 +42,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class NamedThreadFactory implements ThreadFactory {
-    public static final String DEFAULT_PREFIX = "audit-default- ";
+    public static final String DEFAULT_PREFIX = "audit-default-";
 
     private AtomicInteger threadCounter;
     private final String namePrefix;
@@ -53,7 +53,7 @@ public class NamedThreadFactory implements ThreadFactory {
      * @param namePrefix Prefix to use when generating thread names. NULL/Empty will use a default value.
      */
     public NamedThreadFactory(String namePrefix) {
-        if (namePrefix == null || namePrefix.length() == 0) {
+        if (namePrefix == null || namePrefix.isEmpty()) {
             namePrefix = DEFAULT_PREFIX;
         }
 

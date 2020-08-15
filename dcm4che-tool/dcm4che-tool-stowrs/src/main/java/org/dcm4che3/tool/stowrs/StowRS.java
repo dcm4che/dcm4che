@@ -258,7 +258,7 @@ public class StowRS {
     }
 
     private static FileContentType fileContentType(String s) {
-        switch (s.toLowerCase()) {
+        switch (s.toLowerCase(Locale.ENGLISH)) {
             case "stl":
             case "model/stl":
                 return FileContentType.STL;

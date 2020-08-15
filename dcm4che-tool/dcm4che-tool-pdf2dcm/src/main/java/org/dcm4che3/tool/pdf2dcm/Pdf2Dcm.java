@@ -53,6 +53,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -154,7 +155,7 @@ public class Pdf2Dcm {
     }
 
     private static FileContentType fileContentType(String s) {
-        switch (s.toLowerCase()) {
+        switch (s.toLowerCase(Locale.ENGLISH)) {
             case "stl":
             case "model/stl":
             case "model/x.stl-binary":

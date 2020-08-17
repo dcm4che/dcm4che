@@ -1,3 +1,4 @@
+```
 usage: stgcmtscu [options] [-b <aet>[:<port>] -c <aet>@<host>:<port>
                  [<file>..][<directory>..]
 
@@ -234,3 +235,4 @@ with STGCMTSCU as called AE title, for receiving Storage Commitment
 Results, before sending a Storage Commitment Request for SOP Instances in
 directory path/to/study to Storage Service Class Provider DCMQRSCP,
 listening on local port 11112.
+```

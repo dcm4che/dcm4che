@@ -47,7 +47,7 @@ import org.dcm4che3.data.Code;
  * @author Gunter Zeilinger (gunterze@protonmail.com)
  * @since May 2020
  */
-public class ScopeOfAccumlation {
+public class ScopeOfAccumulation {
     public static final Code CODE = new Code(
             "113705",
             "DCM",

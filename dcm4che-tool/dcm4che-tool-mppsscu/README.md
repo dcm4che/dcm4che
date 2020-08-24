@@ -71,12 +71,12 @@ Options:
                                           password by default
     --key-store <file|url>                file path or URL of key store
                                           containing the private key,
-                                          resource:key.jks by default
+                                          resource:key.p12 by default
     --key-store-pass <password>           password for key store
                                           containing the private key,
                                           'secret' by default
     --key-store-type <storetype>          type of key store containing the
-                                          private key, JKS by default
+                                          private key, PKCS12 by default
     --max-ops-invoked <no>                maximum number of operations
                                           this AE may invoke
                                           asynchronously, unlimited by

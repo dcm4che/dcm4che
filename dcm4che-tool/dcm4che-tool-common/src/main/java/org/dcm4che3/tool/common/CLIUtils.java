@@ -602,8 +602,8 @@ public class CLIUtils {
 
         conn.setTlsNeedClientAuth(!cl.hasOption("tls-noauth"));
 
-        String keyStoreURL = cl.getOptionValue("key-store", "resource:key.jks");
-        String keyStoreType =  cl.getOptionValue("key-store-type", "JKS");
+        String keyStoreURL = cl.getOptionValue("key-store", "resource:key.p12");
+        String keyStoreType =  cl.getOptionValue("key-store-type", "PKCS12");
         String keyStorePass = cl.getOptionValue("key-store-pass", "secret");
         String keyPass = cl.getOptionValue("key-pass", keyStorePass);
         String trustStoreURL = cl.getOptionValue("trust-store", "resource:cacerts.jks");

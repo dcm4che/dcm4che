@@ -62,7 +62,7 @@ public abstract class SSLManagerFactory {
 
     public static KeyStore createKeyStore(X509Certificate... certs)
             throws KeyStoreException {
-        KeyStore ks = KeyStore.getInstance("JKS");
+        KeyStore ks = KeyStore.getInstance("PKCS12");
         try {
             ks.load(null);
         } catch (IOException e) {

@@ -606,8 +606,8 @@ public class CLIUtils {
         String keyStoreType =  cl.getOptionValue("key-store-type", "PKCS12");
         String keyStorePass = cl.getOptionValue("key-store-pass", "secret");
         String keyPass = cl.getOptionValue("key-pass", keyStorePass);
-        String trustStoreURL = cl.getOptionValue("trust-store", "resource:cacerts.jks");
-        String trustStoreType =  cl.getOptionValue("trust-store-type", "JKS");
+        String trustStoreURL = cl.getOptionValue("trust-store", "resource:cacerts.p12");
+        String trustStoreType =  cl.getOptionValue("trust-store-type", "PKCS12");
         String trustStorePass = cl.getOptionValue("trust-store-pass", "secret");
 
         Device device = conn.getDevice();

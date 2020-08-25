@@ -241,12 +241,12 @@ Options:
                                           --tls-protocol TLSv1.3
     --trust-store <file|url>              file path of key store
                                           containing trusted certificates,
-                                          resource:cacerts.jks by default
+                                          resource:cacerts.p12 by default
     --trust-store-pass <password>         password for key store with
                                           trusted certificates, 'secret'
                                           by default
     --trust-store-type <storetype>        type of key store with trusted
-                                          certificates, JKS by default
+                                          certificates, PKCS12 by default
     --user <name>                         negotiate user identity with
                                           specified user name
     --user-jwt <token>                    negotiate user identity with

@@ -131,15 +131,15 @@ public class MediaTypes {
             new MediaType("image", "jpeg");
 
     /**
-     * "image/x-jls"
+     * "image/jls"
      */
-    public final static String IMAGE_X_JLS = "image/x-jls";
+    public final static String IMAGE_JLS = "image/jls";
 
     /**
-     * "image/x-jls"
+     * "image/jls"
      */
-    public final static MediaType IMAGE_X_JLS_TYPE =
-            new MediaType("image", "x-jls");
+    public final static MediaType IMAGE_JLS_TYPE =
+            new MediaType("image", "jls");
 
     /**
      * "image/jp2"
@@ -164,15 +164,15 @@ public class MediaTypes {
             new MediaType("image", "jpx");
 
     /**
-     * "image/dicom+rle"
+     * "image/dicom-rle"
      */
-    public final static String IMAGE_X_DICOM_RLE = "image/x-dicom+rle";
+    public final static String IMAGE_DICOM_RLE = "image/dicom-rle";
 
     /**
-     * "image/dicom+rle"
+     * "image/dicom-rle"
      */
-    public final static MediaType IMAGE_X_DICOM_RLE_TYPE =
-            new MediaType("image", "x-dicom+rle");
+    public final static MediaType IMAGE_DICOM_RLE_TYPE =
+            new MediaType("image", "dicom-rle");
 
     /**
      * "video/*"
@@ -371,20 +371,20 @@ public class MediaTypes {
             case UID.JPEGLossless:
                 return IMAGE_JPEG_TYPE;
             case UID.JPEGLSLossless:
-                return IMAGE_X_JLS_TYPE;
+                return IMAGE_JLS_TYPE;
             case UID.JPEG2000LosslessOnly:
                 return IMAGE_JP2_TYPE;
             case UID.JPEG2000Part2MultiComponentLosslessOnly:
                 return IMAGE_JPX_TYPE;
             case UID.RLELossless:
-                return IMAGE_X_DICOM_RLE_TYPE;
+                return IMAGE_DICOM_RLE_TYPE;
             case UID.JPEGBaseline1:
             case UID.JPEGExtended24:
             case UID.JPEGLosslessNonHierarchical14:
                 type = IMAGE_JPEG_TYPE;
                 break;
             case UID.JPEGLSLossyNearLossless:
-                type = IMAGE_X_JLS_TYPE;
+                type = IMAGE_JLS_TYPE;
                 break;
             case UID.JPEG2000:
                 type = IMAGE_JP2_TYPE;
@@ -413,22 +413,30 @@ public class MediaTypes {
 
         String type = bulkdataMediaType.getType().toLowerCase();
         String subtype = bulkdataMediaType.getSubtype().toLowerCase();
-        if (type.equals("image")) {
-            if (subtype.equals("jpeg"))
-                return UID.JPEGLossless;
-            else if (subtype.equals("x-jls"))
-                return UID.JPEGLSLossless;
-            else if (subtype.equals("jp2"))
-                return UID.JPEG2000LosslessOnly;
-            else if (subtype.equals("jpx"))
-                return UID.JPEG2000Part2MultiComponentLosslessOnly;
-            else if (subtype.equals("x-dicom+rle"))
-                return UID.RLELossless;
-        } else if (type.equals("video")) {
-            if (subtype.equals("mpeg"))
-                return UID.MPEG2;
-            else if (subtype.equals("mp4") || subtype.equals("quicktime"))
-                return UID.MPEG4AVCH264HighProfileLevel41;
+        switch (type) {
+            case "image":
+                switch (subtype) {
+                    case "jpeg":
+                        return UID.JPEGLossless;
+                    case "jls":
+                    case "x-jls":
+                        return UID.JPEGLSLossless;
+                    case "jp2":
+                        return UID.JPEG2000LosslessOnly;
+                    case "jpx":
+                        return UID.JPEG2000Part2MultiComponentLosslessOnly;
+                    case "x-dicom-rle":
+                    case "dicom-rle":
+                        return UID.RLELossless;
+                }
+            case "video":
+                switch (subtype) {
+                    case "mpeg":
+                        return UID.MPEG2;
+                    case "mp4":
+                    case "quicktime":
+                        return UID.MPEG4AVCH264HighProfileLevel41;
+                }
         }
         return UID.ExplicitVRLittleEndian;
     }

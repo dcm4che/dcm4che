@@ -58,6 +58,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.*;
 import javax.imageio.stream.ImageOutputStream;
+import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.*;
 import java.util.List;
@@ -68,6 +69,8 @@ import java.util.Objects;
  * @since Jul 2015
  */
 public class Transcoder implements Closeable {
+
+    public static final ColorSpace sRGB = ColorSpace.getInstance(ColorSpace.CS_sRGB);
 
     public interface Handler {
         OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException;
@@ -672,7 +675,7 @@ public class Transcoder implements Closeable {
             } else {
                 int bitsStored = Math.min(imageDescriptor.getBitsStored(), destTransferSyntaxType.getMaxBitsStored());
                 int dataType = bi.getSampleModel().getDataType();
-                cm = pmi.createColorModel(bitsStored, dataType, dataset);
+                cm = pmi.createColorModel(bitsStored, dataType, sRGB, dataset);
             }
             bi = new BufferedImage(cm, bi.getRaster(), false, null);
         }
@@ -889,7 +892,7 @@ public class Transcoder implements Closeable {
         int dataType = bitsAllocated > 8
                 ? (signed ? DataBuffer.TYPE_SHORT : DataBuffer.TYPE_USHORT)
                 : DataBuffer.TYPE_BYTE;
-        ColorModel cm = pmi.createColorModel(bitsStored, dataType, dataset);
+        ColorModel cm = pmi.createColorModel(bitsStored, dataType, sRGB, dataset);
         SampleModel sm = pmi.createSampleModel(dataType, cols, rows, samples, banded);
         WritableRaster raster = Raster.createWritableRaster(sm, null);
         originalBi = new BufferedImage(cm, raster, false, null);

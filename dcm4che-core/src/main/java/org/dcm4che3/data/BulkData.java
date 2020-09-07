@@ -97,17 +97,15 @@ public class BulkData implements Value {
             return;
         
         this.uriPathEnd = pathEnd;
-        if (!uri.startsWith("?offset=", pathEnd))
-            return;
-        
-        int offsetEnd = uri.indexOf("&length=", pathEnd + 8);
-        if (offsetEnd < 0)
-            return;
-
-        try {
-            this.offset = Integer.parseInt(uri.substring(pathEnd + 8, offsetEnd));
-            this.length = Integer.parseInt(uri.substring(offsetEnd + 8));
-        } catch (NumberFormatException ignore) {}
+        for (String qparam : StringUtils.split(uri.substring(pathEnd + 1), '&')) {
+            try {
+                if (qparam.startsWith("offset=")) {
+                    this.offset = Integer.parseInt(qparam.substring(7));
+                } else if (qparam.startsWith("length=")) {
+                    this.length = Integer.parseInt(qparam.substring(7));
+                }
+            } catch (NumberFormatException ignore) {}
+        }
     }
 
     public boolean bigEndian() {

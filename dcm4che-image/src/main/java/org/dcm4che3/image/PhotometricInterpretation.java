@@ -38,6 +38,7 @@
 
 package org.dcm4che3.image;
 
+import java.awt.color.ColorSpace;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
 import java.awt.image.PixelInterleavedSampleModel;
@@ -53,13 +54,13 @@ import org.dcm4che3.data.UID;
 public enum PhotometricInterpretation {
     MONOCHROME1(true, true, false, false) {
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
             return ColorModelFactory.createMonochromeColorModel(bits, dataType);
         }
     },
     MONOCHROME2(true, false, false, false) {
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
             return ColorModelFactory.createMonochromeColorModel(bits, dataType);
         }
     },
@@ -70,14 +71,14 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
-            return ColorModelFactory.createPaletteColorModel(bits, dataType, ds);
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
+            return ColorModelFactory.createPaletteColorModel(bits, dataType, cspace, ds);
         }
     },
     RGB(false, false, false, false) {
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
-            return ColorModelFactory.createRGBColorModel(bits, dataType, ds);
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
+            return ColorModelFactory.createRGBColorModel(bits, dataType, cspace);
         }
 
         @Override
@@ -101,8 +102,8 @@ public enum PhotometricInterpretation {
     },
     YBR_FULL(false, false, true, false) {
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
-            return ColorModelFactory.createYBRFullColorModel(bits, dataType, ds);
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
+            return ColorModelFactory.createYBRFullColorModel(bits, dataType, new YBRColorSpace(cspace,  YBR.FULL));
         }
     },
     YBR_FULL_422(false, false, true, true) {
@@ -112,9 +113,9 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
-            return ColorModelFactory.createYBRColorModel(bits, dataType, ds,
-                    YBR.FULL, ColorSubsampling.YBR_XXX_422);
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
+            return ColorModelFactory.createYBRColorModel(bits, dataType, new YBRColorSpace(cspace, YBR.PARTIAL),
+                    ColorSubsampling.YBR_XXX_422);
         }
 
         @Override
@@ -125,7 +126,7 @@ public enum PhotometricInterpretation {
     },
     YBR_ICT(false, false, true, false) {
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
             throw new UnsupportedOperationException();
         }
 
@@ -137,9 +138,9 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
-            return ColorModelFactory.createYBRColorModel(bits, dataType, ds,
-                    YBR.PARTIAL, ColorSubsampling.YBR_XXX_420);
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
+            return ColorModelFactory.createYBRColorModel(bits, dataType, new YBRColorSpace(cspace, YBR.PARTIAL),
+                    ColorSubsampling.YBR_XXX_420);
         }
 
         @Override
@@ -155,9 +156,9 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
-            return ColorModelFactory.createYBRColorModel(bits, dataType, ds,
-                    YBR.PARTIAL, ColorSubsampling.YBR_XXX_422);
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
+            return ColorModelFactory.createYBRColorModel(bits, dataType, new YBRColorSpace(cspace, YBR.PARTIAL),
+                    ColorSubsampling.YBR_XXX_422);
         }
 
         @Override
@@ -168,7 +169,7 @@ public enum PhotometricInterpretation {
     },
     YBR_RCT(false, false, true, false) {
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
+        public ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
             throw new UnsupportedOperationException();
         }
     };
@@ -213,8 +214,7 @@ public enum PhotometricInterpretation {
         return subSampled;
     }
 
-    public abstract ColorModel createColorModel(int bits, int dataType,
-                                                Attributes ds);
+    public abstract ColorModel createColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds);
 
     public SampleModel createSampleModel(int dataType, int w, int h,
                                          int samples, boolean banded) {

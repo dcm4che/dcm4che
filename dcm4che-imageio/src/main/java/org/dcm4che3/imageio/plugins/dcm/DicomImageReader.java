@@ -38,7 +38,6 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
-import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.EOFException;
@@ -49,6 +48,7 @@ import java.io.InputStream;
 import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.imageio.ImageReadParam;
@@ -66,11 +66,8 @@ import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.image.*;
 import org.dcm4che3.image.LookupTable;
-import org.dcm4che3.image.LookupTableFactory;
-import org.dcm4che3.image.Overlays;
-import org.dcm4che3.image.PhotometricInterpretation;
-import org.dcm4che3.image.StoredValue;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderParam;
@@ -109,7 +106,8 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(DicomImageReader.class);
 
     public static final String POST_PIXEL_DATA = "postPixelData";
-    
+    static final ColorSpace sRGB = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+
     private ImageInputStream iis;
 
     private DicomInputStream dis;
@@ -159,6 +157,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private PhotometricInterpretation pmi;
     private PhotometricInterpretation pmiAfterDecompression;
     private ImageDescriptor imageDescriptor;
+    private ICCProfile.ColorSpaceFactory colorSpaceFactory;
 
     public DicomImageReader(ImageReaderSpi originatingProvider) {
         super(originatingProvider);
@@ -252,12 +251,12 @@ public class DicomImageReader extends ImageReader implements Closeable {
             throws IOException {
         readMetadata();
         checkIndex(frameIndex);
-
+        ColorSpace cspace = colorSpaceOfFrame(frameIndex).orElse(sRGB);
         if (decompressor == null)
-            return createImageType(bitsStored, dataType, banded);
+            return createImageType(bitsStored, dataType, banded, cspace);
         
         if (rle)
-            return createImageType(bitsStored, dataType, true);
+            return createImageType(bitsStored, dataType, true, cspace);
         
         openiis();
         try {
@@ -273,14 +272,14 @@ public class DicomImageReader extends ImageReader implements Closeable {
             throws IOException {
         readMetadata();
         checkIndex(frameIndex);
-        
+        ColorSpace cspace = colorSpaceOfFrame(frameIndex).orElse(sRGB);
         ImageTypeSpecifier imageType;
         if (pmi.isMonochrome())
-            imageType = createImageType(8, DataBuffer.TYPE_BYTE, false);
+            imageType = createImageType(8, DataBuffer.TYPE_BYTE, false, cspace);
         else if (decompressor == null)
-            imageType = createImageType(bitsStored, dataType, banded);
+            imageType = createImageType(bitsStored, dataType, banded, cspace);
         else if (rle)
-            imageType = createImageType(bitsStored, dataType, true);
+            imageType = createImageType(bitsStored, dataType, true, cspace);
         else {
             openiis();
             try {
@@ -434,7 +433,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
             dest = param.getDestination();
         }
         if (rle && imageType == null && dest == null)
-            imageType = createImageType(bitsStored, dataType, true);
+            imageType = createImageType(bitsStored, dataType, true, sRGB);
         decompressParam.setDestinationType(imageType);
         decompressParam.setDestination(dest);
         return decompressParam;
@@ -462,41 +461,80 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 closeiis();
             }
             raster = bi.getRaster();
-            if (samples == 1 || bi.getColorModel().getColorSpace().getType() !=
-                    (pmiAfterDecompression.isYBR() ? ColorSpace.TYPE_YCbCr : ColorSpace.TYPE_RGB)) {
-                bi = null;
-            }
         } else {
             raster = (WritableRaster) readRaster(frameIndex, param);
         }
+        return pmi.isMonochrome()
+                ? applyGrayscaleTransformations(frameIndex, param, raster)
+                : applyColorTransformations(frameIndex, param, raster, bi);
+    }
+
+    private BufferedImage applyGrayscaleTransformations(int frameIndex, ImageReadParam param, WritableRaster raster) {
         int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
         byte[][] overlayData = new byte[overlayGroupOffsets.length][];
-        if (bi == null) {
-            if (pmi.isMonochrome()) {
-                for (int i = 0; i < overlayGroupOffsets.length; i++) {
-                    overlayData[i] = extractOverlay(overlayGroupOffsets[i], raster);
-                }
-                SampleModel sm = createSampleModel(DataBuffer.TYPE_BYTE, false);
-                raster = applyLUTs(raster, frameIndex, param, sm, 8);
-                ColorModel cm = createColorModel(8, DataBuffer.TYPE_BYTE);
-                bi = new BufferedImage(cm, raster, false, null);
+        for (int i = 0; i < overlayGroupOffsets.length; i++) {
+            overlayData[i] = extractOverlay(overlayGroupOffsets[i], raster);
+        }
+        SampleModel sm = new PixelInterleavedSampleModel(
+                DataBuffer.TYPE_BYTE,
+                width,
+                height,
+                1,
+                width,
+                new int[1]);
+        raster = applyLUTs(raster, frameIndex, param, sm, 8);
+        for (int i = 0; i < overlayGroupOffsets.length; i++) {
+            applyOverlayMonochrome(overlayGroupOffsets[i], raster, frameIndex, param, overlayData[i]);
+        }
+        ColorModel cm = ColorModelFactory.createMonochromeColorModel(8, DataBuffer.TYPE_BYTE);
+        BufferedImage bi = new BufferedImage(cm, raster, false, null);
+        return bi;
+    }
+
+    private BufferedImage applyColorTransformations(int frameIndex, ImageReadParam param, WritableRaster raster,
+            BufferedImage bi) {
+        int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
+        ICCProfile.Option iccProfile = param instanceof DicomImageReadParam
+                ? ((DicomImageReadParam) param).getICCProfile()
+                : null;
+        Optional<ColorSpace> iccColorSpace = colorSpaceOfFrame(frameIndex);
+        if (bi != null
+                && pmi != PhotometricInterpretation.PALETTE_COLOR
+                && bi.getColorModel().getColorSpace().getType()
+                    == (pmiAfterDecompression.isYBR() ? ColorSpace.TYPE_YCbCr : ColorSpace.TYPE_RGB)
+                && overlayGroupOffsets.length == 0
+                && (iccProfile == ICCProfile.Option.no
+                    || !iccColorSpace.isPresent() && iccProfile == ICCProfile.Option.none)) {
+            return bi;
+        }
+        ColorSpace colorSpace = iccProfile.adjust(iccColorSpace).orElse(sRGB);
+        ColorModel cm = createColorModel(bitsStored, dataType, colorSpace);
+        bi = new BufferedImage(cm, raster, false, null);
+        Optional<ColorSpace> convertTo = iccProfile.convertTo(iccColorSpace, bi.getColorModel().getColorSpace());
+        if (convertTo.isPresent()) {
+            if (cm instanceof PaletteColorModel) {
+                bi = new BufferedImage(((PaletteColorModel) cm).convertTo(convertTo.get()),
+                        bi.getRaster(),
+                        bi.isAlphaPremultiplied(),
+                        null);
             } else {
-                ColorModel cm = createColorModel(bitsStored, dataType);
-                bi = new BufferedImage(cm, raster, false, null);
+                ColorModel rgbCM = ColorModelFactory.createRGBColorModel(bitsStored, dataType, convertTo.get());
+                bi = BufferedImageUtils.convertYBRtoRGB(bi,
+                        new BufferedImage(
+                                rgbCM,
+                                rgbCM.createCompatibleWritableRaster(width, height),
+                                false,
+                                null));
             }
         }
-        if (overlayGroupOffsets.length > 0) {
-            if (!(bi.getColorModel() instanceof ComponentColorModel)) {
-                BufferedImage bi2 = new BufferedImage(width, height,
-                        pmi.isMonochrome() ? BufferedImage.TYPE_BYTE_GRAY : BufferedImage.TYPE_INT_RGB);
-                Graphics2D graphics = bi2.createGraphics();
-                graphics.drawImage(bi, 0, 0, null);
-                graphics.dispose();
-                bi = bi2;
-            }
-            for (int i = 0; i < overlayGroupOffsets.length; i++) {
-                applyOverlay(overlayGroupOffsets[i], bi.getRaster(), frameIndex, param, 8, overlayData[i]);
-            }
+        if (overlayGroupOffsets.length == 0) {
+            return bi;
+        }
+        if (cm instanceof PaletteColorModel) {
+            bi = BufferedImageUtils.convertPalettetoRGB(bi, null);
+        }
+        for (int i = 0; i < overlayGroupOffsets.length; i++) {
+            applyOverlayColor(overlayGroupOffsets[i], raster, frameIndex, param, bi.getColorModel().getColorSpace());
         }
         return bi;
     }
@@ -547,6 +585,14 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 : iisOfFrame;
     }
 
+    public Optional<ColorSpace> colorSpaceOfFrame(int frameIndex) {
+        ICCProfile.ColorSpaceFactory colorSpaceFactory = this.colorSpaceFactory;
+        if (colorSpaceFactory == null) {
+            this.colorSpaceFactory = colorSpaceFactory = ICCProfile.colorSpaceFactoryOf(metadata.getAttributes());
+        }
+        return colorSpaceFactory.getColorSpace(frameIndex);
+    }
+
     private void seekFrame(int frameIndex) throws IOException {
         assert frameIndex >= flushedFrames;
         if (frameIndex == flushedFrames)
@@ -559,31 +605,38 @@ public class DicomImageReader extends ImageReader implements Closeable {
         }
     }
 
-    private void applyOverlay(int gg0000, WritableRaster raster,
-            int frameIndex, ImageReadParam param, int outBits, byte[] ovlyData) {
+    private void applyOverlayMonochrome(int gg0000, WritableRaster raster,
+            int frameIndex, ImageReadParam param, byte[] ovlyData) {
         Attributes ovlyAttrs = metadata.getAttributes();
-        int[] pixelValue = null;
-        boolean monochrome = pmi.isMonochrome();
+        int[] pixelValue = new int[] { 0xff };
         if (param instanceof DicomImageReadParam) {
             DicomImageReadParam dParam = (DicomImageReadParam) param;
+            pixelValue = new int[] { dParam.getOverlayGrayscaleValue() >> 8 };
             Attributes psAttrs = dParam.getPresentationState();
             if (psAttrs != null) {
                 if (psAttrs.containsValue(Tag.OverlayData | gg0000))
                     ovlyAttrs = psAttrs;
-                pixelValue = monochrome
-                        ? Overlays.getRecommendedGrayscalePixelValue(psAttrs, gg0000, 8)
-                        : Overlays.getRecommendedRGBPixelValue(psAttrs, gg0000);
+                pixelValue = Overlays.getRecommendedGrayscalePixelValue(psAttrs, gg0000, 8);
             }
-            if (pixelValue == null)
-                pixelValue = monochrome
-                        ? new int[] { dParam.getOverlayGrayscaleValue() >> 8 }
-                        : dParam.getOverlayRGBPixelValue();
-        } else {
-            pixelValue = monochrome
-                    ? new int[] { 0xff }
-                    : new int[] { 0xff, 0xff, 0xff } ;
         }
         Overlays.applyOverlay(ovlyData != null ? 0 : frameIndex, raster, ovlyAttrs, gg0000, pixelValue, ovlyData);
+    }
+
+    private void applyOverlayColor(int gg0000, WritableRaster raster, int frameIndex, ImageReadParam param,
+            ColorSpace cspace) {
+        Attributes ovlyAttrs = metadata.getAttributes();
+        int[] pixelValue = new int[] { 0xff, 0xff, 0xff };
+        if (param instanceof DicomImageReadParam) {
+            DicomImageReadParam dParam = (DicomImageReadParam) param;
+            pixelValue = dParam.getOverlayRGBPixelValue();
+            Attributes psAttrs = dParam.getPresentationState();
+            if (psAttrs != null) {
+                if (psAttrs.containsValue(Tag.OverlayData | gg0000))
+                    ovlyAttrs = psAttrs;
+                pixelValue = Overlays.getRecommendedRGBPixelValue(psAttrs, gg0000, cspace);
+            }
+        }
+        Overlays.applyOverlay(frameIndex, raster, ovlyAttrs, gg0000, pixelValue, null);
     }
 
     private int[] getActiveOverlayGroupOffsets(ImageReadParam param) {
@@ -831,14 +884,14 @@ public class DicomImageReader extends ImageReader implements Closeable {
         return pmi.createSampleModel(dataType, width, height, samples, banded);
     }
 
-    private ImageTypeSpecifier createImageType(int bits, int dataType, boolean banded) {
+    private ImageTypeSpecifier createImageType(int bits, int dataType, boolean banded, ColorSpace cspace) {
         return new ImageTypeSpecifier(
-                createColorModel(bits, dataType),
+                createColorModel(bits, dataType, cspace),
                 createSampleModel(dataType, banded));
     }
 
-    private ColorModel createColorModel(int bits, int dataType) {
-        return pmiAfterDecompression.createColorModel(bits, dataType, metadata.getAttributes());
+    private ColorModel createColorModel(int bits, int dataType, ColorSpace cspace) {
+        return pmiAfterDecompression.createColorModel(bits, dataType, cspace, metadata.getAttributes());
     }
 
     private void resetInternalState() {
@@ -860,6 +913,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         }
         patchJpegLS = null;
         pmi = null;
+        colorSpaceFactory = null;
     }
 
     private void checkIndex(int frameIndex) {

@@ -64,15 +64,13 @@ public class ColorModelFactory {
                 dataType);
     }
 
-    public static ColorModel createPaletteColorModel(int bits, int dataType,
-            Attributes ds) {
-        return new PaletteColorModel(bits, dataType, createRGBColorSpace(ds), ds);
+   public static ColorModel createPaletteColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
+        return new PaletteColorModel(bits, dataType, cspace, ds);
     }
 
-    public static ColorModel createRGBColorModel(int bits, int dataType,
-            Attributes ds) {
+    public static ColorModel createRGBColorModel(int bits, int dataType, ColorSpace cspace) {
         return new ComponentColorModel(
-                createRGBColorSpace(ds),
+                cspace,
                 new int[] { bits, bits, bits },
                 false, // hasAlpha
                 false, // isAlphaPremultiplied
@@ -81,10 +79,9 @@ public class ColorModelFactory {
     }
 
 
-    public static ColorModel createYBRFullColorModel(int bits, int dataType,
-            Attributes ds) {
+    public static ColorModel createYBRFullColorModel(int bits, int dataType, ColorSpace cspace) {
         return new ComponentColorModel(
-                new YBRColorSpace(createRGBColorSpace(ds),  YBR.FULL),
+                cspace,
                 new int[] { bits, bits, bits },
                 false, // hasAlpha
                 false, // isAlphaPremultiplied
@@ -92,22 +89,9 @@ public class ColorModelFactory {
                 dataType);
     }
 
-    public static ColorModel createYBRColorModel(int bits, int dataType,
-            Attributes ds, YBR ybr, ColorSubsampling subsampling) {
-        return new SampledComponentColorModel(
-                new YBRColorSpace(createRGBColorSpace(ds), ybr),
-                subsampling);
-    }
-
-    private static ColorSpace createRGBColorSpace(Attributes ds) {
-        return createRGBColorSpace(ds.getSafeBytes(Tag.ICCProfile));
-    }
-
-    private static ColorSpace createRGBColorSpace(byte[] iccProfile) {
-        if (iccProfile != null && iccProfile.length > 0)
-            return new ICC_ColorSpace(ICC_Profile.getInstance(iccProfile));
-
-        return ColorSpace.getInstance(ColorSpace.CS_sRGB);
+    public static ColorModel createYBRColorModel(int bits, int dataType, ColorSpace cspace,
+            ColorSubsampling subsampling) {
+        return new SampledComponentColorModel(cspace, subsampling);
     }
 
 }

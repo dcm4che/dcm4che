@@ -107,15 +107,21 @@ public class BufferedImageUtils {
         WritableRaster rasterDst = dst.getRaster();
         WritableRaster raster = src.getRaster();
         ColorSpace cs = src.getColorModel().getColorSpace();
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                byte[] ba = (byte[]) raster.getDataElements(j, i, null);
-                float[] fba = new float[] { (ba[0] & 0xFF) / 255f, (ba[1] & 0xFF) / 255f, (ba[2] & 0xFF) / 255f };
+        ColorSpace dstcs = dst.getColorModel().getColorSpace();
+        byte[] ba = new byte[3];
+        float[] fba = new float[3];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                raster.getDataElements(x, y, ba);
+                for (int i = 0; i < 3; i++) {
+                    fba[i] = (ba[i] & 0xff) / 255f;
+                }
                 float[] rgb = cs.toRGB(fba);
-                ba[0] = (byte) (rgb[0] * 255);
-                ba[1] = (byte) (rgb[1] * 255);
-                ba[2] = (byte) (rgb[2] * 255);
-                rasterDst.setDataElements(j, i, ba);
+                float[] color = dstcs.fromRGB(rgb);
+                for (int i = 0; i < 3; i++) {
+                    ba[i] = (byte) (color[i] * 255 + 0.5f);
+                }
+                rasterDst.setDataElements(x, y, ba);
             }
         }
         return dst;
@@ -131,7 +137,7 @@ public class BufferedImageUtils {
         int width = src.getWidth();
         int height = src.getHeight();
         if (dst == null) {
-            ColorModel cmodel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[]{8, 8, 8},
+            ColorModel cmodel = new ComponentColorModel(pcm.getColorSpace(), new int[]{8, 8, 8},
                     false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
             SampleModel sampleModel = cmodel.createCompatibleSampleModel(width, height);
             DataBuffer dataBuffer = sampleModel.createDataBuffer();
@@ -140,30 +146,17 @@ public class BufferedImageUtils {
         }
         WritableRaster rasterDst = dst.getRaster();
         WritableRaster raster = src.getRaster();
+        byte[] b = new byte[3];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                byte[] b = convertTo3Bytes(pcm , raster.getDataElements(j, i, null));
+                int rgb = pcm.getRGB(raster.getSample(j, i, 0));
+                b[0] = (byte) ((rgb >> 16) & 0xff);
+                b[1] = (byte) ((rgb >> 8) & 0xff);
+                b[2] = (byte) (rgb & 0xff);
                 rasterDst.setDataElements(j, i, b);
             }
         }
         return dst;
-    }
-
-    private static byte[] convertTo3Bytes(ColorModel pm, Object data) {
-        byte[] b = new byte[3];
-        int pix;
-        if (data instanceof byte[]) {
-            byte[] pixels = (byte[]) data;
-            pix = pm.getRGB(pixels[0]);
-
-        } else {
-            short[] pixels = (short[]) data;
-            pix = pm.getRGB(pixels[0]);
-        }
-        b[0] = (byte) ((pix >> 16) & 0xff);
-        b[1] = (byte) ((pix >> 8) & 0xff);
-        b[2] = (byte) (pix & 0xff);
-        return b;
     }
 
     /**

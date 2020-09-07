@@ -41,6 +41,9 @@ package org.dcm4che3.imageio.plugins.dcm;
 import javax.imageio.ImageReadParam;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.image.ICCProfile;
+
+import java.util.Objects;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -58,6 +61,7 @@ public class DicomImageReadParam extends ImageReadParam {
     private int overlayActivationMask = 0xf;
     private int overlayGrayscaleValue = 0xffff;
     private int overlayRGBValue = 0xffffff;
+    private ICCProfile.Option iccProfile = ICCProfile.Option.none;
     private Attributes presentationState;
 
     public float getWindowCenter() {
@@ -157,5 +161,13 @@ public class DicomImageReadParam extends ImageReadParam {
 
     public int[] getOverlayRGBPixelValue() {
         return new int[]{(overlayRGBValue >> 16) & 0xff, (overlayRGBValue >> 8) & 0xff, overlayRGBValue & 0xff};
+    }
+
+    public ICCProfile.Option getICCProfile() {
+        return iccProfile;
+    }
+
+    public void setICCProfile(ICCProfile.Option iccProfile) {
+        this.iccProfile = Objects.requireNonNull(iccProfile);
     }
 }

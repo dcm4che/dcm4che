@@ -84,6 +84,42 @@ public class PaletteColorModel extends ColorModel {
         lut = LUT.create(bits, r, g, b, rDesc[1], gDesc[1], bDesc[1]);
     }
 
+    private PaletteColorModel(PaletteColorModel src, ColorSpace cs) {
+        super(src.pixel_bits, opaqueBits, cs, false, false,
+                src.getTransparency(), src.transferType);
+        int[] rgb = new int[1 << src.pixel_bits];
+        for (int i = 0; i < rgb.length; i++) {
+           rgb[i] = convertTo(src.getRGB(i), src.getColorSpace(), cs);
+        }
+        lut = new LUT.Packed(src.pixel_bits, rgb);
+    }
+
+    private static int convertTo(int rgb, ColorSpace src, ColorSpace cs) {
+        float[] from = {
+                scaleRGB(rgb >> 16),
+                scaleRGB(rgb >> 8),
+                scaleRGB(rgb),
+        };
+        float[] ciexyz = src.toCIEXYZ(from);
+        float[] to = cs.fromCIEXYZ(ciexyz);
+        return 0xff000000
+                | (unscaleRGB(to[0]) << 16)
+                | (unscaleRGB(to[1]) << 8)
+                | (unscaleRGB(to[2]));
+    }
+
+    private static int unscaleRGB(float value) {
+        return Math.min((int) (value * 256), 255);
+    }
+
+    private static float scaleRGB(int value) {
+        return (value & 0xff) / 255f;
+    }
+
+    public PaletteColorModel convertTo(ColorSpace cs) {
+        return new PaletteColorModel(this, cs);
+    }
+
     private int[] lutDescriptor(Attributes ds, int descTag) {
         int[] desc = ds.getInts(descTag);
         if (desc == null) {
@@ -324,6 +360,12 @@ public class PaletteColorModel extends ColorModel {
                         | ((r[i] & 0xff) << 16)
                         | ((g[i] & 0xff) << 8)
                         | (b[i] & 0xff);
+            }
+
+            Packed(int bits, int[] rgb) {
+                super(bits);
+                this.offset = 0;
+                this.rgb = rgb;
             }
 
             @Override

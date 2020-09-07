@@ -435,6 +435,22 @@ public class Attributes implements Serializable {
         return item;
     }
 
+    public Attributes getFunctionGroup(int sequenceTag, int frameIndex) {
+        Attributes sfgs = getNestedDataset(Tag.SharedFunctionalGroupsSequence);
+        if (sfgs == null)
+            return null;
+
+        Attributes item = sfgs.getNestedDataset(sequenceTag);
+        if (item != null)
+            return item;
+
+        Attributes fgs = getNestedDataset(Tag.PerFrameFunctionalGroupsSequence, frameIndex);
+        if (fgs == null)
+            return null;
+
+        return fgs.getNestedDataset(sequenceTag);
+    }
+
     private int indexForInsertOf(int tag) {
         return size == 0 ? -1
                 : tags[size-1] < tag ? -(size+1)

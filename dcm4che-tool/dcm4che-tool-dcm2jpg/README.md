@@ -10,12 +10,29 @@ Options:
  -c,--windowCenter <center>   Window Center of linear VOI LUT function to
                               apply
  -E <class>                   ImageWriter class to be used for encoding,
-                              choose the first Image Writer found for
-                              given image format by default
+                              com.sun.imageio.plugins.* (= JDK ImageIO
+                              plugins) by default
  -F <format>                  output image format, JPEG by default
     --frame <number>          frame to convert, 1 (= first frame) by
                               default
  -h,--help                    display this help and exit
+    --iccprofile <profile>    specifies the color characteristics of, and
+                              inclusion of an ICC Profile in the rendered
+                              image:
+                              - no: include no ICC profile
+                              - yes: include the ICC Profile specified in
+                              the DICOM image, otherwise the sRGB ICC
+                              profile
+                              - srgb: transform original pixels to sRGB
+                              color space and include sRGB ICC profile
+                              - adobergb: transform original pixels to
+                              Adobe RGB color space and include Adobe RGB
+                              ICC profile
+                              - rommrgb: transform original pixels to ROMM
+                              RGB color space and include ROMM RGB ICC
+                              profile)
+                              Only include ICC profile if one is specified
+                              in the DICOM image by default.
     --lsE                     list available Image Writers for specified
                               output image format
     --lsF                     list supported output image formats

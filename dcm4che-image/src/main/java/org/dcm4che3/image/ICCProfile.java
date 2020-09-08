@@ -126,7 +126,7 @@ public final class ICCProfile {
 
             @Override
             public Optional<ColorSpace> convertTo(Optional<ColorSpace> cspace, ColorSpace srccs) {
-                return srccs.getType() != ColorSpace.CS_sRGB ? srgb.colorSpace : Optional.empty();
+                return srccs.getType() == ColorSpace.TYPE_YCbCr ? srgb.colorSpace : Optional.empty();
             }
         },
         srgb("sRGB.pf") {

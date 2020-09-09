@@ -54,13 +54,13 @@ enum TemporalType {
         public Date parse(TimeZone tz, String s, boolean ceil,
                 DatePrecision precision) {
             precision.lastField = Calendar.DAY_OF_MONTH;
-            return DateUtils.parseDA(null, s, ceil);
+            return DateUtils.parseDA(tz, s, ceil);
         }
 
         @Override
         public String format(TimeZone tz, Date date,
                 DatePrecision precision) {
-            return DateUtils.formatDA(null, date);
+            return DateUtils.formatDA(tz, date);
         }
     }, DT {
         @Override

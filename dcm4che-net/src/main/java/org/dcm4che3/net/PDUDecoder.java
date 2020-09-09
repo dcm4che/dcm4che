@@ -455,7 +455,6 @@ class PDUDecoder extends PDVInputStream {
             nextPDV(PDVType.DATA, pcid);
             if (dimse.isRSP()) {
                 Attributes data = readDataset(tsuid);
-                Dimse.LOG.debug("Dataset:\n{}", data);
                 if (Dimse.LOG.isDebugEnabled()) {
                     Dimse.LOG.debug("{} >> {} Dataset:\n{}", as, dimse.toString(cmd), data);
                 }

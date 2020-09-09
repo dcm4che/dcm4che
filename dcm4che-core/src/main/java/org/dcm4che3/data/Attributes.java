@@ -2368,11 +2368,11 @@ public class Attributes implements Serializable {
     private void mergeOriginalAttributesSequence(Sequence src, Sequence dest) {
         Map<String,Attributes> sort = new TreeMap<>();
         for (Attributes destItem : dest) {
-            sort.put(destItem.getString(Tag.AttributeModificationDateTime), destItem);
+            sort.put(destItem.getString(Tag.AttributeModificationDateTime, ""), destItem);
         }
         dest.clear();
         for (Attributes srcItem : src) {
-            String dt = srcItem.getString(Tag.AttributeModificationDateTime);
+            String dt = srcItem.getString(Tag.AttributeModificationDateTime, "");
             Attributes destItem = sort.get(dt);
             if (destItem != null) {
                 try {
@@ -2382,7 +2382,7 @@ public class Attributes implements Serializable {
                     LOG.info("Failed to merge original attributes modified at {}: {}", dt, e.getMessage());
                 }
             } else {
-                sort.put(srcItem.getString(Tag.AttributeModificationDateTime), new Attributes(srcItem));
+                sort.put(dt, new Attributes(srcItem));
             }
         }
         for (Attributes destItem : sort.values()) {

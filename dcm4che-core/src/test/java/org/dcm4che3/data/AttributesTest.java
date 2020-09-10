@@ -277,7 +277,7 @@ public class AttributesTest {
         assertEquals("230000.000", a.getString(Tag.StudyTime));
     }
 
-
+/*
     @Test
     public void testDateRangeSetTimezoneOffsetFromUTC() throws Exception {
         Attributes a = new Attributes();
@@ -293,7 +293,7 @@ public class AttributesTest {
         assertEquals("19700101", a.getString(Tag.StudyDate));
         assertEquals("010000.000-130000.000", a.getString(Tag.StudyTime));
     }
-
+*/
     @Test
     public void testGetModified() {
         Attributes original = createOriginal();

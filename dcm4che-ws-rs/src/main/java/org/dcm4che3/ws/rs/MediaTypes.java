@@ -471,7 +471,7 @@ public class MediaTypes {
     }
 
     public static MediaType getMultiPartRelatedType(MediaType mediaType) {
-        if (mediaType.isWildcardType()) {
+        if (mediaType.isWildcardType() || mediaType.isWildcardSubtype()) {
             return MediaType.WILDCARD_TYPE;
         }
         if (!equalsIgnoreParameters(MULTIPART_RELATED_TYPE, mediaType)) {

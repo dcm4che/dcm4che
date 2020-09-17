@@ -753,7 +753,7 @@ public class Attributes implements Serializable {
             
             return vr.toBytes(value, getSpecificCharacterSet(vr));
         } catch (UnsupportedOperationException e) {
-            LOG.info("Attempt to access {} {} as bytes", TagUtils.toString(tag), vr);
+            LOG.trace("Attempt to access " + TagUtils.toString(tag) + " " + vr + " as bytes",e);
             return null;
         }
     }
@@ -838,7 +838,7 @@ public class Attributes implements Serializable {
         try {
             return vr.toString(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
-            LOG.info("Attempt to access {} {} as string", TagUtils.toString(tag), vr);
+            LOG.trace("Attempt to access " + TagUtils.toString(tag) + " " + vr + " as string",e);
             return defVal;
         }
     }
@@ -873,7 +873,7 @@ public class Attributes implements Serializable {
             return toStrings(vr.toStrings(value, bigEndian,
                     getSpecificCharacterSet(vr)));
         } catch (UnsupportedOperationException e) {
-            LOG.info("Attempt to access {} {} as string", TagUtils.toString(tag), vr);
+            LOG.trace("Attempt to access " + TagUtils.toString(tag) + " " + vr + " as string",e);
             return null;
         }
     }
@@ -925,7 +925,7 @@ public class Attributes implements Serializable {
 
             return vr.toInt(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
-            LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
+            LOG.trace("Attempt to access " + TagUtils.toString(tag) + " " + vr + " as int",e);
             return defVal;
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
@@ -962,7 +962,7 @@ public class Attributes implements Serializable {
 
             return vr.toInts(value, bigEndian);
         } catch (UnsupportedOperationException e) {
-            LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
+            LOG.trace("Attempt to access " + TagUtils.toString(tag) + " " + vr + " as int",e);
             return null;
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
@@ -1011,7 +1011,7 @@ public class Attributes implements Serializable {
 
             return vr.toFloat(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
-            LOG.info("Attempt to access {} {} as float", TagUtils.toString(tag), vr);
+            LOG.trace("Attempt to access " + TagUtils.toString(tag) + " " + vr + " as float",e);
             return defVal;
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
@@ -1048,7 +1048,7 @@ public class Attributes implements Serializable {
 
             return vr.toFloats(value, bigEndian);
         } catch (UnsupportedOperationException e) {
-            LOG.info("Attempt to access {} {} as float", TagUtils.toString(tag), vr);
+            LOG.trace("Attempt to access " + TagUtils.toString(tag) + " " + vr + " as float",e);
             return null;
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
@@ -1097,7 +1097,7 @@ public class Attributes implements Serializable {
 
             return vr.toDouble(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
-            LOG.info("Attempt to access {} {} as double", TagUtils.toString(tag), vr);
+            LOG.trace("Attempt to access " + TagUtils.toString(tag) + " " + vr + " as double",e);
            return defVal;
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
@@ -1134,7 +1134,7 @@ public class Attributes implements Serializable {
 
             return vr.toDoubles(value, bigEndian);
         } catch (UnsupportedOperationException e) {
-            LOG.info("Attempt to access {} {} as double", TagUtils.toString(tag), vr);
+            LOG.trace("Attempt to access " + TagUtils.toString(tag) + " " + vr + " as double",e);
             return null;
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);

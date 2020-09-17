@@ -470,17 +470,22 @@ public class MediaTypes {
                 &&  type1.getSubtype().equalsIgnoreCase(type2.getSubtype());
     }
 
+    public static boolean isCompatible(MediaType type1, MediaType type2) {
+        return type1.getType().equalsIgnoreCase(type2.getType())
+                && (type2.isWildcardSubtype() || type1.getSubtype().equalsIgnoreCase(type2.getSubtype()));
+    }
+
     public static MediaType getMultiPartRelatedType(MediaType mediaType) {
-        if (mediaType.isWildcardType() || mediaType.isWildcardSubtype()) {
+        if (mediaType.isWildcardType())
             return MediaType.WILDCARD_TYPE;
-        }
-        if (!equalsIgnoreParameters(MULTIPART_RELATED_TYPE, mediaType)) {
+
+        if (!isCompatible(MULTIPART_RELATED_TYPE, mediaType))
             return null;
-        }
+
         String type = mediaType.getParameters().get("type");
-        if (type == null) {
+        if (type == null)
             return MediaType.WILDCARD_TYPE;
-        }
+
         MediaType partType = MediaType.valueOf(type);
         if (mediaType.getParameters().size() > 1) {
             Map<String, String> params = new HashMap<>(mediaType.getParameters());

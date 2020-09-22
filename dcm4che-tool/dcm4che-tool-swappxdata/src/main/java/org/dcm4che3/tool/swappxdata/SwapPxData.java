@@ -40,14 +40,19 @@
 
 package org.dcm4che3.tool.swappxdata;
 
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.ByteUtils;
 
 import java.io.*;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -55,37 +60,12 @@ import java.io.*;
  */
 public class SwapPxData implements Closeable {
 
-    private static final String[] USAGE = {
-            "usage: swappxdata [--uids] [--ifBigEndian [--testAll]] <file>|<directory>...",
-            "",
-            "The swappxdata utility swaps bytes of uncompressed pixel data with Value",
-            "Representation OW.",
-            "For each successfully updated file a dot (.) character is written to stdout.",
-            "If an error occurs on updating a file, an E character is written to stdout",
-            "and a stack trace is written to stderr.",
-            "For each file kept untouched, one of the characters:",
-            "p - no pixel data",
-            "c - compressed pixel data",
-            "b - pixel data with Value Representation OB",
-            "l - little endian encoded pixel data",
-            "8 - pixel data with 8 bits allocated",
-            "is written to stdout.",
-            "",
-            "Options:",
-            "--uids           log SOP Instance UIDs from updated files in file 'uids.log'",
-            "                 in working directory.",
-            "--ifBigEndian    test encoding of pixel data; keep files untouched, if the",
-            "                 pixel data is encoded with little endian or 8 bits allocated.",
-            "                 By default, bytes of uncompressed pixel data with Value",
-            "                 Representation OW will be swapped, independent of its",
-            "                 encoding.",
-            "--testAll        test encoding of pixel data of each file. By default, if one",
-            "                 file of a directory is detected as not big endian encoded,",
-            "                 all remaining files of the directory are kept also untouched",
-            "                 without loading them in memory for testing." };
-    private final boolean uids;
+    private static ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.swappxdata.messages");
+
     private final boolean ifBigEndian;
     private final boolean testAll;
+    private final AttributesFormat logPattern;
+    private final File logFile;
     private String skipDir;
     private PrintWriter uidslog;
     private char skipChar;
@@ -93,46 +73,79 @@ public class SwapPxData implements Closeable {
     private int skipped;
     private int failed;
 
-    public SwapPxData(boolean uids, boolean ifBigEndian, boolean testAll) {
-        this.uids = uids;
+    public SwapPxData(boolean ifBigEndian, boolean testAll, AttributesFormat logPattern, File logFile) {
         this.ifBigEndian = ifBigEndian;
         this.testAll = testAll;
+        this.logPattern = logPattern;
+        this.logFile = logFile;
     }
 
     public static void main(String[] args) {
-        boolean uids, ifBigEndian, testAll;
-        int firstArg = 0;
-        if (uids = args.length > 0 && args[0].equals("--uids")) firstArg++;
-        if (ifBigEndian = args.length > firstArg && args[firstArg].equals("--ifBigEndian")) firstArg++;
-        if (testAll = ifBigEndian && args.length > firstArg && args[firstArg].equals("--testAll")) firstArg++;
-        if (args.length == firstArg || args[firstArg].startsWith("-")) {
-            for (String line : USAGE) {
-                System.out.println(line);
+        try {
+            CommandLine cl = parseComandLine(args);
+            final List<String> argList = cl.getArgList();
+            if (argList.isEmpty())
+                throw new ParseException(rb.getString("missing"));
+            AttributesFormat logPattern = toAttributesFormat(cl);
+            File logFile = new File(cl.getOptionValue("log-file", "uids.log"));
+            if (logPattern != null && logFile.exists()) {
+                throw new IOException(logFile + " already exists");
             }
-            System.exit(-1);
-        }
-        if (uids && (new File("uids.log").exists())) {
-            System.out.println("uids.log already exists");
-            System.exit(-1);
-        }
-        try (SwapPxData inst = new SwapPxData(uids, ifBigEndian, testAll)) {
-            long start = System.currentTimeMillis();
-            for (int i = firstArg; i < args.length; i++) {
-                inst.processFileOrDirectory(new File(args[i]));
+            try (SwapPxData inst = new SwapPxData(
+                    cl.hasOption("ifBigEndian"),
+                    cl.hasOption("test-all"),
+                    logPattern,
+                    logFile)) {
+                long start = System.currentTimeMillis();
+                for (String arg : argList) {
+                    inst.processFileOrDirectory(new File(arg));
+                }
+                long stop = System.currentTimeMillis();
+                System.out.println();
+                log(inst.updated, " files updated");
+                log(inst.skipped, " files skipped");
+                log(inst.failed, " files failed to update");
+                System.out.println("in " + (stop - start) + " ms");
+                if (inst.uidslog != null)
+                    System.out.println("created " + logFile);
             }
-            long stop = System.currentTimeMillis();
-            System.out.println();
-            log(inst.updated, " files updated");
-            log(inst.skipped, " files skipped");
-            log(inst.failed, " files failed to update");
-            System.out.println("in " + (stop - start) + " ms");
-            if (inst.uidslog != null)
-                System.out.println("created uids.log");
-        } catch (IOException e) {
-            System.err.println("Failed to close uids.log:\n");
-            e.printStackTrace(System.err);
+        } catch (ParseException e) {
+            System.err.println("swappxdata: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
+        } catch (Exception e) {
+            System.err.println("swappxdata: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
         }
     }
+
+    private static AttributesFormat toAttributesFormat(CommandLine cl) {
+        String pattern = cl.hasOption("uids") ? "{00080018}" : cl.getOptionValue("log");
+        return pattern != null ? new AttributesFormat(pattern) : null;
+    }
+
+    private static CommandLine parseComandLine(String[] args) throws ParseException {
+        Options opts = new Options();
+        opts.addOption(null, "if-big-endian", false, rb.getString("if-big-endian"));
+        opts.addOption(null, "test-all", false, rb.getString("test-all"));
+        opts.addOption(null, "uids", false, rb.getString("uids"));
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("pattern")
+                .desc(rb.getString("log"))
+                .longOpt("log")
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("path")
+                .desc(rb.getString("log-file"))
+                .longOpt("log-file")
+                .build());
+        CLIUtils.addCommonOptions(opts);
+        return CLIUtils.parseComandLine(args, opts, rb, SwapPxData.class);
+    }
+
 
     private static void log(int n, String suffix) {
         if (n > 0)
@@ -176,8 +189,8 @@ public class SwapPxData implements Closeable {
                         return skipChar = 'l';
                     }
                 }
-                if (uids)
-                    uidslog().println(dataset.getString(Tag.SOPInstanceUID));
+                if (logPattern != null)
+                    uidslog().println(logPattern.format(dataset));
                 updated++;
                 return '.';
             }
@@ -193,7 +206,7 @@ public class SwapPxData implements Closeable {
 
     private PrintWriter uidslog() throws IOException {
         if (uidslog == null)
-            uidslog = new PrintWriter("uids.log");
+            uidslog = new PrintWriter(logFile);
         return uidslog;
     }
 

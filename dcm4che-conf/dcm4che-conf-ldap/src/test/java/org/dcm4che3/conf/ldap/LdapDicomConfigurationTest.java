@@ -96,7 +96,7 @@ public class LdapDicomConfigurationTest {
         assertTrue(ae.isAssociationAcceptor());
         assertTrue(ae.getConnections().get(0).isServer());
         TransferCapability echoSCP = ae.getTransferCapabilityFor(
-                UID.VerificationSOPClass, TransferCapability.Role.SCP);
+                UID.Verification, TransferCapability.Role.SCP);
         assertNotNull(echoSCP);
         assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, echoSCP.getTransferSyntaxes());
         TransferCapability ctSCP = ae.getTransferCapabilityFor(
@@ -106,7 +106,7 @@ public class LdapDicomConfigurationTest {
                 sort(ctSCP.getTransferSyntaxes()));
         assertNull(ctSCP.getStorageOptions());
         TransferCapability findSCP = ae.getTransferCapabilityFor(
-                UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP);
+                UID.StudyRootQueryRetrieveInformationModelFind, TransferCapability.Role.SCP);
         assertNotNull(findSCP);
         assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, findSCP.getTransferSyntaxes());
         assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
@@ -144,16 +144,16 @@ public class LdapDicomConfigurationTest {
         assertFalse(ae.isAssociationAcceptor());
         assertFalse(ae.getConnections().get(0).isServer());
         TransferCapability echoSCP = ae.getTransferCapabilityFor(
-                UID.VerificationSOPClass, TransferCapability.Role.SCP);
+                UID.Verification, TransferCapability.Role.SCP);
         assertNull(echoSCP);
         TransferCapability echoSCU = ae.getTransferCapabilityFor(
-                UID.VerificationSOPClass, TransferCapability.Role.SCU);
+                UID.Verification, TransferCapability.Role.SCU);
         assertNotNull(echoSCU);
         TransferCapability ctSCP = ae.getTransferCapabilityFor(
                 UID.CTImageStorage, TransferCapability.Role.SCP);
         assertEquals(STORAGE_OPTIONS, ctSCP.getStorageOptions());
         TransferCapability findSCP = ae.getTransferCapabilityFor(
-                UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP);
+                UID.StudyRootQueryRetrieveInformationModelFind, TransferCapability.Role.SCP);
         assertEquals(EnumSet.of(QueryOption.RELATIONAL, QueryOption.DATETIME),
                 findSCP.getQueryOptions());
         config.removeDevice("Test-Device-1", null);
@@ -176,7 +176,7 @@ public class LdapDicomConfigurationTest {
     }
 
     private static TransferCapability echoSCP() {
-        return new TransferCapability(null, UID.VerificationSOPClass, Role.SCP,
+        return new TransferCapability(null, UID.Verification, Role.SCP,
                 UID.ImplicitVRLittleEndian);
     }
 
@@ -187,7 +187,7 @@ public class LdapDicomConfigurationTest {
  
     private static final TransferCapability findSCP() {
         TransferCapability tc = new TransferCapability(null, 
-                UID.StudyRootQueryRetrieveInformationModelFIND, Role.SCP,
+                UID.StudyRootQueryRetrieveInformationModelFind, Role.SCP,
                 UID.ImplicitVRLittleEndian);
         tc.setQueryOptions(EnumSet.of(QueryOption.RELATIONAL));
         return tc;
@@ -215,7 +215,7 @@ public class LdapDicomConfigurationTest {
         ae.setAssociationAcceptor(false);
         for (TransferCapability tc : ae.getTransferCapabilities()) {
             String sopClass = tc.getSopClass();
-            if (sopClass.equals(UID.VerificationSOPClass))
+            if (sopClass.equals(UID.Verification))
                 tc.setRole(TransferCapability.Role.SCU);
             else if (sopClass.equals(UID.CTImageStorage))
                 tc.setStorageOptions(STORAGE_OPTIONS);

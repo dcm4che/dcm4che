@@ -94,13 +94,13 @@ public class GetSCU {
     private static final Logger LOG = LoggerFactory.getLogger(GetSCU.class); 
 
     public static enum InformationModel {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelGET, "STUDY"),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelGET, "STUDY"),
-        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired, "STUDY"),
-        CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveGET, "IMAGE"),
-        WithoutBulkData(UID.CompositeInstanceRetrieveWithoutBulkDataGET, null),
-        HangingProtocol(UID.HangingProtocolInformationModelGET, null),
-        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelGET, null);
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelGet, "STUDY"),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelGet, "STUDY"),
+        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelGet, "STUDY"),
+        CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveGet, "IMAGE"),
+        WithoutBulkData(UID.CompositeInstanceRetrieveWithoutBulkDataGet, null),
+        HangingProtocol(UID.HangingProtocolInformationModelGet, null),
+        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelGet, null);
 
         final String cuid;
         final String level;

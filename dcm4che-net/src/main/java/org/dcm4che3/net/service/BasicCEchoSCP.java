@@ -55,7 +55,7 @@ import org.dcm4che3.net.pdu.PresentationContext;
 public class BasicCEchoSCP extends AbstractDicomService {
 
     public BasicCEchoSCP() {
-        super(UID.VerificationSOPClass);
+        super(UID.Verification);
     }
 
     public BasicCEchoSCP(String... sopClasses) {

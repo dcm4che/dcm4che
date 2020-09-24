@@ -141,7 +141,7 @@ public class StoreSCU {
         this.remote = new Connection();
         this.ae = ae;
         rq.addPresentationContext(new PresentationContext(1,
-                UID.VerificationSOPClass, UID.ImplicitVRLittleEndian));
+                UID.Verification, UID.ImplicitVRLittleEndian));
     }
 
     public void setRspHandlerFactory(RSPHandlerFactory rspHandlerFactory) {

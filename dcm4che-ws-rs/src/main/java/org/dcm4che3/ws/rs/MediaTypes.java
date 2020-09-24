@@ -368,36 +368,36 @@ public class MediaTypes {
             case UID.ExplicitVRLittleEndian:
             case UID.ImplicitVRLittleEndian:
                 return MediaType.APPLICATION_OCTET_STREAM_TYPE;
-            case UID.JPEGLossless:
+            case UID.JPEGLosslessSV1:
                 return IMAGE_JPEG_TYPE;
             case UID.JPEGLSLossless:
                 return IMAGE_JLS_TYPE;
-            case UID.JPEG2000LosslessOnly:
+            case UID.JPEG2000Lossless:
                 return IMAGE_JP2_TYPE;
-            case UID.JPEG2000Part2MultiComponentLosslessOnly:
+            case UID.JPEG2000MCLossless:
                 return IMAGE_JPX_TYPE;
             case UID.RLELossless:
                 return IMAGE_DICOM_RLE_TYPE;
-            case UID.JPEGBaseline1:
-            case UID.JPEGExtended24:
-            case UID.JPEGLosslessNonHierarchical14:
+            case UID.JPEGBaseline8Bit:
+            case UID.JPEGExtended12Bit:
+            case UID.JPEGLossless:
                 type = IMAGE_JPEG_TYPE;
                 break;
-            case UID.JPEGLSLossyNearLossless:
+            case UID.JPEGLSNearLossless:
                 type = IMAGE_JLS_TYPE;
                 break;
             case UID.JPEG2000:
                 type = IMAGE_JP2_TYPE;
                 break;
-            case UID.JPEG2000Part2MultiComponent:
+            case UID.JPEG2000MC:
                 type = IMAGE_JPX_TYPE;
                 break;
-            case UID.MPEG2:
-            case UID.MPEG2MainProfileHighLevel:
+            case UID.MPEG2MPML:
+            case UID.MPEG2MPHL:
                 type = VIDEO_MPEG_TYPE;
                 break;
-            case UID.MPEG4AVCH264HighProfileLevel41:
-            case UID.MPEG4AVCH264BDCompatibleHighProfileLevel41:
+            case UID.MPEG4HP41:
+            case UID.MPEG4HP41BD:
                 type = VIDEO_MP4_TYPE;
                 break;
             default:
@@ -417,14 +417,14 @@ public class MediaTypes {
             case "image":
                 switch (subtype) {
                     case "jpeg":
-                        return UID.JPEGLossless;
+                        return UID.JPEGLosslessSV1;
                     case "jls":
                     case "x-jls":
                         return UID.JPEGLSLossless;
                     case "jp2":
-                        return UID.JPEG2000LosslessOnly;
+                        return UID.JPEG2000Lossless;
                     case "jpx":
-                        return UID.JPEG2000Part2MultiComponentLosslessOnly;
+                        return UID.JPEG2000MCLossless;
                     case "x-dicom-rle":
                     case "dicom-rle":
                         return UID.RLELossless;
@@ -432,10 +432,10 @@ public class MediaTypes {
             case "video":
                 switch (subtype) {
                     case "mpeg":
-                        return UID.MPEG2;
+                        return UID.MPEG2MPML;
                     case "mp4":
                     case "quicktime":
-                        return UID.MPEG4AVCH264HighProfileLevel41;
+                        return UID.MPEG4HP41;
                 }
         }
         return UID.ExplicitVRLittleEndian;

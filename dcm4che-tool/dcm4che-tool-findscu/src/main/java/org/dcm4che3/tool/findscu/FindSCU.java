@@ -94,15 +94,15 @@ import org.dcm4che3.util.SafeClose;
 public class FindSCU {
 
     public static enum InformationModel {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY"),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, "STUDY"),
-        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, "STUDY"),
-        MWL(UID.ModalityWorklistInformationModelFIND, null),
-        UPSPull(UID.UnifiedProcedureStepPullSOPClass, null),
-        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, null),
-        UPSQuery(UID.UnifiedProcedureStepQuerySOPClass, null),
-        HangingProtocol(UID.HangingProtocolInformationModelFIND, null),
-        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelFIND, null);
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFind, "STUDY"),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFind, "STUDY"),
+        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFind, "STUDY"),
+        MWL(UID.ModalityWorklistInformationModelFind, null),
+        UPSPull(UID.UnifiedProcedureStepPull, null),
+        UPSWatch(UID.UnifiedProcedureStepWatch, null),
+        UPSQuery(UID.UnifiedProcedureStepQuery, null),
+        HangingProtocol(UID.HangingProtocolInformationModelFind, null),
+        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelFind, null);
 
         final String cuid;
         final String level;

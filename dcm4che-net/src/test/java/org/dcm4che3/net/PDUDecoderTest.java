@@ -57,7 +57,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public class PDUDecoderTest {
 
     private static final TransferCapability ECHO_SCP = new TransferCapability(
-            null, UID.VerificationSOPClass, TransferCapability.Role.SCP, UID.ImplicitVRLittleEndian);
+            null, UID.Verification, TransferCapability.Role.SCP, UID.ImplicitVRLittleEndian);
     private static byte[] ECHO_RQ_WITH_PENDING_PDV = {
             4, 0, 0, 0, 0, 74, 0, 0, 0, 70, 1, 3, 0, 0, 0, 0,
             4, 0, 0, 0, 56, 0, 0, 0, 0, 0, 2, 0, 18, 0, 0, 0,
@@ -115,7 +115,7 @@ public class PDUDecoderTest {
 
     private AAssociateRQ aarq() {
         AAssociateRQ aarq = new AAssociateRQ();
-        aarq.addPresentationContextFor(UID.VerificationSOPClass, UID.ImplicitVRLittleEndian);
+        aarq.addPresentationContextFor(UID.Verification, UID.ImplicitVRLittleEndian);
         return aarq;
     }
 

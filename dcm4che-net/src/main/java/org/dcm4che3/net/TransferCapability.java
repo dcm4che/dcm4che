@@ -74,7 +74,7 @@ public class TransferCapability implements Serializable {
     private StorageOptions storageOptions;
 
     public TransferCapability() {
-        this(null, UID.VerificationSOPClass, Role.SCU, UID.ImplicitVRLittleEndian);
+        this(null, UID.Verification, Role.SCU, UID.ImplicitVRLittleEndian);
     }
 
     public TransferCapability(String commonName, String sopClass, Role role,

@@ -357,11 +357,11 @@ public class MppsSCU {
 
     public void setTransferSyntaxes(String[] tss) {
         rq.addPresentationContext(
-                new PresentationContext(1, UID.VerificationSOPClass,
+                new PresentationContext(1, UID.Verification,
                         UID.ImplicitVRLittleEndian));
         rq.addPresentationContext(
                 new PresentationContext(3,
-                        UID.ModalityPerformedProcedureStepSOPClass,
+                        UID.ModalityPerformedProcedureStep,
                         tss));
     }
 
@@ -430,7 +430,7 @@ public class MppsSCU {
             @Override
             public boolean dicomFile(File f, Attributes fmi, 
                     long dsPos, Attributes ds) {
-                if (UID.ModalityPerformedProcedureStepSOPClass.equals(
+                if (UID.ModalityPerformedProcedureStep.equals(
                         fmi.getString(Tag.MediaStorageSOPClassUID))) {
                     return addMPPS(
                             fmi.getString(Tag.MediaStorageSOPInstanceUID),
@@ -573,7 +573,7 @@ public class MppsSCU {
         for (int tag : CREATE_MPPS_TOP_LEVEL_EMPTY_ATTRS)
             mpps.setNull(tag, dict.vrOf(tag));
 
-        as.ncreate(UID.ModalityPerformedProcedureStepSOPClass,
+        as.ncreate(UID.ModalityPerformedProcedureStep,
                 iuid, mpps, null, rspHandlerFactory.createDimseRSPHandlerForNCreate(mppsWithUID));
     }
 
@@ -584,7 +584,7 @@ public class MppsSCU {
 
     private void setMpps(MppsWithIUID mppsWithIUID)
             throws IOException, InterruptedException {
-        as.nset(UID.ModalityPerformedProcedureStepSOPClass,
+        as.nset(UID.ModalityPerformedProcedureStep,
                 mppsWithIUID.iuid, mppsWithIUID.mpps, null, rspHandlerFactory.createDimseRSPHandlerForNSet());
     }
 

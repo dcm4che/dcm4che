@@ -78,7 +78,7 @@ public class TranscoderTest {
 
     @Test
     public void testCopyBigEndian() throws Exception {
-        test("US-RGB-8-epicard", "US-RGB-8-epicard", UID.ExplicitVRBigEndianRetired, true);
+        test("US-RGB-8-epicard", "US-RGB-8-epicard", UID.ExplicitVRBigEndian, true);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class TranscoderTest {
 
     @Test
     public void testCopyJPEG12bit() throws Exception {
-        test("NM1_JPLY", "NM1_JPLY", UID.JPEGExtended24, true);
+        test("NM1_JPLY", "NM1_JPLY", UID.JPEGExtended12Bit, true);
     }
 
     @Test
@@ -113,32 +113,32 @@ public class TranscoderTest {
 
     @Test
     public void testCompressMF() throws Exception {
-        test("cplx_p02.dcm", "cplx_p02_jply.dcm", UID.JPEGBaseline1, true);
+        test("cplx_p02.dcm", "cplx_p02_jply.dcm", UID.JPEGBaseline8Bit, true);
     }
 
     @Test
     public void testCompressEmbeddedOverlays() throws Exception {
-        test("ovly_p01.dcm", "ovly_p01_jply.dcm", UID.JPEGExtended24, true);
+        test("ovly_p01.dcm", "ovly_p01_jply.dcm", UID.JPEGExtended12Bit, true);
     }
 
     @Test
     public void testCompressPerPlaneRGB() throws Exception {
-        test("US-RGB-8-epicard", "US-RGB-8-epicard_jply", UID.JPEGBaseline1, true);
+        test("US-RGB-8-epicard", "US-RGB-8-epicard_jply", UID.JPEGBaseline8Bit, true);
     }
 
     @Test
     public void testCompressPerPixelRGB() throws Exception {
-        test("US-RGB-8-esopecho", "US-RGB-8-esopecho_jply", UID.JPEGBaseline1, true);
+        test("US-RGB-8-esopecho", "US-RGB-8-esopecho_jply", UID.JPEGBaseline8Bit, true);
     }
 
     @Test
     public void testCompressPerPixelRgb2JpegLossless() throws Exception {
-        test("US-RGB-8-esopecho", "US-RGB-8-esopecho-jpegLossless.dcm", UID.JPEGLossless, true);
+        test("US-RGB-8-esopecho", "US-RGB-8-esopecho-jpegLossless.dcm", UID.JPEGLosslessSV1, true);
     }
 
     @Test
     public void testTranscodePaletteRleMf2RgbJpegls() throws Exception {
-        test("US-PAL-8-10x-echo", "US-PAL-8-10x-echo-jpegls.dcm", UID.JPEGLSLossyNearLossless, true);
+        test("US-PAL-8-10x-echo", "US-PAL-8-10x-echo-jpegls.dcm", UID.JPEGLSNearLossless, true);
     }
 
     @Test
@@ -153,7 +153,7 @@ public class TranscoderTest {
 
     @Test
     public void testTranscodeYbr422Raw2RgbJpegLossless() throws Exception {
-        test("YBR_422.dcm", "YBR_422-jpegLossless.dcm", UID.JPEGLossless, true);
+        test("YBR_422.dcm", "YBR_422-jpegLossless.dcm", UID.JPEGLosslessSV1, true);
     }
 
     @Test
@@ -163,7 +163,7 @@ public class TranscoderTest {
 
     @Test
     public void testCompress12BitsJPLL() throws Exception {
-        test("MR2_UNC", "MR2_UNC-JPLL.dcm", UID.JPEGLossless, true);
+        test("MR2_UNC", "MR2_UNC-JPLL.dcm", UID.JPEGLosslessSV1, true);
         assertEquals(12, jpegBitsPerSample("MR2_UNC-JPLL.dcm"));
     }
 
@@ -175,7 +175,7 @@ public class TranscoderTest {
 
     @Test
     public void testCompress12BitsJ2KR() throws Exception {
-        test("MR2_UNC", "MR2_UNC-J2KR.dcm", UID.JPEG2000LosslessOnly, true);
+        test("MR2_UNC", "MR2_UNC-J2KR.dcm", UID.JPEG2000Lossless, true);
         assertEquals(12, jpegBitsPerSample("MR2_UNC-J2KR.dcm"));
     }
 

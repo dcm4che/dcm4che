@@ -301,13 +301,13 @@ public class Dcm2Dcm {
 
     private static String transferSyntaxOf(CommandLine cl, String def) {
         return cl.hasOption("ivrle") ? UID.ImplicitVRLittleEndian
-                : cl.hasOption("evrbe") ? UID.ExplicitVRBigEndianRetired
+                : cl.hasOption("evrbe") ? UID.ExplicitVRBigEndian
                 : cl.hasOption("defl") ? UID.DeflatedExplicitVRLittleEndian
-                : cl.hasOption("jpeg") ? UID.JPEGBaseline1
-                : cl.hasOption("jpll") ? UID.JPEGLossless
+                : cl.hasOption("jpeg") ? UID.JPEGBaseline8Bit
+                : cl.hasOption("jpll") ? UID.JPEGLosslessSV1
                 : cl.hasOption("jlsl") ? UID.JPEGLSLossless
-                : cl.hasOption("jlsn") ? UID.JPEGLSLossyNearLossless
-                : cl.hasOption("j2kr") ? UID.JPEG2000LosslessOnly
+                : cl.hasOption("jlsn") ? UID.JPEGLSNearLossless
+                : cl.hasOption("j2kr") ? UID.JPEG2000Lossless
                 : cl.hasOption("j2ki") ? UID.JPEG2000
                 : cl.getOptionValue("t", def);
     }
@@ -423,11 +423,11 @@ public class Dcm2Dcm {
         switch (tstype) {
         case JPEG_BASELINE:
             if (bitsStored > 8)
-                return UID.JPEGExtended24;
+                return UID.JPEGExtended12Bit;
             break;
         case JPEG_EXTENDED:
             if (bitsStored <= 8)
-                return UID.JPEGBaseline1;
+                return UID.JPEGBaseline8Bit;
             break;
         default:
         }

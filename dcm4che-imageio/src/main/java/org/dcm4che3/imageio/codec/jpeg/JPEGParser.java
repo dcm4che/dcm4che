@@ -273,15 +273,15 @@ public class JPEGParser implements XPEGParser {
         public String transferSyntaxUID() throws XPEGParserException {
             switch(sof) {
                 case JPEG.SOF0:
-                    return UID.JPEGBaseline1;
+                    return UID.JPEGBaseline8Bit;
                 case JPEG.SOF1:
-                    return UID.JPEGExtended24;
+                    return UID.JPEGExtended12Bit;
                 case JPEG.SOF2:
-                    return UID.JPEGFullProgressionNonHierarchical1012Retired;
+                    return UID.JPEGFullProgressionNonHierarchical1012;
                 case JPEG.SOF3:
-                    return sosParams.get(3) == 1 ? UID.JPEGLossless : UID.JPEGLosslessNonHierarchical14;
+                    return sosParams.get(3) == 1 ? UID.JPEGLosslessSV1 : UID.JPEGLossless;
                 case JPEG.SOF55:
-                    return sosParams.get(3) == 0 ? UID.JPEGLSLossless : UID.JPEGLSLossyNearLossless;
+                    return sosParams.get(3) == 0 ? UID.JPEGLSLossless : UID.JPEGLSNearLossless;
             }
             throw new XPEGParserException(String.format("JPEG SOF%d not supported", sof & 0xf));
         }
@@ -342,7 +342,7 @@ public class JPEGParser implements XPEGParser {
 
         @Override
         public String transferSyntaxUID() {
-            return lossyImageCompression() ? UID.JPEG2000 : UID.JPEG2000LosslessOnly;
+            return lossyImageCompression() ? UID.JPEG2000 : UID.JPEG2000Lossless;
         }
     }
 }

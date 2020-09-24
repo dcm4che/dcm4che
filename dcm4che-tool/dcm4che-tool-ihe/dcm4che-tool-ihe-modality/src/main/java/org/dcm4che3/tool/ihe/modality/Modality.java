@@ -209,7 +209,7 @@ public class Modality {
         Attributes attrs = storescu.getAttributes();
         Sequence seq = attrs.newSequence(Tag.ReferencedPerformedProcedureStepSequence, 1);
         Attributes item = new Attributes(2);
-        item.setString(Tag.ReferencedSOPClassUID, VR.UI, UID.ModalityPerformedProcedureStepSOPClass);
+        item.setString(Tag.ReferencedSOPClassUID, VR.UI, UID.ModalityPerformedProcedureStep);
         item.setString(Tag.ReferencedSOPInstanceUID, VR.UI, mppsiuid);
         seq.add(item);
     }

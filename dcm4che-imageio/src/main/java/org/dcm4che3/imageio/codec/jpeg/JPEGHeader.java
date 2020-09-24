@@ -166,15 +166,15 @@ public class JPEGHeader {
 
         switch(data[sofOffset] & 255) {
             case JPEG.SOF0:
-                return UID.JPEGBaseline1;
+                return UID.JPEGBaseline8Bit;
             case JPEG.SOF1:
-                return UID.JPEGExtended24;
+                return UID.JPEGExtended12Bit;
             case JPEG.SOF2:
-                return UID.JPEGFullProgressionNonHierarchical1012Retired;
+                return UID.JPEGFullProgressionNonHierarchical1012;
             case JPEG.SOF3:
-                return ss() == 1 ? UID.JPEGLossless : UID.JPEGLosslessNonHierarchical14;
+                return ss() == 1 ? UID.JPEGLosslessSV1 : UID.JPEGLossless;
             case JPEG.SOF55:
-                return ss() == 0 ? UID.JPEGLSLossless : UID.JPEGLSLossyNearLossless;
+                return ss() == 0 ? UID.JPEGLSLossless : UID.JPEGLSNearLossless;
         }
         return null;
     }

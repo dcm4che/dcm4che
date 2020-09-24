@@ -1042,7 +1042,7 @@ public class Association {
     }
 
     public DimseRSP cecho() throws IOException, InterruptedException {
-        return cecho(UID.VerificationSOPClass);
+        return cecho(UID.Verification);
     }
 
     public DimseRSP cecho(String cuid) throws IOException, InterruptedException {

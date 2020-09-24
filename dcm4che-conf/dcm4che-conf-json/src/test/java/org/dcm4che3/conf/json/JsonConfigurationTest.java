@@ -240,7 +240,7 @@ public class JsonConfigurationTest {
         assertEquals(1, aeconns.size());
         assertSame(conn, aeconns.get(0));
         assertEquals(3, ae.getTransferCapabilities().size());
-        TransferCapability echoSCP = ae.getTransferCapabilityFor(UID.VerificationSOPClass, TransferCapability.Role.SCP);
+        TransferCapability echoSCP = ae.getTransferCapabilityFor(UID.Verification, TransferCapability.Role.SCP);
         assertNotNull(echoSCP);
         assertArrayEquals(new String[]{ UID.ImplicitVRLittleEndian }, echoSCP.getTransferSyntaxes());
         assertNull(echoSCP.getCommonName());
@@ -254,7 +254,7 @@ public class JsonConfigurationTest {
         assertEquals(StorageOptions.DigitalSignatureSupport.LEVEL_1, storageOptions.getDigitalSignatureSupport());
         assertEquals(StorageOptions.ElementCoercion.YES, storageOptions.getElementCoercion());
         TransferCapability findSCP = ae.getTransferCapabilityFor(
-                UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP);
+                UID.StudyRootQueryRetrieveInformationModelFind, TransferCapability.Role.SCP);
         assertNotNull(findSCP);
         assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
         assertImageReaderExtension(device.getDeviceExtension(ImageReaderExtension.class));
@@ -387,7 +387,7 @@ public class JsonConfigurationTest {
     }
 
     private static TransferCapability echoSCP() {
-        return new TransferCapability(null, UID.VerificationSOPClass, TransferCapability.Role.SCP,
+        return new TransferCapability(null, UID.Verification, TransferCapability.Role.SCP,
                 UID.ImplicitVRLittleEndian);
     }
 
@@ -400,7 +400,7 @@ public class JsonConfigurationTest {
 
     private static final TransferCapability findSCP() {
         TransferCapability tc = new TransferCapability(null,
-                UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP,
+                UID.StudyRootQueryRetrieveInformationModelFind, TransferCapability.Role.SCP,
                 UID.ImplicitVRLittleEndian);
         tc.setQueryOptions(EnumSet.of(QueryOption.RELATIONAL));
         return tc;

@@ -84,17 +84,17 @@ public enum PhotometricInterpretation {
         @Override
         public PhotometricInterpretation compress(String tsuid) {
             switch (tsuid) {
-                case UID.JPEGBaseline1:
-                case UID.JPEGExtended24:
+                case UID.JPEGBaseline8Bit:
+                case UID.JPEGExtended12Bit:
                     return YBR_FULL_422;
-                case UID.JPEGSpectralSelectionNonHierarchical68Retired:
-                case UID.JPEGFullProgressionNonHierarchical1012Retired:
+                case UID.JPEGSpectralSelectionNonHierarchical68:
+                case UID.JPEGFullProgressionNonHierarchical1012:
                     return YBR_FULL;
-                case UID.JPEG2000LosslessOnly:
-                case UID.JPEG2000Part2MultiComponentLosslessOnly:
+                case UID.JPEG2000Lossless:
+                case UID.JPEG2000MCLossless:
                     return YBR_RCT;
                 case UID.JPEG2000:
-                case UID.JPEG2000Part2MultiComponent:
+                case UID.JPEG2000MC:
                     return YBR_ICT;
             }
             return this;

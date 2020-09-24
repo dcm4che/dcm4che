@@ -50,7 +50,7 @@
 <xsl:when test="@type='SOPClass' and contains(@keyword,'ImageStorage')">
 <xsl:text>&#58;</xsl:text>
 <xsl:call-template name="TS" >
-<xsl:with-param name="ids" select="/uids/uid[@type='TransferSyntax' and (contains(@keyword, 'JPEG') or contains(@keyword, 'JPIPReferenced') or contains(@keyword, 'JPIPReferencedDeflate')  or contains(@keyword, 'RLELossless')  or contains(@keyword, 'ImplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRBigEndianRetired')  or contains(@keyword, 'DeflatedExplicitVRLittleEndian')   ) and (not(contains(@keyword, 'Retired')) or @keyword='ExplicitVRBigEndianRetired')]">
+<xsl:with-param name="ids" select="/uids/uid[@type='TransferSyntax' and (contains(@keyword, 'JPEG') or contains(@keyword, 'JPIPReferenced') or contains(@keyword, 'JPIPReferencedDeflate')  or contains(@keyword, 'RLELossless')  or contains(@keyword, 'ImplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRBigEndian')  or contains(@keyword, 'DeflatedExplicitVRLittleEndian')   ) and (not(contains(@keyword, 'Retired')) or @keyword='ExplicitVRBigEndian')]">
 </xsl:with-param> 
 </xsl:call-template>
 </xsl:when>
@@ -58,7 +58,7 @@
 <xsl:when test="@type='SOPClass' and contains(@keyword,'Video')">
 <xsl:text>&#58;</xsl:text>
 <xsl:call-template name="TS" >
-<xsl:with-param name="ids" select="/uids/uid[@type='TransferSyntax' and (contains(@keyword, 'MPEG')  or contains(@keyword, 'ImplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRBigEndianRetired')  or contains(@keyword, 'DeflatedExplicitVRLittleEndian')   ) and (not(contains(@keyword, 'Retired')) or @keyword='ExplicitVRBigEndianRetired')]">
+<xsl:with-param name="ids" select="/uids/uid[@type='TransferSyntax' and (contains(@keyword, 'MPEG')  or contains(@keyword, 'ImplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRBigEndian')  or contains(@keyword, 'DeflatedExplicitVRLittleEndian')   ) and (not(contains(@keyword, 'Retired')) or @keyword='ExplicitVRBigEndian')]">
 </xsl:with-param> 
 </xsl:call-template>
 </xsl:when>
@@ -66,7 +66,7 @@
 <xsl:otherwise>
 <xsl:text>&#58;</xsl:text>
 <xsl:call-template name="TS" >
-<xsl:with-param name="ids" select="/uids/uid[@type='TransferSyntax' and ( contains(@keyword, 'ImplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRBigEndianRetired')  or contains(@keyword, 'DeflatedExplicitVRLittleEndian') or @keyword='ExplicitVRBigEndianRetired')]">
+<xsl:with-param name="ids" select="/uids/uid[@type='TransferSyntax' and ( contains(@keyword, 'ImplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRLittleEndian')  or contains(@keyword, 'ExplicitVRBigEndian')  or contains(@keyword, 'DeflatedExplicitVRLittleEndian') or @keyword='ExplicitVRBigEndian')]">
 </xsl:with-param> 
 </xsl:call-template>
 </xsl:otherwise>

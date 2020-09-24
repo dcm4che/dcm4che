@@ -61,7 +61,7 @@ public class LookupTableFactory {
     private static final String[] XA_XRF_CUIDS = {
             UID.XRayAngiographicImageStorage,
             UID.XRayRadiofluoroscopicImageStorage,
-            UID.XRayAngiographicBiPlaneImageStorageRetired
+            UID.XRayAngiographicBiPlaneImageStorage
     };
     private static final String[] LOG_DISP = { "LOG", "DISP" };
 

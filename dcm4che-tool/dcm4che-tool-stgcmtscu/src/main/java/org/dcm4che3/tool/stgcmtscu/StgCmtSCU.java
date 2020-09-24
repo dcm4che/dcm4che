@@ -112,7 +112,7 @@ public class StgCmtSCU {
 
     private final HashSet<String> outstandingResults = new HashSet<String>(2);
     private final DicomService stgcmtResultHandler =
-            new AbstractDicomService(UID.StorageCommitmentPushModelSOPClass) {
+            new AbstractDicomService(UID.StorageCommitmentPushModel) {
 
              @Override
              public void onDimseRQ(Association as, PresentationContext pc,
@@ -271,20 +271,20 @@ public class StgCmtSCU {
 
     public void setTransferSyntaxes(String[] tss) {
         rq.addPresentationContext(
-                new PresentationContext(1, UID.VerificationSOPClass,
+                new PresentationContext(1, UID.Verification,
                         UID.ImplicitVRLittleEndian));
         rq.addPresentationContext(
                 new PresentationContext(2,
-                        UID.StorageCommitmentPushModelSOPClass,
+                        UID.StorageCommitmentPushModel,
                         tss));
         ae.addTransferCapability(
                 new TransferCapability(null,
-                        UID.VerificationSOPClass,
+                        UID.Verification,
                         TransferCapability.Role.SCP,
                         UID.ImplicitVRLittleEndian));
         ae.addTransferCapability(
                 new TransferCapability(null,
-                        UID.StorageCommitmentPushModelSOPClass,
+                        UID.StorageCommitmentPushModel,
                         TransferCapability.Role.SCU,
                         tss));
     }
@@ -430,8 +430,8 @@ public class StgCmtSCU {
             }
         };
 
-        as.naction(UID.StorageCommitmentPushModelSOPClass,
-                UID.StorageCommitmentPushModelSOPInstance,
+        as.naction(UID.StorageCommitmentPushModel,
+                UID.StorageCommitmentPushModelInstance,
                 1, actionInfo, null, rspHandler);
         addOutstandingResult(tuid);
     }

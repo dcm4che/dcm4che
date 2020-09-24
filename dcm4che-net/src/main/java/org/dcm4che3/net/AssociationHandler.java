@@ -72,7 +72,7 @@ public class AssociationHandler {
                     AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
                     AAssociateRJ.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
         if (!rq.getApplicationContext().equals(
-                UID.DICOMApplicationContextName))
+                UID.DICOMApplicationContext))
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);

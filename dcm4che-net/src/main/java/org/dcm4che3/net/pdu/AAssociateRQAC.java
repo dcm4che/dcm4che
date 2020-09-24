@@ -64,7 +64,7 @@ public abstract class AAssociateRQAC {
     protected int maxOpsPerformed = Connection.SYNCHRONOUS_MODE;
     protected String calledAET;
     protected String callingAET;
-    protected String applicationContext = UID.DICOMApplicationContextName;
+    protected String applicationContext = UID.DICOMApplicationContext;
     protected String implClassUID = Implementation.getClassUID();
     protected String implVersionName = Implementation.getVersionName();
     protected UserIdentityRQ userIdentityRQ;

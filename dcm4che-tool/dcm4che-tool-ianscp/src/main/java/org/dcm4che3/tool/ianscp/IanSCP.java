@@ -91,7 +91,7 @@ public class IanSCP extends Device {
    private int status;
 
    private final DicomService ianSCP =
-           new AbstractDicomService(UID.InstanceAvailabilityNotificationSOPClass) {
+           new AbstractDicomService(UID.InstanceAvailabilityNotification) {
 
             @Override
             public void onDimseRQ(Association as, PresentationContext pc,

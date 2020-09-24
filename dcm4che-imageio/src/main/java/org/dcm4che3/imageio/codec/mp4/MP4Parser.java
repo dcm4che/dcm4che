@@ -152,16 +152,16 @@ public class MP4Parser implements XPEGParser {
                     case 100: // High Profile
                         if (level_idc <= 41)
                             return isBDCompatible()
-                                    ? UID.MPEG4AVCH264BDCompatibleHighProfileLevel41
-                                    : UID.MPEG4AVCH264HighProfileLevel41;
+                                    ? UID.MPEG4HP41BD
+                                    : UID.MPEG4HP41;
                         else if (level_idc <= 42)
-                            // TODO: distinguish between MPEG4AVCH264HighProfileLevel42For2DVideo
-                            //  and MPEG4AVCH264HighProfileLevel42For3DVideo
-                            return UID.MPEG4AVCH264HighProfileLevel42For2DVideo;
+                            // TODO: distinguish between MPEG4HP422D
+                            //  and MPEG4HP423D
+                            return UID.MPEG4HP422D;
                         break;
                     case 128: // Stereo High Profile
                         if (level_idc <= 42)
-                            return UID.MPEG4AVCH264StereoHighProfileLevel42;
+                            return UID.MPEG4HP42STEREO;
                         break;
                 }
                 throw profileLevelNotSupported("MPEG-4 AVC profile_idc/level_idc: %d/%d not supported");
@@ -169,9 +169,9 @@ public class MP4Parser implements XPEGParser {
                 if (level_idc <= 51) {
                     switch (profile_idc) {
                         case 1: // Main Profile
-                            return UID.HEVCH265MainProfileLevel51;
+                            return UID.HEVCM10P51;
                         case 2: // Main 10 Profile
-                            return UID.HEVCH265Main10ProfileLevel51;
+                            return UID.HEVCM10P51;
                     }
                 }
                 throw profileLevelNotSupported("MPEG-4 HEVC profile_idc/level_idc: %d/%d not supported");

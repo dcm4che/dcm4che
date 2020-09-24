@@ -80,40 +80,11 @@
       </xsl:variable>
       <xsl:attribute name="keyword">
         <xsl:choose>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.50'">JPEGBaseline1</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.51'">JPEGExtended24</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.52'">JPEGExtended35Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.53'">JPEGSpectralSelectionNonHierarchical68Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.54'">JPEGSpectralSelectionNonHierarchical79Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.55'">JPEGFullProgressionNonHierarchical1012Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.56'">JPEGFullProgressionNonHierarchical1113Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.57'">JPEGLosslessNonHierarchical14</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.58'">JPEGLosslessNonHierarchical15Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.59'">JPEGExtendedHierarchical1618Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.60'">JPEGExtendedHierarchical1719Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.61'">JPEGSpectralSelectionHierarchical2022Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.62'">JPEGSpectralSelectionHierarchical2123Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.63'">JPEGFullProgressionHierarchical2426Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.64'">JPEGFullProgressionHierarchical2527Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.65'">JPEGLosslessHierarchical28Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.66'">JPEGLosslessHierarchical29Retired</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.70'">JPEGLossless</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.80'">JPEGLSLossless</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.81'">JPEGLSLossyNearLossless</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.90'">JPEG2000LosslessOnly</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.91'">JPEG2000</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.92'">JPEG2000Part2MultiComponentLosslessOnly</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.93'">JPEG2000Part2MultiComponent</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.100'">MPEG2</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.1.2.4.101'">MPEG2MainProfileHighLevel</xsl:when>
-          <xsl:when test="$uid='1.2.840.10008.5.1.4.1.1.9.1.1'">TwelveLeadECGWaveformStorage</xsl:when>
+          <xsl:when test="$uid='1.2.840.10008.5.1.4.1.1.40'">MRImageStorageZeroPadded</xsl:when>
+          <xsl:when test="$uid='1.2.840.10008.5.1.4.1.1.12.77'">ZeissOPTFile</xsl:when>
           <xsl:otherwise>
-            <xsl:call-template name="removeSpaces">
-              <xsl:with-param name="name">
-                <xsl:call-template name="replaceNonAlpha">
-                  <xsl:with-param name="name" select="$name" />
-                </xsl:call-template>
-              </xsl:with-param>
+            <xsl:call-template name="para2str">
+              <xsl:with-param name="para" select="doc:td[3]/doc:para" />
             </xsl:call-template>
           </xsl:otherwise>
         </xsl:choose>
@@ -124,7 +95,7 @@
             <xsl:call-template name="replaceNonAlpha">
               <xsl:with-param name="name">
                 <xsl:call-template name="para2str">
-                  <xsl:with-param name="para" select="doc:td[3]/doc:para"/>
+                  <xsl:with-param name="para" select="doc:td[4]/doc:para"/>
                 </xsl:call-template>
               </xsl:with-param>
             </xsl:call-template>
@@ -148,7 +119,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:value-of select="translate($str,'&#x200b;&#xad;','')"/>
+    <xsl:value-of select="translate($str,'&#x200b;&#xad;&#8203;','')"/>
   </xsl:template>
 
   <xsl:template name="skipAfterColon">

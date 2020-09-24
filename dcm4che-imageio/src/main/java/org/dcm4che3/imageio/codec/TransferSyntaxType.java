@@ -153,23 +153,23 @@ public enum TransferSyntaxType {
         map.put(UID.ImplicitVRLittleEndian, NATIVE);
         map.put(UID.ExplicitVRLittleEndian, NATIVE);
         map.put(UID.DeflatedExplicitVRLittleEndian, NATIVE);
-        map.put(UID.ExplicitVRBigEndianRetired, NATIVE);
-        map.put(UID.JPEGBaseline1, JPEG_BASELINE);
-        map.put(UID.JPEGExtended24, JPEG_EXTENDED);
-        map.put(UID.JPEGLosslessNonHierarchical14, JPEG_LOSSLESS);
+        map.put(UID.ExplicitVRBigEndian, NATIVE);
+        map.put(UID.JPEGBaseline8Bit, JPEG_BASELINE);
+        map.put(UID.JPEGExtended12Bit, JPEG_EXTENDED);
         map.put(UID.JPEGLossless, JPEG_LOSSLESS);
+        map.put(UID.JPEGLosslessSV1, JPEG_LOSSLESS);
         map.put(UID.JPEGLSLossless, JPEG_LOSSLESS);
-        map.put(UID.JPEGLSLossyNearLossless, JPEG_LOSSLESS);
-        map.put(UID.JPEG2000LosslessOnly, JPEG_2000_LOSSLESS);
+        map.put(UID.JPEGLSNearLossless, JPEG_LOSSLESS);
+        map.put(UID.JPEG2000Lossless, JPEG_2000_LOSSLESS);
         map.put(UID.JPEG2000, JPEG_2000);
-        map.put(UID.JPEG2000Part2MultiComponentLosslessOnly, JPEG_2000_LOSSLESS);
-        map.put(UID.JPEG2000Part2MultiComponent, JPEG_2000);
+        map.put(UID.JPEG2000MCLossless, JPEG_2000_LOSSLESS);
+        map.put(UID.JPEG2000MC, JPEG_2000);
         map.put(UID.JPIPReferenced, JPIP);
         map.put(UID.JPIPReferencedDeflate, JPIP);
-        map.put(UID.MPEG2, MPEG);
-        map.put(UID.MPEG2MainProfileHighLevel, MPEG);
-        map.put(UID.MPEG4AVCH264HighProfileLevel41, MPEG);
-        map.put(UID.MPEG4AVCH264BDCompatibleHighProfileLevel41, MPEG);
+        map.put(UID.MPEG2MPML, MPEG);
+        map.put(UID.MPEG2MPHL, MPEG);
+        map.put(UID.MPEG4HP41, MPEG);
+        map.put(UID.MPEG4HP41BD, MPEG);
         map.put(UID.RLELossless, RLE);
     }
 

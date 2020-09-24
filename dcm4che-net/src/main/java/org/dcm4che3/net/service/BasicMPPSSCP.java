@@ -55,7 +55,7 @@ import org.dcm4che3.net.pdu.PresentationContext;
 public class BasicMPPSSCP extends AbstractDicomService {
 
     public BasicMPPSSCP() {
-        super(UID.ModalityPerformedProcedureStepSOPClass);
+        super(UID.ModalityPerformedProcedureStep);
     }
 
     @Override

@@ -93,8 +93,8 @@ class SendStgCmtResult implements Runnable {
 
     private void neventReport(Association as)
             throws IOException, InterruptedException {
-        as.neventReport(UID.StorageCommitmentPushModelSOPClass,
-                UID.StorageCommitmentPushModelSOPInstance, 
+        as.neventReport(UID.StorageCommitmentPushModel,
+                UID.StorageCommitmentPushModelInstance,
                 eventTypeId(eventInfo), eventInfo, null).next();
     }
 
@@ -108,14 +108,14 @@ class SendStgCmtResult implements Runnable {
         aarq.setCalledAET(as.getRemoteAET());
         ApplicationEntity ae = as.getApplicationEntity();
         TransferCapability tc = ae.getTransferCapabilityFor(
-                UID.StorageCommitmentPushModelSOPClass, TransferCapability.Role.SCP);
+                UID.StorageCommitmentPushModel, TransferCapability.Role.SCP);
         aarq.addPresentationContext(
                         new PresentationContext(
                                 1,
-                                UID.StorageCommitmentPushModelSOPClass,
+                                UID.StorageCommitmentPushModel,
                                 tc.getTransferSyntaxes()));
         aarq.addRoleSelection(
-                new RoleSelection(UID.StorageCommitmentPushModelSOPClass, false, true));
+                new RoleSelection(UID.StorageCommitmentPushModel, false, true));
         return aarq;
     }
 

@@ -657,17 +657,17 @@ public class CLIUtils {
     private static String[] IVR_LE_FIRST = {
         UID.ImplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian,
-        UID.ExplicitVRBigEndianRetired
+        UID.ExplicitVRBigEndian
     };
 
     private static String[] EVR_LE_FIRST = {
         UID.ExplicitVRLittleEndian,
-        UID.ExplicitVRBigEndianRetired,
+        UID.ExplicitVRBigEndian,
         UID.ImplicitVRLittleEndian
     };
 
     private static String[] EVR_BE_FIRST = {
-        UID.ExplicitVRBigEndianRetired,
+        UID.ExplicitVRBigEndian,
         UID.ExplicitVRLittleEndian,
         UID.ImplicitVRLittleEndian
     };

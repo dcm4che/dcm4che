@@ -43,6 +43,15 @@ public class DicomInputStreamTest {
     }
 
     @Test
+    public void testBulkDataLimit() throws Exception {
+        try {
+            readFrom("3gb-bulk-data-truncated", IncludeBulkData.URI);
+        } catch (DicomStreamException e) {
+            assertEquals("0x7FE00010 " + DicomInputStream.VALUE_TOO_LARGE, e.getMessage());
+        }
+    }
+
+    @Test
     public void testSpoolDataFragments() throws Exception {
         List<File> bulkDataFiles;
         Object pixeldata;

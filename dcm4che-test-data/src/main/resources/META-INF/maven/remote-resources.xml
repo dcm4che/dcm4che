@@ -59,6 +59,7 @@
         <remoteResource>US-RGB-8-esopecho</remoteResource>
         <remoteResource>YBR_422.dcm</remoteResource>
         <remoteResource>YBR_FULL-RLE.dcm</remoteResource>
+        <remoteResource>3gb-bulk-data-truncated</remoteResource>
     </remoteResources>
     <sourceEncoding>UTF-8</sourceEncoding>
 </remoteResourcesBundle>

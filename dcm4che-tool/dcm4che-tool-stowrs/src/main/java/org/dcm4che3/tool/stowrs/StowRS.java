@@ -228,7 +228,7 @@ public class StowRS {
                 break;
             case jpeg:
             case jpg:
-                instance.bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline1;
+                instance.bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline8Bit;
                 readPixelHeader(instance, metadata, bulkdataFile, false);
                 if (metadata.getString(Tag.SOPClassUID) == null)
                     metadata.setString(Tag.SOPClassUID, VR.UI, UID.SecondaryCaptureImageStorage);

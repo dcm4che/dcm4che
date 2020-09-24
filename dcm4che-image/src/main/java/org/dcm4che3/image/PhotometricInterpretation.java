@@ -141,7 +141,7 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public SampleModel createSampleModel(int dataType, int w, int h, 
+        public SampleModel createSampleModel(int dataType, int w, int h,
                 int samples, boolean banded) {
             return new SampledComponentSampleModel(w, h, ColorSubsampling.YBR_XXX_422);
         }

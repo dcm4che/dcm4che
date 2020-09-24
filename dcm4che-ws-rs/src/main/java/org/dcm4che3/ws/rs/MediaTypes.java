@@ -237,27 +237,27 @@ public class MediaTypes {
     public static MediaType forTransferSyntax(String ts) {
         if (ts.equals(UID.ExplicitVRLittleEndian) || ts.equals(UID.ImplicitVRLittleEndian))
             return MediaType.APPLICATION_OCTET_STREAM_TYPE;
-        if (ts.equals(UID.JPEGLossless))
+        if (ts.equals(UID.JPEGLosslessSV1))
             return IMAGE_JPEG_TYPE;
         if (ts.equals(UID.JPEGLSLossless))
             return IMAGE_X_JLS_TYPE;
-        if (ts.equals(UID.JPEG2000LosslessOnly))
+        if (ts.equals(UID.JPEG2000Lossless))
             return IMAGE_JP2_TYPE;
-        if (ts.equals(UID.JPEG2000Part2MultiComponentLosslessOnly))
+        if (ts.equals(UID.JPEG2000MCLossless))
             return IMAGE_JPX_TYPE;
         if (ts.equals(UID.RLELossless))
             return IMAGE_X_DICOM_RLE_TYPE;
-        if (ts.equals(UID.JPEGBaseline1) || ts.equals(UID.JPEGExtended24) || ts.equals(UID.JPEGLosslessNonHierarchical14))
+        if (ts.equals(UID.JPEGBaseline8Bit) || ts.equals(UID.JPEGExtended12Bit) || ts.equals(UID.JPEGLossless))
             return getMediaType(ts, IMAGE_JPEG_TYPE);
-        if (ts.equals(UID.JPEGLSLossyNearLossless))
+        if (ts.equals(UID.JPEGLSNearLossless))
             return getMediaType(ts, IMAGE_X_JLS_TYPE);
         if (ts.equals(UID.JPEG2000))
             return getMediaType(ts, IMAGE_X_JLS_TYPE);
-        if (ts.equals(UID.JPEG2000Part2MultiComponent))
+        if (ts.equals(UID.JPEG2000MC))
             return getMediaType(ts, IMAGE_JPX_TYPE);
-        if (ts.equals(UID.MPEG2) || ts.equals(UID.MPEG2MainProfileHighLevel))
+        if (ts.equals(UID.MPEG2MPML) || ts.equals(UID.MPEG2MPHL))
             return getMediaType(ts, VIDEO_MPEG_TYPE);
-        if (ts.equals(UID.MPEG4AVCH264HighProfileLevel41) || ts.equals(UID.MPEG4AVCH264BDCompatibleHighProfileLevel41))
+        if (ts.equals(UID.MPEG4HP41) || ts.equals(UID.MPEG4HP41BD))
             return getMediaType(ts, VIDEO_MP4_TYPE);
         else
             throw new IllegalArgumentException("ts: " + ts);
@@ -276,20 +276,20 @@ public class MediaTypes {
         String subtype = bulkdataMediaType.getSubtype().toLowerCase();
         if (type.equals("image")) {
             if (subtype.equals("jpeg"))
-                return UID.JPEGLossless;
+                return UID.JPEGLosslessSV1;
             else if (subtype.equals("x-jls"))
                 return UID.JPEGLSLossless;
             else if (subtype.equals("jp2"))
-                return UID.JPEG2000LosslessOnly;
+                return UID.JPEG2000Lossless;
             else if (subtype.equals("jpx"))
-                return UID.JPEG2000Part2MultiComponentLosslessOnly;
+                return UID.JPEG2000MCLossless;
             else if (subtype.equals("x-dicom+rle"))
                 return UID.RLELossless;
         } else if (type.equals("video")) {
             if (subtype.equals("mpeg"))
-                return UID.MPEG2;
+                return UID.MPEG2MPML;
             else if (subtype.equals("mp4"))
-                return UID.MPEG4AVCH264HighProfileLevel41;
+                return UID.MPEG4HP41;
         }
         return UID.ExplicitVRLittleEndian;
     }

@@ -174,34 +174,34 @@ public class TCGroupConfigAEExtension extends AEExtension {
                 allTCToList(transferCapabilities, DefaultTransferCapabilities.IMAGE_CUIDS, null, DefaultTransferCapabilities.IMAGE_TSUIDS);
                 allTCToList(transferCapabilities, DefaultTransferCapabilities.VIDEO_CUIDS, null, DefaultTransferCapabilities.VIDEO_TSUIDS);
                 allTCToList(transferCapabilities, DefaultTransferCapabilities.OTHER_CUIDS, null, DefaultTransferCapabilities.OTHER_TSUIDS);
-                allTCToList(transferCapabilities, new String[]{UID.InstanceAvailabilityNotificationSOPClass, UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
+                allTCToList(transferCapabilities, new String[]{UID.InstanceAvailabilityNotification, UID.Verification}, null, UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 
             case QUERY:
                 transferCapabilities = new ArrayList<TransferCapability>();
                 allTCToList(transferCapabilities, DefaultTransferCapabilities.QUERY_CUIDS, EnumSet.allOf(QueryOption.class), DefaultTransferCapabilities.OTHER_TSUIDS);
-                allTCToList(transferCapabilities, new String[]{UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
+                allTCToList(transferCapabilities, new String[]{UID.Verification}, null, UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 
             case RETRIEVE:
                 transferCapabilities = new ArrayList<TransferCapability>();
                 allTCToList(transferCapabilities, DefaultTransferCapabilities.RETRIEVE_CUIDS, EnumSet.of(QueryOption.RELATIONAL), DefaultTransferCapabilities.OTHER_TSUIDS);
-                allTCToList(transferCapabilities, new String[]{UID.CompositeInstanceRetrieveWithoutBulkDataGET, UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
+                allTCToList(transferCapabilities, new String[]{UID.CompositeInstanceRetrieveWithoutBulkDataGet, UID.Verification}, null, UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 
             case MWL:
                 transferCapabilities = new ArrayList<TransferCapability>();
-                allTCToList(transferCapabilities, new String[]{UID.ModalityWorklistInformationModelFIND, UID.VerificationSOPClass}, EnumSet.allOf(QueryOption.class), UID.ImplicitVRLittleEndian);
+                allTCToList(transferCapabilities, new String[]{UID.ModalityWorklistInformationModelFind, UID.Verification}, EnumSet.allOf(QueryOption.class), UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 
             case PPS:
                 transferCapabilities = new ArrayList<TransferCapability>();
-                allTCToList(transferCapabilities, new String[]{UID.ModalityPerformedProcedureStepSOPClass, UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
+                allTCToList(transferCapabilities, new String[]{UID.ModalityPerformedProcedureStep, UID.Verification}, null, UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 
             case STORAGE_COMMITMENT:
                 transferCapabilities = new ArrayList<TransferCapability>();
-                allTCToList(transferCapabilities, new String[]{UID.StorageCommitmentPushModelSOPClass, UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
+                allTCToList(transferCapabilities, new String[]{UID.StorageCommitmentPushModel, UID.Verification}, null, UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 
             default:

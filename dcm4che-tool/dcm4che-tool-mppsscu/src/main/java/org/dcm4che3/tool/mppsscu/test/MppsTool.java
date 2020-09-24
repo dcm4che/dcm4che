@@ -168,7 +168,7 @@ public class MppsTool implements TestTool{
         main.getAAssociateRQ().setCalledAET(aeTitle);
         main.getRemoteConnection().setHostname(host);
         main.getRemoteConnection().setPort(port);
-        main.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired});
+        main.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndian});
       //ensure secure connection
         main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
         main.getRemoteConnection().setTlsProtocols(conn.tlsProtocols());

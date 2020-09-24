@@ -111,7 +111,7 @@ public class RetrieveTool implements TestTool{
     private boolean rememberResultAttributes = true;
 
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
-            UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
+            UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndian };
 
 
     public RetrieveTool(String host, int port, String aeTitle, File retrieveDir, Device device, String sourceAETitle,String retrieveLevel

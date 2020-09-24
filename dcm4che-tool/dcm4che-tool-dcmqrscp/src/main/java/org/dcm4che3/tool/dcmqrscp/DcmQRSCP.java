@@ -133,7 +133,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
     private DicomDirReader ddReader;
     private DicomDirWriter ddWriter;
     private HashMap<String, Connection> remoteConnections = new HashMap<String, Connection>();
-    
+
     private final class CFindSCPImpl extends BasicCFindSCP {
 
         private final String[] qrLevels;
@@ -305,15 +305,15 @@ public class DcmQRSCP<T extends InstanceLocator> {
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
     }
-    
+
     public void init() {
         device.setDimseRQHandler(createServiceRegistry());
     }
-    
+
     protected void addCStoreSCPService(DicomServiceRegistry serviceRegistry ) {
         serviceRegistry.addDicomService(new CStoreSCPImpl(ddWriter, filePathFormat, recFact));
     }
-    
+
     protected void addStgCmtSCPService(DicomServiceRegistry serviceRegistry ) {
         serviceRegistry.addDicomService(new StgCmtSCPImpl(ddReader, remoteConnections,  stgCmtOnSameAssoc, device.getExecutor()));
     }
@@ -321,38 +321,38 @@ public class DcmQRSCP<T extends InstanceLocator> {
     private DicomServiceRegistry createServiceRegistry() {
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());
-        
+
         addCStoreSCPService(serviceRegistry);
         addStgCmtSCPService(serviceRegistry);
-        
+
         serviceRegistry.addDicomService(new CFindSCPImpl(
-                UID.PatientRootQueryRetrieveInformationModelFIND,
+                UID.PatientRootQueryRetrieveInformationModelFind,
                 PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(new CFindSCPImpl(
-                UID.StudyRootQueryRetrieveInformationModelFIND,
+                UID.StudyRootQueryRetrieveInformationModelFind,
                 STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(new CFindSCPImpl(
-                UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired,
+                UID.PatientStudyOnlyQueryRetrieveInformationModelFind,
                 PATIENT_STUDY_ONLY_LEVELS));
         serviceRegistry.addDicomService(new CGetSCPImpl(
-                UID.PatientRootQueryRetrieveInformationModelGET,
+                UID.PatientRootQueryRetrieveInformationModelGet,
                 PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(new CGetSCPImpl(
-                UID.StudyRootQueryRetrieveInformationModelGET,
+                UID.StudyRootQueryRetrieveInformationModelGet,
                 STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(new CGetSCPImpl(
-                UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired,
+                UID.PatientStudyOnlyQueryRetrieveInformationModelGet,
                 PATIENT_STUDY_ONLY_LEVELS));
         serviceRegistry.addDicomService(new CGetSCPImpl(
-                UID.CompositeInstanceRetrieveWithoutBulkDataGET));
+                UID.CompositeInstanceRetrieveWithoutBulkDataGet));
         serviceRegistry.addDicomService(new CMoveSCPImpl(
-                UID.PatientRootQueryRetrieveInformationModelMOVE,
+                UID.PatientRootQueryRetrieveInformationModelMove,
                 PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(new CMoveSCPImpl(
-                UID.StudyRootQueryRetrieveInformationModelMOVE,
+                UID.StudyRootQueryRetrieveInformationModelMove,
                 STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(new CMoveSCPImpl(
-                UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired,
+                UID.PatientStudyOnlyQueryRetrieveInformationModelMove,
                 PATIENT_STUDY_ONLY_LEVELS));
         return serviceRegistry;
     }
@@ -360,11 +360,11 @@ public class DcmQRSCP<T extends InstanceLocator> {
     public final Device getDevice() {
         return device;
     }
-    
+
     public void setDevice(Device device) {
         this.device = device;
     }
-    
+
     public void setApplicationEntity(ApplicationEntity ae) {
         this.ae = ae;
     }
@@ -645,7 +645,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
             ae.addTransferCapability(tc);
         } else {
             ae.addTransferCapability(new TransferCapability(null,
-                    UID.VerificationSOPClass, TransferCapability.Role.SCP,
+                    UID.Verification, TransferCapability.Role.SCP,
                     UID.ImplicitVRLittleEndian));
             Properties storageSOPClasses = CLIUtils.loadProperties(cl
                     .getOptionValue("storage-sop-classes",
@@ -714,7 +714,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
     final DicomDirReader getDicomDirReader() {
         return ddReader;
     }
-    
+
     public void setDicomDirReader(DicomDirReader ddReader) {
         this.ddReader = ddReader;
     }
@@ -801,7 +801,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
                     Status.UnableToCalculateNumberOfMatches, e);
         }
     }
-    
+
     public Connection getConnection() {
         return conn;
     }

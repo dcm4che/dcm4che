@@ -198,7 +198,7 @@ public class ColorModelFactory {
 
     /** Indicate if the given tsuid decodes directly to RGB when a colour model */
     public static boolean isDecodingRGB(String tsuid) {
-        return UID.JPEG2000.equals(tsuid) || UID.JPEGBaseline1.equals(tsuid);
+        return UID.JPEG2000.equals(tsuid) || UID.JPEGBaseline8Bit.equals(tsuid);
     }
 
     /**

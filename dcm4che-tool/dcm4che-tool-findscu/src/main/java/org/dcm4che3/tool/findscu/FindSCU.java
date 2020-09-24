@@ -87,7 +87,7 @@ import org.dcm4che3.util.StringUtils;
  * Query/Retrieve Service Class. findscu only supports query functionality using
  * the C-FIND message. It sends query keys to an Service Class Provider (SCP)
  * and waits for responses.
- * 
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  *
@@ -95,14 +95,15 @@ import org.dcm4che3.util.StringUtils;
 public class FindSCU {
 
     public static enum InformationModel {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY"),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, "STUDY"),
-        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, "STUDY"),
-        MWL(UID.ModalityWorklistInformationModelFIND, null),
-        UPSPull(UID.UnifiedProcedureStepPullSOPClass, null),
-        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, null),
-        HangingProtocol(UID.HangingProtocolInformationModelFIND, null),
-        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelFIND, null);
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFind, "STUDY"),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFind, "STUDY"),
+        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFind, "STUDY"),
+        MWL(UID.ModalityWorklistInformationModelFind, null),
+        UPSPull(UID.UnifiedProcedureStepPull, null),
+        UPSWatch(UID.UnifiedProcedureStepWatch, null),
+        UPSQuery(UID.UnifiedProcedureStepQuery, null),
+        HangingProtocol(UID.HangingProtocolInformationModelFind, null),
+        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelFind, null);
 
         final String cuid;
         final String level;
@@ -137,7 +138,7 @@ public class FindSCU {
     private int cancelAfter;
     private InformationModel model;
     private static String[] modelUIDandTS;
-    
+
     private File outDir;
     private DecimalFormat outFileFormat;
     private int[] inFilter;
@@ -154,7 +155,7 @@ public class FindSCU {
 
     private Association as;
     private final AtomicInteger totNumMatches = new AtomicInteger();
-    
+
     private long tStartCFind;
 
     public FindSCU() throws IOException {
@@ -534,7 +535,7 @@ public class FindSCU {
         }
         attrs.addAll(keys);
     }
-    
+
    public void query() throws IOException, InterruptedException {
         query(keys);
     }

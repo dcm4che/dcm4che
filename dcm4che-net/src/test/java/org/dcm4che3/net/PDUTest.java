@@ -79,7 +79,7 @@ public class PDUTest {
     @Test
     @Ignore("Test needs a DICOM listener and may therefore fail in some environments. The Test was introduced to debug/fix a problem with deflated TS and must not be performed regulary!")
     public void testEVRBE_retired() throws Exception {
-        test(UID.ExplicitVRBigEndianRetired);
+        test(UID.ExplicitVRBigEndian);
     }
     
     @Test
@@ -93,7 +93,7 @@ public class PDUTest {
         aeScp.setAssociationAcceptor(true);
         Connection connScp = new Connection("dicom", "localhost", 11122);
         Device deviceScp = createDevice("findSCP", aeScp, connScp);
-        deviceScp.setDimseRQHandler(new AbstractDicomService(UID.PatientRootQueryRetrieveInformationModelFIND) {
+        deviceScp.setDimseRQHandler(new AbstractDicomService(UID.PatientRootQueryRetrieveInformationModelFind) {
             @Override
             protected void onDimseRQ(Association as, PresentationContext pc, Dimse dimse, Attributes cmd, Attributes data) throws IOException {
                 Attributes rsp;
@@ -128,7 +128,7 @@ public class PDUTest {
             }
         };
 
-        as.cfind(UID.PatientRootQueryRetrieveInformationModelFIND, 0, keys, cfindTS, rspHandler);
+        as.cfind(UID.PatientRootQueryRetrieveInformationModelFind, 0, keys, cfindTS, rspHandler);
         if (as.isReadyForDataTransfer()) {
             as.waitForOutstandingRSP();
             as.release();
@@ -140,24 +140,24 @@ public class PDUTest {
 
     public AAssociateRQ getAssocReq(ApplicationEntity aeScp) {
         AAssociateRQ rq = new AAssociateRQ();
-        rq.addPresentationContext(new PresentationContext(1, UID.PatientRootQueryRetrieveInformationModelFIND, 
+        rq.addPresentationContext(new PresentationContext(1, UID.PatientRootQueryRetrieveInformationModelFind,
                 UID.ImplicitVRLittleEndian));
-        rq.addPresentationContext(new PresentationContext(3, UID.PatientRootQueryRetrieveInformationModelFIND, 
+        rq.addPresentationContext(new PresentationContext(3, UID.PatientRootQueryRetrieveInformationModelFind,
                 UID.ExplicitVRLittleEndian));
-        rq.addPresentationContext(new PresentationContext(5, UID.PatientRootQueryRetrieveInformationModelFIND, 
+        rq.addPresentationContext(new PresentationContext(5, UID.PatientRootQueryRetrieveInformationModelFind,
                 UID.DeflatedExplicitVRLittleEndian));
-        rq.addPresentationContext(new PresentationContext(7, UID.PatientRootQueryRetrieveInformationModelFIND, 
-                 UID.ExplicitVRBigEndianRetired));
+        rq.addPresentationContext(new PresentationContext(7, UID.PatientRootQueryRetrieveInformationModelFind,
+                 UID.ExplicitVRBigEndian));
         rq.setCalledAET(aeScp.getAETitle());
         return rq;
     }
     
     private ApplicationEntity createAE(String aet, Role role) {
         ApplicationEntity ae = new ApplicationEntity(aet);
-        ae.addTransferCapability(new TransferCapability(null, UID.VerificationSOPClass, role,
+        ae.addTransferCapability(new TransferCapability(null, UID.Verification, role,
                 UID.ImplicitVRLittleEndian));
-        ae.addTransferCapability(new TransferCapability(null, UID.PatientRootQueryRetrieveInformationModelFIND, role,
-                UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.DeflatedExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired));
+        ae.addTransferCapability(new TransferCapability(null, UID.PatientRootQueryRetrieveInformationModelFind, role,
+                UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.DeflatedExplicitVRLittleEndian, UID.ExplicitVRBigEndian));
         return ae;
     }
 

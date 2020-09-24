@@ -92,7 +92,7 @@ public class QueryTool implements TestTool {
     private final boolean relational;
     private int numMatches;
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
-            UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
+            UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndian };
     private Attributes queryatts = new Attributes();
     private int expectedMatches = Integer.MIN_VALUE;
     

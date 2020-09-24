@@ -254,13 +254,13 @@ public class Jpg2Dcm {
     }
 
     private enum FileType {
-        jpeg(UID.SecondaryCaptureImageStorage, UID.JPEGBaseline1) {
+        jpeg(UID.SecondaryCaptureImageStorage, UID.JPEGBaseline8Bit) {
             @Override
             boolean parseHeader(Jpg2Dcm main) {
                 return (main.jpegHeader = new JPEGHeader(main.buffer, JPEG.SOS)).toAttributes(main.metadata) != null;
             }
         },
-        mpeg(UID.VideoPhotographicImageStorage, UID.MPEG2) {
+        mpeg(UID.VideoPhotographicImageStorage, UID.MPEG2MPML) {
             @Override
             boolean parseHeader(Jpg2Dcm main) {
                 return new MPEGHeader(main.buffer).toAttributes(main.metadata, main.fileLength) != null;

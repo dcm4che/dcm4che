@@ -70,7 +70,7 @@ public class StgCmtSCPImpl extends AbstractDicomService {
     
     public StgCmtSCPImpl(DicomDirReader dicomDirReader, Map<String,Connection> remoteConnections, 
             boolean stgCmtOnSameAssoc, Executor executor) {
-        super(UID.StorageCommitmentPushModelSOPClass);
+        super(UID.StorageCommitmentPushModel);
         this.dicomDirReader = dicomDirReader;
         this.remoteConnections = remoteConnections;
         this.stgCmtOnSameAssoc = stgCmtOnSameAssoc;

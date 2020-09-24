@@ -58,7 +58,7 @@ import org.dcm4che3.net.pdu.PresentationContext;
 public class BasicIanSCP extends AbstractDicomService {
 
     public BasicIanSCP() {
-        super(UID.InstanceAvailabilityNotificationSOPClass);
+        super(UID.InstanceAvailabilityNotification);
     }
 
     @Override

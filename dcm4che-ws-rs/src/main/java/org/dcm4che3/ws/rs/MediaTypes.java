@@ -247,7 +247,7 @@ public class MediaTypes {
             return IMAGE_JPX_TYPE;
         if (ts.equals(UID.RLELossless))
             return IMAGE_X_DICOM_RLE_TYPE;
-        if (ts.equals(UID.JPEGBaseline8Bit) || ts.equals(UID.JPEGExtended12Bit) || ts.equals(UID.JPEGLosslessNonHierarchical14))
+        if (ts.equals(UID.JPEGBaseline8Bit) || ts.equals(UID.JPEGExtended12Bit) || ts.equals(UID.JPEGLossless))
             return getMediaType(ts, IMAGE_JPEG_TYPE);
         if (ts.equals(UID.JPEGLSNearLossless))
             return getMediaType(ts, IMAGE_X_JLS_TYPE);

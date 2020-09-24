@@ -93,7 +93,7 @@ public class MoveTool implements TestTool{
     private TestResult result;
     
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
-            UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
+            UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndian };
 
 
     public MoveTool(String host, int port, String aeTitle, String destAEtitle, String retrieveLevel,

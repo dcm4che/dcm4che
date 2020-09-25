@@ -494,39 +494,18 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private BufferedImage applyColorTransformations(int frameIndex, ImageReadParam param, WritableRaster raster,
             BufferedImage bi) {
         int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
-        ICCProfile.Option iccProfile = param instanceof DicomImageReadParam
-                ? ((DicomImageReadParam) param).getICCProfile()
-                : null;
         Optional<ColorSpace> iccColorSpace = colorSpaceOfFrame(frameIndex);
         if (bi != null
                 && pmi != PhotometricInterpretation.PALETTE_COLOR
                 && bi.getColorModel().getColorSpace().getType()
                     == (pmiAfterDecompression.isYBR() ? ColorSpace.TYPE_YCbCr : ColorSpace.TYPE_RGB)
                 && overlayGroupOffsets.length == 0
-                && (iccProfile == ICCProfile.Option.no
-                    || !iccColorSpace.isPresent() && iccProfile == ICCProfile.Option.none)) {
+                && !iccColorSpace.isPresent()) {
             return bi;
         }
-        ColorSpace colorSpace = iccProfile.adjust(iccColorSpace).orElse(sRGB);
+        ColorSpace colorSpace = iccColorSpace.orElse(sRGB);
         ColorModel cm = createColorModel(bitsStored, dataType, colorSpace);
         bi = new BufferedImage(cm, raster, false, null);
-        Optional<ColorSpace> convertTo = iccProfile.convertTo(iccColorSpace, bi.getColorModel().getColorSpace());
-        if (convertTo.isPresent()) {
-            if (cm instanceof PaletteColorModel) {
-                bi = new BufferedImage(((PaletteColorModel) cm).convertTo(convertTo.get()),
-                        bi.getRaster(),
-                        bi.isAlphaPremultiplied(),
-                        null);
-            } else {
-                ColorModel rgbCM = ColorModelFactory.createRGBColorModel(bitsStored, dataType, convertTo.get());
-                bi = BufferedImageUtils.convertYBRtoRGB(bi,
-                        new BufferedImage(
-                                rgbCM,
-                                rgbCM.createCompatibleWritableRaster(width, height),
-                                false,
-                                null));
-            }
-        }
         if (overlayGroupOffsets.length == 0) {
             return bi;
         }

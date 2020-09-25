@@ -44,6 +44,7 @@ import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
@@ -64,7 +65,7 @@ public class ColorModelFactory {
                 dataType);
     }
 
-   public static ColorModel createPaletteColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
+    public static ColorModel createPaletteColorModel(int bits, int dataType, ColorSpace cspace, Attributes ds) {
         return new PaletteColorModel(bits, dataType, cspace, ds);
     }
 

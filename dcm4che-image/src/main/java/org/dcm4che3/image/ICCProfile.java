@@ -48,6 +48,7 @@ import org.dcm4che3.data.Tag;
 import java.awt.color.ColorSpace;
 import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
+import java.awt.image.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -108,63 +109,71 @@ public final class ICCProfile {
     public enum Option {
         none {
             @Override
-            public Optional<ColorSpace> convertTo(Optional<ColorSpace> cspace, ColorSpace colorSpace) {
-                return cspace.isPresent() ? sRGB : Optional.empty();
+            protected BufferedImage convertColor(BufferedImage bi) {
+                return isCS_sRGB(bi) ? bi : BufferedImageUtils.convertColor(bi, CM_sRGB);
             }
         },
         no {
             @Override
-            public Optional<ColorSpace> adjust(Optional<ColorSpace> cspace) {
-                return Optional.empty();
+            protected BufferedImage convertColor(BufferedImage bi) {
+                return isCS_sRGB(bi) ? bi : BufferedImageUtils.replaceColorModel(bi, CM_sRGB);
             }
         },
         yes {
             @Override
-            public Optional<ColorSpace> adjust(Optional<ColorSpace> cspace) {
-                return cspace.isPresent() ? cspace : srgb.colorSpace;
-            }
-
-            @Override
-            public Optional<ColorSpace> convertTo(Optional<ColorSpace> cspace, ColorSpace srccs) {
-                return srccs.getType() == ColorSpace.TYPE_YCbCr ? srgb.colorSpace : Optional.empty();
+            protected BufferedImage convertColor(BufferedImage bi) {
+                return isCS_sRGB(bi) ? BufferedImageUtils.replaceColorModel(bi, srgb.colorModel) : bi;
             }
         },
         srgb("sRGB.pf") {
             @Override
-            public Optional<ColorSpace> adjust(Optional<ColorSpace> cspace) {
-                return cspace.isPresent() ? cspace : srgb.colorSpace;
-            }
-
-            @Override
-            public Optional<ColorSpace> convertTo(Optional<ColorSpace> cspace, ColorSpace srccs) {
-                return srccs.getType() != ColorSpace.CS_sRGB || cspace.isPresent()
-                        ? srgb.colorSpace : Optional.empty();
+            protected BufferedImage convertColor(BufferedImage bi) {
+                return isCS_sRGB(bi)
+                        ? BufferedImageUtils.replaceColorModel(bi, srgb.colorModel)
+                        : BufferedImageUtils.convertColor(bi, srgb.colorModel);
             }
         },
         adobergb("adobeRGB.pf"),
         rommrgb("rommRGB.pf");
 
-        static final Optional<ColorSpace> sRGB = Optional.of(ColorSpace.getInstance(ColorSpace.CS_sRGB));
-        public final Optional<ColorSpace> colorSpace;
+        private static final ColorModel CM_sRGB = ColorModelFactory.createRGBColorModel(
+                8, DataBuffer.TYPE_BYTE, ColorSpace.getInstance(ColorSpace.CS_sRGB));
+        private final ColorModel colorModel;
 
         Option() {
-            colorSpace = Optional.empty();
+            colorModel = null;
         }
 
         Option(String fileName) {
             try (InputStream is = ICCProfile.class.getResourceAsStream(fileName)){
-                colorSpace = Optional.of(new ICC_ColorSpace(ICC_Profile.getInstance(is)));
+                colorModel = ColorModelFactory.createRGBColorModel(8, DataBuffer.TYPE_BYTE,
+                        new ICC_ColorSpace(ICC_Profile.getInstance(is)));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        public Optional<ColorSpace> adjust(Optional<ColorSpace> cspace) {
-            return cspace;
+        public BufferedImage adjust(BufferedImage bi) {
+            ColorModel cm = bi.getColorModel();
+            return cm.getNumColorComponents() == 3
+                    ? convertColor(toRGB(bi, cm))
+                    : bi;
         }
 
-        public Optional<ColorSpace> convertTo(Optional<ColorSpace> cspace, ColorSpace colorSpace) {
-            return this.colorSpace;
+        protected BufferedImage convertColor(BufferedImage bi) {
+            return BufferedImageUtils.convertColor(bi, colorModel);
+        }
+
+        private static boolean isCS_sRGB(BufferedImage bi) {
+            return bi.getColorModel().getColorSpace().isCS_sRGB();
+        }
+
+        private static BufferedImage toRGB(BufferedImage bi, ColorModel cm) {
+            return cm instanceof PaletteColorModel
+                    ? BufferedImageUtils.convertPalettetoRGB(bi, null)
+                    : cm.getColorSpace().getType() == ColorSpace.TYPE_YCbCr
+                    ? BufferedImageUtils.convertYBRtoRGB(bi, null)
+                    : bi;
         }
     }
 }

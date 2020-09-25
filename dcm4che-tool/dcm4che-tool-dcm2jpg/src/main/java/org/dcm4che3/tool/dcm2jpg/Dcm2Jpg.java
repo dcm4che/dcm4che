@@ -392,10 +392,7 @@ public class Dcm2Jpg {
     }
 
     public void convert(File src, File dest) throws IOException {
-        BufferedImage bi = readImage(src);
-        if (bi.getColorModel() instanceof PaletteColorModel)
-            bi = BufferedImageUtils.convertPalettetoRGB(bi, null);
-        writeImage(dest, bi);
+        writeImage(dest, iccProfile.adjust(readImage(src)));
     }
 
     private BufferedImage readImage(File file) throws IOException {
@@ -418,7 +415,6 @@ public class Dcm2Jpg {
         param.setOverlayActivationMask(overlayActivationMask);
         param.setOverlayGrayscaleValue(overlayGrayscaleValue);
         param.setOverlayRGBValue(overlayRGBValue);
-        param.setICCProfile(iccProfile);
         return param;
     }
 

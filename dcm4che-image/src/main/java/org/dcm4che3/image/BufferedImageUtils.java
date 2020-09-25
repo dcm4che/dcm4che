@@ -159,6 +159,23 @@ public class BufferedImageUtils {
         return dst;
     }
 
+    public static BufferedImage replaceColorModel(BufferedImage bi, ColorModel colorModel) {
+        return new BufferedImage(colorModel, bi.getRaster(), false, null);
+    }
+
+    public static BufferedImage convertColor(BufferedImage bi, ColorModel colorModel) {
+        BufferedImage dest = new BufferedImage(colorModel,
+                Raster.createWritableRaster(
+                        colorModel.createCompatibleSampleModel(
+                                bi.getWidth(),
+                                bi.getHeight()),
+                        null),
+                false,
+                null);
+        new ColorConvertOp(null).filter(bi, dest);
+        return dest;
+    }
+
     /**
      * Set Image Pixel Module Attributes from Buffered Image. Supports Buffered Images with ColorSpace GRAY or RGB
      * and with a DataBuffer containing one bank of unsigned byte data.

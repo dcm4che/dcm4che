@@ -96,7 +96,7 @@
     <uid value="1.3.46.670589.11.0.0.12.2" keyword="PrivatePhilipsMRSeriesDataStorage" type="SOPClass">Private Philips MR Series Data Storage</uid>
     <uid value="1.3.46.670589.11.0.0.12.3" keyword="PrivatePhilipsMRColorImageStorage" type="SOPClass">Private Philips MR Color Image Storage</uid>
     <uid value="1.3.46.670589.11.0.0.12.4" keyword="PrivatePhilipsMRExamcardStorage" type="SOPClass">Private Philips MR Examcard Storage</uid>
-    <uid value="2.16.840.1.114033.5.1.4.1.1.130" keyword="PrivatePMODMultiframeImageStorage" type="SOPClass">Private PMOD Multi-frame Image Storage</uid>
+    <uid value="2.16.840.1.114033.5.1.4.1.1.130" keyword="PrivatePMODMultiFrameImageStorage" type="SOPClass">Private PMOD Multi-frame Image Storage</uid>
   </xsl:template>
 
 </xsl:stylesheet>

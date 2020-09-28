@@ -87,6 +87,8 @@ public class DicomInputStream extends FilterInputStream
         "Implicit VR Big Endian encoded DICOM Stream";
     private static final String DEFLATED_WITH_ZLIB_HEADER =
         "Deflated DICOM Stream with ZLIB Header";
+    /* VisibleForTesting */ static final String VALUE_TOO_LARGE =
+      "tag value too large, must be less than 2Gib";
 
     private static final int ZLIB_HEADER = 0x789c;
     private static final int DEF_ALLOCATE_LIMIT = 0x4000000; // 64MiB
@@ -412,6 +414,11 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
+    private DicomStreamException tagValueTooLargeException()  {
+        return new DicomStreamException(
+            String.format("0x%s %s", TagUtils.toHexString(tag), VALUE_TOO_LARGE));
+      }
+
     public void readHeader() throws IOException {
         byte[] buf = buffer;
         tagPos = pos; 
@@ -427,6 +434,7 @@ public class DicomInputStream extends FilterInputStream
             if (explicitVR) {
                 vr = VR.valueOf(encodedVR = ByteUtils.bytesToVR(buf, 4));
                 if (vr.headerLength() == 8) {
+                    // This length can't overflow since length field is only 16 bits in this case.
                     length = ByteUtils.bytesToUShort(buf, 6, bigEndian);
                     return;
                 }
@@ -436,6 +444,9 @@ public class DicomInputStream extends FilterInputStream
             }
         }
         length = ByteUtils.bytesToInt(buf, 4, bigEndian);
+        if (length < -1) {
+            throw tagValueTooLargeException();
+        }
     }
 
     public boolean readItemHeader() throws IOException {
@@ -776,7 +787,8 @@ public class DicomInputStream extends FilterInputStream
         int valLen = length;
         try {
             if (valLen < 0)
-                throw new EOFException(); // assume InputStream length < 2 GiB
+            throw new IOException(
+                "internal error: length should have been validated in readHeader");
             int allocLen = allocateLimit >= 0
                     ? Math.min(valLen, allocateLimit)
                     : valLen;

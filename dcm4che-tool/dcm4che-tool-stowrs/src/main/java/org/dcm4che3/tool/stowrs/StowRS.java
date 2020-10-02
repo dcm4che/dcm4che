@@ -84,7 +84,7 @@ public class StowRS {
     private static final Logger LOG = LoggerFactory.getLogger(StowRS.class);
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.stowrs.messages");
     private static String[] keys;
-    private String url;
+    private static String url;
     private String user;
     private String bearer;
     private boolean noApp;
@@ -474,6 +474,8 @@ public class StowRS {
             supplementSOPClass(metadata, firstBulkdataFileContentType.getSOPClassUID());
         }
         CLIUtils.addAttributes(metadata, keys);
+        if (!url.endsWith("studies"))
+            metadata.setString(Tag.StudyInstanceUID, VR.UI, url.substring(url.lastIndexOf("/") + 1));
         supplementMissingUIDs(metadata);
         return metadata;
     }

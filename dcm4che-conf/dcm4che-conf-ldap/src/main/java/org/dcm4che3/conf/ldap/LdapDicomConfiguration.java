@@ -2468,7 +2468,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (prev == null) {
                 ConfigurationChanges.ModifiedObject ldapObj =
                         ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.C);
-                createSubcontext(dn, storeTo(ldapObj, prev, new BasicAttributes(true)));
+                createSubcontext(dn, storeTo(ldapObj, entry.getValue(), new BasicAttributes(true)));
             } else {
                 ConfigurationChanges.ModifiedObject ldapObj =
                         ConfigurationChanges.addModifiedObject(diffs, dn, ConfigurationChanges.ChangeType.U);

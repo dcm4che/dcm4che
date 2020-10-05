@@ -95,9 +95,26 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
         return this.attributes;
     }
 
+    /**
+     * Ensure that the instance has a PixelData tag and that it is of non-zero size.  This is a pretty course measurement
+     * of pixel data availability, but it allows us to fail fast when there are obvious problems.
+     */
     @Override
     public boolean containsPixelData() {
-        return getPixelDataValue() != null;
+        boolean containsPixelData;
+
+        Object pixelDataValue = getPixelDataValue();
+        if(pixelDataValue == null) {
+            containsPixelData = false;
+        }
+        else if(pixelDataValue instanceof Fragments) {
+            containsPixelData = !((Fragments)pixelDataValue).isEmpty();
+        }
+        else {
+            containsPixelData = Fragments.length(pixelDataValue) > 0;
+        }
+
+        return containsPixelData;
     }
 
     @Override
@@ -138,7 +155,8 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
         else {
             int frameLength = calculateFrameLength();
             long pixelDataLength = Fragments.length(getPixelDataValue());
-            if(pixelDataLength % frameLength == 0) {
+            if(frameLength > 0 && pixelDataLength % frameLength <= 1) {
+                // We allow for a byte of padding for odd length pixel data
                 frames = (int) pixelDataLength / frameLength;
             }
             else {

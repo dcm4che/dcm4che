@@ -387,6 +387,9 @@ public class Attributes implements Serializable {
         return sq.get(itemIndex);
     }
 
+    /**
+     * Get the nested dataset relative to the current level.
+     */
     public Attributes getNestedDataset(ItemPointer... itemPointers) {
         Attributes item = this;
         for (ItemPointer ip : itemPointers) {

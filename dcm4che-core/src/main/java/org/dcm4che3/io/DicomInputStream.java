@@ -128,6 +128,7 @@ public class DicomInputStream extends FilterInputStream
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
     private List<ItemPointer> itemPointers = new ArrayList<ItemPointer>(4);
+    private List<ItemPointer> immutableItemPointers;
     private boolean decodeUNWithIVRLE = true;
     private boolean addBulkDataReferences;
 
@@ -286,8 +287,23 @@ public class DicomInputStream extends FilterInputStream
         return fileMetaInformation;
     }
 
+    /**
+     * Level of sequence depth of the Attributes instance currently being populated
+     * by the DicomInputStream.  0 indicates the root level.
+     */
     public final int level() {
         return itemPointers.size();
+    }
+
+    /**
+     * Pointers from the root of the instance to the current Attributes instance being
+     * popluated by the DicomInputStream.  An empty list indicates the root level.
+     */
+    public final List<ItemPointer> itemPointers() {
+        if(this.immutableItemPointers == null) {
+            this.immutableItemPointers = Collections.unmodifiableList(itemPointers);
+        }
+        return this.immutableItemPointers;
     }
 
     public final int tag() {

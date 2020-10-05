@@ -332,6 +332,14 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
         return updatedReadParam;
     }
 
+    /**
+     * Read the buffered image from the underlying data source.  Presentation state, Window Level and LUTs will be
+     * applied to the instance according to the configuration of the param argument.
+     * @param frameIndex 0 based index of the frame to read.
+     * @param param parameters to read the instance with.
+     * @return buffered image that contains the rendering DICOM frame
+     * @throws IOException Thrown when the image cannot be read from the underlying data source.
+     */
     @Override
     public BufferedImage read(int frameIndex, ImageReadParam param)
             throws IOException {
@@ -357,8 +365,9 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
             raster = (WritableRaster) readRaster(frameIndex, param);
         }
 
+
         ColorModel cm;
-        if (getAccessor().getPhotometricInterpretation().isMonochrome()) {
+        if (getAccessor().isMonochrome()) {
             int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
             byte[][] overlayData = new byte[overlayGroupOffsets.length][];
             for (int i = 0; i < overlayGroupOffsets.length; i++) {

@@ -170,6 +170,8 @@ public class DicomOutputStream extends FilterOutputStream {
         ByteUtils.tagToBytes(tag, b, 0, bigEndian);
         int headerLen;
         if (!TagUtils.isItem(tag) && explicitVR) {
+            // Check to see if the size of the value to see if it is greater than 64Kib (8th bit is needed).
+            // If so, change the VR tag to unsigned before encoding the value.
             if ((len & 0xffff0000) != 0 && vr.headerLength() == 8)
                 vr = VR.UN;
             ByteUtils.shortToBytesBE(vr.code(), b, 4);

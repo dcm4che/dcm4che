@@ -170,8 +170,10 @@ public class DicomOutputStream extends FilterOutputStream {
         ByteUtils.tagToBytes(tag, b, 0, bigEndian);
         int headerLen;
         if (!TagUtils.isItem(tag) && explicitVR) {
-            // Check to see if the size of the value to see if it is greater than 64Kib (8th bit is needed).
-            // If so, change the VR tag to unsigned before encoding the value.
+            // Encode Attributes whose known Value Representation is none of OB, OD, OF, OW, SQ, UC, UR or UT
+            // and whose value length exceeds 65534 (2^16-2) - and therefore cannot be encoded as a
+            // 16-bit unsigned integer in the Value Length Field defined for the known Value Representation -
+            // with Value Representation UN, according DICOM CP 1066 - ftp://medical.nema.org/medical/dicom/final/cp1066_ft.pdf
             if ((len & 0xffff0000) != 0 && vr.headerLength() == 8)
                 vr = VR.UN;
             ByteUtils.shortToBytesBE(vr.code(), b, 4);

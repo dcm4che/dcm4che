@@ -165,7 +165,7 @@ public class AttributesTest {
         assertTrue(a1.equals(a2));
         assertTrue(a2.equals(a1));
     }
-    
+
     @Test
     public void testPrivateTagEqualsWithoutPrivateCreator() {
         Attributes a1 = new Attributes();
@@ -640,7 +640,7 @@ public class AttributesTest {
         assertArrayEquals(MODALITIES_IN_STUDY, a.getStrings(Tag.ModalitiesInStudy));
         assertEquals(MODALITIES_IN_STUDY[0], a.getString(Tag.ModalitiesInStudy));
     }
-    
+
     @Test
     public void updateRecursive_GivenUpdatedTagWithoutPrivateCreator_UpdatesValue() {
         Attributes original = new Attributes();
@@ -648,9 +648,9 @@ public class AttributesTest {
 
         Attributes updated = new Attributes();
         updated.setString(Tag.AccessionNumber, VR.SH, "UpdatedAccessionNumber");
-        
+
         original.updateRecursive(updated);
-        
+
         assertEquals("UpdatedAccessionNumber", original.getString(Tag.AccessionNumber));
     }
 
@@ -663,21 +663,21 @@ public class AttributesTest {
         originalContentItem.setString(Tag.RelationshipType, VR.CS, "CONTAINS");
         originalContentItem.setString(Tag.ValueType, VR.CS, "CODE");
         originalSequence.add(originalContentItem);
-        
+
         Attributes updated = new Attributes();
         Sequence updatedSequence = updated.ensureSequence(Tag.ContentSequence, 1);
-        
+
         Attributes updatedContentItem = new Attributes();
         updatedContentItem.setString(Tag.ValueType, VR.CS, "TEXT");
         updatedContentItem.setString(Tag.TextValue, VR.UT, "Text Value");
         updatedSequence.add(updatedContentItem);
-        
+
         original.updateRecursive(updated);
-        
+
         Sequence sequence = original.getSequence(Tag.ContentSequence);
-        
+
         assertEquals(1, sequence.size());
-        
+
         Attributes attributes = sequence.get(0);
         assertEquals("CONTAINS", attributes.getString(Tag.RelationshipType));
         assertEquals("TEXT", attributes.getString(Tag.ValueType));
@@ -696,19 +696,19 @@ public class AttributesTest {
             originalContentItem.setString(Tag.RelationshipType, VR.CS, "CONTAINS");
             originalContentItem.setString(Tag.ValueType, VR.CS, "CODE" + i);
             originalSequence.add(originalContentItem);
-        
+
             Attributes updatedContentItem = new Attributes();
             updatedContentItem.setString(Tag.ValueType, VR.CS, "TEXT");
             updatedContentItem.setString(Tag.TextValue, VR.UT, "Text Value" + i);
             updatedSequence.add(updatedContentItem);
         }
-        
+
         original.updateRecursive(updated);
-        
+
         Sequence sequence = original.getSequence(Tag.ContentSequence);
-        
+
         assertEquals(2, sequence.size());
-        
+
         for (int i = 0; i < 2; i++) {
             Attributes attributes = sequence.get(i);
             assertNull(attributes.getString(Tag.RelationshipType));
@@ -724,11 +724,11 @@ public class AttributesTest {
 
         Attributes updated = new Attributes();
         updated.setString(Tag.AccessionNumber, VR.SH, "UpdatedAccessionNumber");
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         assertEquals("UpdatedAccessionNumber", original.getString(Tag.AccessionNumber));
         assertEquals("OriginalAccessionNumber", modified.getString(Tag.AccessionNumber));
     }
@@ -740,11 +740,11 @@ public class AttributesTest {
 
         Attributes updated = new Attributes();
         updated.setString("PrivateCreator", 0x00990001, VR.LO, "UpdatedValue");
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         assertEquals("UpdatedValue", original.getString("PrivateCreator", 0x00990001));
         assertEquals("OriginalValue", modified.getString("PrivateCreator", 0x00990001));
     }
@@ -755,11 +755,11 @@ public class AttributesTest {
 
         Attributes updated = new Attributes();
         updated.setString(Tag.AccessionNumber, VR.SH, "UpdatedAccessionNumber");
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         assertEquals("UpdatedAccessionNumber", original.getString(Tag.AccessionNumber));
         assertNull(modified.getString(Tag.AccessionNumber));
     }
@@ -771,15 +771,15 @@ public class AttributesTest {
 
         Attributes updated = new Attributes();
         updated.setString(Tag.AccessionNumber, VR.SH, "UpdatedAccessionNumber");
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         assertEquals("UpdatedAccessionNumber", original.getString(Tag.AccessionNumber));
         assertNull(modified.getString(Tag.AccessionNumber));
     }
-    
+
     @Test
     public void updateRecursive_GivenModifiedAttributesAndSameTagValue_DoesNotUpdateValue() {
         Attributes original = new Attributes();
@@ -787,11 +787,11 @@ public class AttributesTest {
 
         Attributes updated = new Attributes();
         updated.setString(Tag.AccessionNumber, VR.SH, "OriginalAccessionNumber");
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         assertEquals("OriginalAccessionNumber", original.getString(Tag.AccessionNumber));
         assertNull(modified.getString(Tag.AccessionNumber));
     }
@@ -802,17 +802,17 @@ public class AttributesTest {
 
         Attributes updated = new Attributes();
         Sequence updatedSequence = updated.ensureSequence(Tag.ContentSequence, 1);
-        
+
         Attributes contentItem = new Attributes();
         contentItem.setString(Tag.RelationshipType, VR.CS, "CONTAINS");
         contentItem.setString(Tag.ValueType, VR.CS, "TEXT");
         updatedSequence.add(contentItem);
         updatedSequence.add(new Attributes(contentItem));
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         Sequence sequence = original.getSequence(Tag.ContentSequence);
         assertEquals(2, sequence.size());
         assertNull(modified.getSequence(Tag.ContentSequence));
@@ -825,19 +825,19 @@ public class AttributesTest {
 
         Attributes updated = new Attributes();
         Sequence updatedSequence = updated.ensureSequence(Tag.ContentSequence, 1);
-        
+
         Attributes contentItem = new Attributes();
         contentItem.setString(Tag.RelationshipType, VR.CS, "CONTAINS");
         contentItem.setString(Tag.ValueType, VR.CS, "TEXT");
         updatedSequence.add(contentItem);
         updatedSequence.add(new Attributes(contentItem));
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         Sequence sequence = original.getSequence(Tag.ContentSequence);
-        
+
         assertEquals(2, sequence.size());
         assertNull(modified.getSequence(Tag.ContentSequence));
     }
@@ -851,18 +851,18 @@ public class AttributesTest {
         contentItem.setString(Tag.RelationshipType, VR.CS, "CONTAINS");
         contentItem.setString(Tag.ValueType, VR.CS, "TEXT");
         originalSequence.add(contentItem);
-        
+
         Attributes updated = new Attributes();
         updated.ensureSequence(Tag.ContentSequence, 1);
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         Sequence sequence = original.getSequence(Tag.ContentSequence);
-        
+
         assertEquals(1, sequence.size());
-        
+
         Attributes attributes = sequence.get(0);
         assertEquals("CONTAINS", attributes.getString(Tag.RelationshipType));
         assertEquals("TEXT", attributes.getString(Tag.ValueType));
@@ -878,36 +878,36 @@ public class AttributesTest {
         originalContentItem.setString(Tag.RelationshipType, VR.CS, "CONTAINS");
         originalContentItem.setString(Tag.ValueType, VR.CS, "CODE");
         originalSequence.add(originalContentItem);
-        
+
         Attributes updated = new Attributes();
         Sequence updatedSequence = updated.ensureSequence(Tag.ContentSequence, 1);
-        
+
         Attributes updatedContentItem = new Attributes();
         updatedContentItem.setString(Tag.ValueType, VR.CS, "TEXT");
         updatedContentItem.setString(Tag.TextValue, VR.UT, "Text Value");
         updatedSequence.add(updatedContentItem);
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         Sequence sequence = original.getSequence(Tag.ContentSequence);
-        
+
         assertEquals(1, sequence.size());
-        
+
         Attributes attributes = sequence.get(0);
         assertEquals("CONTAINS", attributes.getString(Tag.RelationshipType));
         assertEquals("TEXT", attributes.getString(Tag.ValueType));
         assertEquals("Text Value", attributes.getString(Tag.TextValue));
-        
+
         Sequence modifiedSequence = modified.getSequence(Tag.ContentSequence);
         Attributes modifiedAttributes = modifiedSequence.get(0);
-        
+
         assertNull(modifiedAttributes.getString(Tag.RelationshipType));
         assertEquals("CODE", modifiedAttributes.getString(Tag.ValueType));
         assertNull(modifiedAttributes.getString(Tag.TextValue));
     }
-    
+
     @Test
     public void updateRecursive_GivenModifiedAttributeAndSequenceWithMultipleItemsInOriginal_UpdatesEntireSequence() {
         Attributes original = new Attributes();
@@ -920,20 +920,20 @@ public class AttributesTest {
             originalContentItem.setString(Tag.RelationshipType, VR.CS, "CONTAINS");
             originalContentItem.setString(Tag.ValueType, VR.CS, "CODE" + i);
             originalSequence.add(originalContentItem);
-        
+
             Attributes updatedContentItem = new Attributes();
             updatedContentItem.setString(Tag.ValueType, VR.CS, "TEXT");
             updatedContentItem.setString(Tag.TextValue, VR.UT, "Text Value" + i);
             updatedSequence.add(updatedContentItem);
         }
-        
+
         Attributes modified = new Attributes();
-        
+
         original.updateRecursive(updated, modified);
-        
+
         Sequence sequence = original.getSequence(Tag.ContentSequence);
         assertEquals(2, sequence.size());
-        
+
         Sequence modifiedSequence = modified.getSequence(Tag.ContentSequence);
         assertEquals(2, modifiedSequence.size());
 

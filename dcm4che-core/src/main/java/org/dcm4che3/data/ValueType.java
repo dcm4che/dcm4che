@@ -68,6 +68,10 @@ interface ValueType {
 
     int[] toInts(Object val, boolean bigEndian);
 
+    long toLong(Object val, boolean bigEndian, int valueIndex, long defVal);
+
+    long[] toLongs(Object val, boolean bigEndian);
+
     float toFloat(Object val, boolean bigEndian, int valueIndex, float defVal);
 
     float[] toFloats(Object val, boolean bigEndian);
@@ -90,6 +94,8 @@ interface ValueType {
     Object toValue(String[] ss, boolean bigEndian);
 
     Object toValue(int[] is, boolean bigEndian);
+
+    Object toValue(long[] is, boolean bigEndian);
 
     Object toValue(float[] fs, boolean bigEndian);
 

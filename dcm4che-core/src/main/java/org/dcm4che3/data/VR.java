@@ -110,27 +110,32 @@ public enum VR {
     LT(0x4c54, 8, ' ', StringValueType.TEXT, false),
 
     /**
-     * Other Byte String
+     * Other Byte
      */
     OB(0x4f42, 12, 0, BinaryValueType.BYTE, true),
 
     /**
-     * Other Double String
+     * Other Double
      */
     OD(0x4f44, 12, 0, BinaryValueType.DOUBLE, true),
 
     /**
-     * Other Float String
+     * Other Float
      */
     OF(0x4f46, 12, 0, BinaryValueType.FLOAT, true),
 
     /**
-     * Other Long String
+     * Other Long
      */
     OL(0x4f4c, 12, 0, BinaryValueType.INT, true),
 
     /**
-     * Other Word String
+     * Other 64-bit Very Long
+     */
+    OV(0x4f56, 12, 0, BinaryValueType.LONG, true),
+
+    /**
+     * Other Word
      */
     OW(0x4f57, 12, 0, BinaryValueType.SHORT, true),
 
@@ -163,6 +168,11 @@ public enum VR {
      * Short Text
      */
     ST(0x5354, 8, ' ', StringValueType.TEXT, false),
+
+    /**
+     * Signed 64-bit Long
+     */
+    SV(0x5356, 12, 0, BinaryValueType.LONG, false),
 
     /**
      * Time
@@ -202,7 +212,12 @@ public enum VR {
     /**
      * Unlimited Text
      */
-    UT(0x5554, 12, ' ', StringValueType.TEXT, false);
+    UT(0x5554, 12, ' ', StringValueType.TEXT, false),
+
+    /**
+     * Unsigned 64-bit Long
+     */
+    UV(0x5556, 12, 0, BinaryValueType.ULONG, false);
 
     private static Logger LOG = LoggerFactory.getLogger(VR.class);
 
@@ -225,7 +240,7 @@ public enum VR {
         return vr.code - AE.code;
     }
 
-    private static final VR[] VALUE_OF = new VR[indexOf(UT)+1];
+    private static final VR[] VALUE_OF = new VR[indexOf(UV)+1];
     static {
         for (VR vr : VR.values())
             VALUE_OF[indexOf(vr)] = vr;
@@ -303,6 +318,14 @@ public enum VR {
         return valueType.toInts(val, bigEndian);
     }
 
+    public long toLong(Object val, boolean bigEndian, int valueIndex, long defVal) {
+        return valueType.toLong(val, bigEndian, valueIndex, defVal);
+    }
+
+    public long[] toLongs(Object val, boolean bigEndian) {
+        return valueType.toLongs(val, bigEndian);
+    }
+
     public float toFloat(Object  val, boolean bigEndian, int valueIndex, float defVal) {
         return valueType.toFloat(val, bigEndian, valueIndex, defVal);
     }
@@ -346,6 +369,10 @@ public enum VR {
         return valueType.toValue(is, bigEndian);
     }
 
+    Object toValue(long[] ls, boolean bigEndian) {
+        return valueType.toValue(ls, bigEndian);
+    }
+
     Object toValue(float[] fs, boolean bigEndian) {
         return valueType.toValue(fs, bigEndian);
     }
@@ -364,7 +391,7 @@ public enum VR {
     }
 
     public int vmOf(Object val) {
-        return headerLength == 12 ? 1 : valueType.vmOf(val);
+        return valueType.vmOf(val);
     }
 
     public static class Holder {

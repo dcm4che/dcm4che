@@ -521,9 +521,13 @@ public class AttributesTest {
                 Tag.SelectorUSValue,
                 Tag.SelectorSLValue,
                 Tag.SelectorSSValue,
-                Tag.SelectorUIValue
+                Tag.SelectorUIValue,
+                Tag.SelectorOVValue,
+                Tag.SelectorSVValue,
+                Tag.SelectorUVValue
         };
         int[] INTS = { Short.MIN_VALUE,  Short.MAX_VALUE };
+        long[] LONGS = { Long.MIN_VALUE,  Short.MAX_VALUE };
         int[] UINTS = { 0xffff,  Short.MAX_VALUE };
         float[] FLOATS = { -Float.MIN_VALUE,  0.1234f, Float.MAX_VALUE };
         double[] DOUBLES = { -Double.MIN_VALUE,  0.1234, Double.MAX_VALUE };
@@ -560,6 +564,9 @@ public class AttributesTest {
         a.setInt(Tag.SelectorSLValue, VR.SL, INTS);
         a.setInt(Tag.SelectorSSValue, VR.SS, INTS);
         a.setString(Tag.SelectorUIValue, VR.UI, UIDS);
+        a.setLong(Tag.SelectorOVValue, VR.OV, LONGS);
+        a.setLong(Tag.SelectorSVValue, VR.SV, LONGS);
+        a.setLong(Tag.SelectorUVValue, VR.UV, LONGS);
         DicomInputStream in = asDicomInputStream(a);
         try {
             in.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
@@ -599,6 +606,9 @@ public class AttributesTest {
             assertArrayEquals(INTS, b.getInts(Tag.SelectorSLValue));
             assertEquals(INTS[0], b.getInt(Tag.SelectorSSValue, 0));
             assertArrayEquals(UIDS, b.getStrings(Tag.SelectorUIValue));
+            assertArrayEquals(LONGS, b.getLongs(Tag.SelectorOVValue));
+            assertEquals(LONGS[0], b.getLong(Tag.SelectorSVValue, 0));
+            assertEquals(LONGS[0], b.getLong(Tag.SelectorUVValue, 0));
         } finally {
             for (File f : in.getBulkDataFiles()) {
                 f.delete();

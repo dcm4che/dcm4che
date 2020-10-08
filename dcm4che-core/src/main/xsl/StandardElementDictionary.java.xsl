@@ -312,6 +312,7 @@ public class StandardElementDictionary extends ElementDictionary {
     <xsl:apply-templates select="//el[@keyword!='' and @vr='OD']"/>
     <xsl:apply-templates select="//el[@keyword!='' and @vr='OF']"/>
     <xsl:apply-templates select="//el[@keyword!='' and @vr='OL']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='OV']"/>
     <xsl:apply-templates select="//el[@keyword!='' and contains(@vr,'OW')]">
         <xsl:with-param name="vr">OW</xsl:with-param>
     </xsl:apply-templates>
@@ -323,6 +324,7 @@ public class StandardElementDictionary extends ElementDictionary {
         <xsl:with-param name="vr">SS</xsl:with-param>
     </xsl:apply-templates>
     <xsl:apply-templates select="//el[@keyword!='' and @vr='ST']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='SV']"/>
     <xsl:apply-templates select="//el[@keyword!='' and @vr='TM']"/>
     <xsl:apply-templates select="//el[@keyword!='' and @vr='UC']"/>
     <xsl:apply-templates select="//el[@keyword!='' and @vr='UI']"/>
@@ -330,6 +332,7 @@ public class StandardElementDictionary extends ElementDictionary {
     <xsl:apply-templates select="//el[@keyword!='' and @vr='UR']"/>
     <xsl:apply-templates select="//el[@keyword!='' and @vr='US']"/>
     <xsl:apply-templates select="//el[@keyword!='' and @vr='UT']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='UV']"/>
 <xsl:text>
         }
         switch (tag &amp; 0xFFFFFF0F) {

@@ -581,15 +581,15 @@ public class Attributes implements Serializable {
         return ds;
     }
 
-    private int[] decodeISValue(int index) {
+    private long[] decodeISValue(int index) {
         Object value = index < 0 ? Value.NULL : values[index];
         if (value == Value.NULL)
-            return ByteUtils.EMPTY_INTS;
+            return ByteUtils.EMPTY_LONGS;
 
-        if (value instanceof int[])
-            return (int[]) value;
+        if (value instanceof long[])
+            return (long[]) value;
 
-        int[] is;
+        long[] ls;
         if (value instanceof byte[])
             value = vrs[index].toStrings((byte[]) value, bigEndian,
                     SpecificCharacterSet.ASCII);
@@ -597,21 +597,21 @@ public class Attributes implements Serializable {
             String s = (String) value;
             if (s.isEmpty()) {
                 values[index] = Value.NULL;
-                return ByteUtils.EMPTY_INTS;
+                return ByteUtils.EMPTY_LONGS;
             }
-            is = new int[] { StringUtils.parseIS(s) };
+            ls = new long[] { StringUtils.parseIS(s) };
         } else { // value instanceof String[]
             String[] ss = (String[]) value;
-            is = new int[ss.length];
-            for (int i = 0; i < is.length; i++) {
+            ls = new long[ss.length];
+            for (int i = 0; i < ls.length; i++) {
                 String s = ss[i];
-                is[i] = (s != null && !s.isEmpty())
+                ls[i] = (s != null && !s.isEmpty())
                             ? StringUtils.parseIS(s)
-                            : Integer.MIN_VALUE;
+                            : Long.MIN_VALUE;
             }
         }
-        values[index] = is;
-        return is;
+        values[index] = ls;
+        return ls;
     }
 
     private void updateVR(int index, VR vr) {
@@ -963,6 +963,92 @@ public class Attributes implements Serializable {
             return vr.toInts(value, bigEndian);
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
+            return null;
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return null;
+        }
+    }
+
+    public long getLong(int tag, long defVal) {
+        return getLong(null, tag, null, 0, defVal);
+    }
+
+    public long getLong(int tag, int valueIndex, long defVal) {
+        return getLong(null, tag, null, valueIndex, defVal);
+    }
+
+    public long getLong(String privateCreator, int tag, long defVal) {
+        return getLong(privateCreator, tag, null, 0, defVal);
+    }
+
+    public long getLong(String privateCreator, int tag, VR vr, long defVal) {
+        return getLong(privateCreator, tag, vr, 0, defVal);
+    }
+
+    public long getLong(String privateCreator, int tag, int valueIndex, long defVal) {
+        return getLong(privateCreator, tag, null, valueIndex, defVal);
+    }
+
+    public long getLong(String privateCreator, int tag, VR vr, int valueIndex, long defVal) {
+        int index = indexOf(privateCreator, tag);
+        if (index < 0)
+            return defVal;
+
+        Object value = values[index];
+        if (value == Value.NULL)
+            return defVal;
+
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
+
+        try {
+            value = loadBulkData(index);
+            if (vr == VR.IS)
+                value = decodeISValue(index);
+
+            return vr.toLong(value, bigEndian, valueIndex, defVal);
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
+            return defVal;
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return defVal;
+        }
+    }
+
+    public long[] getLongs(int tag) {
+        return getLongs(null, tag, null);
+    }
+
+    public long[] getLongs(String privateCreator, int tag) {
+        return getLongs(privateCreator, tag, null);
+    }
+
+    public long[] getLongs(String privateCreator, int tag, VR vr) {
+        int index = indexOf(privateCreator, tag);
+        if (index < 0)
+            return null;
+
+        Object value = values[index];
+        if (value == Value.NULL)
+            return ByteUtils.EMPTY_LONGS;
+
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
+
+        try {
+            value = loadBulkData(index);
+            if (vr == VR.IS)
+                value = decodeISValue(index);
+
+            return vr.toLongs(value, bigEndian);
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as long", TagUtils.toString(tag), vr);
             return null;
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
@@ -1882,6 +1968,15 @@ public class Attributes implements Serializable {
     public Object setInt(String privateCreator, int tag, VR vr, int... is) {
         ensureModifiable();
         return set(privateCreator, tag, vr, vr.toValue(is, bigEndian));
+    }
+
+    public Object setLong(int tag, VR vr, long... ls) {
+        return setLong(null, tag, vr, ls);
+    }
+
+    public Object setLong(String privateCreator, int tag, VR vr, long... ls) {
+        ensureModifiable();
+        return set(privateCreator, tag, vr, vr.toValue(ls, bigEndian));
     }
 
     public Object setFloat(int tag, VR vr, float... fs) {

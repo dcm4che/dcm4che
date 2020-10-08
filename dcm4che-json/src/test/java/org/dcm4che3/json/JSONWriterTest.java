@@ -60,6 +60,9 @@ import org.junit.Test;
 public class JSONWriterTest {
 
     private static byte[] BYTE01 = { 0, 1 };
+    private static final int[] INTS = { 0, 1, -2 };
+    private static final int[] UINTS = { 0, 1, -2 & 0xffff };
+    private static final long[] LONGS = { 0L, 1L, -2L };
     private String RESULT = "{"
             + "\"00080005\":{\"vr\":\"CS\",\"Value\":[null,\"ISO 2022 IR 87\"]},"
             + "\"00080008\":{\"vr\":\"CS\",\"Value\":[\"DERIVED\",\"PRIMARY\"]},"
@@ -82,6 +85,12 @@ public class JSONWriterTest {
             + "\"00280002\":{\"vr\":\"US\",\"Value\":[1]},"
             + "\"00280008\":{\"vr\":\"IS\",\"Value\":[1]},"
             + "\"00280009\":{\"vr\":\"AT\",\"Value\":[\"00181063\"]},"
+            + "\"00720078\":{\"vr\":\"UL\",\"Value\":[0,1,4294967294]},"
+            + "\"0072007A\":{\"vr\":\"US\",\"Value\":[0,1,65534]},"
+            + "\"0072007C\":{\"vr\":\"SL\",\"Value\":[0,1,-2]},"
+            + "\"0072007E\":{\"vr\":\"SS\",\"Value\":[0,1,-2]},"
+            + "\"00720082\":{\"vr\":\"SV\",\"Value\":[\"0\",\"1\",\"-2\"]},"
+            + "\"00720083\":{\"vr\":\"UV\",\"Value\":[\"0\",\"1\",\"18446744073709551614\"]},"
             + "\"60003000\":{\"vr\":\"OW\",\"BulkDataURI\":\"file:/OverlayData\"},"
             + "\"7FE00010\":{\"vr\":\"OB\",\"DataFragment\":["
                 + "null,"
@@ -107,6 +116,12 @@ public class JSONWriterTest {
         dataset.setInt(Tag.SamplesPerPixel, VR.US, 1);
         dataset.setInt(Tag.NumberOfFrames, VR.IS, 1);
         dataset.setInt(Tag.FrameIncrementPointer, VR.AT, Tag.FrameTime);
+        dataset.setInt(Tag.SelectorULValue, VR.UL, INTS);
+        dataset.setInt(Tag.SelectorUSValue, VR.US, UINTS);
+        dataset.setInt(Tag.SelectorSLValue, VR.SL, INTS);
+        dataset.setInt(Tag.SelectorSSValue, VR.SS, INTS);
+        dataset.setLong(Tag.SelectorSVValue, VR.SV, LONGS);
+        dataset.setLong(Tag.SelectorUVValue, VR.UV, LONGS);
         dataset.setValue(Tag.OverlayData, VR.OW, new BulkData(null, "file:/OverlayData", false));
         Fragments frags = dataset.newFragments(Tag.PixelData, VR.OB, 2);
         frags.add(null);

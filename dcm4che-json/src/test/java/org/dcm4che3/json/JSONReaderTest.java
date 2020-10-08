@@ -60,9 +60,19 @@ public class JSONReaderTest {
             "\"00720064\":{\"vr\":\"IS\",\"Value\":[null,1]}," +
             "\"00720072\":{\"vr\":\"DS\",\"Value\":[null,1.0]}," +
             "\"00720074\":{\"vr\":\"FD\",\"Value\":[-1.7976931348623157E308,null,1.7976931348623157E308]}," +
-            "\"00720076\":{\"vr\":\"FL\",\"Value\":[-1.7976931348623157E308,null,1.7976931348623157E308]}}";
+            "\"00720076\":{\"vr\":\"FL\",\"Value\":[-1.7976931348623157E308,null,1.7976931348623157E308]}," +
+            "\"00720078\":{\"vr\":\"UL\",\"Value\":[0,1,4294967294]}," +
+            "\"0072007A\":{\"vr\":\"US\",\"Value\":[0,1,65534]}," +
+            "\"0072007C\":{\"vr\":\"SL\",\"Value\":[0,1,-2]}," +
+            "\"0072007E\":{\"vr\":\"SS\",\"Value\":[0,1,-2]}," +
+            "\"00720082\":{\"vr\":\"SV\",\"Value\":[0,\"1\",\"-2\"]}," +
+            "\"00720083\":{\"vr\":\"UV\",\"Value\":[0,\"1\",\"18446744073709551614\"]}" +
+            "}";
     private static final String[] IS = { null, "1" };
     private static final String[] DS = { null, "1.0" };
+    private static final int[] INTS = { 0, 1, -2 };
+    private static final int[] UINTS = { 0, 1, -2 & 0xffff };
+    private static final long[] LONGS = { 0L, 1L, -2L };
 
     @Test
     public void test() {
@@ -73,6 +83,12 @@ public class JSONReaderTest {
         assertArrayEquals(DS, dataset.getStrings(Tag.SelectorDSValue));
         assertInfinityAndNaN(dataset.getDoubles(Tag.SelectorFDValue));
         assertInfinityAndNaN(dataset.getFloats(Tag.SelectorFLValue));
+        assertArrayEquals(INTS, dataset.getInts(Tag.SelectorULValue));
+        assertArrayEquals(UINTS, dataset.getInts(Tag.SelectorUSValue));
+        assertArrayEquals(INTS, dataset.getInts(Tag.SelectorSLValue));
+        assertArrayEquals(INTS, dataset.getInts(Tag.SelectorSLValue));
+        assertArrayEquals(LONGS, dataset.getLongs(Tag.SelectorSVValue));
+        assertArrayEquals(LONGS, dataset.getLongs(Tag.SelectorUVValue));
     }
 
     private static void assertInfinityAndNaN(double[] doubles) {

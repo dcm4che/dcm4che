@@ -45,6 +45,7 @@ public class ByteUtils {
 
     public static final byte[] EMPTY_BYTES = {};
     public static final int[] EMPTY_INTS = {};
+    public static final long[] EMPTY_LONGS = {};
     public static final float[] EMPTY_FLOATS = {};
     public static final double[] EMPTY_DOUBLES = {};
 

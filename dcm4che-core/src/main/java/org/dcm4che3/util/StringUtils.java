@@ -193,10 +193,16 @@ public class StringUtils {
         return s.substring(0, endIndex);
     }
 
-    public static int parseIS(String s) {
+    public static long parseIS(String s) {
         return s != null && s.length() != 0
-                ? (int) Long.parseLong(s.charAt(0) == '+' ? s.substring(1) : s)
-                : 0;
+                ? Long.parseLong(s)
+                : 0L;
+    }
+
+    public static long parseUV(String s) {
+        return s != null && s.length() != 0
+                ? Long.parseUnsignedLong(s)
+                : 0L;
     }
 
     public static double parseDS(String s) {

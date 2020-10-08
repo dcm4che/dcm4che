@@ -53,6 +53,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -232,6 +234,12 @@ public class JSONReader {
             case US:
                 attrs.setInt(tag, el.vr, el.toInts());
                 break;
+            case SV:
+                attrs.setLong(tag, el.vr, el.toLongs(Long::parseLong));
+                break;
+            case UV:
+                attrs.setLong(tag, el.vr, el.toLongs(Long::parseUnsignedLong));
+                break;
             case SQ:
                 el.toItems(attrs.newSequence(tag, el.values.size()));
                 break;
@@ -239,6 +247,7 @@ public class JSONReader {
             case OD:
             case OF:
             case OL:
+            case OV:
             case OW:
             case UN:
                 if (el.bytes != null)
@@ -418,6 +427,18 @@ public class JSONReader {
                 is[i] = ((Number) values.get(i)).intValue();
             }
             return is;
+        }
+
+        long[] toLongs(ToLongFunction<String> parse) {
+            long[] ls = new long[values.size()];
+            for (int i = 0; i < ls.length; i++) {
+                ls[i] = longValueOf(parse, values.get(i));
+            }
+            return ls;
+        }
+
+        private long longValueOf(ToLongFunction<String> string2long, Object o) {
+            return o instanceof Number ? ((Number) o).longValue() : string2long.applyAsLong((String) o);
         }
 
         void toItems(Sequence seq) {

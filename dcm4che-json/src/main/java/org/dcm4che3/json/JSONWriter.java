@@ -41,6 +41,7 @@ package org.dcm4che3.json;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.LongFunction;
 
 import javax.json.stream.JsonGenerator;
 
@@ -219,6 +220,12 @@ public class JSONWriter implements DicomInputHandler {
         case US:
             writeIntValues(vr, val, bigEndian);
             break;
+        case SV:
+            writeLongValues(Long::toString, vr, val, bigEndian);
+            break;
+        case UV:
+            writeLongValues(Long::toUnsignedString, vr, val, bigEndian);
+            break;
         case UL:
             writeUIntValues(vr, val, bigEndian);
             break;
@@ -226,6 +233,7 @@ public class JSONWriter implements DicomInputHandler {
         case OD:
         case OF:
         case OL:
+        case OV:
         case OW:
         case UN:
             writeInlineBinary(vr, (byte[]) val, bigEndian, preserve);
@@ -308,6 +316,15 @@ public class JSONWriter implements DicomInputHandler {
         int vm = vr.vmOf(val);
         for (int i = 0; i < vm; i++) {
             gen.write(vr.toInt(val, bigEndian, i, 0) & 0xffffffffL);
+        }
+        gen.writeEnd();
+    }
+
+    private void writeLongValues(LongFunction<String> toString, VR vr, Object val, boolean bigEndian) {
+        gen.writeStartArray("Value");
+        int vm = vr.vmOf(val);
+        for (int i = 0; i < vm; i++) {
+            gen.write(toString.apply(vr.toLong(val, bigEndian, i, 0)));
         }
         gen.writeEnd();
     }

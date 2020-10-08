@@ -103,7 +103,17 @@ enum SequenceValueType implements ValueType {
     @Override
     public int[] toInts(Object val, boolean bigEndian) {
         throw new UnsupportedOperationException();
-    } 
+    }
+
+    @Override
+    public long toLong(Object val, boolean bigEndian, int valueIndex, long defVal) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public long[] toLongs(Object val, boolean bigEndian) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public float toFloat(Object val, boolean bigEndian, int valueIndex,
@@ -158,6 +168,11 @@ enum SequenceValueType implements ValueType {
     public Object toValue(int[] is, boolean bigEndian) {
         throw new UnsupportedOperationException();
     } 
+
+    @Override
+    public Object toValue(long[] ls, boolean bigEndian) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public Object toValue(float[] fs, boolean bigEndian) {

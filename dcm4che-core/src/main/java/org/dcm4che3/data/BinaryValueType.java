@@ -424,7 +424,7 @@ enum BinaryValueType implements ValueType {
     }
 
     protected long toLong(byte[] b, int off, boolean bigEndian) {
-        throw new UnsupportedOperationException();
+        return toInt(b, off, bigEndian);
     }
 
     protected float toFloat(byte[] b, int off, boolean bigEndian) {

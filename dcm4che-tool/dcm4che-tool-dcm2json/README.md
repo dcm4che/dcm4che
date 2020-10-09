@@ -50,7 +50,7 @@ Options:
  -I,--indent                     use additional whitespace in JSON output
  -N,--encode-as-number           encode DS, IS, SV and UV values as JSON
                                  numbers; by default DS, IS, SV and UV
-                                 values as encoded JSON strings
+                                 values are encoded as JSON strings
  -V,--version                    output version information and exit
 
 Examples:

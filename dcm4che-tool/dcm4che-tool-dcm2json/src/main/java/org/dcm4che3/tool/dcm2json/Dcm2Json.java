@@ -44,6 +44,7 @@ import java.io.OutputStream;
 import java.util.*;
 
 import javax.json.Json;
+import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.cli.CommandLine;
@@ -51,6 +52,7 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
@@ -72,9 +74,14 @@ public class Dcm2Json {
     private String blkFileSuffix;
     private File blkDirectory;
     private BasicBulkDataDescriptor bulkDataDescriptor = new BasicBulkDataDescriptor();
+    private boolean encodeAsNumber;
 
     public final void setIndent(boolean indent) {
         this.indent = indent;
+    }
+
+    public final void setEncodeAsNumber(boolean encodeAsNumber) {
+        this.encodeAsNumber = encodeAsNumber;
     }
 
     public final void setIncludeBulkData(IncludeBulkData includeBulkData) {
@@ -110,6 +117,7 @@ public class Dcm2Json {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
         opts.addOption("I", "indent", false, rb.getString("indent"));
+        opts.addOption("N", "encode-as-number", false, rb.getString("encode-as-number"));
         addBulkdataOptions(opts);
 
         return CLIUtils.parseComandLine(args, opts, rb, Dcm2Json.class);
@@ -169,6 +177,7 @@ public class Dcm2Json {
             CommandLine cl = parseComandLine(args);
             Dcm2Json main = new Dcm2Json();
             main.setIndent(cl.hasOption("I"));
+            main.setEncodeAsNumber(cl.hasOption("N"));
             configureBulkdata(main, cl);
             String fname = fname(cl.getArgList());
             if (fname.equals("-")) {
@@ -241,6 +250,12 @@ public class Dcm2Json {
         dis.setConcatenateBulkDataFiles(catBlkFiles);
         JsonGenerator jsonGen = createGenerator(System.out);
         JSONWriter jsonWriter = new JSONWriter(jsonGen);
+        if (encodeAsNumber) {
+            jsonWriter.setJsonType(VR.DS, JsonValue.ValueType.NUMBER);
+            jsonWriter.setJsonType(VR.IS, JsonValue.ValueType.NUMBER);
+            jsonWriter.setJsonType(VR.SV, JsonValue.ValueType.NUMBER);
+            jsonWriter.setJsonType(VR.UV, JsonValue.ValueType.NUMBER);
+        }
         dis.setDicomInputHandler(jsonWriter);
         dis.readDataset(-1, -1);
         jsonGen.flush();

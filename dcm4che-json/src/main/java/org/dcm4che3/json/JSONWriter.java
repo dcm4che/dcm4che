@@ -41,8 +41,10 @@ package org.dcm4che3.json;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.EnumMap;
 import java.util.function.LongFunction;
 
+import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 
 import org.dcm4che3.data.Attributes;
@@ -72,8 +74,25 @@ public class JSONWriter implements DicomInputHandler {
     private static final Logger LOG = LoggerFactory.getLogger(JSONWriter.class);
 
     private final JsonGenerator gen;
-    private final Deque<Boolean> hasItems = new ArrayDeque<Boolean>();
+    private final Deque<Boolean> hasItems = new ArrayDeque<>();
     private String replaceBulkDataURI;
+    private EnumMap<VR, JsonValue.ValueType> jsonTypeByVR = new EnumMap<>(VR.class);
+
+    public void setJsonType(VR vr, JsonValue.ValueType valueType) {
+        jsonTypeByVR.put(requireIS_DS_SV_UV(vr), requireNumberOrString(valueType));
+    }
+
+    private static VR requireIS_DS_SV_UV(VR vr) {
+        if (vr != VR.DS && vr != VR.IS && vr != VR.SV && vr != VR.UV)
+            throw new IllegalArgumentException("vr:" + vr);
+        return vr;
+    }
+
+    private static JsonValue.ValueType requireNumberOrString(JsonValue.ValueType jsonType) {
+        if (jsonType != JsonValue.ValueType.NUMBER && jsonType != JsonValue.ValueType.STRING)
+            throw new IllegalArgumentException("jsonType:" + jsonType);
+        return jsonType;
+    }
 
     public JSONWriter(JsonGenerator gen) {
         this.gen = gen;
@@ -255,19 +274,27 @@ public class JSONWriter implements DicomInputHandler {
                 gen.writeNull();
             else switch (vr) {
             case DS:
-                try {
-                    gen.write(StringUtils.parseDS(s));
-                } catch (NumberFormatException e) {
-                    LOG.info("illegal DS value: {} - encoded as null", s);
-                    gen.writeNull();
+                if (jsonTypeByVR.get(VR.DS) == JsonValue.ValueType.NUMBER) {
+                   try {
+                        gen.write(StringUtils.parseDS(s));
+                    } catch (NumberFormatException e) {
+                        LOG.info("illegal DS value: {} - encoded as string", s);
+                        gen.write(s);
+                    }
+                } else {
+                    gen.write(s);
                 }
                 break;
             case IS:
-                try {
-                    gen.write(StringUtils.parseIS(s));
-                } catch (NumberFormatException e) {
-                    LOG.info("illegal IS value: {} - encoded as null", s);
-                    gen.writeNull();
+                if (jsonTypeByVR.get(VR.IS) == JsonValue.ValueType.NUMBER) {
+                    try {
+                        gen.write(StringUtils.parseIS(s));
+                    } catch (NumberFormatException e) {
+                        LOG.info("illegal IS value: {} - encoded as string", s);
+                        gen.write(s);
+                    }
+                } else {
+                    gen.write(s);
                 }
                 break;
             case PN:
@@ -322,9 +349,15 @@ public class JSONWriter implements DicomInputHandler {
 
     private void writeLongValues(LongFunction<String> toString, VR vr, Object val, boolean bigEndian) {
         gen.writeStartArray("Value");
+        boolean asString = jsonTypeByVR.get(vr) != JsonValue.ValueType.NUMBER;
         int vm = vr.vmOf(val);
         for (int i = 0; i < vm; i++) {
-            gen.write(toString.apply(vr.toLong(val, bigEndian, i, 0)));
+            long l = vr.toLong(val, bigEndian, i, 0);
+            if (asString || l < 0 && vr == VR.UV) {
+                gen.write(toString.apply(l));
+            } else {
+                gen.write(l);
+            }
         }
         gen.writeEnd();
     }

@@ -57,8 +57,8 @@ import static org.junit.Assert.*;
 public class JSONReaderTest {
 
     private static final String JSON = "{" +
-            "\"00720064\":{\"vr\":\"IS\",\"Value\":[null,1]}," +
-            "\"00720072\":{\"vr\":\"DS\",\"Value\":[null,1.0]}," +
+            "\"00720064\":{\"vr\":\"IS\",\"Value\":[null,1,\"-2\"]}," +
+            "\"00720072\":{\"vr\":\"DS\",\"Value\":[null,1.0,\"-2.0\"]}," +
             "\"00720074\":{\"vr\":\"FD\",\"Value\":[-1.7976931348623157E308,null,1.7976931348623157E308]}," +
             "\"00720076\":{\"vr\":\"FL\",\"Value\":[-1.7976931348623157E308,null,1.7976931348623157E308]}," +
             "\"00720078\":{\"vr\":\"UL\",\"Value\":[0,1,4294967294]}," +
@@ -68,8 +68,8 @@ public class JSONReaderTest {
             "\"00720082\":{\"vr\":\"SV\",\"Value\":[0,\"1\",\"-2\"]}," +
             "\"00720083\":{\"vr\":\"UV\",\"Value\":[0,\"1\",\"18446744073709551614\"]}" +
             "}";
-    private static final String[] IS = { null, "1" };
-    private static final String[] DS = { null, "1.0" };
+    private static final String[] IS = { null, "1", "-2" };
+    private static final String[] DS = { null, "1.0", "-2.0" };
     private static final int[] INTS = { 0, 1, -2 };
     private static final int[] UINTS = { 0, 1, -2 & 0xffff };
     private static final long[] LONGS = { 0L, 1L, -2L };

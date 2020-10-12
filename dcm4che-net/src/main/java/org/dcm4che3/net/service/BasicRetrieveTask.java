@@ -327,7 +327,7 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
             data = new Attributes(1);
             String[] iuids = new String[failed.size()];
             for (int i = 0; i < iuids.length; i++) {
-                iuids[i] = failed.get(0).iuid;
+                iuids[i] = failed.get(i).iuid;
             }
             data.setString(Tag.FailedSOPInstanceUIDList, VR.UI, iuids);
         }

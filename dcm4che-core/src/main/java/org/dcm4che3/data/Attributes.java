@@ -2469,10 +2469,14 @@ public class Attributes implements Serializable {
         for (Attributes srcItem : src) {
             String dt = srcItem.getString(Tag.AttributeModificationDateTime, "");
             Attributes destItem = sort.get(dt);
-            if (destItem != null) {
+            Attributes destModified;
+            if (destItem != null
+                    && (destModified = destItem.getNestedDataset(Tag.ModifiedAttributesSequence)) != null) {
                 try {
-                    destItem.getNestedDataset(Tag.ModifiedAttributesSequence)
-                            .addAll(srcItem.getNestedDataset(Tag.ModifiedAttributesSequence));
+                    Attributes srcModified;
+                    if ((srcModified = srcItem.getNestedDataset(Tag.ModifiedAttributesSequence)) != null) {
+                        destModified.addAll(srcModified);
+                    }
                 } catch (IncompatibleSpecificCharaterSetException e) {
                     LOG.info("Failed to merge original attributes modified at {}: {}", dt, e.getMessage());
                 }

@@ -2295,7 +2295,7 @@ public class Attributes implements Serializable {
 
         if (updatePolicy != UpdatePolicy.PRESERVE && !isEmpty() &&
                 !isSpecificCharacterSetCompatible(other, include, exclude, fromIndex, toIndex, selection, updatePolicy))
-            throw new IncompatibleSpecificCharaterSetException("Specific Character Sets " +
+            throw new IncompatibleSpecificCharacterSetException("Specific Character Sets " +
                     Arrays.toString(getSpecificCharacterSet().toCodes()) +
                     " and " +
                     Arrays.toString(other.getSpecificCharacterSet().toCodes()) +
@@ -2477,7 +2477,7 @@ public class Attributes implements Serializable {
                     if ((srcModified = srcItem.getNestedDataset(Tag.ModifiedAttributesSequence)) != null) {
                         destModified.addAll(srcModified);
                     }
-                } catch (IncompatibleSpecificCharaterSetException e) {
+                } catch (IncompatibleSpecificCharacterSetException e) {
                     LOG.info("Failed to merge original attributes modified at {}: {}", dt, e.getMessage());
                 }
             } else {

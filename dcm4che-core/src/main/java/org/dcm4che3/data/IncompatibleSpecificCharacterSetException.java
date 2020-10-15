@@ -45,8 +45,8 @@ package org.dcm4che3.data;
  * @author Gunter Zeilinger (gunterze@protonmail.com)
  * @since Mar 2020
  */
-public class IncompatibleSpecificCharaterSetException extends IllegalArgumentException {
-    public IncompatibleSpecificCharaterSetException(String s) {
+public class IncompatibleSpecificCharacterSetException extends IllegalArgumentException {
+    public IncompatibleSpecificCharacterSetException(String s) {
         super(s);
     }
 }

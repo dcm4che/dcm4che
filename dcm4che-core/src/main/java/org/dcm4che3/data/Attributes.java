@@ -2214,7 +2214,15 @@ public class Attributes implements Serializable {
         int index = other.indexOf(privateCreator, tag);
         if (index < 0)
             return false;
+
         Object value = other.values[index];
+        if (!getSpecificCharacterSet().contains(other.getSpecificCharacterSet())
+                && containsNonASCIIStringValues(value, other.vrs[index]))
+            throw new IncompatibleSpecificCharacterSetException("Specific Character Sets " +
+                    Arrays.toString(getSpecificCharacterSet().toCodes()) +
+                    " and " +
+                    Arrays.toString(other.getSpecificCharacterSet().toCodes()) +
+                    " not compatible");
         if (value instanceof Sequence) {
             set(privateCreator, tag, (Sequence) value, null);
         } else if (value instanceof Fragments) {
@@ -2225,6 +2233,20 @@ public class Attributes implements Serializable {
                     toggleEndian(vr, value, bigEndian != other.bigEndian));
         }
         return true;
+    }
+
+    private static boolean containsNonASCIIStringValues(Object val, VR vr) {
+        if (val instanceof Sequence) {
+            for (Attributes item : ((Sequence) val)) {
+                if (item.containsNonASCIIStringValues(
+                        null, null, 0, 0, null)) {
+                    return true;
+                }
+            }
+        } else if (val != Value.NULL && vr.useSpecificCharacterSet()) {
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -192,7 +192,7 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
             }
 
             Fragments fragments = (Fragments) pixelData;
-            ImageInputStream iisOfFile = uriLoader.openStream(this.uri);
+            ImageInputStream iisOfFile = openStreamForFile();
             iisOfFrame = new SegmentedImageInputStream(iisOfFile,fragments, frameIndex);
         }
         else {
@@ -225,6 +225,18 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
                 : ByteOrder.LITTLE_ENDIAN);
 
         return iisOfFrame;
+    }
+
+    private ImageInputStream openStreamForFile() throws IOException {
+        ImageInputStream iisOfFile;
+        if(this.uri.getScheme().equals("java")) {
+            // If the protocol is java:iis then we now that we do not have a file to read from, so an empty IIS is returned
+            iisOfFile =  new ByteArrayImageInputStream(new byte[0]);
+        }
+        else {
+            iisOfFile = uriLoader.openStream(this.uri);
+        }
+        return iisOfFile;
     }
 
     protected  void checkFrameIndex(int frameIndex) throws IOException {

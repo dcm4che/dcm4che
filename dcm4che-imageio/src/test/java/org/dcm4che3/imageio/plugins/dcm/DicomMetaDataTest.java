@@ -78,7 +78,7 @@ public abstract class DicomMetaDataTest {
         return createMetadata(new TestData(fileName));
     }
 
-    private DicomMetaData createMetadata(TestData data) throws IOException {
+    protected DicomMetaData createMetadata(TestData data) throws IOException {
         return this.createMetadataFactory().readMetaData(data.toFile());
     }
 

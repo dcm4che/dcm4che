@@ -1029,6 +1029,17 @@ public class Device implements Serializable {
         }
     }
 
+    public int getNumberOfAssociationsInitiatedTo(String calledAET) {
+        synchronized (associations) {
+            int count = 0;
+            for (Association association : associations) {
+                if (calledAET.equals(association.getCalledAET()))
+                    count++;
+            }
+            return count;
+        }
+    }
+
     public void waitForNoOpenConnections() throws InterruptedException {
         synchronized (associations) {
             while (!associations.isEmpty())

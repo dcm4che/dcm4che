@@ -738,8 +738,8 @@ public class AuditMessages {
     private static ActiveParticipant toActiveParticipant(ActiveParticipantBuilder activeParticipantBuilder) {
         ActiveParticipant ap = new ActiveParticipant();
         ap.setUserID(activeParticipantBuilder.userID);
-        ap.setUserIDTypeCode(activeParticipantBuilder.userIDTypeCode);
-        ap.setUserTypeCode(activeParticipantBuilder.userTypeCode);
+        //ap.setUserIDTypeCode(activeParticipantBuilder.userIDTypeCode);
+        //ap.setUserTypeCode(activeParticipantBuilder.userTypeCode);
         ap.setAlternativeUserID(activeParticipantBuilder.altUserID);
         ap.setUserName(activeParticipantBuilder.userName);
         ap.setUserIsRequestor(activeParticipantBuilder.requester);

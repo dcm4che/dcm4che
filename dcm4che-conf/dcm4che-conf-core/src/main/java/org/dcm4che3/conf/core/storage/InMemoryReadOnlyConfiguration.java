@@ -42,47 +42,44 @@ package org.dcm4che3.conf.core.storage;
 
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Path;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Roman K
  */
 public class InMemoryReadOnlyConfiguration implements Configuration {
 
-    private final Map<String, Object> root;
+    private final InMemoryConfiguration delegate;
 
     public InMemoryReadOnlyConfiguration(Map<String, Object> root) {
-        this.root = root;
+        this.delegate = new InMemoryConfiguration(root);
     }
 
     @Override
     public Map<String, Object> getConfigurationRoot() throws ConfigurationException {
-        return root;
+        return delegate.getConfigurationRoot();
     }
 
     @Override
     public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
-        return Nodes.getNode(root, path.getPathItems());
+        return delegate.getConfigurationNode(path, configurableClass);
     }
 
     @Override
     public List<Object> getConfigurationNodes(Class configurableClass, Path... paths) throws ConfigurationException {
-        return Arrays.stream(paths)
-                .map(path -> getConfigurationNode(path, configurableClass))
-                .collect(Collectors.toList());
+        return delegate.getConfigurationNodes(configurableClass, paths);
     }
 
     @Override
     public boolean nodeExists(Path path) throws ConfigurationException {
-        return Nodes.nodeExists(root, path.getPathItems());
+        return delegate.nodeExists(path);
     }
 
     @Override
     public void refreshNode(Path path) throws ConfigurationException {
+        delegate.refreshNode(path);
     }
 
     @Override
@@ -97,12 +94,12 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
 
     @Override
     public Path getPathByUUID(String uuid) {
-        throw new ConfigurationException("Unexpected error - uuid index is missing");
+        return delegate.getPathByUUID(uuid);
     }
 
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
-        return Nodes.search(root, liteXPathExpression);
+        return delegate.search(liteXPathExpression);
     }
 
     @Override
@@ -111,6 +108,6 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
 
     @Override
     public void runBatch(Batch batch) {
-        batch.run();
+        delegate.runBatch(batch);
     }
 }

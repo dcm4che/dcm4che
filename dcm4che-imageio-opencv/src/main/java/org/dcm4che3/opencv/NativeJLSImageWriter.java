@@ -125,6 +125,10 @@ class NativeJLSImageWriter extends ImageWriter {
                     jpeglsNLE = 0;
                     bitCompressed = 16; // Extend to bit allocated to avoid exception as negative values are treated as large positive values
                 }
+                // Specific case not well supported by jpeg and jpeg-ls encoder that reduce the stream to 8-bit
+                if(bitCompressed == 8 && desc.getBitsAllocated() == 16){
+                  bitCompressed = 12;
+                }
 
                 int[] params = new int[15];
                 params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags

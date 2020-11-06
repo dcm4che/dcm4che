@@ -52,10 +52,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Roman K
@@ -126,6 +124,15 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     public synchronized Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
         Object node = Nodes.getNode(getConfigurationRoot(), path.getPathItems());
         return node;
+    }
+
+    @Override
+    public synchronized List<Object> getConfigurationNodes(Class configurableClass, Path... paths) throws ConfigurationException {
+        Object configurationRoot = getConfigurationRoot();
+
+        return Arrays.stream(paths)
+                .map(path -> Nodes.getNode(configurationRoot, path.getPathItems()))
+                .collect(Collectors.toList());
     }
 
 

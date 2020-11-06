@@ -41,7 +41,6 @@ package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
-import org.dcm4che3.audit.ObjectFactory;
 import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
@@ -52,6 +51,7 @@ import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.BatchRunner.Batch;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.api.TypeSafeConfiguration;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.context.LoadingContext;
@@ -62,6 +62,7 @@ import org.dcm4che3.data.ValueSelector;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceInfo;
+import org.dcm4che3.net.DeviceType;
 import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
@@ -267,6 +268,48 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         } catch (NoSuchElementException e) {
             throw new ConfigurationNotFoundException("Device with UUID '" + uuid + "' not found", e);
         }
+    }
+
+    @Override
+    public Device[] listDevices(DeviceType deviceType) throws ConfigurationException {
+        if (deviceType == null) {
+            throw new IllegalArgumentException("Requested deviceType cannot be null");
+        }
+
+        Device[] devices;
+        try {
+            List<String> deviceNames = new ArrayList<>();
+            Iterator search = lowLevelConfig.search(DicomPath.AllDeviceNamesByPrimaryDeviceType
+                    .set("primaryDeviceType", deviceType.toString())
+                    .path());
+            while (search.hasNext()) {
+                deviceNames.add(search.next().toString());
+            }
+
+            List<Object> deviceConfigurationNodes = lowLevelConfig.getConfigurationNodes(Device.class,
+                        deviceNames.stream()
+                                .map(DicomPath::devicePath)
+                                .toArray(Path[]::new));
+
+            if (deviceConfigurationNodes == null || deviceConfigurationNodes.isEmpty()) {
+                throw new ConfigurationNotFoundException("No Devices of type " + deviceType + " were found");
+            }
+
+            devices = deviceConfigurationNodes.stream()
+                    .map(deviceConfigurationNode -> {
+                        LoadingContext ctx = config.getContextFactory().newLoadingContext();
+                        return vitalizer.newConfiguredInstance((Map<String, Object>) deviceConfigurationNode, Device.class, ctx);
+                    })
+                    .toArray(Device[]::new);
+
+            // perform alternative TC init in case an extension is present
+            alternativeTCLoader.initGroupBasedTCs(devices);
+
+        } catch (RuntimeException e) {
+            throw new ConfigurationException("Configuration for devices of type " + deviceType + " cannot be loaded", e);
+        }
+
+        return devices;
     }
 
     @Override

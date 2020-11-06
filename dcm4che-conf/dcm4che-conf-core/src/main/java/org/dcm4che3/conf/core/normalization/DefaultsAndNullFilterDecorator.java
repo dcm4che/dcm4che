@@ -158,52 +158,27 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
         super.persistNode(path, configNode, configurableClass);
     }
 
+    public List<Object> getConfigurationNodes(Class configurableClass, Path... paths) throws ConfigurationException {
+        ConfigNodeTypesafeFilter applyDefaults = new DefaultValueHandlingTypesafeFilter();
+
+        // fill in default values for properties that are null and have defaults
+        List<Object> nodes = super.getConfigurationNodes(configurableClass, paths);
+        if (configurableClass != null && nodes != null) {
+            nodes.forEach(node -> ConfigNodeTraverser.traverseNodeTypesafe(node, ConfigReflection.getDummyPropertyForClass(configurableClass), allExtensionClasses, applyDefaults));
+        }
+
+        return nodes;
+    }
 
     @Override
     public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
-
-        ConfigNodeTypesafeFilter applyDefaults = new ConfigNodeTypesafeFilter() {
-            @Override
-            public boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, ConfigProperty property) throws ConfigurationException {
-
-                // if no value for this property, see if there is default and set it
-                if (!containerNode.containsKey(property.getAnnotatedName())) {
-                    String defaultValue = property.getDefaultValue();
-                    if (!defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
-                        Object normalized = vitalizer.lookupDefaultTypeAdapter(property.getRawClass()).normalize(defaultValue, property, contextFactory.newProcessingContext());
-                        containerNode.put(property.getAnnotatedName(), normalized);
-                        return true;
-                    }
-                    // for null map & extension map - create empty obj
-                    else if ((property.isExtensionsProperty() || property.isMap())) {
-                        containerNode.put(property.getAnnotatedName(), new TreeMap());
-                        return true;
-                    }
-                    // for null collections - create empty list
-                    else if ((property.isCollection())) {
-                        containerNode.put(property.getAnnotatedName(), new ArrayList());
-                        return true;
-                    }
-                    // for null array - set to default value
-                    else if (property.isArray()) {
-                        Object defaultNode = getDefaultValueFromClass(containerNodeClass, property);
-                        if(defaultNode == null) {
-                            containerNode.put( property.getAnnotatedName(), new ArrayList() );
-                        }else {
-                            containerNode.put( property.getAnnotatedName(), defaultNode );
-                        }
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        };
+        ConfigNodeTypesafeFilter applyDefaults = new DefaultValueHandlingTypesafeFilter();
 
         // fill in default values for properties that are null and have defaults
         Map<String, Object> node = (Map<String, Object>) super.getConfigurationNode(path, configurableClass);
-        if (configurableClass != null && node != null)
+        if (configurableClass != null && node != null) {
             ConfigNodeTraverser.traverseNodeTypesafe(node, ConfigReflection.getDummyPropertyForClass(configurableClass), allExtensionClasses, applyDefaults);
+        }
         return node;
     }
 
@@ -217,5 +192,44 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
         return super.search(liteXPathExpression);
+    }
+
+    private class DefaultValueHandlingTypesafeFilter implements ConfigNodeTypesafeFilter {
+
+        @Override
+        public boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, ConfigProperty property) throws ConfigurationException {
+
+            // if no value for this property, see if there is default and set it
+            if (!containerNode.containsKey(property.getAnnotatedName())) {
+                String defaultValue = property.getDefaultValue();
+                if (!defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
+                    Object normalized = vitalizer.lookupDefaultTypeAdapter(property.getRawClass()).normalize(defaultValue, property, contextFactory.newProcessingContext());
+                    containerNode.put(property.getAnnotatedName(), normalized);
+                    return true;
+                }
+                // for null map & extension map - create empty obj
+                else if ((property.isExtensionsProperty() || property.isMap())) {
+                    containerNode.put(property.getAnnotatedName(), new TreeMap());
+                    return true;
+                }
+                // for null collections - create empty list
+                else if ((property.isCollection())) {
+                    containerNode.put(property.getAnnotatedName(), new ArrayList());
+                    return true;
+                }
+                // for null array - set to default value
+                else if (property.isArray()) {
+                    Object defaultNode = getDefaultValueFromClass(containerNodeClass, property);
+                    if (defaultNode == null) {
+                        containerNode.put( property.getAnnotatedName(), new ArrayList() );
+                    } else {
+                        containerNode.put( property.getAnnotatedName(), defaultNode );
+                    }
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

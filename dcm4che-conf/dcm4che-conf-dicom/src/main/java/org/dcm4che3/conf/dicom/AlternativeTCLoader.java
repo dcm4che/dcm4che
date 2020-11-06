@@ -92,27 +92,29 @@ public class AlternativeTCLoader {
         return this.tcGroups = config.getDicomConfigurationExtension(TransferCapabilityConfigExtension.class).getTransferCapabilityConfig();
     }
 
-
-    void initGroupBasedTCs(Device d) throws ConfigurationException {
-
+    void initGroupBasedTCs(Device... devices) throws ConfigurationException {
         TCConfiguration tcConfig = getTCConfig();
 
-        for (ApplicationEntity applicationEntity : d.getApplicationEntities()) {
-            TCGroupConfigAEExtension tcGroupConfigAEExtension = applicationEntity.getAEExtension(TCGroupConfigAEExtension.class);
-            if (tcGroupConfigAEExtension != null) {
+        for (Device device : devices) {
+            for (ApplicationEntity applicationEntity : device.getApplicationEntities()) {
+                TCGroupConfigAEExtension tcGroupConfigAEExtension = applicationEntity.getAEExtension(TCGroupConfigAEExtension.class);
+                if (tcGroupConfigAEExtension == null) {
+                    continue;
+                }
 
                 // override any entries that might have been added before
-                applicationEntity.setTransferCapabilities(new ArrayList<TransferCapability>());
+                applicationEntity.setTransferCapabilities(new ArrayList<>());
 
                 // Always add CEcho SCP
                 applicationEntity.addTransferCapability(new TransferCapability("CEcho SCP", UID.VerificationSOPClass, TransferCapability.Role.SCP, UID.ImplicitVRLittleEndian));
 
                 // add processed TCs from pre-configured groups to this ae
-                for (Map.Entry<String, TCGroupConfigAEExtension.TCGroupDetails> tcGroupRefEntry : tcGroupConfigAEExtension.getScpTCs().entrySet())
+                for (Map.Entry<String, TCGroupConfigAEExtension.TCGroupDetails> tcGroupRefEntry : tcGroupConfigAEExtension.getScpTCs().entrySet()) {
                     addTC(applicationEntity, tcConfig, tcGroupRefEntry, TransferCapability.Role.SCP);
-                for (Map.Entry<String, TCGroupConfigAEExtension.TCGroupDetails> tcGroupRefEntry : tcGroupConfigAEExtension.getScuTCs().entrySet())
+                }
+                for (Map.Entry<String, TCGroupConfigAEExtension.TCGroupDetails> tcGroupRefEntry : tcGroupConfigAEExtension.getScuTCs().entrySet()) {
                     addTC(applicationEntity, tcConfig, tcGroupRefEntry, TransferCapability.Role.SCU);
-
+                }
             }
         }
     }

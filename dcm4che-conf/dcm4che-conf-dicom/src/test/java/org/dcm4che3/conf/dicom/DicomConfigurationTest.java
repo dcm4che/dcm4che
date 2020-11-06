@@ -46,17 +46,19 @@ import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.dicom.configclasses.SomeDeviceExtension;
-import org.dcm4che3.net.AEExtension;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
+import org.dcm4che3.net.*;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Roman K
@@ -89,6 +91,88 @@ public class DicomConfigurationTest {
 
         Assert.assertEquals("The new aet must have 1 connection", 1, deviceLoaded.getApplicationEntity("aet2").getConnections().size());
 
+    }
+
+    @Test
+    public void listDevices_produce_expected_results() {
+        CommonDicomConfiguration config = SimpleStorageTest.createCommonDicomConfiguration();
+        config.purgeConfiguration();
+
+        Device originalDevice = createDeviceWithArchiveExtension("DEVICE", "Default", "Other", "Storage", DeviceType.ARCHIVE, DeviceType.PRINT);
+        config.persist(originalDevice);
+
+        Device[] devices = config.listDevices(DeviceType.ARCHIVE);
+        Assert.assertTrue(devices.length == 1);
+
+        Device device = devices[0];
+
+        Assert.assertTrue(deepCompare(originalDevice, device));
+        Assert.assertTrue(Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.ARCHIVE.toString()));
+        Assert.assertTrue(Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.PRINT.toString()));
+        Assert.assertTrue(device.getApplicationEntities().stream().anyMatch(aet -> {
+            ExternalArchiveAEExtension extension = aet.getAEExtension(ExternalArchiveAEExtension.class);
+            return extension != null && extension.isDefaultForStorage();
+        }));
+    }
+
+    @Test
+    public void listDevices_produce_equivalent_results_as_findDevice() {
+        CommonDicomConfiguration config = SimpleStorageTest.createCommonDicomConfiguration();
+        config.purgeConfiguration();
+
+        Device originalDevice = createDeviceWithArchiveExtension("DEVICE", "Default", "Other", "Storage", DeviceType.ARCHIVE, DeviceType.PRINT);
+        config.persist(originalDevice);
+
+        Device[] devices = config.listDevices(DeviceType.ARCHIVE);
+        Assert.assertTrue(devices.length == 1);
+
+        Device listedDevice = devices[0];
+        Device foundDevice = config.findDevice(originalDevice.getDeviceName());
+
+        Assert.assertTrue(deepCompare(foundDevice, listedDevice));
+    }
+
+    @Ignore
+    @Test
+    public void listDevices_produce_faster_results_than_findDevice() throws ConfigurationException {
+        CommonDicomConfiguration config = SimpleStorageTest.createCommonDicomConfiguration();
+        config.purgeConfiguration();
+
+        List<Device> originalDevices = createDevicesWithArchiveExtension("DEVICE", "Default", "Other", "Storage", 100, DeviceType.ARCHIVE, DeviceType.PRINT);
+        originalDevices.forEach(config::persist);
+
+        List<String> deviceNames = originalDevices.stream().map(Device::getDeviceName).collect(Collectors.toList());
+
+        long timeToFindDevices = -System.currentTimeMillis();
+        List<Device> foundDevices = new ArrayList<>();
+        for (String deviceName : deviceNames) {
+            Device device = config.findDevice(deviceName);
+            if (Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.ARCHIVE.toString())) {
+                foundDevices.add(device);
+            }
+        }
+        timeToFindDevices += System.currentTimeMillis();
+
+        long timeToListDevices = -System.currentTimeMillis();
+        Device[] listedDevices = config.listDevices(DeviceType.ARCHIVE);
+        timeToListDevices += System.currentTimeMillis();
+
+        Assert.assertTrue(listedDevices != null && listedDevices.length > 0);
+        Assert.assertTrue(foundDevices.size() > 0);
+
+        Assert.assertEquals(listedDevices.length, foundDevices.size());
+
+        for (Device foundDevice : foundDevices) {
+            for (Device listedDevice : listedDevices) {
+                if (foundDevice.getDeviceName().equals(listedDevice.getDeviceName())) {
+                    Assert.assertTrue(deepCompare(foundDevice, listedDevice));
+                    break;
+                }
+            }
+        }
+
+        Assert.assertTrue("timeToListDevices: " + timeToListDevices + ", timeToFindDevices: " + timeToFindDevices,
+                timeToListDevices < timeToFindDevices);
     }
 
     @Test
@@ -245,10 +329,6 @@ public class DicomConfigurationTest {
 
     }
 
-
-
-
-
     @Test
     public void testAECrossRef() {
         CommonDicomConfigurationWithHL7 config = prepareTestConfigWithRefs();
@@ -378,6 +458,38 @@ public class DicomConfigurationTest {
         );
     }
 
+    private List<Device> createDevicesWithArchiveExtension(String deviceName, String defaultTitle, String otherTitle, String storageTitle, int quantity, DeviceType... deviceTypes) {
+        List<Device> devicesList = new ArrayList<>();
+        for (int i = 0; i < quantity; i++) {
+            devicesList.add(createDeviceWithArchiveExtension(deviceName + i, defaultTitle, otherTitle, storageTitle + i, deviceTypes));
+        }
+        return devicesList;
+    }
+
+    private Device createDeviceWithArchiveExtension(String deviceName, String defaultTitle, String otherTitle, String storageTitle, DeviceType... deviceTypes) {
+        ApplicationEntity defaultApplicationEntity = new ApplicationEntity();
+        defaultApplicationEntity.setAETitle(defaultTitle);
+
+        ApplicationEntity otherApplicationEntity = new ApplicationEntity();
+        otherApplicationEntity.setAETitle(otherTitle);
+
+        ApplicationEntity storageApplicationEntity = new ApplicationEntity();
+        storageApplicationEntity.setAETitle(storageTitle);
+
+        ExternalArchiveAEExtension storageArchiveExtension = new ExternalArchiveAEExtension();
+        storageArchiveExtension.setDefaultForStorage(true);
+        storageApplicationEntity.addAEExtension(storageArchiveExtension);
+
+        Device testDevice = new Device();
+        testDevice.setDeviceName(deviceName);
+        testDevice.setInstalled(true);
+        testDevice.setPrimaryDeviceTypes(Arrays.stream(deviceTypes).map(DeviceType::toString).toArray(String[]::new));
+        testDevice.setDefaultAE(defaultApplicationEntity);
+        testDevice.addApplicationEntity(defaultApplicationEntity);
+        testDevice.addApplicationEntity(otherApplicationEntity);
+        testDevice.addApplicationEntity(storageApplicationEntity);
+        return testDevice;
+    }
 
     private Device createDevice(String aeRenameTestDevice) {
         Device testDevice = new Device(aeRenameTestDevice);
@@ -395,5 +507,23 @@ public class DicomConfigurationTest {
         ae.setAETitle("aet1");
         testDevice.addApplicationEntity(ae);
         return testDevice;
+    }
+
+    private boolean deepCompare(Serializable o1, Serializable o2) {
+        try {
+            ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
+            ObjectOutputStream oos1 = new ObjectOutputStream(baos1);
+            oos1.writeObject(o1);
+            oos1.close();
+
+            ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+            ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+            oos2.writeObject(o2);
+            oos2.close();
+
+            return Arrays.equals(baos1.toByteArray(), baos2.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

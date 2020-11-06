@@ -44,6 +44,7 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Path;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -68,6 +69,11 @@ public class DelegatingConfiguration implements Configuration {
     @Override
     public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
         return delegate.getConfigurationNode(path, configurableClass);
+    }
+
+    @Override
+    public List<Object> getConfigurationNodes(Class configurableClass, Path[] paths) throws ConfigurationException {
+        return delegate.getConfigurationNodes(configurableClass, paths);
     }
 
     @Override

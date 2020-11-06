@@ -45,8 +45,8 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Path;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Roman K
@@ -67,6 +67,13 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
     @Override
     public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
         return Nodes.getNode(root, path.getPathItems());
+    }
+
+    @Override
+    public List<Object> getConfigurationNodes(Class configurableClass, Path... paths) throws ConfigurationException {
+        return Arrays.stream(paths)
+                .map(path -> getConfigurationNode(path, configurableClass))
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -48,7 +48,6 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.dicom.configclasses.SomeDeviceExtension;
 import org.dcm4che3.net.*;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -58,7 +57,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Roman K
@@ -102,14 +100,14 @@ public class DicomConfigurationTest {
         config.persist(originalDevice);
 
         Device[] devices = config.listDevices(DeviceType.ARCHIVE);
-        Assert.assertTrue(devices.length == 1);
+        Assert.assertEquals("Method listDevices should have retrieved exactly 1 Device", 1, devices.length);
 
         Device device = devices[0];
 
-        Assert.assertTrue(deepCompare(originalDevice, device));
-        Assert.assertTrue(Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.ARCHIVE.toString()));
-        Assert.assertTrue(Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.PRINT.toString()));
-        Assert.assertTrue(device.getApplicationEntities().stream().anyMatch(aet -> {
+        Assert.assertTrue("Device retrieved from listDevices does not match the expected original Device", deepCompare(originalDevice, device));
+        Assert.assertTrue("Device retrieved does not contain expected ARCHIVE DeviceType", Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.ARCHIVE.toString()));
+        Assert.assertTrue("Device retrieved does not contain expected PRINT DeviceType", Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.PRINT.toString()));
+        Assert.assertTrue("Device retrieved does not contain expected ExternalArchiveAEExtension values", device.getApplicationEntities().stream().anyMatch(aet -> {
             ExternalArchiveAEExtension extension = aet.getAEExtension(ExternalArchiveAEExtension.class);
             return extension != null && extension.isDefaultForStorage();
         }));
@@ -124,55 +122,12 @@ public class DicomConfigurationTest {
         config.persist(originalDevice);
 
         Device[] devices = config.listDevices(DeviceType.ARCHIVE);
-        Assert.assertTrue(devices.length == 1);
+        Assert.assertEquals("Method listDevices should have retrieved exactly 1 Device", 1, devices.length);
 
         Device listedDevice = devices[0];
         Device foundDevice = config.findDevice(originalDevice.getDeviceName());
 
-        Assert.assertTrue(deepCompare(foundDevice, listedDevice));
-    }
-
-    @Ignore
-    @Test
-    public void listDevices_produce_faster_results_than_findDevice() throws ConfigurationException {
-        CommonDicomConfiguration config = SimpleStorageTest.createCommonDicomConfiguration();
-        config.purgeConfiguration();
-
-        List<Device> originalDevices = createDevicesWithArchiveExtension("DEVICE", "Default", "Other", "Storage", 100, DeviceType.ARCHIVE, DeviceType.PRINT);
-        originalDevices.forEach(config::persist);
-
-        List<String> deviceNames = originalDevices.stream().map(Device::getDeviceName).collect(Collectors.toList());
-
-        long timeToFindDevices = -System.currentTimeMillis();
-        List<Device> foundDevices = new ArrayList<>();
-        for (String deviceName : deviceNames) {
-            Device device = config.findDevice(deviceName);
-            if (Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.ARCHIVE.toString())) {
-                foundDevices.add(device);
-            }
-        }
-        timeToFindDevices += System.currentTimeMillis();
-
-        long timeToListDevices = -System.currentTimeMillis();
-        Device[] listedDevices = config.listDevices(DeviceType.ARCHIVE);
-        timeToListDevices += System.currentTimeMillis();
-
-        Assert.assertTrue(listedDevices != null && listedDevices.length > 0);
-        Assert.assertTrue(foundDevices.size() > 0);
-
-        Assert.assertEquals(listedDevices.length, foundDevices.size());
-
-        for (Device foundDevice : foundDevices) {
-            for (Device listedDevice : listedDevices) {
-                if (foundDevice.getDeviceName().equals(listedDevice.getDeviceName())) {
-                    Assert.assertTrue(deepCompare(foundDevice, listedDevice));
-                    break;
-                }
-            }
-        }
-
-        Assert.assertTrue("timeToListDevices: " + timeToListDevices + ", timeToFindDevices: " + timeToFindDevices,
-                timeToListDevices < timeToFindDevices);
+        Assert.assertTrue("Device retrieved from listDevices does not match the expected Device retrieved from findDevice", deepCompare(foundDevice, listedDevice));
     }
 
     @Test
@@ -456,14 +411,6 @@ public class DicomConfigurationTest {
                         .getDevice()
                         .getDeviceName()
         );
-    }
-
-    private List<Device> createDevicesWithArchiveExtension(String deviceName, String defaultTitle, String otherTitle, String storageTitle, int quantity, DeviceType... deviceTypes) {
-        List<Device> devicesList = new ArrayList<>();
-        for (int i = 0; i < quantity; i++) {
-            devicesList.add(createDeviceWithArchiveExtension(deviceName + i, defaultTitle, otherTitle, storageTitle + i, deviceTypes));
-        }
-        return devicesList;
     }
 
     private Device createDeviceWithArchiveExtension(String deviceName, String defaultTitle, String otherTitle, String storageTitle, DeviceType... deviceTypes) {

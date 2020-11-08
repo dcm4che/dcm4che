@@ -159,6 +159,21 @@ public class BufferedImageUtils {
         return dst;
     }
 
+    public static BufferedImage convertShortsToBytes(BufferedImage src, BufferedImage dst) {
+        if (dst == null) {
+            dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        }
+        DataBuffer srcBuffer = src.getRaster().getDataBuffer();
+        short[] srcData = srcBuffer instanceof DataBufferUShort
+                ? ((DataBufferUShort) srcBuffer).getData()
+                : ((DataBufferShort) srcBuffer).getData();
+        byte[] dstData = ((DataBufferByte) dst.getRaster().getDataBuffer()).getData();
+        for (int i = 0; i < srcData.length; i++) {
+            dstData[i] = (byte) srcData[i];
+        }
+        return dst;
+    }
+
     public static BufferedImage replaceColorModel(BufferedImage bi, ColorModel colorModel) {
         return new BufferedImage(colorModel, bi.getRaster(), false, null);
     }

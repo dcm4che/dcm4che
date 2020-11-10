@@ -123,12 +123,12 @@ public interface DicomConfiguration {
     List<String> listAllAETitles() throws ConfigurationException;
 
     /**
-     * Returns all {@link Device} objects containing a specific {@link DeviceType} from the configuration backend
-     * @param primaryDeviceType
+     * Returns all {@link Device} objects containing specific {@link DeviceType}s from the configuration backend
+     * @param primaryDeviceTypes Can be optionally included. If not, all the {@link Device}s will be retrieved
      * @return {@link Device} array
      * @throws org.dcm4che3.conf.core.api.ConfigurationException
      */
-    Device[] listDevices(DeviceType primaryDeviceType) throws ConfigurationException;
+    Device[] listDevices(DeviceType... primaryDeviceTypes) throws ConfigurationException;
 
     /**
      * Invalidates any present cached state for the configuration storage view of the client.

@@ -92,7 +92,30 @@ public class DicomConfigurationTest {
     }
 
     @Test
-    public void listDevices_produce_expected_results() {
+    public void listDevices_accepts_empty_primaryDeviceType() {
+        CommonDicomConfiguration config = SimpleStorageTest.createCommonDicomConfiguration();
+        config.purgeConfiguration();
+
+        Device originalDevice = createDeviceWithArchiveExtension("DEVICE", "Default", "Other", "Storage", DeviceType.ARCHIVE, DeviceType.PRINT);
+        config.persist(originalDevice);
+
+        Device[] allDevices = config.listDevices();
+        Assert.assertEquals("Method listDevices should have retrieved exactly 1 Device", 1, allDevices.length);
+
+        Device device = allDevices[0];
+
+        Assert.assertTrue("Device retrieved from listDevices does not match the expected original Device", deepCompare(originalDevice, device));
+        Assert.assertTrue("Device retrieved does not contain expected ARCHIVE DeviceType", Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.ARCHIVE.toString()));
+        Assert.assertTrue("Device retrieved does not contain expected PRINT DeviceType", Arrays.asList(device.getPrimaryDeviceTypes()).contains(DeviceType.PRINT.toString()));
+        Assert.assertTrue("Device retrieved does not contain expected ExternalArchiveAEExtension values", device.getApplicationEntities().stream().anyMatch(aet -> {
+            ExternalArchiveAEExtension extension = aet.getAEExtension(ExternalArchiveAEExtension.class);
+            return extension != null && extension.isDefaultForStorage();
+        }));
+
+    }
+
+    @Test
+    public void listDevices_accepts_single_primaryDeviceType() {
         CommonDicomConfiguration config = SimpleStorageTest.createCommonDicomConfiguration();
         config.purgeConfiguration();
 
@@ -114,7 +137,62 @@ public class DicomConfigurationTest {
     }
 
     @Test
-    public void listDevices_produce_equivalent_results_as_findDevice() {
+    public void listDevices_accepts_multiple_primaryDeviceTypes() {
+        CommonDicomConfiguration config = SimpleStorageTest.createCommonDicomConfiguration();
+        config.purgeConfiguration();
+
+        Device archiveDevice = createDeviceWithArchiveExtension("DEVICE1", "Default1", "Other1", "Storage1", DeviceType.ARCHIVE);
+        Device printDevice = createDeviceWithArchiveExtension("DEVICE2", "Default2", "Other2", "Storage2", DeviceType.PRINT);
+        Device printAndArchiveDevice = createDeviceWithArchiveExtension("DEVICE3", "Default3", "Other3", "Storage3", DeviceType.PRINT, DeviceType.ARCHIVE);
+        config.persist(archiveDevice);
+        config.persist(printDevice);
+        config.persist(printAndArchiveDevice);
+
+        Device[] devices = config.listDevices(DeviceType.ARCHIVE, DeviceType.PRINT, null, DeviceType.ARCHIVE);
+        Assert.assertEquals("Method listDevices should have retrieved exactly 3 Devices", 3, devices.length);
+
+        Device listedArchiveDevice = null;
+        Device listedPrintDevice = null;
+        Device listedPrintAndArchiveDevice = null;
+
+        for (Device device : devices) {
+            List<String> deviceTypes = Arrays.asList(device.getPrimaryDeviceTypes());
+            if (deviceTypes.contains(DeviceType.ARCHIVE.toString())) {
+                if (deviceTypes.contains(DeviceType.PRINT.toString())) {
+                    listedPrintAndArchiveDevice = device;
+                } else {
+                    listedArchiveDevice = device;
+                }
+            } else {
+                listedPrintDevice = device;
+            }
+        }
+
+        Assert.assertTrue("Device of type ARCHIVE retrieved from listDevices does not match the expected original Device",deepCompare(listedArchiveDevice, archiveDevice));
+        Assert.assertTrue("Device of type ARCHIVE retrieved does not contain expected ARCHIVE DeviceType", Arrays.asList(listedArchiveDevice.getPrimaryDeviceTypes()).contains(DeviceType.ARCHIVE.toString()));
+        Assert.assertTrue("Device of type ARCHIVE retrieved does not contain expected ExternalArchiveAEExtension values", listedArchiveDevice.getApplicationEntities().stream().anyMatch(aet -> {
+            ExternalArchiveAEExtension extension = aet.getAEExtension(ExternalArchiveAEExtension.class);
+            return extension != null && extension.isDefaultForStorage();
+        }));
+
+        Assert.assertTrue("Device of type PRINT retrieved from listDevices does not match the expected original Device",deepCompare(listedPrintDevice, printDevice));
+        Assert.assertTrue("Device of type PRINT retrieved does not contain expected PRINT DeviceType", Arrays.asList(listedPrintDevice.getPrimaryDeviceTypes()).contains(DeviceType.PRINT.toString()));
+        Assert.assertTrue("Device of type PRINT retrieved does not contain expected ExternalArchiveAEExtension values", listedPrintDevice.getApplicationEntities().stream().anyMatch(aet -> {
+            ExternalArchiveAEExtension extension = aet.getAEExtension(ExternalArchiveAEExtension.class);
+            return extension != null && extension.isDefaultForStorage();
+        }));
+
+        Assert.assertTrue("Device of type PRINT and ARCHIVE retrieved from listDevices does not match the expected original Device",deepCompare(listedPrintAndArchiveDevice, printAndArchiveDevice));
+        Assert.assertTrue("Device of type PRINT and ARCHIVE retrieved does not contain expected PRINT DeviceType", Arrays.asList(listedPrintAndArchiveDevice.getPrimaryDeviceTypes()).contains(DeviceType.PRINT.toString()));
+        Assert.assertTrue("Device of type PRINT and ARCHIVE retrieved does not contain expected ARCHIVE DeviceType", Arrays.asList(listedPrintAndArchiveDevice.getPrimaryDeviceTypes()).contains(DeviceType.ARCHIVE.toString()));
+        Assert.assertTrue("Device of type PRINT and ARCHIVE retrieved does not contain expected ExternalArchiveAEExtension values", listedPrintAndArchiveDevice.getApplicationEntities().stream().anyMatch(aet -> {
+            ExternalArchiveAEExtension extension = aet.getAEExtension(ExternalArchiveAEExtension.class);
+            return extension != null && extension.isDefaultForStorage();
+        }));
+    }
+
+    @Test
+    public void listDevices_produces_equivalent_results_as_findDevice() {
         CommonDicomConfiguration config = SimpleStorageTest.createCommonDicomConfiguration();
         config.purgeConfiguration();
 
@@ -128,6 +206,27 @@ public class DicomConfigurationTest {
         Device foundDevice = config.findDevice(originalDevice.getDeviceName());
 
         Assert.assertTrue("Device retrieved from listDevices does not match the expected Device retrieved from findDevice", deepCompare(foundDevice, listedDevice));
+
+        Device[] allDevices = config.listDevices();
+        Assert.assertEquals("Method listDevices should have retrieved exactly 1 Device", 1, allDevices.length);
+
+        listedDevice = allDevices[0];
+        foundDevice = config.findDevice(originalDevice.getDeviceName());
+
+        Assert.assertTrue("Device retrieved from listDevices does not match the expected Device retrieved from findDevice", deepCompare(foundDevice, listedDevice));
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void listDevices_fails_when_null_primaryDeviceType() {
+        CommonDicomConfiguration config = SimpleStorageTest.createCommonDicomConfiguration();
+        config.purgeConfiguration();
+
+        Device originalDevice = createDeviceWithArchiveExtension("DEVICE", "Default", "Other", "Storage", DeviceType.ARCHIVE, DeviceType.PRINT);
+        config.persist(originalDevice);
+
+        config.listDevices(null);
+
+        Assert.fail("Method listDevices should not allow null argument");
     }
 
     @Test

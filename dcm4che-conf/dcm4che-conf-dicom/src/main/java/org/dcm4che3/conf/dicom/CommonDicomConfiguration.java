@@ -271,28 +271,21 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     }
 
     @Override
-    public Device[] listDevices(DeviceType deviceType) throws ConfigurationException {
-        if (deviceType == null) {
-            throw new IllegalArgumentException("Requested deviceType cannot be null");
+    public Device[] listDevices(DeviceType... primaryDeviceTypes) throws ConfigurationException {
+        if (primaryDeviceTypes == null) {
+            throw new IllegalArgumentException("Requested primaryDeviceTypes cannot be null");
         }
 
         Device[] devices;
         try {
-            List<String> deviceNames = new ArrayList<>();
-            Iterator search = lowLevelConfig.search(DicomPath.AllDeviceNamesByPrimaryDeviceType
-                    .set("primaryDeviceType", deviceType.toString())
-                    .path());
-            while (search.hasNext()) {
-                deviceNames.add(search.next().toString());
-            }
-
+            String[] deviceNames = listDeviceNamesByPrimaryDeviceTypes(primaryDeviceTypes);
             List<Object> deviceConfigurationNodes = lowLevelConfig.getConfigurationNodes(Device.class,
-                        deviceNames.stream()
+                        Arrays.stream(deviceNames)
                                 .map(DicomPath::devicePath)
                                 .toArray(Path[]::new));
 
             if (deviceConfigurationNodes == null || deviceConfigurationNodes.isEmpty()) {
-                throw new ConfigurationNotFoundException("No Devices of type " + deviceType + " were found");
+                throw new ConfigurationNotFoundException("No Devices were found");
             }
 
             devices = deviceConfigurationNodes.stream()
@@ -306,7 +299,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             alternativeTCLoader.initGroupBasedTCs(devices);
 
         } catch (RuntimeException e) {
-            throw new ConfigurationException("Configuration for devices of type " + deviceType + " cannot be loaded", e);
+            throw new ConfigurationException("Configuration for devices cannot be loaded", e);
         }
 
         return devices;
@@ -365,6 +358,28 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             throw new ConfigurationException("Error while getting list of device names", e);
         }
         return deviceNames.toArray(new String[deviceNames.size()]);
+    }
+
+    private String[] listDeviceNamesByPrimaryDeviceTypes(DeviceType[] primaryDeviceTypes) throws ConfigurationException {
+        if (primaryDeviceTypes == null || primaryDeviceTypes.length == 0) {
+            return listDeviceNames();
+        }
+
+        primaryDeviceTypes = Arrays.stream(primaryDeviceTypes)
+                .filter(Objects::nonNull)
+                .toArray(DeviceType[]::new);
+
+        Set<String> deviceNames = new HashSet<>();
+        for (DeviceType primaryDeviceType : primaryDeviceTypes) {
+            Iterator search = lowLevelConfig.search(DicomPath.AllDeviceNamesByPrimaryDeviceType
+                    .set("primaryDeviceType", primaryDeviceType.toString())
+                    .path());
+            while (search.hasNext()) {
+                deviceNames.add(search.next().toString());
+            }
+        }
+
+        return deviceNames.toArray(new String[0]);
     }
 
     @Override

@@ -270,15 +270,13 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         }
     }
 
-    @Override
-    public Device[] listDevices(DeviceType... primaryDeviceTypes) throws ConfigurationException {
-        if (primaryDeviceTypes == null) {
-            throw new IllegalArgumentException("Requested primaryDeviceTypes cannot be null");
+    protected Device[] listDevices(String[] deviceNames) throws ConfigurationException {
+        if (deviceNames == null || deviceNames.length == 0) {
+            return new Device[0];
         }
 
         Device[] devices;
         try {
-            String[] deviceNames = listDeviceNamesByPrimaryDeviceTypes(primaryDeviceTypes);
             List<Object> deviceConfigurationNodes = lowLevelConfig.getConfigurationNodes(Device.class,
                         Arrays.stream(deviceNames)
                                 .map(DicomPath::devicePath)
@@ -303,6 +301,32 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         }
 
         return devices;
+    }
+
+    @Override
+    public Device[] listAllDevices() throws ConfigurationException {
+        String[] deviceNames = listDeviceNames();
+        return listDevices(deviceNames);
+    }
+
+    @Override
+    public Device[] listDevices(DeviceType deviceType) throws ConfigurationException {
+        if (deviceType == null) {
+            return new Device[0];
+        }
+
+        String[] deviceNames = listDeviceNamesByPrimaryDeviceTypes(deviceType);
+        return listDevices(deviceNames);
+    }
+
+    @Override
+    public Device[] listDevices(DeviceType[] deviceTypes) throws ConfigurationException {
+        if (deviceTypes == null || deviceTypes.length == 0) {
+            return new Device[0];
+        }
+
+        String[] deviceNames = listDeviceNamesByPrimaryDeviceTypes(deviceTypes);
+        return listDevices(deviceNames);
     }
 
     @Override
@@ -360,17 +384,13 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         return deviceNames.toArray(new String[deviceNames.size()]);
     }
 
-    private String[] listDeviceNamesByPrimaryDeviceTypes(DeviceType[] primaryDeviceTypes) throws ConfigurationException {
-        if (primaryDeviceTypes == null || primaryDeviceTypes.length == 0) {
-            return listDeviceNames();
-        }
-
-        primaryDeviceTypes = Arrays.stream(primaryDeviceTypes)
-                .filter(Objects::nonNull)
-                .toArray(DeviceType[]::new);
-
+    private String[] listDeviceNamesByPrimaryDeviceTypes(DeviceType... primaryDeviceTypes) throws ConfigurationException {
         Set<String> deviceNames = new HashSet<>();
         for (DeviceType primaryDeviceType : primaryDeviceTypes) {
+            if (primaryDeviceType == null) {
+                continue;
+            }
+
             Iterator search = lowLevelConfig.search(DicomPath.AllDeviceNamesByPrimaryDeviceType
                     .set("primaryDeviceType", primaryDeviceType.toString())
                     .path());

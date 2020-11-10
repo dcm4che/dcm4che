@@ -41,6 +41,7 @@
 
 package org.dcm4che3.opencv;
 
+import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -127,7 +128,12 @@ class NativeJPEGImageWriter extends ImageWriter {
                 int channels = CvType.channels(cvType);
                 boolean signed = desc.isSigned();
                 int dcmFlags = signed ? Imgcodecs.DICOM_FLAG_SIGNED : Imgcodecs.DICOM_FLAG_UNSIGNED;
-
+                // Specific case not well supported by jpeg and jpeg-ls encoder that reduce the stream to 8-bit
+                int bitCompressed = desc.getBitsCompressed();
+                if(bitCompressed == 8 && renderedImage.getSampleModel().getTransferType() != DataBuffer.TYPE_BYTE){
+                  bitCompressed = 12;
+                }
+                
                 int[] params = new int[15];
                 params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
                 params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags
@@ -135,7 +141,7 @@ class NativeJPEGImageWriter extends ImageWriter {
                 params[Imgcodecs.DICOM_PARAM_HEIGHT] = mat.height(); // Image height
                 params[Imgcodecs.DICOM_PARAM_COMPRESSION] = Imgcodecs.DICOM_CP_JPG; // Type of compression
                 params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
-                params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsCompressed(); // Bits per sample
+                params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = bitCompressed; // Bits per sample
                 params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
                 params[Imgcodecs.DICOM_PARAM_COLOR_MODEL] = epi; // Photometric interpretation
                 params[Imgcodecs.DICOM_PARAM_JPEG_MODE] = jpegParams.getMode(); // JPEG Codec mode

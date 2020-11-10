@@ -41,6 +41,7 @@
 
 package org.dcm4che3.opencv;
 
+import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -129,7 +130,7 @@ class NativeJPEGImageWriter extends ImageWriter {
                 int dcmFlags = signed ? Imgcodecs.DICOM_FLAG_SIGNED : Imgcodecs.DICOM_FLAG_UNSIGNED;
                 // Specific case not well supported by jpeg and jpeg-ls encoder that reduce the stream to 8-bit
                 int bitCompressed = desc.getBitsCompressed();
-                if(bitCompressed == 8 && desc.getBitsAllocated() == 16){
+                if(bitCompressed == 8 && renderedImage.getSampleModel().getTransferType() != DataBuffer.TYPE_BYTE){
                   bitCompressed = 12;
                 }
                 

@@ -56,15 +56,32 @@ CP="$CP:$DCM4CHE_HOME/lib/commons-cli-${commons-cli.version}.jar"
 
 # Setup the native library path
 if [ "x$JAVA_LIBRARY_PATH" = "x" ]; then
-    if [ "x$PLATFORM" = "x" ]; then
-        "$JAVA" -version 2>&1 | grep -q 64-Bit
-        if [ $? -eq 0 ]; then
-            PLATFORM=linux-x86_64
-        else
-            PLATFORM=linux-i686
-        fi
+    OS_ARC=`"$JAVA" -cp $DCM4CHE_HOME/lib/weasis-core-img-${weasis.core.img.version}.jar org.weasis.core.util.NativeLibrary`
+    JAVA_LIBRARY_PATH=$DCM4CHE_HOME/lib/${OS_ARC}
+
+    case "$OS_ARC" in
+        windows*)
+        LIB_NAME=opencv_java
+        LIB_EXT=dll
+        ;;
+        mac*)
+        LIB_NAME=libopencv_java
+        LIB_EXT=jnilib
+        ;;
+        *)
+        LIB_NAME=libopencv_java
+        LIB_EXT=so
+        ;;
+    esac
+
+    if [ -e "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}" ]; then
+      echo "Native OpenCV library has been found in ${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}"
+    else
+      URL=https://github.com/nroduit/mvn-repo/raw/master/org/weasis/thirdparty/org/opencv/${LIB_NAME}/${weasis.opencv.native.version}/${weasis.opencv.native.version}-${weasis}-${OS_ARC}.${LIB_EXT}
+      echo "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT} is missing. Try to download ${URL}"
+      mkdir -p "${JAVA_LIBRARY_PATH}"
+      wget --auth-no-challenge -O "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}" "${URL}" || { rm "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}"; echo "Cannot download the native library related to the architecture ${OS_ARC}, try it manually." && exit 1; }
     fi
-    JAVA_LIBRARY_PATH=$DCM4CHE_HOME/lib/${PLATFORM}
 fi
 
 # For Cygwin, switch paths to Windows format before running java

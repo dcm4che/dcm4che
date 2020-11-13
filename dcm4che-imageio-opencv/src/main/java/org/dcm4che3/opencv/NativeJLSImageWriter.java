@@ -54,6 +54,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.opencv.core.CvType;
@@ -99,10 +100,20 @@ class NativeJLSImageWriter extends ImageWriter {
         ImageOutputStream stream = (ImageOutputStream) output;
         stream.setByteOrder(ByteOrder.LITTLE_ENDIAN);
 
+        JPEGLSImageWriteParam jpegParams = (JPEGLSImageWriteParam) param;
+
         if (!(stream instanceof BytesWithImageImageDescriptor)) {
             throw new IllegalArgumentException("stream does not implement BytesWithImageImageDescriptor!");
         }
         ImageDescriptor desc = ((BytesWithImageImageDescriptor) stream).getImageDescriptor();
+        PhotometricInterpretation pi = desc.getPhotometricInterpretation();
+
+        if (jpegParams.isCompressionLossless() && (PhotometricInterpretation.YBR_FULL_422 == pi
+            || PhotometricInterpretation.YBR_PARTIAL_422 == pi || PhotometricInterpretation.YBR_PARTIAL_420 == pi
+            || PhotometricInterpretation.YBR_ICT == pi || PhotometricInterpretation.YBR_RCT == pi)) {
+            throw new IllegalArgumentException(
+                "True lossless encoder: Photometric interpretation is not supported: " + pi);
+        }
 
         RenderedImage renderedImage = image.getRenderedImage();
         Mat buf = null;
@@ -114,10 +125,11 @@ class NativeJLSImageWriter extends ImageWriter {
                 // So the input image has always a pixel interleaved mode mode((PlanarConfiguration = 0)
                 mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
 
-                int jpeglsNLE = param instanceof JPEGLSImageWriteParam ? ((JPEGLSImageWriteParam) param).getNearLossless() : 0;
+                int jpeglsNLE = jpegParams.getNearLossless();
                 int bitCompressed = desc.getBitsCompressed();
                 int cvType = mat.type();
                 int channels = CvType.channels(cvType);
+                int epi = channels == 1 ? Imgcodecs.EPI_Monochrome2 : Imgcodecs.EPI_RGB;
                 boolean signed = desc.isSigned();
                 int dcmFlags = signed ? Imgcodecs.DICOM_FLAG_SIGNED : Imgcodecs.DICOM_FLAG_UNSIGNED;
                 if(signed) {
@@ -126,7 +138,7 @@ class NativeJLSImageWriter extends ImageWriter {
                     bitCompressed = 16; // Extend to bit allocated to avoid exception as negative values are treated as large positive values
                 }
 
-                int[] params = new int[15];
+                int[] params = new int[16];
                 params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
                 params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags
                 params[Imgcodecs.DICOM_PARAM_WIDTH] = mat.width(); // Image width
@@ -135,6 +147,7 @@ class NativeJLSImageWriter extends ImageWriter {
                 params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
                 params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = bitCompressed; // Bits per sample
                 params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
+                params[Imgcodecs.DICOM_PARAM_COLOR_MODEL] = epi; // Photometric interpretation
                 params[Imgcodecs.DICOM_PARAM_JPEGLS_LOSSY_ERROR] = jpeglsNLE; // Lossy error for jpeg-ls
 
                 dicomParams = new MatOfInt(params);

@@ -41,6 +41,7 @@ package org.dcm4che3.data;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 
+import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,11 +53,11 @@ public class PersonName {
 
     private static final Logger LOG = LoggerFactory.getLogger(PersonName.class);
 
-    public static enum Component {
+    public enum Component {
         FamilyName, GivenName, MiddleName, NamePrefix, NameSuffix
     };
 
-    public static enum Group {
+    public enum Group {
         Alphabetic, Ideographic, Phonetic
     };
 
@@ -80,29 +81,53 @@ public class PersonName {
         while (stk.hasMoreTokens()) {
             String tk = stk.nextToken();
             switch (tk.charAt(0)) {
-            case '=':
-                if (++gindex > 2)
-                    if (lenient) {
-                        LOG.info(
-                            "illegal PN: {} - truncate illegal component group(s)", s);
-                        return;
+                case '=':
+                    if (++gindex > 2)
+                        if (lenient) {
+                            LOG.info(
+                                    "illegal PN: {} - truncate illegal component group(s)", s);
+                            return;
+                        } else
+                            throw new IllegalArgumentException(s);
+                    cindex = 0;
+                    break;
+                case '^':
+                    ++cindex;
+                    break;
+                default:
+                    if (cindex <= 4)
+                        set(gindex, cindex, tk);
+                    else if (lenient) {
+                        LOG.info("illegal PN: {} - subsumes {}th component in suffix", s, cindex + 1);
+                        set(gindex, 4, StringUtils.maskNull(get(gindex, 4), "") + ' ' + tk);
                     } else
                         throw new IllegalArgumentException(s);
-                cindex = 0;
-                break;
-            case '^':
-                if (++cindex > 4)
-                    if (lenient) {
-                        LOG.info(
-                            "illegal PN: {} - ignore illegal component(s)", s);
-                        break;
-                    } else
-                        throw new IllegalArgumentException(s);
-                break;
-            default:
-                if (cindex <= 4)
-                    set(gindex, cindex, tk);
             }
+        }
+    }
+
+    /**
+     * Set all components of a component group from encoded component group value.
+     *
+     * @param g component group
+     * @param s encoded component group value
+     */
+    public void set(Group g, String s) {
+        int gindex = g.ordinal();
+        if (s.indexOf('=') >= 0)
+            throw new IllegalArgumentException(s);
+
+        String[] ss = StringUtils.split(s, '^');
+        if (ss.length > 5)
+            throw new IllegalArgumentException(s);
+
+        int cindex = 0;
+        do {
+            set(gindex, cindex, cindex < ss.length ? ss[cindex] : null);
+        } while (++cindex <= 4);
+        while (cindex < ss.length) {
+            LOG.info("illegal PN: {} - subsumes {}th component in suffix", s, cindex + 1);
+            set(gindex, 4, StringUtils.maskNull(get(gindex, 4), "") + ' ' +  ss[cindex]);
         }
     }
 
@@ -178,7 +203,7 @@ public class PersonName {
     }
 
     public String get(Group g, Component c) {
-        return fields[g.ordinal() * 5 + c.ordinal()];
+        return get(g.ordinal(), c.ordinal());
     }
 
     public void set(Component c, String s) {
@@ -187,6 +212,10 @@ public class PersonName {
 
     public void set(Group g, Component c, String s) {
         set(g.ordinal(), c.ordinal(), s);
+    }
+
+    private String get(int gindex, int cindex) {
+        return fields[gindex * 5 + cindex];
     }
 
     private void set(int gindex, int cindex, String s) {

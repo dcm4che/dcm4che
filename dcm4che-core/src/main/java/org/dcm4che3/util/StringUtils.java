@@ -52,12 +52,7 @@ import java.util.regex.Pattern;
 public class StringUtils {
 
     public static String LINE_SEPARATOR = AccessController.doPrivileged(
-            new PrivilegedAction<String>() {
-                public String run() {
-                    return System.getProperty("line.separator");
-                }
-            }
-         );
+            (PrivilegedAction<String>) () -> System.getProperty("line.separator"));
 
     public static String[] EMPTY_STRING = {};
 

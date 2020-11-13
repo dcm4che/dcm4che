@@ -60,8 +60,31 @@ public class PersonNameTest {
     }
 
     @Test
+    public void testSubsumeSurplusComponentInSuffix() {
+        PersonName pn = new PersonName("Adams^John Robert Quincy^^Rev.^B.A.^M.Div.", true);
+        assertEquals("Adams", pn.get(PersonName.Component.FamilyName));
+        assertEquals("John Robert Quincy", pn.get(PersonName.Component.GivenName));
+        assertEquals("Rev.", pn.get(PersonName.Component.NamePrefix));
+        assertEquals("B.A. M.Div.", pn.get(PersonName.Component.NameSuffix));
+    }
+
+    @Test
     public void testValueOf2() {
         PersonName pn = new PersonName("Hong^Gildong=洪^吉洞=홍^길동");
+        assertEquals("Hong", pn.get(PersonName.Group.Alphabetic, PersonName.Component.FamilyName));
+        assertEquals("Gildong", pn.get(PersonName.Group.Alphabetic, PersonName.Component.GivenName));
+        assertEquals("洪", pn.get(PersonName.Group.Ideographic, PersonName.Component.FamilyName));
+        assertEquals("吉洞", pn.get(PersonName.Group.Ideographic, PersonName.Component.GivenName));
+        assertEquals("홍", pn.get(PersonName.Group.Phonetic, PersonName.Component.FamilyName));
+        assertEquals("길동", pn.get(PersonName.Group.Phonetic, PersonName.Component.GivenName));
+    }
+
+    @Test
+    public void testSetGroup() {
+        PersonName pn = new PersonName();
+        pn.set(PersonName.Group.Alphabetic, "Hong^Gildong");
+        pn.set(PersonName.Group.Ideographic, "洪^吉洞");
+        pn.set(PersonName.Group.Phonetic, "홍^길동");
         assertEquals("Hong", pn.get(PersonName.Group.Alphabetic, PersonName.Component.FamilyName));
         assertEquals("Gildong", pn.get(PersonName.Group.Alphabetic, PersonName.Component.GivenName));
         assertEquals("洪", pn.get(PersonName.Group.Ideographic, PersonName.Component.FamilyName));

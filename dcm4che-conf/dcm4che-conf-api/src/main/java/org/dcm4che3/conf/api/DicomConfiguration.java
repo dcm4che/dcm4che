@@ -40,6 +40,7 @@ package org.dcm4che3.conf.api;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
+import org.dcm4che3.net.DeviceType;
 
 import java.util.List;
 
@@ -122,6 +123,29 @@ public interface DicomConfiguration {
     List<String> listAllAETitles() throws ConfigurationException;
 
     /**
+     * Returns all {@link Device} objects from the configuration backend
+     * @return {@link Device} array
+     * @throws org.dcm4che3.conf.core.api.ConfigurationException
+     */
+    Device[] listAllDevices() throws ConfigurationException;
+
+    /**
+     * Returns all {@link Device} objects containing a specific {@link DeviceType} from the configuration backend
+     * @param primaryDeviceType {@link DeviceType} to be used as filter
+     * @return {@link Device} array
+     * @throws org.dcm4che3.conf.core.api.ConfigurationException
+     */
+    Device[] listDevices(DeviceType primaryDeviceType) throws ConfigurationException;
+
+    /**
+     * Returns all {@link Device} objects containing specific {@link DeviceType}s from the configuration backend
+     * @param primaryDeviceTypes {@link DeviceType}s to be used as filter
+     * @return {@link Device} array
+     * @throws org.dcm4che3.conf.core.api.ConfigurationException
+     */
+    Device[] listDevices(DeviceType[] primaryDeviceTypes) throws ConfigurationException;
+
+    /**
      * Invalidates any present cached state for the configuration storage view of the client.
      * There is no guarantee whether the devices accessed afterwards will be re-loaded lazily or eagerly.
      *
@@ -152,7 +176,7 @@ public interface DicomConfiguration {
      * @param dicomConfigBatch Configuration batch to execute
      */
     void runBatch(DicomConfigBatch dicomConfigBatch);
-    
+
     /**
      * Defines a configuration batch that allows to execute configuration changes in a bulk-type manner.
      * 

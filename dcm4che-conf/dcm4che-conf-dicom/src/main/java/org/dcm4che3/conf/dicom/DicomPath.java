@@ -66,7 +66,8 @@ public enum DicomPath {
     DeviceUUIDByAnyUUID,
     DeviceByNameForWrite,
     DeviceByNameForRead,
-    AETransferCapabilities;
+    AETransferCapabilities,
+    AllDeviceNamesByPrimaryDeviceType;
 
     public static final Path TC_GROUPS_PATH = new Path("dicomConfigurationRoot","globalConfiguration","dcmTransferCapabilities");
     public static final Path CONFIG_ROOT_PATH = new Path("dicomConfigurationRoot");
@@ -78,6 +79,7 @@ public enum DicomPath {
     static {
         // search
         PATHS.put(/**************/AllAETitles, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE/*/dicomAETitle | /dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE/*/dcmAETitleAliases");
+        PATHS.put(AllDeviceNamesByPrimaryDeviceType, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomPrimaryDeviceType='{primaryDeviceType}']/dicomDeviceName");
 
         PATHS.put(/*******/DeviceNameByAEName, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[@name='{aeName}']]/dicomDeviceName");
         PATHS.put(/**/DeviceNameByAENameAlias, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[*/dcmAETitleAliases='{aeNameAlias}']]/dicomDeviceName");

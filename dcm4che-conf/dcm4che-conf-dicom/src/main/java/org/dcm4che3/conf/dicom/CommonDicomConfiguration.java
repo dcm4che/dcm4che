@@ -41,7 +41,6 @@ package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
-import org.dcm4che3.audit.ObjectFactory;
 import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
@@ -52,6 +51,7 @@ import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.BatchRunner.Batch;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.api.TypeSafeConfiguration;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.context.LoadingContext;
@@ -62,6 +62,7 @@ import org.dcm4che3.data.ValueSelector;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceInfo;
+import org.dcm4che3.net.DeviceType;
 import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
@@ -269,6 +270,65 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         }
     }
 
+    protected Device[] listDevices(String[] deviceNames) throws ConfigurationException {
+        if (deviceNames == null || deviceNames.length == 0) {
+            return new Device[0];
+        }
+
+        Device[] devices;
+        try {
+            List<Object> deviceConfigurationNodes = lowLevelConfig.getConfigurationNodes(Device.class,
+                        Arrays.stream(deviceNames)
+                                .map(DicomPath::devicePath)
+                                .toArray(Path[]::new));
+
+            if (deviceConfigurationNodes == null || deviceConfigurationNodes.isEmpty()) {
+                throw new ConfigurationNotFoundException("No Devices were found");
+            }
+
+            devices = deviceConfigurationNodes.stream()
+                    .map(deviceConfigurationNode -> {
+                        LoadingContext ctx = config.getContextFactory().newLoadingContext();
+                        return vitalizer.newConfiguredInstance((Map<String, Object>) deviceConfigurationNode, Device.class, ctx);
+                    })
+                    .toArray(Device[]::new);
+
+            // perform alternative TC init in case an extension is present
+            alternativeTCLoader.initGroupBasedTCs(devices);
+
+        } catch (RuntimeException e) {
+            throw new ConfigurationException("Configuration for devices cannot be loaded", e);
+        }
+
+        return devices;
+    }
+
+    @Override
+    public Device[] listAllDevices() throws ConfigurationException {
+        String[] deviceNames = listDeviceNames();
+        return listDevices(deviceNames);
+    }
+
+    @Override
+    public Device[] listDevices(DeviceType deviceType) throws ConfigurationException {
+        if (deviceType == null) {
+            return new Device[0];
+        }
+
+        String[] deviceNames = listDeviceNamesByPrimaryDeviceTypes(deviceType);
+        return listDevices(deviceNames);
+    }
+
+    @Override
+    public Device[] listDevices(DeviceType[] deviceTypes) throws ConfigurationException {
+        if (deviceTypes == null || deviceTypes.length == 0) {
+            return new Device[0];
+        }
+
+        String[] deviceNames = listDeviceNamesByPrimaryDeviceTypes(deviceTypes);
+        return listDevices(deviceNames);
+    }
+
     @Override
     public Device findDevice(String name, DicomConfigOptions options) throws ConfigurationException {
 
@@ -322,6 +382,24 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             throw new ConfigurationException("Error while getting list of device names", e);
         }
         return deviceNames.toArray(new String[deviceNames.size()]);
+    }
+
+    private String[] listDeviceNamesByPrimaryDeviceTypes(DeviceType... primaryDeviceTypes) throws ConfigurationException {
+        Set<String> deviceNames = new HashSet<>();
+        for (DeviceType primaryDeviceType : primaryDeviceTypes) {
+            if (primaryDeviceType == null) {
+                continue;
+            }
+
+            Iterator search = lowLevelConfig.search(DicomPath.AllDeviceNamesByPrimaryDeviceType
+                    .set("primaryDeviceType", primaryDeviceType.toString())
+                    .path());
+            while (search.hasNext()) {
+                deviceNames.add(search.next().toString());
+            }
+        }
+
+        return deviceNames.toArray(new String[0]);
     }
 
     @Override

@@ -47,6 +47,7 @@ import org.dcm4che3.conf.core.storage.SimpleCachingConfigurationDecorator;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.dcm4che3.conf.dicom.configclasses.SomeDeviceExtension;
 import org.dcm4che3.conf.dicom.misc.DeepEqualsDiffer;
+import org.dcm4che3.net.ExternalArchiveAEExtension;
 import org.dcm4che3.net.TCGroupConfigAEExtension;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.junit.Assert;
@@ -98,6 +99,7 @@ public class SimpleStorageTest {
         DicomConfigurationBuilder builder = DicomConfigurationBuilder.newConfigurationBuilder(System.getProperties());
         builder.registerDeviceExtension(HL7DeviceExtension.class);
         builder.registerAEExtension(TCGroupConfigAEExtension.class);
+        builder.registerAEExtension(ExternalArchiveAEExtension.class);
         builder.registerDeviceExtension(SomeDeviceExtension.class);
         builder.uuidIndexing();
         builder.extensionMerge(true);

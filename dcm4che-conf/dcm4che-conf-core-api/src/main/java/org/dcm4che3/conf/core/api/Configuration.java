@@ -40,6 +40,7 @@
 package org.dcm4che3.conf.core.api;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -109,6 +110,16 @@ public interface Configuration extends BatchRunner {
      * @throws ConfigurationException
      */
     Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException;
+
+    /**
+     * Loads configuration nodes for each specified path.
+     *
+     * @param configurableClass
+     * @param paths              References to multiple nodes
+     * @return configuration nodes or an empty {@link List}, if not found
+     * @throws ConfigurationException
+     */
+    List<Object> getConfigurationNodes(Class configurableClass, Path[] paths) throws ConfigurationException;
 
     /**
      * Tests if a node under the specified path exists.

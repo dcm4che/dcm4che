@@ -551,6 +551,8 @@ public class Transcoder implements Closeable {
             nullifyUnusedBits();
             bi = palette2rgb ? BufferedImageUtils.convertPalettetoRGB(originalBi, bi)
                     : ybr2rgb ? BufferedImageUtils.convertYBRtoRGB(originalBi, bi)
+                    : imageDescriptor.is16BitsAllocated8BitsStored()
+                    ? BufferedImageUtils.convertShortsToBytes(originalBi, bi) // workaround for JPEG codec issue
                     : originalBi;
             compressFrame(i);
         }

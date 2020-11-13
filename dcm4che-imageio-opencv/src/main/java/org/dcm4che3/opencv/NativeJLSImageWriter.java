@@ -41,6 +41,7 @@
 
 package org.dcm4che3.opencv;
 
+import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -136,6 +137,10 @@ class NativeJLSImageWriter extends ImageWriter {
                     LOGGER.warn("Force compression to JPEG-LS lossless as lossy is not adapted to signed data.");
                     jpeglsNLE = 0;
                     bitCompressed = 16; // Extend to bit allocated to avoid exception as negative values are treated as large positive values
+                }
+                // Specific case not well supported by jpeg and jpeg-ls encoder that reduce the stream to 8-bit
+                if(bitCompressed == 8 && renderedImage.getSampleModel().getTransferType() != DataBuffer.TYPE_BYTE){
+                  bitCompressed = 12;
                 }
 
                 int[] params = new int[16];

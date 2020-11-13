@@ -41,6 +41,7 @@
 
 package org.dcm4che3.opencv;
 
+import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -134,6 +135,10 @@ class NativeJPEGImageWriter extends ImageWriter {
                 if(signed && jpegParams.getPrediction() > 1) {
                     LOGGER.warn("Force JPEGLosslessNonHierarchical14 compression to 16-bit with signed data.");
                     bitCompressed = 16;
+                }
+                // Specific case not well supported by jpeg and jpeg-ls encoder that reduce the stream to 8-bit
+                if(bitCompressed == 8 && renderedImage.getSampleModel().getTransferType() != DataBuffer.TYPE_BYTE){
+                    bitCompressed = 12;
                 }
 
                 int[] params = new int[16];

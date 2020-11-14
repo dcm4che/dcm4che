@@ -98,8 +98,10 @@ public class PersonName {
                     if (cindex <= 4)
                         set(gindex, cindex, tk);
                     else if (lenient) {
-                        LOG.info("illegal PN: {} - subsumes {}th component in suffix", s, cindex + 1);
-                        set(gindex, 4, StringUtils.maskNull(get(gindex, 4), "") + ' ' + tk);
+                        if ((tk = trim(tk)) != null) {
+                            LOG.info("illegal PN: {} - subsumes {}th component in suffix", s, cindex + 1);
+                            set(gindex, 4, StringUtils.maskNull(get(gindex, 4), "") + ' ' + tk);
+                        }
                     } else
                         throw new IllegalArgumentException(s);
             }
@@ -121,13 +123,8 @@ public class PersonName {
         if (ss.length > 5)
             throw new IllegalArgumentException(s);
 
-        int cindex = 0;
-        do {
-            set(gindex, cindex, cindex < ss.length ? ss[cindex] : null);
-        } while (++cindex <= 4);
-        while (cindex < ss.length) {
-            LOG.info("illegal PN: {} - subsumes {}th component in suffix", s, cindex + 1);
-            set(gindex, 4, StringUtils.maskNull(get(gindex, 4), "") + ' ' +  ss[cindex]);
+        for (int cindex = 0; cindex < 5; cindex++) {
+            fields[gindex * 5 + cindex] = cindex < ss.length ? trim(ss[cindex]) : null;
         }
     }
 

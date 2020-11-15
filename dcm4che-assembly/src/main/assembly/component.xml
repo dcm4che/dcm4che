@@ -214,14 +214,14 @@
     <dependencySet>
       <outputDirectory>lib</outputDirectory>
       <includes>
-        <include>com.sun.media:clib_jiio</include>
+        <include>com.sun.media:clib_jiio:zip:osgi</include>
       </includes>
       <unpack>true</unpack>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>lib/linux-i686</outputDirectory>
+      <outputDirectory>lib/linux-x86</outputDirectory>
       <includes>
         <include>*:*:so:linux-x86:*</include>
       </includes>
@@ -229,7 +229,7 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>lib/linux-x86_64</outputDirectory>
+      <outputDirectory>lib/linux-x86-64</outputDirectory>
       <includes>
         <include>*:*:so:linux-x86-64:*</include>
       </includes>
@@ -237,7 +237,7 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>lib/macosx-x86_64</outputDirectory>
+      <outputDirectory>lib/macosx-x86-64</outputDirectory>
       <includes>
         <include>*:*:jnilib:macosx-x86-64:*</include>
       </includes>
@@ -245,7 +245,7 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>lib/win-i686</outputDirectory>
+      <outputDirectory>lib/windows-x86</outputDirectory>
       <includes>
         <include>*:*:dll:windows-x86:*</include>
       </includes>
@@ -253,7 +253,7 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>lib/win-x86_64</outputDirectory>
+      <outputDirectory>lib/windows-x86-64</outputDirectory>
       <includes>
         <include>*:*:dll:windows-x86-64:*</include>
       </includes>

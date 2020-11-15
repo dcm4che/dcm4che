@@ -60,9 +60,9 @@ if [ "x$JAVA_LIBRARY_PATH" = "x" ]; then
     if [ "x$PLATFORM" = "x" ]; then
         "$JAVA" -version 2>&1 | grep -q 64-Bit
         if [ $? -eq 0 ]; then
-            PLATFORM=linux-x86_64
+            PLATFORM=linux-x86-64
         else
-            PLATFORM=linux-i686
+            PLATFORM=linux-x86
         fi
     fi
     JAVA_LIBRARY_PATH=$DCM4CHE_HOME/lib/${PLATFORM}

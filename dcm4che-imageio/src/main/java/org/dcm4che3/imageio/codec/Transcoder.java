@@ -132,8 +132,6 @@ public class Transcoder implements Closeable {
 
     private DicomOutputStream dos;
 
-    private Attributes postPixelData;
-    
     private Handler handler;
 
     private ImageDescriptor imageDescriptor;
@@ -397,8 +395,8 @@ public class Transcoder implements Closeable {
             }
             initDicomOutputStream();
             writeDataset();
-        } else if (postPixelData != null)
-            dos.writeDataset(null, postPixelData);
+        } else
+            dataset.writePostPixelDataTo(dos);
     }
 
     private final DicomInputHandler dicomInputHandler = new DicomInputHandler() {
@@ -413,12 +411,9 @@ public class Transcoder implements Closeable {
                     imageDescriptor = new ImageDescriptor(attrs, bitsCompressed);
                     initDicomOutputStream();
                     processPixelData();
-                    postPixelData = new Attributes(dis.bigEndian());
                 }
             } else {
                 dis.readValue(dis, attrs);
-                if (postPixelData != null && dis.level() == 0)
-                    postPixelData.addSelected(attrs, attrs.getPrivateCreator(tag), tag);
             }
         }
 

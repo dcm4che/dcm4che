@@ -2930,6 +2930,23 @@ public class Attributes implements Serializable {
         }
     }
 
+    public void writePostPixelDataTo(DicomOutputStream out)
+            throws IOException {
+        if (isEmpty() || tags[0] >= 0 && tags[size-1] <= Tag.PixelData)
+            return;
+
+        SpecificCharacterSet cs = getSpecificCharacterSet();
+        int indexPostPixelData = indexOf(Tag.PixelData) + 1;
+        if (indexPostPixelData < 0)
+            indexPostPixelData = -indexPostPixelData;
+
+        writeTo(out, cs, indexPostPixelData, size, 0);
+        if (tags[0] < 0) {
+            int index0 = -(1 + indexOf(0));
+            writeTo(out, cs, 0, index0, 0);
+        }
+    }
+
      public void writeItemTo(DicomOutputStream out) throws IOException {
          DicomEncodingOptions encOpts = out.getEncodingOptions();
          int len = getEncodedItemLength(encOpts, out.isExplicitVR());

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2020d - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2020e - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -13270,7 +13270,7 @@
         <para xml:id="para_7046e441-c86c-4e31-917d-aa42236003ba">User-Identity-Type</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_276328ba-b1b2-4841-b8d1-612735e34600">Field value shall be in the range 1 to 4 with the following meanings:</para>
+        <para xml:id="para_276328ba-b1b2-4841-b8d1-612735e34600">Field value shall be in the range 1 to 5 with the following meanings:</para>
         <para xml:id="para_4e42d526-3c88-415e-ab36-ace6943a17ee">1 - Username as a string in UTF-8</para>
         <para xml:id="para_3f5dda40-8c82-4a32-8b37-43ecd740a261">2 - Username as a string in UTF-8 and passcode</para>
         <para xml:id="para_7279eb99-7d15-4c8c-9493-9d33ce1e16f7">3 - Kerberos Service ticket</para>

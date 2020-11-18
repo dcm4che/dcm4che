@@ -1,31 +1,20 @@
 package org.dcm4che3.io;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileInputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Sequence;
+import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.junit.Test;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class DicomInputStreamTest {
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     public void testPart10ExplicitVR() throws Exception {
@@ -62,7 +51,7 @@ public class DicomInputStreamTest {
         assertEquals(((BulkData) pixelData).uri, item.getString(Tag.RetrieveURL));
     }
 
-    private static Attributes readFromResource(String name,
+    private static Attributes readFromResource(String name, 
             IncludeBulkData includeBulkData)
             throws Exception {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -75,33 +64,6 @@ public class DicomInputStreamTest {
         } finally {
             in.close();
         }
-    }
-
-    @Test
-    public void readValueExplicitVR() throws Exception {
-
-        File smallBlob = temporaryFolder.newFile("smallBlob");
-
-        byte[] expectedBytes = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-
-        try (DicomOutputStream dicomOutputStream = new DicomOutputStream(smallBlob)) {
-
-            dicomOutputStream.writeAttribute(Tag.PixelData, VR.OB, expectedBytes);
-
-        }
-
-        try (FileInputStream fileInputStream = new FileInputStream(smallBlob)) {
-
-            DicomInputStream dicomInputStream = new DicomInputStream(fileInputStream, UID.ExplicitVRLittleEndian);
-
-            dicomInputStream.readHeader();
-
-            byte[] actualBytes = dicomInputStream.readValue();
-
-            Assert.assertArrayEquals(expectedBytes, actualBytes);
-
-        }
-
     }
 
 }

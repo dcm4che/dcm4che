@@ -125,7 +125,7 @@ public final class ICCProfile {
                 return isCS_sRGB(bi) ? BufferedImageUtils.replaceColorModel(bi, srgb.colorModel) : bi;
             }
         },
-        srgb("sRGB.pf") {
+        srgb("sRGB.icc") {
             @Override
             protected BufferedImage convertColor(BufferedImage bi) {
                 return isCS_sRGB(bi)
@@ -133,8 +133,8 @@ public final class ICCProfile {
                         : BufferedImageUtils.convertColor(bi, srgb.colorModel);
             }
         },
-        adobergb("adobeRGB.pf"),
-        rommrgb("rommRGB.pf");
+        adobergb("adobeRGB.icc"),
+        rommrgb("rommRGB.icc");
 
         private static final ColorModel CM_sRGB = ColorModelFactory.createRGBColorModel(
                 8, DataBuffer.TYPE_BYTE, ColorSpace.getInstance(ColorSpace.CS_sRGB));

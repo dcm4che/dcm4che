@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
@@ -68,7 +67,6 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
-import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -782,14 +780,8 @@ public class DicomInputStream extends FilterInputStream
 
         } catch (IOException e) {
 
-            if (Objects.isNull(e.getMessage()) && Objects.nonNull(e.getCause())) {
-
-                    throw new IOException(String.format("IOException during read of %s #%d @ %d",
-                            TagUtils.toString(tag), length, tagPos), e.getCause());
-
-            }
-
-            throw e;
+            throw new IOException(String.format("IOException during read of %s #%d @ %d",
+                    TagUtils.toString(tag), length, tagPos), e.getCause());
 
         }
 

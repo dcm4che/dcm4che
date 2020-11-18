@@ -768,7 +768,7 @@ public class DicomInputStream extends FilterInputStream
                 throw new EOFException("DicomInputStream length is less than zero");
             }
 
-            if (allocateLimit > 0 && length > allocateLimit) {
+            if (length > allocateLimit) {
                 LOG.warn("Expected value length {} exceeds allocate limit {}", length, allocateLimit);
             }
 

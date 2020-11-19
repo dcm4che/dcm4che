@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
@@ -68,7 +67,6 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
-import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,6 +163,8 @@ public class DicomInputStream extends FilterInputStream
     }
 
     /** 
+     * Returns the limit of initial allocated memory for element values.
+     * 
      * By default, the limit is set to 67108864 (64 MiB).
      *
      * @return Limit of initial allocated memory for value or -1 for no limit
@@ -175,9 +175,22 @@ public class DicomInputStream extends FilterInputStream
     }
 
     /**
+     * Sets the limit of initial allocated memory for element values. If the
+     * value length exceeds the limit, a byte array with the specified size is
+     * allocated. If the array can filled with bytes read from this
+     * <code>DicomInputStream</code>, the byte array is reallocated with
+     * twice the previous length and filled again. That continues until
+     * the twice of the previous length exceeds the actual value length. Then
+     * the byte array is reallocated with actual value length and filled with
+     * the remaining bytes for the value from this <code>DicomInputStream</code>.
+     * 
+     * The rational of the incrementing allocation of byte arrays is to avoid
+     * OutOfMemoryErrors on parsing corrupted DICOM streams.
+     * 
      * By default, the limit is set to 67108864 (64 MiB).
      * 
      * @param allocateLimit limit of initial allocated memory or -1 for no limit
+     * 
      */
     public final void setAllocateLimit(int allocateLimit) {
         this.allocateLimit = allocateLimit;
@@ -763,36 +776,27 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public byte[] readValue() throws IOException {
-
+        int valLen = length;
         try {
-
-            if (length < 0) {
-                throw new EOFException("DicomInputStream length is less than zero");
+            if (valLen < 0)
+                throw new EOFException(); // assume InputStream length < 2 GiB
+            int allocLen = allocateLimit >= 0
+                    ? Math.min(valLen, allocateLimit)
+                    : valLen;
+            byte[] value = new byte[allocLen];
+            readFully(value, 0, allocLen);
+            while (allocLen < valLen) {
+                int newLength = Math.min(valLen, allocLen << 1);
+                value = Arrays.copyOf(value, newLength);
+                readFully(value, allocLen, newLength - allocLen);
+                allocLen = newLength;
             }
-
-            if (allocateLimit > 0 && length > allocateLimit) {
-                LOG.warn("Expected value length {} exceeds allocate limit {}", length, allocateLimit);
-            }
-
-            byte[] value = new byte[length];
-
-            readFully(value, 0, length);
-
             return value;
-
         } catch (IOException e) {
-
-            if ((Objects.isNull(e.getMessage()) || e.getMessage().trim().equals("")) && Objects.nonNull(e.getCause())) {
-
-                    throw new IOException(String.format("IOException during read of %s #%d @ %d",
-                            TagUtils.toString(tag), length, tagPos), e.getCause());
-
-            }
-
+            LOG.warn("IOException during read of {} #{} @ {}",
+                    TagUtils.toString(tag), length, tagPos, e);
             throw e;
-
         }
-
     }
 
     private void switchTransferSyntax(String tsuid) throws IOException {

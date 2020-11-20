@@ -3056,15 +3056,62 @@ public class Attributes implements Serializable {
         
     }
 
+    /**
+     * Creates DICOM File Meta Information for this <i>Data Set</i> with given <i>Transfer Syntax UID (0002,0010)</i>,
+     * including optional <i>Implementation Version Name (0002,0013)</i>.
+     *
+     * @param tsuid <i>Transfer Syntax UID (0002,0010)</i>
+     * @return created DICOM File Meta Information
+     */
     public Attributes createFileMetaInformation(String tsuid) {
+        return createFileMetaInformation(tsuid, true);
+    }
+
+    /**
+     * Creates DICOM File Meta Information for this <i>Data Set</i> with given <i>Transfer Syntax UID (0002,0010)</i>.
+     *
+     * @param tsuid <i>Transfer Syntax UID (0002,0010)</i>
+     * @param includeImplementationVersionName <code>true</code> if the optional
+     *                                         <i>Implementation Version Name (0002,0013)</i> is to be included;
+     *                                         <code>false</code> if it is to be omitted.
+     * @return created DICOM File Meta Information
+     */
+    public Attributes createFileMetaInformation(String tsuid, boolean includeImplementationVersionName) {
         return createFileMetaInformation(
                 getString(Tag.SOPInstanceUID, null),
                 getString(Tag.SOPClassUID, null),
-                tsuid);
+                tsuid,
+                includeImplementationVersionName);
     }
 
-    public static Attributes createFileMetaInformation(String iuid,
-            String cuid, String tsuid) {
+    /**
+     * Creates DICOM File Meta Information with given <i>Media Storage SOP Instance UID (0002,0013)</i>,
+     * <i>Media Storage SOP Class UID (0002,0012)</i> and <i>Transfer Syntax UID (0002,0010)</i>,
+     * including optional <i>Implementation Version Name (0002,0013)</i>.
+     *
+     * @param iuid <i>Media Storage SOP Instance UID (0002,0013)</i>
+     * @param cuid <i>Media Storage SOP Class UID (0002,0012)</i>
+     * @param tsuid <i>Transfer Syntax UID (0002,0010)</i>
+     * @return created DICOM File Meta Information
+     */
+    public static Attributes createFileMetaInformation(String iuid, String cuid, String tsuid) {
+        return createFileMetaInformation(iuid, cuid, tsuid, true);
+    }
+
+    /**
+     * Creates DICOM File Meta Information with given <i>Media Storage SOP Instance UID (0002,0013)</i>,
+     * <i>Media Storage SOP Class UID (0002,0012)</i> and <i>Transfer Syntax UID (0002,0010)</i>.
+     *
+     * @param iuid <i>Media Storage SOP Instance UID (0002,0013)</i>
+     * @param cuid <i>Media Storage SOP Class UID (0002,0012)</i>
+     * @param tsuid <i>Transfer Syntax UID (0002,0010)</i>
+     * @param includeImplementationVersionName <code>true</code> if the optional
+     *                                         <i>Implementation Version Name (0002,0013)</i> is to be included;
+     *                                         <code>false</code> if it is to be omitted.
+     * @return created DICOM File Meta Information
+     */
+    public static Attributes createFileMetaInformation(String iuid, String cuid, String tsuid,
+            boolean includeImplementationVersionName) {
         if (iuid == null || iuid.isEmpty())
             throw new IllegalArgumentException("Missing SOP Instance UID");
         if (cuid == null || cuid.isEmpty())
@@ -3080,8 +3127,9 @@ public class Attributes implements Serializable {
         fmi.setString(Tag.TransferSyntaxUID, VR.UI, tsuid);
         fmi.setString(Tag.ImplementationClassUID, VR.UI,
                 Implementation.getClassUID());
-        fmi.setString(Tag.ImplementationVersionName, VR.SH,
-                Implementation.getVersionName());
+        if (includeImplementationVersionName)
+            fmi.setString(Tag.ImplementationVersionName, VR.SH,
+                    Implementation.getVersionName());
         return fmi;
     }
 

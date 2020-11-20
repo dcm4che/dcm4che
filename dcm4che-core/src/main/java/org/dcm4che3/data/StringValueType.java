@@ -266,12 +266,8 @@ enum StringValueType implements ValueType {
         }
 
         @Override
-        public int toInt(Object val, boolean bigEndian, int valueIndex,
-                int defVal) {
-            long[] is = (long[]) val;
-            return valueIndex < is.length && is[valueIndex] != Integer.MIN_VALUE
-                    ? (int) is[valueIndex]
-                    : defVal;
+        public int toInt(Object val, boolean bigEndian, int valueIndex, int defVal) {
+            return (int) toLong(val, bigEndian, valueIndex, defVal);
         } 
 
         @Override
@@ -285,7 +281,15 @@ enum StringValueType implements ValueType {
                 return Value.NULL;
 
             return ArrayUtils.intsToLong(is);
-        } 
+        }
+
+        @Override
+        public long toLong(Object val, boolean bigEndian, int valueIndex, long defVal) {
+            long[] is = (long[]) val;
+            return valueIndex < is.length && is[valueIndex] != Integer.MIN_VALUE
+                    ? is[valueIndex]
+                    : defVal;
+        }
 
         @Override
         public long[] toLongs(Object val, boolean bigEndian) {

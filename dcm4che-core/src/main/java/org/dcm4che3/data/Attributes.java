@@ -3279,7 +3279,7 @@ public class Attributes implements Serializable {
         DicomInputStream din = new DicomInputStream(in, 
                 bigEndian ? UID.ExplicitVRBigEndian
                           : UID.ExplicitVRLittleEndian);
-        din.readAttributes(this, -1, Tag.ItemDelimitationItem);
+        din.readItemValue(this, -1);
     }
 
     public ValidationResult validate(IOD iod) {

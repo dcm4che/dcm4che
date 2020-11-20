@@ -385,7 +385,7 @@ public class Transcoder implements Closeable {
 
     public void transcode(Handler handler) throws IOException {
         this.handler = handler;
-        dis.readAttributes(dataset, -1, -1);
+        dis.readAllAttributes(dataset);
 
         if (dos == null) {
             if (compressor != null) { // Adjust destination Transfer Syntax if no pixeldata

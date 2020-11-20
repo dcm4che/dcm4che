@@ -735,7 +735,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
                     epdiis = new EncapsulatedPixelDataImageInputStream(dis, imageDescriptor);
             } else {
                 try {
-                    dis.readAttributes(ds, -1, -1);
+                    dis.readAllAttributes(ds);
                 } catch (EOFException e) {};
             }
             setMetadata(new DicomMetaData(fmi, ds));
@@ -756,7 +756,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
             pixelDataLength = dis.length();            
         } else {
             try {
-                dis.readAttributes(ds, -1, -1);
+                dis.readAttributes(ds, -1, o -> false);
             } catch (EOFException e) {};
         }
         setMetadata(new DicomMetaData(fmi, ds));

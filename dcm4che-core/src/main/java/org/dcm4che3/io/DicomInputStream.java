@@ -38,29 +38,22 @@
 
 package org.dcm4che3.io;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.zip.Inflater;
-import java.util.zip.InflaterInputStream;
-
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.ElementDictionary;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.ItemPointer;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.VR;
+import org.dcm4che3.data.*;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -468,15 +461,23 @@ public class DicomInputStream extends FilterInputStream
             throw new IllegalStateException(
                     "bigEndian=" + bigEndian + ", explicitVR=" + explicitVR );
         Attributes attrs = new Attributes(9);
-        readAttributes(attrs, -1, -1);
+        readAllAttributes(attrs);
         return attrs;
     }
 
+    public void readAllAttributes(Attributes attrs) throws IOException {
+        readAttributes(attrs, -1, o -> false);
+    }
+
     public Attributes readDataset(int len, int stopTag) throws IOException {
+        return readDataset(len, tagEqualOrGreater(stopTag));
+    }
+
+    public Attributes readDataset(int len, Predicate<DicomInputStream> stopPredicate) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian, 64);
-        readAttributes(attrs, len, stopTag);
+        readAttributes(attrs, len, stopPredicate);
         attrs.trimToSize();
         handler.endDataset(this);
         return attrs;
@@ -516,10 +517,17 @@ public class DicomInputStream extends FilterInputStream
         return attrs;
     }
 
-    public void readAttributes(Attributes attrs, int len, int stopTag)
+    public void readAttributes(Attributes attrs, int len, int stopTag) throws IOException {
+        readAttributes(attrs, len, tagEqualOrGreater(stopTag));
+    }
+
+    private static Predicate<DicomInputStream> tagEqualOrGreater(int stopTag) {
+        return stopTag != -1 ? o -> Integer.compareUnsigned(o.tag, stopTag) >= 0 : o -> false;
+    }
+
+    public void readAttributes(Attributes attrs, int len, Predicate<DicomInputStream> stopPredicate)
             throws IOException {
         boolean undeflen = len == -1;
-        boolean hasStopTag = stopTag != -1;
         long endPos =  pos + (len & 0xffffffffL);
         while (undeflen || this.pos < endPos) {
             try {
@@ -529,7 +537,7 @@ public class DicomInputStream extends FilterInputStream
                     break;
                 throw e;
             }
-            if (hasStopTag && tag == stopTag)
+            if (stopPredicate.test(this))
                 break;
             if (vr != null) {
                 if (vr == VR.UN) {
@@ -623,7 +631,7 @@ public class DicomInputStream extends FilterInputStream
         }
         Attributes attrs = new Attributes(seq.getParent().bigEndian());
         seq.add(attrs);
-        readAttributes(attrs, length, Tag.ItemDelimitationItem);
+        readItemValue(attrs, length);
         attrs.trimToSize();
     }
 
@@ -761,9 +769,13 @@ public class DicomInputStream extends FilterInputStream
                     + TagUtils.toString(tag) + " #" + length + " @ " + pos);
         Attributes attrs = new Attributes(bigEndian);
         attrs.setItemPosition(tagPos);
-        readAttributes(attrs, length, Tag.ItemDelimitationItem);
+        readItemValue(attrs, length);
         attrs.trimToSize();
         return attrs;
+    }
+
+    public void readItemValue(Attributes attrs, int length) throws IOException {
+        readAttributes(attrs, length, dis -> dis.tag == Tag.ItemDelimitationItem);
     }
 
     private void readFragments(Attributes attrs, int fragsTag, VR vr)

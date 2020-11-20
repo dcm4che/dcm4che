@@ -756,7 +756,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
             pixelDataLength = dis.length();            
         } else {
             try {
-                dis.readAttributes(ds, -1, o -> false);
+                dis.readAllAttributes(ds);
             } catch (EOFException e) {};
         }
         setMetadata(new DicomMetaData(fmi, ds));

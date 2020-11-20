@@ -469,6 +469,10 @@ public class DicomInputStream extends FilterInputStream
         readAttributes(attrs, -1, o -> false);
     }
 
+    public Attributes readDataset() throws IOException {
+        return readDataset(-1, o -> false);
+    }
+
     public Attributes readDataset(int len, int stopTag) throws IOException {
         return readDataset(len, tagEqualOrGreater(stopTag));
     }

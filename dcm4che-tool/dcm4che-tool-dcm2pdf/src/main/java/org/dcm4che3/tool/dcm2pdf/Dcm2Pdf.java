@@ -204,7 +204,7 @@ public class Dcm2Pdf {
 
     private void convert(Path src, Path dest) {
         try (DicomInputStream dis = new DicomInputStream(src.toFile())) {
-            Attributes attributes = dis.readDataset(-1, -1);
+            Attributes attributes = dis.readDataset();
             String sopCUID = attributes.getString(Tag.SOPClassUID);
             if (!sopCUID.equals(fileType.getCuid())) {
                 LOG.info("DICOM file {} with {} SOP Class cannot be converted to file type {}",

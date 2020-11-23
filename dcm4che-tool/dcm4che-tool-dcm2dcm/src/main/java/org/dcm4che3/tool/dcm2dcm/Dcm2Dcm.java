@@ -367,7 +367,7 @@ public class Dcm2Dcm {
         try {
             dis.setIncludeBulkData(IncludeBulkData.URI);
             fmi = dis.readFileMetaInformation();
-            dataset = dis.readDataset(-1, -1);
+            dataset = dis.readDataset();
         } finally {
             dis.close();
         }

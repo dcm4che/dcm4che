@@ -726,7 +726,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
 
         if (dis != null) {
             Attributes fmi = dis.readFileMetaInformation();
-            Attributes ds = dis.readDataset(-1, Tag.PixelData);
+            Attributes ds = dis.readDatasetUntilPixelData();
             if (dis.tag() == Tag.PixelData) {
                 imageDescriptor = new ImageDescriptor(ds);
                 pixelDataVR = dis.vr();
@@ -749,7 +749,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         dis.setBulkDataDescriptor(BulkDataDescriptor.PIXELDATA);
         dis.setURI("java:iis"); // avoid copy of pixeldata to temporary file
         Attributes fmi = dis.readFileMetaInformation();
-        Attributes ds = dis.readDataset(-1, Tag.PixelData);
+        Attributes ds = dis.readDatasetUntilPixelData();
         if( dis.tag() == Tag.PixelData ) {
             imageDescriptor = new ImageDescriptor(ds);
             pixelDataVR = dis.vr();
@@ -939,7 +939,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     }
     
     private Attributes readPostAttr(DicomInputStream dis) throws IOException {
-        Attributes postAttr = dis.readDataset(-1, -1);
+        Attributes postAttr = dis.readDataset();
         postAttr.addAll(metadata.getAttributes());
         metadata = new DicomMetaData(metadata.getFileMetaInformation(), postAttr);
         return postAttr;

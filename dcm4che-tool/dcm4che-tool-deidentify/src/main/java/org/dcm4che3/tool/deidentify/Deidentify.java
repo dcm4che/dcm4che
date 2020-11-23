@@ -182,7 +182,7 @@ public class Deidentify {
         try (DicomInputStream dis = new DicomInputStream(src)) {
             dis.setIncludeBulkData(IncludeBulkData.URI);
             fmi = dis.readFileMetaInformation();
-            dataset = dis.readDataset(-1, -1);
+            dataset = dis.readDataset();
         }
         deidentifier.deidentify(dataset);
         if (fmi != null)

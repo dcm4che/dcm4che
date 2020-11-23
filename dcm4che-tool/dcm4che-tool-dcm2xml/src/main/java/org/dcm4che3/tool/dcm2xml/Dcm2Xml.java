@@ -305,7 +305,7 @@ public class Dcm2Xml {
         saxWriter.setIncludeKeyword(includeKeyword);
         saxWriter.setIncludeNamespaceDeclaration(includeNamespaceDeclaration);
         dis.setDicomInputHandler(saxWriter);
-        dis.readDataset(-1, -1);
+        dis.readDataset();
     }
 
     private TransformerHandler getTransformerHandler()

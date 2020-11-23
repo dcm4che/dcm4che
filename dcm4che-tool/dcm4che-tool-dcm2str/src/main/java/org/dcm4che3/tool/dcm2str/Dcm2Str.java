@@ -114,7 +114,7 @@ public class Dcm2Str extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
         try (DicomInputStream dis = new DicomInputStream(path.toFile())) {
-            Attributes dataset = dis.readDataset(-1, -1);
+            Attributes dataset = dis.readDataset();
             dataset.addAll(cliAttrs);
             System.out.println(format.format(dataset));
         } catch (IOException e) {

@@ -224,7 +224,7 @@ public class WadoWS {
         if (cl.hasOption("out-dir"))
             wadoWS.setOutputDirectory(new File(cl.getOptionValue("out-dir")));
         kosAttr = cl.hasOption("f") 
-                ? new DicomInputStream(new FileInputStream(new File(cl.getOptionValue("f")))).readDataset(-1, -1) 
+                ? new DicomInputStream(new FileInputStream(new File(cl.getOptionValue("f")))).readDataset()
                 : toAttributes(cl.getOptionValue("study"));
     }
 

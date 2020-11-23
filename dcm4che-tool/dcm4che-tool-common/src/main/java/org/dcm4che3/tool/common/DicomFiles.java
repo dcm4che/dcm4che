@@ -105,7 +105,7 @@ public abstract class DicomFiles {
                 in.setIncludeBulkData(IncludeBulkData.NO);
                 Attributes fmi = in.readFileMetaInformation();
                 long dsPos = in.getPosition();
-                Attributes ds = in.readDataset(-1, Tag.PixelData);
+                Attributes ds = in.readDatasetUntilPixelData();
                 if (fmi == null || !fmi.containsValue(Tag.TransferSyntaxUID)
                         || !fmi.containsValue(Tag.MediaStorageSOPClassUID)
                         || !fmi.containsValue(Tag.MediaStorageSOPInstanceUID))

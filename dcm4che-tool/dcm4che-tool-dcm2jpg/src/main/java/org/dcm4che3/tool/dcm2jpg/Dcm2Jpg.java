@@ -436,7 +436,7 @@ public class Dcm2Jpg {
             return null;
         DicomInputStream dis = new DicomInputStream(f);
         try {
-            return dis.readDataset(-1, -1);
+            return dis.readDataset();
         } finally {
             SafeClose.close(dis);
         }

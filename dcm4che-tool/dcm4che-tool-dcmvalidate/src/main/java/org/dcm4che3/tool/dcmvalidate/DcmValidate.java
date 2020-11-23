@@ -113,7 +113,7 @@ public class DcmValidate {
         try {
             System.out.print("Validate: " + file + " ... ");
             dis = new DicomInputStream(file);
-            Attributes attrs = dis.readDataset(-1, -1);
+            Attributes attrs = dis.readDataset();
             ValidationResult result = attrs.validate(iod);
             if (result.isValid())
                 System.out.println("OK");

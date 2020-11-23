@@ -257,7 +257,7 @@ public class Dcm2Json {
             jsonWriter.setJsonType(VR.UV, JsonValue.ValueType.NUMBER);
         }
         dis.setDicomInputHandler(jsonWriter);
-        dis.readDataset(-1, -1);
+        dis.readDataset();
         jsonGen.flush();
     }
 

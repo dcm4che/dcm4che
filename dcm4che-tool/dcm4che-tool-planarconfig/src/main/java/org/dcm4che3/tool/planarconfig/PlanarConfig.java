@@ -238,7 +238,7 @@ public class PlanarConfig implements Closeable {
             try (DicomInputStream is = new DicomInputStream(file)) {
                 is.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
                 is.setDicomInputHandler(writePlanarConfiguration);
-                dataset = is.readDataset(-1, -1);
+                dataset = is.readDataset();
             }
             VR.Holder vr = new VR.Holder();
             Object value = dataset.getValue(Tag.PixelData, vr);

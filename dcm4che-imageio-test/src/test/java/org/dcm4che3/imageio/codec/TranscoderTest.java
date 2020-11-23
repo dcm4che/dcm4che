@@ -205,7 +205,7 @@ public class TranscoderTest {
 
     private long jpegPos(File ofile) throws IOException {
         try (DicomInputStream dis = new DicomInputStream(ofile)) {
-            dis.readDataset(-1, Tag.PixelData);
+            dis.readDatasetUntilPixelData();
             return dis.getPosition() + 16;
         }
     }

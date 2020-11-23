@@ -399,7 +399,7 @@ public class DcmQRSCP {
         DicomInputStream in = new DicomInputStream(file);
         try {
             in.setIncludeBulkData(IncludeBulkData.NO);
-            return in.readDataset(-1, Tag.PixelData);
+            return in.readDatasetUntilPixelData();
         } finally {
             SafeClose.close(in);
         }

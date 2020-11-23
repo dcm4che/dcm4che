@@ -83,7 +83,7 @@ public class IODTest {
     private static Attributes readDataset(String name)
             throws Exception {
         try (DicomInputStream in = new DicomInputStream(new File("target/test-data/" + name))) {
-            return in.readDataset(-1, -1);
+            return in.readDataset();
         }
     }
 }

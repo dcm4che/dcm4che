@@ -504,7 +504,7 @@ class PDUDecoder extends PDVInputStream {
     public Attributes readDataset(String tsuid) throws IOException {
         DicomInputStream in = new DicomInputStream(this, tsuid);
         try {
-            return in.readDataset(-1, -1);
+            return in.readDataset();
         } finally {
             SafeClose.close(in);
         }

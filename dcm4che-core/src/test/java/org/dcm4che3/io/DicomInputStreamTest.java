@@ -59,7 +59,7 @@ public class DicomInputStreamTest {
             in.setIncludeBulkData(IncludeBulkData.URI);
             in.setURI(null); // force spooling
             in.setConcatenateBulkDataFiles(false);
-            pixeldata = in.readDataset(-1, -1).getValue(Tag.PixelData);
+            pixeldata = in.readDataset().getValue(Tag.PixelData);
             bulkDataFiles = in.getBulkDataFiles();
         }
         try {
@@ -82,7 +82,7 @@ public class DicomInputStreamTest {
     private static Attributes readFrom(String name, IncludeBulkData includeBulkData) throws Exception {
         try ( DicomInputStream in = new DicomInputStream(new File("target/test-data/" + name))) {
             in.setIncludeBulkData(includeBulkData);
-            return in.readDataset(-1, -1);
+            return in.readDataset();
         }
     }
 
@@ -90,7 +90,7 @@ public class DicomInputStreamTest {
     public void testNoOutOfMemoryErrorOnInvalidLength() throws IOException {
         byte[] b = { 8, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 'e', 'v', 'i', 'l', 'l', 'e', 'n', 'g', 'h' };
         try ( DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b))) {
-            in.readDataset(-1, -1);
+            in.readDataset();
         }
     }
 }

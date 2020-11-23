@@ -310,7 +310,7 @@ public class TestDicomImageReader {
         Attributes attrs;
         try {
             dis.setIncludeBulkData(includeBulkData);
-            attrs = dis.readDataset(-1, -1);
+            attrs = dis.readDataset();
         } finally {
             SafeClose.close(dis);
         }

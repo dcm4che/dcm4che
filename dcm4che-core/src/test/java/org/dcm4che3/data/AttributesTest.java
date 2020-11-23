@@ -572,7 +572,7 @@ public class AttributesTest {
             in.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
             in.setBulkDataDescriptor(new BasicBulkDataDescriptor().excludeDefaults().addTag(TAGS));
             in.setConcatenateBulkDataFiles(true);
-            Attributes b = in.readDataset(-1, -1);
+            Attributes b = in.readDataset();
             for (int tag : TAGS) {
                 assertTrue(b.getValue(tag) instanceof BulkData);
             }

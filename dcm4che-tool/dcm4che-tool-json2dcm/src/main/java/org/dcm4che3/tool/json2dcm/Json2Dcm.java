@@ -355,7 +355,7 @@ public class Json2Dcm {
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);
         dis.setConcatenateBulkDataFiles(catBlkFiles);
-        dataset = dis.readDataset(-1, -1);
+        dataset = dis.readDataset();
         fmi = dis.getFileMetaInformation();
         bulkDataFiles = dis.getBulkDataFiles();
     }

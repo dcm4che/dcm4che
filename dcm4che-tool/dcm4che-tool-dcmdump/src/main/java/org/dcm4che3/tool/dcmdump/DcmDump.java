@@ -84,7 +84,7 @@ public class DcmDump implements DicomInputHandler {
 
     public void parse(DicomInputStream dis) throws IOException {
         dis.setDicomInputHandler(this);
-        dis.readDataset(-1, -1);
+        dis.readDataset();
     }
 
     @Override

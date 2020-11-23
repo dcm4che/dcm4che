@@ -51,7 +51,7 @@ public class DicomOutputStreamTest {
     private Attributes readAttributes() throws IOException {
         DicomInputStream in = new DicomInputStream(file);
         try {
-            return in.readDataset(-1, -1);
+            return in.readDataset();
         } finally {
             in.close();
         }

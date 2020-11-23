@@ -78,10 +78,10 @@ class RetrieveTaskImpl extends BasicRetrieveTask {
         try {
             if (withoutBulkData) {
                 in.setIncludeBulkData(IncludeBulkData.NO);
-                attrs = in.readDataset(-1, Tag.PixelData);
+                attrs = in.readDatasetUntilPixelData();
             } else {
                 in.setIncludeBulkData(IncludeBulkData.URI);
-                attrs = in.readDataset(-1, -1);
+                attrs = in.readDataset();
             }
         } finally {
             SafeClose.close(in);

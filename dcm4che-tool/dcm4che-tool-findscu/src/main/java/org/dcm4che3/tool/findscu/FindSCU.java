@@ -467,7 +467,7 @@ public class FindSCU {
         try {
             attrs = fileExt.equals("xml")
                     ? SAXReader.parse(filePath)
-                    : new DicomInputStream(f).readDataset(-1, -1);
+                    : new DicomInputStream(f).readDataset();
             if (inFilter != null) {
                 attrs = new Attributes(inFilter.length + 1);
                 attrs.addSelected(attrs, inFilter);

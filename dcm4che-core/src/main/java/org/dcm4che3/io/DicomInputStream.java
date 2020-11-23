@@ -473,6 +473,11 @@ public class DicomInputStream extends FilterInputStream
         return readDataset(-1, o -> false);
     }
 
+    public Attributes readDatasetUntilPixelData() throws IOException {
+        return readDataset(-1, o -> o.tag == Tag.PixelData);
+    }
+
+    @Deprecated
     public Attributes readDataset(int len, int stopTag) throws IOException {
         return readDataset(len, tagEqualOrGreater(stopTag));
     }

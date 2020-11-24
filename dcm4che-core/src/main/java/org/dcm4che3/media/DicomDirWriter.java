@@ -108,7 +108,7 @@ public class DicomDirWriter extends DicomDirReader {
             if (seqLen > 0)
                 this.nextRecordPos += seqLen;
             else
-                this.nextRecordPos = (int) (raf.length() - 12); 
+                this.nextRecordPos = (int) (raf.length() - 8);
         }
         updateDirInfoHeader();
     }

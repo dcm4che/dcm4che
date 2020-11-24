@@ -70,7 +70,7 @@ public class MultipartInputStream extends FilterInputStream {
 
     @Override
     public int read() throws IOException {
-        return isBoundary() ? -1 : buffer[rpos++];
+        return isBoundary() ? -1 : (buffer[rpos++] & 0xff);
     }
 
     @Override

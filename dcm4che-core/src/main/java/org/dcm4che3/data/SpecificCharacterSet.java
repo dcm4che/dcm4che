@@ -132,21 +132,18 @@ public class SpecificCharacterSet {
         }
 
         public static Codec forCode(String code) {
-            return forCode(code, SpecificCharacterSet.DEFAULT.codecs[0]);
+            return forCode(code, true);
         }
 
-        private static Codec forCodeChecked(String code) {
-            Codec codec = forCode(code, null);
-            if (codec == null)
-                throw new IllegalArgumentException("No such Specific Character Set Code: " + code);
-            return codec;
+        private static Codec forCode(String code, boolean lenient) {
+            return forCode(code, lenient, SpecificCharacterSet.DEFAULT.codecs[0]);
         }
 
-        private static Codec forCode(String code, Codec defCodec) {
+        private static Codec forCode(String code, boolean lenient, Codec defCodec) {
             switch(code != null ? code : "") {
                 case "":
                 case "ISO 2022 IR 6":
-                    return SpecificCharacterSet.DEFAULT.codecs[0];
+                    return defCodec;
                 case "ISO_IR 100":
                 case "ISO 2022 IR 100":
                     return Codec.ISO_8859_1;
@@ -194,6 +191,8 @@ public class SpecificCharacterSet {
                 case "GBK":
                     return Codec.GB18030;
             }
+            if (!lenient)
+                throw new IllegalArgumentException("No such Specific Character Set Code: " + code);
             return defCodec;
         }
 
@@ -530,7 +529,7 @@ public class SpecificCharacterSet {
      *          in this instance of the Java virtual machine
      */
     public static void setCharsetNameMapping(String code, String charsetName) {
-        Codec.forCodeChecked(code).setCharsetName(checkCharsetName(charsetName));
+        Codec.forCode(code, false).setCharsetName(checkCharsetName(charsetName));
     }
 
     /**
@@ -589,7 +588,7 @@ public class SpecificCharacterSet {
     }
 
     public static String checkSpecificCharacterSet(String code) {
-        Codec.forCodeChecked(code);
+        Codec.forCode(code, false);
         return code;
     }
 
@@ -603,14 +602,21 @@ public class SpecificCharacterSet {
         if (codes == null || codes.length == 0)
             return DEFAULT;
 
-        if (codes.length > 1)
+        boolean iso2022 = codes.length > 1;
+        Codec defCodec = SpecificCharacterSet.DEFAULT.codecs[0];
+        if (iso2022) {
             codes = checkISO2022(codes);
+            if (defCodec == Codec.UTF_8) {
+                defCodec = Codec.ISO_646;
+            }
+        }
 
         Codec[] infos = new Codec[codes.length];
-        for (int i = 0; i < codes.length; i++)
-            infos[i] = Codec.forCode(codes[i]);
+        for (int i = 0; i < codes.length; i++) {
+            infos[i] = Codec.forCode(codes[i], true, defCodec);
+        }
 
-        return codes.length > 1 ? new ISO2022(infos,codes)
+        return iso2022 ? new ISO2022(infos, codes)
                 : new SpecificCharacterSet(infos, codes);
     }
 

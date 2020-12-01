@@ -304,7 +304,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 hl7App.getApplicationName(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "hl7AcceptedSendingApplication",
                 hl7App.getAcceptedSendingApplications());
-        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmOtherApplicationNames", hl7App.getOtherApplicationNames());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "hl7OtherApplicationName", hl7App.getOtherApplicationNames());
         LdapUtils.storeNotEmpty(ldapObj, attrs, "hl7AcceptedMessageType",
                 hl7App.getAcceptedMessageTypes());
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7DefaultCharacterSet",

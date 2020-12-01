@@ -238,7 +238,18 @@ public class DateUtils {
 
     public static Date parseTM(TimeZone tz, String s, boolean ceil,
             DatePrecision precision) {
-        return parseTM(cal(tz), s, ceil, precision);
+        return parseTM(cal(tz), truncateTimeZone(s), ceil, precision);
+    }
+
+    private static String truncateTimeZone(String s) {
+        int length = s.length();
+        if (length > 4) {
+            char sign = s.charAt(length - 5);
+            if (sign == '+' || sign == '-') {
+                return s.substring(0, length - 5);
+            }
+        }
+        return s;
     }
 
     private static Date parseTM(Calendar cal, String s, boolean ceil,

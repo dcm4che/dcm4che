@@ -162,13 +162,13 @@ public class UnparsedHL7Message implements Serializable {
         if ((n & 1) != 0) return false;
         int i = beginIndex;
         while (--n > 0) {
-            int hex = parseHex(data[i++]);
-            if (hex < 0
-                    || hex == data[3]   // field separator
-                    || hex == data[4]   // component separator
-                    || hex == data[5]   // repetition separator
-                    || hex == data[6]   // escape character
-                    || hex == data[7]   // subcomponent separator
+            int d = parseHex(data[i++]);
+            if (d < 0
+                    || d == data[3]   // field separator
+                    || d == data[4]   // component separator
+                    || d == data[5]   // repetition separator
+                    || d == data[6]   // escape character
+                    || d == data[7]   // subcomponent separator
             ) {
                 return false;
             }
@@ -176,12 +176,12 @@ public class UnparsedHL7Message implements Serializable {
         return true;
     }
 
-    private static int parseHex(int i) {
-        int d = i - 0x30;
+    private static int parseHex(int ch) {
+        int d = ch - 0x30;
         if (d > 9) {
-            d = i - 0x41;
+            d = ch - 0x41;
             if (d > 6) {
-                d = i - 0x61;
+                d = ch - 0x61;
                 if (d > 6) return -1;
             }
             if (d >= 0)

@@ -146,7 +146,7 @@ public class UnparsedHL7Message implements Serializable {
                     x = i + 1;
                 }
             } else if (x > 0 && data[i] == data[6]) {
-                if (isXdddd(data, x, i)) {
+                if (validHexAndNoSeparator(data, x, i)) {
                     pos = Arrays.copyOf(pos, pos.length + 2);
                     pos[pos.length-2] = x;
                     pos[pos.length-1] = i;
@@ -157,7 +157,7 @@ public class UnparsedHL7Message implements Serializable {
         return pos;
     }
 
-    private static boolean isXdddd(byte[] data, int beginIndex, int endIndex) {
+    private static boolean validHexAndNoSeparator(byte[] data, int beginIndex, int endIndex) {
         int n = endIndex - beginIndex;
         if ((n & 1) != 0) return false;
         int i = beginIndex;

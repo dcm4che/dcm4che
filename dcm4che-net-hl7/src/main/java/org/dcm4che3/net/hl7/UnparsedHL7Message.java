@@ -122,7 +122,7 @@ public class UnparsedHL7Message implements Serializable {
 
     private static int replaceXdddd(byte[] src, int beginIndex, int endIndex, byte[] dest, int destPos) {
         for (int i = beginIndex; i < endIndex;) {
-            dest[destPos++] = (byte) ((parseHex(src[i++]) << 4) | parseHex(src[i++]));
+            dest[destPos++] = (byte) parseHex(src[i++], src[i++]);
         }
         return endIndex - beginIndex;
     }
@@ -141,7 +141,7 @@ public class UnparsedHL7Message implements Serializable {
         int[] pos = {};
         int x = 0;
         for (int i = 0; i < data.length; i++) {
-            if (data[i] == (byte) 0x58) {
+            if (data[i] == 0x58) { // == X
                 if (i > 0 && data[i-1] == data[6]) {
                     x = i + 1;
                 }
@@ -158,12 +158,10 @@ public class UnparsedHL7Message implements Serializable {
     }
 
     private static boolean validHexAndNoSeparator(byte[] data, int beginIndex, int endIndex) {
-        int n = endIndex - beginIndex;
-        if ((n & 1) != 0) return false;
-        int i = beginIndex;
-        while (--n > 0) {
-            int d = parseHex(data[i++]);
-            if (d < 0
+        if (((endIndex - beginIndex) & 1) != 0) return false;
+        int d;
+        for (int i = beginIndex; i < endIndex;) {
+            if ((d = parseHex(data[i++], data[i++])) < 0
                     || d == data[3]   // field separator
                     || d == data[4]   // component separator
                     || d == data[5]   // repetition separator
@@ -176,13 +174,17 @@ public class UnparsedHL7Message implements Serializable {
         return true;
     }
 
+    private static int parseHex(int ch1, int ch2) {
+        return (parseHex(ch1) << 4) | parseHex(ch2);
+    }
+
     private static int parseHex(int ch) {
         int d = ch - 0x30;
         if (d > 9) {
             d = ch - 0x41;
-            if (d > 6) {
+            if (d > 5) {
                 d = ch - 0x61;
-                if (d > 6) return -1;
+                if (d > 5) return -1;
             }
             if (d >= 0)
                 d += 10;

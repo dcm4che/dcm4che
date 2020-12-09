@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: GitHub dcm4che Discussions
+    url: https://github.com/dcm4che/dcm4che/discussions
+    about: Please ask and answer questions here.
+  - name: dcm4che - Google Group
+    url: https://groups.google.com/g/dcm4che
+    about: Alternatively you may also post questions and find answers there.

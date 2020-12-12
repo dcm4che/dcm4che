@@ -367,10 +367,9 @@ public class Xml2Dcm {
     }
 
     public void mergeXML(String fname) throws Exception {
-        if (dataset == null)
-            dataset = new Attributes();
         ContentHandlerAdapter ch = new ContentHandlerAdapter(dataset, lenient);
         parseXML(fname, ch);
+        dataset = ch.getDataset();
         Attributes fmi2 = ch.getFileMetaInformation();
         if (fmi2 != null)
             fmi = fmi2;

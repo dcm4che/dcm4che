@@ -44,15 +44,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.ElementDictionary;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.PersonName;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.VR;
+import org.dcm4che3.data.*;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,16 +62,16 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private static final Logger LOG =  LoggerFactory.getLogger(ContentHandlerAdapter.class);
 
     private Attributes fmi;
-    private final boolean bigEndian;
+    private boolean bigEndian;
     private final boolean lenient;
-    private final LinkedList<Attributes> items = new LinkedList<Attributes>();
-    private final LinkedList<Sequence> seqs = new LinkedList<Sequence>();
+    private final LinkedList<Attributes> items = new LinkedList<>();
+    private final LinkedList<Sequence> seqs = new LinkedList<>();
 
     private final ByteArrayOutputStream bout = new ByteArrayOutputStream(64);
     private final char[] carry = new char[4];
     private int carryLen;
     private final StringBuilder sb = new StringBuilder(64);
-    private final ArrayList<String> values = new ArrayList<String>();
+    private final ArrayList<String> values = new ArrayList<>();
     private PersonName pn;
     private PersonName.Group pnGroup;
     private int tag;
@@ -92,15 +87,19 @@ public class ContentHandlerAdapter extends DefaultHandler {
     }
 
     public ContentHandlerAdapter(Attributes attrs, boolean lenient) {
-        if (attrs == null)
-            throw new NullPointerException();
-        items.add(attrs);
-        bigEndian = attrs.bigEndian();
+        if (attrs != null) {
+            items.add(attrs);
+            bigEndian = attrs.bigEndian();
+        }
         this.lenient = lenient;
     }
 
     public Attributes getFileMetaInformation() {
         return fmi;
+    }
+
+    public Attributes getDataset() {
+        return items.getFirst();
     }
 
     @Override
@@ -305,12 +304,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             dataFragments = null;
             return;
         }
-        Attributes attrs = items.getLast();
-        if (TagUtils.isFileMetaInformation(tag)) {
-            if (fmi == null)
-                fmi = new Attributes();
-            attrs = fmi;
-        }
+        Attributes attrs = attrs();
         if (bulkData != null) {
             attrs.setValue(privateCreator, tag, vr, bulkData);
             bulkData = null;
@@ -335,6 +329,23 @@ public class ContentHandlerAdapter extends DefaultHandler {
                 }
             }
         }
+    }
+
+    private Attributes attrs() {
+        if (TagUtils.isFileMetaInformation(tag)) {
+            if (fmi == null) {
+                fmi = new Attributes();
+            }
+            return fmi;
+        }
+        if (items.isEmpty()) {
+            items.add(new Attributes(bigEndian = bigEndian(fmi)));
+        }
+        return items.getLast();
+    }
+
+    private static boolean bigEndian(Attributes fmi) {
+        return fmi != null && UID.ExplicitVRBigEndian.equals(fmi.getString(Tag.TransferSyntaxUID));
     }
 
     private static String prefix(String privateCreator, int level) {
@@ -380,7 +391,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
 
     private String[] getStrings() {
         try {
-            return values.toArray(new String[values.size()]);
+            return values.toArray(StringUtils.EMPTY_STRING);
         } finally {
             values.clear();
         }

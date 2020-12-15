@@ -192,8 +192,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private void startItem(int number) {
         Sequence seq = seqs.getLast();
         while (seq.size() < number-1)
-            seq.add(new Attributes(0));
-        Attributes item = new Attributes();
+            seq.add(new Attributes(bigEndian,0));
+        Attributes item = new Attributes(bigEndian);
         seq.add(item);
         items.add(item);
     }

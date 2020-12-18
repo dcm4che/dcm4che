@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Allows conversion of DICOM files into JSON format. See <a href="
- * http://dicom.nema.org/dicom/2013/output/chtml/part18/sect_F.2.html">DICOM JSON Model</a>.
+ * http://dicom.nema.org/medical/dicom/current/output/html/part18.html#sect_F.2">DICOM JSON Model</a>.
  *
  * <p> Implements {@link org.dcm4che3.io.DicomInputHandler} so it can be attached to a
  * {@link org.dcm4che3.io.DicomInputStream} to produce the JSON while being read. See sample usage below.

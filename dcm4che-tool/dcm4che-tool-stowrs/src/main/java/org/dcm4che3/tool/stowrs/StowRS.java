@@ -38,27 +38,8 @@
 
 package org.dcm4che3.tool.stowrs;
 
-import java.io.*;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.text.MessageFormat;
-import java.util.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
-import javax.ws.rs.core.MediaType;
-import javax.xml.transform.stream.StreamResult;
-
 import org.apache.commons.cli.*;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.ElementDictionary;
-import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.*;
 import org.dcm4che3.imageio.codec.XPEGParser;
 import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGParser;
@@ -69,11 +50,32 @@ import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXTransformer;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.*;
 import org.dcm4che3.util.Base64;
+import org.dcm4che3.util.StreamUtils;
+import org.dcm4che3.util.UIDUtils;
 import org.dcm4che3.ws.rs.MediaTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.json.Json;
+import javax.json.stream.JsonGenerator;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.core.MediaType;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.GeneralSecurityException;
+import java.security.cert.X509Certificate;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
@@ -94,6 +96,8 @@ public class StowRS {
     private static String requestAccept;
     private static String requestContentType;
     private static String metadataFile;
+    private static boolean allowAnyHost;
+    private static boolean disableTM;
     private boolean tsuid;
     private static final String boundary = "myboundary";
     private static final AtomicInteger fileCount = new AtomicInteger();
@@ -172,6 +176,14 @@ public class StowRS {
                 .hasArg()
                 .desc(rb.getString("accept"))
                 .build());
+        opts.addOption(Option.builder()
+                .longOpt("allowAnyHost")
+                .desc(rb.getString("allowAnyHost"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("disableTM")
+                .desc(rb.getString("disableTM"))
+                .build());
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder("u")
                 .hasArg()
@@ -229,6 +241,8 @@ public class StowRS {
         bearer = cl.getOptionValue("bearer");
         vlPhotographicImage = cl.hasOption("xc");
         videoPhotographicImage = cl.hasOption("video");
+        allowAnyHost = cl.hasOption("allowAnyHost");
+        disableTM = cl.hasOption("disableTM");
         if (cl.hasOption("contentType"))
             bulkdataFileContentType = fileContentTypeFromCL = fileContentType(cl.getOptionValue("contentType"));
         processFirstFile(cl);
@@ -556,13 +570,18 @@ public class StowRS {
 
     private void stow(List<String> files) throws Exception {
         URL newUrl = new URL(url);
-        final HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
+        final HttpsURLConnection connection = (HttpsURLConnection) newUrl.openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type",
                 MediaTypes.MULTIPART_RELATED + "; type=\"" + requestContentType + "\"; boundary=" + boundary);
         connection.setRequestProperty("Accept", requestAccept);
+        if (url.startsWith("https")) {
+            connection.setHostnameVerifier((hostname, session) -> allowAnyHost);
+            if (disableTM)
+                connection.setSSLSocketFactory(sslContext().getSocketFactory());
+        }
         logOutgoing(connection);
         authorize(connection);
         try (OutputStream out = connection.getOutputStream()) {
@@ -575,6 +594,25 @@ public class StowRS {
         } catch (Exception e) {
             LOG.error("Exception : " + e.getMessage());
         }
+    }
+
+    SSLContext sslContext() throws GeneralSecurityException {
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(null, trustManagers(), new java.security.SecureRandom());
+        return ctx;
+    }
+
+    TrustManager[] trustManagers() {
+        return new TrustManager[] { new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+            }
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+        }
+        };
     }
 
     private void authorize(HttpURLConnection connection) {
@@ -594,13 +632,13 @@ public class StowRS {
         return "Basic " + new String(ch);
     }
 
-    private void logOutgoing(HttpURLConnection connection) {
+    private void logOutgoing(HttpsURLConnection connection) {
         LOG.info("> " + connection.getRequestMethod() + " " + connection.getURL());
         LOG.info("> Content-Type: " + connection.getRequestProperty("Content-Type"));
         LOG.info("> Accept: " + connection.getRequestProperty("Accept"));
     }
 
-    private void logIncoming(HttpURLConnection connection) throws Exception {
+    private void logIncoming(HttpsURLConnection connection) throws Exception {
         LOG.info("< Content-Length: " + connection.getContentLength());
         LOG.info("< HTTP/1.1 Response: " + connection.getResponseCode() + " " + connection.getResponseMessage());
         LOG.info("< Transfer-Encoding: " + connection.getContentEncoding());

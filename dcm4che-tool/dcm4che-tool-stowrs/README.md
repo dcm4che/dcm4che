@@ -37,6 +37,11 @@
                                       is absent as well then
                                       application/dicom+xml will be used by
                                       default.
+        --allowAnyHost                If the other server requires HTTPS and
+                                      this option is specified, the other
+                                      server’s certificate is validated via
+                                      the truststore, but host name validation
+                                      is not done.
         --bearer <bearer>             Specify the bearer token to be used in
                                       Authorization header for server
                                       authentication.
@@ -44,6 +49,9 @@
                                       If specified, content type of individual
                                       bulkdata file(s) (and/or in
                                       directory(-ies)) shall not be probed.
+        --disableTM                   If the other server requires HTTPS and
+                                      this option is specified, a truststore
+                                      need not be specified.
      -f,--file <file>                 Specify the file containing the metadata
                                       (in XML format).
      -h,--help                        display this help and exit

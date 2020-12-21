@@ -43,20 +43,26 @@ import org.apache.commons.cli.*;
 import org.dcm4che3.mime.MultipartInputStream;
 import org.dcm4che3.mime.MultipartParser;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.*;
+import org.dcm4che3.util.Base64;
+import org.dcm4che3.util.StreamUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import javax.net.ssl.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -69,6 +75,8 @@ public class WadoRS {
     private static String user;
     private static String bearer;
     private static boolean header;
+    private static boolean allowAnyHost;
+    private static boolean disableTM;
     private String accept = "*";
     private static String outDir;
 
@@ -119,6 +127,14 @@ public class WadoRS {
                 .argName("directory")
                 .desc(rb.getString("out-dir"))
                 .build());
+        opts.addOption(Option.builder()
+                .longOpt("allowAnyHost")
+                .desc(rb.getString("allowAnyHost"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("disableTM")
+                .desc(rb.getString("disableTM"))
+                .build());
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder("u")
                 .hasArg()
@@ -140,6 +156,8 @@ public class WadoRS {
         if (cl.getArgList().isEmpty())
             throw new MissingArgumentException("Missing url");
         header = cl.hasOption("header");
+        allowAnyHost = cl.hasOption("allowAnyHost");
+        disableTM = cl.hasOption("disableTM");
         if (cl.hasOption("a"))
             wadoRS.setAccept(cl.getOptionValues("a"));
         user = cl.getOptionValue("u");
@@ -152,17 +170,41 @@ public class WadoRS {
         if (!header)
             url = appendAcceptToURL(url);
         URL newUrl = new URL(url);
-        final HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
+        final HttpsURLConnection connection = (HttpsURLConnection) newUrl.openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestMethod("GET");
         if (header)
             connection.setRequestProperty("Accept", accept);
+        if (url.startsWith("https")) {
+            connection.setHostnameVerifier((hostname, session) -> allowAnyHost);
+            if (disableTM)
+                connection.setSSLSocketFactory(sslContext().getSocketFactory());
+        }
         logOutgoing(connection);
         authorize(connection);
         logIncoming(connection);
         unpack(connection, uid);
         connection.disconnect();
+    }
+
+    SSLContext sslContext() throws GeneralSecurityException {
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(null, trustManagers(), new java.security.SecureRandom());
+        return ctx;
+    }
+
+    TrustManager[] trustManagers() {
+        return new TrustManager[] { new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            }
+        };
     }
 
     private void authorize(HttpURLConnection connection) {
@@ -173,7 +215,7 @@ public class WadoRS {
         LOG.info("> Authorization: " + authorization);
         connection.setRequestProperty("Authorization", authorization);
     }
-
+    
     private static String basicAuth() {
         byte[] userPswdBytes = user.getBytes();
         int len = (userPswdBytes.length * 4 / 3 + 3) & ~3;
@@ -197,12 +239,12 @@ public class WadoRS {
                 : url.substring(url.lastIndexOf('/')+1);
     }
 
-    private void logOutgoing(HttpURLConnection connection) {
+    private void logOutgoing(HttpsURLConnection connection) {
         LOG.info("> " + connection.getRequestMethod() + " " + connection.getURL());
         LOG.info("> Accept: " + accept);
     }
 
-    private void logIncoming(HttpURLConnection connection) throws Exception {
+    private void logIncoming(HttpsURLConnection connection) throws Exception {
         LOG.info("< Content-Length: " + connection.getContentLength());
         LOG.info("< HTTP/1.1 Response: " + connection.getResponseCode() + " " + connection.getResponseMessage());
         LOG.info("< Transfer-Encoding: " + connection.getContentEncoding());

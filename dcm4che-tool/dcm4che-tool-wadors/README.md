@@ -20,9 +20,16 @@
                                  multipart/related;type=application/dicom+xml
                                  If specified, by default it will be appended
                                  to the URL as a query parameter.
+        --allowAnyHost           If the other server requires HTTPS and this
+                                 option is specified, the other server’s
+                                 certificate is validated via the truststore,
+                                 but host name validation is not done.
         --bearer <bearer>        Specify the bearer token to be used in
                                  Authorization header for server
                                  authentication.
+        --disableTM              If the other server requires HTTPS and this
+                                 option is specified, a truststore need not be
+                                 specified.
      -h,--help                   display this help and exit
         --header                 If specified, Accept value shall be sent as
                                  HTTP Request Header instead being appended to

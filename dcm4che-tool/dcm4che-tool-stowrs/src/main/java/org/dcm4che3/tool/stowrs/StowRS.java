@@ -87,8 +87,6 @@ public class StowRS {
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.stowrs.messages");
     private static String[] keys;
     private static String url;
-    private String user;
-    private String bearer;
     private boolean noApp;
     private boolean pixelHeader;
     private static boolean vlPhotographicImage;
@@ -98,6 +96,7 @@ public class StowRS {
     private static String metadataFile;
     private static boolean allowAnyHost;
     private static boolean disableTM;
+    private static String authorization;
     private boolean tsuid;
     private static final String boundary = "myboundary";
     private static final AtomicInteger fileCount = new AtomicInteger();
@@ -237,8 +236,9 @@ public class StowRS {
         pixelHeader = cl.hasOption("pixel-header");
         noApp = cl.hasOption("no-appn");
         keys = cl.getOptionValues("m");
-        user = cl.getOptionValue("u");
-        bearer = cl.getOptionValue("bearer");
+        authorization = cl.hasOption("u")
+                ? basicAuth(cl.getOptionValue("u"))
+                : cl.hasOption("bearer") ? "Bearer " + cl.getOptionValue("bearer") : null;
         vlPhotographicImage = cl.hasOption("xc");
         videoPhotographicImage = cl.hasOption("video");
         allowAnyHost = cl.hasOption("allowAnyHost");
@@ -570,25 +570,54 @@ public class StowRS {
 
     private void stow(List<String> files) throws Exception {
         URL newUrl = new URL(url);
-        final HttpsURLConnection connection = (HttpsURLConnection) newUrl.openConnection();
+        if (url.startsWith("https")) {
+            stowHttps(files, newUrl);
+            return;
+        }
+
+        final HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type",
                 MediaTypes.MULTIPART_RELATED + "; type=\"" + requestContentType + "\"; boundary=" + boundary);
         connection.setRequestProperty("Accept", requestAccept);
-        if (url.startsWith("https")) {
-            connection.setHostnameVerifier((hostname, session) -> allowAnyHost);
-            if (disableTM)
-                connection.setSSLSocketFactory(sslContext().getSocketFactory());
-        }
-        logOutgoing(connection);
-        authorize(connection);
+        if (authorization != null)
+            connection.setRequestProperty("Authorization", authorization);
+        logOutgoing(newUrl, connection.getRequestProperty("Content-Type"));
         try (OutputStream out = connection.getOutputStream()) {
             writeData(files, out);
             out.write(("\r\n--" + boundary + "--\r\n").getBytes());
             out.flush();
-            logIncoming(connection);
+            logIncoming(connection.getResponseCode(), connection.getResponseMessage(), connection.getHeaderFields(),
+                        connection.getInputStream());
+            connection.disconnect();
+            LOG.info("STOW successful!");
+        } catch (Exception e) {
+            LOG.error("Exception : " + e.getMessage());
+        }
+    }
+
+    private void stowHttps(List<String> files, URL url) throws Exception {
+        final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type",
+                MediaTypes.MULTIPART_RELATED + "; type=\"" + requestContentType + "\"; boundary=" + boundary);
+        connection.setRequestProperty("Accept", requestAccept);
+        if (authorization != null)
+            connection.setRequestProperty("Authorization", authorization);
+        if (disableTM)
+            connection.setSSLSocketFactory(sslContext().getSocketFactory());
+        connection.setHostnameVerifier((hostname, session) -> allowAnyHost);
+        logOutgoing(url, connection.getRequestProperty("Content-Type"));
+        try (OutputStream out = connection.getOutputStream()) {
+            writeData(files, out);
+            out.write(("\r\n--" + boundary + "--\r\n").getBytes());
+            out.flush();
+            logIncoming(connection.getResponseCode(), connection.getResponseMessage(), connection.getHeaderFields(),
+                        connection.getInputStream());
             connection.disconnect();
             LOG.info("STOW successful!");
         } catch (Exception e) {
@@ -615,16 +644,7 @@ public class StowRS {
         };
     }
 
-    private void authorize(HttpURLConnection connection) {
-        if (user == null && bearer == null)
-            return;
-
-        String authorization = user != null ? basicAuth() : "Bearer " + bearer;
-        LOG.info("> Authorization: " + authorization);
-        connection.setRequestProperty("Authorization", authorization);
-    }
-
-    private String basicAuth() {
+    private String basicAuth(String user) {
         byte[] userPswdBytes = user.getBytes();
         int len = (userPswdBytes.length * 4 / 3 + 3) & ~3;
         char[] ch = new char[len];
@@ -632,21 +652,23 @@ public class StowRS {
         return "Basic " + new String(ch);
     }
 
-    private void logOutgoing(HttpsURLConnection connection) {
-        LOG.info("> " + connection.getRequestMethod() + " " + connection.getURL());
-        LOG.info("> Content-Type: " + connection.getRequestProperty("Content-Type"));
-        LOG.info("> Accept: " + connection.getRequestProperty("Accept"));
+    private void logOutgoing(URL url, String contentType) {
+        LOG.info("> POST " + url.toString());
+        LOG.info("> Content-Type: " + contentType);
+        LOG.info("> Accept: " + requestAccept);
+        LOG.info("> Authorization: " + authorization);
     }
 
-    private void logIncoming(HttpsURLConnection connection) throws Exception {
-        LOG.info("< Content-Length: " + connection.getContentLength());
-        LOG.info("< HTTP/1.1 Response: " + connection.getResponseCode() + " " + connection.getResponseMessage());
-        LOG.info("< Transfer-Encoding: " + connection.getContentEncoding());
-        LOG.info("< Content-Type: " + connection.getContentType());
-        LOG.info("< Date: " + connection.getLastModified());
+    private void logIncoming(int respCode, String respMsg, Map<String, List<String>> headerFields, InputStream is) {
+        LOG.info("< HTTP/1.1 Response: " + respCode + " " + respMsg);
+        for (Map.Entry<String, List<String>> header : headerFields.entrySet())
+            if (header.getKey() != null)
+                LOG.info("< " + header.getKey() + " : " + String.join(";", header.getValue()));
         LOG.info("< Response Content: ");
-        try (InputStream is = connection.getInputStream()) {
+        try {
             LOG.debug(readFullyAsString(is));
+        } catch (Exception e) {
+            LOG.info("Exception caught on reading response body \n", e);
         }
     }
 

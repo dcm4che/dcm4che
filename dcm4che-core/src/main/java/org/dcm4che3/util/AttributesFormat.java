@@ -52,6 +52,7 @@ import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.UnaryOperator;
 
 import org.dcm4che3.data.Attributes;
 
@@ -74,6 +75,7 @@ public class AttributesFormat extends Format {
     private final int[][] tagPaths;
     private final int[] index;
     private final int[] offsets;
+    private final UnaryOperator[] slices;
     private final Type[] types;
     private final MessageFormat format;
 
@@ -85,6 +87,7 @@ public class AttributesFormat extends Format {
         this.index = new int[n];
         this.types = new Type[n];
         this.offsets = new int[n];
+        this.slices = new UnaryOperator[n];
         this.format = buildMessageFormat(tokens);
     }
 
@@ -171,6 +174,12 @@ public class AttributesFormat extends Format {
                         } catch (IllegalArgumentException e) {
                             throw new IllegalArgumentException(pattern);
                         }
+                    case slice:
+                        try {
+                            slices[i] = new Slice(tagStr.substring(typeEnd+1));
+                        } catch (RuntimeException e) {
+                            throw new IllegalArgumentException(pattern);
+                        }
                 }
             } else {
                 types[i] = Type.none;
@@ -211,14 +220,14 @@ public class AttributesFormat extends Format {
         for (int i = 0; i < args.length; i++) {
             int[] tagPath = tagPaths[i];
             if (tagPath == null) { // now
-                args[i] = types[i].toArg(attrs, 0, index[i], offsets[i]);
+                args[i] = types[i].toArg(attrs, 0, index[i], offsets[i], slices[i]);
             } else {
                 int last = tagPath.length - 1;
                 Attributes item = attrs;
                 for (int j = 0; j < last && item != null; j++) {
                     item = item.getNestedDataset(tagPath[j]);
                 }
-                args[i] = item != null ? types[i].toArg(item, tagPath[last], index[i], offsets[i]) : null;
+                args[i] = item != null ? types[i].toArg(item, tagPath[last], index[i], offsets[i], slices[i]) : null;
             }
         }
         return args;
@@ -237,57 +246,63 @@ public class AttributesFormat extends Format {
     private enum Type {
         none {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
-                return attrs.getString(tag, index);
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
+                return attrs.getString(tag, index, "");
+            }
+        },
+        slice {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> slice) {
+                return slice.apply(attrs.getString(tag, index));
             }
         },
         number {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 return attrs.getDouble(tag, index, 0.);
             }
         },
         offset {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 return Integer.toString(attrs.getInt(tag, index, 0) + offset);
             }
         },
         date {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 return tag != 0 ? attrs.getDate(tag, index) : new Date();
             }
         },
         time {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 return tag != 0 ? attrs.getDate(tag, index) : new Date();
             }
         },
         choice {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 return attrs.getDouble(tag, index, 0.);
             }
         },
         hash {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 String s = attrs.getString(tag, index);
                 return s != null ? TagUtils.toHexString(s.hashCode()) : null;
             }
         },
         md5 {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 String s = attrs.getString(tag, index);
                 return s != null ? getMD5String(s) : null;
             }
         },
         urlencoded {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 String s = attrs.getString(tag, index);
                 try {
                     return s != null ? URLEncoder.encode(s, "UTF-8") : null;
@@ -298,24 +313,24 @@ public class AttributesFormat extends Format {
         },
         rnd {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 return TagUtils.toHexString(ThreadLocalRandom.current().nextInt());
             }
         },
         uuid {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 return UUID.randomUUID();
             }
         },
         uid {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset) {
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
                 return UIDUtils.createUID();
             }
         };
 
-        abstract Object toArg(Attributes attrs, int tag, int index, int offset);
+        abstract Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice);
 
         String getMD5String( String s ) {
             try {
@@ -356,4 +371,34 @@ public class AttributesFormat extends Format {
         }
     }
 
+    private class Slice implements UnaryOperator<String> {
+        final int beginIndex;
+        final int endIndex;
+        public Slice(String s) {
+            String[] ss = StringUtils.split(s, ',');
+            if (ss.length == 1) {
+                beginIndex = Integer.parseInt(ss[0]);
+                endIndex = 0;
+            } else if (ss.length == 2) {
+                endIndex = Integer.parseInt(ss[1]);
+                beginIndex = endIndex != 0 ? Integer.parseInt(ss[0]) : 0;
+            } else {
+                throw new IllegalArgumentException(s);
+            }
+        }
+
+        @Override
+        public String apply(String s) {
+            try {
+                int l = s.length();
+                return endIndex == 0
+                        ? s.substring(beginIndex < 0 ? Math.max(0, l + beginIndex) : beginIndex)
+                        : s.substring(
+                                beginIndex < 0 ? Math.max(0, l + beginIndex) : beginIndex,
+                                endIndex < 0 ? l + endIndex : Math.min(l, endIndex));
+            } catch (RuntimeException e) {
+                return "";
+            }
+        }
+    }
 }

@@ -61,6 +61,8 @@ public class AttributesFormatTest {
         "{rnd}/{rnd,uuid}/{rnd,uid}";
     private static final String TEST_PATTERN_OFFSET =
         "{00200011,offset,100}/{00200013,offset,-1}";
+    private static final String TEST_PATTERN_SLICE =
+        "{00100020,slice,3}/{00100020,slice,3,6}/{00100020,slice,-3}/{00100020,slice,-6,-3}";
     private static final Pattern ASSERT_PATTERN_RND =
             Pattern.compile("[0-9A-F]{8}+/[0-9a-f]{8}+(-[0-9a-f]{4}+){3}+-[0-9a-f]{12}+/2\\.25\\.\\d*");
 
@@ -101,5 +103,12 @@ public class AttributesFormatTest {
         attrs.setString(Tag.SeriesNumber, VR.IS, "1");
         attrs.setString(Tag.InstanceNumber, VR.IS, "2");
         assertEquals("101/1", new AttributesFormat(TEST_PATTERN_OFFSET).format(attrs));
+    }
+
+    @Test
+    public void testSlice() {
+        Attributes attrs = new Attributes(1);
+        attrs.setString(Tag.PatientID, VR.LO, "123456789");
+        assertEquals("456789/456/789/456", new AttributesFormat(TEST_PATTERN_SLICE).format(attrs));
     }
 }

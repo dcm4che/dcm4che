@@ -251,7 +251,8 @@ public class WadoRS {
     private void logOutgoing(URL url) {
         LOG.info("> GET " + url.toString());
         LOG.info("> Accept: " + accept);
-        LOG.info("> Authorization: " + authorization);
+        if (authorization != null)
+            LOG.info("> Authorization: " + authorization);
     }
 
     private void processWadoResp(HttpURLConnection connection, String uid) throws Exception {

@@ -656,7 +656,8 @@ public class StowRS {
         LOG.info("> POST " + url.toString());
         LOG.info("> Content-Type: " + contentType);
         LOG.info("> Accept: " + requestAccept);
-        LOG.info("> Authorization: " + authorization);
+        if (authorization != null)
+            LOG.info("> Authorization: " + authorization);
     }
 
     private void logIncoming(int respCode, String respMsg, Map<String, List<String>> headerFields, InputStream is) {

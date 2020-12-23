@@ -51,12 +51,12 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.PersonName;
-import org.dcm4che3.data.Value;
 import org.dcm4che3.data.PersonName.Group;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.SpecificCharacterSet;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.data.Value;
 import org.dcm4che3.io.DicomInputHandler;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.util.Base64;
@@ -66,6 +66,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Allows conversion of DICOM files into JSON format. See <a href="
+ * http://dicom.nema.org/medical/dicom/current/output/html/part18.html#sect_F.2">DICOM JSON Model</a>.
+ *
+ * <p> Implements {@link org.dcm4che3.io.DicomInputHandler} so it can be attached to a
+ * {@link org.dcm4che3.io.DicomInputStream} to produce the JSON while being read. See sample usage below.
+ *
+ * <p> Usage:
+ *
+ * <pre>
+ * <code>
+ * JsonGenerator gen = ...
+ * JSONWriter jsonWriter = new JSONWriter(gen);
+ *
+ * // If you've already read the DICOM file and have Attributes:
+ * jsonWriter.write(attrs);
+ *
+ * // To include the meta information:
+ * gen.writeStartObject();
+ * jsonWriter.writeAttributes(metadata);
+ * jsonWriter.writeAttributes(attributes);
+ * gen.writeEnd();
+ *
+ * // If you have a DicomInputStream:
+ * DicomInputStream ds = ....
+ * dis.setDicomInputHandler(jsonWriter);
+ * dis.readDataset(-1, -1);
+ * gen.flush();
+ * </code>
+ * </pre>
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
@@ -106,23 +136,35 @@ public class JSONWriter implements DicomInputHandler {
         this.replaceBulkDataURI = replaceBulkDataURI;
     }
 
+    /**
+     * Writes the given attributes as a full JSON object. Subsequent calls will generate a new JSON
+     * object.
+     */
     public void write(Attributes attrs) {
-        final SpecificCharacterSet cs = attrs.getSpecificCharacterSet();
         gen.writeStartObject();
-        try {
-            attrs.accept(new Attributes.Visitor(){
+        writeAttributes(attrs);
+        gen.writeEnd();
+    }
 
-                @Override
-                public boolean visit(Attributes attrs, int tag, VR vr, Object value)
-                        throws Exception {
-                     writeAttribute(tag, vr, value, cs, attrs);
-                     return true;
-                }},
-                false);
+    /**
+     * Writes the given attributes to JSON. Can be used to output multiple attributes (e.g. metadata,
+     * attributes) to the same JSON object.
+     */
+    public void writeAttributes(Attributes attrs) {
+        final SpecificCharacterSet cs = attrs.getSpecificCharacterSet();
+        try {
+            attrs.accept(new Attributes.Visitor() {
+                             @Override
+                             public boolean visit(Attributes attrs, int tag, VR vr, Object value)
+                                     throws Exception {
+                                 writeAttribute(tag, vr, value, cs, attrs);
+                                 return true;
+                             }
+                         },
+                    false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        gen.writeEnd();
     }
 
     private void writeAttribute(int tag, VR vr, Object value,

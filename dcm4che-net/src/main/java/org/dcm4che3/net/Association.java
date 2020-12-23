@@ -59,6 +59,7 @@ import org.dcm4che3.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.pdu.RoleSelection;
 import org.dcm4che3.util.IntHashMap;
+import org.dcm4che3.util.ReverseDNS;
 import org.dcm4che3.util.SafeClose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,6 +174,14 @@ public class Association {
 
     public final Socket getSocket() {
         return sock;
+    }
+
+    public String getLocalHostName() {
+        return ReverseDNS.hostNameOf(sock.getLocalAddress());
+    }
+
+    public String getRemoteHostName() {
+        return ReverseDNS.hostNameOf(sock.getInetAddress());
     }
 
     public final Connection getConnection() {
@@ -1308,6 +1317,10 @@ public class Association {
 
     public EnumSet<QueryOption> getQueryOptionsFor(String cuid) {
         return QueryOption.toOptions(ac.getExtNegotiationFor(cuid));
+    }
+
+    public EnumSet<QueryOption> getRequestedQueryOptionsFor(String cuid) {
+        return QueryOption.toOptions(rq.getExtNegotiationFor(cuid));
     }
 }
 

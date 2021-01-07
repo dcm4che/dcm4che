@@ -211,11 +211,8 @@ public enum Dimse {
             promptIntTo(cmdAttrs, ", prior=", Tag.Priority, sb);
             promptMoveOriginatorTo(cmdAttrs, sb);
             break;
-        case C_GET_RQ:
-            promptIntTo(cmdAttrs, ", prior=", Tag.Priority, sb);
-            promptAttributeIdentifierListTo(cmdAttrs, sb);
-            break;
         case C_FIND_RQ:
+        case C_GET_RQ:
             promptIntTo(cmdAttrs, ", prior=", Tag.Priority, sb);
             break;
         case C_MOVE_RQ:
@@ -229,6 +226,9 @@ public enum Dimse {
         case N_EVENT_REPORT_RQ:
         case N_EVENT_REPORT_RSP:
             promptIntTo(cmdAttrs, ", eventID=", Tag.EventTypeID, sb);
+            break;
+        case N_GET_RQ:
+            promptAttributeIdentifierListTo(cmdAttrs, sb);
             break;
         case N_ACTION_RQ:
         case N_ACTION_RSP:

@@ -12,44 +12,6 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
- *
- * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2010
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
-
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
@@ -76,6 +38,10 @@
 
 package org.dcm4che3.data;
 
+import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
@@ -88,11 +54,12 @@ import java.util.StringTokenizer;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class SpecificCharacterSet {
-    
+
+    private static final Logger LOG = LoggerFactory.getLogger(SpecificCharacterSet.class);
+
     public static final SpecificCharacterSet ASCII = new SpecificCharacterSet(new Codec[]{Codec.ISO_646});
 
     public static SpecificCharacterSet DEFAULT = ASCII;
-
     private static ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = new ThreadLocal<SoftReference<Encoder>>();
     private static ThreadLocal<SoftReference<Encoder>> cachedEncoder2 = new ThreadLocal<SoftReference<Encoder>>();
 
@@ -139,97 +106,68 @@ public class SpecificCharacterSet {
         }
 
         public static Codec forCode(String code) {
-            if (code == null)
-                return ISO_646;
-
-            switch(last2digits(code)) {
-            case 0:
-                if (code.equals("ISO_IR 100") || code.equals("ISO 2022 IR 100"))
-                    return Codec.ISO_8859_1;
-                break;
-            case 1:
-                if (code.equals("ISO_IR 101") || code.equals("ISO 2022 IR 101"))
-                    return Codec.ISO_8859_2;
-                break;
-            case 6:
-                if (code.equals("ISO 2022 IR 6"))
-                    return Codec.ISO_646;
-                break;
-            case 9:
-                if (code.equals("ISO_IR 109") || code.equals("ISO 2022 IR 109"))
-                    return Codec.ISO_8859_3;
-                break;
-            case 10:
-                if (code.equals("ISO_IR 110") || code.equals("ISO 2022 IR 110"))
-                    return Codec.ISO_8859_4;
-                break;
-            case 13:
-                if (code.equals("ISO_IR 13") || code.equals("ISO 2022 IR 13"))
-                    return Codec.JIS_X_201;
-                break;
-            case 26:
-                if (code.equals("ISO_IR 126") || code.equals("ISO 2022 IR 126"))
-                    return Codec.ISO_8859_7;
-                break;
-            case 27:
-                if (code.equals("ISO_IR 127") || code.equals("ISO 2022 IR 127"))
-                    return Codec.ISO_8859_6;
-                break;
-            case 30:
-                if (code.equals("GB18030"))
-                    return Codec.GB18030;
-                break;
-            case 31:
-                if (code.equals("GBK"))
-                    return Codec.GB18030;
-                break;
-            case 38:
-                if (code.equals("ISO_IR 138") || code.equals("ISO 2022 IR 138"))
-                    return Codec.ISO_8859_8;
-                break;
-            case 44:
-                if (code.equals("ISO_IR 144") || code.equals("ISO 2022 IR 144"))
-                    return Codec.ISO_8859_5;
-                break;
-            case 48:
-                if (code.equals("ISO_IR 148") || code.equals("ISO 2022 IR 148"))
-                    return Codec.ISO_8859_9;
-                break;
-            case 49:
-                if (code.equals("ISO 2022 IR 149"))
-                    return Codec.KS_X_1001;
-                break;
-            case 58:
-                if (code.equals("ISO 2022 IR 58"))
-                    return Codec.GB2312;
-                break;
-            case 59:
-                if (code.equals("ISO 2022 IR 159"))
-                    return Codec.JIS_X_212;
-                break;
-            case 66:
-                if (code.equals("ISO_IR 166") || code.equals("ISO 2022 IR 166"))
-                    return Codec.TIS_620;
-                break;
-            case 87:
-                if (code.equals("ISO 2022 IR 87"))
-                    return Codec.JIS_X_208;
-                break;
-            case 92:
-                if (code.equals("ISO_IR 192"))
-                    return Codec.UTF_8;
-                break;
-            }
-            return ISO_646;
+            return forCode(code, true);
         }
 
-        private static int last2digits(String code) {
-            int len = code.length();
-            if (len < 2)
-                return -1;
-            char ch1 = code.charAt(len-1);
-            char ch2 = code.charAt(len-2);
-            return (ch2 & 15) * 10 + (ch1 & 15);
+        private static Codec forCode(String code, boolean lenient) {
+            return forCode(code, lenient, SpecificCharacterSet.DEFAULT.codecs[0]);
+        }
+
+        private static Codec forCode(String code, boolean lenient, Codec defCodec) {
+            switch(code != null ? code : "") {
+                case "":
+                case "ISO 2022 IR 6":
+                    return defCodec;
+                case "ISO_IR 100":
+                case "ISO 2022 IR 100":
+                    return Codec.ISO_8859_1;
+                case "ISO_IR 101":
+                case "ISO 2022 IR 101":
+                    return Codec.ISO_8859_2;
+                case "ISO_IR 109":
+                case "ISO 2022 IR 109":
+                    return Codec.ISO_8859_3;
+                case "ISO_IR 110":
+                case "ISO 2022 IR 110":
+                    return Codec.ISO_8859_4;
+                case "ISO_IR 144":
+                case "ISO 2022 IR 144":
+                    return Codec.ISO_8859_5;
+                case "ISO_IR 127":
+                case "ISO 2022 IR 127":
+                    return Codec.ISO_8859_6;
+                case "ISO_IR 126":
+                case "ISO 2022 IR 126":
+                    return Codec.ISO_8859_7;
+                case "ISO_IR 138":
+                case "ISO 2022 IR 138":
+                    return Codec.ISO_8859_8;
+                case "ISO_IR 148":
+                case "ISO 2022 IR 148":
+                    return Codec.ISO_8859_9;
+                case "ISO_IR 13":
+                case "ISO 2022 IR 13":
+                    return Codec.JIS_X_201;
+                case "ISO_IR 166":
+                case "ISO 2022 IR 166":
+                    return Codec.TIS_620;
+                case "ISO 2022 IR 87":
+                    return Codec.JIS_X_208;
+                case "ISO 2022 IR 159":
+                    return Codec.JIS_X_212;
+                case "ISO 2022 IR 149":
+                    return Codec.KS_X_1001;
+                case "ISO 2022 IR 58":
+                    return Codec.GB2312;
+                case "ISO_IR 192":
+                    return Codec.UTF_8;
+                case "GB18030":
+                case "GBK":
+                    return Codec.GB18030;
+            }
+            if (!lenient)
+                throw new IllegalArgumentException("No such Specific Character Set Code: " + code);
+            return defCodec;
         }
 
         public byte[] encode(String val) {
@@ -533,11 +471,104 @@ public class SpecificCharacterSet {
         if (codes == null || codes.length == 0)
             return DEFAULT;
 
+        boolean iso2022 = codes.length > 1;
+        Codec defCodec = SpecificCharacterSet.DEFAULT.codecs[0];
+        if (iso2022) {
+            codes = checkISO2022(codes);
+            if (defCodec == Codec.UTF_8) {
+                defCodec = Codec.ISO_646;
+            }
+        }
+
         Codec[] infos = new Codec[codes.length];
-        for (int i = 0; i < codes.length; i++)
-            infos[i] = Codec.forCode(codes[i]);
-        return codes.length > 1 ? new ISO2022(infos,codes)
+        for (int i = 0; i < codes.length; i++) {
+            infos[i] = Codec.forCode(codes[i], true, defCodec);
+        }
+
+        return iso2022 ? new ISO2022(infos, codes)
                 : new SpecificCharacterSet(infos, codes);
+    }
+
+    /**
+     * Replace single code for Single-Byte Character Sets with Code Extensions by code for Single-Byte Character Sets
+     * without Code Extensions.
+     *
+     * @param codes the codes
+     * @return {@code true} if the code was replaced.
+     */
+    public static boolean trimISO2022(String[] codes) {
+        if (codes != null && codes.length == 1 && codes[0].startsWith("ISO 2022")) {
+            switch (codes[0]) {
+                case "ISO 2022 IR 6":
+                    codes[0] = "";
+                    return true;
+                case "ISO 2022 IR 100":
+                    codes[0] = "ISO_IR 100";
+                    return true;
+                case "ISO 2022 IR 101":
+                    codes[0] = "ISO_IR 101";
+                    return true;
+                case "ISO 2022 IR 109":
+                    codes[0] = "ISO_IR 109";
+                    return true;
+                case "ISO 2022 IR 110":
+                    codes[0] = "ISO_IR 110";
+                    return true;
+                case "ISO 2022 IR 144":
+                    codes[0] = "ISO_IR 144";
+                    return true;
+                case "ISO 2022 IR 127":
+                    codes[0] = "ISO_IR 127";
+                    return true;
+                case "ISO 2022 IR 126":
+                    codes[0] = "ISO_IR 126";
+                    return true;
+                case "ISO 2022 IR 138":
+                    codes[0] = "ISO_IR 138";
+                    return true;
+                case "ISO 2022 IR 148":
+                    codes[0] = "ISO_IR 148";
+                    return true;
+                case "ISO 2022 IR 13":
+                    codes[0] = "ISO_IR 13";
+                    return true;
+                case "ISO 2022 IR 166":
+                    codes[0] = "ISO_IR 166";
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    private static String[] checkISO2022(String[] codes) {
+        for (String code : codes) {
+            if (code != null && !code.isEmpty() && !code.startsWith("ISO 2022")) {
+                LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
+                        StringUtils.concat(codes, '\\'), StringUtils.maskNull(codes[0], ""));
+                return new String[]{codes[0]};
+            }
+        }
+        return ensureFirstContainsASCII(codes);
+    }
+
+    private static String[] ensureFirstContainsASCII(String[] codes) {
+        for (int i = 0; i < codes.length; i++) {
+            if (Codec.forCode(codes[i]).containsASCII()) {
+                if (i == 0) return codes;
+                String[] clone = codes.clone();
+                clone[0] = codes[i];
+                clone[i] = codes[0];
+                LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
+                        StringUtils.concat(codes, '\\'), StringUtils.concat(clone, '\\'));
+                return clone;
+            }
+        }
+        String[] withASCII = new String[1 + codes.length];
+        withASCII[0] = "";
+        System.arraycopy(codes, 0, withASCII, 1, codes.length);
+        LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
+                StringUtils.concat(codes, '\\'), StringUtils.concat(withASCII, '\\'));
+        return withASCII;
     }
 
     public String[] toCodes () {

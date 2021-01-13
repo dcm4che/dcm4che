@@ -88,14 +88,14 @@ public class DimseRSPHandler {
 
     public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
         if (stopOnPending || !Status.isPending(cmd.getInt(Tag.Status, -1)))
-            stopTimeout(as);
+            stopTimeout();
     }
 
     public void onClose(Association as) {
-        stopTimeout(as);
+        stopTimeout();
     }
 
-    private void stopTimeout(Association as) {
+    private synchronized void stopTimeout() {
         if (timeout != null) {
             timeout.stop();
             timeout = null;

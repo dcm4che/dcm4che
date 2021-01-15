@@ -671,52 +671,37 @@ public class SpecificCharacterSet {
         return false;
     }
 
-    /**
-     * Maps code for Single-Byte Character Sets without Code Extensions to code for Single-Byte Character Sets
-     * with Code Extensions.
-     *
-     * @param code the code without extension
-     * @return the mapped code with extension, {@code null} if no mapping available.
-     */
-    public static String getISO2022Alias(String code) {
-        switch (code) {
-            case "":
-                return "ISO 2022 IR 6";
-            case "ISO_IR 100":
-                return "ISO 2022 IR 100";
-            case "ISO_IR 101":
-                return "ISO 2022 IR 101";
-            case "ISO_IR 109":
-                return "ISO 2022 IR 109";
-            case "ISO_IR 110":
-                return "ISO 2022 IR 110";
-            case "ISO_IR 144":
-                return "ISO 2022 IR 144";
-            case "ISO_IR 127":
-                return "ISO 2022 IR 127";
-            case "ISO_IR 126":
-                return "ISO 2022 IR 126";
-            case "ISO_IR 138":
-                return "ISO 2022 IR 138";
-            case "ISO_IR 148":
-                return "ISO 2022 IR 148";
-            case "ISO_IR 13":
-                return "ISO 2022 IR 13";
-            case "ISO_IR 166":
-                return "ISO 2022 IR 166";
-        }
-        return null;
-    }
-
     private static String[] checkISO2022(String[] codes) {
-        for (String code : codes) {
-            if (code != null && !code.isEmpty() && !code.startsWith("ISO 2022") && getISO2022Alias(code) == null) {
+        String[] results = codes;
+        for (int i = 0; i < codes.length; i++) {
+            String code = codes[i];
+            if (code != null && !code.isEmpty() && !code.startsWith("ISO 2022")) {
+                switch (code) {
+                    case "ISO_IR 100":
+                    case "ISO_IR 101":
+                    case "ISO_IR 109":
+                    case "ISO_IR 110":
+                    case "ISO_IR 144":
+                    case "ISO_IR 127":
+                    case "ISO_IR 126":
+                    case "ISO_IR 138":
+                    case "ISO_IR 148":
+                    case "ISO_IR 13":
+                    case "ISO_IR 166":
+                        if (results == codes) results = codes.clone();
+                        results[i] = "ISO 2022 " + code.substring(4);
+                        continue;
+                }
                 LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
                         StringUtils.concat(codes, '\\'), StringUtils.maskNull(codes[0], ""));
                 return new String[]{codes[0]};
             }
         }
-        return ensureFirstContainsASCII(codes);
+        if (codes != results) {
+            LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
+                    StringUtils.concat(codes, '\\'), StringUtils.concat(results, '\\'));
+        }
+        return ensureFirstContainsASCII(results);
     }
 
     private static String[] ensureFirstContainsASCII(String[] codes) {

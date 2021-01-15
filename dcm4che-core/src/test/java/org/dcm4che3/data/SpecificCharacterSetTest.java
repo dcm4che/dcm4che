@@ -231,6 +231,11 @@ public class SpecificCharacterSetTest {
                 new String[] { "ISO 2022 IR 13", "ISO 2022 IR 87" });
     }
 
+    private SpecificCharacterSet jisX0201_withAlias() {
+        return SpecificCharacterSet.valueOf(
+                new String[] { "ISO_IR 13", "ISO 2022 IR 87" });
+    }
+
     private SpecificCharacterSet ksx1001() {
         return SpecificCharacterSet.valueOf(
                 new String[] { null, "ISO 2022 IR 149" });
@@ -347,6 +352,18 @@ public class SpecificCharacterSetTest {
     public void testDecodeJapanesePersonNameJISX0201() {
         assertEquals(JAPANESE_PERSON_NAME_JISX0201,
                 jisX0201().decode(JAPANESE_PERSON_NAME_JISX0201_BYTES));
+    }
+
+    @Test
+    public void testEncodeJapanesePersonNameJISX0201_withAlias() {
+        assertArrayEquals(JAPANESE_PERSON_NAME_JISX0201_BYTES,
+                jisX0201_withAlias().encode(JAPANESE_PERSON_NAME_JISX0201, PN_DELIMS));
+    }
+
+    @Test
+    public void testDecodeJapanesePersonNameJISX0201_withAlias() {
+        assertEquals(JAPANESE_PERSON_NAME_JISX0201,
+                jisX0201_withAlias().decode(JAPANESE_PERSON_NAME_JISX0201_BYTES));
     }
 
     @Test

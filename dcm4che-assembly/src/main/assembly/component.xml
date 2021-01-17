@@ -221,14 +221,6 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>lib/linux-x86</outputDirectory>
-      <includes>
-        <include>*:*:so:linux-x86:*</include>
-      </includes>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <outputDirectory>lib/linux-x86-64</outputDirectory>
       <includes>
         <include>*:*:so:linux-x86-64:*</include>

@@ -63,6 +63,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.osgi.OpenCVNativeLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.weasis.opencv.data.ImageCV;
 import org.weasis.opencv.op.ImageConversion;
 
@@ -76,6 +78,7 @@ class NativeJPEGImageWriter extends ImageWriter {
         OpenCVNativeLoader loader = new OpenCVNativeLoader();
         loader.init();
     }
+    private static final Logger LOGGER = LoggerFactory.getLogger(NativeJPEGImageWriter.class);
 
     NativeJPEGImageWriter(ImageWriterSpi originatingProvider) throws IOException {
         super(originatingProvider);
@@ -128,13 +131,17 @@ class NativeJPEGImageWriter extends ImageWriter {
                 int channels = CvType.channels(cvType);
                 boolean signed = desc.isSigned();
                 int dcmFlags = signed ? Imgcodecs.DICOM_FLAG_SIGNED : Imgcodecs.DICOM_FLAG_UNSIGNED;
-                // Specific case not well supported by jpeg and jpeg-ls encoder that reduce the stream to 8-bit
                 int bitCompressed = desc.getBitsCompressed();
-                if(bitCompressed == 8 && renderedImage.getSampleModel().getTransferType() != DataBuffer.TYPE_BYTE){
-                  bitCompressed = 12;
+                if(signed && jpegParams.getPrediction() > 1) {
+                    LOGGER.warn("Force JPEGLosslessNonHierarchical14 compression to 16-bit with signed data.");
+                    bitCompressed = 16;
                 }
-                
-                int[] params = new int[15];
+                // Specific case not well supported by jpeg and jpeg-ls encoder that reduce the stream to 8-bit
+                if(bitCompressed == 8 && renderedImage.getSampleModel().getTransferType() != DataBuffer.TYPE_BYTE){
+                    bitCompressed = 12;
+                }
+
+                int[] params = new int[16];
                 params[Imgcodecs.DICOM_PARAM_IMREAD] = Imgcodecs.IMREAD_UNCHANGED; // Image flags
                 params[Imgcodecs.DICOM_PARAM_DCM_IMREAD] = dcmFlags; // DICOM flags
                 params[Imgcodecs.DICOM_PARAM_WIDTH] = mat.width(); // Image width

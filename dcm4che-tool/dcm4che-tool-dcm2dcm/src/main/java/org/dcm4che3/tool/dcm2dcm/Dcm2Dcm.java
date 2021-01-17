@@ -331,12 +331,7 @@ public class Dcm2Dcm {
          }
          final File finalDest = dest.isDirectory() ? new File(dest, src.getName()) : dest;
          if (executer != null) {
-             executer.execute(new Runnable() {
-                 @Override
-                 public void run() {
-                     transcode(src, finalDest);
-                 }
-             });
+             executer.execute(() -> transcode(src, finalDest));
          } else {
              transcode(src, finalDest);
          }
@@ -407,12 +402,7 @@ public class Dcm2Dcm {
             transcoder.setEncodingOptions(encOpts);
             transcoder.setDestinationTransferSyntax(tsuid);
             transcoder.setCompressParams(params.toArray(new Property[params.size()]));
-            transcoder.transcode(new Transcoder.Handler(){
-                @Override
-                public OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException {
-                    return new FileOutputStream(dest);
-                }
-            });
+            transcoder.transcode((transcoder1, dataset) -> new FileOutputStream(dest));
         } catch (Exception e) {
             Files.deleteIfExists(dest.toPath());
             throw e;

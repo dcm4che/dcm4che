@@ -280,7 +280,6 @@ public class Transcoder implements Closeable {
     public void setDestinationTransferSyntax(String tsuid) {
         if (tsuid.equals(destTransferSyntax))
             return;
-
         this.destTransferSyntaxType = TransferSyntaxType.forUID(tsuid);
         this.lossyCompression = TransferSyntaxType.isLossyCompression(tsuid);
         this.destTransferSyntax = tsuid;
@@ -289,6 +288,28 @@ public class Transcoder implements Closeable {
             initDecompressor();
         if (destTransferSyntaxType.isPixeldataEncapsulated())
             initCompressor(tsuid);
+    }
+
+    private String adaptSuitableSyntax(String dstTsuid) {
+    int bitsStored = imageDescriptor.getBitsStored();
+        switch (dstTsuid) {
+            case UID.JPEGBaseline8Bit:
+                return bitsStored <= 8 ? dstTsuid : bitsStored <= 16 ? UID.JPEGLosslessSV1 : UID.ExplicitVRLittleEndian;
+            case UID.JPEGExtended12Bit:
+            case UID.JPEGSpectralSelectionNonHierarchical68:
+            case UID.JPEGFullProgressionNonHierarchical1012:
+                return !imageDescriptor.isSigned() && bitsStored <= 12 ? dstTsuid :
+                    bitsStored <= 16 ? UID.JPEGLosslessSV1 : UID.ExplicitVRLittleEndian;
+            case UID.JPEGLossless:
+            case UID.JPEGLosslessSV1:
+            case UID.JPEGLSLossless:
+            case UID.JPEGLSNearLossless:
+            case UID.JPEG2000Lossless:
+            case UID.JPEG2000:
+                return bitsStored <= 16 ? dstTsuid : UID.ExplicitVRLittleEndian;
+            default:
+                return dstTsuid;
+        }
     }
 
     public String getPixelDataBulkDataURI() {
@@ -409,6 +430,7 @@ public class Transcoder implements Closeable {
                     skipPixelData();
                 } else {
                     imageDescriptor = new ImageDescriptor(attrs, bitsCompressed);
+                    setDestinationTransferSyntax(adaptSuitableSyntax(destTransferSyntax));
                     initDicomOutputStream();
                     processPixelData();
                 }
@@ -566,7 +588,8 @@ public class Transcoder implements Closeable {
                 LOG.warn("Converting PALETTE_COLOR model into a lossy format is not recommended, prefer a lossless format");
             } else if ((pmi.isSubSampled() && !srcTransferSyntaxType.isPixeldataEncapsulated())
                     || (pmi == PhotometricInterpretation.YBR_FULL
-                            && TransferSyntaxType.isYBRCompression(destTransferSyntax))) {
+                            && (TransferSyntaxType.isYBRCompression(destTransferSyntax) ||
+                            destTransferSyntaxType == TransferSyntaxType.JPEG_LS))) {
                 ybr2rgb = true;
                 pmi = PhotometricInterpretation.RGB;
                 LOG.debug("Conversion to an RGB color model is required before compression.");
@@ -598,9 +621,8 @@ public class Transcoder implements Closeable {
 
     private PhotometricInterpretation pmiForCompression(PhotometricInterpretation pmi) {
         // org.dcm4che3.opencv.NativeJPEGImageWriter requires RGB for correct JPEG Lossless compression of YBR_FULL
-        return pmi.isYBR() && destTransferSyntaxType == TransferSyntaxType.JPEG_LOSSLESS
-                ? PhotometricInterpretation.RGB
-                : pmi;
+        return pmi.isYBR() && (destTransferSyntaxType == TransferSyntaxType.JPEG_LOSSLESS ||
+                destTransferSyntaxType == TransferSyntaxType.JPEG_LS)  ? PhotometricInterpretation.RGB : pmi;
     }
 
     private void extractEmbeddedOverlays() {

@@ -58,7 +58,7 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-${slf4j.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-${log4j.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-${commons-cli.version}.jar
 
-rem Setup native library path
+rem Setup the native library path
 "%JAVA%" -version 2>&1 | findstr 64-Bit >nul && set "OS=windows-x86-64" || set "OS=windows-x86"
 set JAVA_LIBRARY_PATH=%DCM4CHE_HOME%\lib\%OS%
 

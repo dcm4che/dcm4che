@@ -155,15 +155,7 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/linux-i686</outputDirectory>
-      <includes>
-        <include>*:*:so:linux-x86:*</include>
-      </includes>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/linux-x86_64</outputDirectory>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/linux-x86-64</outputDirectory>
       <includes>
         <include>*:*:so:linux-x86-64:*</include>
       </includes>
@@ -171,7 +163,7 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/macosx-x86_64</outputDirectory>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/macosx-x86-64</outputDirectory>
       <includes>
         <include>*:*:jnilib:macosx-x86-64:*</include>
       </includes>
@@ -179,7 +171,7 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/win-i686</outputDirectory>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/windows-x86</outputDirectory>
       <includes>
         <include>*:*:dll:windows-x86:*</include>
       </includes>
@@ -187,7 +179,7 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/win-x86_64</outputDirectory>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/windows-x86-64</outputDirectory>
       <includes>
         <include>*:*:dll:windows-x86-64:*</include>
       </includes>

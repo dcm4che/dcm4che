@@ -1,9 +1,9 @@
 MSH|^~\&|MESA_OF|XYZ_RADIOLOGY|MESA_IM|XYZ_IMAGE_MANAGER|||OMI^O23|100112|P|2.5.1|||||| ||
-PID||1234^^^CHIP-ISSUER|4711471151^^^zxcv|1234^^^TATTOO-ISSUER|DOE^Shadow||20141014|F^|OwnerFamilyName^OwnerGivenName||||||||||||||||||||||||||CAN^Canine|TPDL^ToyPoodle||
+PID||1234^^^CHIP-ISSUER|4711471151^^^zxcv|1234^^^TATTOO-ISSUER|DOE^Shadow||20141014|F^|OwnerFamilyName^OwnerGivenName||||||||||||||||||||||||||388490000^Canis^SCT|25243005^Toy poodle dog breed^SCT||
 PV1||E|ED||||1234^WEAVER^TIMOTHY^P^^DR|5101^NELL^FREDERICK^P^^DR||HSR|||||AS||0000^Admitting^Doctor^P^^DR||V100^^^ADT1|||||||||||||||||||||||||200008201100|||||||V|
 ORC|NW|A100Z^MESA_ORDPLC|B100Z^MESA_ORDFIL||SC||||200008161510|^ROSEWOOD^RANDOLPH||7101^ESTRADA^JAIME^P^^DR|Enterer^^Location^EL^00000|(314)555-1212|200008161510||922229-10^IHE-RAD^IHE-CODE-231||
 TQ1|1|1|once||||S|200008161510|
-OBR|1|A100Z^MESA_ORDPLC|B100Z^MESA_ORDFIL||||||||||xxx|||7101^ESTRADA^JAIME^P^^DR||||||||||||||WALK|||||||||||A|||300332007^Liver Mass^SCT|
-IPC|ACC|RPID|1.2.392.200036.9125.0.199402091242.1|SPSID|CR|ProtocolCode^ProtocolMeaning^ProtocolScheme|ScheduledStationName|ScheduledProcedureStepLocation|SSAET\SSAET2
+OBR|1|A100Z^MESA_ORDPLC|B100Z^MESA_ORDFIL||||||||||xxx|||7101^ESTRADA^JAIME^P^^DR||||||||||||||WALK|||||||||||A|||24725-4^Head CT^LN|
+IPC|ACC|RPID|1.2.392.200036.9125.0.199402091242.1|SPSID|CT|ProtocolCode^ProtocolMeaning^ProtocolScheme|ScheduledStationName|ScheduledProcedureStepLocation|SSAET\SSAET2
 OBX|1|TX|kg^Body Weight||15kg||||||F||||||
 OBX|2|TX|m^Body Height||0.4m||||||F||||||

@@ -4,6 +4,6 @@ PV1||E|ED||||1234^WEAVER^TIMOTHY^P^^DR|5101^NELL^FREDERICK^P^^DR||HSR|||||AS||00
 ORC|NW|A100Z^MESA_ORDPLC|B100Z^MESA_ORDFIL||SC||||200008161510|^ROSEWOOD^RANDOLPH||7101^ESTRADA^JAIME^P^^DR|Enterer^^Location^EL^00000|(314)555-1212|200008161510||922229-10^IHE-RAD^IHE-CODE-231||
 TQ1|1|1|once||||S|200008161510|
 OBR|1|A100Z^MESA_ORDPLC|B100Z^MESA_ORDFIL||||||||||xxx|||7101^ESTRADA^JAIME^P^^DR||||||||||||||WALK|||||||||||A|||24725-4^Head CT^LN|
-IPC|ACC|RPID|1.2.392.200036.9125.0.199402091242.1|SPSID|CT|ProtocolCode^ProtocolMeaning^ProtocolScheme|ScheduledStationName|ScheduledProcedureStepLocation|SSAET\SSAET2
+IPC|ACC|RPID|1.2.392.200036.9125.0.199402091242.1|SPSID|CT|ProtocolCode^ProtocolMeaning^ProtocolScheme|ScheduledStationName|ScheduledProcedureStepLocation|SSAET
 OBX|1|TX|kg^Body Weight||15kg||||||F||||||
 OBX|2|TX|m^Body Height||0.4m||||||F||||||

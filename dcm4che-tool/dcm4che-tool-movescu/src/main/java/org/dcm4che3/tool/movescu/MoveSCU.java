@@ -38,6 +38,19 @@
 
 package org.dcm4che3.tool.movescu;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.dcm4che3.data.*;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.net.*;
+import org.dcm4che3.net.pdu.AAssociateRQ;
+import org.dcm4che3.net.pdu.ExtendedNegotiation;
+import org.dcm4che3.net.pdu.PresentationContext;
+import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.SafeClose;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -45,29 +58,6 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.*;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.ElementDictionary;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DimseRSPHandler;
-import org.dcm4che3.net.IncompatibleConnectionException;
-import org.dcm4che3.net.pdu.AAssociateRQ;
-import org.dcm4che3.net.pdu.ExtendedNegotiation;
-import org.dcm4che3.net.pdu.PresentationContext;
-import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.SafeClose;
-import org.dcm4che3.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -214,8 +204,7 @@ public class MoveSCU extends Device {
     private static void addKeyOptions(Options opts) {
         opts.addOption(Option.builder("m")
                 .hasArgs()
-                .argName("attr=value")
-                .valueSeparator('=')
+                .argName("[seq/]attr=value")
                 .desc(rb.getString("match"))
                 .build());
         opts.addOption(Option.builder("i")
@@ -292,11 +281,7 @@ public class MoveSCU extends Device {
     }
 
     private static void configureKeys(MoveSCU main, CommandLine cl) {
-        if (cl.hasOption("m")) {
-            String[] keys = cl.getOptionValues("m");
-            for (int i = 1; i < keys.length; i++, i++)
-                main.addKey(CLIUtils.toTag(keys[i - 1]), StringUtils.split(keys[i], '/'));
-        }
+        CLIUtils.addAttributes(main.keys, cl.getOptionValues("m"));
         if (cl.hasOption("L"))
             main.addLevel(cl.getOptionValue("L"));
         if (cl.hasOption("i"))

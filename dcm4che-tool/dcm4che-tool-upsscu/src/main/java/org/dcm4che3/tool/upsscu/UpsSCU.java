@@ -38,14 +38,6 @@
 
 package org.dcm4che3.tool.upsscu;
 
-import java.io.*;
-import java.security.GeneralSecurityException;
-import java.util.Date;
-import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.*;
 import org.dcm4che3.io.SAXReader;
@@ -59,6 +51,15 @@ import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.util.Date;
+import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -321,7 +322,7 @@ public class UpsSCU {
                 .build());
         opts.addOption(Option.builder("m")
                 .hasArgs()
-                .argName("[seq/]attr=value")
+                .argName("[seq.]attr=value")
                 .desc(rb.getString("match"))
                 .build());
         opts.addOption(Option.builder("O")
@@ -332,7 +333,7 @@ public class UpsSCU {
                 .build());
         opts.addOption(Option.builder("r")
                 .hasArgs()
-                .argName("[seq/]attr")
+                .argName("attr")
                 .desc(rb.getString("return"))
                 .build());
         opts.addOption(Option.builder()
@@ -355,7 +356,7 @@ public class UpsSCU {
                 .build());
         opts.addOption(Option.builder("s")
                 .hasArgs()
-                .argName("[seq/]attr=value")
+                .argName("[seq.]attr=value")
                 .desc(rb.getString("set"))
                 .build());
         opts.addOption(Option.builder()

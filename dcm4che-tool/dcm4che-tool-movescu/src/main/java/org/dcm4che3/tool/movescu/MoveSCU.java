@@ -204,7 +204,7 @@ public class MoveSCU extends Device {
     private static void addKeyOptions(Options opts) {
         opts.addOption(Option.builder("m")
                 .hasArgs()
-                .argName("[seq/]attr=value")
+                .argName("[seq.]attr=value")
                 .desc(rb.getString("match"))
                 .build());
         opts.addOption(Option.builder("i")

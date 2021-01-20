@@ -13,11 +13,11 @@ Options:
                                  memory; at default, bulkdata from -i
                                  <dicom-file> is streamed to -o
                                  <dicom-file> and not hold in memory
-    --blk <[seq/]attr>           specify attribute by keyword or tag value
+    --blk <[seq.]attr>           specify attribute by keyword or tag value
                                  (in hex) which shall be treated as
                                  bulkdata, e.g.
-                                 --blk=IconImageSequence/PixelData or
-                                 --blk=00880200/7FE00010. Multiple
+                                 --blk=IconImageSequence.PixelData or
+                                 --blk=00880200.7FE00010. Multiple
                                  attributes can be specified by repeating
                                  the option for each attribute.
     --blk-file-prefix <prefix>   prefix for generating file names for

@@ -112,7 +112,7 @@ public class Pdf2Dcm {
         CLIUtils.addCommonOptions(opts);
         opts.addOption(Option.builder("m")
                 .hasArgs()
-                .argName("[seq/]attr=value")
+                .argName("[seq.]attr=value")
                 .desc(rb.getString("metadata"))
                 .build());
         opts.addOption(Option.builder("f")

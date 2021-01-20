@@ -122,7 +122,7 @@ public class StowRS {
             throws ParseException {
         Options opts = new Options();
         opts.addOption(Option.builder("m")
-                .numberOfArgs(2).argName("[seq/]attr=value")
+                .numberOfArgs(2).argName("[seq.]attr=value")
                 .desc(rb.getString("metadata"))
                 .build());
         opts.addOption(Option.builder("f")

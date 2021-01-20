@@ -55,13 +55,13 @@
      -f,--file <file>                 Specify the file containing the metadata
                                       (in XML format).
      -h,--help                        display this help and exit
-     -m <[seq/]attr=value>            Specify metadata attributes. attr can be
+     -m <[seq.]attr=value>            Specify metadata attributes. attr can be
                                       specified by keyword or tag value (in
                                       hex), e.g. PatientName or 00100010.
                                       Attributes in nested Datasets can be
                                       specified by including the keyword/tag
                                       value of the sequence attribute, e.g.
-                                      00400275/00400009 for Scheduled
+                                      00400275.00400009 for Scheduled
                                       Procedure Step ID in the Request.
         --no-app                      Application segments APPn are to be
                                       excluded from JPEG stream. If absent

@@ -38,33 +38,19 @@
 
 package org.dcm4che3.tool.mkkos;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Date;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.Option.Builder;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.VR;
+import org.apache.commons.cli.*;
+import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.common.DicomFiles;
 import org.dcm4che3.util.UIDUtils;
+
+import java.io.*;
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -283,7 +269,7 @@ public class MkKOS {
        opts.addOptionGroup(group);
        opts.addOption(Option.builder("s")
                .hasArgs()
-               .argName("[seq/]attr=value")
+               .argName("[seq.]attr=value")
                .desc(rb.getString("set"))
                .build());
        opts.addOption(Option.builder()

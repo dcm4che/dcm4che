@@ -17,12 +17,12 @@
      -f <xml-file>           specify included DICOM attributes by XML
                              presentation in <xml-file>
      -h,--help               display this help and exit
-     -m <[seq/]attr=value>   specify included DICOM Attribute. attr can be
+     -m <[seq.]attr=value>   specify included DICOM Attribute. attr can be
                              specified by keyword or tag value (in hex), e.g.
                              PatientName or00100010. Attributes in nested
                              Datasets can be specified by including the
                              keyword/tag value of the sequence attribute,e.g.
-                             00400275/00400009 for Scheduled Procedure Step ID
+                             00400275.00400009 for Scheduled Procedure Step ID
                              in the Request Attributes Sequence. Overrides
                              DICOM attributesspecified by -f <xml-file>
         --no-app             remove application segments APPn from
@@ -34,24 +34,24 @@
                              etc/jpg2dcm/vlPhotographicImageMetadata.xml file.
     -
     Example 1: jpg2dcm -f metadata.xml image.jpg image.dcm
-    => Encapulate JPEG Image verbatim with DICOM attributes specified in
+    => Encapsulate JPEG Image verbatim with DICOM attributes specified in
     metadata.xml into DICOM Image Object.
     -
     Example 2: jpg2dcm --no-app -m PatientName=Simson^Homer -m PatientSex=M --
     homer.jpg image.dcm
-    => Encapulate JPEG Image without application segments with specified DICOM
-    attributes into DICOM Image Object.
+    => Encapsulate JPEG Image without application segments with specified
+    DICOM attributes into DICOM Image Object.
     -
     Example 3: jpg2dcm video.mpeg video.dcm
-    => Encapulate MPEG2 Video into DICOM Video Object.
+    => Encapsulate MPEG2 Video into DICOM Video Object.
     -
     Example 4: jpg2dcm video.mp4 videoMP4.dcm
-    => Encapulate MP4 Video into DICOM Video Object.
+    => Encapsulate MP4 Video into DICOM Video Object.
     -
     Example 5: jpg2dcm img1.jpeg video1.mp4 dicom-dir
-    => Encapulate the specified image and video files to DICOM objects in
+    => Encapsulate the specified image and video files to DICOM objects in
     dicom-dir.
     -
     Example 6: jpg2dcm image-dir mp4-dir mpeg2-dir dicom-object-dir
-    => Encapulate images and videos specified in mentioned directories to
+    => Encapsulate images and videos specified in mentioned directories to
     DICOM objects in dicom-object-dir.

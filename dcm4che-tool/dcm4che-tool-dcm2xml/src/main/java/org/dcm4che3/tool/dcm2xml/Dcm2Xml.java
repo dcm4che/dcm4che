@@ -38,12 +38,12 @@
 
 package org.dcm4che3.tool.dcm2xml;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
+import org.apache.commons.cli.*;
+import org.dcm4che3.io.BasicBulkDataDescriptor;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.io.SAXWriter;
+import org.dcm4che3.tool.common.CLIUtils;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -53,15 +53,12 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
-import org.dcm4che3.io.*;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.tool.common.CLIUtils;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -191,7 +188,7 @@ public class Dcm2Xml {
         opts.addOption(Option.builder(null)
                 .longOpt("blk")
                 .hasArgs()
-                .argName("[seq/]attr")
+                .argName("[seq.]attr")
                 .desc(rb.getString("blk"))
                 .build());
         opts.addOption(Option.builder(null)

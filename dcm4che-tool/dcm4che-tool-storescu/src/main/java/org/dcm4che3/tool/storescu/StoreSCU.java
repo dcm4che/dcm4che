@@ -38,14 +38,29 @@
 
 package org.dcm4che3.tool.storescu;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
+import org.dcm4che3.imageio.codec.Decompressor;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.io.SAXReader;
+import org.dcm4che3.net.*;
+import org.dcm4che3.net.pdu.AAssociateRQ;
+import org.dcm4che3.net.pdu.PresentationContext;
+import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.tool.common.DicomFiles;
+import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.util.StringUtils;
+import org.dcm4che3.util.TagUtils;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.List;
@@ -55,38 +70,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.imageio.codec.Decompressor;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.SAXReader;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.DataWriterAdapter;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DimseRSPHandler;
-import org.dcm4che3.net.IncompatibleConnectionException;
-import org.dcm4che3.net.InputStreamDataWriter;
-import org.dcm4che3.net.Status;
-import org.dcm4che3.net.pdu.AAssociateRQ;
-import org.dcm4che3.net.pdu.PresentationContext;
-import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.tool.common.DicomFiles;
-import org.dcm4che3.util.SafeClose;
-import org.dcm4che3.util.StringUtils;
-import org.dcm4che3.util.TagUtils;
-import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -208,7 +191,7 @@ public class StoreSCU {
     private static void addAttributesOption(Options opts) {
         opts.addOption(Option.builder("s")
                 .hasArgs()
-                .argName("[seq/]attr=value")
+                .argName("[seq.]attr=value")
                 .desc(rb.getString("set"))
                 .build());
     }

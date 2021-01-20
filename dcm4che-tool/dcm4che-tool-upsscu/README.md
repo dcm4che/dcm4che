@@ -67,7 +67,7 @@ Options:
                                           Globally/FilteredGlobalSubscript
                                           ion/SpecificUPSInstance with
                                           deletion lock.
- -m <[seq/]attr=value>                    Specify matching key for
+ -m <[seq.]attr=value>                    Specify matching key for
                                           subscribing to Filtered Global
                                           Subscription. Attributes can be
                                           specified by keyword or tag
@@ -76,9 +76,9 @@ Options:
                                           nested Datasets can be specified
                                           by including the keyword/tag
                                           value of the sequence attribute,
-                                          e.g. 00400275/00400009 for
-                                          Scheduled Procedure Step ID in
-                                          the Request Attributes Sequence.
+                                          e.g. 00404018.00080100 for Code
+                                          Value in Scheduled Workitem Code
+                                          Sequence.
     --max-ops-invoked <no>                maximum number of operations
                                           this AE may invoke
                                           asynchronously, unlimited by
@@ -134,12 +134,11 @@ Options:
     --proxy <[user:password@]host:port>   specify host and port of the
                                           HTTP Proxy to tunnel the DICOM
                                           connection.
- -r <[seq/]attr>                          Specify return key for
+ -r <attr>                                Specify return key for
                                           --operation get. Key can be
                                           specified by keyword or tag
                                           value (in hex), e.g.
-                                          NumberOfStudyRelatedSeries or
-                                          00201206.
+                                          WorklistLabel or 00741202.
     --reason <reason>                     Specify Reason of Request
                                           Cancellation of UPS.
     --reason-code <code>                  Specify Reason Code in format
@@ -158,7 +157,7 @@ Options:
                                           other outstanding DIMSE RSPs
                                           than C-MOVE or C-GET RSPs, no
                                           timeout by default
- -s <[seq/]attr=value>                    Set element of dataset in format
+ -s <[seq.]attr=value>                    Set element of dataset in format
                                           <attribute=value>.
     --send-timeout <ms>                   timeout in ms for sending other
                                           DIMSE RQs than C-STORE RQs, no

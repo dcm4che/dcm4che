@@ -38,29 +38,19 @@
 
 package org.dcm4che3.tool.xml2dcm;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.ResourceBundle;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
+import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
 import org.dcm4che3.io.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.tool.common.CLIUtils;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.*;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger (gunterze@protonmail.com)
@@ -211,7 +201,7 @@ public class Xml2Dcm {
          opts.addOption(Option.builder(null)
                  .longOpt("blk")
                  .hasArgs()
-                 .argName("[seq/]attr")
+                 .argName("[seq.]attr")
                  .desc(rb.getString("blk"))
                  .build());
          opts.addOption(Option.builder(null)

@@ -38,34 +38,8 @@
 
 package org.dcm4che3.tool.ihe.modality;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.security.GeneralSecurityException;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.Option.Builder;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.VR;
+import org.apache.commons.cli.*;
+import org.dcm4che3.data.*;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
@@ -77,6 +51,16 @@ import org.dcm4che3.tool.mppsscu.MppsSCU;
 import org.dcm4che3.tool.stgcmtscu.StgCmtSCU;
 import org.dcm4che3.tool.storescu.StoreSCU;
 import org.dcm4che3.util.UIDUtils;
+
+import java.io.*;
+import java.security.GeneralSecurityException;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author Michael Backhaus <michael.backhaus@agfa.com>
@@ -369,7 +353,7 @@ public class Modality {
                 .build());
         opts.addOption(Option.builder("s")
                 .hasArgs()
-                .argName("[seq/]attr=value")
+                .argName("[seq.]attr=value")
                 .desc(rb.getString("set"))
                 .build());
    }

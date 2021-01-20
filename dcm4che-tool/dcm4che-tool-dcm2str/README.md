@@ -1,4 +1,4 @@
-    usage: dcm2str -p <pattern> [-s <[seq/]attr=value>].. --
+    usage: dcm2str -p <pattern> [-s <[seq.]attr=value>].. --
                    [<file>..][<directory>..]
     
     Apply Attributes Format Pattern either to one or more DICOM files and/or
@@ -9,12 +9,12 @@
     Options:
      -h,--help               display this help and exit
      -p <pattern>            Specify Attributes Format Pattern to be applied.
-     -s <[seq/]attr=value>   Specify attributes added to the object(s). It can
+     -s <[seq.]attr=value>   Specify attributes added to the object(s). It can
                              be specified by keyword or tag (in hex), e.g.
                              StudyInstanceUID=1.2.3 or 0020000D=1.2.3.
                              Attributes in nested Datasets can be specified by
                              including the keyword/tag value of the sequence
-                             attribute, e.g. 00400275/00400009 for Scheduled
+                             attribute, e.g. 00400275.00400009 for Scheduled
                              Procedure Step ID in the Request Attributes
                              Sequence.
      -V,--version            output version information and exit

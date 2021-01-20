@@ -38,26 +38,24 @@
 
 package org.dcm4che3.tool.dcm2json;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.*;
-
-import javax.json.Json;
-import javax.json.JsonValue;
-import javax.json.stream.JsonGenerator;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
+
+import javax.json.Json;
+import javax.json.JsonValue;
+import javax.json.stream.JsonGenerator;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -160,7 +158,7 @@ public class Dcm2Json {
         opts.addOption(Option.builder(null)
                 .longOpt("blk")
                 .hasArgs()
-                .argName("[seq/]attr")
+                .argName("[seq.]attr")
                 .desc(rb.getString("blk"))
                 .build());
         opts.addOption(Option.builder(null)

@@ -126,7 +126,7 @@ Options:
                                           other outstanding DIMSE RSPs
                                           than C-MOVE or C-GET RSPs, no
                                           timeout by default
- -s <[seq/]attr=value>                    specify attributes added to the
+ -s <[seq.]attr=value>                    specify attributes added to the
                                           sent object(s). attr can be
                                           specified by keyword or tag
                                           value (in hex), e.g. PatientName
@@ -134,7 +134,7 @@ Options:
                                           nested Datasets can be specified
                                           by including the keyword/tag
                                           value of the sequence attribute,
-                                          e.g. 00400275/00400009 for
+                                          e.g. 00400275.00400009 for
                                           Scheduled Procedure Step ID in
                                           the Request Attributes Sequence.
     --send-timeout <ms>                   timeout in ms for sending other

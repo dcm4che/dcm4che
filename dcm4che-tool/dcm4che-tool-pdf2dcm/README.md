@@ -21,30 +21,30 @@
      -f <xml-file>                    specify included DICOM attributes by XML
                                       presentation in <xml-file>
      -h,--help                        display this help and exit
-     -m <[seq/]attr=value>            specify included DICOM Attribute. attr
+     -m <[seq.]attr=value>            specify included DICOM Attribute. attr
                                       can be specified by keyword or tag value
                                       (in hex), e.g. PatientName or 00100010.
                                       Attributes in nested Datasets can be
                                       specified by including the keyword/tag
                                       value of the sequence attribute, e.g.
-                                      00400275/00400009 for Scheduled
+                                      00400275.00400009 for Scheduled
                                       Procedure Step ID in the Request
                                       Attributes Sequence. Overrides DICOM
                                       attributes specified by -f <xml-file>
      -V,--version                     output version information and exit
     -
     Example 1: pdf2dcm -f metadata.xml file.pdf object.dcm
-    => Encapulate PDF document with DICOM attributes specified in metadata.xml
-    into DICOM Object.
+    => Encapsulate PDF document with DICOM attributes specified in
+    metadata.xml into DICOM Object.
     -
     Example 2: pdf2dcm -f metadata.xml cda.xml object.dcm
-    => Encapulate CDA file by first generating metadata from
+    => Encapsulate CDA file by first generating metadata from
     etc/pdf2dcm/encapsulatedCDAMetadata.xml and then adding DICOM attributes
     specified in metadata.xml into DICOM Object.
     -
     Example 3: pdf2dcm -f metadata.xml --contentType model/stl stl.xml
     stlObject.dcm
-    => Encapulate STL file by first generating metadata from
+    => Encapsulate STL file by first generating metadata from
     etc/pdf2dcm/encapsulatedSTLMetadata.xml and then adding DICOM attributes
     specified in metadata.xml into DICOM Object. Additionally content type of
     the file returned by system will be ignored and instead specified content
@@ -52,14 +52,14 @@
     -
     Example 4: pdf2dcm -m PatientName=Simson^Homer -m PatientSex=M -- file.pdf
     object.dcm
-    => Encapulate PDF document first generating metadata from
+    => Encapsulate PDF document first generating metadata from
     etc/pdf2dcm/encapsulatedPDFMetadata.xml and then adding given PatientName
     and PatientSex into DICOM Image Object.
     -
     Example 5: pdf2dcm file.pdf file.stl dicom-dir
-    => Encapulate the specified PDF and STL files to DICOM objects in
+    => Encapsulate the specified PDF and STL files to DICOM objects in
     dicom-dir.
     -
     Example 6: pdf2dcm pdf-dir cda-dir stl-dir dicom-object-dir
-    => Encapulate PDF files, CDA files and STL files specified in mentioned
+    => Encapsulate PDF files, CDA files and STL files specified in mentioned
     directories to DICOM objects in dicom-object-dir.

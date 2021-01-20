@@ -92,14 +92,14 @@ Options:
                                           ColorPalette. If no Information
                                           Model is specified, StudyRoot
                                           will be used.
- -m <[seq/]attr=value>                    specify matching key. attr can
+ -m <[seq.]attr=value>                    specify matching key. attr can
                                           be specified by keyword or tag
                                           value (in hex), e.g. PatientName
                                           or 00100010. Attributes in
                                           nested Datasets can be specified
                                           by including the keyword/tag
                                           value of the sequence attribute,
-                                          e.g. 00400275/00400009 for
+                                          e.g. 00400275.00400009 for
                                           Scheduled Procedure Step ID in
                                           the Request Attributes Sequence.
                                           Overrides query keys specified
@@ -157,7 +157,7 @@ Options:
     --proxy <[user:password@]host:port>   specify host and port of the
                                           HTTP Proxy to tunnel the DICOM
                                           connection.
- -r <[seq/]attr>                          specify return key. key can be
+ -r <[seq.]attr>                          specify return key. key can be
                                           specified by keyword or tag
                                           value (in hex), e.g.
                                           NumberOfStudyRelatedSeries or

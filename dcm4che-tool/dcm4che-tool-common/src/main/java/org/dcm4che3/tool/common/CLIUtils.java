@@ -38,43 +38,24 @@
 
 package org.dcm4che3.tool.common;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.text.MessageFormat;
-import java.util.EnumMap;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.Option.Builder;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.ElementDictionary;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.VR;
+import org.apache.commons.cli.*;
+import org.dcm4che3.data.*;
 import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.io.DicomEncodingOptions;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.Priority;
-import org.dcm4che3.net.SSLManagerFactory;
+import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.UserIdentityRQ;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.text.MessageFormat;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -804,10 +785,10 @@ public class CLIUtils {
                 int delim = optVal.indexOf('=');
                 if (delim < 0) {
                     addAttributes(attrs,
-                            toTags(StringUtils.split(optVal, '/')));
+                            toTags(StringUtils.split(optVal, '.')));
                 } else {
                     addAttributes(attrs,
-                            toTags(StringUtils.split(optVal.substring(0, delim), '/')),
+                            toTags(StringUtils.split(optVal.substring(0, delim), '.')),
                             optVal.substring(delim + 1));
                 }
             }
@@ -817,13 +798,13 @@ public class CLIUtils {
         if (optVals != null)
             for (int i = 0; i < optVals.length; i++)
                 addAttributes(attrs,
-                        toTags(StringUtils.split(optVals[i], '/')));
+                        toTags(StringUtils.split(optVals[i], '.')));
     }
 
     public static void addTagPaths(BasicBulkDataDescriptor desc, String[] optVals) {
         if (optVals != null)
             for (int i = 0; i < optVals.length; i++)
-                desc.addTagPath(toTags(StringUtils.split(optVals[i], '/')));
+                desc.addTagPath(toTags(StringUtils.split(optVals[i], '.')));
     }
 
     public static boolean updateAttributes(Attributes data, Attributes attrs,

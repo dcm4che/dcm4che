@@ -9,6 +9,8 @@
     <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA"/>
     <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS"/>
     <DicomAttribute keyword="OtherPatientIDSequence" tag="00101002" vr="SQ"/>
+    <DicomAttribute keyword="PatientSize" tag="00101020" vr="DS"/>
+    <DicomAttribute keyword="PatientWeight" tag="00101030" vr="DS"/>
     <DicomAttribute keyword="MedicalAlerts" tag="00102000" vr="LO"/>
     <DicomAttribute keyword="PregnancyStatus" tag="001021C0" vr="US"/>
     <DicomAttribute keyword="PatientSpeciesDescription" tag="00102201" vr="LO"/>

@@ -130,14 +130,18 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public DicomInputStream(InputStream in) throws IOException {
+        this(in, 128);
+    }
+
+    public DicomInputStream(InputStream in, int preambleLength) throws IOException {
         super(in.markSupported() ? in : new BufferedInputStream(in));
-        guessTransferSyntax();
+        guessTransferSyntax(preambleLength);
     }
 
     public DicomInputStream(File file) throws IOException {
         super(new BufferedInputStream(new FileInputStream(file)));
         try {
-            guessTransferSyntax();
+            guessTransferSyntax(128);
         } catch (IOException e) {
             SafeClose.close(in);
             throw e;
@@ -426,7 +430,7 @@ public class DicomInputStream extends FilterInputStream
         default:
             if (explicitVR) {
                 vr = VR.valueOf(encodedVR = ByteUtils.bytesToVR(buf, 4));
-                if (vr.headerLength() == 8) {
+                if (vr != null && vr.headerLength() == 8) {
                     // This length can't overflow since length field is only 16 bits in this case.
                     length = ByteUtils.bytesToUShort(buf, 6, bigEndian);
                     return;
@@ -548,6 +552,11 @@ public class DicomInputStream extends FilterInputStream
             }
             if (stopPredicate.test(this))
                 break;
+            if (encodedVR != 0 && vr == null) {
+                LOG.warn("Unrecognized VR code: {}H - treat as UN",
+                        TagUtils.shortToHexString(encodedVR));
+                vr = VR.UN;
+            }
             if (vr != null) {
                 if (vr == VR.UN) {
                     vr = ElementDictionary.vrOf(tag,
@@ -570,7 +579,11 @@ public class DicomInputStream extends FilterInputStream
             throws IOException {
         checkIsThis(dis);
         if (excludeBulkData) {
-            skipFully(length);
+            if (length == -1) {
+                skipSequence();
+            } else {
+                skipFully(length);
+            }
         } else if (length == 0) {
             attrs.setNull(tag, vr);
         } else if (vr == VR.SQ) {
@@ -591,6 +604,26 @@ public class DicomInputStream extends FilterInputStream
                 attrs.setBytes(tag, vr, b);
             } else if (tag == Tag.FileMetaInformationGroupLength)
                 setFileMetaInformationGroupLength(b);
+        }
+    }
+
+    private void skipSequence() throws IOException {
+        while (readItemHeader()) skipItem();
+    }
+
+    private void skipItem() throws IOException {
+        if (length == -1) {
+            for (;;) {
+                readHeader();
+                if (length == -1) {
+                    skipSequence();
+                } else {
+                    skipFully(length);
+                    if (tag == Tag.ItemDelimitationItem) break;
+                }
+            }
+        } else {
+            skipFully(length);
         }
     }
 
@@ -858,14 +891,17 @@ public class DicomInputStream extends FilterInputStream
         return ByteUtils.bytesToUShortBE(buf, 0) == ZLIB_HEADER;
     }
 
-    private void guessTransferSyntax() throws IOException {
-        byte[] b132 = new byte[132];
-        mark(132);
-        int rlen = StreamUtils.readAvailable(this, b132, 0, 132);
-        if (rlen == 132) {
-            if (b132[128] == 'D' && b132[129] == 'I' && b132[130] == 'C' && b132[131] == 'M') {
-                preamble = new byte[128];
-                System.arraycopy(b132, 0, preamble, 0, 128);
+    private void guessTransferSyntax(int preambleLength) throws IOException {
+        byte[] b132 = new byte[preambleLength + 4];
+        mark(b132.length);
+        int rlen = StreamUtils.readAvailable(this, b132, 0, b132.length);
+        if (rlen == b132.length) {
+            if (b132[preambleLength] == 'D'
+                    && b132[preambleLength + 1] == 'I'
+                    && b132[preambleLength + 2] == 'C'
+                    && b132[preambleLength + 3] == 'M') {
+                preamble = new byte[preambleLength];
+                System.arraycopy(b132, 0, preamble, 0, preambleLength);
                 if (!markSupported()) {
                     hasfmi = true;
                     tsuid = UID.ExplicitVRLittleEndian;
@@ -873,8 +909,8 @@ public class DicomInputStream extends FilterInputStream
                     explicitVR = true;
                     return;
                 }
-                mark(132);
-                rlen = StreamUtils.readAvailable(this, b132, 0, 132);
+                mark(b132.length);
+                rlen = StreamUtils.readAvailable(this, b132, 0, b132.length);
             }
         }
         if (rlen < 8

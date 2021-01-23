@@ -130,6 +130,7 @@
         <include>org.dcm4che:dcm4che-soundex</include>
         <include>org.dcm4che:dcm4che-ws-rs</include>
         <include>org.dcm4che:dcm4che-xdsi</include>
+        <include>org.dcm4che.tool:dcm4che-tool-agfa2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-common</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2dcm</include>

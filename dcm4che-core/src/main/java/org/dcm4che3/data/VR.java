@@ -252,9 +252,7 @@ public enum VR {
             if (vr != null)
                 return vr;
         } catch (IndexOutOfBoundsException e) {}
-        LOG.warn("Unrecognized VR code: {}H - treat as UN",
-                TagUtils.shortToHexString(code));
-        return UN;
+        return null;
     }
 
     public int code() {

@@ -100,12 +100,15 @@ public class StreamUtils {
         copy(in, out, new byte[COPY_BUFFER_SIZE]);
     }
 
-    public static  void copy(InputStream in, OutputStream out, int len,
-            byte buf[]) throws IOException {
+    public static  void copy(InputStream in, OutputStream out, int len, byte buf[]) throws IOException {
+        copy(in, out, (long) len, buf);
+    }
+
+    public static  void copy(InputStream in, OutputStream out, long len, byte buf[]) throws IOException {
         if (len < 0)
             throw new IndexOutOfBoundsException();
         while (len > 0) {
-            int count = in.read(buf, 0, Math.min(len, buf.length));
+            int count = in.read(buf, 0, (int) Math.min(len, buf.length));
             if (count < 0)
                 throw new EOFException();
             out.write(buf, 0, count);
@@ -113,9 +116,12 @@ public class StreamUtils {
         }
     }
 
-    public static  void copy(InputStream in, OutputStream out, int len)
-            throws IOException {
-        copy(in, out, len, new byte[Math.min(len, COPY_BUFFER_SIZE)]);
+    public static  void copy(InputStream in, OutputStream out, int len) throws IOException {
+        copy(in, out, (long) len);
+    }
+
+    public static  void copy(InputStream in, OutputStream out, long len) throws IOException {
+        copy(in, out, (long) len, new byte[(int) Math.min(len, COPY_BUFFER_SIZE)]);
     }
 
     public static void copy(InputStream in, OutputStream out, int len,

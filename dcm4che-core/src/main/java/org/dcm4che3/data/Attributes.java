@@ -65,10 +65,10 @@ public class Attributes implements Serializable {
     }
 
     public interface SequenceVisitor extends Visitor {
-    	default void startSequence(int sqTag) {};
-    	default void endSequence() {};
         void startItem(int sqTag, int itemIndex);
         void endItem();
+        default void startSequence(int sqTag) {};
+        default void endSequence() {};
     }
 
     public static abstract class ItemPointerVisitor implements SequenceVisitor {

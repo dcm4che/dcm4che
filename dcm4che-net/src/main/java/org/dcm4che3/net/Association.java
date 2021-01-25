@@ -812,6 +812,7 @@ public class Association {
     private DimseRSPHandler removeDimseRSPHandler(int msgId) {
         synchronized (rspHandlerForMsgId ) {
             DimseRSPHandler tmp = rspHandlerForMsgId.remove(msgId);
+            tmp.stopTimeout(this);
             rspHandlerForMsgId.notifyAll();
             return tmp;
         }

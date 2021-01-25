@@ -95,7 +95,7 @@ public class DimseRSPHandler {
         stopTimeout(as);
     }
 
-    private void stopTimeout(Association as) {
+    void stopTimeout(Association as) {
         if (timeout != null) {
             timeout.stop();
             timeout = null;

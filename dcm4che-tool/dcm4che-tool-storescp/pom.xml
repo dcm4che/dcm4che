@@ -47,7 +47,15 @@
   <artifactId>dcm4che-tool-storescp</artifactId>
   <name>dcm4che-tool-storescp</name>
   <description>Receive DICOM Composite Objects from peer DICOM AE</description>
+  <properties>
+    <commons-io.version>2.7</commons-io.version>
+  </properties>
   <dependencies>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>

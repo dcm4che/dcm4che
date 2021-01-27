@@ -38,46 +38,44 @@
 
 package org.dcm4che3.tool.storescp;
 
-import java.io.File;
-import java.io.IOException;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.IOUtils;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.net.*;
+import org.dcm4che3.net.pdu.PresentationContext;
+import org.dcm4che3.net.service.BasicCEchoSCP;
+import org.dcm4che3.net.service.BasicCStoreSCP;
+import org.dcm4che3.net.service.DicomServiceRegistry;
+import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.tool.storescp.io.CopyableDicomInputStream;
+import org.dcm4che3.util.AttributesFormat;
+import org.dcm4che3.util.SafeClose;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.net.*;
-import org.dcm4che3.net.pdu.PresentationContext;
-import org.dcm4che3.net.service.BasicCEchoSCP;
-import org.dcm4che3.net.service.BasicCStoreSCP;
-import org.dcm4che3.net.service.DicomServiceException;
-import org.dcm4che3.net.service.DicomServiceRegistry;
-import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.AttributesFormat;
-import org.dcm4che3.util.SafeClose;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
  */
 public class StoreSCP {
 
     private static final Logger LOG = LoggerFactory.getLogger(StoreSCP.class);
 
     private static ResourceBundle rb =
-        ResourceBundle.getBundle("org.dcm4che3.tool.storescp.messages");
+            ResourceBundle.getBundle("org.dcm4che3.tool.storescp.messages");
     private static final String PART_EXT = ".part";
 
     private final Device device = new Device("storescp");
@@ -92,32 +90,38 @@ public class StoreSCP {
 
         @Override
         protected void store(Association as, PresentationContext pc,
-                Attributes rq, PDVInputStream data, Attributes rsp)
+                             Attributes rq, PDVInputStream data, Attributes rsp)
                 throws IOException {
             sleep(as, receiveDelays);
-            try {
-                rsp.setInt(Tag.Status, VR.US, status);
-                if (storageDir == null)
-                    return;
+            if (storageDir == null) return;
 
-                String cuid = rq.getString(Tag.AffectedSOPClassUID);
-                String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-                String tsuid = pc.getTransferSyntax();
-                File file = new File(storageDir, iuid + PART_EXT);
-                try {
-                    storeTo(as, as.createFileMetaInformation(iuid, cuid, tsuid),
-                            data, file);
-                    renameTo(as, file, new File(storageDir,
-                            filePathFormat == null
-                                    ? iuid
-                                    : filePathFormat.format(parse(file))));
-                } catch (Exception e) {
-                    deleteFile(as, file);
-                    throw new DicomServiceException(Status.ProcessingFailure, e);
+            Attributes dataset = new Attributes();
+            String tsuid = pc.getTransferSyntax();
+            String cuid = rq.getString(Tag.AffectedSOPClassUID);
+            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+            Attributes fmi = as.createFileMetaInformation(iuid, cuid, tsuid);
+
+            try (CopyableDicomInputStream bdis = new CopyableDicomInputStream(data, pc.getTransferSyntax());) {
+                dataset.addAll(bdis.readDatasetUntilPixelData());
+                try (InputStream bais = new ByteArrayInputStream(bdis.getOutput().toByteArray());
+                     InputStream sis = new SequenceInputStream(bais, bdis);) {
+                    File tmpFile = new File(storageDir, iuid + PART_EXT);
+                    File destinationFile = new File(storageDir, filePathFormat == null ? iuid : filePathFormat.format(dataset));
+                    try {
+                        try (DicomOutputStream dos = new DicomOutputStream(tmpFile)) {
+                            dos.writeFileMetaInformation(fmi);
+                            IOUtils.copy(sis, dos);
+                        }
+                        renameTo(as, tmpFile, destinationFile);
+                    } catch (Exception e) {
+                        deleteFile(as, destinationFile);
+                        throw e;
+                    } finally {
+                        deleteFile(as, tmpFile);
+                    }
                 }
-            } finally {
-                sleep(as, responseDelays);
             }
+
         }
 
     };
@@ -141,8 +145,8 @@ public class StoreSCP {
         ae.addConnection(conn);
     }
 
-    private void storeTo(Association as, Attributes fmi, 
-            PDVInputStream data, File file) throws IOException  {
+    private void storeTo(Association as, Attributes fmi,
+                         PDVInputStream data, File file) throws IOException {
         LOG.info("{}: M-WRITE {}", as, file);
         file.getParentFile().mkdirs();
         DicomOutputStream out = new DicomOutputStream(file);
@@ -281,7 +285,7 @@ public class StoreSCP {
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
-            ScheduledExecutorService scheduledExecutorService = 
+            ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
             main.device.setScheduledExecutor(scheduledExecutorService);
             main.device.setExecutor(executorService);
@@ -307,27 +311,27 @@ public class StoreSCP {
     }
 
     private static void configureTransferCapability(ApplicationEntity ae,
-            CommandLine cl) throws IOException {
+                                                    CommandLine cl) throws IOException {
         if (cl.hasOption("accept-unknown")) {
             ae.addTransferCapability(
-                    new TransferCapability(null, 
+                    new TransferCapability(null,
                             "*",
                             TransferCapability.Role.SCP,
                             "*"));
         } else {
             Properties p = CLIUtils.loadProperties(
-                    cl.getOptionValue("sop-classes", 
+                    cl.getOptionValue("sop-classes",
                             "resource:sop-classes.properties"),
                     null);
             for (String cuid : p.stringPropertyNames()) {
                 String ts = p.getProperty(cuid);
                 TransferCapability tc = new TransferCapability(null,
-                        CLIUtils.toUID(cuid), 
+                        CLIUtils.toUID(cuid),
                         TransferCapability.Role.SCP,
                         CLIUtils.toUIDs(ts));
                 ae.addTransferCapability(tc);
             }
         }
-     }
+    }
 
 }

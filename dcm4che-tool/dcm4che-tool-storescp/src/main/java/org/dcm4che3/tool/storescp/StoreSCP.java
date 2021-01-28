@@ -46,8 +46,6 @@ import org.apache.commons.io.IOUtils;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.PresentationContext;
@@ -57,7 +55,6 @@ import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.storescp.io.CopyableDicomInputStream;
 import org.dcm4che3.util.AttributesFormat;
-import org.dcm4che3.util.SafeClose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,16 +158,6 @@ public class StoreSCP {
             dest.delete();
         if (!from.renameTo(dest))
             throw new IOException("Failed to rename " + from + " to " + dest);
-    }
-
-    private static Attributes parse(File file) throws IOException {
-        DicomInputStream in = new DicomInputStream(file);
-        try {
-            in.setIncludeBulkData(IncludeBulkData.NO);
-            return in.readDatasetUntilPixelData();
-        } finally {
-            SafeClose.close(in);
-        }
     }
 
     private static void deleteFile(Association as, File file) {

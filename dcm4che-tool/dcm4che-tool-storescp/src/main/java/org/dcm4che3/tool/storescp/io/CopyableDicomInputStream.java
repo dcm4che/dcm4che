@@ -41,7 +41,6 @@ package org.dcm4che3.tool.storescp.io;
 import org.dcm4che3.io.DicomInputStream;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 

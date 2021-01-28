@@ -46,6 +46,7 @@ import org.apache.commons.io.IOUtils;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.PresentationContext;
@@ -94,14 +95,16 @@ public class StoreSCP {
             rsp.setInt(Tag.Status, VR.US, status);
             if (storageDir == null) return;
 
+
             try (CopyableDicomInputStream bdis = new CopyableDicomInputStream(data, pc.getTransferSyntax());) {
                 Attributes dataset = bdis.readDatasetUntilPixelData();
                 try (InputStream bais = new ByteArrayInputStream(bdis.getOutput().toByteArray());
-                     InputStream sis = new SequenceInputStream(bais, bdis);) {
+                     InputStream sis = new SequenceInputStream(bais, bdis);
+                     InputStream dis = new DicomInputStream(sis, pc.getTransferSyntax());) {
                     String tsuid = pc.getTransferSyntax();
                     String cuid = rq.getString(Tag.AffectedSOPClassUID);
                     String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-                    storeTo(as, iuid, as.createFileMetaInformation(iuid, cuid, tsuid), dataset, sis);
+                    storeTo(as, iuid, as.createFileMetaInformation(iuid, cuid, tsuid), dataset, dis);
                 }
             } finally {
                 sleep(as, responseDelays);

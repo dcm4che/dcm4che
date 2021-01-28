@@ -408,7 +408,7 @@ public class StowRS {
     private static void setContentAndAcceptType(CommandLine cl, boolean dicom) throws Exception {        
         if (dicom) {
             requestContentType = MediaTypes.APPLICATION_DICOM;
-            requestAccept = MediaTypes.APPLICATION_DICOM_XML;
+            requestAccept = cl.hasOption("a") ? getOptionValue("a", cl) : MediaTypes.APPLICATION_DICOM_XML;
             return;
         }
 

@@ -27,11 +27,12 @@
                                       xml or json. The value of Accept header
                                       will then be sent in request header as
                                       application/dicom+xml or
-                                      application/dicom+json. Note that for
-                                      DICOM objects application/dicom+xml will
-                                      always be used by default. If this flag
-                                      is absent, for bulkdata type of objects
-                                      the value specified in -t option will be
+                                      application/dicom+json. For DICOM
+                                      objects, if this option is not set then
+                                      application/dicom+xml will be used
+                                      always by default. If this flag is
+                                      absent, for bulkdata type of objects the
+                                      value specified in -t option will be
                                       used to determine application/dicom+xml
                                       or application/dicom+json. If -t option
                                       is absent as well then

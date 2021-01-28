@@ -45,6 +45,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.io.DicomOutputStream;
@@ -93,37 +94,22 @@ public class StoreSCP {
                              Attributes rq, PDVInputStream data, Attributes rsp)
                 throws IOException {
             sleep(as, receiveDelays);
+            rsp.setInt(Tag.Status, VR.US, status);
             if (storageDir == null) return;
 
-            Attributes dataset = new Attributes();
-            String tsuid = pc.getTransferSyntax();
-            String cuid = rq.getString(Tag.AffectedSOPClassUID);
-            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-            Attributes fmi = as.createFileMetaInformation(iuid, cuid, tsuid);
-
             try (CopyableDicomInputStream bdis = new CopyableDicomInputStream(data, pc.getTransferSyntax());) {
-                dataset.addAll(bdis.readDatasetUntilPixelData());
+                Attributes dataset = bdis.readDatasetUntilPixelData();
                 try (InputStream bais = new ByteArrayInputStream(bdis.getOutput().toByteArray());
                      InputStream sis = new SequenceInputStream(bais, bdis);) {
-                    File tmpFile = new File(storageDir, iuid + PART_EXT);
-                    File destinationFile = new File(storageDir, filePathFormat == null ? iuid : filePathFormat.format(dataset));
-                    try {
-                        try (DicomOutputStream dos = new DicomOutputStream(tmpFile)) {
-                            dos.writeFileMetaInformation(fmi);
-                            IOUtils.copy(sis, dos);
-                        }
-                        renameTo(as, tmpFile, destinationFile);
-                    } catch (Exception e) {
-                        deleteFile(as, destinationFile);
-                        throw e;
-                    } finally {
-                        deleteFile(as, tmpFile);
-                    }
+                    String tsuid = pc.getTransferSyntax();
+                    String cuid = rq.getString(Tag.AffectedSOPClassUID);
+                    String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+                    storeTo(as, iuid, as.createFileMetaInformation(iuid, cuid, tsuid), dataset, sis);
                 }
+            } finally {
+                sleep(as, responseDelays);
             }
-
         }
-
     };
 
     private void sleep(Association as, int[] delays) {
@@ -145,16 +131,26 @@ public class StoreSCP {
         ae.addConnection(conn);
     }
 
-    private void storeTo(Association as, Attributes fmi,
-                         PDVInputStream data, File file) throws IOException {
-        LOG.info("{}: M-WRITE {}", as, file);
-        file.getParentFile().mkdirs();
-        DicomOutputStream out = new DicomOutputStream(file);
+    private void storeTo(
+            Association as,
+            String iuid,
+            Attributes fmi,
+            Attributes dataset,
+            InputStream sis
+    ) throws IOException {
+        File tmpFile = new File(storageDir, iuid + PART_EXT);
+        File destinationFile = new File(storageDir, filePathFormat == null ? iuid : filePathFormat.format(dataset));
         try {
-            out.writeFileMetaInformation(fmi);
-            data.copyTo(out);
+            try (DicomOutputStream dos = new DicomOutputStream(tmpFile);) {
+                dos.writeFileMetaInformation(fmi);
+                IOUtils.copy(sis, dos);
+            }
+            renameTo(as, tmpFile, destinationFile);
+        } catch (Exception e) {
+            deleteFile(as, destinationFile);
+            throw e;
         } finally {
-            SafeClose.close(out);
+            deleteFile(as, tmpFile);
         }
     }
 

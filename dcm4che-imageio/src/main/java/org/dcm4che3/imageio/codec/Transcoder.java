@@ -284,14 +284,30 @@ public class Transcoder implements Closeable {
         this.lossyCompression = TransferSyntaxType.isLossyCompression(tsuid);
         this.destTransferSyntax = tsuid;
 
-        if (srcTransferSyntaxType.isPixeldataEncapsulated())
-            initDecompressor();
-        if (destTransferSyntaxType.isPixeldataEncapsulated())
+        if (srcTransferSyntaxType.isPixeldataEncapsulated()) {
+          initDecompressor();
+        } else {
+            if(decompressor != null) {
+                decompressor.dispose();
+                decompressor = null;
+            }
+        }
+
+        if (destTransferSyntaxType.isPixeldataEncapsulated()) {
             initCompressor(tsuid);
+        } else {
+            if(compressor != null) {
+                compressor.dispose();
+                compressor = null;
+            }
+        }
     }
 
     private String adaptSuitableSyntax(String dstTsuid) {
-    int bitsStored = imageDescriptor.getBitsStored();
+        int bitsStored = imageDescriptor.getBitsStored();
+        if(bitsStored == 1 && imageDescriptor.getBitsAllocated() == 1) {
+            return srcTransferSyntax;
+        }
         switch (dstTsuid) {
             case UID.JPEGBaseline8Bit:
                 return bitsStored <= 8 ? dstTsuid : bitsStored <= 16 ? UID.JPEGLosslessSV1 : UID.ExplicitVRLittleEndian;

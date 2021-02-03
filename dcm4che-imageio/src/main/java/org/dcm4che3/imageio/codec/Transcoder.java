@@ -416,8 +416,11 @@ public class Transcoder implements Closeable {
         if (deleteBulkDataFiles)
             for (File tmpFile : dis.getBulkDataFiles())
                 tmpFile.delete();
-        if (closeOutputStream && dos != null)
-            dos.close();
+        if (dos != null) {
+            dos.finish();
+            if (closeOutputStream)
+                dos.close();
+        }
     }
 
     public void transcode(Handler handler) throws IOException {

@@ -40,23 +40,15 @@ package org.dcm4che3.tool.dcm2jpg;
 
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.image.BufferedImageUtils;
 import org.dcm4che3.image.ICCProfile;
-import org.dcm4che3.image.PaletteColorModel;
 import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
 
 import javax.imageio.*;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageOutputStream;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -396,8 +388,8 @@ public class Dcm2Jpg {
     }
 
     private BufferedImage readImage(File file) throws IOException {
-        try (ImageInputStream iis = new FileImageInputStream(file)) {
-            imageReader.setInput(iis);
+        try (DicomInputStream dis = new DicomInputStream(file)) {
+            imageReader.setInput(dis);
             return imageReader.read(frame - 1, readParam());
         }
     }

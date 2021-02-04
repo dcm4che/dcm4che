@@ -50,6 +50,12 @@ Options:
     --suffix <suffix>         file extension used with destination
                               directory argument,lower case format name by
                               default
+    --usedis                  use DicomInputStream for reading the DICOM
+                              image. Supports deflated transfer syntaxes
+                              (default, without option --frame <number>)
+    --useiis                  use ImageInputStream for reading the DICOM
+                              image (default, with option --frame
+                              <number>)
     --uselut                  use explicit VOI LUT in image, even if the
                               image also specifies Window Center/Width;
                               prefer applying Window Center/Width over

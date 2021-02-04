@@ -1,4 +1,4 @@
-```
+Native OpenCV library has been found in /home/gunter/dcm4che/lib/linux-x86-64/libopencv_java.so
 usage: dcm2jpg [<options>] <dicom-file> <jpeg-file>
 or dcm2jpg [Options] <dicom-file>... <outdir>
 or dcm2jpg [Options] <indir>... <outdir>
@@ -23,16 +23,20 @@ Options:
                               - yes: include the ICC Profile specified in
                               the DICOM image, otherwise the sRGB ICC
                               profile
-                              - srgb: transform original pixels to sRGB
-                              color space and include sRGB ICC profile
-                              - adobergb: transform original pixels to
-                              Adobe RGB color space and include Adobe RGB
-                              ICC profile
-                              - rommrgb: transform original pixels to ROMM
-                              RGB color space and include ROMM RGB ICC
-                              profile)
-                              Only include ICC profile if one is specified
-                              in the DICOM image by default.
+                              - srgb: include sRGB ICC profile and
+                              transform original pixels to sRGB color
+                              space if an ICC Profile is specified in the
+                              DICOM image
+                              - adobergb: include Adobe RGB ICC profile
+                              and transform original pixels to Adobe RGB
+                              color space
+                              - rommrgb: include ROMM RGB ICC profile and
+                              transform original pixels to ROMM RGB color
+                              space
+                              By default, include no ICC profile, but
+                              transform original pixels to sRGB color
+                              space if an ICC Profile is specified in the
+                              DICOM image.
     --lsE                     list available Image Writers for specified
                               output image format
     --lsF                     list supported output image formats
@@ -72,4 +76,3 @@ Options:
 -
 Example: dcm2jpg img.dcm img.jpg
 => Convert DICOM image 'img.dcm' to JPEG image 'img.jpg'
-```

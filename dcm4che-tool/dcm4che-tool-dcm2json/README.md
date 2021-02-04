@@ -20,11 +20,8 @@ Options:
                                  the option for each attribute.
     --blk-file-prefix <prefix>   prefix for generating file names for
                                  extracted bulkdata; 'blk' by default
-    --blk-file-suffix <suffix>   directory were files with extracted
-                                 bulkdata are stored if the DICOM object
-                                 is read from "standard input; if not
-                                 specified, files are stored into the
-                                 default temporary-file directory
+    --blk-file-suffix <suffix>   suffix for generating file names for
+                                 extracted bulkdata; '.tmp' by default
     --blk-nodefs                 do NOT treat attributes listed by DICOM
                                  Composite Instance Retrieve Without Bulk
                                  Data Service Class as bulkdata, but only

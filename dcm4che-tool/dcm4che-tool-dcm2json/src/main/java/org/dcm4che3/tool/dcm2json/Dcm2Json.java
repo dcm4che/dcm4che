@@ -149,7 +149,7 @@ public class Dcm2Json {
                 .longOpt("blk-file-suffix")
                 .hasArg()
                 .argName("suffix")
-                .desc(rb.getString("blk-file-dir"))
+                .desc(rb.getString("blk-file-suffix"))
                 .build());
         opts.addOption("c", "cat-blk-files", false,
                 rb.getString("cat-blk-files"));

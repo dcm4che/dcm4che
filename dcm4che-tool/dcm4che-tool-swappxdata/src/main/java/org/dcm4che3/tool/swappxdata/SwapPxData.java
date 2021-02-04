@@ -92,7 +92,7 @@ public class SwapPxData implements Closeable {
                 throw new IOException(logFile + " already exists");
             }
             try (SwapPxData inst = new SwapPxData(
-                    cl.hasOption("ifBigEndian"),
+                    cl.hasOption("if-big-endian"),
                     cl.hasOption("test-all"),
                     logPattern,
                     logFile)) {

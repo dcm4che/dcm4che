@@ -47,7 +47,9 @@ import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
 
 import javax.imageio.*;
+import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +67,8 @@ public class Dcm2Jpg {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che3.tool.dcm2jpg.messages");
 
+    private enum InputStreamType {DIS, IIS}
+    private InputStreamType inputStreamType;
     private String suffix;
     private int frame = 1;
     private int windowIndex;
@@ -168,6 +172,11 @@ public class Dcm2Jpg {
         this.iccProfile = Objects.requireNonNull(iccProfile);
     }
 
+    public final void setInputStreamType(InputStreamType inputStreamType)
+    {
+        this.inputStreamType = inputStreamType;
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
@@ -269,6 +278,8 @@ public class Dcm2Jpg {
         opts.addOption(null, "noauto", false, rb.getString("noauto"));
         opts.addOption(null, "lsE", false, rb.getString("lsencoders"));
         opts.addOption(null, "lsF", false, rb.getString("lsformats"));
+        opts.addOption(null, "usedis", false, rb.getString("usedis"));
+        opts.addOption(null, "useiis", false, rb.getString("useiis"));
 
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Dcm2Jpg.class);
         if (cl.hasOption("lsF")) {
@@ -327,6 +338,10 @@ public class Dcm2Jpg {
                     throw new ParseException(e.getMessage());
                 }
             }
+            if(!cl.hasOption("usedis") && !cl.hasOption("useiis"))
+                main.setInputStreamType((cl.hasOption("frame")) ? InputStreamType.IIS : InputStreamType.DIS);
+            else
+                main.setInputStreamType((cl.hasOption("usedis")) ? InputStreamType.DIS : InputStreamType.IIS);
             @SuppressWarnings("unchecked")
             final List<String> argList = cl.getArgList();
             int argc = argList.size();
@@ -388,6 +403,19 @@ public class Dcm2Jpg {
     }
 
     private BufferedImage readImage(File file) throws IOException {
+        if(inputStreamType.equals(InputStreamType.DIS))
+            return readImageFromDicomInputStream(file);
+        return readImageFromImageInputStream(file);
+    }
+
+    private BufferedImage readImageFromImageInputStream(File file) throws IOException {
+        try (ImageInputStream iis = new FileImageInputStream(file)) {
+            imageReader.setInput(iis);
+            return imageReader.read(frame - 1, readParam());
+        }
+    }
+
+    private BufferedImage readImageFromDicomInputStream(File file) throws IOException {
         try (DicomInputStream dis = new DicomInputStream(file)) {
             imageReader.setInput(dis);
             return imageReader.read(frame - 1, readParam());

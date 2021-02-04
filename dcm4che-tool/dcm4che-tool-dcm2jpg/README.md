@@ -1,4 +1,4 @@
-Native OpenCV library has been found in /home/gunter/dcm4che/lib/linux-x86-64/libopencv_java.so
+```
 usage: dcm2jpg [<options>] <dicom-file> <jpeg-file>
 or dcm2jpg [Options] <dicom-file>... <outdir>
 or dcm2jpg [Options] <indir>... <outdir>
@@ -76,3 +76,4 @@ Options:
 -
 Example: dcm2jpg img.dcm img.jpg
 => Convert DICOM image 'img.dcm' to JPEG image 'img.jpg'
+```

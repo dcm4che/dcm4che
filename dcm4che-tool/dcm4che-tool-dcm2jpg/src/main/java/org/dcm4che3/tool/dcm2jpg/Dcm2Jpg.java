@@ -40,23 +40,17 @@ package org.dcm4che3.tool.dcm2jpg;
 
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.image.BufferedImageUtils;
 import org.dcm4che3.image.ICCProfile;
-import org.dcm4che3.image.PaletteColorModel;
 import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
 
 import javax.imageio.*;
-import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageOutputStream;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -73,6 +67,10 @@ public class Dcm2Jpg {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che3.tool.dcm2jpg.messages");
 
+    private interface ReadImage {
+        BufferedImage apply(File src) throws IOException;
+    }
+    private ReadImage readImage;
     private String suffix;
     private int frame = 1;
     private int windowIndex;
@@ -176,6 +174,10 @@ public class Dcm2Jpg {
         this.iccProfile = Objects.requireNonNull(iccProfile);
     }
 
+    public final void setReadImage(ReadImage readImage) {
+        this.readImage = readImage;
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
@@ -277,7 +279,16 @@ public class Dcm2Jpg {
         opts.addOption(null, "noauto", false, rb.getString("noauto"));
         opts.addOption(null, "lsE", false, rb.getString("lsencoders"));
         opts.addOption(null, "lsF", false, rb.getString("lsformats"));
-
+        OptionGroup useGroup = new OptionGroup();
+        useGroup.addOption(Option.builder()
+                .longOpt("usedis")
+                .desc(rb.getString("usedis"))
+                .build());
+        useGroup.addOption(Option.builder()
+                .longOpt("useiis")
+                .desc(rb.getString("useiis"))
+                .build());
+        opts.addOptionGroup(useGroup);
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Dcm2Jpg.class);
         if (cl.hasOption("lsF")) {
             listSupportedFormats();
@@ -335,6 +346,14 @@ public class Dcm2Jpg {
                     throw new ParseException(e.getMessage());
                 }
             }
+            main.setReadImage(cl.hasOption("frame")
+                    ? (cl.hasOption("usedis")
+                        ? main::readImageFromDicomInputStream
+                        : main::readImageFromImageInputStream)
+                    : (cl.hasOption("useiis")
+                        ? main::readImageFromImageInputStream
+                        : main::readImageFromDicomInputStream));
+
             @SuppressWarnings("unchecked")
             final List<String> argList = cl.getArgList();
             int argc = argList.size();
@@ -392,12 +411,19 @@ public class Dcm2Jpg {
     }
 
     public void convert(File src, File dest) throws IOException {
-        writeImage(dest, iccProfile.adjust(readImage(src)));
+        writeImage(dest, iccProfile.adjust(readImage.apply(src)));
     }
 
-    private BufferedImage readImage(File file) throws IOException {
+    private BufferedImage readImageFromImageInputStream(File file) throws IOException {
         try (ImageInputStream iis = new FileImageInputStream(file)) {
             imageReader.setInput(iis);
+            return imageReader.read(frame - 1, readParam());
+        }
+    }
+
+    private BufferedImage readImageFromDicomInputStream(File file) throws IOException {
+        try (DicomInputStream dis = new DicomInputStream(file)) {
+            imageReader.setInput(dis);
             return imageReader.read(frame - 1, readParam());
         }
     }

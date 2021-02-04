@@ -45,9 +45,11 @@ Options:
                                  default temporary-file directory
  -h,--help                       display this help and exit
  -I,--indent                     use additional whitespace in JSON output
- -N,--encode-as-number           encode DS, IS, SV and UV values as JSON
-                                 numbers; by default DS, IS, SV and UV
-                                 values are encoded as JSON strings
+ -N,--encode-as-number           encode IS, SV and UV values in the range
+                                 [-(2^53)+1, (2^53)-1] and valid DS values
+                                 as JSON numbers; by default DS, IS, SV
+                                 and UV values are encoded as JSON
+                                 strings.
  -V,--version                    output version information and exit
 
 Examples:

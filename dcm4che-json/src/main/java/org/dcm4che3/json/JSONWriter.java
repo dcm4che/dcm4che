@@ -102,6 +102,7 @@ import org.slf4j.LoggerFactory;
 public class JSONWriter implements DicomInputHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(JSONWriter.class);
+    private static final int DOUBLE_MAX_BITS = 53;
 
     private final JsonGenerator gen;
     private final Deque<Boolean> hasItems = new ArrayDeque<>();
@@ -329,12 +330,7 @@ public class JSONWriter implements DicomInputHandler {
                 break;
             case IS:
                 if (jsonTypeByVR.get(VR.IS) == JsonValue.ValueType.NUMBER) {
-                    try {
-                        gen.write(StringUtils.parseIS(s));
-                    } catch (NumberFormatException e) {
-                        LOG.info("illegal IS value: {} - encoded as string", s);
-                        gen.write(s);
-                    }
+                    writeNumber(s);
                 } else {
                     gen.write(s);
                 }
@@ -347,6 +343,19 @@ public class JSONWriter implements DicomInputHandler {
             }
         }
         gen.writeEnd();
+    }
+
+    private void writeNumber(String s) {
+        try {
+            long l = StringUtils.parseIS(s);
+            if ((l < 0 ? -l : l) >> DOUBLE_MAX_BITS == 0) {
+                gen.write(l);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            LOG.info("illegal IS value: {} - encoded as string", s);
+        }
+        gen.write(s);
     }
 
     private void writeDoubleValues(VR vr, Object val, boolean bigEndian) {
@@ -395,7 +404,7 @@ public class JSONWriter implements DicomInputHandler {
         int vm = vr.vmOf(val);
         for (int i = 0; i < vm; i++) {
             long l = vr.toLong(val, bigEndian, i, 0);
-            if (asString || l < 0 && vr == VR.UV) {
+            if (asString || (l < 0 ? (vr == VR.UV || (-l >> DOUBLE_MAX_BITS) > 0) : (l >> DOUBLE_MAX_BITS) > 0)) {
                 gen.write(toString.apply(l));
             } else {
                 gen.write(l);

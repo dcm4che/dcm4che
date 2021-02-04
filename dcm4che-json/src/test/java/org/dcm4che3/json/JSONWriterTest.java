@@ -63,7 +63,7 @@ public class JSONWriterTest {
     private static byte[] BYTE01 = { 0, 1 };
     private static final int[] INTS = { 0, 1, -2 };
     private static final int[] UINTS = { 0, 1, -2 & 0xffff };
-    private static final long[] LONGS = { 0L, 1L, -2L };
+    private static final long[] LONGS = { 0L, 1L, -2L, Long.MAX_VALUE };
     private String RESULT_STRING = "{"
             + "\"00080005\":{\"vr\":\"CS\",\"Value\":[null,\"ISO 2022 IR 87\"]},"
             + "\"00080008\":{\"vr\":\"CS\",\"Value\":[\"DERIVED\",\"PRIMARY\"]},"
@@ -90,8 +90,8 @@ public class JSONWriterTest {
             + "\"0072007A\":{\"vr\":\"US\",\"Value\":[0,1,65534]},"
             + "\"0072007C\":{\"vr\":\"SL\",\"Value\":[0,1,-2]},"
             + "\"0072007E\":{\"vr\":\"SS\",\"Value\":[0,1,-2]},"
-            + "\"00720082\":{\"vr\":\"SV\",\"Value\":[\"0\",\"1\",\"-2\"]},"
-            + "\"00720083\":{\"vr\":\"UV\",\"Value\":[\"0\",\"1\",\"18446744073709551614\"]},"
+            + "\"00720082\":{\"vr\":\"SV\",\"Value\":[\"0\",\"1\",\"-2\",\"9223372036854775807\"]},"
+            + "\"00720083\":{\"vr\":\"UV\",\"Value\":[\"0\",\"1\",\"18446744073709551614\",\"9223372036854775807\"]},"
             + "\"60003000\":{\"vr\":\"OW\",\"BulkDataURI\":\"file:/OverlayData\"},"
             + "\"7FE00010\":{\"vr\":\"OB\",\"DataFragment\":["
                 + "null,"
@@ -124,8 +124,8 @@ public class JSONWriterTest {
             + "\"0072007A\":{\"vr\":\"US\",\"Value\":[0,1,65534]},"
             + "\"0072007C\":{\"vr\":\"SL\",\"Value\":[0,1,-2]},"
             + "\"0072007E\":{\"vr\":\"SS\",\"Value\":[0,1,-2]},"
-            + "\"00720082\":{\"vr\":\"SV\",\"Value\":[0,1,-2]},"
-            + "\"00720083\":{\"vr\":\"UV\",\"Value\":[0,1,\"18446744073709551614\"]},"
+            + "\"00720082\":{\"vr\":\"SV\",\"Value\":[0,1,-2,\"9223372036854775807\"]},"
+            + "\"00720083\":{\"vr\":\"UV\",\"Value\":[0,1,\"18446744073709551614\",\"9223372036854775807\"]},"
             + "\"60003000\":{\"vr\":\"OW\",\"BulkDataURI\":\"file:/OverlayData\"},"
             + "\"7FE00010\":{\"vr\":\"OB\",\"DataFragment\":["
                 + "null,"

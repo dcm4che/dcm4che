@@ -42,90 +42,77 @@ package org.dcm4che3.audit;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since June 2016
  */
 
 public class ActiveParticipantBuilder {
-    final String userID;
-    final AuditMessages.UserIDTypeCode userIDTypeCode;
-    final String userTypeCode;
-    final String napID;
-    final String altUserID;
-    final String userName;
-    final String napTypeCode;
-    final boolean requester;
-    final AuditMessages.MediaType mediaType;
-    final AuditMessages.RoleIDCode[] roleIDCode;
+    private final String userID;
+    private AuditMessages.UserIDTypeCode userIDTypeCode;
+    private String userTypeCode;
+    private final String napID;
+    private String napTypeCode;
+    private String altUserID;
+    private String userName;
+    private boolean requester;
+    private AuditMessages.MediaType mediaType;
+    private AuditMessages.RoleIDCode[] roleIDCode = {};
 
-    public static class Builder {
-        private final String userID;
-        private AuditMessages.UserIDTypeCode userIDTypeCode;
-        private String userTypeCode;
-        private final String napID;
-        private String napTypeCode;
-        private String altUserID;
-        private String userName;
-        private boolean requester;
-        private AuditMessages.MediaType mediaType;
-        private AuditMessages.RoleIDCode[] roleIDCode = {};
-
-        public Builder(String userID, String napID) {
-            this.userID = userID;
-            this.napID = napID;
-            this.napTypeCode = napID != null
-                                ? AuditMessages.isIP(napID)
-                                    ? AuditMessages.NetworkAccessPointTypeCode.IPAddress
-                                    : AuditMessages.NetworkAccessPointTypeCode.MachineName
-                                : null;
-        }
-
-        public Builder userIDTypeCode(AuditMessages.UserIDTypeCode val) {
-            userIDTypeCode = val;
-            userTypeCode = userTypeCode(val);
-            return this;
-        }
-
-        public Builder altUserID(String val) {
-            altUserID = val;
-            return this;
-        }
-
-        public Builder userName(String val) {
-            userName = val;
-            return this;
-        }
-
-        public Builder isRequester() {
-          requester = true;
-          return this;
-        }
-
-        public Builder mediaType(AuditMessages.MediaType val) {
-            mediaType = val;
-            return this;
-        }
-
-        public Builder roleIDCode(AuditMessages.RoleIDCode... val) {
-            roleIDCode = val;
-            return this;
-        }
-
-        public ActiveParticipantBuilder build() {
-            return new ActiveParticipantBuilder(this);
-        }
+    public ActiveParticipantBuilder(String userID, String napID) {
+        this.userID = userID;
+        this.napID = napID;
+        this.napTypeCode = napID != null
+                            ? AuditMessages.isIP(napID)
+                                ? AuditMessages.NetworkAccessPointTypeCode.IPAddress
+                                : AuditMessages.NetworkAccessPointTypeCode.MachineName
+                            : null;
     }
 
-    private ActiveParticipantBuilder(Builder builder) {
-        userID = builder.userID;
-        userIDTypeCode = builder.userIDTypeCode;
-        userTypeCode = builder.userTypeCode;
-        napID = builder.napID;
-        altUserID = builder.altUserID;
-        userName = builder.userName;
-        napTypeCode = builder.napTypeCode;
-        requester = builder.requester;
-        mediaType = builder.mediaType;
-        roleIDCode = builder.roleIDCode;
+    public ActiveParticipantBuilder userIDTypeCode(AuditMessages.UserIDTypeCode val) {
+        userIDTypeCode = val;
+        userTypeCode = userTypeCode(val);
+        return this;
+    }
+
+    public ActiveParticipantBuilder altUserID(String val) {
+        altUserID = val;
+        return this;
+    }
+
+    public ActiveParticipantBuilder userName(String val) {
+        userName = val;
+        return this;
+    }
+
+    public ActiveParticipantBuilder isRequester() {
+      requester = true;
+      return this;
+    }
+
+    public ActiveParticipantBuilder mediaType(AuditMessages.MediaType val) {
+        mediaType = val;
+        return this;
+    }
+
+    public ActiveParticipantBuilder roleIDCode(AuditMessages.RoleIDCode... val) {
+        roleIDCode = val;
+        return this;
+    }
+
+    public ActiveParticipant build() {
+        ActiveParticipant ap = new ActiveParticipant();
+        ap.setUserID(userID);
+        ap.setUserIDTypeCode(userIDTypeCode);
+        ap.setUserTypeCode(userTypeCode);
+        ap.setAlternativeUserID(altUserID);
+        ap.setUserName(userName);
+        ap.setUserIsRequestor(requester);
+        ap.setNetworkAccessPointID(napID);
+        ap.setNetworkAccessPointTypeCode(napTypeCode);
+        ap.setMediaType(mediaType);
+        for (AuditMessages.RoleIDCode roleID : roleIDCode)
+            ap.getRoleIDCode().add(roleID);
+        return ap;
     }
 
     private static String userTypeCode(AuditMessages.UserIDTypeCode userIDTypeCode) {

@@ -723,34 +723,6 @@ public class AuditMessages {
 
     }
 
-    public static EventIdentification toEventIdentification(EventIdentificationBuilder eventIdentificationBuilder) {
-        EventIdentification ei = new EventIdentification();
-        ei.setEventID(eventIdentificationBuilder.eventID);
-        ei.setEventActionCode(eventIdentificationBuilder.eventActionCode);
-        ei.setEventDateTime(eventIdentificationBuilder.eventDateTime);
-        ei.setEventOutcomeIndicator(eventIdentificationBuilder.outcome);
-        ei.setEventOutcomeDescription(eventIdentificationBuilder.outcomeDesc);
-        for (org.dcm4che3.audit.EventTypeCode type : eventIdentificationBuilder.eventTypeCode)
-            ei.getEventTypeCode().add(type);
-        return ei;
-    }
-
-    private static ActiveParticipant toActiveParticipant(ActiveParticipantBuilder activeParticipantBuilder) {
-        ActiveParticipant ap = new ActiveParticipant();
-        ap.setUserID(activeParticipantBuilder.userID);
-        ap.setUserIDTypeCode(activeParticipantBuilder.userIDTypeCode);
-        ap.setUserTypeCode(activeParticipantBuilder.userTypeCode);
-        ap.setAlternativeUserID(activeParticipantBuilder.altUserID);
-        ap.setUserName(activeParticipantBuilder.userName);
-        ap.setUserIsRequestor(activeParticipantBuilder.requester);
-        ap.setNetworkAccessPointID(activeParticipantBuilder.napID);
-        ap.setNetworkAccessPointTypeCode(activeParticipantBuilder.napTypeCode);
-        ap.setMediaType(activeParticipantBuilder.mediaType);
-        for (RoleIDCode roleID : activeParticipantBuilder.roleIDCode)
-            ap.getRoleIDCode().add(roleID);
-        return ap;
-    }
-
    public static AuditSourceIdentification createAuditSourceIdentification(
             String siteID, String sourceID, AuditSourceTypeCode... types) {
         AuditSourceIdentification asi = new AuditSourceIdentification();
@@ -761,41 +733,6 @@ public class AuditMessages {
         return asi;
    }
 
-    private static ParticipantObjectDescription toParticipantObjectDescription(ParticipantObjectDescriptionBuilder poDesc) {
-        ParticipantObjectDescription pod = new ParticipantObjectDescription();
-        for (String acc : poDesc.acc)
-            pod.getAccession().add(AuditMessages.createAccession(acc));
-        for (String mpps : poDesc.mpps)
-            pod.getMPPS().add(AuditMessages.createMPPS(mpps));
-        for (SOPClass sopC : poDesc.sopC)
-            pod.getSOPClass().add(sopC);
-        pod.setEncrypted(poDesc.encrypted);
-        pod.setAnonymized(poDesc.anonymized);
-        if (poDesc.pocsStudyUIDs.length > 1)
-            pod.setParticipantObjectContainsStudy(
-                    AuditMessages.createParticipantObjectContainsStudy(
-                            AuditMessages.createStudyIDs(poDesc.pocsStudyUIDs)));
-        return pod;
-    }
-
-    private static ParticipantObjectIdentification toParticipantObjectIdentification(
-            ParticipantObjectIdentificationBuilder participantObjectIdentificationBuilder) {
-        ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
-        poi.setParticipantObjectID(participantObjectIdentificationBuilder.id);
-        poi.setParticipantObjectIDTypeCode(participantObjectIdentificationBuilder.idType);
-        poi.setParticipantObjectName(participantObjectIdentificationBuilder.name);
-        poi.setParticipantObjectQuery(participantObjectIdentificationBuilder.query);
-        poi.setParticipantObjectTypeCode(participantObjectIdentificationBuilder.type);
-        poi.setParticipantObjectTypeCodeRole(participantObjectIdentificationBuilder.role);
-        poi.setParticipantObjectDataLifeCycle(participantObjectIdentificationBuilder.lifeCycle);
-        poi.setParticipantObjectSensitivity(participantObjectIdentificationBuilder.sensitivity);
-        if (participantObjectIdentificationBuilder.desc != null)
-            poi.setParticipantObjectDescription(toParticipantObjectDescription(participantObjectIdentificationBuilder.desc));
-        for (ParticipantObjectDetail participantObjectDetail : participantObjectIdentificationBuilder.detail)
-                poi.getParticipantObjectDetail().add(participantObjectDetail);
-        return poi;
-    }
-
     public static ParticipantObjectDetail createParticipantObjectDetail(
             String type, String value) {
         if (value == null)
@@ -805,12 +742,6 @@ public class AuditMessages {
         detail.setType(type);
         detail.setValue(value.getBytes());
         return detail;
-    }
-
-    private static MPPS createMPPS(String uid) {
-        MPPS mpps = new MPPS();
-        mpps.setUID(uid);
-        return mpps;
     }
 
     public static SOPClass createSOPClass(HashSet<String> instances, String uid, Integer numI) {
@@ -941,15 +872,15 @@ public class AuditMessages {
     }
 
     public static AuditMessage createMessage(
-            EventIdentificationBuilder eventIdentificationBuilder, ActiveParticipantBuilder[] activeParticipantBuilders,
-            ParticipantObjectIdentificationBuilder... participantObjectIdentificationBuilders) {
+            EventIdentification eventIdentification, ActiveParticipant[] activeParticipants,
+            ParticipantObjectIdentification... participantObjectIdentifications) {
         AuditMessage msg = new AuditMessage();
-        msg.setEventIdentification(toEventIdentification(eventIdentificationBuilder));
-        for (ActiveParticipantBuilder activeParticipantBuilder : activeParticipantBuilders)
-            if (activeParticipantBuilder != null)
-                msg.getActiveParticipant().add(toActiveParticipant(activeParticipantBuilder));
-        for (ParticipantObjectIdentificationBuilder participantObjectIdentificationBuilder : participantObjectIdentificationBuilders)
-            msg.getParticipantObjectIdentification().add(toParticipantObjectIdentification(participantObjectIdentificationBuilder));
+        msg.setEventIdentification(eventIdentification);
+        for (ActiveParticipant activeParticipant : activeParticipants)
+            if (activeParticipant != null)
+                msg.getActiveParticipant().add(activeParticipant);
+        for (ParticipantObjectIdentification participantObjectIdentification : participantObjectIdentifications)
+            msg.getParticipantObjectIdentification().add(participantObjectIdentification);
         return msg;
     }
 

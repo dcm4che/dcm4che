@@ -128,45 +128,47 @@ public class AuditMessageTest {
 
     @Test
     public void testDICOMInstancesTransferred() throws Exception {
-        EventIdentificationBuilder ei = new EventIdentificationBuilder.Builder(AuditMessages.EventID.DICOMInstancesTransferred,
+        EventIdentification ei = new EventIdentificationBuilder(AuditMessages.EventID.DICOMInstancesTransferred,
                 AuditMessages.EventActionCode.Create, Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success).build();
 
         SOPClass[] sopClasses = new SOPClass[2];
         sopClasses[0] = AuditMessages.createSOPClass(null,  "1.2.840.10008.5.1.4.1.1.2", 1500);
         sopClasses[1] = AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.11.1", 3);
 
-        ParticipantObjectDescriptionBuilder pod = new ParticipantObjectDescriptionBuilder.Builder()
+        ParticipantObjectDescription pod = new ParticipantObjectDescriptionBuilder()
                 .sopC(sopClasses)
                 .acc("12341234")
                 .mpps("1.2.840.10008.1.2.3.4.5")
                 .build();
 
-        ParticipantObjectIdentificationBuilder poiStudy = new ParticipantObjectIdentificationBuilder.Builder("1.2.840.10008.2.3.4.5.6.7.78.8",
+        ParticipantObjectIdentification poiStudy = new ParticipantObjectIdentificationBuilder("1.2.840.10008.2.3.4.5.6.7.78.8",
                 AuditMessages.ParticipantObjectIDTypeCode.StudyInstanceUID, AuditMessages.ParticipantObjectTypeCode.SystemObject,
                 AuditMessages.ParticipantObjectTypeCodeRole.Resource).desc(pod)
-                .lifeCycle(AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation).build();
-        ParticipantObjectIdentificationBuilder poiPatient = new ParticipantObjectIdentificationBuilder.Builder("ptid12345",
+                .lifeCycle(AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation)
+                .build();
+        ParticipantObjectIdentification poiPatient = new ParticipantObjectIdentificationBuilder("ptid12345",
                 AuditMessages.ParticipantObjectIDTypeCode.PatientNumber, AuditMessages.ParticipantObjectTypeCode.Person,
-                AuditMessages.ParticipantObjectTypeCodeRole.Patient).name("John Doe").build();
+                AuditMessages.ParticipantObjectTypeCodeRole.Patient).name("John Doe")
+                .build();
 
-        AuditMessage msg = AuditMessages.createMessage(ei, activeParticipantBuilders(), poiStudy, poiPatient);
+        AuditMessage msg = AuditMessages.createMessage(ei, activeParticipants(), poiStudy, poiPatient);
         msg.getAuditSourceIdentification().add(AuditMessages.createAuditSourceIdentification("Hospital", "ReadingRoom",
                         AuditMessages.AuditSourceTypeCode.EndUserDisplayDevice));
         AuditMessages.toXML(msg, System.out, true);
     }
 
-    private ActiveParticipantBuilder[] activeParticipantBuilders() {
-        ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[3];
+    private ActiveParticipant[] activeParticipants() {
+        ActiveParticipant[] activeParticipants = new ActiveParticipant[3];
 
-        activeParticipants[0] = new ActiveParticipantBuilder.Builder("DCM4CHEE", "192.168.1.2")
+        activeParticipants[0] = new ActiveParticipantBuilder("DCM4CHEE", "192.168.1.2")
                 .userIDTypeCode(AuditMessages.UserIDTypeCode.StationAETitle)
                 .altUserID(AuditMessages.alternativeUserIDForAETitle("AEFOO"))
                 .roleIDCode(AuditMessages.RoleIDCode.Source).build();
-        activeParticipants[1] = new ActiveParticipantBuilder.Builder("STORESCP", "192.168.1.5")
+        activeParticipants[1] = new ActiveParticipantBuilder("STORESCP", "192.168.1.5")
                 .userIDTypeCode(AuditMessages.UserIDTypeCode.StationAETitle)
                 .altUserID(AuditMessages.alternativeUserIDForAETitle("AEPACS"))
                 .roleIDCode(AuditMessages.RoleIDCode.Destination).build();
-        activeParticipants[2] = new ActiveParticipantBuilder.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
+        activeParticipants[2] = new ActiveParticipantBuilder("smitty@readingroom.hospital.org", "192.168.1.2")
                 .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
                 .isRequester()
                 .altUserID("smith@nema")

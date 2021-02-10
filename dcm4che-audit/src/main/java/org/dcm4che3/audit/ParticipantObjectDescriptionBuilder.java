@@ -41,68 +41,97 @@
 package org.dcm4che3.audit;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since June 2016
  */
 
 public class ParticipantObjectDescriptionBuilder {
-    final String[] acc;
-    final String[] mpps;
-    final SOPClass[] sopC;
-    final Boolean encrypted;
-    final Boolean anonymized;
-    final String[] pocsStudyUIDs;
+    private Boolean encrypted;
+    private Boolean anonymized;
+    private String[] pocsStudyUIDs = {};
+    private String[] accNumbers = {};
+    private String[] mppsUIDs = {};
+    private SOPClass[] sopClasses = {};
 
-    public static class Builder {
-        private Boolean encrypted;
-        private Boolean anonymized;
-        private String[] pocsStudyUIDs = {};
-        private String[] acc = {};
-        private String[] mpps = {};
-        private SOPClass[] sopC = {};
-
-        public Builder acc(String... val) {
-            acc = val;
-            return this;
-        }
-
-        public Builder mpps(String... val) {
-            mpps = val;
-            return this;
-        }
-
-        public Builder sopC(SOPClass... val) {
-            sopC = val;
-            return this;
-        }
-
-        public Builder pocsStudyUIDs(String... val) {
-            pocsStudyUIDs = val;
-            return this;
-        }
-
-        public Builder encrypted(Boolean val) {
-            encrypted = val;
-            return this;
-        }
-
-        Builder anonymized(Boolean val) {
-            anonymized = val;
-            return this;
-        }
-
-        public ParticipantObjectDescriptionBuilder build() {
-            return new ParticipantObjectDescriptionBuilder(this);
-        }
+    public ParticipantObjectDescriptionBuilder acc(String... val) {
+        accNumbers = val;
+        return this;
     }
 
-    private ParticipantObjectDescriptionBuilder(Builder builder) {
-        encrypted = builder.encrypted;
-        anonymized = builder.anonymized;
-        pocsStudyUIDs = builder.pocsStudyUIDs;
-        acc = builder.acc;
-        mpps = builder.mpps;
-        sopC = builder.sopC;
+    public ParticipantObjectDescriptionBuilder mpps(String... val) {
+        mppsUIDs = val;
+        return this;
+    }
+
+    public ParticipantObjectDescriptionBuilder sopC(SOPClass... val) {
+        sopClasses = val;
+        return this;
+    }
+
+    public ParticipantObjectDescriptionBuilder pocsStudyUIDs(String... val) {
+        pocsStudyUIDs = val;
+        return this;
+    }
+
+    public ParticipantObjectDescriptionBuilder encrypted(Boolean val) {
+        encrypted = val;
+        return this;
+    }
+
+    ParticipantObjectDescriptionBuilder ParticipantObjectDescriptionBuilder(Boolean val) {
+        anonymized = val;
+        return this;
+    }
+
+    public ParticipantObjectDescription build() {
+        ParticipantObjectDescription pod = new ParticipantObjectDescription();
+        for (String acc : accNumbers)
+            pod.getAccession().add(createAccession(acc));
+        for (String mpps : mppsUIDs)
+            pod.getMPPS().add(createMPPS(mpps));
+        for (SOPClass sopC : sopClasses)
+            pod.getSOPClass().add(sopC);
+        pod.setEncrypted(encrypted);
+        pod.setAnonymized(anonymized);
+        if (pocsStudyUIDs.length > 1)
+            pod.setParticipantObjectContainsStudy(
+                    createParticipantObjectContainsStudy(
+                            createStudyIDs(pocsStudyUIDs)));
+        return pod;
+    }
+
+    private static Accession createAccession(String accessionNumber) {
+        Accession accession = new Accession();
+        accession.setNumber(accessionNumber);
+        return accession;
+    }
+
+    private static MPPS createMPPS(String uid) {
+        MPPS mpps = new MPPS();
+        mpps.setUID(uid);
+        return mpps;
+    }
+
+    private static ParticipantObjectContainsStudy
+        createParticipantObjectContainsStudy(org.dcm4che3.audit.StudyIDs... studyIDs) {
+        ParticipantObjectContainsStudy study = new ParticipantObjectContainsStudy();
+        for (org.dcm4che3.audit.StudyIDs studyID : studyIDs)
+            study.getStudyIDs().add(studyID);
+        return study;
+    }
+
+    private static StudyIDs[] createStudyIDs(String... studyUIDs) {
+        Set<StudyIDs> set = new HashSet<>();
+        for (String s : studyUIDs) {
+            StudyIDs sID = new StudyIDs();
+            sID.setUID(s);
+            set.add(sID);
+        }
+        return set.toArray(new StudyIDs[set.size()]);
     }
 }

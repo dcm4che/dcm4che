@@ -59,6 +59,7 @@ import java.nio.file.StandardOpenOption;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Mar 2016
  */
 class AuditAuth {
@@ -97,7 +98,7 @@ class AuditAuth {
     private static void sendAuditMessage(Path file, Event event, AuditLogger auditLogger, KeycloakSession keycloakSession) {
         try {
             AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
-            ActiveParticipantBuilder[] activeParticipants = AuditUtils.activeParticipants(info, auditLogger);
+            ActiveParticipant[] activeParticipants = AuditUtils.activeParticipants(info, auditLogger);
 
             AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forEvent(event);
             AuditUtils.emitAudit(auditLogger,
@@ -114,7 +115,7 @@ class AuditAuth {
     }
 
     private static void superUserAudit(Event event, AuditLogger auditLogger, KeycloakSession keycloakSession,
-                                       AuditUtils.AuditEventType eventType, ActiveParticipantBuilder[] activeParticipants) {
+                                       AuditUtils.AuditEventType eventType, ActiveParticipant[] activeParticipants) {
         if (event.getUserId() == null
                 || eventType == AuditUtils.AuditEventType.UPDT_USER
                 || !isSuperUser(event, keycloakSession))

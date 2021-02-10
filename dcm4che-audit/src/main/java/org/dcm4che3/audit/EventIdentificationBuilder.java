@@ -44,52 +44,43 @@ import java.util.Calendar;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since June 2016
  */
 public class EventIdentificationBuilder {
-    final AuditMessages.EventID eventID;
-    final String eventActionCode;
-    final Calendar eventDateTime;
-    final String outcome;
-    final String outcomeDesc;
-    final EventTypeCode[] eventTypeCode;
+    private final AuditMessages.EventID eventID;
+    private final String eventActionCode;
+    private final Calendar eventDateTime;
+    private final String outcome;
+    private String outcomeDesc;
+    private EventTypeCode[] eventTypeCode = {};
 
-    public static class Builder {
-        private final AuditMessages.EventID eventID;
-        private final String eventActionCode;
-        private final Calendar eventDateTime;
-        private final String outcome;
-        private String outcomeDesc;
-        private EventTypeCode[] eventTypeCode = {};
-
-        public Builder(AuditMessages.EventID eventID, String eventActionCode, Calendar eventDateTime, String outcome) {
-            this.eventID = eventID;
-            this.eventActionCode = eventActionCode;
-            this.eventDateTime = eventDateTime;
-            this.outcome = outcome;
-        }
-
-        public Builder outcomeDesc(String val) {
-            outcomeDesc = val;
-            return this;
-        }
-
-        public Builder eventTypeCode(EventTypeCode... val) {
-            eventTypeCode = val;
-            return this;
-        }
-
-        public EventIdentificationBuilder build() {
-            return new EventIdentificationBuilder(this);
-        }
+    public EventIdentificationBuilder(AuditMessages.EventID eventID, String eventActionCode, Calendar eventDateTime, String outcome) {
+        this.eventID = eventID;
+        this.eventActionCode = eventActionCode;
+        this.eventDateTime = eventDateTime;
+        this.outcome = outcome;
     }
 
-    private EventIdentificationBuilder(Builder builder) {
-        eventID = builder.eventID;
-        eventActionCode = builder.eventActionCode;
-        eventDateTime = builder.eventDateTime;
-        outcome = builder.outcome;
-        outcomeDesc = builder.outcomeDesc;
-        eventTypeCode = builder.eventTypeCode;
+    public EventIdentificationBuilder outcomeDesc(String val) {
+        outcomeDesc = val;
+        return this;
+    }
+
+    public EventIdentificationBuilder eventTypeCode(EventTypeCode... val) {
+        eventTypeCode = val;
+        return this;
+    }
+
+    public EventIdentification build() {
+        EventIdentification ei = new EventIdentification();
+        ei.setEventID(eventID);
+        ei.setEventActionCode(eventActionCode);
+        ei.setEventDateTime(eventDateTime);
+        ei.setEventOutcomeIndicator(outcome);
+        ei.setEventOutcomeDescription(outcomeDesc);
+        for (org.dcm4che3.audit.EventTypeCode type : eventTypeCode)
+            ei.getEventTypeCode().add(type);
+        return ei;
     }
 }

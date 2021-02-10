@@ -55,6 +55,7 @@ import java.nio.file.Path;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Oct 2018
  */
 class AuditUtils {
@@ -127,9 +128,9 @@ class AuditUtils {
         }
     }
 
-    static EventIdentificationBuilder eventID(
+    static EventIdentification eventID(
             AuditUtils.AuditEventType eventType, AuditLogger auditLogger, String outcome, String adminEventInfo) {
-        return new EventIdentificationBuilder.Builder(
+        return new EventIdentificationBuilder(
                 eventType.eventID,
                 AuditMessages.EventActionCode.Execute,
                 auditLogger.timeStamp(),
@@ -149,15 +150,15 @@ class AuditUtils {
                 : AuditMessages.EventOutcomeIndicator.Success;
     }
 
-    static ActiveParticipantBuilder[] activeParticipants(AuthInfo info, AuditLogger auditLogger) {
-        ActiveParticipantBuilder[] activeParticipants = new ActiveParticipantBuilder[2];
+    static ActiveParticipant[] activeParticipants(AuthInfo info, AuditLogger auditLogger) {
+        ActiveParticipant[] activeParticipants = new ActiveParticipant[2];
         String userName = info.getField(AuthInfo.USER_NAME);
-        activeParticipants[0] = new ActiveParticipantBuilder.Builder(
+        activeParticipants[0] = new ActiveParticipantBuilder(
                 userName,
                 info.getField(AuthInfo.IP_ADDR))
                 .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
                 .isRequester().build();
-        activeParticipants[1] = new ActiveParticipantBuilder.Builder(
+        activeParticipants[1] = new ActiveParticipantBuilder(
                 auditLogger.getDevice().getDeviceName(),
                 auditLogger.getConnections().get(0).getHostname())
                 .userIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName)

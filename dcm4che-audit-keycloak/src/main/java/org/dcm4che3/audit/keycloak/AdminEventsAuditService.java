@@ -56,6 +56,7 @@ import java.nio.file.StandardOpenOption;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Oct 2018
  */
 class AdminEventsAuditService {
@@ -110,12 +111,12 @@ class AdminEventsAuditService {
     private static AuditMessage createAuditMsg(Path file, AdminEvent adminEvent, AuditLogger auditLogger) {
         AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
         AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forAdminEvent(adminEvent);
-        EventIdentificationBuilder eventIdentification = AuditUtils.eventID(
+        EventIdentification eventIdentification = AuditUtils.eventID(
                 eventType, auditLogger, adminEvent.getError(), info.getField(AuthInfo.EVENT));
 
-        ActiveParticipantBuilder[] activeParticipants = AuditUtils.activeParticipants(info, auditLogger);
+        ActiveParticipant[] activeParticipants = AuditUtils.activeParticipants(info, auditLogger);
 
-        ParticipantObjectIdentificationBuilder poi = new ParticipantObjectIdentificationBuilder.Builder(
+        ParticipantObjectIdentification poi = new ParticipantObjectIdentificationBuilder(
                 auditLogger.getDevice().getDeviceName(),
                 AuditMessages.ParticipantObjectIDTypeCode.DeviceName,
                 AuditMessages.ParticipantObjectTypeCode.SystemObject,

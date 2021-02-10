@@ -42,86 +42,75 @@ package org.dcm4che3.audit;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since June 2016
  */
 
 public class ParticipantObjectIdentificationBuilder {
-    final String id;
-    final AuditMessages.ParticipantObjectIDTypeCode idType;
-    final String name;
-    final byte[] query;
-    final String type;
-    final String role;
-    final String lifeCycle;
-    final String sensitivity;
-    final ParticipantObjectDescriptionBuilder desc;
-    final ParticipantObjectDetail[] detail;
+    private final String id;
+    private final AuditMessages.ParticipantObjectIDTypeCode idType;
+    private String name;
+    private byte[] query;
+    private String type;
+    private String role;
+    private String lifeCycle;
+    private String sensitivity;
+    private ParticipantObjectDescription desc;
+    private ParticipantObjectDetail[] detail = {};
 
-    public static class Builder {
-        private final String id;
-        private final AuditMessages.ParticipantObjectIDTypeCode idType;
-        private String name;
-        private byte[] query;
-        private String type;
-        private String role;
-        private String lifeCycle;
-        private String sensitivity;
-        private ParticipantObjectDescriptionBuilder desc;
-        private ParticipantObjectDetail[] detail = {};
-
-        public Builder(String id, AuditMessages.ParticipantObjectIDTypeCode idType,
-                       String type, String role) {
-            this.id = id;
-            this.idType = idType;
-            this.type = type;
-            this.role = role;
-        }
-
-        public Builder name(String val) {
-            name = val;
-            return this;
-        }
-
-        public Builder query(byte[] val) {
-            query = val;
-            return this;
-        }
-
-        public Builder lifeCycle(String val) {
-            lifeCycle = val;
-            return this;
-        }
-
-        public Builder sensitivity(String val) {
-            sensitivity = val;
-            return this;
-        }
-
-        public Builder desc(ParticipantObjectDescriptionBuilder val) {
-            desc = val;
-            return this;
-        }
-
-        public Builder detail(ParticipantObjectDetail... val) {
-            detail = val;
-            return this;
-        }
-
-        public ParticipantObjectIdentificationBuilder build() {
-            return new ParticipantObjectIdentificationBuilder(this);
-        }
+    public ParticipantObjectIdentificationBuilder(String id, AuditMessages.ParticipantObjectIDTypeCode idType,
+                   String type, String role) {
+        this.id = id;
+        this.idType = idType;
+        this.type = type;
+        this.role = role;
     }
 
-    private ParticipantObjectIdentificationBuilder(Builder builder) {
-        id = builder.id;
-        idType = builder.idType;
-        name = builder.name;
-        query = builder.query;
-        type = builder.type;
-        role = builder.role;
-        lifeCycle = builder.lifeCycle;
-        sensitivity = builder.sensitivity;
-        desc = builder.desc;
-        detail = builder.detail;
+    public ParticipantObjectIdentificationBuilder name(String val) {
+        name = val;
+        return this;
+    }
+
+    public ParticipantObjectIdentificationBuilder query(byte[] val) {
+        query = val;
+        return this;
+    }
+
+    public ParticipantObjectIdentificationBuilder lifeCycle(String val) {
+        lifeCycle = val;
+        return this;
+    }
+
+    public ParticipantObjectIdentificationBuilder sensitivity(String val) {
+        sensitivity = val;
+        return this;
+    }
+
+    public ParticipantObjectIdentificationBuilder desc(ParticipantObjectDescription val) {
+        desc = val;
+        return this;
+    }
+
+    public ParticipantObjectIdentificationBuilder detail(ParticipantObjectDetail... val) {
+        detail = val;
+        return this;
+    }
+
+    public ParticipantObjectIdentification build() {
+        ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
+        poi.setParticipantObjectID(id);
+        poi.setParticipantObjectIDTypeCode(idType);
+        poi.setParticipantObjectName(name);
+        poi.setParticipantObjectQuery(query);
+        poi.setParticipantObjectTypeCode(type);
+        poi.setParticipantObjectTypeCodeRole(role);
+        poi.setParticipantObjectDataLifeCycle(lifeCycle);
+        poi.setParticipantObjectSensitivity(sensitivity);
+        if (desc != null)
+            poi.setParticipantObjectDescription(desc);
+        for (ParticipantObjectDetail participantObjectDetail : detail)
+            poi.getParticipantObjectDetail().add(participantObjectDetail);
+        return poi;
     }
 }
+

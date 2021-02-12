@@ -3176,8 +3176,7 @@ public class Attributes implements Serializable {
                         (Sequence) keyValue))
                     return false;
             } else {
-                throw new UnsupportedOperationException("Keys with VR: "
-                        + keyVrs[i] + " not supported");
+                LOG.info("Matching Key {} with VR: {} not supported", TagUtils.toString(tag), keyVrs[i]);
             }
         }
         return true;

@@ -501,7 +501,7 @@ public class Attributes implements Serializable {
             creatorTag = tags[index];
             if (vrs[index].isStringType()) {
                 Object creatorID = decodeStringValue(index);
-                if (privateCreator.equals(creatorID))
+                if (privateCreator != null && privateCreator.equals(creatorID))
                     return creatorTag;
             }
             index++;
@@ -2666,9 +2666,14 @@ public class Attributes implements Serializable {
                 int tmp = TagUtils.creatorTagOf(tag);
                 if (creatorTag != tmp) {
                     creatorTag = tmp;
-                    otherCreatorTag = other.creatorTagOf(privateCreatorAt(indexOf(creatorTag)), tag, false);
-                    if (otherCreatorTag == -1)
-                        return false;
+                    String privateCreator = privateCreatorAt(indexOf(creatorTag));
+                    if (privateCreator != null) {
+                    	otherCreatorTag = other.creatorTagOf(privateCreator, tag, false);
+                        if (otherCreatorTag == -1)
+                            return false;
+                    }
+                    else
+                    	otherCreatorTag = creatorTag;
                 }
                 int j = other.indexOf(TagUtils.toPrivateTag(otherCreatorTag, tag));
                 if (j < 0 || !equalValues(other, i, j))

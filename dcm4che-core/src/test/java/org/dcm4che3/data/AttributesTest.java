@@ -163,6 +163,18 @@ public class AttributesTest {
         assertTrue(a1.equals(a2));
         assertTrue(a2.equals(a1));
     }
+    
+    @Test
+    public void testPrivateTagEqualsWithoutPrivateCreator() {
+    	Attributes a1 = new Attributes();
+    	a1.setString(0x55330010, VR.LO, "CREATOR1");
+    	a1.setString(0x55331134, VR.LO, "VALUE1");
+    	Attributes a2 = new Attributes();
+    	a2.setString(0x55330010, VR.LO, "CREATOR1");
+    	a2.setString(0x55331134, VR.LO, "VALUE1");
+    	assertTrue(a1.equals(a2));
+    	assertTrue(a2.equals(a1));
+    }
 
     @Test
     public void testEqualValues() {

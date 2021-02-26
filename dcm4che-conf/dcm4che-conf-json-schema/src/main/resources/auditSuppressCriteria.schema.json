@@ -8,28 +8,92 @@
   "properties": {
     "cn": {
       "title": "Name",
-      "description": "Arbitrary/Meaningful name of the Audit Suppress Criteria",
+      "description": "Arbitrary/Meaningful name of the Audit Suppress Criteria.",
       "type": "string"
     },
     "dcmAuditEventID": {
       "title": "Audit Event ID",
-      "description": "RFC 3881 Audit Event ID code and codeSystemName in format (CV, CSD, \"CM\")",
+      "description": "DICOM PS 3.15 A.5 Audit Event ID code and codeSystemName in format (CV, CSD, \"CM\").",
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "(110100, DCM, \"Application Activity\")",
+          "(110101, DCM, \"Audit Log Used\")",
+          "(110102, DCM, \"Begin Transferring DICOM Instances\")",
+          "(110103, DCM, \"DICOM Instances Accessed\")",
+          "(110104, DCM, \"DICOM Instances Transferred\")",
+          "(110105, DCM, \"DICOM Study Deleted\")",
+          "(110106, DCM, \"Export\")",
+          "(110107, DCM, \"Import\")",
+          "(110108, DCM, \"Network Entry\")",
+          "(110109, DCM, \"Order Record\")",
+          "(110110, DCM, \"Patient Record\")",
+          "(110111, DCM, \"Procedure Record\")",
+          "(110112, DCM, \"Query\")",
+          "(110113, DCM, \"Security Alert\")",
+          "(110114, DCM, \"User Authentication\")",
+          "(IHE0001, IHE, \"Health Services Provision Event\")",
+          "(IHE0002, IHE, \"Medication Event\")",
+          "(IHE0003, IHE, \"Patient Care Resource Assignment\")",
+          "(IHE0004, IHE, \"Patient Care Episode\")",
+          "(IHE0005, IHE, \"Patient Care Protocol\")"
+        ]
       }
     },
     "dcmAuditEventTypeCode": {
       "title": "Audit Event Type Code",
-      "description": "RFC 3881 Audit Event Type code in format (CV, CSD, \"CM\")",
+      "description": "DICOM PS 3.15 A.5 Audit Event Type code in format (CV, CSD, \"CM\").",
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "(110120, DCM, \"Application Start\")",
+          "(110121, DCM, \"Application Stop\")",
+          "(110122, DCM, \"Login\")",
+          "(110123, DCM, \"Logout\")",
+          "(110124, DCM, \"Attach\")",
+          "(110125, DCM, \"Detach\")",
+          "(110126, DCM, \"Node Authentication\")",
+          "(110127, DCM, \"Emergency Override Started\")",
+          "(110128, DCM, \"Network Configuration\")",
+          "(110129, DCM, \"Security Configuration\")",
+          "(110130, DCM, \"Hardware Configuration\")",
+          "(110131, DCM, \"Software Configuration\")",
+          "(110132, DCM, \"Use of Restricted Function\")",
+          "(110133, DCM, \"Audit Recording Stopped\")",
+          "(110134, DCM, \"Audit Recording Started\")",
+          "(110135, DCM, \"Object Security Attributes Changed\")",
+          "(110136, DCM, \"Security Roles Changed\")",
+          "(110137, DCM, \"User security Attributes Changed\")",
+          "(110138, DCM, \"Emergency Override Stopped\")",
+          "(110139, DCM, \"Remote Service Operation Started\")",
+          "(110140, DCM, \"Remote Service Operation Stopped\")",
+          "(110141, DCM, \"Local Service Operation Started\")",
+          "(110142, DCM, \"Local Service Operation Stopped\")",
+          "(ITI-8, IHE Transactions, \"Patient Identity Feed\")",
+          "(ITI-9, IHE Transactions, \"PIX Query\")",
+          "(ITI-10, IHE Transactions, \"PIX Update Notification\")",
+          "(ITI-18, IHE Transactions, \"Registry Stored Query\")",
+          "(ITI-21, IHE Transactions, \"Patient Demographics Query\")",
+          "(ITI-22, IHE Transactions, \"Patient Demographics and Visit Query\")",
+          "(ITI-38, IHE Transactions, \"Cross Gateway Query\")",
+          "(ITI-39, IHE Transactions, \"Cross Gateway Retrieve\")",
+          "(ITI-41, IHE Transactions, \"Provide and Register Document Set-b\")",
+          "(ITI-42, IHE Transactions, \"Register Document Set-b\")",
+          "(ITI-43, IHE Transactions, \"Retrieve Document Set\")",
+          "(ITI-44, IHE Transactions, \"Patient Identity Feed\")",
+          "(ITI-45, IHE Transactions, \"PIX Query\")",
+          "(ITI-46, IHE Transactions, \"PIX Update Notification\")",
+          "(ITI-47, IHE Transactions, \"Patient Demographics Query\")",
+          "(ITI-51, IHE Transactions, \"Multi-Patient Query\")",
+          "(ITI-63, IHE Transactions, \"XCF Fetch\")"
+        ]
       }
     },
     "dcmAuditEventActionCode": {
       "title": "Event Action Code",
-      "description": "RFC 3881 Audit Event Action Type code.",
+      "description": "DICOM PS 3.15 A.5 Audit Event Action Type code.",
       "type": "array",
       "items": {
         "type": "string",
@@ -44,7 +108,7 @@
     },
     "dcmAuditEventOutcomeIndicator": {
       "title": "Event Outcome Indicator",
-      "description": "RFC 3881 Audit Event Outcome Indicator.",
+      "description": "DICOM PS 3.15 A.5 Audit Event Outcome Indicator.",
       "type": "array",
       "items": {
         "type": "string",
@@ -58,7 +122,7 @@
     },
     "dcmAuditUserID": {
       "title": "User ID",
-      "description": "RFC 3881 Audit Active Participant User ID",
+      "description": "DICOM PS 3.15 A.5 Audit Active Participant User ID.",
       "type": "array",
       "items": {
         "type": "string"
@@ -66,7 +130,7 @@
     },
     "dcmAuditAlternativeUserID": {
       "title": "Alternative User ID",
-      "description": "RFC 3881 Audit Active Participant Alternative User ID",
+      "description": "DICOM PS 3.15 A.5 Audit Active Participant Alternative User ID.",
       "type": "array",
       "items": {
         "type": "string"
@@ -74,15 +138,23 @@
     },
     "dcmAuditUserRoleIDCode": {
       "title": "User Role ID Code",
-      "description": "RFC 3881 Audit Active Participant User Role ID code in format (CV, CSD, \"CM\")",
+      "description": "DICOM PS 3.15 A.5 Audit Active Participant User Role ID code in format (CV, CSD, \"CM\").",
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "(110150, DCM, \"Application\")",
+          "(110151, DCM, \"Application Launcher\")",
+          "(110152, DCM, \"Destination\")",
+          "(110153, DCM, \"Source\")",
+          "(110154, DCM, \"Destination Media\")",
+          "(110155, DCM, \"Source Media\")"
+        ]
       }
     },
     "dcmAuditNetworkAccessPointID": {
       "title": "Network Access Point ID",
-      "description": "RFC 3881 Audit Active Participant Network Access Point ID",
+      "description": "DICOM PS 3.15 A.5 Audit Active Participant Network Access Point ID.",
       "type": "array",
       "items": {
         "type": "string"
@@ -90,8 +162,83 @@
     },
     "dcmAuditUserIsRequestor": {
       "title": "User is Requestor",
-      "description": "Indicates if Active Participant is initiator/requestor of the Audit Event as specified by RFC 3881",
+      "description": "Indicates if Active Participant is initiator/requestor of the Audit Event as specified by DICOM PS 3.15 A.5",
       "type": "boolean"
+    },
+    "dcmParticipantObjectTypeCode": {
+      "title": "Participant Object Type Code",
+      "description": "DICOM PS 3.15 A.5 Participant Object Type Code.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      }
+    },
+    "dcmParticipantObjectTypeCodeRole": {
+      "title": "Participant Object Type Code Role",
+      "description": "DICOM PS 3.15 A.5 Participant Object Type Code Role.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24",
+          "25",
+          "26"
+        ]
+      }
+    },
+    "dcmParticipantObjectDataLifeCycle": {
+      "title": "Participant Object Data Life Cycle",
+      "description": "DICOM PS 3.15 A.5 Participant Object Data Life Cycle.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15"
+        ]
+      }
     }
   }
 }

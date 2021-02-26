@@ -130,6 +130,12 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
             writer.writeNotEmpty("dcmAuditUserRoleIDCode", suppressCriteria.getUserRoleIDCodesAsStringArray());
             writer.writeNotEmpty("dcmAuditNetworkAccessPointID", suppressCriteria.getNetworkAccessPointIDs());
             writer.writeNotNull("dcmAuditUserIsRequestor", suppressCriteria.getUserIsRequestor());
+            writer.writeNotEmpty("dcmParticipantObjectTypeCodes",
+                    suppressCriteria.getParticipantObjectTypeCodes());
+            writer.writeNotEmpty("dcmParticipantObjectTypeCodeRoles",
+                    suppressCriteria.getParticipantObjectTypeCodeRoles());
+            writer.writeNotEmpty("dcmParticipantObjectDataLifeCycle",
+                    suppressCriteria.getParticipantObjectDataLifeCycle());
             writer.writeEnd();
         }
         writer.writeEnd();
@@ -287,6 +293,15 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                         break;
                     case "dcmAuditUserIsRequestor":
                         ct.setUserIsRequestor(reader.booleanValue());
+                        break;
+                    case "dcmParticipantObjectTypeCodes":
+                        ct.setParticipantObjectTypeCodes(reader.stringArray());
+                        break;
+                    case "dcmParticipantObjectTypeCodeRoles":
+                        ct.setParticipantObjectTypeCodeRoles(reader.stringArray());
+                        break;
+                    case "dcmParticipantObjectDataLifeCycle":
+                        ct.setParticipantObjectDataLifeCycle(reader.stringArray());
                         break;
                     default:
                         reader.skipUnknownProperty();

@@ -168,6 +168,12 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 criteria.getNetworkAccessPointIDs());
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmAuditUserIsRequestor",
                 criteria.getUserIsRequestor(), null);
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmParticipantObjectTypeCodes",
+                criteria.getParticipantObjectTypeCodes());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "getParticipantObjectTypeCodeRoles",
+                criteria.getParticipantObjectTypeCodeRoles());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "getParticipantObjectDataLifeCycle",
+                criteria.getParticipantObjectDataLifeCycle());
         return attrs;
     }
 
@@ -246,6 +252,12 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                         attrs.get("dcmAuditNetworkAccessPointID")));
                 criteria.setUserIsRequestor(LdapUtils.booleanValue(
                         attrs.get("dcmAuditUserIsRequestor"), null));
+                criteria.setParticipantObjectTypeCodes(LdapUtils.stringArray(
+                        attrs.get("dcmParticipantObjectTypeCodes")));
+                criteria.setParticipantObjectTypeCodeRoles(LdapUtils.stringArray(
+                        attrs.get("dcmParticipantObjectTypeCodeRoles")));
+                criteria.setParticipantObjectDataLifeCycle(LdapUtils.stringArray(
+                        attrs.get("dcmParticipantObjectDataLifeCycle")));
                 auditLogger.addAuditSuppressCriteria(criteria);
             }
         } finally {
@@ -473,6 +485,15 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         LdapUtils.storeDiffObject(ldapObj, mods, "dcmAuditUserIsRequestor",
                 a.getUserIsRequestor(),
                 b.getUserIsRequestor(), null);
+        LdapUtils.storeDiff(ldapObj, mods, "dcmParticipantObjectTypeCodes",
+                a.getParticipantObjectTypeCodes(),
+                b.getParticipantObjectTypeCodes());
+        LdapUtils.storeDiff(ldapObj, mods, "dcmParticipantObjectTypeCodeRoles",
+                a.getParticipantObjectTypeCodeRoles(),
+                b.getParticipantObjectTypeCodeRoles());
+        LdapUtils.storeDiff(ldapObj, mods, "dcmParticipantObjectDataLifeCycle",
+                a.getParticipantObjectDataLifeCycle(),
+                b.getParticipantObjectDataLifeCycle());
         return mods;
     }
 

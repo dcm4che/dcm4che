@@ -2655,24 +2655,38 @@ public class Attributes implements Serializable {
         if (size != other.size)
             return false;
 
+        String privateCreator = null;
         int creatorTag = 0;
         int otherCreatorTag = 0;
         for (int i = 0; i < size; i++) {
             int tag = tags[i];
-            if (!TagUtils.isPrivateGroup(tag)) {
-                if (tag != other.tags[i] || !equalValues(other, i, i))
-                    return false;
-            } else if (TagUtils.isPrivateTag(tag)) {
-                int tmp = TagUtils.creatorTagOf(tag);
-                if (creatorTag != tmp) {
-                    creatorTag = tmp;
-                    otherCreatorTag = other.creatorTagOf(privateCreatorAt(indexOf(creatorTag)), tag, false);
-                    if (otherCreatorTag == -1)
+            switch (TagUtils.Type.typeOf(tag)) {
+                case PRIVATE_CREATOR:
+                    continue;
+                case PRIVATE:
+                    int tmp = TagUtils.creatorTagOf(tag);
+                    if (creatorTag != tmp) {
+                        creatorTag = tmp;
+                        privateCreator = privateCreatorAt(indexOf(tmp));
+                        if (privateCreator != null) {
+                            otherCreatorTag = other.creatorTagOf(privateCreator, tag, false);
+                            if (otherCreatorTag == -1)
+                                return false; // other has no matching private creator
+                        } else {
+                            if (other.privateCreatorAt(other.indexOf(tmp)) != null)
+                                return false; // other attribute has associated private creator
+                        }
+                    }
+                    if (privateCreator != null) {
+                        int j = other.indexOf(TagUtils.toPrivateTag(otherCreatorTag, tag));
+                        if (j < 0 || !equalValues(other, i, j))
+                            return false;
+                        continue;
+                    }
+                    // fall through: treat private attributes without associated private creator like standard attributes
+                case STANDARD:
+                    if (tag != other.tags[i] || !equalValues(other, i, i))
                         return false;
-                }
-                int j = other.indexOf(TagUtils.toPrivateTag(otherCreatorTag, tag));
-                if (j < 0 || !equalValues(other, i, j))
-                    return false;
             }
         }
         return true;

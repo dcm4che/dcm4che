@@ -45,6 +45,13 @@ import org.dcm4che3.data.Tag;
  */
 public class TagUtils {
 
+    public enum Type {
+        STANDARD, PRIVATE, PRIVATE_CREATOR;
+        public static Type typeOf(int tag) {
+            return (tag & 0x00010000) != 0 ? (tag & 0x0000FF00) != 0 ? PRIVATE : PRIVATE_CREATOR : STANDARD;
+        }
+    }
+
     private static char[] HEX_DIGITS = {
         '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'

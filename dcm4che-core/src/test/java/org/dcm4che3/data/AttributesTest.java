@@ -182,8 +182,8 @@ public class AttributesTest {
         Attributes a2 = new Attributes();
         a2.setString(0x00090020, VR.LO, "CREATOR2");
         a2.setString(0x00091010, VR.LO, "VALUE1");
-        assertFalse("expected !a1.equals(a2)", a1.equals(a2));
-        assertFalse("expected !a2.equals(a1)", a2.equals(a1));
+        assertFalse(a1.equals(a2));
+        assertFalse(a2.equals(a1));
     }
 
     @Test

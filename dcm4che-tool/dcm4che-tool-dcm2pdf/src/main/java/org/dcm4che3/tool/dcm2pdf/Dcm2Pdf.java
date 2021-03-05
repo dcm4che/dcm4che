@@ -65,6 +65,7 @@ public class Dcm2Pdf {
     private static final Logger LOG = LoggerFactory.getLogger(Dcm2Pdf.class);
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.dcm2pdf.messages");
     private FileType fileType;
+    private boolean encapsulatedDocLength;
 
     public static void main(String[] args) {
         try {
@@ -116,6 +117,10 @@ public class Dcm2Pdf {
                 .hasArg(false)
                 .desc(rb.getString("stl"))
                 .build());
+        opts.addOption(Option.builder()
+                .longOpt("encapsulatedDocLength")
+                .desc(rb.getString("encapsulatedDocLength"))
+                .build());
         opts.addOptionGroup(group);
         return CLIUtils.parseComandLine(args, opts, rb, Dcm2Pdf.class);
     }
@@ -129,6 +134,7 @@ public class Dcm2Pdf {
                         ? FileType.OBJ
                         : cl.hasOption("stl")
                             ? FileType.STL :  FileType.PDF;
+        this.encapsulatedDocLength = cl.hasOption("encapsulatedDocLength");
     }
 
     enum FileType {
@@ -214,11 +220,14 @@ public class Dcm2Pdf {
 
             FileOutputStream fos = new FileOutputStream(dest.toFile());
             byte[] value = (byte[]) attributes.getValue(Tag.EncapsulatedDocument);
-            if (fileType == FileType.PDF || fileType == FileType.STL)
-                fos.write(value);
-            else
+            if (encapsulatedDocLength && attributes.getLong(Tag.EncapsulatedDocumentLength, 0L) % 2 != 0)
                 fos.write(value, 0, value.length - 1);
-
+            else {
+                if (fileType == FileType.PDF || fileType == FileType.STL)
+                    fos.write(value);
+                else
+                    fos.write(value, 0, value.length - 1);
+            }
             System.out.println(MessageFormat.format(rb.getString("converted"), src, dest));
         } catch (Exception e) {
             System.out.println(MessageFormat.format(rb.getString("failed"), src, e.getMessage()));

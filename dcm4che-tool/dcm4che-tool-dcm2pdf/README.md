@@ -9,12 +9,17 @@
     specify corresponding options as provided.
     -
     Options:
-        --cda       Convert DICOM object(s) into CDA file(s)
-     -h,--help      display this help and exit
-        --mtl       Convert DICOM object(s) into MTL file(s)
-        --obj       Convert DICOM object(s) into OBJ file(s)
-        --stl       Convert DICOM object(s) into STL file(s)
-     -V,--version   output version information and exit
+        --cda                     Convert DICOM object(s) into CDA file(s)
+        --encapsulatedDocLength   If specified, check Encapsulated Document
+                                  Length (0042,0015) value in attributes. If
+                                  this attribute is present and has an odd
+                                  length, extract the original unpadded
+                                  document.
+     -h,--help                    display this help and exit
+        --mtl                     Convert DICOM object(s) into MTL file(s)
+        --obj                     Convert DICOM object(s) into OBJ file(s)
+        --stl                     Convert DICOM object(s) into STL file(s)
+     -V,--version                 output version information and exit
     -
     Example 1: dcm2pdf object.dcm file.pdf
     => Convert Encapsulated PDF DICOM object to a pdf file.

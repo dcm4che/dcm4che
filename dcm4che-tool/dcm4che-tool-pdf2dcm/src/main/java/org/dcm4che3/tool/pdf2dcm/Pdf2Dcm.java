@@ -80,6 +80,7 @@ public class Pdf2Dcm {
 
     private static Attributes staticMetadata;
     private static FileContentType fileContentType;
+    private static boolean encapsulatedDocLength;
 
     public static void main(String[] args) {
         try {
@@ -125,6 +126,10 @@ public class Pdf2Dcm {
                 .argName("contentType")
                 .longOpt("contentType")
                 .desc(rb.getString("contentType"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("encapsulatedDocLength")
+                .desc(rb.getString("encapsulatedDocLength"))
                 .build());
         return CLIUtils.parseComandLine(args, opts, rb, Pdf2Dcm.class);
     }
@@ -183,6 +188,7 @@ public class Pdf2Dcm {
         createStaticMetadata(cl);
         if (cl.hasOption("contentType"))
             fileContentType = fileContentType(cl.getOptionValue("contentType"));
+        encapsulatedDocLength = cl.hasOption("encapsulatedDocLength");
     }
 
     private static void createStaticMetadata(CommandLine cl) throws Exception {
@@ -195,13 +201,15 @@ public class Pdf2Dcm {
         supplementType2Tags(staticMetadata);
     }
 
-    private Attributes createMetadata(FileContentType fileContentType) throws Exception {
+    private Attributes createMetadata(FileContentType fileContentType, File srcFile) throws Exception {
         Attributes fileMetadata = SAXReader.parse(StreamUtils.openFileOrURL(fileContentType.getSampleMetadataFile()));
         fileMetadata.addAll(staticMetadata);
         if ((fileContentType == FileContentType.STL
                 || fileContentType == FileContentType.OBJ)
                 && !fileMetadata.containsValue(Tag.FrameOfReferenceUID))
             fileMetadata.setString(Tag.FrameOfReferenceUID, VR.UI, UIDUtils.createUID());
+        if (encapsulatedDocLength)
+            fileMetadata.setLong(Tag.EncapsulatedDocumentLength, VR.UL, srcFile.length());
         return fileMetadata;
     }
 
@@ -259,9 +267,9 @@ public class Pdf2Dcm {
     private void convert(Path srcFilePath, Path destFilePath) throws Exception {
         FileContentType fileContentType1 = fileContentType != null
                                             ? fileContentType : FileContentType.valueOf(srcFilePath);
-        Attributes fileMetadata = createMetadata(fileContentType1);
         File srcFile = srcFilePath.toFile();
         File destFile = destFilePath.toFile();
+        Attributes fileMetadata = createMetadata(fileContentType1, srcFile);
         long fileLength = srcFile.length();
         if (fileLength > MAX_FILE_SIZE)
             throw new IllegalArgumentException(MessageFormat.format(rb.getString("file-too-large"), srcFile));

@@ -18,6 +18,9 @@
                                       If specified, content type of individual
                                       file(s) (and/or in directory(-ies))
                                       shall not be probed.
+        --encapsulatedDocLength       If specified, supplement Encapsulated
+                                      Document Length (0042,0015) attribute in
+                                      metadata.
      -f <xml-file>                    specify included DICOM attributes by XML
                                       presentation in <xml-file>
      -h,--help                        display this help and exit

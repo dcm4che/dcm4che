@@ -53,6 +53,10 @@
         --disableTM                   If the other server requires HTTPS and
                                       this option is specified, a truststore
                                       need not be specified.
+        --encapsulatedDocLength       If specified, supplement Encapsulated
+                                      Document Length (0042,0015) attribute in
+                                      metadata for encapsulated document
+                                      uploads.
      -f,--file <file>                 Specify the file containing the metadata
                                       (in XML format).
      -h,--help                        display this help and exit

@@ -96,6 +96,7 @@ public class StowRS {
     private static String metadataFile;
     private static boolean allowAnyHost;
     private static boolean disableTM;
+    private static boolean encapsulatedDocLength;
     private static String authorization;
     private boolean tsuid;
     private static final String boundary = "myboundary";
@@ -183,6 +184,10 @@ public class StowRS {
                 .longOpt("disableTM")
                 .desc(rb.getString("disableTM"))
                 .build());
+        opts.addOption(Option.builder()
+                .longOpt("encapsulatedDocLength")
+                .desc(rb.getString("encapsulatedDocLength"))
+                .build());
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder("u")
                 .hasArg()
@@ -243,6 +248,7 @@ public class StowRS {
         videoPhotographicImage = cl.hasOption("video");
         allowAnyHost = cl.hasOption("allowAnyHost");
         disableTM = cl.hasOption("disableTM");
+        encapsulatedDocLength = cl.hasOption("encapsulatedDocLength");
         if (cl.hasOption("contentType"))
             bulkdataFileContentType = fileContentTypeFromCL = fileContentType(cl.getOptionValue("contentType"));
         processFirstFile(cl);
@@ -254,15 +260,12 @@ public class StowRS {
 
         final boolean[] dicom = {false};
         for (String file : cl.getArgList()) {
-            applyFunctionToFile(file, new StowRSFileFunction<Path>() {
-                @Override
-                public void apply(Path path) throws IOException {
-                    dicom[0] = toDicomInputStream(path) != null;
-                    if (!dicom[0]) {
-                        firstBulkdataFileContentType = FileContentType.valueOf(path);
-                        if (fileContentTypeFromCL == null)
-                            bulkdataFileContentType = firstBulkdataFileContentType;
-                    }
+            applyFunctionToFile(file, path -> {
+                dicom[0] = toDicomInputStream(path) != null;
+                if (!dicom[0]) {
+                    firstBulkdataFileContentType = FileContentType.valueOf(path);
+                    if (fileContentTypeFromCL == null)
+                        bulkdataFileContentType = firstBulkdataFileContentType;
                 }
             });
             if (dicom[0] || firstBulkdataFileContentType != null)
@@ -435,6 +438,7 @@ public class StowRS {
         LOG.info(MessageFormat.format(rb.getString("supplement-metadata-from-file"), bulkdataFilePath));
         String contentLoc = "bulk" + UIDUtils.createUID();
         metadata.setValue(bulkdataFileContentType.getBulkdataTypeTag(), VR.OB, new BulkData(null, contentLoc, false));
+        StowRSBulkdata stowRSBulkdata = new StowRSBulkdata(bulkdataFilePath);
         switch (bulkdataFileContentType) {
             case SLA:
             case STL:
@@ -444,8 +448,8 @@ public class StowRS {
             case PDF:
             case CDA:
             case MTL:
-                supplementEncapsulatedDocAttrs(metadata);
-                contentLocBulkdata.put(contentLoc, new StowRSBulkdata(bulkdataFilePath));
+                supplementEncapsulatedDocAttrs(metadata, stowRSBulkdata);
+                contentLocBulkdata.put(contentLoc, stowRSBulkdata);
                 break;
             case JPEG:
             case JP2:
@@ -454,14 +458,14 @@ public class StowRS {
             case MPEG:
             case MP4:
             case QUICKTIME:
-                pixelMetadata(contentLoc, bulkdataFilePath.toFile(), metadata);
+                pixelMetadata(contentLoc, stowRSBulkdata, metadata);
                 break;
         }
         return metadata;
     }
 
-    private void pixelMetadata(String contentLoc, File bulkdataFile, Attributes metadata) {
-        StowRSBulkdata stowRSBulkdata = new StowRSBulkdata(bulkdataFile.toPath());
+    private void pixelMetadata(String contentLoc, StowRSBulkdata stowRSBulkdata, Attributes metadata) {
+        File bulkdataFile = stowRSBulkdata.getBulkdataFile();
         if (pixelHeader || tsuid || noApp) {
             CompressedPixelData compressedPixelData = CompressedPixelData.valueOf();
             try(FileInputStream fis = new FileInputStream(bulkdataFile)) {
@@ -523,9 +527,11 @@ public class StowRS {
                 metadata.setNull(tag, DICT.vrOf(tag));
     }
 
-    private static void supplementEncapsulatedDocAttrs(Attributes metadata) {
+    private static void supplementEncapsulatedDocAttrs(Attributes metadata, StowRSBulkdata stowRSBulkdata) {
         if (!metadata.contains(Tag.AcquisitionDateTime))
             metadata.setNull(Tag.AcquisitionDateTime, VR.DT);
+        if (encapsulatedDocLength)
+            metadata.setLong(Tag.EncapsulatedDocumentLength, VR.UL, stowRSBulkdata.getFileLength());
     }
 
     private enum CompressedPixelData {
@@ -834,7 +840,7 @@ public class StowRS {
         writePartHeaders(out, bulkdataContentType1, contentLocation);
 
         int offset = 0;
-        int length = (int) stowRSBulkdata.getBulkdataFilePath().toFile().length();
+        int length = (int) stowRSBulkdata.getFileLength();
         long positionAfterAPPSegments = parser != null ? parser.getPositionAfterAPPSegments() : -1L;
         if (noApp && positionAfterAPPSegments != -1L) {
             offset = (int) positionAfterAPPSegments;
@@ -847,14 +853,26 @@ public class StowRS {
 
     static class StowRSBulkdata {
         Path bulkdataFilePath;
+        File bulkdataFile;
         XPEGParser parser;
+        long fileLength;
 
         StowRSBulkdata(Path bulkdataFilePath) {
             this.bulkdataFilePath = bulkdataFilePath;
+            this.bulkdataFile = bulkdataFilePath.toFile();
+            this.fileLength = bulkdataFile.length();
         }
 
         Path getBulkdataFilePath() {
             return bulkdataFilePath;
+        }
+
+        File getBulkdataFile() {
+            return bulkdataFile;
+        }
+
+        long getFileLength() {
+            return fileLength;
         }
 
         XPEGParser getParser() {

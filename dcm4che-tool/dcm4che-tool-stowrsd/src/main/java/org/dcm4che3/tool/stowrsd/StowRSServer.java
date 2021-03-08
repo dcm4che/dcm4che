@@ -210,7 +210,7 @@ public class StowRSServer {
         }
     }
 
-    private void setStorageDirectory(Path storageDir) throws IOException {
+    public void setStorageDirectory(Path storageDir) throws IOException {
         if (storageDir != null)
             Files.createDirectories(storageDir);
         this.storageDir = storageDir;

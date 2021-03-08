@@ -274,12 +274,11 @@ public class WebApplication {
     @Override
     public String toString() {
         return "WebApplication[name=" + applicationName
-                + ",classes=" + serviceClasses
+                + ",serviceClasses=" + serviceClasses
                 + ",path=" + servicePath
                 + ",aet=" + aeTitle
                 + ",applicationClusters=" + Arrays.toString(applicationClusters)
                 + ",keycloakClientID=" + keycloakClientID
-                + ",serviceClasses=" + serviceClasses
                 + ",properties=" + properties
                 + ",installed=" + installed
                 + ']';

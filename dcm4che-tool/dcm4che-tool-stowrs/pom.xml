@@ -30,7 +30,6 @@
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
     <version>5.23.1</version>
-    <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-tool-stowrs</artifactId>
   <name>dcm4che-tool-stowrs</name>
@@ -47,10 +46,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-        <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-json</artifactId>
       <version>${project.version}</version>
@@ -64,6 +59,10 @@
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-ws-rs</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
     </dependency>
   </dependencies>
 </project>

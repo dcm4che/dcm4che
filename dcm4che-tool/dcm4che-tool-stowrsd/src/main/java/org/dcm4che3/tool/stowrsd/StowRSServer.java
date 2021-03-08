@@ -1,0 +1,297 @@
+/*
+ * **** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+ * Java(TM), hosted at https://github.com/dcm4che.
+ *
+ * The Initial Developer of the Original Code is
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2019
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * See @authors listed below
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * **** END LICENSE BLOCK *****
+ *
+ */
+
+package org.dcm4che3.tool.stowrsd;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+import org.apache.commons.cli.*;
+import org.dcm4che3.mime.MultipartInputStream;
+import org.dcm4che3.mime.MultipartParser;
+import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.DateUtils;
+import org.dcm4che3.util.StreamUtils;
+import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.nio.file.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+/**
+ * @author Gunter Zeilinger (gunterze@protonmail.com)
+ * @since Mar 2021
+ */
+public class StowRSServer {
+    private static final Logger LOG = LoggerFactory.getLogger(StowRSServer.class);
+    private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.stowrsd.messages");
+
+    private final HttpServer server;
+    private Path storageDir;
+
+    public StowRSServer(InetSocketAddress addr) throws IOException {
+        server = HttpServer.create(addr, 0);
+        server.createContext("/", this::handle);
+    }
+
+    public void start() {
+        LOG.info("Start listening on {}", server.getAddress());
+        server.start();
+    }
+
+    public void stop(int delay) {
+        server.stop(delay);
+    }
+
+    private void handle(HttpExchange httpExchange) throws IOException {
+        LOG.info("{} -> {}", httpExchange.getLocalAddress(), httpExchange.getRemoteAddress());
+        LOG.info("< {} {} {}",
+                httpExchange.getRequestMethod(),
+                httpExchange.getRequestURI(),
+                httpExchange.getProtocol());
+        for (Map.Entry<String, List<String>> entry : httpExchange.getRequestHeaders().entrySet()) {
+            LOG.info("< {}: {}", entry.getKey(), entry.getValue());
+        }
+        switch (httpExchange.getRequestMethod()) {
+            case "POST":
+                onPOST(httpExchange);
+                break;
+            default:
+                sendResponseHeaders(httpExchange, 405,"Method Not Allowed", -1);
+        }
+    }
+
+    private void onPOST(HttpExchange httpExchange) throws IOException {
+        String requestContentType = httpExchange.getRequestHeaders().getFirst("Content-type");
+        if (requestContentType == null) {
+            sendResponseHeaders(httpExchange, 400,"Bad Request", -1);
+            return;
+        }
+        String[] requestContentTypeParams = StringUtils.split(requestContentType, ';');
+        if (!"multipart/related".equalsIgnoreCase(requestContentTypeParams[0])) {
+            sendResponseHeaders(httpExchange, 415,"Unsupported Media Type", -1);
+            return;
+        }
+        String boundary = boundary(requestContentTypeParams);
+        if (boundary == null) {
+            sendResponseHeaders(httpExchange, 400,"Bad Request", -1);
+            return;
+        }
+        new MultipartParser(boundary).parse(httpExchange.getRequestBody(), new MultipartHandler());
+        String mediaType = selectMediaType(httpExchange);
+        if (mediaType != null) {
+            byte[] response = loadResource(mediaType.endsWith("xml")
+                    ? "resource:response.xml"
+                    : "resource:response.json");
+            httpExchange.getResponseHeaders().add("Content-type", mediaType);
+            sendResponseHeaders(httpExchange, 200, "OK", response.length);
+            try (OutputStream out = httpExchange.getResponseBody()) {
+                out.write(response);
+            }
+        } else {
+            sendResponseHeaders(httpExchange, 406,"Not Acceptable", -1);
+        }
+    }
+
+    private String boundary(String[] params) {
+        for (int i = 1; i < params.length; i++) {
+            String param = params[i].trim();
+            if (param.length() > 12 && param.startsWith("boundary=")) {
+                return param.charAt(9) == '"' && param.charAt(param.length() - 1) == '"'
+                        ? param.substring(10, param.length() - 1)
+                        : param.substring(9);
+            }
+        }
+        return null;
+    }
+
+    private void sendResponseHeaders(HttpExchange httpExchange, int rCode, String rMsg, int responseLength)
+            throws IOException {
+        httpExchange.sendResponseHeaders(rCode, responseLength);
+        LOG.info("> {} {} {}", httpExchange.getProtocol(), rCode, rMsg);
+        for (Map.Entry<String, List<String>> entry : httpExchange.getResponseHeaders().entrySet()) {
+            LOG.info("> {}: {}", entry.getKey(), entry.getValue());
+        }
+    }
+
+    private byte[] loadResource(String name) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        StreamUtils.copy(StreamUtils.openFileOrURL(name), out);
+        return out.toByteArray();
+    }
+
+    private String selectMediaType(HttpExchange httpExchange) {
+        for (String acceptHeader: httpExchange.getRequestHeaders().get("Accept")) {
+            for (String mediaType : StringUtils.split(acceptHeader, ',')) {
+                switch (withoutParams(mediaType).toLowerCase()) {
+                    case "*":
+                    case "*/*":
+                    case "application/*":
+                    case "application/dicom+json":
+                        return "application/dicom+json";
+                    case "application/json":
+                        return "application/json";
+                    case "application/dicom+xml":
+                        return "application/dicom+xml";
+                    case "text/*":
+                    case "text/xml":
+                        return "text/xml";
+                }
+            }
+        }
+        return null;
+    }
+
+    private String withoutParams(String mediaType) {
+        int endIndex = mediaType.indexOf(';');
+        return endIndex < 0 ? mediaType : mediaType.substring(0, endIndex);
+    }
+
+    public static void main(String[] args) {
+        try {
+            CommandLine cl = parseComandLine(args);
+            StowRSServer main = new StowRSServer(toInetSocketAddress(cl));
+            if (!cl.hasOption("ignore")) {
+                main.setStorageDirectory(
+                        Paths.get(cl.getOptionValue("directory", ".")));
+            }
+            main.start();
+        } catch (ParseException e) {
+            System.err.println("stowrsd: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
+        } catch (Exception e) {
+            System.err.println("stowrsd: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
+        }
+    }
+
+    private void setStorageDirectory(Path storageDir) throws IOException {
+        if (storageDir != null)
+            Files.createDirectories(storageDir);
+        this.storageDir = storageDir;
+    }
+
+    private static CommandLine parseComandLine(String[] args)
+            throws ParseException {
+        Options opts = new Options();
+        addOptions(opts);
+        CLIUtils.addCommonOptions(opts);
+        return CLIUtils.parseComandLine(args, opts, rb, StowRSServer.class);
+    }
+
+    public static void addOptions(Options opts) {
+        opts.addOption(null, "ignore", false, rb.getString("ignore"));
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("path")
+                .desc(rb.getString("directory"))
+                .longOpt("directory")
+                .build());
+        opts.addOption(Option.builder("b")
+                .hasArg()
+                .argName("[ip:]port")
+                .desc(rb.getString("bind-server"))
+                .longOpt("bind")
+                .build());
+    }
+
+    private static InetSocketAddress toInetSocketAddress(CommandLine cl) throws MissingOptionException {
+        if (!cl.hasOption("b"))
+            throw new MissingOptionException(rb.getString("missing-bind-opt"));
+        String s = cl.getOptionValue("b");
+        int index = s.indexOf(':');
+        return index < 0
+                ? new InetSocketAddress(Integer.parseInt(s))
+                : new InetSocketAddress(s.substring(0, index), Integer.parseInt(s.substring(index + 1)));
+    }
+
+    private class MultipartHandler implements MultipartParser.Handler {
+        private Path storageSupDir;
+
+        MultipartHandler() throws IOException {
+            if (storageDir != null) {
+                Date now = new Date();
+                for (; ; ) {
+                    try {
+                        storageSupDir = Files.createDirectory(storageDir.resolve(DateUtils.formatDT(null, now)));
+                        break;
+                    } catch (FileAlreadyExistsException e) {
+                        now = new Date(now.getTime() + 1);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void bodyPart(int partNumber, MultipartInputStream in) throws IOException {
+            LOG.info("< Part #{}:", partNumber);
+            Map<String, List<String>> partHeaders = in.readHeaderParams();
+            for (Map.Entry<String, List<String>> partHeader : partHeaders.entrySet()) {
+                LOG.info("< {}: {}", partHeader.getKey(), partHeader.getValue());
+            }
+            if (storageSupDir != null) {
+                Path file = storageSupDir.resolve(
+                        String.format("%03d", partNumber) + suffix(partHeaders.get("Content-type")));
+                LOG.info("* M-WRITE {}", file);
+                Files.copy(in, file);
+            } else {
+                in.skipAll();
+            }
+        }
+    }
+
+    private static String suffix(List<String> contentTypes) {
+        if (contentTypes.isEmpty()) return "";
+        String[] split = StringUtils.split(contentTypes.get(0).toLowerCase(), ';');
+        return split[0].endsWith("dicom") ? ".dcm"
+                : split[0].endsWith("xml") ? ".xml"
+                : split[0].endsWith("json") ? ".json"
+                : "";
+    }
+
+}

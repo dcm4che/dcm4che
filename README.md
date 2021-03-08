@@ -92,6 +92,7 @@ Utilities
 - [storescp][]: DICOM Composite Object Receiver
 - [storescu][]: Send DICOM Composite Objects
 - [stowrs][]: Send DICOM Composite Objects or Bulkdata file over Web
+- [stowrsd][]: STOW-RS Server
 - [swappxdata][]: Swaps bytes of uncompressed pixel data in DICOM files
 - [syslog][]: Send Syslog messages via TCP/TLS or UDP to a Syslog Receiver
 - [syslogd][]: Receives RFC 5424 Syslog messages via TCP/TLS or UDP
@@ -136,6 +137,7 @@ Utilities
 [storescp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescp/README.md
 [storescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescu/README.md
 [stowrs]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stowrs/README.md
+[stowrsd]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stowrsd/README.md
 [swappxdata]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-swappxdata/README.md
 [syslog]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-syslog/README.md
 [syslogd]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-syslogd/README.md

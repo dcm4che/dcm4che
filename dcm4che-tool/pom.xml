@@ -91,6 +91,7 @@
     <module>dcm4che-tool-storescp</module>
     <module>dcm4che-tool-storescu</module>
     <module>dcm4che-tool-stowrs</module>
+    <module>dcm4che-tool-stowrsd</module>
     <module>dcm4che-tool-swappxdata</module>
     <module>dcm4che-tool-syslog</module>
     <module>dcm4che-tool-syslogd</module>

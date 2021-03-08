@@ -153,6 +153,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
         <include>org.dcm4che.tool:dcm4che-tool-stowrs</include>
+        <include>org.dcm4che.tool:dcm4che-tool-stowrsd</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-json2csv</include>

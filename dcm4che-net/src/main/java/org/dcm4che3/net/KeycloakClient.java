@@ -179,4 +179,18 @@ public class KeycloakClient {
         tlsDisableTrustManager = src.tlsDisableTrustManager;
     }
 
+    @Override
+    public String toString() {
+        return "KeycloakClient[keycloakClientID=" + keycloakClientID
+                + ",keycloakServerURL=" + keycloakServerURL
+                + ",keycloakRealm=" + keycloakRealm
+                + ",keycloakGrantType=" + keycloakGrantType
+                + ",keycloakClientSecret=" + keycloakClientSecret
+                + ",userID=" + userID
+                + ",password=" + password
+                + ",tlsAllowAnyHostname=" + tlsAllowAnyHostname
+                + ",tlsDisableTrustManager=" + tlsDisableTrustManager
+                + ']';
+    }
+
 }

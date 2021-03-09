@@ -110,8 +110,7 @@ class AuditUtils {
     static void emitAudit(AuditLogger auditLogger, AuditMessage auditMsg) {
         auditMsg.getAuditSourceIdentification().add(auditLogger.createAuditSourceIdentification());
         try {
-            AuditLogger.SendStatus write = auditLogger.write(auditLogger.timeStamp(), auditMsg);
-            System.out.println("log send status: " + write);
+            auditLogger.write(auditLogger.timeStamp(), auditMsg);
         } catch (Exception e) {
             LOG.warn("Failed to emit audit message", e);
         }

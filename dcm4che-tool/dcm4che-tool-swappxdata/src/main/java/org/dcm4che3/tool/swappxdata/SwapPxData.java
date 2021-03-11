@@ -182,7 +182,7 @@ public class SwapPxData implements Closeable {
                     return skipChar = '8';
                 }
                 try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-                    if (!toggleEndian(raf, (BulkData) value)) {
+                    if (!toggleEndian(raf, (BulkData) value, dataset.getInt(Tag.BitsStored, 16))) {
                         skipped++;
                         if (!testAll)
                             skipDir = file.getParent();
@@ -210,20 +210,21 @@ public class SwapPxData implements Closeable {
         return uidslog;
     }
 
-    private boolean toggleEndian(RandomAccessFile raf, BulkData bulkData) throws IOException {
+    private boolean toggleEndian(RandomAccessFile raf, BulkData bulkData, int bitsStored) throws IOException {
+        int mask = (1 << bitsStored) - 1;
         byte[] b = new byte[bulkData.length()];
         raf.seek(bulkData.offset());
         raf.readFully(b);
         if (ifBigEndian) {
-            int prevBE = ByteUtils.bytesToShortBE(b, 0);
-            int prevLE = ByteUtils.bytesToShortLE(b, 0);
+            int prevBE = ByteUtils.bytesToShortBE(b, 0) & mask;
+            int prevLE = ByteUtils.bytesToShortLE(b, 0) & mask;
             long diff = 0L;
             for (int off = 2, end = b.length - 1; off < end; off++, off++) {
-                int valBE = ByteUtils.bytesToShortBE(b, off);
-                diff += Math.abs(valBE - prevBE);
+                int valBE = ByteUtils.bytesToShortBE(b, off) & mask;
+                diff += diff(valBE, prevBE, mask);
                 prevBE = valBE;
-                int valLE = ByteUtils.bytesToShortLE(b, off);
-                diff -= Math.abs(valLE - prevLE);
+                int valLE = ByteUtils.bytesToShortLE(b, off) & mask;
+                diff -= diff(valLE, prevLE, mask);
                 prevLE = valLE;
             }
             if (diff > 0)
@@ -232,6 +233,11 @@ public class SwapPxData implements Closeable {
         raf.seek(bulkData.offset());
         raf.write(ByteUtils.swapShorts(b, 0, b.length));
         return true;
+    }
+
+    private static int diff(int val, int prev, int mask) {
+        int diff = Math.abs(val - prev);
+        return diff != mask ? diff : 0; // suppress Black/White diffs
     }
 
     @Override

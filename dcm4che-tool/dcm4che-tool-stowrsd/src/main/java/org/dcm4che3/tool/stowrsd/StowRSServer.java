@@ -56,10 +56,8 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.file.*;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.concurrent.Executors;
 
 /**
  * @author Gunter Zeilinger (gunterze@protonmail.com)
@@ -71,9 +69,11 @@ public class StowRSServer {
 
     private final HttpServer server;
     private Path storageDir;
+    private boolean unpack;
 
-    public StowRSServer(InetSocketAddress addr) throws IOException {
-        server = HttpServer.create(addr, 0);
+    public StowRSServer(InetSocketAddress addr, int backlog, int threads) throws IOException {
+        server = HttpServer.create(addr, backlog);
+        server.setExecutor(Executors.newFixedThreadPool(threads));
         server.createContext("/", this::handle);
     }
 
@@ -86,15 +86,36 @@ public class StowRSServer {
         server.stop(delay);
     }
 
+    private static class LogHeaders {
+        final String prefix;
+        final Set<Map.Entry<String, List<String>>> headers;
+
+        LogHeaders(String prefix, Set<Map.Entry<String, List<String>>> headers) {
+            this.prefix = prefix;
+            this.headers = headers;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, List<String>> entry : headers) {
+                sb.append(System.lineSeparator())
+                        .append(prefix).append(entry.getKey())
+                        .append(": ").append(entry.getValue());
+            }
+            return sb.toString();
+        }
+    }
+
     private void handle(HttpExchange httpExchange) throws IOException {
-        LOG.info("{} -> {}", httpExchange.getLocalAddress(), httpExchange.getRemoteAddress());
-        LOG.info("< {} {} {}",
+        LOG.info("{} -> {}{}< {} {} {}{}",
+                httpExchange.getRemoteAddress(),
+                httpExchange.getLocalAddress(),
+                System.lineSeparator(),
                 httpExchange.getRequestMethod(),
                 httpExchange.getRequestURI(),
-                httpExchange.getProtocol());
-        for (Map.Entry<String, List<String>> entry : httpExchange.getRequestHeaders().entrySet()) {
-            LOG.info("< {}: {}", entry.getKey(), entry.getValue());
-        }
+                httpExchange.getProtocol(),
+                new LogHeaders("< ", httpExchange.getRequestHeaders().entrySet()));
         switch (httpExchange.getRequestMethod()) {
             case "POST":
                 onPOST(httpExchange);
@@ -107,6 +128,7 @@ public class StowRSServer {
     private void onPOST(HttpExchange httpExchange) throws IOException {
         String requestContentType = httpExchange.getRequestHeaders().getFirst("Content-type");
         if (requestContentType == null) {
+            LOG.warn("Missing Content-type header");
             sendResponseHeaders(httpExchange, 400,"Bad Request", -1);
             return;
         }
@@ -115,12 +137,29 @@ public class StowRSServer {
             sendResponseHeaders(httpExchange, 415,"Unsupported Media Type", -1);
             return;
         }
-        String boundary = boundary(requestContentTypeParams);
-        if (boundary == null) {
-            sendResponseHeaders(httpExchange, 400,"Bad Request", -1);
-            return;
+        if (unpack) {
+            String boundary = boundary(requestContentTypeParams);
+            if (boundary == null) {
+                LOG.warn("Missing boundary parameter in Content-type: {}", requestContentType);
+                sendResponseHeaders(httpExchange, 400, "Bad Request", -1);
+                return;
+            }
+            new MultipartParser(boundary).parse(httpExchange.getRequestBody(), new MultipartHandler());
+        } else {
+            if (storageDir != null) {
+                Date now = new Date();
+                for (; ; ) {
+                    try {
+                        Path file = storageDir.resolve(DateUtils.formatDT(null, now) + ".multipart");
+                        Files.copy(httpExchange.getRequestBody(), file);
+                        LOG.info("* M-WRITE {}", file);
+                        break;
+                    } catch (FileAlreadyExistsException e) {
+                        now = new Date(now.getTime() + 1);
+                    }
+                }
+            }
         }
-        new MultipartParser(boundary).parse(httpExchange.getRequestBody(), new MultipartHandler());
         String mediaType = selectMediaType(httpExchange);
         if (mediaType != null) {
             byte[] response = loadResource(mediaType.endsWith("xml")
@@ -151,10 +190,12 @@ public class StowRSServer {
     private void sendResponseHeaders(HttpExchange httpExchange, int rCode, String rMsg, int responseLength)
             throws IOException {
         httpExchange.sendResponseHeaders(rCode, responseLength);
-        LOG.info("> {} {} {}", httpExchange.getProtocol(), rCode, rMsg);
-        for (Map.Entry<String, List<String>> entry : httpExchange.getResponseHeaders().entrySet()) {
-            LOG.info("> {}: {}", entry.getKey(), entry.getValue());
-        }
+        LOG.info("{} -> {}{}> {} {} {}{}",
+                httpExchange.getRemoteAddress(),
+                httpExchange.getLocalAddress(),
+                System.lineSeparator(),
+                httpExchange.getProtocol(), rCode, rMsg,
+                new LogHeaders("> ", httpExchange.getResponseHeaders().entrySet()));
     }
 
     private byte[] loadResource(String name) throws IOException {
@@ -193,7 +234,10 @@ public class StowRSServer {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            StowRSServer main = new StowRSServer(toInetSocketAddress(cl));
+            StowRSServer main = new StowRSServer(
+                    toInetSocketAddress(cl),
+                    CLIUtils.getIntOption(cl, "backlog", 0),
+                    CLIUtils.getIntOption(cl, "threads", 1));
             if (!cl.hasOption("ignore")) {
                 main.setStorageDirectory(
                         Paths.get(cl.getOptionValue("directory", ".")));
@@ -225,12 +269,25 @@ public class StowRSServer {
     }
 
     public static void addOptions(Options opts) {
+        opts.addOption("u", "unpack", false, rb.getString("unpack"));
         opts.addOption(null, "ignore", false, rb.getString("ignore"));
-        opts.addOption(Option.builder()
+        opts.addOption(Option.builder("d")
                 .hasArg()
                 .argName("path")
                 .desc(rb.getString("directory"))
                 .longOpt("directory")
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("no")
+                .desc(rb.getString("backlog"))
+                .longOpt("backlog")
+                .build());
+        opts.addOption(Option.builder("t")
+                .hasArg()
+                .argName("no")
+                .desc(rb.getString("threads"))
+                .longOpt("threads")
                 .build());
         opts.addOption(Option.builder("b")
                 .hasArg()
@@ -269,11 +326,8 @@ public class StowRSServer {
 
         @Override
         public void bodyPart(int partNumber, MultipartInputStream in) throws IOException {
-            LOG.info("< Part #{}:", partNumber);
             Map<String, List<String>> partHeaders = in.readHeaderParams();
-            for (Map.Entry<String, List<String>> partHeader : partHeaders.entrySet()) {
-                LOG.info("< {}: {}", partHeader.getKey(), partHeader.getValue());
-            }
+            LOG.info("< Part #{}:{}", partNumber, new LogHeaders("< ", partHeaders.entrySet()));
             if (storageSupDir != null) {
                 Path file = storageSupDir.resolve(
                         String.format("%03d", partNumber) + suffix(partHeaders.get("Content-type")));

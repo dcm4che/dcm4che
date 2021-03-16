@@ -73,7 +73,8 @@ public class StowRSServer {
 
     public StowRSServer(InetSocketAddress addr, int backlog, int threads) throws IOException {
         server = HttpServer.create(addr, backlog);
-        server.setExecutor(Executors.newFixedThreadPool(threads));
+        if (threads > 1)
+            server.setExecutor(Executors.newFixedThreadPool(threads));
         server.createContext("/", this::handle);
     }
 
@@ -240,8 +241,9 @@ public class StowRSServer {
                     CLIUtils.getIntOption(cl, "threads", 1));
             if (!cl.hasOption("ignore")) {
                 main.setStorageDirectory(
-                        Paths.get(cl.getOptionValue("directory", ".")));
+                        Paths.get(cl.getOptionValue("d", ".")));
             }
+            main.setUnpack(cl.hasOption("u"));
             main.start();
         } catch (ParseException e) {
             System.err.println("stowrsd: " + e.getMessage());
@@ -258,6 +260,10 @@ public class StowRSServer {
         if (storageDir != null)
             Files.createDirectories(storageDir);
         this.storageDir = storageDir;
+    }
+
+    public void setUnpack(boolean unpack) {
+        this.unpack = unpack;
     }
 
     private static CommandLine parseComandLine(String[] args)

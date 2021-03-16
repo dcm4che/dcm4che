@@ -493,4 +493,7 @@ public class MediaTypes {
                 : null;
     }
 
+    public static MediaType applicationDicomWithTransferSyntax(String tsuid) {
+        return new MediaType("application", "dicom", Collections.singletonMap("transfer-syntax", tsuid));
+    }
 }

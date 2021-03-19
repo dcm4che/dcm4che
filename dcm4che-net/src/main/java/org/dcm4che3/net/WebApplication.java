@@ -68,7 +68,8 @@ public class WebApplication {
         MOVE_MATCHING,
         UPS_MATCHING,
         ELASTICSEARCH,
-        XDS_RS
+        XDS_RS,
+        AGFA_BLOB
     }
 
     private Device device;

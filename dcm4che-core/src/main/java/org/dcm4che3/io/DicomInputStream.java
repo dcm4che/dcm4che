@@ -430,6 +430,12 @@ public class DicomInputStream extends FilterInputStream
         default:
             if (explicitVR) {
                 vr = VR.valueOf(encodedVR = ByteUtils.bytesToVR(buf, 4));
+                if (vr == null && !TagUtils.isPrivateTag(tag)) {
+                    vr = ElementDictionary.getStandardElementDictionary().vrOf(tag);
+                    if (vr != null)
+                        LOG.warn("Replace unrecognized VR code: {}H by known VR: {} of {}",
+                                TagUtils.shortToHexString(encodedVR), vr, TagUtils.toString(tag));
+                }
                 if (vr != null && vr.headerLength() == 8) {
                     // This length can't overflow since length field is only 16 bits in this case.
                     length = ByteUtils.bytesToUShort(buf, 6, bigEndian);

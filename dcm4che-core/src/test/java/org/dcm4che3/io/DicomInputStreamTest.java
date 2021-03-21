@@ -93,4 +93,15 @@ public class DicomInputStreamTest {
             in.readDataset();
         }
     }
+
+    @Test
+    public void correctVR() throws IOException {
+        byte[] b = { 0x08, 0, 0x68, 0, 'U', 'K', 16, 0,
+                'F', 'O', 'R', ' ', 'P', 'R', 'E', 'S', 'E', 'N', 'T', 'A', 'T', 'I', 'O', 'N' };
+        Attributes attrs;
+        try (DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b), UID.ExplicitVRLittleEndian)) {
+            attrs = in.readDataset();
+        }
+        assertEquals("FOR PRESENTATION", attrs.getString(Tag.PresentationIntentType));
+    }
 }

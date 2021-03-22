@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>5.23.1</version>
+    <version>5.23.2</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-tool-hl7rcv</artifactId>

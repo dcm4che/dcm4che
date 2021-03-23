@@ -43,7 +43,6 @@ package org.dcm4che3.tool.agfa2dcm;
 
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.AttributesFormat;
@@ -66,7 +65,13 @@ public class Agfa2Dcm {
 
     private static ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.agfa2dcm.messages");
     private static final byte[] ARCHIVE_BLOB = { 'A', 'R', 'C', 'H', 'I', 'V', 'E', '-', 'B', 'L', 'O', 'B' };
-    private static final int ARCHIVE_BLOB_TAG = 0x52414843;
+    private static final int ARCHIVE_BLOB_TAG_LE = 0x52414843;
+    private static final int ARCHIVE_BLOB_TAG_BE = 0x41524348;
+
+    private static boolean isArchiveBlobTag(DicomInputStream dis) {
+        int tag = dis.tag();
+        return tag == ARCHIVE_BLOB_TAG_LE || tag == ARCHIVE_BLOB_TAG_BE;
+    }
 
     public static void main(String[] args) {
         try {
@@ -129,9 +134,9 @@ public class Agfa2Dcm {
             do {
                 dis = new DicomInputStream(in, 116);
                 dis.setIncludeBulkData(DicomInputStream.IncludeBulkData.NO);
-                Attributes attrs = dis.readDataset(-1, o -> o.tag() == ARCHIVE_BLOB_TAG);
+                Attributes attrs = dis.readDataset(-1, Agfa2Dcm::isArchiveBlobTag);
                 list.add(new Part(format.format(attrs), dis.getPosition()));
-            } while (dis.tag() == ARCHIVE_BLOB_TAG);
+            } while (isArchiveBlobTag(dis));
         }
         list.get(list.size() - 1).length += 12;
         try (InputStream in = Files.newInputStream(blobPath)) {

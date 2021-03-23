@@ -417,6 +417,10 @@ public class DicomInputStream extends FilterInputStream
       }
 
     public void readHeader() throws IOException {
+        readHeader(dis -> false);
+    }
+
+    public void readHeader(Predicate<DicomInputStream> stopPredicate) throws IOException {
         byte[] buf = buffer;
         tagPos = pos; 
         readFully(buf, 0, 8);
@@ -430,13 +434,13 @@ public class DicomInputStream extends FilterInputStream
         default:
             if (explicitVR) {
                 vr = VR.valueOf(encodedVR = ByteUtils.bytesToVR(buf, 4));
-                if (vr == null && !TagUtils.isPrivateTag(tag)) {
+                if (vr == null) {
                     vr = ElementDictionary.getStandardElementDictionary().vrOf(tag);
-                    if (vr != null)
-                        LOG.warn("Replace unrecognized VR code: {}H by known VR: {} of {}",
-                                TagUtils.shortToHexString(encodedVR), vr, TagUtils.toString(tag));
+                    if (!stopPredicate.test(this))
+                        LOG.warn("Unrecognized VR code: {}H for {} - treat as {}",
+                                TagUtils.shortToHexString(encodedVR), TagUtils.toString(tag), vr);
                 }
-                if (vr != null && vr.headerLength() == 8) {
+                if (vr.headerLength() == 8) {
                     // This length can't overflow since length field is only 16 bits in this case.
                     length = ByteUtils.bytesToUShort(buf, 6, bigEndian);
                     return;
@@ -550,7 +554,7 @@ public class DicomInputStream extends FilterInputStream
         long endPos =  pos + (len & 0xffffffffL);
         while (undeflen || this.pos < endPos) {
             try {
-                readHeader();
+                readHeader(stopPredicate);
             } catch (EOFException e) {
                 if (undeflen && pos == tagPos)
                     break;
@@ -558,11 +562,6 @@ public class DicomInputStream extends FilterInputStream
             }
             if (stopPredicate.test(this))
                 break;
-            if (encodedVR != 0 && vr == null) {
-                LOG.warn("Unrecognized VR code: {}H - treat as UN",
-                        TagUtils.shortToHexString(encodedVR));
-                vr = VR.UN;
-            }
             if (vr != null) {
                 if (vr == VR.UN) {
                     vr = ElementDictionary.vrOf(tag,

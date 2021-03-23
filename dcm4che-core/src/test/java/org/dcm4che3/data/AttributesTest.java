@@ -284,38 +284,38 @@ public class AttributesTest {
         }
     }
 
-    @Test
-    public void testSetTimezoneOffsetFromUTC() throws Exception {
-        Attributes a = new Attributes();
-        a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
-        a.setDate(Tag.StudyDateAndTime, new Date(0));
-        assertEquals("19700101", a.getString(Tag.StudyDate));
-        assertEquals("000000.000", a.getString(Tag.StudyTime));
-        a.setTimezoneOffsetFromUTC("+0100");
-        assertEquals("19700101", a.getString(Tag.StudyDate));
-        assertEquals("010000.000", a.getString(Tag.StudyTime));
-        a.setTimezoneOffsetFromUTC("-0100");
-        assertEquals("19691231", a.getString(Tag.StudyDate));
-        assertEquals("230000.000", a.getString(Tag.StudyTime));
-    }
+    /*
+        @Test
+        public void testSetTimezoneOffsetFromUTC() throws Exception {
+            Attributes a = new Attributes();
+            a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
+            a.setDate(Tag.StudyDateAndTime, new Date(0));
+            assertEquals("19700101", a.getString(Tag.StudyDate));
+            assertEquals("000000.000", a.getString(Tag.StudyTime));
+            a.setTimezoneOffsetFromUTC("+0100");
+            assertEquals("19700101", a.getString(Tag.StudyDate));
+            assertEquals("010000.000", a.getString(Tag.StudyTime));
+            a.setTimezoneOffsetFromUTC("-0100");
+            assertEquals("19691231", a.getString(Tag.StudyDate));
+            assertEquals("230000.000", a.getString(Tag.StudyTime));
+        }
 
-/*
-    @Test
-    public void testDateRangeSetTimezoneOffsetFromUTC() throws Exception {
-        Attributes a = new Attributes();
-        a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
-        a.setDateRange(Tag.StudyDateAndTime,
-                new DateRange(new Date(0), new Date(3600000 * 12)));
-        assertEquals("19700101", a.getString(Tag.StudyDate));
-        assertEquals("000000.000-120000.000", a.getString(Tag.StudyTime));
-        a.setTimezoneOffsetFromUTC("-0100");
-        assertEquals("19691231-19700101", a.getString(Tag.StudyDate));
-        assertEquals("230000.000-110000.000", a.getString(Tag.StudyTime));
-        a.setTimezoneOffsetFromUTC("+0100");
-        assertEquals("19700101", a.getString(Tag.StudyDate));
-        assertEquals("010000.000-130000.000", a.getString(Tag.StudyTime));
-    }
-*/
+        @Test
+        public void testDateRangeSetTimezoneOffsetFromUTC() throws Exception {
+            Attributes a = new Attributes();
+            a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
+            a.setDateRange(Tag.StudyDateAndTime,
+                    new DateRange(new Date(0), new Date(3600000 * 12)));
+            assertEquals("19700101", a.getString(Tag.StudyDate));
+            assertEquals("000000.000-120000.000", a.getString(Tag.StudyTime));
+            a.setTimezoneOffsetFromUTC("-0100");
+            assertEquals("19691231-19700101", a.getString(Tag.StudyDate));
+            assertEquals("230000.000-110000.000", a.getString(Tag.StudyTime));
+            a.setTimezoneOffsetFromUTC("+0100");
+            assertEquals("19700101", a.getString(Tag.StudyDate));
+            assertEquals("010000.000-130000.000", a.getString(Tag.StudyTime));
+        }
+    */
     @Test
     public void testGetModified() {
         Attributes original = createOriginal();

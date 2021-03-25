@@ -41,6 +41,7 @@
 
 package org.dcm4che3.tool.stowrsd;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.commons.cli.*;
@@ -121,9 +122,21 @@ public class StowRSServer {
             case "POST":
                 onPOST(httpExchange);
                 break;
+            case "OPTIONS":
+                onOPTIONS(httpExchange);
+                break;
             default:
                 sendResponseHeaders(httpExchange, 405,"Method Not Allowed", -1);
         }
+    }
+
+    private void onOPTIONS(HttpExchange httpExchange) throws IOException {
+        Headers requestHeaders = httpExchange.getRequestHeaders();
+        Headers responseHeaders = httpExchange.getResponseHeaders();
+        responseHeaders.put("Access-control-allow-origin", requestHeaders.get("Origin"));
+        responseHeaders.put("Access-control-allow-methods", requestHeaders.get("Access-control-request-method"));
+        responseHeaders.put("Access-control-allow-headers", requestHeaders.get("Access-control-request-headers"));
+        sendResponseHeaders(httpExchange, 204,"No Content", -1);
     }
 
     private void onPOST(HttpExchange httpExchange) throws IOException {
@@ -166,7 +179,10 @@ public class StowRSServer {
             byte[] response = loadResource(mediaType.endsWith("xml")
                     ? "resource:response.xml"
                     : "resource:response.json");
-            httpExchange.getResponseHeaders().add("Content-type", mediaType);
+            Headers requestHeaders = httpExchange.getRequestHeaders();
+            Headers responseHeaders = httpExchange.getResponseHeaders();
+            responseHeaders.put("Access-control-allow-origin", requestHeaders.get("Origin"));
+            responseHeaders.add("Content-type", mediaType);
             sendResponseHeaders(httpExchange, 200, "OK", response.length);
             try (OutputStream out = httpExchange.getResponseBody()) {
                 out.write(response);

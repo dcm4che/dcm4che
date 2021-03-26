@@ -172,6 +172,8 @@ public class StowRSServer {
                         now = new Date(now.getTime() + 1);
                     }
                 }
+            } else {
+                StreamUtils.skipAll(httpExchange.getRequestBody());
             }
         }
         String mediaType = selectMediaType(httpExchange);
@@ -370,4 +372,13 @@ public class StowRSServer {
                 : "";
     }
 
+    private static final OutputStream NULL = new OutputStream() {
+        @Override
+        public void write(int b) {
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) {
+        }
+    };
 }

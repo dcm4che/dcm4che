@@ -177,4 +177,36 @@ public class StreamUtils {
             return new FileInputStream(name);
         return new URL(name).openStream();
     }
+
+
+    public static void skipAll(InputStream in) throws IOException {
+        copy(in, nullOutputStream());
+    }
+
+    public static OutputStream nullOutputStream() {
+        return new OutputStream() {
+            private volatile boolean closed;
+
+            private void ensureOpen() throws IOException {
+                if (closed) {
+                    throw new IOException("Stream closed");
+                }
+            }
+
+            @Override
+            public void write(int b) throws IOException {
+                ensureOpen();
+            }
+
+            @Override
+            public void write(byte b[], int off, int len) throws IOException {
+                ensureOpen();
+            }
+
+            @Override
+            public void close() {
+                closed = true;
+            }
+        };
+    }
 }

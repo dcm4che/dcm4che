@@ -106,6 +106,8 @@ public class Transcoder implements Closeable {
 
     private boolean includeFileMetaInformation;
 
+    private boolean includeImplementationVersionName = true;
+
     private boolean nullifyPixelData;
 
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
@@ -251,6 +253,14 @@ public class Transcoder implements Closeable {
 
     public void setRetainFileMetaInformation(boolean retainFileMetaInformation) {
         this.retainFileMetaInformation = retainFileMetaInformation;
+    }
+
+    public boolean isIncludeImplementationVersionName() {
+        return includeImplementationVersionName;
+    }
+
+    public void setIncludeImplementationVersionName(boolean includeImplementationVersionName) {
+        this.includeImplementationVersionName = includeImplementationVersionName;
     }
 
     public boolean isNullifyPixelData() {
@@ -907,7 +917,7 @@ public class Transcoder implements Closeable {
             if (retainFileMetaInformation)
                 fmi = dis.getFileMetaInformation();
             if (fmi == null)
-                fmi = dataset.createFileMetaInformation(destTransferSyntax);
+                fmi = dataset.createFileMetaInformation(destTransferSyntax, includeImplementationVersionName);
             else
                 fmi.setString(Tag.TransferSyntaxUID, VR.UI, destTransferSyntax);
         }

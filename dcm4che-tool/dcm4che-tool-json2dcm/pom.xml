@@ -42,7 +42,7 @@
   <parent>
     <groupId>org.dcm4che.tool</groupId>
     <artifactId>dcm4che-tool</artifactId>
-    <version>5.23.2</version>
+    <version>5.23.3</version>
   </parent>
   <artifactId>dcm4che-tool-json2dcm</artifactId>
   <description>Convert JSON to DICOM file</description>

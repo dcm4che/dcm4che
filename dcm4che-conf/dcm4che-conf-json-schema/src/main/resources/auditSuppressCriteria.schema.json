@@ -145,8 +145,8 @@
         "enum": [
           "(110150, DCM, \"Application\")",
           "(110151, DCM, \"Application Launcher\")",
-          "(110152, DCM, \"Destination\")",
-          "(110153, DCM, \"Source\")",
+          "(110152, DCM, \"Destination Role ID\")",
+          "(110153, DCM, \"Source Role ID\")",
           "(110154, DCM, \"Destination Media\")",
           "(110155, DCM, \"Source Media\")"
         ]

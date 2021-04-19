@@ -58,7 +58,6 @@ public class WebApplication {
         QIDO_RS,
         UPS_RS,
         MWL_RS,
-        MPPS_RS,
         QIDO_COUNT,
         DCM4CHEE_ARC,
         DCM4CHEE_ARC_AET,

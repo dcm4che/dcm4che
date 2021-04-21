@@ -84,24 +84,25 @@
     <weasis.core.img.version>4.5.1</weasis.core.img.version>
     <weasis.opencv.native.version>4.5.1-dcm</weasis.opencv.native.version>
     <keycloak.version>11.0.3</keycloak.version>
-    <jbossws-cxf-client.version>5.4.1.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>3.3.9</apache-cxf.version>
+    <jbossws-cxf-client.version>5.4.3.Final</jbossws-cxf-client.version>
+    <apache-cxf.version>3.3.10</apache-cxf.version>
     <apache-commons-csv.version>1.7</apache-commons-csv.version>
     <apache-commons-compress.version>1.20</apache-commons-compress.version>
     <jakarta.activation.version>1.2.2</jakarta.activation.version>
     <jakarta.xml.bind.version>2.3.2</jakarta.xml.bind.version>
+    <jaxb-runtime.version>2.3.3-b02</jaxb-runtime.version>
     <jakarta.xml.ws.version>2.3.2</jakarta.xml.ws.version>
     <jakarta.xml.soap-api.version>1.4.1</jakarta.xml.soap-api.version>
     <jakarta.ws.rs.version>2.1.6</jakarta.ws.rs.version>
     <jakarta.json.version>1.1.6</jakarta.json.version>
     <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
-    <com.sun.istack.version>3.0.8</com.sun.istack.version>
+    <com.sun.istack.version>3.0.10</com.sun.istack.version>
     <com.sun.xml.messaging.saaj.version>1.5.1</com.sun.xml.messaging.saaj.version>
     <com.sun.xml.stream.buffer.version>1.5.7</com.sun.xml.stream.buffer.version>
     <com.sun.xml.ws.policy.version>2.7.6</com.sun.xml.ws.policy.version>
     <org.glassfish.gmbal.version>4.0.0</org.glassfish.gmbal.version>
     <org.jvnet.mimepull.version>1.9.11</org.jvnet.mimepull.version>
-    <org.jvnet.staxex.version>1.8.1</org.jvnet.staxex.version>
+    <org.jvnet.staxex.version>1.8.3</org.jvnet.staxex.version>
     <commons-cli.version>1.4</commons-cli.version>
   </properties>
   <build>
@@ -284,7 +285,7 @@
       <dependency>
         <groupId>org.glassfish.jaxb</groupId>
         <artifactId>jaxb-runtime</artifactId>
-        <version>${jakarta.xml.bind.version}</version>
+        <version>${jaxb-runtime.version}</version>
       </dependency>
       <dependency>
         <groupId>jakarta.xml.ws</groupId>

@@ -93,6 +93,10 @@ public class LookupTableFactory {
     }
 
     public void setPresentationLUT(Attributes attrs) {
+        setPresentationLUT(attrs, false);
+    }
+
+    public void setPresentationLUT(Attributes attrs, boolean ignorePresentationLUTShape) {
         Attributes pLUT = attrs.getNestedDataset(Tag.PresentationLUTSequence);
         if (pLUT != null) {
             int[] desc = pLUT.getInts(Tag.LUTDescriptor);
@@ -103,11 +107,10 @@ public class LookupTableFactory {
                         pLUT.getSafeBytes(Tag.LUTData), pLUT.bigEndian());
             }
         } else {
-            String pShape = attrs.getString(Tag.PresentationLUTShape);
-            inverse = (pShape != null 
-                ? "INVERSE".equals(pShape)
-                : "MONOCHROME1".equals(
-                        attrs.getString(Tag.PhotometricInterpretation)));
+            String pShape;
+            inverse = (ignorePresentationLUTShape || (pShape = attrs.getString(Tag.PresentationLUTShape)) == null
+                    ? "MONOCHROME1".equals(attrs.getString(Tag.PhotometricInterpretation))
+                    : "INVERSE".equals(pShape));
         }
     }
 

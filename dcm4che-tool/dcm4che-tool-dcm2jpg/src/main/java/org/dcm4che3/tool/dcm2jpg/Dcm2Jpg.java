@@ -79,6 +79,7 @@ public class Dcm2Jpg {
     private float windowCenter;
     private float windowWidth;
     private boolean autoWindowing = true;
+    private boolean ignorePresentationLUTShape;
     private Attributes prState;
     private final ImageReader imageReader =
             ImageIO.getImageReadersByFormatName("DICOM").next();
@@ -152,6 +153,14 @@ public class Dcm2Jpg {
 
     public final void setAutoWindowing(boolean autoWindowing) {
         this.autoWindowing = autoWindowing;
+    }
+
+    public boolean isIgnorePresentationLUTShape() {
+        return ignorePresentationLUTShape;
+    }
+
+    public void setIgnorePresentationLUTShape(boolean ignorePresentationLUTShape) {
+        this.ignorePresentationLUTShape = ignorePresentationLUTShape;
     }
 
     public final void setPresentationState(Attributes prState) {
@@ -277,6 +286,7 @@ public class Dcm2Jpg {
                 .build());
         opts.addOption(null, "uselut", false, rb.getString("uselut"));
         opts.addOption(null, "noauto", false, rb.getString("noauto"));
+        opts.addOption(null, "noshape", false, rb.getString("noshape"));
         opts.addOption(null, "lsE", false, rb.getString("lsencoders"));
         opts.addOption(null, "lsF", false, rb.getString("lsformats"));
         OptionGroup useGroup = new OptionGroup();
@@ -337,6 +347,7 @@ public class Dcm2Jpg {
                         parseHex(cl.getOptionValue("ovlyrgb").substring(1)));
             main.setPreferWindow(!cl.hasOption("uselut"));
             main.setAutoWindowing(!cl.hasOption("noauto"));
+            main.setIgnorePresentationLUTShape(cl.hasOption("noshape"));
             main.setPresentationState(
                     loadDicomObject((File) cl.getParsedOptionValue("ps")));
             if (cl.hasOption("iccprofile")) {
@@ -434,6 +445,7 @@ public class Dcm2Jpg {
         param.setWindowCenter(windowCenter);
         param.setWindowWidth(windowWidth);
         param.setAutoWindowing(autoWindowing);
+        param.setIgnorePresentationLUTShape(ignorePresentationLUTShape);
         param.setWindowIndex(windowIndex);
         param.setVOILUTIndex(voiLUTIndex);
         param.setPreferWindow(preferWindow);

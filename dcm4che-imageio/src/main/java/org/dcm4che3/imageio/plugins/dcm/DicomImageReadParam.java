@@ -53,6 +53,7 @@ public class DicomImageReadParam extends ImageReadParam {
     private boolean autoWindowing = true;
     private boolean addAutoWindow = false;
     private boolean preferWindow = true;
+    private boolean ignorePresentationLUTShape = false;
     private int windowIndex;
     private int voiLUTIndex;
     private int overlayActivationMask = 0xf;
@@ -105,6 +106,14 @@ public class DicomImageReadParam extends ImageReadParam {
 
     public void setPreferWindow(boolean preferWindow) {
         this.preferWindow = preferWindow;
+    }
+
+    public boolean isIgnorePresentationLUTShape() {
+        return ignorePresentationLUTShape;
+    }
+
+    public void setIgnorePresentationLUTShape(boolean ignorePresentationLUTShape) {
+        this.ignorePresentationLUTShape = ignorePresentationLUTShape;
     }
 
     public int getWindowIndex() {

@@ -654,7 +654,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
                             imgAttrs.getString(Tag.SOPInstanceUID),
                             frameIndex+1),
                     0, 0, false);
-            lutParam.setPresentationLUT(psAttrs);
+            lutParam.setPresentationLUT(psAttrs, false);
         } else {
             Attributes sharedFctGroups = imgAttrs.getNestedDataset(
                     Tag.SharedFunctionalGroupsSequence);
@@ -677,7 +677,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
                     dParam.isPreferWindow());
             if (dParam.isAutoWindowing())
                 lutParam.autoWindowing(imgAttrs, raster, dParam.isAddAutoWindow());
-            lutParam.setPresentationLUT(imgAttrs);
+            lutParam.setPresentationLUT(imgAttrs, dParam.isIgnorePresentationLUTShape());
         }
         LookupTable lut = lutParam.createLUT(outBits);
         lut.lookup(raster, destRaster);

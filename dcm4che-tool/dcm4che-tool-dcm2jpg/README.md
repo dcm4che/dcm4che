@@ -42,6 +42,12 @@ Options:
     --lsF                     list supported output image formats
     --noauto                  disable auto-windowing for images w/o VOI
                               attributes
+    --noshape                 ignore present (2050,0020) Presentation LUT
+                              Shape; prioritize value of (0028,0004)
+                              Photometric Interpretation to determine if
+                              minimum sample value is intended to be
+                              displayed as white (=MONCHROME1) or as black
+                              (=MONCHROME2)
     --overlays <mask>         render overlays specified by bits 1-16 of
                               <mask> in hex; FFFF by default.
     --ovlygray <value>        grayscale value of rendered overlays in hex;

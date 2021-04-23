@@ -3257,8 +3257,8 @@ public class Attributes implements Serializable {
             boolean matchNoValue, Sequence keySeq) {
         int n = keySeq.size();
         if (n > 1)
-            throw new IllegalArgumentException("Keys contain Sequence "
-                    + TagUtils.toString(tag) + " with " + n + " Items");
+            LOG.info("Matching Key {} with VR: SQ contains {} Items - only consider first Item",
+                    TagUtils.toString(tag), n);
 
         Attributes keys = keySeq.get(0);
         if (keys.isEmpty())

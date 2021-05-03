@@ -40,6 +40,7 @@ package org.dcm4che3.json;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.data.PersonName.Group;
+import org.dcm4che3.io.BulkDataCreator;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
@@ -53,6 +54,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
@@ -72,6 +75,7 @@ public class JSONReader {
 
     private final JsonParser parser;
     private boolean skipBulkDataURI;
+    private BulkData.Creator bulkDataCreator = BulkData::new;
     private Attributes fmi;
     private Event event;
     private String s;
@@ -80,7 +84,7 @@ public class JSONReader {
     private final EnumMap<Group, String> pnGroups = new EnumMap<>(PersonName.Group.class);
 
     public JSONReader(JsonParser parser) {
-        this.parser = parser;
+        this.parser = Objects.requireNonNull(parser);
     }
 
     public boolean isSkipBulkDataURI() {
@@ -89,6 +93,10 @@ public class JSONReader {
 
     public void setSkipBulkDataURI(boolean skipBulkDataURI) {
         this.skipBulkDataURI = skipBulkDataURI;
+    }
+
+    public void setBulkDataCreator(BulkData.Creator bulkDataCreator ) {
+        this.bulkDataCreator = Objects.requireNonNull(bulkDataCreator);
     }
 
     public Attributes getFileMetaInformation() {
@@ -202,7 +210,7 @@ public class JSONReader {
             attrs.setNull(tag, el.vr);
         else if (el.bulkDataURI != null) {
             if (!skipBulkDataURI)
-                attrs.setValue(tag, el.vr, new BulkData(null, el.bulkDataURI, false));
+                attrs.setValue(tag, el.vr, bulkDataCreator.create(null, el.bulkDataURI, false));
         } else switch (el.vr) {
             case AE:
             case AS:

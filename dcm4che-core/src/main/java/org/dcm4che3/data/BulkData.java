@@ -285,4 +285,9 @@ public class BulkData implements Value {
         this.length = (int) longLength;
         this.uri = this.uri.substring(0, this.uriPathEnd)+"?offset="+this.offset+"&length="+this.length;
     }
+
+    @FunctionalInterface
+    public interface Creator {
+        BulkData create(String uuid, String uri, boolean bigEndian);
+    }
 }

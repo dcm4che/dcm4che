@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Objects;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.util.Base64;
@@ -61,6 +62,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
 
     private static final Logger LOG =  LoggerFactory.getLogger(ContentHandlerAdapter.class);
 
+    private BulkData.Creator bulkDataCreator = BulkData::new;
     private Attributes fmi;
     private boolean bigEndian;
     private final boolean lenient;
@@ -92,6 +94,10 @@ public class ContentHandlerAdapter extends DefaultHandler {
             bigEndian = attrs.bigEndian();
         }
         this.lenient = lenient;
+    }
+
+    public void setBulkDataCreator(BulkData.Creator bulkDataCreator ) {
+        this.bulkDataCreator = Objects.requireNonNull(bulkDataCreator);
     }
 
     public Attributes getFileMetaInformation() {
@@ -155,7 +161,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
    }
 
     private void bulkData(String uuid, String uri) {
-        bulkData = new BulkData(uuid, uri, items.getLast().bigEndian());
+        bulkData = bulkDataCreator.create(uuid, uri, items.getLast().bigEndian());
     }
 
     private void startInlineBinary() {

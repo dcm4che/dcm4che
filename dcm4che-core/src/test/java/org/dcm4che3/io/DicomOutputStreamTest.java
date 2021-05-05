@@ -1,23 +1,14 @@
 package org.dcm4che3.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.*;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.io.DicomEncodingOptions;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.data.*;
 import org.dcm4che3.util.UIDUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -136,7 +127,11 @@ public class DicomOutputStreamTest {
         } finally {
             out.close();
         }
-        deserializeAttributes();
+        Attributes dataset = deserializeAttributes();
+        assertTrue(dataset.getValue(Tag.PixelData) instanceof BulkData);
+        Object fragments = dataset.getValue("DicomOutputStreamTest", 0x99990010);
+        assertTrue(fragments instanceof Fragments);
+        assertTrue(((Fragments) fragments).get(2) instanceof BulkDataWithPrefix);
     }
 
     private void testWriteDataset(DicomOutputStream out, String tsuid)
@@ -165,13 +160,16 @@ public class DicomOutputStreamTest {
                 .add(requestAttributes());
         ds.setString(Tag.SOPClassUID, VR.UI, "1.2.3.4");
         ds.setString(Tag.SOPInstanceUID, VR.UI, "4.3.2.1");
-        BulkData bdl = new BulkData(
+        BulkData bulkData = new BulkData(
                 uri("OT-PAL-8-face"), 1654, 307200, false);
-        ds.setValue(Tag.PixelData, VR.OW, bdl);
+        ds.setValue(Tag.PixelData, VR.OW, bulkData);
+        byte[] prefix = {1, 2, 3, 4};
+        BulkData bulkDataWithPrefix = new BulkDataWithPrefix(
+                uri("OT-PAL-8-face"), 1654, 307200, false, prefix);
         Fragments frags = ds.newFragments("DicomOutputStreamTest", 0x99990010, VR.OB, 3);
         frags.add(null);
-        frags.add(new byte[] { 1, 2, 3, 4 });
-        frags.add(bdl);
+        frags.add(prefix);
+        frags.add(bulkDataWithPrefix);
         return ds;
     }
 

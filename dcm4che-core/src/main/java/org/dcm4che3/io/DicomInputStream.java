@@ -597,8 +597,7 @@ public class DicomInputStream extends FilterInputStream
             readFragments(attrs, tag, vr);
         } else if (length == BulkData.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
-            attrs.setValue(tag, vr, BulkData.deserializeFrom(
-                    (ObjectInputStream) super.in));
+            attrs.setValue(tag, vr, deserializeBulkData((ObjectInputStream) super.in));
         } else if (includeBulkDataURI) {
             attrs.setValue(tag, vr, bulkDataCreator.createBulkData(this));
         } else {
@@ -609,6 +608,14 @@ public class DicomInputStream extends FilterInputStream
                 attrs.setBytes(tag, vr, b);
             } else if (tag == Tag.FileMetaInformationGroupLength)
                 setFileMetaInformationGroupLength(b);
+        }
+    }
+
+    private Object deserializeBulkData(ObjectInputStream ois) throws IOException {
+        try {
+            return ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IOException(e);
         }
     }
 
@@ -692,7 +699,7 @@ public class DicomInputStream extends FilterInputStream
             frags.add(ByteUtils.EMPTY_BYTES);
         } else if (length == BulkData.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
-            frags.add(BulkData.deserializeFrom((ObjectInputStream) super.in));
+            frags.add(deserializeBulkData((ObjectInputStream) super.in));
         } else if (includeBulkDataURI) {
             frags.add(bulkDataCreator.createBulkData(this));
         } else {

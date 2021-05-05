@@ -205,7 +205,7 @@ public class DicomOutputStream extends FilterOutputStream {
         if (val instanceof BulkData
                 && super.out instanceof ObjectOutputStream) {
             writeHeader(tag, vr, BulkData.MAGIC_LEN);
-            ((BulkData) val).serializeTo((ObjectOutputStream) super.out);
+            ((ObjectOutputStream) super.out).writeObject(val);
         } else {
             int length = val.getEncodedLength(encOpts, explicitVR, vr);
             writeHeader(tag, vr, length);

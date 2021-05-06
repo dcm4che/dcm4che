@@ -425,14 +425,14 @@ public class Dcm2Jpg {
         writeImage(dest, iccProfile.adjust(readImage.apply(src)));
     }
 
-    private BufferedImage readImageFromImageInputStream(File file) throws IOException {
+    public BufferedImage readImageFromImageInputStream(File file) throws IOException {
         try (ImageInputStream iis = new FileImageInputStream(file)) {
             imageReader.setInput(iis);
             return imageReader.read(frame - 1, readParam());
         }
     }
 
-    private BufferedImage readImageFromDicomInputStream(File file) throws IOException {
+    public BufferedImage readImageFromDicomInputStream(File file) throws IOException {
         try (DicomInputStream dis = new DicomInputStream(file)) {
             imageReader.setInput(dis);
             return imageReader.read(frame - 1, readParam());

@@ -122,7 +122,7 @@ public class DicomDirWriter extends DicomDirReader {
     }
 
     public static DicomDirWriter open(File file) throws IOException {
-        if (!file.isFile())
+        if (!file.isDirectory())
             throw new FileNotFoundException();
 
         return new DicomDirWriter(file);

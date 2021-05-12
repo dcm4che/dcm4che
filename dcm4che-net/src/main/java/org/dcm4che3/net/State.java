@@ -74,6 +74,11 @@ public enum State {
                 throws IOException {
             as.handle(rq);
         }
+
+        @Override
+        void write(Association as, AAbort aa) {
+            as.doCloseSocket();
+        }
     },
     Sta3("Sta3 - Awaiting local A-ASSOCIATE response primitive"),
     Sta4("Sta4 - Awaiting transport connection opening to complete"),

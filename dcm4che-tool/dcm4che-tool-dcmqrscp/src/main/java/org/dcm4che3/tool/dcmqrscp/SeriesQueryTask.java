@@ -73,6 +73,7 @@ class SeriesQueryTask extends StudyQueryTask {
         Attributes ret = new Attributes(patRec.size()
                 + studyRec.size()
                 + seriesRec.size());
+        Attributes.unifyCharacterSets(patRec, studyRec, seriesRec);
         ret.addAll(patRec);
         ret.addAll(studyRec, true);
         ret.addAll(seriesRec, true);

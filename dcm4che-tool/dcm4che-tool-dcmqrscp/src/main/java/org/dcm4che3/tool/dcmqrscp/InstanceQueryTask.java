@@ -71,6 +71,7 @@ class InstanceQueryTask extends SeriesQueryTask {
                 + studyRec.size()
                 + seriesRec.size()
                 + instRec.size());
+        Attributes.unifyCharacterSets(patRec, studyRec, seriesRec, instRec);
         ret.addAll(patRec);
         ret.addAll(studyRec, true);
         ret.addAll(seriesRec, true);

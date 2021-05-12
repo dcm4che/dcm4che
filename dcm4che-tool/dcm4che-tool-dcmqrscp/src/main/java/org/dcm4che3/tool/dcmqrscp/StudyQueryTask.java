@@ -70,6 +70,7 @@ class StudyQueryTask extends PatientQueryTask {
     @Override
     public Attributes nextMatch() throws DicomServiceException {
         Attributes ret = new Attributes(patRec.size() + studyRec.size());
+        Attributes.unifyCharacterSets(patRec, studyRec);
         ret.addAll(patRec);
         ret.addAll(studyRec, true);
         wrappedFindNextStudy();

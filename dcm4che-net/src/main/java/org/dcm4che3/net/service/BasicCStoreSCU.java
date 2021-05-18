@@ -252,8 +252,18 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
             super.onDimseRSP(as, cmd, data);
             int storeStatus = cmd.getInt(Tag.Status, -1);
-            if (storeStatus == Status.Success)
+            if (storeStatus == Status.Success) {
+            	/*
+            	 * Attributes are cleared for completed ArchiveInstanceLocators 
+            	 * except first locator so to preserve patient attributes 
+            	 * to keep memory usage low while transmitting
+            	 */
+            	if(!completed.isEmpty()) {
+            		inst.setObject(null);
+            	}
+                LOG.debug("Successfully completed instance with uid {}", inst.iuid);
                 completed.add(inst);
+            }
             else if ((storeStatus & 0xB000) == 0xB000)
                 warning.add(inst);
             else {

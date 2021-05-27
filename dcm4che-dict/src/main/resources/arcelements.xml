@@ -45,6 +45,7 @@
   <el tag="7777xx12" keyword="PatientVerificationDateTime" vr="DT" vm="1">Patient Verification Date Time</el>
   <el tag="7777xx13" keyword="PatientVerificationStatus" vr="CS" vm="1">Patient Verification Status</el>
   <el tag="7777xx14" keyword="FailedVerificationsOfPatient" vr="US" vm="1">Failed Verifications of Patient</el>
+  <el tag="7777xx15" keyword="DominantPatientSequence" vr="SQ" vm="1">Dominant Patient Sequence</el>
   <el tag="7777xx20" keyword="StudyReceiveDateTime" vr="DT" vm="1">Study Receive Date Time</el>
   <el tag="7777xx21" keyword="StudyUpdateDateTime" vr="DT" vm="1">Study Update Date Time</el>
   <el tag="7777xx22" keyword="StudyAccessDateTime" vr="DT" vm="1">Study Access Date Time</el>

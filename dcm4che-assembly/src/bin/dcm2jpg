@@ -77,7 +77,7 @@ if [ "x$JAVA_LIBRARY_PATH" = "x" ]; then
     if [ -e "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}" ]; then
       echo "Native OpenCV library has been found in ${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}"
     else
-      URL=https://github.com/nroduit/mvn-repo/raw/master/org/weasis/thirdparty/org/opencv/${LIB_NAME}/${weasis.opencv.native.version}/${weasis.opencv.native.version}-${weasis}-${OS_ARC}.${LIB_EXT}
+      URL=https://github.com/nroduit/mvn-repo/raw/master/org/weasis/thirdparty/org/opencv/${LIB_NAME}/${weasis.opencv.native.version}/${LIB_NAME}-${weasis.opencv.native.version}-${OS_ARC}.${LIB_EXT}
       echo "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT} is missing. Try to download ${URL}"
       mkdir -p "${JAVA_LIBRARY_PATH}"
       wget --auth-no-challenge -O "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}" "${URL}" || { rm "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}"; echo "Cannot download the native library related to the architecture ${OS_ARC}, try it manually." && exit 1; }

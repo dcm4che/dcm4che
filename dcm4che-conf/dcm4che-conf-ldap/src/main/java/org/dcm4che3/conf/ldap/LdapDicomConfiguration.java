@@ -38,32 +38,23 @@
 
 package org.dcm4che3.conf.ldap;
 
-import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.*;
-
-import javax.naming.*;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-
-import org.dcm4che3.conf.api.ConfigurationChanges;
-import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.api.*;
 import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.Connection.Protocol;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.naming.*;
+import javax.naming.directory.*;
+import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -866,7 +857,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 search(deviceDN, "(objectclass=dcmWebApp", StringUtils.EMPTY_STRING);
         try {
             while (webApps.hasMore()) {
-                String rdn = aets.next().getName();
+                String rdn = webApps.next().getName();
                 dns.add(rdn + ',' + webAppsRegistryDN);
             }
         } finally {

@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool-ihe</artifactId>
     <groupId>org.dcm4che.tool.ihe</groupId>
-    <version>5.23.3</version>
+    <version>5.24.0</version>
   </parent>
   <artifactId>dcm4che-tool-ihe-modality</artifactId>
   <name>dcm4che-tool-ihe-modality</name>

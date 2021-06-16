@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>5.23.3</version>
+    <version>5.24.0</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-hl7</artifactId>

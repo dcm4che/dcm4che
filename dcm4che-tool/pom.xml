@@ -70,6 +70,7 @@
     <module>dcm4che-tool-fixlo2un</module>
     <module>dcm4che-tool-getscu</module>
     <module>dcm4che-tool-hl72xml</module>
+    <module>dcm4che-tool-hl7pdq</module>
     <module>dcm4che-tool-hl7pix</module>
     <module>dcm4che-tool-hl7rcv</module>
     <module>dcm4che-tool-hl7snd</module>

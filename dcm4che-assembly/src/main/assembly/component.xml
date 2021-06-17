@@ -149,6 +149,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-fixlo2un</include>
         <include>org.dcm4che.tool:dcm4che-tool-getscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl72xml</include>
+        <include>org.dcm4che.tool:dcm4che-tool-hl7pdq</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7pix</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>

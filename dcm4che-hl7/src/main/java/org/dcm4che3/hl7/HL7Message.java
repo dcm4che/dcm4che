@@ -168,6 +168,25 @@ public class HL7Message extends ArrayList<HL7Segment> {
         return qbp;
     }
 
+    public static HL7Message makePdqQuery(String[] queryParams, String... domains) {
+        HL7Segment msh = HL7Segment.makeMSH();
+        msh.setField(8, "QBP^Q22^QBP_Q21");
+        HL7Segment qpd = new HL7Segment(5);
+        qpd.setField(0, "QPD");
+        qpd.setField(1, "IHE PDQ Query");
+        qpd.setField(2, "QRY" + msh.getField(9, ""));
+        qpd.setField(3, HL7Segment.concat(queryParams, '~'));
+        qpd.setField(4, HL7Segment.concat(domains, '~'));
+        HL7Segment rcp = new HL7Segment(8);
+        rcp.setField(0, "RCP");
+        rcp.setField(1, "I");
+        HL7Message qbp = new HL7Message(3);
+        qbp.add(msh);
+        qbp.add(qpd);
+        qbp.add(rcp);
+        return qbp;
+    }
+
     public static HL7Message makeACK(HL7Segment msh, HL7Exception e) {
         HL7Message ack = makeACK(msh, e.getAcknowledgmentCode(), e.getErrorMessage());
         HL7Segment err = e.getErrorSegment();

@@ -43,8 +43,7 @@
         <artifactId>dcm4che-tool</artifactId>
         <groupId>org.dcm4che.tool</groupId>
         <version>5.23.3</version>
-        <relativePath>..</relativePath>
-    </parent>
+        </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>dcm4che-tool-dcm2pdf</artifactId>

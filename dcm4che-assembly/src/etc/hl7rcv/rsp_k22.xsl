@@ -38,7 +38,7 @@
         <field><xsl:value-of select="MSH/field[2]" /></field>
         <field><xsl:value-of select="$DateTimeOfMessage" /></field>
         <field><xsl:value-of select="MSH/field[6]" /></field>
-        <field>RSP<component>K23</component><component>RSP_K23</component></field>
+        <field>RSP<component>K22</component><component>RSP_K21</component></field>
         <field><xsl:value-of select="$MessageControlID" /></field>
         <field><xsl:value-of select="MSH/field[9]" /></field>
         <field><xsl:value-of select="MSH/field[10]" /></field>

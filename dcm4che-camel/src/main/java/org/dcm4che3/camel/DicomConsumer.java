@@ -96,7 +96,7 @@ public class DicomConsumer extends DefaultConsumer implements DimseRQHandler{
     public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
             Attributes cmd, PDVInputStream data) throws IOException {
         final int msgid = cmd.getInt(Tag.MessageID, 0);
-        Exchange exchange = getEndpoint().createExchange(dimse, cmd, data);
+        Exchange exchange = getEndpoint().createExchange(dimse, cmd, data, pc.getTransferSyntax());
         AsyncCallback callback = new EndpointDimseRQHandlerAsyncCallback(
                 as, pc, dimse, msgid, exchange);
         AsyncProcessorHelper.process(getAsyncProcessor(), exchange, callback);

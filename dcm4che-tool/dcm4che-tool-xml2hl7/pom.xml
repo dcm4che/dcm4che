@@ -43,7 +43,6 @@
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
     <version>5.24.0</version>
-    <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-tool-xml2hl7</artifactId>
   <name>dcm4che-tool-xml2hl7</name>
@@ -52,7 +51,7 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-hl7</artifactId>
-      <version>5.24.0</version>
+      <version>5.23.3</version>
     </dependency>
   </dependencies>
 </project>

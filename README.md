@@ -74,6 +74,7 @@ Utilities
 - [findscu][]: Invoke DICOM C-FIND Query Request
 - [getscu][]: Invoke DICOM C-GET Retrieve Request
 - [hl72xml][]: Convert HL7 v2.x message in XML presentation
+- [hl7pdq][]: Query HL7 v2.x Patient Demographics Supplier
 - [hl7pix][]: Query HL7 v2.x PIX Manager
 - [hl7rcv][]: HL7 v2.x Receiver
 - [hl7snd][]: Send HL7 v2.x message
@@ -119,6 +120,7 @@ Utilities
 [findscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-findscu/README.md
 [getscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-getscu/README.md
 [hl72xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl72xml/README.md
+[hl7pdq]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7pdq/README.md
 [hl7pix]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7pix/README.md
 [hl7rcv]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7rcv/README.md
 [hl7snd]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7snd/README.md

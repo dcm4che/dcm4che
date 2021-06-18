@@ -45,8 +45,7 @@
         <artifactId>dcm4che-tool</artifactId>
         <groupId>org.dcm4che.tool</groupId>
         <version>5.24.0</version>
-        <relativePath>..</relativePath>
-    </parent>
+        </parent>
     <artifactId>dcm4che-tool-pdf2dcm</artifactId>
     <name>dcm4che-tool-pdf2dcm</name>
     <description>PDF to DICOM Converter</description>

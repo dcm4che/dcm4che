@@ -79,7 +79,6 @@ public class EchoSCP implements Processor {
         Dimse dimse = in.getHeader("dimse", Dimse.class);
         if (dimse != Dimse.C_ECHO_RQ)
             throw new DicomServiceException(Status.UnrecognizedOperation);
-        in.getB
         DicomMessage out = new DicomMessage(
                 Dimse.C_ECHO_RSP,
                 Commands.mkEchoRSP(in.getCommand(), Status.Success));

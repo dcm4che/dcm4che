@@ -148,7 +148,7 @@ Options:
                                           exit
 -
 Examples:
-hl7pdq -c XREF^XYZ@localhost:2575 @PID.3.1^XYZ10515W @PID.3.4.1=XREF2005
+hl7pdq -c XREF^XYZ@localhost:2575 @PID.3.1^XYZ10515W @PID.3.4.1^XREF2005
 => Query Patient Demographics Supplier XREF^XYZ listening on local port
 2575 for a patient with Patient ID XYZ10515W with Assigning Authority
 Namespace ID XREF2005

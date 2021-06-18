@@ -41,6 +41,7 @@ package org.dcm4che3.camel;
 import org.apache.camel.impl.DefaultMessage;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.PDVInputStream;
 
@@ -54,23 +55,24 @@ public class DicomMessage extends DefaultMessage {
     private Attributes cmd;
 
     public DicomMessage(Dimse dimse, Attributes cmd) {
-        this(dimse, cmd, (Object) null);
+        this(dimse, cmd, (Object) null, UID.ImplicitVRLittleEndian);
     }
 
-    public DicomMessage(Dimse dimse, Attributes cmd, Attributes data) {
-        this(dimse, cmd, (Object) data);
+    public DicomMessage(Dimse dimse, Attributes cmd, Attributes data, String ts) {
+        this(dimse, cmd, (Object) data, ts);
     }
 
-    public DicomMessage(Dimse dimse, Attributes cmd, PDVInputStream data) {
-        this(dimse, cmd, (Object) data);
+    public DicomMessage(Dimse dimse, Attributes cmd, PDVInputStream data, String ts) {
+        this(dimse, cmd, (Object) data, ts);
     }
 
-    private DicomMessage(Dimse dimse, Attributes cmd, Object data) {
+    private DicomMessage(Dimse dimse, Attributes cmd, Object data, String ts) {
         this.cmd = cmd;
         setMessageId(cmd.getString(Tag.MessageID));
         setHeader("dimse", dimse);
         setHeader("sopclass", cmd.getString(dimse.tagOfSOPClassUID()));
         setHeader("sopinstance", cmd.getString(dimse.tagOfSOPInstanceUID()));
+        setHeader("transfersyntax", ts);
         setBody(data);
     }
 

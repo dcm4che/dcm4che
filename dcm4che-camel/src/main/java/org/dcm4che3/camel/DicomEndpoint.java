@@ -45,8 +45,10 @@ import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.PDVInputStream;
+import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.util.StringUtils;
 
 /**
@@ -96,10 +98,9 @@ public class DicomEndpoint extends DefaultEndpoint {
         return false;
     }
 
-    public Exchange createExchange(Dimse dimse, Attributes cmd,
-            PDVInputStream data) {
+    public Exchange createExchange(Dimse dimse, Attributes cmd, PDVInputStream data, String ts) {
         Exchange exchange = super.createExchange();
-        exchange.setIn(new DicomMessage(dimse, cmd, data));
+        exchange.setIn(new DicomMessage(dimse, cmd, data, ts));
         return exchange;
     }
 

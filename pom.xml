@@ -104,6 +104,11 @@
     <org.jvnet.mimepull.version>1.9.11</org.jvnet.mimepull.version>
     <org.jvnet.staxex.version>1.8.3</org.jvnet.staxex.version>
     <commons-cli.version>1.4</commons-cli.version>
+
+    <!-- for SonarCloud / SonarQube -->
+    <sonar.projectKey>dcm4che_dcm4che</sonar.projectKey>
+    <sonar.organization>dcm4che</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
   <build>
     <extensions>

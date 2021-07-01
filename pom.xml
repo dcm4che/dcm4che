@@ -106,7 +106,6 @@
     <commons-cli.version>1.4</commons-cli.version>
 
     <!-- for SonarCloud / SonarQube -->
-    <sonar.projectKey>dcm4che_dcm4che</sonar.projectKey>
     <sonar.organization>dcm4che</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>

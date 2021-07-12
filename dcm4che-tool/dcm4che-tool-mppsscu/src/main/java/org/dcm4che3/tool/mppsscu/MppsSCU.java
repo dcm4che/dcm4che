@@ -633,23 +633,23 @@ public class MppsSCU {
             dcrSeq.add(new Attributes(discontinuationReason));
 
         Sequence raSeq = inst.getSequence(Tag.RequestAttributesSequence);
-        Attributes ssa1 = inst.getNestedDataset(Tag.ScheduledStepAttributesSequence);
+        Attributes ssa = new Attributes(inst.getNestedDataset(Tag.ScheduledStepAttributesSequence));
         if (raSeq == null || raSeq.isEmpty()) {
             Sequence ssaSeq =
                     mpps.newSequence(Tag.ScheduledStepAttributesSequence, 1);
-            Attributes ssa = ssa1 == null ? new Attributes() : ssa1;
             ssaSeq.add(ssa);
             for (int tag : SSA_TYPE_2_ATTRS)
-                ssa.setNull(tag, dict.vrOf(tag));
+                if (!ssa.containsValue(tag))
+                    ssa.setNull(tag, dict.vrOf(tag));
             ssa.addSelected(inst, SSA_ATTRS);
         } else {
             Sequence ssaSeq =
                     mpps.newSequence(Tag.ScheduledStepAttributesSequence, raSeq.size());
             for (Attributes ra : raSeq) {
-                Attributes ssa = ssa1 == null ? new Attributes() : ssa1;
                 ssaSeq.add(ssa);
                 for (int tag : SSA_TYPE_2_ATTRS)
-                    ssa.setNull(tag, dict.vrOf(tag));
+                    if (!ssa.containsValue(tag))
+                        ssa.setNull(tag, dict.vrOf(tag));
                 ssa.addSelected(inst, SSA_ATTRS);
                 ssa.addSelected(ra, SSA_ATTRS);
             }

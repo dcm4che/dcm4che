@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.List;
 
 import org.dcm4che3.data.*;
@@ -70,7 +69,7 @@ public class DicomInputStreamTest {
             for (int i = 0; i < 10; i++) {
                 Object fragment = fragments.get(++i);
                 assertTrue(fragment instanceof BulkData);
-                assertEquals(bulkDataFiles.get(i + 3), ((BulkData)fragment).getFile());
+                assertEquals(bulkDataFiles.get(i + 3), ((BulkData) fragment).getFile());
             }
         } finally {
             for (File bulkDataFile : bulkDataFiles) {
@@ -79,8 +78,14 @@ public class DicomInputStreamTest {
         }
     }
 
+    @Test
+    public void testNoPreambleDataContainsDICMatByte128() throws Exception {
+        Attributes attrs = readFrom("no_preamble_dicm_in_data", IncludeBulkData.NO);
+        assertEquals("DICMA1", attrs.getString(Tag.StationName));
+    }
+
     private static Attributes readFrom(String name, IncludeBulkData includeBulkData) throws Exception {
-        try ( DicomInputStream in = new DicomInputStream(new File("target/test-data/" + name))) {
+        try (DicomInputStream in = new DicomInputStream(new File("target/test-data/" + name))) {
             in.setIncludeBulkData(includeBulkData);
             return in.readDataset();
         }

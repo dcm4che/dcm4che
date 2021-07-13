@@ -55,6 +55,7 @@ import java.util.function.Predicate;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -111,7 +112,7 @@ public class DicomInputStream extends FilterInputStream
     private BulkDataCreator bulkDataCreator = this;
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
-    private List<ItemPointer> itemPointers = new ArrayList<ItemPointer>(4);
+    private final List<ItemPointer> itemPointers = new ArrayList<>(4);
     private boolean excludeBulkData;
     private boolean includeBulkDataURI;
 
@@ -649,8 +650,9 @@ public class DicomInputStream extends FilterInputStream
             if (blkOut == null) {
                 File blkfile = File.createTempFile(blkFilePrefix,
                         blkFileSuffix, blkDirectory);
-                if (blkFiles == null)
-                    blkFiles = new ArrayList<File>();
+                if (blkFiles == null) {
+                    blkFiles = new ArrayList<>();
+                }
                 blkFiles.add(blkfile);
                 blkURI = blkfile.toURI().toString();
                 blkOut = new FileOutputStream(blkfile);
@@ -894,8 +896,9 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private boolean hasZLIBHeader() throws IOException {
-        if (!markSupported())
+        if (!markSupported()) {
             return false;
+        }
         byte[] buf = buffer;
         mark(2);
         read(buf, 0, 2);
@@ -904,45 +907,76 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private void guessTransferSyntax(int preambleLength) throws IOException {
-        byte[] b132 = new byte[preambleLength + 4];
-        mark(b132.length);
-        int rlen = StreamUtils.readAvailable(this, b132, 0, b132.length);
-        if (rlen == b132.length) {
-            if (b132[preambleLength] == 'D'
-                    && b132[preambleLength + 1] == 'I'
-                    && b132[preambleLength + 2] == 'C'
-                    && b132[preambleLength + 3] == 'M') {
-                preamble = new byte[preambleLength];
-                System.arraycopy(b132, 0, preamble, 0, preambleLength);
+        int preambleWithPrefixLength = preambleLength + 4;
+        int numBytes = preambleWithPrefixLength + 132;
+        byte[] bytes = new byte[numBytes];
+        mark(numBytes);
+        int rlen = StreamUtils.readAvailable(this, bytes, 0, numBytes);
+        reset();
+
+        byte[] preambleBytes = new byte[preambleWithPrefixLength];
+        byte[] fmiBytes = new byte[132];
+        if (rlen > preambleWithPrefixLength) {
+            System.arraycopy(bytes, 0, preambleBytes, 0, preambleWithPrefixLength);
+            System.arraycopy(bytes, preambleWithPrefixLength, fmiBytes, 0, rlen - preambleWithPrefixLength);
+        } else {
+            System.arraycopy(bytes, 0, fmiBytes, 0, rlen);
+        }
+
+        if (testPreambleAndFMI(preambleBytes, fmiBytes, rlen - 132)) {
+            // advance the stream position to immediately after the preamble / before the fmi
+            StreamUtils.readAvailable(this, bytes, 0, preambleWithPrefixLength);
+        } else {
+            if (preambleBytes != null) {
+                fmiBytes = preambleBytes;
+            }
+
+            if (rlen < 8
+                    || !this.guessTransferSyntax(fmiBytes, rlen, false)
+                    && !this.guessTransferSyntax(fmiBytes, rlen, true)) {
+                throw new DicomStreamException(NOT_A_DICOM_STREAM);
+            }
+        }
+        mark(132);
+        hasfmi = TagUtils.isFileMetaInformation(
+                ByteUtils.bytesToTag(fmiBytes, 0, bigEndian));
+    }
+
+    private boolean testPreambleAndFMI(byte[] preambleBytes, byte[] fmiBytes, int rlen) throws IOException {
+        if (preambleBytes != null) {
+            if (preambleBytes[128] == 'D' && preambleBytes[129] == 'I' && preambleBytes[130] == 'C'
+                    && preambleBytes[131] == 'M') {
+                preamble = new byte[128];
+                System.arraycopy(preambleBytes, 0, preamble, 0, 128);
                 if (!markSupported()) {
                     hasfmi = true;
                     tsuid = UID.ExplicitVRLittleEndian;
                     bigEndian = false;
                     explicitVR = true;
-                    return;
+                    return true;
                 }
-                mark(b132.length);
-                rlen = StreamUtils.readAvailable(this, b132, 0, b132.length);
+
+                if (rlen > 8
+                        && (this.guessTransferSyntax(fmiBytes, rlen, false)
+                        || this.guessTransferSyntax(fmiBytes, rlen, true))) {
+                    return true;
+                }
             }
         }
-        if (rlen < 8
-                || !guessTransferSyntax(b132, rlen, false)
-                && !guessTransferSyntax(b132, rlen, true))
-            throw new DicomStreamException(NOT_A_DICOM_STREAM);
-        reset();
-        hasfmi = TagUtils.isFileMetaInformation(
-                ByteUtils.bytesToTag(b132, 0, bigEndian));
+
+        return false;
     }
 
     private boolean guessTransferSyntax(byte[] b132, int rlen, boolean bigEndian)
             throws DicomStreamException {
         int tag1 = ByteUtils.bytesToTag(b132, 0, bigEndian);
         VR vr = ElementDictionary.vrOf(tag1, null);
-        if (vr == VR.UN)
+        if (vr == VR.UN) {
             return false;
+        }
         if (ByteUtils.bytesToVR(b132, 4) == vr.code()) {
             this.tsuid = bigEndian ? UID.ExplicitVRBigEndian
-                                   : UID.ExplicitVRLittleEndian;
+                    : UID.ExplicitVRLittleEndian;
             this.bigEndian = bigEndian;
             this.explicitVR = true;
             return true;

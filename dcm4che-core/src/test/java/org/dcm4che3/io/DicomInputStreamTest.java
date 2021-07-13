@@ -51,6 +51,12 @@ public class DicomInputStreamTest {
         assertEquals(((BulkData) pixelData).uri, item.getString(Tag.RetrieveURL));
     }
 
+    @Test
+    public void testNoPreambleDataContainsDICMatByte128() throws Exception {
+        Attributes attrs = readFromResource("no_preamble_dicm_in_data", IncludeBulkData.NO);
+        assertEquals("DICMA1", attrs.getString(Tag.StationName));
+    }
+
     private static Attributes readFromResource(String name, 
             IncludeBulkData includeBulkData)
             throws Exception {

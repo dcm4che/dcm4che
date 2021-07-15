@@ -719,7 +719,7 @@ public class ApplicationEntity implements Serializable {
                     }
         if (cc == null)
             throw new IncompatibleConnectionException(
-                    "No compatible connection to " + remote.getAETitle() + " available on " + this);
+                    "No compatible connection to " + remote.getAETitle() + " available on " + this); 
         return cc;
     }
 

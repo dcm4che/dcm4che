@@ -616,6 +616,8 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("110182","DCM","Node ID");
         public static final ParticipantObjectIDTypeCode ITI_PIXQuery = 
                 new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
+        public static final ParticipantObjectIDTypeCode ITI_PatientDemographicsQuery =
+                new ParticipantObjectIDTypeCode("ITI-21", "IHE Transactions", "Patient Demographics Query");
         public static final ParticipantObjectIDTypeCode QIDO_QUERY =
                 new ParticipantObjectIDTypeCode("QIDO","99DCM4CHEE","QIDO_Query");
         public static final ParticipantObjectIDTypeCode TASK =

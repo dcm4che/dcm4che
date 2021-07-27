@@ -107,7 +107,7 @@ public class Attributes implements Serializable {
     private transient int[] groupLengths;
     private transient int groupLengthIndex0;
 
-    private final boolean bigEndian;
+    private volatile boolean bigEndian;
     private long itemPosition = -1;
     private boolean containsSpecificCharacterSet;
     private boolean containsTimezoneOffsetFromUTC;
@@ -258,9 +258,6 @@ public class Attributes implements Serializable {
 
     Attributes setParent(Attributes parent, String parentSequencePrivateCreator, int parentSequenceTag) {
         if (parent != null) {
-            if (parent.bigEndian != bigEndian)
-                throw new IllegalArgumentException(
-                    "Endian of Item must match Endian of parent Data Set");
             if (this.parent != null)
                 throw new IllegalArgumentException(
                     "Item already contained by Sequence");
@@ -268,11 +265,27 @@ public class Attributes implements Serializable {
                 cs = null;
             if (!containsTimezoneOffsetFromUTC)
                 tz = null;
+            if (parent.bigEndian != bigEndian)
+                toggleEndian();
         }
         this.parent = parent;
         this.parentSequencePrivateCreator = parentSequencePrivateCreator;
         this.parentSequenceTag = parentSequenceTag;
         return this;
+    }
+
+    private void toggleEndian() {
+        for (int i = 0; i < size; i++) {
+            Object value = values[i];
+            if (value instanceof byte[]) {
+                vrs[i].toggleEndian((byte[]) value, false);
+            } else if (value instanceof Sequence) {
+                for (Attributes item : (Sequence) value) {
+                    item.toggleEndian();
+                }
+            }
+            bigEndian = !bigEndian;
+        }
     }
 
     public final long getItemPosition() {
@@ -2627,7 +2640,7 @@ public class Attributes implements Serializable {
         if (originalAttributes.isEmpty())
             return this;
 
-        Attributes item = new Attributes(5);
+        Attributes item = new Attributes(bigEndian, 5);
         item.ensureSequence(Tag.ModifiedAttributesSequence, 1).add(originalAttributes);
         item.setDate(Tag.AttributeModificationDateTime, VR.DT, modificationDateTime);
         item.setString(Tag.ModifyingSystem, VR.LO, modifyingSystem);

@@ -46,10 +46,7 @@ import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StringUtils;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -978,5 +975,24 @@ public class AttributesTest {
             seq.clear();
             fail("Expected exception: java.lang.UnsupportedOperationException");
         } catch (UnsupportedOperationException expected) {}
+    }
+
+    @Test
+    public void testMixedEndian() throws IOException {
+        Attributes bigEndian = new Attributes(true);
+        Attributes modifiedAttributes = new Attributes();
+        modifiedAttributes.setInt(Tag.PixelRepresentation, VR.US, 1);
+        assertFalse(modifiedAttributes.bigEndian());
+        assertArrayEquals(modifiedAttributes.getBytes(Tag.PixelRepresentation), new byte[]{1,0});
+        bigEndian.addOriginalAttributes(
+                null,
+                new Date(),
+                "COERCE",
+                "dcm4che",
+                modifiedAttributes);
+        Attributes originalAttributes = bigEndian.getNestedDataset(Tag.OriginalAttributesSequence);
+        assertTrue(originalAttributes.bigEndian());
+        assertTrue(modifiedAttributes.bigEndian());
+        assertArrayEquals(modifiedAttributes.getBytes(Tag.PixelRepresentation), new byte[]{0,1});
     }
 }

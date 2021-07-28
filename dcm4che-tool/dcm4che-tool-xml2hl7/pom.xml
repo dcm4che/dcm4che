@@ -51,7 +51,7 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-hl7</artifactId>
-      <version>5.23.3</version>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

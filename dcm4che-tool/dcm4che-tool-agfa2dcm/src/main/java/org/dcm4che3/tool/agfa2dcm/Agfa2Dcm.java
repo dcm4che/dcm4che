@@ -130,15 +130,16 @@ public class Agfa2Dcm {
             if (!Arrays.equals(header, ARCHIVE_BLOB))
                 throw new IOException ("Missing ARCHIVE-BLOB header");
 
-            DicomInputStream dis;
-            do {
-                dis = new DicomInputStream(in, 116);
+            DicomInputStream dis = null;
+            Part part = null;
+            for(int headerLength = 12; dis == null || isArchiveBlobTag(dis); headerLength = dis.explicitVR() ? 12 : 8) {
+                if (part != null) part.length -= headerLength;
+                dis = new DicomInputStream(in, 128 - headerLength);
                 dis.setIncludeBulkData(DicomInputStream.IncludeBulkData.NO);
                 Attributes attrs = dis.readDataset(-1, Agfa2Dcm::isArchiveBlobTag);
-                list.add(new Part(format.format(attrs), dis.getPosition()));
-            } while (isArchiveBlobTag(dis));
+                list.add(part = new Part(format.format(attrs), dis.getPosition() + headerLength));
+            }
         }
-        list.get(list.size() - 1).length += 12;
         try (InputStream in = Files.newInputStream(blobPath)) {
             StreamUtils.skipFully(in, 16384);
             for (Part part : list) {

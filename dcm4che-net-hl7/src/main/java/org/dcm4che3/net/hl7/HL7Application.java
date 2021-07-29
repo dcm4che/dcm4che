@@ -258,7 +258,7 @@ public class HL7Application implements Serializable {
             throw new HL7Exception(
                     new ERRSegment(msh)
                             .setHL7ErrorCode(ERRSegment.RequiredFieldMissing)
-                            .setErrorLocation(ERRSegment.MissingMessageControlID)
+                            .setErrorLocation(ERRSegment.MissingMessageType)
                             .setUserMessage("Missing Message Type"));
 
         if (!(acceptedMessageTypes.contains("*")

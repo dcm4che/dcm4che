@@ -78,9 +78,9 @@
     <module>dcm4che-tool-ianscu</module>
     <module>dcm4che-tool-ihe</module>
     <module>dcm4che-tool-jpg2dcm</module>
-    <module>dcm4che-tool-json2csv</module>
     <module>dcm4che-tool-json2dcm</module>
     <module>dcm4che-tool-json2index</module>
+    <module>dcm4che-tool-json2props</module>
     <module>dcm4che-tool-json2rst</module>
     <module>dcm4che-tool-mkkos</module>
     <module>dcm4che-tool-movescu</module>

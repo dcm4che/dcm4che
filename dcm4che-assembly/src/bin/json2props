@@ -1,10 +1,10 @@
 #!/bin/sh
 # -------------------------------------------------------------------------
-# json2csv  Launcher
+# json2props  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che3.tool.json2csv.Json2Csv
-MAIN_JAR=dcm4che-tool-json2csv-${project.version}.jar
+MAIN_CLASS=org.dcm4che3.tool.json2props.Json2Props
+MAIN_JAR=dcm4che-tool-json2props-${project.version}.jar
 
 DIRNAME="`dirname "$0"`"
 

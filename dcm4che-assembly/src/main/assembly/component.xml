@@ -157,9 +157,9 @@
         <include>org.dcm4che.tool:dcm4che-tool-stowrsd</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscu</include>
-        <include>org.dcm4che.tool:dcm4che-tool-json2csv</include>
         <include>org.dcm4che.tool:dcm4che-tool-json2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-json2index</include>
+        <include>org.dcm4che.tool:dcm4che-tool-json2props</include>
         <include>org.dcm4che.tool:dcm4che-tool-json2rst</include>
         <include>org.dcm4che.tool:dcm4che-tool-jpg2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-mkkos</include>

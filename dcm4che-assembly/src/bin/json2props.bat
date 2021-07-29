@@ -1,13 +1,13 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem json2csv  Launcher
+rem json2props  Launcher
 rem -------------------------------------------------------------------------
 
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che3.tool.json2csv.Json2Csv
-set MAIN_JAR=dcm4che-tool-json2csv-${project.version}.jar
+set MAIN_CLASS=org.dcm4che3.tool.json2props.Json2Props
+set MAIN_JAR=dcm4che-tool-json2props-${project.version}.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%

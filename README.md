@@ -81,7 +81,7 @@ Utilities
 - [ianscp][]: DICOM Instance Availability Notification receiver 
 - [ianscu][]: Send DICOM Instance Availability Notification
 - [jpg2dcm][]: Convert JPEG images or MPEG videos in DICOM files
-- [json2csv][]: Convert Archive configuration schema JSON files to CVS and vice versa
+- [json2props][]: Convert Archive configuration schema JSON files to key/value properties files and vice versa
 - [json2rst][]: Generate ReStructuredText files from Archive configuration schema JSON files
 - [mkkos][]: Make DICOM Key Object Selection Document
 - [modality][]: Simulates DICOM Modality
@@ -127,7 +127,7 @@ Utilities
 [ianscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscp/README.md
 [ianscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscu/README.md
 [jpg2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-jpg2dcm/README.md
-[json2csv]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-json2csv/README.md
+[json2props]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-json2props/README.md
 [json2rst]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-json2rst/README.md
 [mkkos]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mkkos/README.md
 [modality]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ihe/dcm4che-tool-ihe-modality/README.md

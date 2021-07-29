@@ -39,48 +39,44 @@
  *
  */
 
-package org.dcm4che3.tool.json2csv;
+package org.dcm4che3.tool.json2props;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Gunter Zeilinger (gunterze@protonmail.com)
  * @since Feb 2020
  */
-public class Json2Csv {
+public class Json2Props {
 
     private static final String[] USAGE = {
-            "usage: json2csv <schema-dir> <csv-dir>",
-            "    or json2csv <schema-dir> <csv-dir> <out-schema-dir>",
+            "usage: json2props <schema-dir> <props-dir>",
+            "    or json2props <schema-dir> <props-dir> <out-schema-dir>",
             "",
-            "The json2csv utility converts Archive configuration schema JSON files to CVS",
-            "and vice versa to ease translation of attribute names and descriptions to",
-            "other languages than English."
+            "The json2props utility converts Archive configuration schema JSON files",
+            "to key-value properties files and vice versa to ease translation of",
+            "attribute names and descriptions to other languages than English."
     };
-    private static final String PROPERTY_TITLE_DESCRIPTION = "\"property\",\"title\",\"description\"";
     private final File schemaDir;
-    private final File csvDir;
+    private final File propsDir;
 
-    public Json2Csv(File schemaDir, File csvDir) {
+    public Json2Props(File schemaDir, File propsDir) {
         this.schemaDir = schemaDir;
-        this.csvDir = csvDir;
+        this.propsDir = propsDir;
     }
 
     public static void main(String[] args) throws Exception {
         switch (args.length) {
             case 2:
-                json2csv(new File(args[0]), new File(args[1]));
+                json2props(new File(args[0]), new File(args[1]));
                 break;
             case 3:
-                csv2json(new File(args[0]), new File(args[1]), new File(args[2]));
+                props2json(new File(args[0]), new File(args[1]), new File(args[2]));
                 break;
             default:
                 for (String line : USAGE) {
@@ -90,21 +86,18 @@ public class Json2Csv {
         }
     }
 
-    public static void json2csv(File schemaDir, File csvDir) throws IOException {
-        csvDir.mkdirs();
-        for (String fname : schemaDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".schema.json");
-            }
-        })) {
-            json2csv1(
+    public static void json2props(File schemaDir, File propsDir) throws IOException {
+        propsDir.mkdirs();
+        for (String fname : schemaDir.list((dir, name) -> name.endsWith(".schema.json"))) {
+            String prefix = fname.substring(0, fname.length() - 11);
+            json2props1(
                     new File(schemaDir, fname),
-                    new File(csvDir, fname.substring(0, fname.length() - 4) + "csv"));
+                    new File(propsDir, prefix + "properties"),
+                    prefix);
         }
     }
 
-    private static void json2csv1(File inFile, File outFile) throws IOException {
+    private static void json2props1(File inFile, File outFile, String prefix) throws IOException {
         System.out.println(inFile.toString() + "=>" + outFile.toString());
         try (JsonReader reader = Json.createReader(
                 new InputStreamReader(
@@ -115,43 +108,49 @@ public class Json2Csv {
                     StandardCharsets.UTF_8)) {
                 JsonObject doc = reader.readObject();
                 JsonObject properties = doc.getJsonObject("properties");
-                writer.write(PROPERTY_TITLE_DESCRIPTION);
-                writer.write("\r\n\"\",\"");
+                writer.write(prefix.substring(0, prefix.length() - 1));
+                writer.write(':');
                 writer.write(doc.getString("title"));
-                writer.write("\",\"");
+                writer.write('|');
                 writer.write(doc.getString("description").replace("\"", "\"\""));
+                writer.write('\r');
+                writer.write('\n');
                 for (String name : properties.keySet()) {
                     JsonObject property = properties.getJsonObject(name);
-                    writer.write("\"\r\n\"");
+                    writer.write(prefix);
                     writer.write(name);
-                    writer.write("\",\"");
+                    writer.write(':');
                     writer.write(property.getString("title"));
-                    writer.write("\",\"");
+                    writer.write('|');
                     writer.write(property.getString("description").replace("\"", "\"\""));
+                    writer.write('\r');
+                    writer.write('\n');
                 }
-                writer.write("\"\r\n");
             }
         }
     }
 
-    public static void csv2json(File srcSchemaDir, File csvDir, File destSchemaDir) throws IOException {
+    public static void props2json(File srcSchemaDir, File propsDir, File destSchemaDir) throws IOException {
         destSchemaDir.mkdirs();
-        for (String fname : srcSchemaDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".schema.json");
-            }
-        })) {
-            csv2json1(
+        for (String fname : srcSchemaDir.list((dir, name) -> name.endsWith(".schema.json"))) {
+            String prefix = fname.substring(0, fname.length() - 11);
+            props2json1(
                     new File(srcSchemaDir, fname),
-                    new File(csvDir, fname.substring(0, fname.length() - 4) + "csv"),
-                    new File(destSchemaDir, fname));
+                    new File(propsDir, prefix + "properties"),
+                    new File(destSchemaDir, fname),
+                    prefix);
         }
     }
 
-    private static void csv2json1(File schemaFile, File csvFile, File outFile) throws IOException {
-        System.out.println(csvFile.toString() + "=>" + outFile.toString());
-        Map<String, String[]> csv = parseCSV(csvFile);
+    private static void props2json1(File schemaFile, File propsFile, File outFile, String prefix)
+            throws IOException {
+        System.out.println(propsFile.toString() + "=>" + outFile.toString());
+        Properties props = new Properties();
+        try (BufferedReader reader1 = new BufferedReader(new InputStreamReader(
+                new FileInputStream(propsFile),
+                StandardCharsets.UTF_8))) {
+            props.load(reader1);
+        } catch (FileNotFoundException e) {}
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
                     new FileInputStream(schemaFile),
@@ -162,8 +161,9 @@ public class Json2Csv {
                         StandardCharsets.UTF_8))) {
                 String line;
                 String indent = "  ";
-                String[] csvLine = csv.get("\"\"");
-                int field = csvLine != null ? 0 : 3;
+                String value = props.getProperty(prefix.substring(0, prefix.length() - 1));
+                int endTitle = -1;
+                int field = value != null ? 0 : 3;
                 int fieldAfterDescription = 3;
                 while ((line = reader.readLine()) != null) {
                     switch (field) {
@@ -171,11 +171,12 @@ public class Json2Csv {
                             field = 1;
                             break;
                         case 1:
-                            line = indent + "\"title\": " + csvLine[1] + ',';
+                            endTitle = value.indexOf('|');
+                            line = indent + "\"title\": \"" + value.substring(0, endTitle) + "\",";
                             field = 2;
                             break;
                         case 2:
-                            line = indent + "\"description\": " + csvLine[2] + ',';
+                            line = indent + "\"description\": \"" + value.substring(endTitle + 1) + "\",";
                             field = fieldAfterDescription;
                             break;
                         case 3:
@@ -187,8 +188,8 @@ public class Json2Csv {
                             break;
                         case 4:
                             if (line.startsWith("    \"")) {
-                                csvLine = csv.get(line.substring(4, line.length() - 3));
-                                if (csvLine != null) {
+                                value = props.getProperty(prefix + line.substring(4, line.length() - 3));
+                                if (value != null) {
                                     field = 1;
                                 }
                             }
@@ -198,37 +199,6 @@ public class Json2Csv {
                 }
             }
         }
-    }
-
-    private static Map<String, String[]> parseCSV(File csvFile) throws IOException {
-        Map<String, String[]> csv = new HashMap<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new FileInputStream(csvFile),
-                StandardCharsets.UTF_8))) {
-            String line;
-            if (!PROPERTY_TITLE_DESCRIPTION.equals(line = reader.readLine())) {
-                throw new IOException("Unexpected CSV header: " + line);
-            }
-            while ((line = reader.readLine()) != null) {
-                String[] split = split(line);
-                csv.put(split[0], split);
-            }
-        } catch (FileNotFoundException e) {}
-        return csv;
-    }
-
-    private static String[] split(String line) {
-        String[] fields = line.split(",");
-        if (fields.length > 3) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(fields[2]);
-            for (int i = 3; i < fields.length; i++) {
-                sb.append(',').append(fields[i]);
-            }
-            fields = new String[]{ fields[0], fields[1], sb.toString() };
-        }
-        fields[2] = fields[2].replace("\\", "\\\\").replace("\"\"", "\\\"");
-        return fields;
     }
 
 }

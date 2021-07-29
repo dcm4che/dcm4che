@@ -50,7 +50,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>dcm4che-tool-json2csv</artifactId>
+  <artifactId>dcm4che-tool-json2props</artifactId>
 
   <dependencies>
     <dependency>

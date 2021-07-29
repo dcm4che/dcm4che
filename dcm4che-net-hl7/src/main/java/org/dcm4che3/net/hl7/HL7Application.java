@@ -254,6 +254,13 @@ public class HL7Application implements Serializable {
                             .setErrorLocation(ERRSegment.UnknownSendingApplication)
                             .setUserMessage("Sending Application not recognized"));
         String messageType = msh.getMessageType();
+        if (messageType.equals(""))
+            throw new HL7Exception(
+                    new ERRSegment(msh)
+                            .setHL7ErrorCode(ERRSegment.RequiredFieldMissing)
+                            .setErrorLocation(ERRSegment.MissingMessageControlID)
+                            .setUserMessage("Missing Message Type"));
+
         if (!(acceptedMessageTypes.contains("*")
                 || acceptedMessageTypes.contains(messageType)))
             throw new HL7Exception(

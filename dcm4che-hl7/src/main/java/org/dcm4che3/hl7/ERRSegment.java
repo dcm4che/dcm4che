@@ -61,6 +61,7 @@ public class ERRSegment extends HL7Segment {
     public static final String UnknownSendingFacility = "MSH^1^4";
     public static final String UnknownReceivingApplication = "MSH^1^5";
     public static final String UnknownReceivingFacility = "MSH^1^6";
+    public static final String MissingMessageControlID = "MSH^1^10";
 
     public ERRSegment(char fieldSeparator, String encodingCharacters) {
         super(9, fieldSeparator, encodingCharacters);

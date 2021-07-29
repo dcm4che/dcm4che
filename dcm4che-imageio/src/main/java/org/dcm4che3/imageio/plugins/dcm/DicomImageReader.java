@@ -505,7 +505,9 @@ public class DicomImageReader extends ImageReader implements Closeable {
         }
         ColorSpace colorSpace = iccColorSpace.orElse(sRGB);
         ColorModel cm = createColorModel(bitsStored, dataType, colorSpace);
-        bi = new BufferedImage(cm, raster, false, null);
+        if (cm.isCompatibleRaster(raster) || pmi != pmiAfterDecompression || iccColorSpace.isPresent() ) {
+            bi = new BufferedImage(cm, raster, false, null);
+        }
         if (overlayGroupOffsets.length == 0) {
             return bi;
         }

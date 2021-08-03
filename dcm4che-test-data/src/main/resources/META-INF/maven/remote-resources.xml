@@ -60,6 +60,7 @@
         <remoteResource>YBR_422.dcm</remoteResource>
         <remoteResource>YBR_FULL-RLE.dcm</remoteResource>
         <remoteResource>3gb-bulk-data-truncated</remoteResource>
+		    <remoteResource>no_preamble_dicm_in_data</remoteResource>
     </remoteResources>
     <sourceEncoding>UTF-8</sourceEncoding>
 </remoteResourcesBundle>

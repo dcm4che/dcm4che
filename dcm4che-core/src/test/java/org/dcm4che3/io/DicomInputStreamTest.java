@@ -79,6 +79,12 @@ public class DicomInputStreamTest {
         }
     }
 
+    @Test
+    public void testNoPreambleDataContainsDICMatByte128() throws Exception {
+        Attributes attrs = readFrom("no_preamble_dicm_in_data", IncludeBulkData.NO);
+        assertEquals("DICMA1", attrs.getString(Tag.StationName));
+    }
+
     private static Attributes readFrom(String name, IncludeBulkData includeBulkData) throws Exception {
         try ( DicomInputStream in = new DicomInputStream(new File("target/test-data/" + name))) {
             in.setIncludeBulkData(includeBulkData);

@@ -38,7 +38,6 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
-import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.EOFException;

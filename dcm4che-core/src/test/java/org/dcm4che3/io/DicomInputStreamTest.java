@@ -1,15 +1,19 @@
 package org.dcm4che3.io;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URL;
 
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Sequence;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -51,18 +55,23 @@ public class DicomInputStreamTest {
         assertEquals(((BulkData) pixelData).uri, item.getString(Tag.RetrieveURL));
     }
 
-    private static Attributes readFromResource(String name, 
-            IncludeBulkData includeBulkData)
-            throws Exception {
+    @Test
+    public void testNoPreambleDataContainsDICMatByte128() throws Exception {
+        Attributes attrs = readFromResource("no_preamble_dicm_in_data", IncludeBulkData.NO);
+        assertEquals("DICMA1", attrs.getString(Tag.StationName));
+    }
+
+    private static Attributes readFromResource(String name, IncludeBulkData includeBulkData) throws Exception {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        DicomInputStream in = new DicomInputStream(
-                new File(cl.getResource(name).toURI()));
-        try {
+        URL resource = cl.getResource(name);
+        if (resource == null) {
+            throw new FileNotFoundException("Could not resolve resource with name: '" + name + "'");
+        }
+        File file = new File(resource.toURI());
+        try (DicomInputStream in = new DicomInputStream(file)) {
             in.setIncludeBulkData(includeBulkData);
             in.setAddBulkDataReferences(includeBulkData == IncludeBulkData.URI);
             return in.readDataset(-1, -1);
-        } finally {
-            in.close();
         }
     }
 

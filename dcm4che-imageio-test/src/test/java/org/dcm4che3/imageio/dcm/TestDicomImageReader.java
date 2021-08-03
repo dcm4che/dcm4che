@@ -86,6 +86,7 @@ public class TestDicomImageReader {
     private static final String US_MF_RLE = "US-PAL-8-10x-echo";
     private static final String US_MF_RLE_CHECKSUM = "5F4909DEDD7D1E113CC69172C693B4705FEE5B46";
     private static final String REPORT_DFL = "report_dfl";
+    private static final String UNCOMPRESSED_SINGLEFRAME = "MR2_UNC";
 
     DicomImageReader reader;
     
@@ -136,7 +137,19 @@ public class TestDicomImageReader {
             testReadPostPixelData(is);
         }
     }
-    
+
+    /**
+     * This test previously throw an out of memory exception, shows that the changes work.
+     * @throws IOException
+     */
+    @Test
+    public void testReadUncompressedingleFrame_fromImageInputStream() throws IOException {
+        try(FileImageInputStream is = new FileImageInputStream(new File("target/test-data/" + UNCOMPRESSED_SINGLEFRAME))) {
+            reader.setInput(is);
+            reader.read(0);
+        }
+    }
+
     @Test 
     public void testReadCompressedPostPixelData_fromInputStream() throws IOException {
         try(FileInputStream is = new FileInputStream(new File("target/test-data/" + US_MF_RLE))) {

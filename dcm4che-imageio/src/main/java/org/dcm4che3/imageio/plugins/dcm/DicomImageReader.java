@@ -38,6 +38,7 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
+import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.EOFException;
@@ -505,7 +506,14 @@ public class DicomImageReader extends ImageReader implements Closeable {
         }
         ColorSpace colorSpace = iccColorSpace.orElse(sRGB);
         ColorModel cm = createColorModel(bitsStored, dataType, colorSpace);
-        bi = new BufferedImage(cm, raster, false, null);
+        if (cm.isCompatibleRaster(raster)) {
+            bi = new BufferedImage(cm, raster, false, null);
+        } else if (bi != null) {
+            bi = BufferedImageUtils.convertColor(bi, cm);
+        } else {
+            LOG.info("applyColorTransformations not supported for {}", raster);
+            return bi;
+        }
         if (overlayGroupOffsets.length == 0) {
             return bi;
         }

@@ -507,11 +507,13 @@ public class DicomImageReader extends ImageReader implements Closeable {
         ColorModel cm = createColorModel(bitsStored, dataType, colorSpace);
         if (cm.isCompatibleRaster(raster)) {
             bi = new BufferedImage(cm, raster, false, null);
-        } else if (bi != null) {
-            bi = BufferedImageUtils.convertColor(bi, cm);
         } else {
-            LOG.info("applyColorTransformations not supported for {}", raster);
-            return bi;
+            if (bi == null) {
+                DirectColorModel directColorModel = new DirectColorModel(24, 0xff0000, 0xff00, 0xff);
+                LOG.info("Missing Color Model information, assume {}", directColorModel);
+                bi = new BufferedImage(directColorModel, bi.getRaster(), false, null);
+            }
+            bi = BufferedImageUtils.convertColor(bi, cm);
         }
         if (overlayGroupOffsets.length == 0) {
             return bi;

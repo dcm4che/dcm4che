@@ -191,8 +191,7 @@ public class Json2Props {
                             break;
                         case 4:
                             if (line.startsWith("    \"")) {
-                                String key = prefix + line.substring(5, line.length() - 4);
-                                value = props.getProperty(key);
+                                value = props.getProperty(prefix + line.substring(5, line.length() - 4));
                                 if (value != null) {
                                     field = 1;
                                 }

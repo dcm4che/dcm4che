@@ -157,7 +157,7 @@ public abstract class StreamSegment {
         return null;
     }
 
-    private static long[][] getSegments(SegmentedInputImageStream iis) throws Exception {
+    private static long[][] getSegments(SegmentedInputImageStream iis) throws IOException {
         Integer curSegment = iis.getCurSegment();
         if (curSegment != null && curSegment >= 0) {
             ImageDescriptor desc = iis.getImageDescriptor();
@@ -166,7 +166,6 @@ public abstract class StreamSegment {
                 if (!desc.isMultiframe() && lastSegment < fragments.size()) {
                     lastSegment = fragments.size();
                 }
-                System.out.println("lastSegment="+lastSegment+" curSegment="+curSegment);
                 long[] segPositions = new long[lastSegment - curSegment];
                 long[] segLength = new long[segPositions.length];
                 long beforePos = 0;

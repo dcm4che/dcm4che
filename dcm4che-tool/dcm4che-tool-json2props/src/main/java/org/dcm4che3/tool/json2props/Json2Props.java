@@ -112,7 +112,7 @@ public class Json2Props {
                 writer.write(':');
                 writer.write(doc.getString("title"));
                 writer.write('|');
-                writer.write(doc.getString("description").replace("\"", "\"\""));
+                writer.write(doc.getString("description").replace("\\", "\\\\"));
                 writer.write('\r');
                 writer.write('\n');
                 for (String name : properties.keySet()) {
@@ -122,7 +122,7 @@ public class Json2Props {
                     writer.write(':');
                     writer.write(property.getString("title"));
                     writer.write('|');
-                    writer.write(property.getString("description").replace("\"", "\"\""));
+                    writer.write(property.getString("description").replace("\\", "\\\\"));
                     writer.write('\r');
                     writer.write('\n');
                 }
@@ -176,7 +176,10 @@ public class Json2Props {
                             field = 2;
                             break;
                         case 2:
-                            line = indent + "\"description\": \"" + value.substring(endTitle + 1) + "\",";
+                            line = indent + "\"description\": \"" + value.substring(endTitle + 1)
+                                    .replace("\\", "\\\\")
+                                    .replace("\"", "\\\"")
+                                    + "\",";
                             field = fieldAfterDescription;
                             break;
                         case 3:
@@ -188,7 +191,8 @@ public class Json2Props {
                             break;
                         case 4:
                             if (line.startsWith("    \"")) {
-                                value = props.getProperty(prefix + line.substring(4, line.length() - 3));
+                                String key = prefix + line.substring(5, line.length() - 4);
+                                value = props.getProperty(key);
                                 if (value != null) {
                                     field = 1;
                                 }

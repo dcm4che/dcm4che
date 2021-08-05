@@ -55,6 +55,8 @@
   <properties>
     <!-- Skip test by default except for some architecture related to the native library -->
     <skipTests>true</skipTests>
+    <!-- empty default argLine for tests, will be extended by jacoco and surefire later -->
+    <argLine></argLine>
   </properties>
   <profiles>
     <profile>
@@ -69,7 +71,7 @@
         <os-name>macosx</os-name>
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
-		<lib-file-ext>jnilib</lib-file-ext>
+        <lib-file-ext>jnilib</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -86,7 +88,7 @@
         <os-name>linux</os-name>
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
-		<lib-file-ext>so</lib-file-ext>
+        <lib-file-ext>so</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -103,7 +105,7 @@
         <os-name>linux</os-name>
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
-		<lib-file-ext>so</lib-file-ext>
+        <lib-file-ext>so</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -120,7 +122,7 @@
         <os-name>linux</os-name>
         <cpu-name>x86</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
-		<lib-file-ext>so</lib-file-ext>
+        <lib-file-ext>so</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -136,7 +138,7 @@
         <os-name>windows</os-name>
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>opencv_java</lib-file-name>
-		<lib-file-ext>dll</lib-file-ext>
+        <lib-file-ext>dll</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -152,7 +154,7 @@
         <os-name>windows</os-name>
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>opencv_java</lib-file-name>
-		<lib-file-ext>dll</lib-file-ext>
+        <lib-file-ext>dll</lib-file-ext>
       </properties>
     </profile>
     <profile>
@@ -168,8 +170,28 @@
         <os-name>windows</os-name>
         <cpu-name>x86</cpu-name>
         <lib-file-name>opencv_java</lib-file-name>
-		<lib-file-ext>dll</lib-file-ext>
+        <lib-file-ext>dll</lib-file-ext>
       </properties>
+    </profile>
+    <profile>
+      <id>test-coverage</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>jacoco-report-aggregate</id>
+                <goals>
+                  <goal>report-aggregate</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
   <build>
@@ -235,7 +257,7 @@
                   <classifier>${os-name}-${cpu-name}</classifier>
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/lib/${os-name}-${cpu-name}</outputDirectory>
-				 <destFileName>${lib-file-name}.${lib-file-ext}</destFileName>
+                  <destFileName>${lib-file-name}.${lib-file-ext}</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -245,7 +267,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>-Djava.library.path=${project.build.directory}/lib/${os-name}-${cpu-name}</argLine>
+          <argLine>@{argLine} -Djava.library.path=${project.build.directory}/lib/${os-name}-${cpu-name}</argLine>
           <skipTests>${skipTests}</skipTests>
         </configuration>
       </plugin>
@@ -272,13 +294,11 @@
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-imageio-opencv</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-imageio-rle</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.media</groupId>
@@ -289,6 +309,7 @@
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

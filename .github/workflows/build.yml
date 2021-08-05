@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-      - release-code-coverage
+      - generic-config
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:

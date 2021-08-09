@@ -514,6 +514,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 bi = new BufferedImage(directColorModel, bi.getRaster(), false, null);
             }
             bi = BufferedImageUtils.convertColor(bi, cm);
+            raster = bi.getRaster();
         }
         if (overlayGroupOffsets.length == 0) {
             return bi;

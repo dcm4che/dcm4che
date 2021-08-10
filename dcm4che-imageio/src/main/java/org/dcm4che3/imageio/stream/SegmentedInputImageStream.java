@@ -76,7 +76,8 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
     private byte[] byteFrag;
     private ImageDescriptor imageDescriptor;
 
-    /** Create a segmented input stream, that updates the bulk data entries as required, frameIndex
+    /**
+     * Create a segmented input stream, that updates the bulk data entries as required, frameIndex
      * of -1 means the entire object/value.
      */
     public SegmentedInputImageStream(ImageInputStream stream,
@@ -97,7 +98,7 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         fragments = new Fragments(VR.OB, false, 16);
         if( !singleFrame ) {
             lastSegment = 2;
-        } 
+        }
         fragments.add(new byte[0]);
         fragments.add(new BulkData("pixelData://",  streamPosition, length, false));
         stream = iis;
@@ -338,5 +339,22 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
             LOG.debug("Stack trace",e);
             return -1;
         }
+    }
+
+    public ImageInputStream getStream() {
+        return stream;
+    }
+
+    public int getCurSegment() {
+        return curSegment;
+    }
+
+    public List<Object> getFragments() {
+        return fragments;
+    }
+
+    public Integer getLastSegment() throws IOException {
+        seek(Long.MAX_VALUE);
+        return lastSegment;
     }
 }

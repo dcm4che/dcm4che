@@ -71,6 +71,8 @@ import org.dcm4che3.util.SafeClose;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -78,6 +80,7 @@ import org.junit.Test;
  *
  */
 public class TestDicomImageReader {
+    private static final Logger log = LoggerFactory.getLogger(TestDicomImageReader.class);
 
 	private static final String TEST_DATA_DIR = "target/test-data/";
     private static final String CPLX_P02 = "cplx_p02.dcm";
@@ -86,7 +89,7 @@ public class TestDicomImageReader {
     private static final String US_MF_RLE = "US-PAL-8-10x-echo";
     private static final String US_MF_RLE_CHECKSUM = "5F4909DEDD7D1E113CC69172C693B4705FEE5B46";
     private static final String REPORT_DFL = "report_dfl";
-    private static final String UNCOMPRESSED_SINGLEFRAME = "MR2_UNC";
+    private static final String NM_JPLY = "NM1_JPLY";
 
     DicomImageReader reader;
     
@@ -143,10 +146,12 @@ public class TestDicomImageReader {
      * @throws IOException
      */
     @Test
-    public void testReadUncompressedingleFrame_fromImageInputStream() throws IOException {
-        try(FileImageInputStream is = new FileImageInputStream(new File("target/test-data/" + UNCOMPRESSED_SINGLEFRAME))) {
+    public void testReadCompressedSingleFrame_fromImageInputStream() throws IOException {
+        File file = new File("target/test-data/"+ NM_JPLY);
+        try(FileImageInputStream is = new FileImageInputStream(file)) {
+            log.trace("Reading file {} iis {}", file, is);
             reader.setInput(is);
-            reader.read(0);
+            Raster r = reader.readRaster(0, reader.getDefaultReadParam());
         }
     }
 

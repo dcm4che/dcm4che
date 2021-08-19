@@ -59,6 +59,7 @@ import java.util.EnumMap;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -141,6 +142,7 @@ public class Connection implements Serializable {
     private String[] blacklist = {};
     private Boolean installed;
     private Protocol protocol = Protocol.DICOM;
+    private EndpointIdentificationAlgorithm endpointIdentificationAlgorithm;
     private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
             new EnumMap<Protocol, TCPProtocolHandler>(Protocol.class);
     private static final EnumMap<Protocol, UDPProtocolHandler> udpHandlers =
@@ -155,6 +157,11 @@ public class Connection implements Serializable {
 
     static {
         registerTCPProtocolHandler(Protocol.DICOM, DicomProtocolHandler.INSTANCE);
+    }
+
+    enum EndpointIdentificationAlgorithm {
+        HTTPS,
+        LDAPS
     }
 
     public Connection() {
@@ -318,6 +325,21 @@ public class Connection implements Serializable {
 
         this.protocol = protocol;
         needRebind();
+    }
+
+    public EndpointIdentificationAlgorithm getEndpointIdentificationAlgorithm() {
+        return endpointIdentificationAlgorithm;
+    }
+
+    public void setEndpointIdentificationAlgorithm( EndpointIdentificationAlgorithm endpointIdentificationAlgorithm )
+    {
+        if (endpointIdentificationAlgorithm == null)
+            throw new NullPointerException();
+
+        if (this.endpointIdentificationAlgorithm == endpointIdentificationAlgorithm)
+            return;
+
+        this.endpointIdentificationAlgorithm = endpointIdentificationAlgorithm;
     }
 
     boolean isRebindNeeded() {
@@ -1153,7 +1175,14 @@ public class Connection implements Serializable {
         ssl.setEnabledProtocols(
                 intersect(remoteConn.getTlsProtocols(), getTlsProtocols()));
         ssl.setEnabledCipherSuites(
-                intersect(remoteConn.tlsCipherSuites, tlsCipherSuites));
+                intersect(remoteConn.getTlsCipherSuites(), getTlsCipherSuites()));
+
+        SSLParameters parameters = ssl.getSSLParameters();
+
+        if ( getEndpointIdentificationAlgorithm() != null )
+            parameters.setEndpointIdentificationAlgorithm( getEndpointIdentificationAlgorithm().name() );
+
+        ssl.setSSLParameters( parameters );
         ssl.startHandshake();
         return ssl;
     }

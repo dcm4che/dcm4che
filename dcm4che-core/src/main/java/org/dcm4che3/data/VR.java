@@ -237,7 +237,7 @@ public enum VR {
     }
 
     private static int indexOf(int code) {
-        return ((code & 0x3f00) >> 3) | (code & 0x3f);
+        return ((code & 0x1f00) >> 3) | (code & 0x1f);
     }
 
     private static final VR[] VALUE_OF = new VR[1024];
@@ -247,7 +247,7 @@ public enum VR {
     }
 
     public static VR valueOf(int code) {
-        return (code & 0xffffa0a0) == 0 && (code & 0x4040) == 0x4040 ? VALUE_OF[indexOf(code)] : null;
+        return ((code ^ 0x4040) & 0xffffe0e0) == 0 ? VALUE_OF[indexOf(code)] : null;
     }
 
     public int code() {

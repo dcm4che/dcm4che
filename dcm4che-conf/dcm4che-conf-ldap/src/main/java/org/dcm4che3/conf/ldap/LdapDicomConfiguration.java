@@ -854,7 +854,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             LdapUtils.safeClose(aets);
         }
         NamingEnumeration<SearchResult> webApps =
-                search(deviceDN, "(objectclass=dcmWebApp", StringUtils.EMPTY_STRING);
+                search(deviceDN, "(objectclass=dcmWebApp)", StringUtils.EMPTY_STRING);
         try {
             while (webApps.hasMore()) {
                 String rdn = webApps.next().getName();

@@ -116,14 +116,8 @@ public abstract class StreamSegment {
 
     private static StreamSegment getFileStreamSegment(SegmentedInputImageStream iis) {
         try {
-            Class<? extends ImageInputStream> clazz = iis.getClass();
-            Field fStream = clazz.getDeclaredField("stream");
-            Field fCurSegment = clazz.getDeclaredField("curSegment");
-            if (fCurSegment != null && fStream != null) {
-                fCurSegment.setAccessible(true);
-                fStream.setAccessible(true);
 
-                ImageInputStream fstream = (ImageInputStream) fStream.get(iis);
+                ImageInputStream fstream = iis.getStream();
                 Field fRaf = null;
                 if (fstream instanceof FileImageInputStream) {
                     fRaf = FileImageInputStream.class.getDeclaredField("raf");
@@ -133,7 +127,7 @@ public abstract class StreamSegment {
 
                 if (fRaf != null) {
                     fRaf.setAccessible(true);
-                    long[][] seg = getSegments(iis, clazz, fCurSegment);
+                    long[][] seg = getSegments(iis);
                     if (seg != null) {
                         RandomAccessFile raf = (RandomAccessFile) fRaf.get(fstream);
                         /*
@@ -147,7 +141,7 @@ public abstract class StreamSegment {
                     MemoryCacheImageInputStream mstream = (MemoryCacheImageInputStream) fstream;
                     byte[] b = MemoryStreamSegment.getByte(MemoryStreamSegment.getByteArrayInputStream(mstream));
                     if (b != null) {
-                        long[][] seg = getSegments(iis, clazz, fCurSegment);
+                        long[][] seg = getSegments(iis);
                         if (seg != null) {
                             int offset = (int) seg[0][0];
                             return new MemoryStreamSegment(
@@ -157,28 +151,21 @@ public abstract class StreamSegment {
                     }
                 }
                 LOGGER.error("Cannot read SegmentedInputImageStream with {} ", fstream.getClass());
-            }
         } catch (Exception e) {
             LOGGER.error("Building FileStreamSegment from SegmentedInputImageStream", e);
         }
         return null;
     }
 
-    private static long[][] getSegments(SegmentedInputImageStream iis, Class<? extends ImageInputStream> clazz, Field fCurSegment) throws Exception {
-        Integer curSegment = (Integer) fCurSegment.get(iis);
+    private static long[][] getSegments(SegmentedInputImageStream iis) throws IOException {
+        Integer curSegment = iis.getCurSegment();
         if (curSegment != null && curSegment >= 0) {
             ImageDescriptor desc = iis.getImageDescriptor();
-            Field ffragments = clazz.getDeclaredField("fragments");
-            Field flastSegment = clazz.getDeclaredField("lastSegment");
-            if (ffragments != null && flastSegment != null) {
-                ffragments.setAccessible(true);
-                flastSegment.setAccessible(true);
-                List<Object> fragments = (List<Object>) ffragments.get(iis);
-                Integer lastSegment = (Integer) flastSegment.get(iis);
+                List<Object> fragments = iis.getFragments();
+                Integer lastSegment = iis.getLastSegment();
                 if (!desc.isMultiframe() && lastSegment < fragments.size()) {
                     lastSegment = fragments.size();
                 }
-
                 long[] segPositions = new long[lastSegment - curSegment];
                 long[] segLength = new long[segPositions.length];
                 long beforePos = 0;
@@ -202,7 +189,6 @@ public abstract class StreamSegment {
                     }
                 }
                 return new long[][] { segPositions, segLength };
-            }
         }
         return null;
     }

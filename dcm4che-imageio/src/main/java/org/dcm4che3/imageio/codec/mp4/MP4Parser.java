@@ -169,7 +169,7 @@ public class MP4Parser implements XPEGParser {
                 if (level_idc <= 51) {
                     switch (profile_idc) {
                         case 1: // Main Profile
-                            return UID.HEVCM10P51;
+                            return UID.HEVCMP51;
                         case 2: // Main 10 Profile
                             return UID.HEVCM10P51;
                     }

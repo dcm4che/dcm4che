@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2021c - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2021d - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -842,7 +842,7 @@
               <para xml:id="para_f3864a75-5bc3-47fd-a2a7-ed2d35ec99b5">the Basic DICOM File Service, which provides access to Storage Media independently from specific physical media storage formats and file structures, or</para>
           </listitem>
           <listitem>
-              <para>DICOM Real-Time Communication, which provides real-time transport of DICOM metadata based on SMPTE and RTP.</para>
+              <para xml:id="para_ccc9facf-8efc-4ba0-9f83-3b35987de5da">DICOM Real-Time Communication, which provides real-time transport of DICOM metadata based on SMPTE and RTP.</para>
           </listitem>
       </itemizedlist>
       <para xml:id="para_b6116be0-8f53-48fe-a1e0-55564662e507">PS3.7 focuses on the DICOM Message Service and here the OSI Basic Reference Model is used to model the interconnection of medical imaging equipment.

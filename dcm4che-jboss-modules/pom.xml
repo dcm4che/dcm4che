@@ -225,18 +225,6 @@
               </descriptors>
             </configuration>
           </execution>
-          <execution>
-            <id>${project.name}-bundles-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <descriptors>
-                <descriptor>src/main/assembly/bundles.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
     </plugins>

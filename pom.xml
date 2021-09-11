@@ -156,7 +156,7 @@
         <plugin>
           <groupId>org.jboss.ws.plugins</groupId>
           <artifactId>jaxws-tools-maven-plugin</artifactId>
-          <version>1.2.3.Final</version>
+          <version>1.2.1.Final</version>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>

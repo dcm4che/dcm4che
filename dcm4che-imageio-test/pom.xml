@@ -267,7 +267,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>@{argLine} -Djava.library.path=${project.build.directory}/lib/${os-name}-${cpu-name}</argLine>
+          <argLine>@{argLine} -Djava.library.path=${project.build.directory}/lib/${os-name}-${cpu-name} -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.desktop/javax.imageio.stream=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED</argLine>
           <skipTests>${skipTests}</skipTests>
         </configuration>
       </plugin>

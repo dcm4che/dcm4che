@@ -702,7 +702,7 @@ public class ApplicationEntity implements Serializable {
             if (conn.isInstalled() && conn.isCompatible(remoteConn))
                 return conn;
         throw new IncompatibleConnectionException(
-                "No compatible connection to " + remoteConn.getHostname() + " available on " + this.getAETitle());
+                "No compatible connection to " + remoteConn + " available on " + this.getAETitle());
     }
 
     public CompatibleConnection findCompatibelConnection(ApplicationEntity remote)

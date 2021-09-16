@@ -100,6 +100,8 @@ if [ -n "$IMAGE_WRITER_FACTORY" ]; then
     JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che3.imageio.codec.ImageWriterFactory=$IMAGE_WRITER_FACTORY"
 fi
 
+# Required from JDK 16 with legacy image API (Decompressor and Compressor)
+JAVA_OPTS="$JAVA_OPTS -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.desktop/javax.imageio.stream=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED"
 
 # Execute the JVM
 exec "$JAVA" $JAVA_OPTS -Djava.library.path="$JAVA_LIBRARY_PATH" -cp "$CP" $MAIN_CLASS "$@"

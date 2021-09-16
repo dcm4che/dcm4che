@@ -66,4 +66,7 @@ set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path="%JAVA_LIBRARY_PATH%"
 if not "%IMAGE_READER_FACTORY%" == "" ^
  set JAVA_OPTS=%JAVA_OPTS% -Dorg.dcm4che3.imageio.codec.ImageReaderFactory=%IMAGE_READER_FACTORY%
 
+rem Required from JDK 16 with legacy image API (Decompressor and Compressor)
+set JAVA_OPTS=%JAVA_OPTS% -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.desktop/javax.imageio.stream=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED
+
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

@@ -702,7 +702,7 @@ public class ApplicationEntity implements Serializable {
             if (conn.isInstalled() && conn.isCompatible(remoteConn))
                 return conn;
         throw new IncompatibleConnectionException(
-                "No compatible connection to " + remoteConn + " available on " + this);
+                "No compatible connection to " + remoteConn + " available on " + this.getAETitle());
     }
 
     public CompatibleConnection findCompatibelConnection(ApplicationEntity remote)
@@ -719,7 +719,7 @@ public class ApplicationEntity implements Serializable {
                     }
         if (cc == null)
             throw new IncompatibleConnectionException(
-                    "No compatible connection to " + remote.getAETitle() + " available on " + this); 
+                    "No compatible connection to " + remote.getAETitle() + " available on " + this.getAETitle());
         return cc;
     }
 

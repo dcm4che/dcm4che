@@ -565,7 +565,7 @@ public class DicomInputStream extends FilterInputStream
             if (vr != null) {
                 if (vr == VR.UN) {
                     vr = tag == Tag.PurposeOfReferenceCodeSequence
-                            ? probeIsSequence() ? VR.SQ : VR.CS // probe for legacy (0040,A170) CS Observation Class
+                            ? probeObservationClass() ? VR.CS : VR.SQ
                             : ElementDictionary.vrOf(tag, attrs.getPrivateCreator(tag));
                     if (vr == VR.UN && length == -1)
                         vr = VR.SQ; // assumes UN with undefined length are SQ,
@@ -580,13 +580,8 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-    private boolean probeIsSequence() throws IOException {
-        if (length <= 0) return true;
-        if (length < 8) return false;
-        in.mark(4);
-        in.read(buffer, 0, 4);
-        in.reset();
-        return ByteUtils.bytesToTag(buffer, 0, false) == Tag.Item;
+    private boolean probeObservationClass() {
+        return !itemPointers.isEmpty() && itemPointers.get(0).sequenceTag == Tag.FindingsSequenceTrial;
     }
 
     @Override

@@ -1,8 +1,5 @@
 package org.dcm4che3.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +7,8 @@ import java.util.List;
 import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -113,7 +112,12 @@ public class DicomInputStreamTest {
 
     @Test()
     public void testSRTag0040A170IsObservationClass() throws Exception {
-        Attributes attrs =readFrom("Tag-0040-A170-VR-CS.dcm", IncludeBulkData.NO);
-        assertTrue(attrs.contains(Tag.PurposeOfReferenceCodeSequence));
+        Attributes attrs = readFrom("Tag-0040-A170-VR-CS.dcm", IncludeBulkData.NO);
+        Attributes findings = attrs.getNestedDataset(Tag.FindingsSequenceTrial);
+        assertNotNull(findings);
+        Attributes contentItem1 = findings.getNestedDataset(Tag.ContentSequence);
+        assertNotNull(contentItem1);
+        assertEquals(VR.CS, contentItem1.getVR(Tag.PurposeOfReferenceCodeSequence));
+        assertEquals("NAMED TYPE", contentItem1.getString(Tag.PurposeOfReferenceCodeSequence));
     }
 }

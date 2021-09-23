@@ -8,6 +8,7 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.junit.Test;
 
@@ -75,4 +76,14 @@ public class DicomInputStreamTest {
         }
     }
 
+    @Test()
+    public void testSRTag0040A170IsObservationClass() throws Exception {
+        Attributes attrs =readFromResource("Tag-0040-A170-VR-CS.dcm", IncludeBulkData.NO);
+        Attributes findings = attrs.getNestedDataset(Tag.FindingsSequenceTrial);
+        assertNotNull(findings);
+        Attributes contentItem1 = findings.getNestedDataset(Tag.ContentSequence);
+        assertNotNull(contentItem1);
+        assertEquals(VR.CS, contentItem1.getVR(Tag.PurposeOfReferenceCodeSequence));
+        assertEquals("NAMED TYPE", contentItem1.getString(Tag.PurposeOfReferenceCodeSequence));
+    }
 }

@@ -563,8 +563,9 @@ public class DicomInputStream extends FilterInputStream
                             bigEndian = false;
                             explicitVR = false;
                         }
-                        vr = ElementDictionary.vrOf(tag,
-                                attrs.getPrivateCreator(tag));
+                        vr = tag == Tag.PurposeOfReferenceCodeSequence
+                                ? probeObservationClass() ? VR.CS : VR.SQ
+                                : ElementDictionary.vrOf(tag, attrs.getPrivateCreator(tag));
                         if (vr == VR.UN && length == -1)
                             vr = VR.SQ; // assumes UN with undefined length are SQ,
                                         // will fail on UN fragments!
@@ -577,6 +578,10 @@ public class DicomInputStream extends FilterInputStream
             } else
                 skipAttribute(UNEXPECTED_ATTRIBUTE);
         }
+    }
+
+    private boolean probeObservationClass() {
+        return !itemPointers.isEmpty() && itemPointers.get(0).sequenceTag == Tag.FindingsSequenceTrial;
     }
 
     @Override

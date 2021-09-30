@@ -923,7 +923,7 @@ public class DicomInputStream extends FilterInputStream
                 preamble = new byte[preambleLength];
                 System.arraycopy(b134, 0, preamble, 0, preambleLength);
                 reset();
-                skip(preambleLength + 4);
+                StreamUtils.skipFully(this, preambleLength + 4);
                 mark(b134.length);
                 rlen = StreamUtils.readAvailable(this, b134, 0, b134.length);
             }

@@ -1,7 +1,6 @@
 package org.dcm4che3.io;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.List;
 
 import org.dcm4che3.data.*;
@@ -18,6 +17,24 @@ public class DicomInputStreamTest {
     @Test
     public void testPart10ExplicitVR() throws Exception {
         Attributes attrs = readFrom("DICOMDIR", IncludeBulkData.YES);
+        Sequence seq = attrs.getSequence(null, Tag.DirectoryRecordSequence);
+        assertEquals(44, seq.size());
+   }
+
+    @Test
+    public void testPart10Skip64Max() throws Exception {
+        Attributes result;
+        try (DicomInputStream in = new DicomInputStream(
+                new BufferedInputStream(new FileInputStream("target/test-data/DICOMDIR")){
+            @Override
+            public synchronized long skip(long n) throws IOException {
+                return super.skip(Math.min(n, 128L));
+            }
+        })) {
+            in.setIncludeBulkData(IncludeBulkData.YES);
+            result = in.readDataset();
+        }
+        Attributes attrs = result;
         Sequence seq = attrs.getSequence(null, Tag.DirectoryRecordSequence);
         assertEquals(44, seq.size());
    }

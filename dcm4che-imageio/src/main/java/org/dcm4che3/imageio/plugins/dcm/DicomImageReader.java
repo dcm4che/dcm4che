@@ -484,7 +484,11 @@ public class DicomImageReader extends ImageReader implements Closeable {
                 new int[1]);
         raster = applyLUTs(raster, frameIndex, param, sm, 8);
         for (int i = 0; i < overlayGroupOffsets.length; i++) {
-            applyOverlayMonochrome(overlayGroupOffsets[i], raster, frameIndex, param, overlayData[i]);
+            try {
+                applyOverlayMonochrome(overlayGroupOffsets[i], raster, frameIndex, param, overlayData[i]);
+            } catch (IllegalArgumentException e) {
+                LOG.info(ignoreInvalidOverlay(overlayGroupOffsets[i], e));
+            }
         }
         ColorModel cm = ColorModelFactory.createMonochromeColorModel(8, DataBuffer.TYPE_BYTE);
         BufferedImage bi = new BufferedImage(cm, raster, false, null);
@@ -522,9 +526,17 @@ public class DicomImageReader extends ImageReader implements Closeable {
             bi = BufferedImageUtils.convertPalettetoRGB(bi, null);
         }
         for (int i = 0; i < overlayGroupOffsets.length; i++) {
-            applyOverlayColor(overlayGroupOffsets[i], bi.getRaster(), frameIndex, param, bi.getColorModel().getColorSpace());
+            try {
+                applyOverlayColor(overlayGroupOffsets[i], bi.getRaster(), frameIndex, param, bi.getColorModel().getColorSpace());
+            } catch (IllegalArgumentException e) {
+                LOG.info(ignoreInvalidOverlay(overlayGroupOffsets[i], e));
+            }
         }
         return bi;
+    }
+
+    private static String ignoreInvalidOverlay(int overlayGroupOffset, IllegalArgumentException e) {
+        return String.format("Ignore invalid Overlay (60%02X,eeee) with %s", overlayGroupOffset, e.getMessage());
     }
 
     private byte[] extractOverlay(int gg0000, WritableRaster raster) {

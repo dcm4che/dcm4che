@@ -22,7 +22,7 @@ public class DicomInputStreamTest {
    }
 
     @Test
-    public void testPart10Skip64Max() throws Exception {
+    public void testPart10SkipNotAllAtOnce() throws Exception {
         Attributes result;
         try (DicomInputStream in = new DicomInputStream(
                 new BufferedInputStream(new FileInputStream("target/test-data/DICOMDIR")){

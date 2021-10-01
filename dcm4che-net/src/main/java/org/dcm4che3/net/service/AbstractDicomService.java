@@ -59,7 +59,7 @@ public abstract class AbstractDicomService implements DicomService {
     }
 
     @Override
-    public final String[] getSOPClasses() {
+    public String[] getSOPClasses() {
         return sopClasses;
     }
 

@@ -257,20 +257,16 @@ public class StowRS {
         if (cl.getArgList().isEmpty())
             return;
 
-        final boolean[] dicom = {false};
-        for (String file : cl.getArgList()) {
-            applyFunctionToFile(file, path -> {
-                dicom[0] = Files.probeContentType(path) != null;
-                if (!dicom[0]) {
-                    firstBulkdataFileContentType = FileContentType.valueOf(path);
-                    if (fileContentTypeFromCL == null)
-                        bulkdataFileContentType = firstBulkdataFileContentType;
-                }
-            });
-            if (dicom[0] || firstBulkdataFileContentType != null)
-                break;
-        }
-        setContentAndAcceptType(cl, dicom[0]);
+        applyFunctionToFile(cl.getArgList().get(0), false, path -> {
+            String contentType = Files.probeContentType(path);
+            if (contentType == null || !contentType.equals(MediaTypes.APPLICATION_DICOM)) {
+                firstBulkdataFileContentType = FileContentType.valueOf(contentType, path);
+                if (fileContentTypeFromCL == null)
+                    bulkdataFileContentType = firstBulkdataFileContentType;
+            }
+            setContentAndAcceptType(cl, contentType != null && contentType.equals(MediaTypes.APPLICATION_DICOM));
+        });
+
     }
 
     private static FileContentType fileContentType(String s) {
@@ -392,15 +388,14 @@ public class StowRS {
             this.mediaType = mediaType;
         }
 
-        static FileContentType valueOf(Path path) throws IOException {
+        static FileContentType valueOf(String contentType, Path path) {
             String fileName = path.toFile().getName();
             String ext = fileName.substring(fileName.lastIndexOf('.') + 1);
-            String contentType = Files.probeContentType(path);
             return fileContentType(contentType != null ? contentType : ext);
         }
     }
 
-    private static void setContentAndAcceptType(CommandLine cl, boolean dicom) throws Exception {        
+    private static void setContentAndAcceptType(CommandLine cl, boolean dicom) {
         if (dicom) {
             requestContentType = MediaTypes.APPLICATION_DICOM;
             requestAccept = cl.hasOption("a") ? getOptionValue("a", cl) : MediaTypes.APPLICATION_DICOM_XML;
@@ -694,12 +689,7 @@ public class StowRS {
         }
 
         for (String file : files) 
-            applyFunctionToFile(file, new StowRSFileFunction<Path>() {
-                @Override
-                public void apply(Path path) throws IOException {
-                    writeDicomFile(out, path);
-                }
-            });
+            applyFunctionToFile(file, true, path -> writeDicomFile(out, path));
     }
 
     private static void writeDicomFile(OutputStream out, Path path) throws IOException {
@@ -724,20 +714,17 @@ public class StowRS {
                         new JSONWriter(gen).write(createMetadata(staticMetadata));
 
                     for (String file : files)
-                        applyFunctionToFile(file, new StowRSFileFunction<Path>() {
-                            @Override
-                            public void apply(Path path) throws IOException {
-                                if (ignoreNonMatchingFileContentTypes(path))
-                                    LOG.info(MessageFormat.format(rb.getString(
-                                            "ignore-non-matching-file-content-type"),
-                                            path,
-                                            bulkdataFileContentType,
-                                            fileContentTypeFromCL != null
-                                                    ? fileContentTypeFromCL : firstBulkdataFileContentType));
-                                else
-                                    new JSONWriter(gen).write(
-                                            supplementMetadataFromFile(path, createMetadata(staticMetadata)));
-                            }
+                        applyFunctionToFile(file, true, path -> {
+                            if (ignoreNonMatchingFileContentTypes(path))
+                                LOG.info(MessageFormat.format(rb.getString(
+                                        "ignore-non-matching-file-content-type"),
+                                        path,
+                                        bulkdataFileContentType,
+                                        fileContentTypeFromCL != null
+                                                ? fileContentTypeFromCL : firstBulkdataFileContentType));
+                            else
+                                new JSONWriter(gen).write(
+                                        supplementMetadataFromFile(path, createMetadata(staticMetadata)));
                         });
                     gen.writeEnd();
                     gen.flush();
@@ -757,12 +744,7 @@ public class StowRS {
             writeXMLMetadata(out, staticMetadata);
 
         for (String file : files) 
-            applyFunctionToFile(file, new StowRSFileFunction<Path>() {
-                @Override
-                public void apply(Path path) {
-                    writeXMLMetadataAndBulkdataForEach(out, staticMetadata, path);
-                }
-            });
+            applyFunctionToFile(file, true, path -> writeXMLMetadataAndBulkdataForEach(out, staticMetadata, path));
     }
 
     private void writeXMLMetadataAndBulkdataForEach(OutputStream out, Attributes staticMetadata, Path bulkdataFilePath) {
@@ -791,7 +773,7 @@ public class StowRS {
         if (fileCount.incrementAndGet() == 1 || fileContentTypeFromCL != null)
             return false;
 
-        bulkdataFileContentType = FileContentType.valueOf(path);
+        bulkdataFileContentType = FileContentType.valueOf(Files.probeContentType(path), path);
         return !firstBulkdataFileContentType.equals(bulkdataFileContentType);
     }
 
@@ -875,30 +857,27 @@ public class StowRS {
         }
     }
 
-    private void applyFunctionToFile(String file, final StowRSFileFunction<Path> function) throws IOException {
+    private void applyFunctionToFile(String file, boolean continueVisit, final StowRSFileFunction<Path> function) throws IOException {
         Path path = Paths.get(file);
         if (Files.isDirectory(path)) {
-            Files.walkFileTree(path, new StowRSFileVisitor(new StowRSFileConsumer<Path>() {
-                @Override
-                public void accept(Path path) throws IOException {
-                    function.apply(path);
-                }
-            }));
+            Files.walkFileTree(path, new StowRSFileVisitor(function::apply, continueVisit));
         } else
             function.apply(path);
     }
 
     static class StowRSFileVisitor extends SimpleFileVisitor<Path> {
         private final StowRSFileConsumer<Path> consumer;
+        private final boolean continueVisit;
 
-        StowRSFileVisitor(StowRSFileConsumer<Path> consumer){
+        StowRSFileVisitor(StowRSFileConsumer<Path> consumer, boolean continueVisit){
             this.consumer = consumer;
+            this.continueVisit = continueVisit;
         }
 
         @Override
         public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
             consumer.accept(path);
-            return FileVisitResult.CONTINUE;
+            return continueVisit ? FileVisitResult.CONTINUE : FileVisitResult.TERMINATE;
         }
     }
 

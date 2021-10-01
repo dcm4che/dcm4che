@@ -68,11 +68,15 @@ public class StowRSServer {
     private static final Logger LOG = LoggerFactory.getLogger(StowRSServer.class);
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.stowrsd.messages");
 
+    private final byte[] responseXML;
+    private final byte[] responseJSON;
     private final HttpServer server;
     private Path storageDir;
     private boolean unpack;
 
     public StowRSServer(InetSocketAddress addr, int backlog, int threads) throws IOException {
+        responseXML = loadResource("resource:response.xml");
+        responseJSON = loadResource("resource:response.json");
         server = HttpServer.create(addr, backlog);
         if (threads > 1)
             server.setExecutor(Executors.newFixedThreadPool(threads));
@@ -133,9 +137,12 @@ public class StowRSServer {
     private void onOPTIONS(HttpExchange httpExchange) throws IOException {
         Headers requestHeaders = httpExchange.getRequestHeaders();
         Headers responseHeaders = httpExchange.getResponseHeaders();
-        responseHeaders.put("Access-control-allow-origin", requestHeaders.get("Origin"));
-        responseHeaders.put("Access-control-allow-methods", requestHeaders.get("Access-control-request-method"));
-        responseHeaders.put("Access-control-allow-headers", requestHeaders.get("Access-control-request-headers"));
+        setNotNull(responseHeaders, "Access-control-allow-origin",
+                requestHeaders.getFirst("Origin"));
+        setNotNull(responseHeaders, "Access-control-allow-methods",
+                requestHeaders.getFirst("Access-control-request-method"));
+        setNotNull(responseHeaders, "Access-control-allow-headers",
+                requestHeaders.getFirst("Access-control-request-headers"));
         sendResponseHeaders(httpExchange, 204,"No Content", -1);
     }
 
@@ -178,13 +185,11 @@ public class StowRSServer {
         }
         String mediaType = selectMediaType(httpExchange);
         if (mediaType != null) {
-            byte[] response = loadResource(mediaType.endsWith("xml")
-                    ? "resource:response.xml"
-                    : "resource:response.json");
+            byte[] response = mediaType.endsWith("xml") ? responseXML : responseJSON;
             Headers requestHeaders = httpExchange.getRequestHeaders();
             Headers responseHeaders = httpExchange.getResponseHeaders();
-            responseHeaders.put("Access-control-allow-origin", requestHeaders.get("Origin"));
-            responseHeaders.add("Content-type", mediaType);
+            setNotNull(responseHeaders, "Access-control-allow-origin", requestHeaders.getFirst("Origin"));
+            responseHeaders.set("Content-type", mediaType);
             sendResponseHeaders(httpExchange, 200, "OK", response.length);
             try (OutputStream out = httpExchange.getResponseBody()) {
                 out.write(response);
@@ -194,7 +199,11 @@ public class StowRSServer {
         }
     }
 
-    private String boundary(String[] params) {
+    private static void setNotNull(Headers responseHeaders, String key, String value) {
+        if (value != null) responseHeaders.set(key, value);
+    }
+
+    private static String boundary(String[] params) {
         for (int i = 1; i < params.length; i++) {
             String param = params[i].trim();
             if (param.length() > 12 && param.startsWith("boundary=")) {
@@ -206,7 +215,7 @@ public class StowRSServer {
         return null;
     }
 
-    private void sendResponseHeaders(HttpExchange httpExchange, int rCode, String rMsg, int responseLength)
+    private static void sendResponseHeaders(HttpExchange httpExchange, int rCode, String rMsg, int responseLength)
             throws IOException {
         httpExchange.sendResponseHeaders(rCode, responseLength);
         LOG.info("{} -> {}{}> {} {} {}{}",
@@ -217,13 +226,13 @@ public class StowRSServer {
                 new LogHeaders("> ", httpExchange.getResponseHeaders().entrySet()));
     }
 
-    private byte[] loadResource(String name) throws IOException {
+    private static byte[] loadResource(String name) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         StreamUtils.copy(StreamUtils.openFileOrURL(name), out);
         return out.toByteArray();
     }
 
-    private String selectMediaType(HttpExchange httpExchange) {
+    private static String selectMediaType(HttpExchange httpExchange) {
         for (String acceptHeader: httpExchange.getRequestHeaders().get("Accept")) {
             for (String mediaType : StringUtils.split(acceptHeader, ',')) {
                 switch (withoutParams(mediaType).toLowerCase()) {
@@ -245,7 +254,7 @@ public class StowRSServer {
         return null;
     }
 
-    private String withoutParams(String mediaType) {
+    private static String withoutParams(String mediaType) {
         int endIndex = mediaType.indexOf(';');
         return endIndex < 0 ? mediaType : mediaType.substring(0, endIndex);
     }

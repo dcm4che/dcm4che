@@ -44,6 +44,7 @@ import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StreamUtils;
+import org.dcm4che3.util.TagUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,14 +64,15 @@ public class DicomFileDetector extends FileTypeDetector {
         try (InputStream in = Files.newInputStream(path)) {
             byte[] b134 = new byte[134];
             int rlen = StreamUtils.readAvailable(in, b134, 0, 134);
-            return rlen == 134 && (isPart10(b134) || isIVR_LE(b134) || isEVR(b134))
+            return rlen >= 8 && (isPart10(b134, rlen) || isIVR_LE(b134, rlen) || isEVR(b134, rlen))
                     ? APPLICATION_DICOM
                     : null;
         }
     }
 
-    private static boolean isPart10(byte[] b134) {
-        return b134[128] == 'D'
+    private static boolean isPart10(byte[] b134, int rlen) {
+        return rlen == 134
+                && b134[128] == 'D'
                 && b134[129] == 'I'
                 && b134[130] == 'C'
                 && b134[131] == 'M'
@@ -78,16 +80,18 @@ public class DicomFileDetector extends FileTypeDetector {
                 && b134[133] == 0;
     }
 
-    private static boolean isIVR_LE(byte[] b134) {
+    private static boolean isIVR_LE(byte[] b134, int rlen) {
         int tag = ByteUtils.bytesToTagLE(b134, 0);
         int vlen = ByteUtils.bytesToIntLE(b134, 4);
-        return tag == 0 ? vlen == 4
-                : (ElementDictionary.getStandardElementDictionary().vrOf(tag) != null && vlen <= 64);
+        return TagUtils.isGroupLength(tag) ? vlen == 4
+                : (ElementDictionary.getStandardElementDictionary().vrOf(tag) != null && (8 + vlen) <= rlen);
     }
 
-    private static boolean isEVR(byte[] b134) {
+    private static boolean isEVR(byte[] b134, int rlen) {
+        int tagLE = ByteUtils.bytesToTagLE(b134, 0);
+        int tagBE = ByteUtils.bytesToTagBE(b134, 0);
         VR vr = VR.valueOf(ByteUtils.bytesToVR(b134, 4));
         return vr != null && vr == ElementDictionary.getStandardElementDictionary().vrOf(
-                ByteUtils.bytesToTag(b134, 0, b134[0] == 0));
+                tagLE >= 0 && tagLE < tagBE ? tagLE : tagBE);
     }
 }

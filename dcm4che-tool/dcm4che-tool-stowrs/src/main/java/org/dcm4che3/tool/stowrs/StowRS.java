@@ -45,7 +45,6 @@ import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGParser;
 import org.dcm4che3.imageio.codec.mp4.MP4Parser;
 import org.dcm4che3.imageio.codec.mpeg.MPEG2Parser;
-import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXTransformer;
 import org.dcm4che3.json.JSONWriter;
@@ -261,7 +260,7 @@ public class StowRS {
         final boolean[] dicom = {false};
         for (String file : cl.getArgList()) {
             applyFunctionToFile(file, path -> {
-                dicom[0] = toDicomInputStream(path) != null;
+                dicom[0] = Files.probeContentType(path) != null;
                 if (!dicom[0]) {
                     firstBulkdataFileContentType = FileContentType.valueOf(path);
                     if (fileContentTypeFromCL == null)
@@ -399,13 +398,6 @@ public class StowRS {
             String contentType = Files.probeContentType(path);
             return fileContentType(contentType != null ? contentType : ext);
         }
-    }
-
-    private static DicomInputStream toDicomInputStream(Path path) {
-        try {
-            return new DicomInputStream(path.toFile());
-        } catch (Exception e) {}
-        return null;
     }
 
     private static void setContentAndAcceptType(CommandLine cl, boolean dicom) throws Exception {        
@@ -711,13 +703,12 @@ public class StowRS {
     }
 
     private static void writeDicomFile(OutputStream out, Path path) throws IOException {
-        DicomInputStream dis = toDicomInputStream(path);
-        if (dis == null) {
+        if (Files.probeContentType(path) == null) {
             LOG.info(MessageFormat.format(rb.getString("not-dicom-file"), path));
             return;
         }
         writePartHeaders(out, requestContentType, null);
-        StreamUtils.copy(dis, out);
+        Files.copy(path, out);
     }
 
     private void writeMetadataAndBulkData(OutputStream out, List<String> files, final Attributes staticMetadata)

@@ -52,6 +52,7 @@
   <description>DICOM utilities</description>
   <modules>
     <module>dcm4che-tool-agfa2dcm</module>
+    <module>dcm4che-tool-agfa2sr</module>
     <module>dcm4che-tool-common</module>
     <module>dcm4che-tool-dcm2dcm</module>
     <module>dcm4che-tool-dcm2jpg</module>

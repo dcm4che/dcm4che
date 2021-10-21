@@ -1,5 +1,5 @@
 dcm4che DICOM Toolkit & Library
-=========================
+===============================
 Sources: https://github.com/dcm4che/dcm4che  
 Binaries: https://sourceforge.net/projects/dcm4che/files/dcm4che3  
 Issue Tracker: https://github.com/dcm4che/dcm4che/issues  
@@ -58,6 +58,7 @@ Modules
 Utilities
 ---------
 - [agfa2dcm][]: Extract DICOM files from Agfa BLOB file
+- [agfa2sr][]: Extract concatenated XML Agfa Reports and convert them to DICOM SR Documents
 - [dcm2dcm][]: Transcode DICOM file according the specified Transfer Syntax
 - [dcm2jpg][]: Convert DICOM image to JPEG or other image formats
 - [dcm2json][]: Convert DICOM file in JSON presentation
@@ -104,6 +105,7 @@ Utilities
 - [xml2hl7][]: Create HL7 v2.x message from XML presentation
 
 [agfa2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-agfa2dcm/README.md
+[agfa2sr]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-agfa2sr/README.md
 [dcm2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2dcm/README.md
 [dcm2jpg]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2jpg/README.md
 [dcm2json]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2json/README.md

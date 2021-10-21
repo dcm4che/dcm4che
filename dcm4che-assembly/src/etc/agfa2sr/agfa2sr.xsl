@@ -27,14 +27,6 @@
                 <xsl:with-param name="vr" select="'UI'"/>
                 <xsl:with-param name="val" select="'1.2.840.10008.5.1.4.1.1.88.11'"/>
             </xsl:call-template>
-            <!-- Study Date -->
-            <xsl:call-template name="attr">
-                <xsl:with-param name="tag" select="'00080020'"/>
-                <xsl:with-param name="vr" select="'DA'"/>
-                <xsl:with-param name="val" select="translate(ReportDetails/InterpretationTranscribedDate, '-', '')"/>
-            </xsl:call-template>
-            <!-- Study Time -->
-            <DicomAttribute tag="00080030" vr="TM"/>
             <!-- Accession Number -->
             <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00080050'"/>
@@ -54,7 +46,7 @@
                 <xsl:with-param name="tag" select="'00080090'"/>
                 <xsl:with-param name="val" select="$referringPhysicianName"/>
             </xsl:call-template>
-            <!--Study Description-->
+            <!-- Study Description -->
             <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00081030'"/>
                 <xsl:with-param name="vr" select="'LO'"/>
@@ -67,25 +59,25 @@
                 <xsl:with-param name="tag" select="'00100010'"/>
                 <xsl:with-param name="val" select="PatientDetails/Name"/>
             </xsl:call-template>
-            <!--Patient ID-->
+            <!-- Patient ID -->
             <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00100020'"/>
                 <xsl:with-param name="vr" select="'LO'"/>
                 <xsl:with-param name="val" select="PatientDetails/Id/IdText"/>
             </xsl:call-template>
-            <!--Issuer of Patient ID-->
+            <!-- Issuer of Patient ID -->
             <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00100021'"/>
                 <xsl:with-param name="vr" select="'LO'"/>
                 <xsl:with-param name="val" select="PatientDetails/Id/IdDomain"/>
             </xsl:call-template>
-            <!--Patient's Birth Date-->
+            <!-- Patient's Birth Date -->
             <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00100030'"/>
                 <xsl:with-param name="vr" select="'DA'"/>
                 <xsl:with-param name="val" select="translate(PatientDetails/BirthDate, '-', '')"/>
             </xsl:call-template>
-            <!--Patient's Sex-->
+            <!-- Patient's Sex -->
             <xsl:variable name="patSex1" select="substring(PatientDetails/Sex, 1, 1)"/>
             <xsl:choose>
                 <xsl:when test="$patSex1 = 'M' or $patSex1 = 'F'">
@@ -166,10 +158,10 @@
         <xsl:param name="studyIUID"/>
         <xsl:param name="studyDesc"/>
         <xsl:param name="reasonFor"/>
-        <!--Referenced Request Sequence-->
+        <!-- Referenced Request Sequence -->
         <DicomAttribute tag="0040A370" vr="SQ">
             <Item number="1">
-                <!--Accession Number-->
+                <!-- Accession Number -->
                 <xsl:call-template name="attr">
                     <xsl:with-param name="tag" select="'00080050'"/>
                     <xsl:with-param name="vr" select="'SH'"/>
@@ -180,7 +172,7 @@
                     <xsl:with-param name="tag" select="'00080090'"/>
                     <xsl:with-param name="val" select="$referringPhysicianName"/>
                 </xsl:call-template>
-                <!--Referenced Study Sequence-->
+                <!-- Referenced Study Sequence -->
                 <DicomAttribute tag="00081110" vr="SQ"/>
                 <!-- Study Instance UID -->
                 <xsl:call-template name="attr">
@@ -188,15 +180,15 @@
                     <xsl:with-param name="vr" select="'UI'"/>
                     <xsl:with-param name="val" select="$studyIUID"/>
                 </xsl:call-template>
-                <!--Requested Procedure Description-->
+                <!-- Requested Procedure Description -->
                 <xsl:call-template name="attr">
                     <xsl:with-param name="tag" select="'00321060'"/>
                     <xsl:with-param name="vr" select="'LO'"/>
                     <xsl:with-param name="val" select="$studyDesc"/>
                 </xsl:call-template>
-                <!--Requested Procedure Sequence-->
+                <!-- Requested Procedure Sequence -->
                 <DicomAttribute tag="00321064" vr="SQ"/>
-                <!--Requested Procedure ID-->
+                <!-- Requested Procedure ID -->
                 <DicomAttribute tag="00401001" vr="SH"/>
                 <!-- Reason for the Requested Procedure -->
                 <xsl:if test="$reasonFor">
@@ -206,9 +198,9 @@
                         <xsl:with-param name="val" select="$reasonFor"/>
                     </xsl:call-template>
                 </xsl:if>
-                <!--Placer Order Number / Imaging Service Request-->
+                <!-- Placer Order Number / Imaging Service Request -->
                 <DicomAttribute tag="00402016" vr="LO"/>
-                <!--Filler Order Number / Imaging Service Request-->
+                <!-- Filler Order Number / Imaging Service Request -->
                 <DicomAttribute tag="00402017" vr="LO"/>
             </Item>
         </DicomAttribute>
@@ -216,7 +208,7 @@
 
     <xsl:template match="ReportDetails">
         <xsl:variable name="resultStatus" select="ReportStatus"/>
-        <!--Completion Flag-->
+        <!-- Completion Flag -->
         <xsl:variable name="completionFlag">
             <xsl:choose>
                 <xsl:when test="$resultStatus='Finalized'">COMPLETE</xsl:when>
@@ -228,7 +220,7 @@
             <xsl:with-param name="vr" select="'CS'"/>
             <xsl:with-param name="val" select="$completionFlag"/>
         </xsl:call-template>
-        <!--Verification Flag-->
+        <!-- Verification Flag -->
         <xsl:variable name="verifyingObserver" select="InterpretationApprover"/>
         <xsl:variable name="interpretationRecordDate" select="translate(InterpretationRecordDate, '-', '')"/>
         <xsl:variable name="interpretationRecordTime" select="translate(InterpretationRecordTime, ':', '')"/>
@@ -245,7 +237,7 @@
             <xsl:with-param name="vr" select="'CS'"/>
             <xsl:with-param name="val" select="$verificationFlag"/>
         </xsl:call-template>
-        <!--Content Date/Time-->
+        <!-- Content Date/Time -->
         <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00080023'"/>
             <xsl:with-param name="vr" select="'DA'"/>
@@ -255,6 +247,17 @@
             <xsl:with-param name="tag" select="'00080033'"/>
             <xsl:with-param name="vr" select="'TM'"/>
             <xsl:with-param name="val" select="$interpretationRecordTime"/>
+        </xsl:call-template>
+        <!-- Study Date/Time -->
+        <xsl:call-template name="attr">
+            <xsl:with-param name="tag" select="'00080020'"/>
+            <xsl:with-param name="vr" select="'DA'"/>
+            <xsl:with-param name="val" select="$interpretationRecordDate"/>
+        </xsl:call-template>
+        <xsl:call-template name="attr">
+            <xsl:with-param name="tag" select="'00080030'"/>
+            <xsl:with-param name="vr" select="'TM'"/>
+            <xsl:with-param name="val" select="'0000'"/>
         </xsl:call-template>
         <xsl:if test="$verificationFlag = 'VERIFIED'">
             <!-- Verifying Observer Sequence -->

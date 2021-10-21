@@ -37,9 +37,10 @@ Options:
  -x,--xsl <xsl-file>         apply XSLT stylesheet specified by file path
                              or URL or resource in the class path,
                              agfa2sr.xsl by default. Specify 'none' to
-                             disable XSLT, but store extracted Agfa Report
-                             verbatim using the Study Instance UID as file
-                             name and '.xml' as file name extension.
+                             disable XSLT, but store extracted Agfa
+                             Reports verbatim using the Study Instance UID
+                             as file name and '.xml' as file name
+                             extension.
     --xml                    disable conversion of output of XSLT into
                              DICOM Part 10 file, but store it verbatim
                              using the Study Instance UID as file name and

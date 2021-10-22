@@ -299,6 +299,7 @@ public class Agfa2SR {
         t.setParameter("docTitleCodeMeaning", docTitleCode.getCodeMeaning());
         t.setParameter("VerifyingOrganization", verifyingOrganization);
         t.setParameter("SpecificCharacterSet", attrs.getString(Tag.SpecificCharacterSet, ""));
+        t.setParameter("SOPClassUID", attrs.getString(Tag.SOPClassUID, UID.BasicTextSRStorage));
         t.setParameter("Manufacturer", attrs.getString(Tag.Manufacturer, ""));
         t.setParameter("SeriesNumber", attrs.getString(Tag.SeriesNumber, "0"));
         t.setParameter("InstanceNumber", attrs.getString(Tag.InstanceNumber, "1"));

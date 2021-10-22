@@ -162,10 +162,10 @@ public class Agfa2SR {
                 .desc(rb.getString("lang"))
                 .build());
         opts.addOption(Option.builder()
-                .longOpt("verifying-org")
+                .longOpt("org")
                 .hasArg()
                 .argName("name")
-                .desc(rb.getString("verifying-org"))
+                .desc(rb.getString("org"))
                 .build());
         opts.addOption(Option.builder("d")
                 .hasArg()

@@ -222,28 +222,26 @@ public class Agfa2SR {
                     continue;
                 }
                 try {
-                    if (t == null || xml) {
-                        try (Writer w = Files.newBufferedWriter(
-                                Paths.get(outDir, siuid + ".xml"),
-                                StandardCharsets.UTF_8)) {
-                            if (t != null) {
-                                t.transform(new StreamSource(new StringReader(report)), new StreamResult(w));
-                            } else {
-                                w.write(report);
-                            }
+                    if (t == null) {
+                        try (Writer w = getWriter(outDir, siuid)) {
+                            w.write(report);
                         }
                     } else {
-                        Attributes attrs = new Attributes();
-                        t.transform(new StreamSource(new StringReader(report)),
-                                new SAXResult(new ContentHandlerAdapter(attrs)));
-                        attrs.addAll(this.attrs);
-                        attrs.setString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.remapUID(siuid));
-                        attrs.setString(Tag.SOPInstanceUID, VR.UI,
-                                UIDUtils.remapUID(siuid + attrs.getString(Tag.InstanceNumber)));
-                        File file = new File(outDir, format.format(attrs));
-                        file.getParentFile().mkdirs();
-                        try (DicomOutputStream dos = new DicomOutputStream(file)) {
-                            dos.writeDataset(attrs.createFileMetaInformation(UID.ExplicitVRLittleEndian), attrs);
+                        t.setParameter("SeriesInstanceUID", UIDUtils.remapUID(siuid));
+                        t.setParameter("SOPInstanceUID", UIDUtils.remapUID(siuid + "1"));
+                        if (xml) {
+                            try (Writer w = getWriter(outDir, siuid)) {
+                                t.transform(new StreamSource(new StringReader(report)), new StreamResult(w));
+                            }
+                        } else {
+                            Attributes attrs = new Attributes(this.attrs);
+                            t.transform(new StreamSource(new StringReader(report)),
+                                    new SAXResult(new ContentHandlerAdapter(attrs)));
+                            File file = new File(outDir, format.format(attrs));
+                            file.getParentFile().mkdirs();
+                            try (DicomOutputStream dos = new DicomOutputStream(file)) {
+                                dos.writeDataset(attrs.createFileMetaInformation(UID.ExplicitVRLittleEndian), attrs);
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -267,6 +265,12 @@ public class Agfa2SR {
                 extracted, srcPath.toAbsolutePath(), dir.toAbsolutePath());
     }
 
+    private BufferedWriter getWriter(String outDir, String siuid) throws IOException {
+        return Files.newBufferedWriter(
+                Paths.get(outDir, siuid + ".xml"),
+                StandardCharsets.UTF_8);
+    }
+
     private static String cutStudyInstanceUID(String report) {
         int start;
         if ((start = report.indexOf(START_OF_STUDY_IUID)) >= 0) {
@@ -282,6 +286,11 @@ public class Agfa2SR {
         if (xsltURL == null) return null;
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
         Transformer t = tf.newTemplates(new StreamSource(xsltURL)).newTransformer();
+        t.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+        if (indent) {
+            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+        }
+        t.setOutputProperty(OutputKeys.VERSION, xmlVersion);
         t.setParameter("langCodeValue", languageCode.getCodeValue());
         t.setParameter("langCodingSchemeDesignator", languageCode.getCodingSchemeDesignator());
         t.setParameter("langCodeMeaning", languageCode.getCodeMeaning());
@@ -289,11 +298,10 @@ public class Agfa2SR {
         t.setParameter("docTitleCodingSchemeDesignator", docTitleCode.getCodingSchemeDesignator());
         t.setParameter("docTitleCodeMeaning", docTitleCode.getCodeMeaning());
         t.setParameter("VerifyingOrganization", verifyingOrganization);
-        t.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
-        if (indent) {
-            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-        }
-        t.setOutputProperty(OutputKeys.VERSION, xmlVersion);
+        t.setParameter("SpecificCharacterSet", attrs.getString(Tag.SpecificCharacterSet, ""));
+        t.setParameter("Manufacturer", attrs.getString(Tag.Manufacturer, ""));
+        t.setParameter("SeriesNumber", attrs.getString(Tag.SeriesNumber, "0"));
+        t.setParameter("InstanceNumber", attrs.getString(Tag.InstanceNumber, "1"));
         return t;
     }
 

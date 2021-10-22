@@ -11,6 +11,13 @@
     <xsl:param name="docTitleCodingSchemeDesignator"/>
     <xsl:param name="docTitleCodeMeaning"/>
     <xsl:param name="VerifyingOrganization"/>
+    <xsl:param name="Manufacturer"/>
+    <xsl:param name="SpecificCharacterSet"/>
+    <xsl:param name="SeriesNumber">0</xsl:param>
+    <xsl:param name="InstanceNumber">1</xsl:param>
+    <xsl:param name="SeriesInstanceUID"/>
+    <xsl:param name="SOPClassUID">1.2.840.10008.5.1.4.1.1.88.11</xsl:param>
+    <xsl:param name="SOPInstanceUID"/>
     <xsl:variable name="ABC">AÄBCDEFGHIJKLMNOÖÕPQRSTUÜVWXYZ</xsl:variable>
     <xsl:variable name="abc">aäbcdefghijklmnoöõpqrstuüvwxyz</xsl:variable>
 
@@ -21,12 +28,28 @@
         <xsl:variable name="studyDesc" select="translate(OrderDetails/StudyDetails/StudyDescription, ' ', ' ')"/>
         <xsl:variable name="reasonFor" select="translate(OrderDetails/StudyDetails/ReasonForStudy,' -',' ')"/>
         <NativeDicomModel>
+            <xsl:if test="$SpecificCharacterSet">
+                <!-- Specific Character Set -->
+                <xsl:call-template name="attr">
+                    <xsl:with-param name="tag" select="'00080005'"/>
+                    <xsl:with-param name="vr" select="'CS'"/>
+                    <xsl:with-param name="val" select="$SpecificCharacterSet"/>
+                </xsl:call-template>
+            </xsl:if>
             <!-- SOP Class UID -->
             <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00080016'"/>
                 <xsl:with-param name="vr" select="'UI'"/>
                 <xsl:with-param name="val" select="'1.2.840.10008.5.1.4.1.1.88.11'"/>
             </xsl:call-template>
+            <xsl:if test="$SOPInstanceUID">
+                <!-- SOP Instance UID -->
+                <xsl:call-template name="attr">
+                    <xsl:with-param name="tag" select="'00080018'"/>
+                    <xsl:with-param name="vr" select="'UI'"/>
+                    <xsl:with-param name="val" select="$SOPInstanceUID"/>
+                </xsl:call-template>
+            </xsl:if>
             <!-- Accession Number -->
             <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00080050'"/>
@@ -40,7 +63,11 @@
                 <xsl:with-param name="val" select="'SR'"/>
             </xsl:call-template>
             <!-- Manufacturer -->
-            <DicomAttribute tag="00080070" vr="LO"/>
+            <xsl:call-template name="attr">
+                <xsl:with-param name="tag" select="'00080070'"/>
+                <xsl:with-param name="vr" select="'LO'"/>
+                <xsl:with-param name="val" select="$Manufacturer"/>
+            </xsl:call-template>
             <!-- Referring Physician's Name -->
             <xsl:call-template name="pnAttrs">
                 <xsl:with-param name="tag" select="'00080090'"/>
@@ -97,19 +124,27 @@
                 <xsl:with-param name="vr" select="'UI'"/>
                 <xsl:with-param name="val" select="$studyIUID"/>
             </xsl:call-template>
+            <xsl:if test="$SeriesInstanceUID">
+                <!-- Series Instance UID -->
+                <xsl:call-template name="attr">
+                    <xsl:with-param name="tag" select="'0020000E'"/>
+                    <xsl:with-param name="vr" select="'UI'"/>
+                    <xsl:with-param name="val" select="$SeriesInstanceUID"/>
+                </xsl:call-template>
+            </xsl:if>
             <!-- Study ID -->
             <DicomAttribute tag="00200010" vr="SH"/>
             <!-- Series Number -->
             <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00200011'"/>
                 <xsl:with-param name="vr" select="'IS'"/>
-                <xsl:with-param name="val" select="'0'"/>
+                <xsl:with-param name="val" select="$SeriesNumber"/>
             </xsl:call-template>
             <!-- Instance Number -->
             <xsl:call-template name="attr">
                 <xsl:with-param name="tag" select="'00200013'"/>
                 <xsl:with-param name="vr" select="'IS'"/>
-                <xsl:with-param name="val" select="'1'"/>
+                <xsl:with-param name="val" select="$InstanceNumber"/>
             </xsl:call-template>
             <!-- Performed Procedure Code Sequence -->
             <DicomAttribute tag="0040A372" vr="SQ"/>
@@ -586,21 +621,19 @@
         <xsl:param name="tag"/>
         <xsl:param name="vr"/>
         <xsl:param name="val"/>
-        <xsl:if test="$val">
-            <DicomAttribute tag="{$tag}" vr="{$vr}">
-                <xsl:if test="$val != '&quot;&quot;'">
-                    <Value number="1">
-                        <xsl:value-of select="$val"/>
-                    </Value>
-                </xsl:if>
-            </DicomAttribute>
-        </xsl:if>
+        <DicomAttribute tag="{$tag}" vr="{$vr}">
+            <xsl:if test="$val">
+                <Value number="1">
+                    <xsl:value-of select="$val"/>
+                </Value>
+            </xsl:if>
+        </DicomAttribute>
     </xsl:template>
 
     <xsl:template name="pnComp">
         <xsl:param name="name"/>
         <xsl:param name="val"/>
-        <xsl:if test="$val and $val != '&quot;&quot;'">
+        <xsl:if test="$val">
             <xsl:element name="{$name}">
                 <xsl:value-of select="$val"/>
             </xsl:element>

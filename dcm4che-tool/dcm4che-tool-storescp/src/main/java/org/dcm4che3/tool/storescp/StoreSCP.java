@@ -40,8 +40,11 @@ package org.dcm4che3.tool.storescp;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -103,7 +106,7 @@ public class StoreSCP {
                 String cuid = rq.getString(Tag.AffectedSOPClassUID);
                 String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
                 String tsuid = pc.getTransferSyntax();
-                File file = new File(storageDir, iuid + PART_EXT);
+                File file = new File(storageDir, String.format("%s_%s%s", iuid, UUID.randomUUID(), PART_EXT));
                 try {
                     storeTo(as, as.createFileMetaInformation(iuid, cuid, tsuid),
                             data, file);
@@ -157,10 +160,22 @@ public class StoreSCP {
     private static void renameTo(Association as, File from, File dest)
             throws IOException {
         LOG.info("{}: M-RENAME {} to {}", as, from, dest);
-        if (!dest.getParentFile().mkdirs())
-            dest.delete();
-        if (!from.renameTo(dest))
-            throw new IOException("Failed to rename " + from + " to " + dest);
+        for(int try_count = 1; try_count <= 3; try_count++) {
+            try{
+                dest.getParentFile().mkdirs();
+                Files.move(from.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                return;
+            }
+            catch (IOException e){
+                if (try_count == 3){
+                    throw e;
+                }
+                try {
+                    Thread.sleep((long)(Math.random()*50));
+                } catch (InterruptedException ignore) {
+                }
+            }
+        }
     }
 
     private static Attributes parse(File file) throws IOException {

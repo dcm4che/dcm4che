@@ -89,7 +89,7 @@ class PatientQueryTask extends BasicQueryTask {
     }
 
     @Override
-    protected Attributes adjust(Attributes match) {
+    protected Attributes adjust(Attributes match) throws DicomServiceException {
         Attributes adjust = super.adjust(match);
         adjust.remove(Tag.DirectoryRecordType);
         if (keys.contains(Tag.SOPClassUID))

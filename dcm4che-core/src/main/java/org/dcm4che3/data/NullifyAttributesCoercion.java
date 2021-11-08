@@ -65,7 +65,7 @@ public class NullifyAttributesCoercion implements AttributesCoercion {
     }
 
     @Override
-    public void coerce(Attributes attrs, Attributes modified) {
+    public void coerce(Attributes attrs, Attributes modified) throws Exception {
         VR.Holder vr = new VR.Holder();
         for (int nullifyTag : nullifyTags) {
             Object value = attrs.getValue(nullifyTag, vr);

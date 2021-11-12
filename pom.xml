@@ -125,8 +125,7 @@
           <configuration>
           	<fork>true</fork>
           	<useIncrementalCompilation>true</useIncrementalCompilation>
-
-          </configuration>\n
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>

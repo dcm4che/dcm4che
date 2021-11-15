@@ -72,7 +72,6 @@ public class DicomOutputStream extends FilterOutputStream {
     private boolean bigEndian;
     private CountingOutputStream countingOutputStream;
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
-    private Deflater deflater;
 
     private final byte[] buf = new byte[12];
 
@@ -155,9 +154,9 @@ public class DicomOutputStream extends FilterOutputStream {
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
                         || tsuid.equals(UID.JPIPReferencedDeflate)) {
-            this.countingOutputStream = new CountingOutputStream(super.out);
-            super.out = new DeflaterOutputStream(countingOutputStream,
-                    deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true));
+                this.countingOutputStream = new CountingOutputStream(super.out);
+                super.out = new DeflaterOutputStream(countingOutputStream,
+                        new Deflater(Deflater.DEFAULT_COMPRESSION, true));
         }
     }
 
@@ -243,7 +242,5 @@ public class DicomOutputStream extends FilterOutputStream {
         } catch (IOException ignored) {
         }
         super.close();
-        if (deflater != null)
-            deflater.end();
     }
 }

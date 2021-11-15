@@ -123,7 +123,6 @@ public class DicomInputStream extends FilterInputStream
     private String blkURI;
     private FileOutputStream blkOut;
     private long blkOutPos;
-    private Inflater inflater;
 
     public DicomInputStream(InputStream in, String tsuid) throws IOException {
         super(in);
@@ -340,8 +339,6 @@ public class DicomInputStream extends FilterInputStream
     public void close() throws IOException {
         SafeClose.close(blkOut);
         super.close();
-        if (inflater != null)
-            inflater.end();
     }
 
     @Override
@@ -892,13 +889,12 @@ public class DicomInputStream extends FilterInputStream
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
                         || tsuid.equals(UID.JPIPReferencedDeflate)) {
-            boolean nowrap = true;
             if (hasZLIBHeader()) {
                 LOG.warn(DEFLATED_WITH_ZLIB_HEADER);
-                nowrap = false;
-            }
-            super.in = new InflaterInputStream(super.in,
-                    inflater = new Inflater(nowrap));
+                super.in = new InflaterInputStream(super.in);
+            } else
+                super.in = new InflaterInputStream(super.in,
+                        new Inflater(true));
         }
     }
 

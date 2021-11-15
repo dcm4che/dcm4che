@@ -59,7 +59,7 @@ public class MergeAttributesCoercion implements AttributesCoercion {
     }
 
     @Override
-    public void coerce(Attributes attrs, Attributes modified) {
+    public void coerce(Attributes attrs, Attributes modified) throws Exception {
         Attributes.unifyCharacterSets(attrs, newAttrs);
         if (modified != null) {
             attrs.update(Attributes.UpdatePolicy.OVERWRITE, newAttrs, modified);

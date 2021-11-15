@@ -71,7 +71,7 @@ public class DeIdentificationAttributesCoercion implements AttributesCoercion {
     }
 
     @Override
-    public void coerce(Attributes attrs, Attributes modified) {
+    public void coerce(Attributes attrs, Attributes modified) throws Exception {
         deIdentifier.deidentify(attrs);
         if (next != null)
             next.coerce(attrs, modified);

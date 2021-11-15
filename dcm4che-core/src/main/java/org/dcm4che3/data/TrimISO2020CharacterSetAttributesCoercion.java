@@ -58,7 +58,7 @@ public class TrimISO2020CharacterSetAttributesCoercion implements AttributesCoer
     }
 
     @Override
-    public void coerce(Attributes attrs, Attributes modified) {
+    public void coerce(Attributes attrs, Attributes modified) throws Exception {
         String[] codes = attrs.getStrings(Tag.SpecificCharacterSet);
         if (SpecificCharacterSet.trimISO2022(codes)) {
             Object originalValue = attrs.setString(Tag.SpecificCharacterSet, VR.CS, codes);

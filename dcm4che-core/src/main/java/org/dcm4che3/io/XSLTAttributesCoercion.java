@@ -107,7 +107,7 @@ public class XSLTAttributesCoercion implements AttributesCoercion {
     }
 
     @Override
-    public void coerce(Attributes attrs, Attributes modified) {
+    public void coerce(Attributes attrs, Attributes modified) throws Exception {
         Attributes newAttrs;
         try {
             newAttrs = SAXTransformer.transform(

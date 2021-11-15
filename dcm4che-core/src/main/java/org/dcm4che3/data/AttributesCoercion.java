@@ -54,6 +54,6 @@ public interface AttributesCoercion {
             return uid;
         }
     };
-    void coerce(Attributes attrs, Attributes modified);
+    void coerce(Attributes attrs, Attributes modified) throws Exception;
     String remapUID(String uid);
 }

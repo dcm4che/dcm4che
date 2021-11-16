@@ -123,6 +123,7 @@ public class DicomInputStream extends FilterInputStream
     private String blkURI;
     private FileOutputStream blkOut;
     private long blkOutPos;
+    private Inflater inflater;
 
     public DicomInputStream(InputStream in, String tsuid) throws IOException {
         super(in);
@@ -338,6 +339,9 @@ public class DicomInputStream extends FilterInputStream
     @Override
     public void close() throws IOException {
         SafeClose.close(blkOut);
+        if (inflater != null) {
+            inflater.end();
+        }
         super.close();
     }
 
@@ -894,7 +898,7 @@ public class DicomInputStream extends FilterInputStream
                 super.in = new InflaterInputStream(super.in);
             } else
                 super.in = new InflaterInputStream(super.in,
-                        new Inflater(true));
+                        inflater = new Inflater(true));
         }
     }
 

@@ -75,8 +75,7 @@ public class DicomOutputStream extends FilterOutputStream {
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
 
     private final byte[] buf = new byte[12];
-
-	private Deflater deflater;
+    private Deflater deflater;
 
     public DicomOutputStream(OutputStream out, String tsuid)
             throws IOException {
@@ -163,7 +162,7 @@ public class DicomOutputStream extends FilterOutputStream {
                         || tsuid.equals(UID.JPIPReferencedDeflate)) {
                 this.countingOutputStream = new CountingOutputStream(super.out);
                 super.out = new DeflaterOutputStream(countingOutputStream,
-                		deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true));
+                        deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true));
         }
     }
 
@@ -252,8 +251,9 @@ public class DicomOutputStream extends FilterOutputStream {
             finish();
         } catch (IOException ignored) {
         }
+        if (deflater != null) {
+            deflater.end();
+        }
         super.close();
-        if (deflater != null)
-        	deflater.end();
     }
 }

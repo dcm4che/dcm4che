@@ -26,7 +26,7 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-conf-dicom</artifactId>
+      <artifactId>dcm4che-conf-ldap</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

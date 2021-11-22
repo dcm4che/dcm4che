@@ -7,7 +7,6 @@
     <module name="org.dcm4che.conf.api-hl7"/>
     <module name="org.dcm4che.conf.core"/>
     <module name="org.dcm4che.conf.core-api"/>
-    <module name="org.dcm4che.conf.dicom"/>
 
     <module name="org.dcm4che.core"/>
     <module name="org.dcm4che.dict-private"/>

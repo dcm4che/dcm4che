@@ -52,6 +52,7 @@ import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.PresentationContext;
+import org.dcm4che3.net.pdu.RoleSelection;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.common.DicomFiles;
 import org.dcm4che3.util.SafeClose;
@@ -63,10 +64,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -181,6 +179,7 @@ public class StoreSCU {
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
+        addStoreTCOptions(opts);
         addTmpFileOptions(opts);
         addRelatedSOPClassOptions(opts);
         addAttributesOption(opts);
@@ -200,6 +199,21 @@ public class StoreSCU {
         opts.addOption(Option.builder().hasArg().argName("suffix")
                 .desc(rb.getString("uid-suffix"))
                 .longOpt("uid-suffix").build());
+    }
+
+    private static void addStoreTCOptions(Options opts) {
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("cuid:tsuid[(,|;)...]")
+                .desc(rb.getString("store-tc"))
+                .longOpt("store-tc")
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("file|url")
+                .desc(rb.getString("store-tcs"))
+                .longOpt("store-tcs")
+                .build());
     }
 
     public static void addTmpFileOptions(Options opts) {
@@ -245,7 +259,9 @@ public class StoreSCU {
             main.setPriority(CLIUtils.priorityOf(cl));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
-            if (!echo) {
+            if (echo) {
+                configureStorageSOPClasses(main, cl);
+            } else {
                 System.out.println(rb.getString("scanning"));
                 t1 = System.currentTimeMillis();
                 main.scanFiles(argList);
@@ -324,6 +340,35 @@ public class StoreSCU {
                             : "resource:rel-sop-classes.properties", p);
             storescu.relSOPClasses.init(p);
         }
+    }
+
+    private static void configureStorageSOPClasses(StoreSCU main, CommandLine cl)
+            throws Exception {
+        String[] pcs = cl.getOptionValues("store-tc");
+        if (pcs != null)
+            for (String pc : pcs) {
+                String[] ss = StringUtils.split(pc, ':');
+                configureStorageSOPClass(main, ss[0], ss[1]);
+            }
+        String[] files = cl.getOptionValues("store-tcs");
+        if (files != null)
+            for (String file : files) {
+                Properties p = CLIUtils.loadProperties(file, null);
+                Set<Map.Entry<Object, Object>> entrySet = p.entrySet();
+                for (Map.Entry<Object, Object> entry : entrySet)
+                    configureStorageSOPClass(main, (String) entry.getKey(), (String) entry.getValue());
+            }
+    }
+
+    private static void configureStorageSOPClass(StoreSCU main, String cuid, String tsuids0) {
+        for (String tsuids2 : StringUtils.split(tsuids0, ';')) {
+            main.addOfferedStorageSOPClass(CLIUtils.toUID(cuid), CLIUtils.toUIDs(tsuids2));
+        }
+    }
+
+    public void addOfferedStorageSOPClass(String cuid, String... tsuids) {
+        rq.addPresentationContext(new PresentationContext(
+                2 * rq.getNumberOfPresentationContexts() + 1, cuid, tsuids));
     }
 
     public final void enableSOPClassRelationshipExtNeg(boolean enable) {

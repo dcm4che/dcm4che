@@ -126,6 +126,34 @@ Options:
     --ssl3                                enable only TLS/SSL protocol
                                           SSLv3; equivalent to
                                           --tls-protocol SSLv3
+    --store-tc <cuid:tsuid[(,|;)...]>     specifies Storage Transfer
+                                          Capability offered additionally
+                                          to the Verification SOP Class if
+                                          no DICOM file is specified,
+                                          probing the Association
+                                          Acceptance Policy of the Storage
+                                          SCP. SOP Class and Transfer
+                                          Syntaxes can be specified by its
+                                          UID or its name in camel-Case
+                                          (e.g. 1.2.840.10008.5.1.4.1.1.2
+                                          or CTImageStorage). Semicolon
+                                          separated Transfer Syntaxes will
+                                          be offered in separate
+                                          Presentation Contexts, where
+                                          comma separated Transfer
+                                          Syntaxes will be offered in one
+                                          Presentation Context.
+    --store-tcs <file|url>                specifies file which defines
+                                          negotiated Storage Transfer
+                                          Capabilities offered
+                                          additionally to the Verification
+                                          SOP Class if no DICOM file is
+                                          specified, probing the
+                                          Association Acceptance Policy of
+                                          the Storage SCP. Storage
+                                          Transfer Capabilities are
+                                          formatted as values of option
+                                          --store-tc.
     --store-timeout <ms>                  timeout in ms for sending
                                           C-STORE sRQ, no timeout by
                                           default

@@ -219,7 +219,7 @@ public class StowRS {
             System.err.println(rb.getString("try"));
             System.exit(2);
         } catch (Exception e) {
-            LOG.error("Error: \n", e);
+            System.err.println("stowrs: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
         }
@@ -586,8 +586,6 @@ public class StowRS {
                         connection.getInputStream());
             connection.disconnect();
             LOG.info("STOW successful!");
-        } catch (Exception e) {
-            LOG.error("Exception : " + e.getMessage());
         }
     }
 
@@ -613,8 +611,6 @@ public class StowRS {
                         connection.getInputStream());
             connection.disconnect();
             LOG.info("STOW successful!");
-        } catch (Exception e) {
-            LOG.error("Exception : " + e.getMessage());
         }
     }
 

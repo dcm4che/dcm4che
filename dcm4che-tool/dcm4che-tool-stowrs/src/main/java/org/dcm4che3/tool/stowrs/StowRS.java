@@ -98,6 +98,7 @@ public class StowRS {
     private static boolean encapsulatedDocLength;
     private static String authorization;
     private boolean tsuid;
+    private File tmpFile;
     private static final String boundary = "myboundary";
     private static final AtomicInteger fileCount = new AtomicInteger();
     private static FileContentType fileContentTypeFromCL;
@@ -212,8 +213,9 @@ public class StowRS {
             List<String> files = cl.getArgList();
             StowRS stowRS = new StowRS();
             stowRS.doNecessaryChecks(cl, files);
+            stowRS.scanFiles(files);
             LOG.info("Storing objects.");
-            stowRS.stow(files);
+            stowRS.stow();
         } catch (ParseException e) {
             System.err.println("stowrs: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -468,7 +470,7 @@ public class StowRS {
         contentLocBulkdata.put(contentLoc, stowRSBulkdata);
     }
 
-    private static Attributes createStaticMetadata() throws Exception {
+    private Attributes createStaticMetadata() throws Exception {
         LOG.info("Creating static metadata. Set defaults, if essential attributes are not present.");
         Attributes metadata;
         if (firstBulkdataFileContentType == null)
@@ -561,10 +563,22 @@ public class StowRS {
         }
     }
 
-    private void stow(List<String> files) throws Exception {
+    public void scanFiles(List<String> files) throws Exception {
+        tmpFile = File.createTempFile("stowrs-", null, null);
+        tmpFile.deleteOnExit();
+        try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+            if (requestContentType.equals(MediaTypes.APPLICATION_DICOM))
+                for (String file : files)
+                    applyFunctionToFile(file, true, path -> writeDicomFile(out, path));
+            else
+                writeMetadataAndBulkData(out, files, createStaticMetadata());
+        }
+    }
+
+    private void stow() throws Exception {
         URL newUrl = new URL(url);
         if (url.startsWith("https")) {
-            stowHttps(files, newUrl);
+            stowHttps(newUrl);
             return;
         }
 
@@ -579,7 +593,7 @@ public class StowRS {
             connection.setRequestProperty("Authorization", authorization);
         logOutgoing(newUrl, connection.getRequestProperty("Content-Type"));
         try (OutputStream out = connection.getOutputStream()) {
-            writeData(files, out);
+            StreamUtils.copy(new FileInputStream(tmpFile), out);
             out.write(("\r\n--" + boundary + "--\r\n").getBytes());
             out.flush();
             logIncoming(connection.getResponseCode(), connection.getResponseMessage(), connection.getHeaderFields(),
@@ -589,7 +603,7 @@ public class StowRS {
         }
     }
 
-    private void stowHttps(List<String> files, URL url) throws Exception {
+    private void stowHttps(URL url) throws Exception {
         final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
@@ -604,7 +618,7 @@ public class StowRS {
         connection.setHostnameVerifier((hostname, session) -> allowAnyHost);
         logOutgoing(url, connection.getRequestProperty("Content-Type"));
         try (OutputStream out = connection.getOutputStream()) {
-            writeData(files, out);
+            StreamUtils.copy(new FileInputStream(tmpFile), out);
             out.write(("\r\n--" + boundary + "--\r\n").getBytes());
             out.flush();
             logIncoming(connection.getResponseCode(), connection.getResponseMessage(), connection.getHeaderFields(),

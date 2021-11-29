@@ -735,11 +735,12 @@ public class JsonConfiguration {
         writer.writeNotNullOrDef("dicomTransferRole", tc.getRole().toString(), null);
         writer.writeNotEmpty("dicomTransferSyntax", tc.getTransferSyntaxes());
         if (extended) {
-            writer.writeNotEmpty("dcmPreferredTransferSyntax", tc.getPreferredTransferSyntaxes());
             EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
             StorageOptions storageOpts = tc.getStorageOptions();
-            if (queryOpts != null || storageOpts != null) {
+            String[] preferredTransferSyntaxes = tc.getPreferredTransferSyntaxes();
+            if (queryOpts != null || storageOpts != null || preferredTransferSyntaxes.length > 0) {
                 writer.writeStartObject("dcmTransferCapability");
+                writer.writeNotEmpty("dcmPreferredTransferSyntax", preferredTransferSyntaxes);
                 if (queryOpts != null) {
                     writer.writeNotDef("dcmRelationalQueries",
                             queryOpts.contains(QueryOption.RELATIONAL), false);

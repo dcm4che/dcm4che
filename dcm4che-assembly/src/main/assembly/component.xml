@@ -233,6 +233,14 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/linux-armv7a</outputDirectory>
+      <includes>
+        <include>*:*:so:linux-armv7a:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <outputDirectory>lib/macosx-x86-64</outputDirectory>
       <includes>
         <include>*:*:jnilib:macosx-x86-64:*</include>

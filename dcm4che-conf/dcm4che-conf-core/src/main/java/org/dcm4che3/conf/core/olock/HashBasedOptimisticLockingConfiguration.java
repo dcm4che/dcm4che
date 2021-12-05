@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- *
  * Caution: persistNode should be called in a transaction to ensure consistent comparison between data from backend/data being persisted,
  * otherwise it's possible that another writer modifies something before this class obtains a lock and the changes by that writer will be lost
  *
@@ -30,13 +28,12 @@ import java.util.Map;
  *  </li>
  * </ul>
  *
- *
  * @author Roman K
  */
 @SuppressWarnings("unchecked")
 public class HashBasedOptimisticLockingConfiguration extends DelegatingConfiguration {
+    
     private static final String NOT_CALCULATED_YET = "not-calculated-yet";
-    public static final String OLD_OLOCK_HASH_KEY = "#old_hash";
 
     private final List<Class> allExtensionClasses;
 
@@ -65,18 +62,7 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
             return;
         }
 
-        // save old hashes in node being persisted
-        ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new OLockCopyFilter(OLD_OLOCK_HASH_KEY));
-
-        // calculate current hashes in node being persisted and set them in OLOCK_HASH_KEY property,
-        // ensure to ignore OLD_OLOCK_HASH_KEY property in calculation
-        ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new OLockHashCalcFilter(OLD_OLOCK_HASH_KEY));
-
-        ////// merge the object /////
-        ConfigNodeTraverser.dualTraverseMapNodes(nodeInStorage, nodeBeingPersisted, new OLockMergeDualFilter());
-
-        // filter all the set #hash properties out before persisting the node in the storage
-        ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new CleanupFilter(OLD_OLOCK_HASH_KEY, Configuration.OLOCK_HASH_KEY));
+        OLockNodeMerger.merge(nodeBeingPersisted, nodeInStorage);
 
         delegate.persistNode(path, nodeBeingPersisted, configurableClass);
     }
@@ -120,5 +106,4 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
             return false;
         }
     }
-
 }

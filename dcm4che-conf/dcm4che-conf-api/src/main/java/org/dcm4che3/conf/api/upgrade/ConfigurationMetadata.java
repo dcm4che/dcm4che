@@ -40,31 +40,31 @@
 
 package org.dcm4che3.conf.api.upgrade;
 
-import org.dcm4che3.conf.api.upgrade.UpgradeScript;
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.net.DeviceExtension;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.StorageVersionedConfigurableClass;
+
 /**
  * @author Roman K
+ * @author Maciek Siemczyk (maciek.siemczyk@agfa.com)
+ * 
+ * @see StorageVersionedConfigurableClass
  */
 @ConfigurableClass
-public class ConfigurationMetadata {
+public class ConfigurationMetadata extends StorageVersionedConfigurableClass {
 
-    @ConfigurableProperty(
-            label = "Global configuration version"
-    )
+    @ConfigurableProperty(label = "Global configuration version")
     private String version;
 
     @ConfigurableProperty(type = ConfigurableProperty.ConfigurablePropertyType.ExtensionsProperty)
     private Map<Class<? extends ConfigurationMetadataExtension>, ConfigurationMetadataExtension> extensions =
-            new HashMap<Class<? extends ConfigurationMetadataExtension>, ConfigurationMetadataExtension>();
+            new HashMap<>();
 
     @ConfigurableProperty
-    Map<String, UpgradeScript.UpgradeScriptMetadata> metadataOfUpgradeScripts = new HashMap<String, UpgradeScript.UpgradeScriptMetadata>();
+    Map<String, UpgradeScript.UpgradeScriptMetadata> metadataOfUpgradeScripts = new HashMap<>();
 
     public String getVersion() {
         return version;

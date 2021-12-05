@@ -3,6 +3,7 @@ package org.dcm4che3.conf.api;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.StorageVersionedConfigurableClass;
 import org.dcm4che3.net.TCGroupConfigAEExtension;
 import org.dcm4che3.net.TransferCapability;
 
@@ -10,13 +11,16 @@ import java.util.*;
 
 /**
  * @author Roman K
+ * @author Maciek Siemczyk (maciek.siemczyk@agfa.com)
+ * 
+ * @see StorageVersionedConfigurableClass
  */
 @ConfigurableClass
-public class TCConfiguration {
+public class TCConfiguration extends StorageVersionedConfigurableClass {
 
     @ConfigurableProperty
-    private Map<String, TCGroup> transferCapabilityGroups = new TreeMap<String, TCGroup>();
-
+    private Map<String, TCGroup> transferCapabilityGroups = new TreeMap<>();
+    
     /**
      * Persists default group config
      * Deprecated. Do not use it in upgrade scripts.
@@ -57,7 +61,7 @@ public class TCConfiguration {
         }
 
         @ConfigurableProperty
-        List<TransferCapability> transferCapabilities = new ArrayList<TransferCapability>();
+        List<TransferCapability> transferCapabilities = new ArrayList<>();
 
         public List<TransferCapability> getTransferCapabilities() {
             return transferCapabilities;

@@ -38,29 +38,41 @@
 
 package org.dcm4che3.net;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
-import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.data.Code;
-import org.dcm4che3.data.Issuer;
-import org.dcm4che3.util.StringUtils;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
+import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.conf.core.api.StorageVersionedConfigurableClass;
+import org.dcm4che3.data.Code;
+import org.dcm4che3.data.Issuer;
+import org.dcm4che3.util.StringUtils;
 
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM enabled system or
@@ -75,7 +87,7 @@ import java.util.concurrent.TimeUnit;
         objectClasses = {"dcmDevice", "dicomDevice"},
         distinguishingField = "dicomDeviceName")
 @ConfigurableClass(referable = true)
-public class Device implements Serializable {
+public class Device extends StorageVersionedConfigurableClass implements Serializable {
 
     private static final long serialVersionUID = -5816872456184522866L;
 
@@ -251,7 +263,7 @@ public class Device implements Serializable {
     private transient volatile SSLContext sslContext;
     private transient volatile KeyManager km;
     private transient volatile TrustManager tm;
-
+    
     public Device() {
     }
 

@@ -39,8 +39,20 @@
  */
 package org.dcm4che3.conf.core.adapters;
 
-import com.google.common.util.concurrent.SettableFuture;
-import org.dcm4che3.conf.core.api.*;
+import java.lang.reflect.Field;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.apache.commons.lang.StringUtils;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
+import org.dcm4che3.conf.core.api.TypeSafeConfiguration;
+import org.dcm4che3.conf.core.api.StorageVersionedConfigurableClass;
 import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.api.internal.ConfigReflection;
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
@@ -52,9 +64,7 @@ import org.dcm4che3.conf.core.util.PathFollower;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.concurrent.Future;
+import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * Reflective adapter that handles classes with ConfigurableClass annotations.<br/>
@@ -62,12 +72,14 @@ import java.util.concurrent.Future;
  * <p/>
  * User has to use the special constructor and initialize providedConfObj when the
  * already created conf object should be used instead of instantiating one
+ * 
+ * @author Roman K
+ * @author Maciek Siemczyk (maciek.siemczyk@agfa.com)
  */
 @SuppressWarnings("unchecked")
 public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Object>> {
 
-
-    private static Logger log = LoggerFactory.getLogger(ReflectiveAdapter.class);
+    private static final Logger log = LoggerFactory.getLogger(ReflectiveAdapter.class);
 
     private T providedConfObj;
 
@@ -168,6 +180,14 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
             populateFields(configNode, ctx, clazz, confObj);
         }
 
+        // Set the storage version if needed. 
+        if (StorageVersionedConfigurableClass.class.isAssignableFrom(clazz)) {
+            Number version = (Number) configNode.get(Configuration.VERSION_KEY);
+            
+            if (version != null) {
+                ((StorageVersionedConfigurableClass) confObj).setStorageVersion(version.longValue());
+            }
+        }
     }
 
     private void populateFields(Map<String, Object> configNode, LoadingContext ctx, Class<T> clazz, T confObj) {
@@ -202,7 +222,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
         // TODO: replace with proxy
 
         // if no config context - leave the parent unset
-        TypeSafeConfiguration typeSafeConfig = ctx.getTypeSafeConfiguration();
+        TypeSafeConfiguration<?> typeSafeConfig = ctx.getTypeSafeConfiguration();
         if (typeSafeConfig == null) return;
 
         // Get path of this object in the storage
@@ -212,7 +232,10 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
         // parent is either the first or the second in the path (otherwise cannot really get the parent)
 
-        if (configProperties.size() < 1) return;
+        if (configProperties.isEmpty()) {
+            return;
+        }
+        
         configProperties.removeLast();
         int nodesAbove = 1;
 
@@ -220,16 +243,23 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
         if (!configProperties.peekLast().isConfObject()) {
             configProperties.removeLast();
             nodesAbove++;
-            if (configProperties.size() == 0) return;
-            if (!configProperties.peekLast().isConfObject()) return;
+            if (configProperties.isEmpty()) {
+                return;
+            }
+            
+            if (!configProperties.peekLast().isConfObject()) {
+                return;
+            }
         }
 
         // now we are looking at the parent
         ConfigProperty parentProp = configProperties.peekLast();
 
         if (!parentField.getType().isAssignableFrom(parentProp.getRawClass())) {
-            log.warn("Parent type mismatch: config structure denotes " + parentProp.getRawClass() + ", but the class has a field of type " + parentField.getType()
-                    + " config object uuid=" + uuid + ", config class " + clazz);
+            log.warn(
+                    "Parent type mismatch: config structure denotes {}, but the class"
+                        + "has a field of type {} config object uuid={}, config class {}.",
+                    parentProp.getRawClass(), parentField.getType(), uuid, clazz);
             return;
         }
 
@@ -248,7 +278,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
         Class<T> clazz = (Class<T>) object.getClass();
 
-        Map<String, Object> configNode = new TreeMap<String, Object>();
+        Map<String, Object> configNode = new TreeMap<>();
 
         // get data from all the configurable fields
         for (ConfigProperty fieldProperty : ConfigReflection.getAllConfigurableFields(clazz)) {
@@ -259,59 +289,71 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
                 throw new ConfigurationException("Error while serializing configuration field '" + fieldProperty.getName() + "' in class " + clazz.getSimpleName(), e);
             }
         }
+        
+        // Set the storage version if needed. 
+        if (StorageVersionedConfigurableClass.class.isAssignableFrom(clazz)) {
+            configNode.put(Configuration.VERSION_KEY, ((StorageVersionedConfigurableClass) object).getStorageVersion());
+        }
 
         return configNode;
     }
-
 
     @Override
     public Map<String, Object> getSchema(ConfigProperty property, ProcessingContext ctx) throws ConfigurationException {
 
         Class<T> clazz = (Class<T>) property.getType();
 
-        Map<String, Object> classMetaDataWrapper = new HashMap<String, Object>();
-        Map<String, Object> classMetaData = new HashMap<String, Object>();
-        classMetaDataWrapper.put("properties", classMetaData);
-        classMetaDataWrapper.put("type", "object");
-        classMetaDataWrapper.put("class", clazz.getSimpleName());
+        Map<String, Object> classMetaDataWrapper = new HashMap<>();
+        Map<String, Object> classMetaData = new HashMap<>();
+        classMetaDataWrapper.put(PropertySchema.PROPERTIES_KEY, classMetaData);
+        classMetaDataWrapper.put(PropertySchema.TYPE_KEY, "object");
+        classMetaDataWrapper.put(PropertySchema.CLASS_KEY, clazz.getSimpleName());
 
         // find out if we need to include uiOrder metadata
-        boolean includeOrder = false;
-
-
-        for (ConfigProperty configurableChildProperty : ConfigReflection.getAllConfigurableFields(clazz))
-            if (configurableChildProperty.getAnnotation(ConfigurableProperty.class).order() != 0) includeOrder = true;
+        boolean includeOrder = ConfigReflection.getAllConfigurableFields(clazz).stream()
+            .map(configurableProperty -> configurableProperty.getAnnotation(ConfigurableProperty.class))
+            .anyMatch(annotation -> annotation.order() != 0);
         
         // populate properties
-
         for (ConfigProperty prop : ConfigReflection.getAllConfigurableFields(clazz)) {
 
-            ConfigTypeAdapter childAdapter = ctx.getVitalizer().lookupTypeAdapter(prop);
-            Map<String, Object> childPropertyMetadata = new LinkedHashMap<String, Object>();
+            ConfigTypeAdapter<?, ?> childAdapter = ctx.getVitalizer().lookupTypeAdapter(prop);
+            Map<String, Object> childPropertyMetadata = new LinkedHashMap<>();
             classMetaData.put(prop.getAnnotatedName(), childPropertyMetadata);
 
-            if (!"".equals( prop.getLabel() ) )
-                childPropertyMetadata.put("title", prop.getLabel());
+            setPropertyAttributeIfPresent(childPropertyMetadata, prop.getLabel(), PropertySchema.TITLE_KEY);
+            setPropertyAttributeIfPresent(childPropertyMetadata, prop.getDescription(), "description");
 
-            if (!"".equals( prop.getDescription() ) )
-                childPropertyMetadata.put("description", prop.getDescription());
             try {
-                if (!prop.getDefaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE))
+                if (!prop.getDefaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
                     childPropertyMetadata.put("default", childAdapter.normalize(prop.getDefaultValue(), prop, ctx));
+                }
             } catch (ClassCastException e) {
                 childPropertyMetadata.put("default", 0);
             }
-            if (!prop.getTags().isEmpty())
+            
+            if (!prop.getTags().isEmpty()) {
                 childPropertyMetadata.put("tags", prop.getTags());
+            }
 
-            if (includeOrder)
-                childPropertyMetadata.put("uiOrder", prop.getOrder());
+            if (includeOrder) {
+                childPropertyMetadata.put(PropertySchema.UI_ORDER_KEY, prop.getOrder());
+            }
 
-            childPropertyMetadata.put("uiGroup", prop.getGroup());
+            childPropertyMetadata.put(PropertySchema.UI_GROUP_KEY, prop.getGroup());
+            
+            // Make optimistic lock hashes read-only so people don't mess with them.
+            if (prop.isOlockHash()) {
+                childPropertyMetadata.put(PropertySchema.READONLY_KEY, true);    
+            }
 
             // also merge in the metadata from this child itself
             Map<String, Object> childMetaData = childAdapter.getSchema(prop, ctx);
             if (childMetaData != null) childPropertyMetadata.putAll(childMetaData);
+        }
+        
+        if (StorageVersionedConfigurableClass.class.isAssignableFrom(clazz)) {
+            addStorageVersionSchemaProperty(classMetaData);
         }
 
         return classMetaDataWrapper;
@@ -320,5 +362,42 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
     @Override
     public Map<String, Object> normalize(Object configNode, ConfigProperty property, ProcessingContext ctx) throws ConfigurationException {
         return (Map<String, Object>) configNode;
+    }
+    
+    private void setPropertyAttributeIfPresent(
+            final Map<String, Object> childPropertyMetadata,
+            final String propertyAttributeValue,
+            final String propertyAttributeKey) {
+        
+        if (StringUtils.isNotEmpty(propertyAttributeValue)) {
+            childPropertyMetadata.put(propertyAttributeKey, propertyAttributeValue);
+        }
+    }
+        
+    private void addStorageVersionSchemaProperty(Map<String, Object> classMetaData) {
+
+        Map<String, Object> versionProperty = new HashMap<>();
+        versionProperty.put(PropertySchema.TYPE_KEY, "integer");
+        versionProperty.put(PropertySchema.UI_GROUP_KEY, "Other");
+        versionProperty.put(PropertySchema.READONLY_KEY, true);
+        
+        classMetaData.put(Configuration.VERSION_KEY, versionProperty);
+    }
+    
+    public static final class PropertySchema {
+        
+        /**
+         * Private constructor to prevent instantiation.
+         */
+        private PropertySchema() { }
+        
+        public static final String CLASS_KEY = "class";
+        public static final String TYPE_KEY = "type";
+        public static final String PROPERTIES_KEY = "properties";
+        
+        public static final String TITLE_KEY = "title";
+        public static final String UI_ORDER_KEY = "uiOrder";
+        public static final String UI_GROUP_KEY = "uiGroup";
+        public static final String READONLY_KEY = "readonly";
     }
 }

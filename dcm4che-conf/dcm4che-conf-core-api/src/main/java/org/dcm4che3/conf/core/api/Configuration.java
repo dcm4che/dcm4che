@@ -86,6 +86,10 @@ public interface Configuration extends BatchRunner {
     String WEAK_REFERENCE_KEY = "weakReference";
     String REFERENCE_BY_UUID_PATTERN = "//*[_.uuid='{uuid}']";
 
+    /**
+     * A special property key that indicates the database (JPA controlled) version of the containing node.
+     */
+    String VERSION_KEY = "_.version";
 
     enum ConfigStorageType {
         JSON_FILE,

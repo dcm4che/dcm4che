@@ -182,10 +182,10 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
         // Set the storage version if needed. 
         if (StorageVersionedConfigurableClass.class.isAssignableFrom(clazz)) {
-            Long version = (Long) configNode.get(Configuration.VERSION_KEY);
+            Number version = (Number) configNode.get(Configuration.VERSION_KEY);
             
             if (version != null) {
-                ((StorageVersionedConfigurableClass) confObj).setStorageVersion(version);
+                ((StorageVersionedConfigurableClass) confObj).setStorageVersion(version.longValue());
             }
         }
     }

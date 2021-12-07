@@ -85,9 +85,32 @@ public class ReflectiveAdapterTest {
     }
     
     @Test
+    public void fromConfigNode_PopulatesStorageVersionAndReturnsDeserializedObject_GivenValidConfigNodeWithIntegerVersionAndPropertyForClassExtendingStorageVersionedConfigurableClass() {
+        
+        final long expectedVersion = 8L;
+        final String expectedSomeConfig = "B";
+         
+        configNode.put(AStorageVersionedConfigurableClass.PROPERTY_NAME, expectedSomeConfig);
+        configNode.put(Configuration.VERSION_KEY, (int) expectedVersion);
+        
+        ConfigProperty property = ConfigReflection.getDummyPropertyForClass(AStorageVersionedConfigurableClass.class);
+        
+        Object actualObject = reflectiveAdapter.fromConfigNode(configNode, property, loadingContext, null);
+        
+        assertThat("Returned object", actualObject, notNullValue());
+        assertThat("Object is wrong type", actualObject, instanceOf(AStorageVersionedConfigurableClass.class));
+        
+        AStorageVersionedConfigurableClass storageVersionedConfigurableClass
+                = (AStorageVersionedConfigurableClass) actualObject;
+        
+        assertThat("Wrong version", storageVersionedConfigurableClass.getStorageVersion(), equalTo(expectedVersion));
+        assertThat("Some config", storageVersionedConfigurableClass.getSomeConfig(), equalTo(expectedSomeConfig));
+    }
+    
+    @Test
     public void fromConfigNode_DoesNotPopulateStorageVersionAndReturnsDeserializedObject_GivenConfigNodeWithoutVersionAndPropertyForClassExtendingStorageVersionedConfigurableClass() {
         
-        final String expectedSomeConfig = "B";
+        final String expectedSomeConfig = "C";
         
         configNode.put(AStorageVersionedConfigurableClass.PROPERTY_NAME, expectedSomeConfig);
         

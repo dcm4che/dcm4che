@@ -60,6 +60,11 @@
      -f,--file <file>                 Specify the file containing the metadata
                                       (in XML format).
      -h,--help                        display this help and exit
+     -l,--limit <arg>                 If specified, split number of objects
+                                      sent in one request. More objects than
+                                      the specified limit are sent split in
+                                      multiple HTTP requests sequentially over
+                                      one TCP connection.
      -m <[seq.]attr=value>            Specify metadata attributes. attr can be
                                       specified by keyword or tag value (in
                                       hex), e.g. PatientName or 00100010.
@@ -88,6 +93,15 @@
                                       default. Note that for DICOM objects,
                                       tool will always send Content-type as
                                       application/dicom.
+        --tmp-file-dir <directory>    directory were temporary file with File
+                                      Meta Information from scanned files is
+                                      stored; if not specified, the file is
+                                      stored into the default temporary-file
+                                      directory
+        --tmp-file-prefix <prefix>    prefix for generated file name for
+                                      temporary file; 'stowrs-' by default
+        --tmp-file-suffix <suffix>    suffix for generated file name for
+                                      temporary file; '.tmp' by default
         --tsuid                       Specify if the Transfer Syntax UID shall
                                       be sent in multipart request for content
                                       types image/jpeg, video/mpeg, video/mp4

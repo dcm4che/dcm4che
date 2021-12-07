@@ -58,15 +58,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import javax.ws.rs.core.MediaType;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -75,6 +73,7 @@ import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
@@ -99,10 +98,15 @@ public class StowRS {
     private static boolean encapsulatedDocLength;
     private static String authorization;
     private boolean tsuid;
-    private File tmpFile;
+    private String tmpPrefix;
+    private String tmpSuffix;
+    private File tmpDir;
+    private final List<StowChunk> stowChunks = new ArrayList<>();
+    private int limit;
     private int filesScanned;
     private int filesSent;
     private long totalSize;
+    private Map<String, String> requestProperties;
     private static final String boundary = "myboundary";
     private static final AtomicInteger fileCount = new AtomicInteger();
     private static FileContentType fileContentTypeFromCL;
@@ -192,6 +196,11 @@ public class StowRS {
                 .longOpt("encapsulatedDocLength")
                 .desc(rb.getString("encapsulatedDocLength"))
                 .build());
+        opts.addOption(Option.builder("l")
+                .longOpt("limit")
+                .hasArg()
+                .desc(rb.getString("limit"))
+                .build());
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder("u")
                 .hasArg()
@@ -206,35 +215,70 @@ public class StowRS {
                 .desc(rb.getString("bearer"))
                 .build());
         opts.addOptionGroup(group);
+        addTmpFileOptions(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StowRS.class);
     }
 
+    public static void addTmpFileOptions(Options opts) {
+        opts.addOption(Option.builder().hasArg().argName("directory")
+                .desc(rb.getString("tmp-file-dir"))
+                .longOpt("tmp-file-dir").build());
+        opts.addOption(Option.builder().hasArg().argName("prefix")
+                .desc(rb.getString("tmp-file-prefix"))
+                .longOpt("tmp-file-prefix").build());
+        opts.addOption(Option.builder().hasArg().argName("suffix")
+                .desc(rb.getString("tmp-file-suffix"))
+                .longOpt("tmp-file-suffix").build());
+    }
+    
+    public final void setRequestProperties(Map<String, String> requestProperties) {
+        this.requestProperties = requestProperties;
+    }
+
+    public final void setTmpFilePrefix(String prefix) {
+        this.tmpPrefix = prefix;
+    }
+
+    public final void setTmpFileSuffix(String suffix) {
+        this.tmpSuffix = suffix;
+    }
+
+    public final void setTmpFileDirectory(File tmpDir) {
+        this.tmpDir = tmpDir;
+    }
+
+    public final void setLimit(int limit) {
+        this.limit = limit;
+    }
+
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        long t1, t2;
+        long t1;
         try {
             CommandLine cl = parseCommandLine(args);
             List<String> files = cl.getArgList();
             StowRS stowRS = new StowRS();
             stowRS.doNecessaryChecks(cl, files);
             stowRS.scan(files);
+            System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+            t1 = System.currentTimeMillis();
             if (url.startsWith("https")) {
-                final HttpsURLConnection connection = stowRS.openTLS();
-                t1 = System.currentTimeMillis();
-                stowRS.stowHttps(connection);
+                for (StowChunk stowChunk : stowRS.stowChunks) {
+                    HttpsURLConnection connection = stowRS.openTLS();
+                    long stowChunkStart = System.currentTimeMillis();
+                    stowRS.stowHttps(connection, stowChunk);
+                    logSentPerChunk(stowChunk, stowChunkStart);
+                }
             } else {
-                final HttpURLConnection connection = stowRS.open();
-                t1 = System.currentTimeMillis();
-                stowRS.stow(connection);
+                for (StowChunk stowChunk : stowRS.stowChunks) {
+                    HttpURLConnection connection = stowRS.open();
+                    long stowChunkStart = System.currentTimeMillis();
+                    stowRS.stow(connection, stowChunk);
+                    logSentPerChunk(stowChunk, stowChunkStart);
+                }
             }
-            t2 = System.currentTimeMillis();
-            if (stowRS.filesSent > 0) {
-                float s = (t2 - t1) / 1000F;
-                float mb = stowRS.totalSize / 1048576F;
-                System.out.println(MessageFormat.format(rb.getString("sent"),
-                        stowRS.filesSent, mb, s, mb / s));
-            }
+            logSent(stowRS, t1);
         } catch (ParseException e) {
             System.err.println("stowrs: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -246,7 +290,29 @@ public class StowRS {
         }
     }
 
-    private void scan(List<String> files) throws Exception {
+    private static void logSentPerChunk(StowChunk stowChunk, long t1) {
+        if (stowChunk.sent == 0)
+            return;
+
+        long t2 = System.currentTimeMillis();
+        float s = (t2 - t1) / 1000F;
+        float mb = stowChunk.getSize() / 1048576F;
+        System.out.println(MessageFormat.format(rb.getString("sent"),
+                stowChunk.sent, mb, s, mb / s));
+    }
+
+    private static void logSent(StowRS stowRS, long t1) {
+        if (stowRS.filesSent == 0 || stowRS.limit == 1)
+            return;
+
+        long t2 = System.currentTimeMillis();
+        float s = (t2 - t1) / 1000F;
+        float mb = stowRS.totalSize / 1048576F;
+        System.out.println(MessageFormat.format(rb.getString("sentAll"),
+                stowRS.filesSent, mb, s, mb / s));
+    }
+
+    private void scan(List<String> files) {
         long t1, t2;
         System.out.println(rb.getString("scanning"));
         t1 = System.currentTimeMillis();
@@ -289,7 +355,17 @@ public class StowRS {
         encapsulatedDocLength = cl.hasOption("encapsulatedDocLength");
         if (cl.hasOption("contentType"))
             bulkdataFileContentType = fileContentTypeFromCL = fileContentType(cl.getOptionValue("contentType"));
+        setLimit(Integer.parseInt(cl.getOptionValue("limit", "1")));
+        configureTmpFile(cl);
         processFirstFile(cl);
+        setRequestProperties(requestProperties());
+    }
+
+    private void configureTmpFile(CommandLine cl) {
+        if (cl.hasOption("tmp-file-dir"))
+            setTmpFileDirectory(new File(cl.getOptionValue("tmp-file-dir")));
+        setTmpFilePrefix(cl.getOptionValue("tmp-file-prefix", "stowrs-"));
+        setTmpFileSuffix(cl.getOptionValue("tmp-file-suffix"));
     }
 
     private void processFirstFile(CommandLine cl) throws Exception {
@@ -601,46 +677,112 @@ public class StowRS {
         }
     }
 
-    public void scanFiles(List<String> files) throws Exception {
-        tmpFile = File.createTempFile("stowrs-", null, null);
-        tmpFile.deleteOnExit();
-        try (FileOutputStream out = new FileOutputStream(tmpFile)) {
-            if (requestContentType.equals(MediaTypes.APPLICATION_DICOM))
-                for (String file : files)
-                    applyFunctionToFile(file, true, path -> writeDicomFile(out, path));
-            else
-                writeMetadataAndBulkData(out, files, createStaticMetadata());
+    static class StowChunk {
+        private final File tmpFile;
+        private final AtomicInteger scanned = new AtomicInteger();
+        private int sent;
+        private long size;
+
+        StowChunk(File tmpFile) {
+            this.tmpFile = tmpFile;
+        }
+
+        void setAttributes(long length) {
+            scanned.getAndIncrement();
+            this.size += length;
+        }
+
+        AtomicInteger getScanned() {
+            return scanned;
+        }
+
+        File getTmpFile() {
+            return tmpFile;
+        }
+
+        long getSize() {
+            return size;
+        }
+
+        int sent() {
+            this.sent = scanned.get();
+            return sent;
         }
     }
 
-    private void stow(final HttpURLConnection connection) throws Exception {
+    public void scanFiles(List<String> files) {
+        final AtomicInteger counter = new AtomicInteger();
+        files.stream().collect(Collectors.groupingBy(it -> counter.getAndIncrement() / limit))
+                .values().forEach(fPR -> {
+                    try {
+                        File tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
+                        tmpFile.deleteOnExit();
+                        StowChunk stowChunk = new StowChunk(tmpFile);
+                        try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+                            if (requestContentType.equals(MediaTypes.APPLICATION_DICOM))
+                                fPR.forEach(f -> {
+                                    try {
+                                        applyFunctionToFile(f, true, path -> writeDicomFile(out, path, stowChunk));
+                                    } catch (Exception e) {
+                                        LOG.info("Failed to scan : {}", f);
+                                    }
+                                });
+                            else
+                                writeMetadataAndBulkData(out, fPR, createStaticMetadata(), stowChunk);
+                        }
+                        filesScanned += stowChunk.getScanned().get();
+                        stowChunks.add(stowChunk);
+                    } catch (Exception e) {
+                        LOG.info("Failed to scan {} in tmp file", fPR);
+                    }
+                });
+    }
+
+    private Map<String, String> requestProperties() {
+        Map<String, String> requestProperties = new HashMap<>();
+        requestProperties.put("Content-Type",
+                MediaTypes.MULTIPART_RELATED + "; type=\"" + requestContentType + "\"; boundary=" + boundary);
+        requestProperties.put("Accept", requestAccept);
+        requestProperties.put("Connection", "keep-alive");
+        if (authorization != null)
+            requestProperties.put("Authorization", authorization);
+        return requestProperties;
+    }
+
+    private void stow(final HttpURLConnection connection, StowChunk stowChunk) throws Exception {
+        File tmpFile = stowChunk.getTmpFile();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type",
-                MediaTypes.MULTIPART_RELATED + "; type=\"" + requestContentType + "\"; boundary=" + boundary);
-        connection.setRequestProperty("Accept", requestAccept);
-        if (authorization != null)
-            connection.setRequestProperty("Authorization", authorization);
-        logOutgoing(connection.getURL(), connection.getRequestProperty("Content-Type"));
-        try (OutputStream out = connection.getOutputStream()) {
+        connection.setRequestProperty("Content-Length", String.valueOf(tmpFile.length()));
+        requestProperties.forEach(connection::setRequestProperty);
+        logOutgoing(connection.getURL(), connection.getRequestProperties());
+        OutputStream out = connection.getOutputStream();
+        try {
             StreamUtils.copy(new FileInputStream(tmpFile), out);
             out.write(("\r\n--" + boundary + "--\r\n").getBytes());
             out.flush();
             logIncoming(connection.getResponseCode(), connection.getResponseMessage(), connection.getHeaderFields(),
                     connection.getInputStream());
             connection.disconnect();
-            filesSent = filesScanned;
+            filesSent += stowChunk.sent();
+            totalSize += stowChunk.getSize();
+        } finally {
+            out.close();
         }
     }
 
     private HttpURLConnection open() throws Exception {
         long t1, t2;
         t1 = System.currentTimeMillis();
-        final HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        URLConnection urlConnection = new URL(url).openConnection();
+
+        final HttpURLConnection connection = (HttpURLConnection) urlConnection;
         t2 = System.currentTimeMillis();
+        System.out.println("..");
         System.out.println(MessageFormat.format(
                 rb.getString("connected"), url, t2 - t1));
+        System.out.println(connection.toString());
         return connection;
     }
 
@@ -649,24 +791,23 @@ public class StowRS {
         t1 = System.currentTimeMillis();
         final HttpsURLConnection connection = (HttpsURLConnection) new URL(url).openConnection();
         t2 = System.currentTimeMillis();
+        System.out.println("..");
         System.out.println(MessageFormat.format(
                 rb.getString("connected"), url, t2 - t1));
         return connection;
     }
 
-    private void stowHttps(final HttpsURLConnection connection) throws Exception {
+    private void stowHttps(final HttpsURLConnection connection, StowChunk stowChunk) throws Exception {
+        File tmpFile = stowChunk.getTmpFile();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type",
-                MediaTypes.MULTIPART_RELATED + "; type=\"" + requestContentType + "\"; boundary=" + boundary);
-        connection.setRequestProperty("Accept", requestAccept);
-        if (authorization != null)
-            connection.setRequestProperty("Authorization", authorization);
         if (disableTM)
             connection.setSSLSocketFactory(sslContext().getSocketFactory());
+        connection.setRequestProperty("Content-Length", String.valueOf(tmpFile.length()));
+        requestProperties.forEach(connection::setRequestProperty);
         connection.setHostnameVerifier((hostname, session) -> allowAnyHost);
-        logOutgoing(connection.getURL(), connection.getRequestProperty("Content-Type"));
+        logOutgoing(connection.getURL(), connection.getRequestProperties());
         try (OutputStream out = connection.getOutputStream()) {
             StreamUtils.copy(new FileInputStream(tmpFile), out);
             out.write(("\r\n--" + boundary + "--\r\n").getBytes());
@@ -674,7 +815,8 @@ public class StowRS {
             logIncoming(connection.getResponseCode(), connection.getResponseMessage(), connection.getHeaderFields(),
                     connection.getInputStream());
             connection.disconnect();
-            filesSent = filesScanned;
+            filesSent += stowChunk.sent();
+            totalSize += stowChunk.getSize();
         }
     }
 
@@ -705,12 +847,9 @@ public class StowRS {
         return "Basic " + new String(ch);
     }
 
-    private void logOutgoing(URL url, String contentType) {
+    private void logOutgoing(URL url, Map<String, List<String>> headerFields) {
         LOG.info("> POST " + url.toString());
-        LOG.info("> Content-Type: " + contentType);
-        LOG.info("> Accept: " + requestAccept);
-        if (authorization != null)
-            LOG.info("> Authorization: " + authorization);
+        headerFields.forEach((k,v) -> LOG.info("> " + k + " : " + String.join(",", v)));
     }
 
     private void logIncoming(int respCode, String respMsg, Map<String, List<String>> headerFields, InputStream is) {
@@ -721,6 +860,7 @@ public class StowRS {
         LOG.info("< Response Content: ");
         try {
             LOG.debug(readFullyAsString(is));
+            is.close();
         } catch (Exception e) {
             LOG.info("Exception caught on reading response body \n", e);
         }
@@ -742,21 +882,20 @@ public class StowRS {
         }
     }
 
-    private void writeDicomFile(OutputStream out, Path path) throws IOException {
+    private void writeDicomFile(OutputStream out, Path path, StowChunk stowChunk) throws IOException {
         if (Files.probeContentType(path) == null) {
             LOG.info(MessageFormat.format(rb.getString("not-dicom-file"), path));
             return;
         }
         writePartHeaders(out, requestContentType, null);
         Files.copy(path, out);
-        filesScanned++;
-        totalSize += path.toFile().length();
+        stowChunk.setAttributes(path.toFile().length());
     }
 
-    private void writeMetadataAndBulkData(OutputStream out, List<String> files, final Attributes staticMetadata)
+    private void writeMetadataAndBulkData(OutputStream out, List<String> files, final Attributes staticMetadata, StowChunk stowChunk)
             throws Exception {
         if (requestContentType.equals(MediaTypes.APPLICATION_DICOM_XML))
-            writeXMLMetadataAndBulkdata(out, files, staticMetadata);
+            writeXMLMetadataAndBulkdata(out, files, staticMetadata, stowChunk);
 
         else {
             try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
@@ -764,8 +903,7 @@ public class StowRS {
                     gen.writeStartArray();
                     if (files.isEmpty()) {
                         new JSONWriter(gen).write(createMetadata(staticMetadata));
-                        filesScanned++;
-                        totalSize += metadataFile.length();
+                        stowChunk.setAttributes(metadataFile.length());
                     }
 
                     for (String file : files)
@@ -780,7 +918,6 @@ public class StowRS {
                             else {
                                 new JSONWriter(gen).write(
                                         supplementMetadataFromFile(path, createMetadata(staticMetadata)));
-                                filesScanned++;
                             }
                         });
                     gen.writeEnd();
@@ -789,24 +926,24 @@ public class StowRS {
                 writeMetadata(out, bOut);
 
                 for (String contentLocation : contentLocBulkdata.keySet())
-                    writeFile(contentLocation, out);
+                    writeFile(contentLocation, out, stowChunk);
             }
         }
         contentLocBulkdata.clear();
     }
 
-    private void writeXMLMetadataAndBulkdata(final OutputStream out, List<String> files, final Attributes staticMetadata)
+    private void writeXMLMetadataAndBulkdata(final OutputStream out, List<String> files, final Attributes staticMetadata, StowChunk stowChunk)
             throws Exception {
         if (files.isEmpty()) {
             writeXMLMetadata(out, staticMetadata);
-            filesScanned++;
+            stowChunk.setAttributes(metadataFile.length());
         }
 
         for (String file : files)
-            applyFunctionToFile(file, true, path -> writeXMLMetadataAndBulkdataForEach(out, staticMetadata, path));
+            applyFunctionToFile(file, true, path -> writeXMLMetadataAndBulkdataForEach(out, staticMetadata, path, stowChunk));
     }
 
-    private void writeXMLMetadataAndBulkdataForEach(OutputStream out, Attributes staticMetadata, Path bulkdataFilePath) {
+    private void writeXMLMetadataAndBulkdataForEach(OutputStream out, Attributes staticMetadata, Path bulkdataFilePath, StowChunk stowChunk) {
         try {
             if (ignoreNonMatchingFileContentTypes(bulkdataFilePath)) {
                 LOG.info(MessageFormat.format(rb.getString(
@@ -822,8 +959,7 @@ public class StowRS {
                 SAXTransformer.getSAXWriter(new StreamResult(bOut)).write(metadata);
                 writeMetadata(out, bOut);
             }
-            writeFile(((BulkData) metadata.getValue(bulkdataFileContentType.getBulkdataTypeTag())).getURI(), out);
-            filesScanned++;
+            writeFile(((BulkData) metadata.getValue(bulkdataFileContentType.getBulkdataTypeTag())).getURI(), out, stowChunk);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -863,7 +999,7 @@ public class StowRS {
         out.write("\r\n".getBytes());
     }
 
-    private void writeFile(String contentLocation, OutputStream out) throws Exception {
+    private void writeFile(String contentLocation, OutputStream out, StowChunk stowChunk) throws Exception {
         String bulkdataContentType1 = bulkdataFileContentType.getMediaType();
         StowRSBulkdata stowRSBulkdata = contentLocBulkdata.get(contentLocation);
         XPEGParser parser = stowRSBulkdata.getParser();
@@ -882,7 +1018,7 @@ public class StowRS {
         }
         length -= offset;
         out.write(Files.readAllBytes(stowRSBulkdata.getBulkdataFilePath()), offset, length);
-        totalSize += stowRSBulkdata.bulkdataFile.length();
+        stowChunk.setAttributes(stowRSBulkdata.bulkdataFile.length());
     }
 
     static class StowRSBulkdata {

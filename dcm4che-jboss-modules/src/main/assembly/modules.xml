@@ -179,6 +179,14 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/linux-aarch64</outputDirectory>
+      <includes>
+        <include>*:*:so:linux-aarch64:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <outputDirectory>/modules/org/dcm4che/imageio/main/lib/macosx-x86_64</outputDirectory>
       <includes>
         <include>*:*:jnilib:macosx-x86-64:*</include>

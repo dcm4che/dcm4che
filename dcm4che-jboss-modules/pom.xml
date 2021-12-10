@@ -179,6 +179,13 @@
       <groupId>org.weasis.thirdparty.org.opencv</groupId>
       <artifactId>libopencv_java</artifactId>
       <version>${weasis.opencv.native.version}</version>
+      <type>so</type>
+      <classifier>linux-aarch64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.thirdparty.org.opencv</groupId>
+      <artifactId>libopencv_java</artifactId>
+      <version>${weasis.opencv.native.version}</version>
       <type>jnilib</type>
       <classifier>macosx-x86-64</classifier>
     </dependency>

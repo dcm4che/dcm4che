@@ -146,7 +146,10 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     public void refreshNode(Path path) throws ConfigurationException {
         removeOldReferablesFromIndex(super.getConfigurationNode(path, null));
         super.refreshNode(path);
-        addReferablesToIndex(path.getPathItems(), super.getConfigurationNode(path, null));
+        Object node = super.getConfigurationNode(path, null);
+        if (node != null) {
+            addReferablesToIndex(path.getPathItems(), node);
+        }
     }
 
     @Override

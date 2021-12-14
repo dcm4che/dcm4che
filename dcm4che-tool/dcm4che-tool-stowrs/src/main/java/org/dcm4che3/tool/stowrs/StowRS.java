@@ -749,6 +749,7 @@ public class StowRS {
                 else
                     writeMetadataAndBulkData(out, files, createStaticMetadata(), stowChunk);
             }
+            stowChunks.add(stowChunk);
         } catch (Exception e) {
             LOG.info("Failed to scan files in tmp file\n", e);
         }

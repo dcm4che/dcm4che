@@ -354,7 +354,7 @@ public class StowRS {
         encapsulatedDocLength = cl.hasOption("encapsulatedDocLength");
         if (cl.hasOption("contentType"))
             bulkdataFileContentType = fileContentTypeFromCL = fileContentType(cl.getOptionValue("contentType"));
-        setLimit(Integer.parseInt(cl.getOptionValue("limit", "1")));
+        setLimit(Integer.parseInt(cl.getOptionValue("limit", "0")));
         configureTmpFile(cl);
         processFirstFile(cl);
         setRequestProperties(requestProperties());
@@ -709,7 +709,12 @@ public class StowRS {
         }
     }
 
-    public void scanFiles(List<String> files) {
+    private void scanFiles(List<String> files) {
+        if (limit == 0) {
+            scanFilesNoLimit(files);
+            return;
+        }
+
         final AtomicInteger counter = new AtomicInteger();
         files.stream().collect(Collectors.groupingBy(it -> counter.getAndIncrement() / limit))
             .values().forEach(fPR -> {
@@ -730,6 +735,23 @@ public class StowRS {
                 }
                 processFilesPerRequest(filePaths.equals(fPR) ? fPR : filePaths);
             });
+    }
+
+    private void scanFilesNoLimit(List<String> files) {
+        try {
+            File tmpFile = File.createTempFile("stowrs-", null, null);
+            tmpFile.deleteOnExit();
+            StowChunk stowChunk = new StowChunk(tmpFile);
+            try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+                if (requestContentType.equals(MediaTypes.APPLICATION_DICOM))
+                    for (String file : files)
+                        applyFunctionToFile(file, true, path -> writeDicomFile(out, path, stowChunk));
+                else
+                    writeMetadataAndBulkData(out, files, createStaticMetadata(), stowChunk);
+            }
+        } catch (Exception e) {
+            LOG.info("Failed to scan files in tmp file\n", e);
+        }
     }
 
     private void processFilesPerRequest(List<String> fPR) {

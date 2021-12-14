@@ -261,7 +261,6 @@ public class StowRS {
             StowRS stowRS = new StowRS();
             stowRS.doNecessaryChecks(cl, files);
             stowRS.scan(files);
-            System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
             t1 = System.currentTimeMillis();
             if (url.startsWith("https")) {
                 for (StowChunk stowChunk : stowRS.stowChunks) {
@@ -713,29 +712,51 @@ public class StowRS {
     public void scanFiles(List<String> files) {
         final AtomicInteger counter = new AtomicInteger();
         files.stream().collect(Collectors.groupingBy(it -> counter.getAndIncrement() / limit))
-                .values().forEach(fPR -> {
+            .values().forEach(fPR -> {
+                List<String> filePaths = new ArrayList<>();
+                for (String f : fPR) {
                     try {
-                        File tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
-                        tmpFile.deleteOnExit();
-                        StowChunk stowChunk = new StowChunk(tmpFile);
-                        try (FileOutputStream out = new FileOutputStream(tmpFile)) {
-                            if (requestContentType.equals(MediaTypes.APPLICATION_DICOM))
-                                fPR.forEach(f -> {
-                                    try {
-                                        applyFunctionToFile(f, true, path -> writeDicomFile(out, path, stowChunk));
-                                    } catch (Exception e) {
-                                        LOG.info("Failed to scan : {}", f);
-                                    }
-                                });
-                            else
-                                writeMetadataAndBulkData(out, fPR, createStaticMetadata(), stowChunk);
-                        }
-                        filesScanned += stowChunk.getScanned().get();
-                        stowChunks.add(stowChunk);
+                        Path path = Paths.get(f);
+                        if (Files.isDirectory(path)) {
+                            List<String> dirPaths = Files.list(path).map(Path::toString).collect(Collectors.toList());
+                            System.out.println(
+                                    MessageFormat.format(rb.getString("directory-files"), f, dirPaths.size()));
+                            scanFiles(dirPaths);
+                        } else
+                            filePaths.add(f);
                     } catch (Exception e) {
-                        LOG.info("Failed to scan {} in tmp file", fPR);
+                        LOG.info("Failed to list files of directory : {}\n", f, e);
                     }
-                });
+                }
+                processFilesPerRequest(filePaths.equals(fPR) ? fPR : filePaths);
+            });
+    }
+
+    private void processFilesPerRequest(List<String> fPR) {
+        if (fPR.isEmpty())
+            return;
+
+        try {
+            File tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
+            tmpFile.deleteOnExit();
+            StowChunk stowChunk = new StowChunk(tmpFile);
+            try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+                if (requestContentType.equals(MediaTypes.APPLICATION_DICOM))
+                    fPR.forEach(f -> {
+                        try {
+                            applyFunctionToFile(f, true, path -> writeDicomFile(out, path, stowChunk));
+                        } catch (Exception e) {
+                            LOG.info("Failed to scan : {}\n", f, e);
+                        }
+                    });
+                else
+                    writeMetadataAndBulkData(out, fPR, createStaticMetadata(), stowChunk);
+            }
+            filesScanned += stowChunk.getScanned().get();
+            stowChunks.add(stowChunk);
+        } catch (Exception e) {
+            LOG.info("Failed to scan {} in tmp file\n", fPR, e);
+        }
     }
 
     private Map<String, String> requestProperties() {
@@ -782,7 +803,6 @@ public class StowRS {
         System.out.println("..");
         System.out.println(MessageFormat.format(
                 rb.getString("connected"), url, t2 - t1));
-        System.out.println(connection.toString());
         return connection;
     }
 

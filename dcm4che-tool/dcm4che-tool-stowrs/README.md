@@ -64,7 +64,14 @@
                                       sent in one request. More objects than
                                       the specified limit are sent split in
                                       multiple HTTP requests sequentially over
-                                      one TCP connection.
+                                      one TCP connection. Files are only split
+                                      if specified file paths are individual
+                                      files or specified folder paths contain
+                                      files more than specified limit. Limit
+                                      is not applicable to a combination of
+                                      file paths and folder paths or if
+                                      several folder paths contains files less
+                                      than specified limit.
      -m <[seq.]attr=value>            Specify metadata attributes. attr can be
                                       specified by keyword or tag value (in
                                       hex), e.g. PatientName or 00100010.
@@ -152,3 +159,31 @@
     => Send stow request to stowRS Receiver first generating metadata from
     etc/stowrs/encapsulatedPDFMetadata.xml and then adding
     given StudyInstanceUID for the 3 pdf files.
+    -
+    Example: stowrs --limit 2 --url
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies
+    /path-file1.dcm /path-file2.dcm /path-file3.dcm
+    => Split 3 DICOM files to be sent in two http requests in one TCP
+    connection to be sent to stowRS Receiver
+    -
+    Example: stowrs --limit 4 --url
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies
+    /dir-path-3-files /dir-path-7-files 
+    /nested-dir-path-9FilesDir1-3FilesDir2
+    => Split DICOM files to be sent in 7 http requests in one TCP connection
+    to be sent to stowRS Receiver : First http request
+    containing 3 files from /dir-path-3-files. Next two http requests
+    containing 4 and 3 files from /dir-path-7-files respectively.
+    Next 3 http requests containing 4, 4 and 1 files from
+    /nested-dir-path-9FilesDir1 respectively and the last http request
+    containing 3 files from /nested-dir-path-3FilesDir2
+    -
+    Example: stowrs --limit 4 --url
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies
+    /dir-path-1-file /path-file1.dcm /path-file2.dcm /path-file3.dcm 
+    /dir-path-4-files
+    => Split DICOM files to be sent in 3 http requests in one TCP connection
+    to be sent to stowRS Receiver : First http request
+    containing 1 file from /dir-path-1-file. Next http request containing 3
+    files for specified three file paths. Last http
+    request containing 4 files from /dir-path-4-files

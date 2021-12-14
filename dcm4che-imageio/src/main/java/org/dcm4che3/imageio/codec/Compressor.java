@@ -72,6 +72,7 @@ import org.dcm4che3.image.BufferedImageUtils;
 import org.dcm4che3.image.Overlays;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
+import org.dcm4che3.imageio.stream.RAFFileImageInputStream;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.util.ByteUtils;
@@ -376,7 +377,7 @@ public class Compressor extends Decompressor implements Closeable {
 
     public BufferedImage readFrame(int frameIndex) throws IOException {
         if (iis == null)
-            iis = new FileImageInputStream(file);
+            iis = new RAFFileImageInputStream(file);
 
         if (decompressor != null)
             return decompressFrame(iis, frameIndex);

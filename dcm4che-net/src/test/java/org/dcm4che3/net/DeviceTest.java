@@ -37,13 +37,13 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.net;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
 import org.junit.Test;
 
 /**
@@ -59,11 +59,18 @@ public class DeviceTest {
     public void testReconfigure() throws Exception {
         Device d1 = createDevice("test", "AET1");
         Device d2 = createDevice("test", "AET2");
+        d2.setOlockHash("I.hash.you.not");
+        d2.setStorageVersion(35);
+        
         d1.reconfigure(d2);
         ApplicationEntity ae = d1.getApplicationEntity("AET2");
         assertNotNull(ae);
         List<Connection> conns = ae.getConnections();
         assertEquals(1, conns.size());
+        
+       assertThat("Olock Hash", d1.getOlockHash(), equalTo("I.hash.you.not"));
+       assertThat("Storage version", d1.getStorageVersion(), equalTo(35L));
+       
     }
 
     private Device createDevice(String name, String aet) {

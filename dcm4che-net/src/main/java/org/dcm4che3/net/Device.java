@@ -1281,6 +1281,7 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
 
     protected void setDeviceAttributes(Device from) {
         setOlockHash(from.olockHash);
+        setStorageVersion(from.getStorageVersion());
         setDescription(from.description);
         setManufacturer(from.manufacturer);
         setManufacturerModelName(from.manufacturerModelName);

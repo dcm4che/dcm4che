@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2021d - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2021e - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -3888,7 +3888,7 @@
 <para xml:id="para_40781e42-2299-4921-9a3f-8efa9d4e664f">construct a Message conveying the (final) C-FIND-RSP</para>
 </listitem>
       <listitem>
-<para xml:id="para_a0274280-4b99-4714-b056-b02e011c8c59">end the Message using the P-DATA request service (see 8.1)</para>
+<para xml:id="para_a0274280-4b99-4714-b056-b02e011c8c59">send the Message using the P-DATA request service (see 8.1)</para>
 </listitem>
     </orderedlist>
   </listitem>

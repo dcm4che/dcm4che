@@ -561,6 +561,7 @@ public class AttributesTest {
         int[] UINTS = { 0xffff,  Short.MAX_VALUE };
         float[] FLOATS = { -Float.MIN_VALUE,  0.1234f, Float.MAX_VALUE };
         double[] DOUBLES = { -Double.MIN_VALUE,  0.1234, Double.MAX_VALUE };
+        String[] DOUBLES_AS_STRINGS = { "-4.9E-324", "0.1234", "1.7976931348E308" };
         String URI = "http://host/path";
 
         Attributes a = new Attributes();
@@ -628,6 +629,7 @@ public class AttributesTest {
             assertEquals(URI, b.getString(Tag.SelectorURValue));
             assertArrayEquals(FLOATS, b.getFloats(Tag.SelectorDSValue), 0);
             assertArrayEquals(DOUBLES, b.getDoubles(Tag.SelectorODValue), 0);
+            assertArrayEquals(DOUBLES_AS_STRINGS, b.getStrings(Tag.SelectorFDValue));
             assertEquals(DOUBLES[0], b.getDouble(Tag.SelectorFDValue, 0), 0);
             assertArrayEquals(INTS, b.getInts(Tag.SelectorOLValue));
             assertEquals(FLOATS[0], b.getFloat(Tag.SelectorFLValue, 0), 0);

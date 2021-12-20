@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %-5p - %m%n</pattern>
+    </encoder>
+  </appender>
+  <logger name="org.dcm4che3.net.audit" level="DEBUG"/>
+  <root level="INFO">
+    <appender-ref ref="stdout"/>
+  </root>
+</configuration>

@@ -47,8 +47,8 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-${slf4j.version}.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-${slf4j.version}.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-${log4j.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\logback-core-${logback.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\logback-classic-${logback.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\jakarta.activation-${jakarta.activation.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-${commons-cli.version}.jar
 

@@ -186,8 +186,8 @@
         <include>com.sun.media:jai_imageio</include>
         <include>com.sun.media:clibwrapper_jiio</include>
         <include>org.slf4j:slf4j-api</include>
-        <include>org.slf4j:slf4j-log4j12</include>
-        <include>log4j:log4j</include>
+        <include>ch.qos.logback:logback-core</include>
+        <include>ch.qos.logback:logback-classic</include>
         <include>commons-cli:commons-cli</include>
         <include>org.glassfish:jakarta.json</include>
         <include>com.sun.activation:jakarta.activation</include>

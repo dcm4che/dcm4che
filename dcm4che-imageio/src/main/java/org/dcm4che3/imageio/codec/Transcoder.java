@@ -40,6 +40,7 @@
 
 package org.dcm4che3.imageio.codec;
 
+import java.lang.reflect.Method;
 import org.dcm4che3.data.*;
 import org.dcm4che3.image.BufferedImageUtils;
 import org.dcm4che3.image.Overlays;
@@ -636,14 +637,18 @@ public class Transcoder implements Closeable {
                 dataset.setInt(Tag.PlanarConfiguration, VR.US, destTransferSyntaxType.getPlanarConfiguration());
             if (lossyCompression) {
                 dataset.setString(Tag.LossyImageCompression, VR.CS, "01");
-				if ("jpeg2000-cv".equals(compressorParam.formatName)) {
-					for (Property p : compressorParam.getImageWriteParams()) {
-						if ("compressionRatiofactor".equals(p.getName())) {
-							dataset.setFloat(Tag.LossyImageCompressionRatio, VR.DS, ((Double) p.getValue()).floatValue());
-							break;
-						}
-					}
-				}
+                if ("jpeg2000-cv".equals(compressorParam.formatName)) {
+                  try {
+                      Method m  =
+                        compressParam
+                            .getClass()
+                            .getDeclaredMethod("getCompressionRatiofactor");
+                    Integer val = (Integer) m.invoke(compressParam);
+                    dataset.setFloat(Tag.LossyImageCompressionRatio, VR.DS, val.floatValue());
+                  } catch (Exception e) {
+                    LOG.error("Cannot get compressionRatiofactor of jpeg2000-cv encoder");
+                  }
+                }
             }
         }
     }

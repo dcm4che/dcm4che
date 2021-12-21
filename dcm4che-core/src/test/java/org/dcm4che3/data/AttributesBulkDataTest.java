@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for {@link Attributes} including {@link BulkData} values.
  *
- * @author Hermann Czedik-Eysenberg (hermann.czedik-eysenberg@agfa.com)
+ * @author Hermann Czedik-Eysenberg (hermann-agfa@czedik.net)
  */
 public class AttributesBulkDataTest {
 

@@ -532,6 +532,10 @@ public class Attributes implements Serializable {
 
     private Object decodeStringValue(int index) {
         Object value = loadBulkData(values[index]);
+        return decodeStringValue(index, value);
+    }
+
+    private Object decodeStringValue(int index, Object value) {
         if (value instanceof byte[]) {
             value = vrs[index].toStrings((byte[]) value, bigEndian,
                     getSpecificCharacterSet(vrs[index]));
@@ -844,12 +848,13 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr.isStringType()) {
-            value = decodeStringValue(index);
-            if (value == Value.NULL)
-                return defVal;
-        }
 
+        value = loadBulkData(value);
+        if (vr.isStringType()) {
+            value = decodeStringValue(index, value);
+        }
+        if (value == Value.NULL)
+            return defVal;
         try {
             return vr.toString(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
@@ -879,11 +884,13 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
+
+        value = loadBulkData(value);
         if (vr.isStringType()) {
-            value = decodeStringValue(index);
-            if (value == Value.NULL)
-                return StringUtils.EMPTY_STRING;
+            value = decodeStringValue(index, value);
         }
+        if (value == Value.NULL)
+            return StringUtils.EMPTY_STRING;
         try {
             return toStrings(vr.toStrings(value, bigEndian,
                     getSpecificCharacterSet(vr)));

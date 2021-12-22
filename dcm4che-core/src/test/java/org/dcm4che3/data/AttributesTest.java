@@ -48,6 +48,7 @@ import org.junit.Test;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Date;
 
 import static org.junit.Assert.*;
@@ -516,6 +517,7 @@ public class AttributesTest {
     @Test
     public void testBulkdata() throws IOException {
         byte[] BYTES = { Byte.MIN_VALUE, 0, Byte.MAX_VALUE, 0 };
+        String[] BYTES_AS_STRING = { "-128", "0", "127", "0" };
         String[] STRINGS = { "VALUE1", "VALUE2" };
         String[] AGES = { "018M", "018Y" };
         String[] DATES = { "19560708", "20010203" };
@@ -557,10 +559,16 @@ public class AttributesTest {
                 Tag.SelectorUVValue
         };
         int[] INTS = { Short.MIN_VALUE,  Short.MAX_VALUE };
-        long[] LONGS = { Long.MIN_VALUE,  Short.MAX_VALUE };
+        String[] INTS_AS_STRING = { "-32768",  "32767" };
+        long[] LONGS = { Long.MIN_VALUE,  Long.MAX_VALUE };
+        String[] LONGS_AS_STRINGS = { "-9223372036854775808",  "9223372036854775807" };
+        String[] ULONGS_AS_STRINGS = { "9223372036854775808",  "9223372036854775807" };
         int[] UINTS = { 0xffff,  Short.MAX_VALUE };
+        String[] UINTS_AS_STRINGS = { "65535",  "32767" };
         float[] FLOATS = { -Float.MIN_VALUE,  0.1234f, Float.MAX_VALUE };
+        String[] FLOATS_AS_STRINGS = { "-1.4E-45", "0.1234", "3.4028235E38" };
         double[] DOUBLES = { -Double.MIN_VALUE,  0.1234, Double.MAX_VALUE };
+        String[] DOUBLES_AS_STRINGS = { "-4.9E-324", "0.1234", "1.7976931348E308" };
         String URI = "http://host/path";
 
         Attributes a = new Attributes();
@@ -609,36 +617,53 @@ public class AttributesTest {
             assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorAEValue));
             assertArrayEquals(AGES, b.getStrings(Tag.SelectorASValue));
             assertEquals(TAGS[0], b.getInt(Tag.SelectorATValue, 0));
+            assertEquals("0072005E", b.getString(Tag.SelectorATValue));
             assertArrayEquals(DATES, b.getStrings(Tag.SelectorDAValue));
             assertEquals(STRINGS[0], b.getString(Tag.SelectorCSValue));
             assertArrayEquals(DATES, b.getStrings(Tag.SelectorDTValue));
             assertArrayEquals(INTS, b.getInts(Tag.SelectorISValue));
+            assertArrayEquals(INTS_AS_STRING, b.getStrings(Tag.SelectorISValue));
             assertArrayEquals(BYTES, b.getBytes(Tag.SelectorOBValue));
+            assertArrayEquals(BYTES_AS_STRING, b.getStrings(Tag.SelectorOBValue));
             assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorLOValue));
             assertArrayEquals(FLOATS, b.getFloats(Tag.SelectorOFValue), 0);
+            assertArrayEquals(FLOATS_AS_STRINGS, b.getStrings(Tag.SelectorOFValue));
             assertEquals(URI, b.getString(Tag.SelectorLTValue));
             assertArrayEquals(INTS, b.getInts(Tag.SelectorOWValue));
+            assertArrayEquals(INTS_AS_STRING, b.getStrings(Tag.SelectorOWValue));
             assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorPNValue));
             assertArrayEquals(TIMES, b.getStrings(Tag.SelectorTMValue));
             assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorSHValue));
             assertArrayEquals(BYTES, b.getBytes(Tag.SelectorUNValue));
+            assertArrayEquals(BYTES_AS_STRING, b.getStrings(Tag.SelectorUNValue));
             assertEquals(URI, b.getString(Tag.SelectorSTValue));
             assertArrayEquals(STRINGS, b.getStrings(Tag.SelectorUCValue));
             assertEquals(URI, b.getString(Tag.SelectorUTValue));
             assertEquals(URI, b.getString(Tag.SelectorURValue));
             assertArrayEquals(FLOATS, b.getFloats(Tag.SelectorDSValue), 0);
+            assertArrayEquals(FLOATS_AS_STRINGS, b.getStrings(Tag.SelectorDSValue));
             assertArrayEquals(DOUBLES, b.getDoubles(Tag.SelectorODValue), 0);
+            assertArrayEquals(DOUBLES_AS_STRINGS, b.getStrings(Tag.SelectorFDValue));
             assertEquals(DOUBLES[0], b.getDouble(Tag.SelectorFDValue, 0), 0);
             assertArrayEquals(INTS, b.getInts(Tag.SelectorOLValue));
+            assertArrayEquals(INTS_AS_STRING, b.getStrings(Tag.SelectorOLValue));
             assertEquals(FLOATS[0], b.getFloat(Tag.SelectorFLValue, 0), 0);
+            assertArrayEquals(FLOATS_AS_STRINGS, b.getStrings(Tag.SelectorFLValue));
             assertArrayEquals(UINTS, b.getInts(Tag.SelectorULValue));
+            assertArrayEquals(UINTS_AS_STRINGS, b.getStrings(Tag.SelectorULValue));
             assertEquals(UINTS[0], b.getInt(Tag.SelectorUSValue, 0));
+            assertEquals(UINTS_AS_STRINGS[0], b.getString(Tag.SelectorUSValue));
             assertArrayEquals(INTS, b.getInts(Tag.SelectorSLValue));
+            assertArrayEquals(INTS_AS_STRING, b.getStrings(Tag.SelectorSLValue));
             assertEquals(INTS[0], b.getInt(Tag.SelectorSSValue, 0));
+            assertEquals(INTS_AS_STRING[0], b.getString(Tag.SelectorSSValue));
             assertArrayEquals(UIDS, b.getStrings(Tag.SelectorUIValue));
             assertArrayEquals(LONGS, b.getLongs(Tag.SelectorOVValue));
+            assertArrayEquals(LONGS_AS_STRINGS, b.getStrings(Tag.SelectorOVValue));
             assertEquals(LONGS[0], b.getLong(Tag.SelectorSVValue, 0));
+            assertEquals(LONGS_AS_STRINGS[0], b.getString(Tag.SelectorSVValue));
             assertEquals(LONGS[0], b.getLong(Tag.SelectorUVValue, 0));
+            assertEquals(ULONGS_AS_STRINGS[0], b.getString(Tag.SelectorUVValue));
         } finally {
             for (File f : in.getBulkDataFiles()) {
                 f.delete();

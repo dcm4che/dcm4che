@@ -38,15 +38,12 @@
 
 package org.dcm4che3.data;
 
-import org.dcm4che3.io.BasicBulkDataDescriptor;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StringUtils;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 

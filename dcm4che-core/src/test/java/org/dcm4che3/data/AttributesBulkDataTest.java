@@ -63,62 +63,75 @@ public class AttributesBulkDataTest {
             Tag.SelectorUVValue
     };
     private int[] INTS = { Short.MIN_VALUE,  Short.MAX_VALUE };
-    private long[] LONGS = { Long.MIN_VALUE,  Short.MAX_VALUE };
+    private long[] LONGS = { Long.MIN_VALUE,  Long.MAX_VALUE };
     private int[] UINTS = { 0xffff,  Short.MAX_VALUE };
     private float[] FLOATS = { -Float.MIN_VALUE,  0.1234f, Float.MAX_VALUE };
     private double[] DOUBLES = { -Double.MIN_VALUE,  0.1234, Double.MAX_VALUE };
+    private String[] BYTES_AS_STRING = { "-128", "0", "127", "0" };
+    private String[] LONGS_AS_STRINGS = { "-9223372036854775808",  "9223372036854775807" };
+    private String[] INTS_AS_STRING = { "-32768",  "32767" };
+    private String[] ULONGS_AS_STRINGS = { "9223372036854775808",  "9223372036854775807" };
+    private String[] UINTS_AS_STRINGS = { "65535",  "32767" };
+    private String[] FLOATS_AS_STRINGS = { "-1.4E-45", "0.1234", "3.4028235E38" };
     private String[] DOUBLES_AS_STRINGS = { "-4.9E-324", "0.1234", "1.7976931348E308" };
     private String URI = "http://host/path";
 
     @Test
     public void testBulkdataLittleEndian() throws IOException {
-        Attributes a = createTestAttributes();
-        DicomInputStream in = asDicomInputStream(a, UID.ExplicitVRLittleEndian);
-        try {
-            in.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
-            in.setBulkDataDescriptor(new BasicBulkDataDescriptor().excludeDefaults().addTag(TAGS));
-            in.setConcatenateBulkDataFiles(true);
-            Attributes b = in.readDataset();
-            assertValues(b);
-        } finally {
-            for (File f : in.getBulkDataFiles()) {
-                f.delete();
-            }
-        }
+        testBulkdata(UID.ExplicitVRLittleEndian, false, false);
     }
 
     @Test
     public void testBulkdataBigEndian() throws IOException {
-        Attributes a = createTestAttributes();
-        DicomInputStream in = asDicomInputStream(a, UID.ExplicitVRBigEndian);
-        try {
-            in.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
-            in.setBulkDataDescriptor(new BasicBulkDataDescriptor().excludeDefaults().addTag(TAGS));
-            in.setConcatenateBulkDataFiles(true);
-            Attributes b = in.readDataset();
-            assertValues(b);
-        } finally {
-            for (File f : in.getBulkDataFiles()) {
-                f.delete();
-            }
-        }
+        testBulkdata(UID.ExplicitVRBigEndian, true, false);
     }
 
     @Test
     public void testBulkdataBigEndianToLittleEndian() throws IOException {
+        testBulkdata(UID.ExplicitVRBigEndian, false, false);
+    }
+
+    @Test
+    public void testBulkdataLittleEndianToBigEndian() throws IOException {
+        testBulkdata(UID.ExplicitVRLittleEndian, true, false);
+    }
+
+    @Test
+    public void testBulkdataLittleEndianBinaryAsString() throws IOException {
+        testBulkdata(UID.ExplicitVRLittleEndian, false, true);
+    }
+
+    @Test
+    public void testBulkdataBigEndianBinaryAsString() throws IOException {
+        testBulkdata(UID.ExplicitVRBigEndian, true, true);
+    }
+
+    @Test
+    public void testBulkdataBigEndianToLittleEndianBinaryAsString() throws IOException {
+        testBulkdata(UID.ExplicitVRBigEndian, false, true);
+    }
+
+    @Test
+    public void testBulkdataLittleEndianToBigEndianBinaryAsString() throws IOException {
+        testBulkdata(UID.ExplicitVRLittleEndian, true, true);
+    }
+
+    private void testBulkdata(String transferSyntaxUID, boolean toBigEndian, boolean binaryAsStrings)
+            throws IOException {
         Attributes a = createTestAttributes();
-        DicomInputStream in = asDicomInputStream(a, UID.ExplicitVRBigEndian);
+        DicomInputStream in = asDicomInputStream(a, transferSyntaxUID);
         try {
             in.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
             in.setBulkDataDescriptor(new BasicBulkDataDescriptor().excludeDefaults().addTag(TAGS));
             in.setConcatenateBulkDataFiles(true);
-            Attributes attributesBigEndian = in.readDataset();
-
-            // store bigEndian BulkData references in a littleEndian Attributes
-            Attributes attributesLittleEndian = new Attributes();
-            attributesLittleEndian.addAll(attributesBigEndian);
-
-            assertValues(attributesLittleEndian);
+            Attributes attrs = in.readDataset();
+            if (attrs.bigEndian() != toBigEndian)
+                attrs = new Attributes(attrs, toBigEndian);
+            if (binaryAsStrings) {
+                assertBinaryValuesAsStrings(attrs);
+            } else {
+                assertValues(attrs);
+            }
         } finally {
             for (File f : in.getBulkDataFiles()) {
                 f.delete();
@@ -126,26 +139,23 @@ public class AttributesBulkDataTest {
         }
     }
 
-    @Test
-    public void testBulkdataLittleEndianToBigEndian() throws IOException {
-        Attributes a = createTestAttributes();
-        DicomInputStream in = asDicomInputStream(a, UID.ExplicitVRLittleEndian);
-        try {
-            in.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
-            in.setBulkDataDescriptor(new BasicBulkDataDescriptor().excludeDefaults().addTag(TAGS));
-            in.setConcatenateBulkDataFiles(true);
-            Attributes attributesLittleEndian = in.readDataset();
-
-            // store littleEndian BulkData references in a bigEndian Attributes
-            Attributes attributesBigEndian = new Attributes(true);
-            attributesBigEndian.addAll(attributesLittleEndian);
-
-            assertValues(attributesBigEndian);
-        } finally {
-            for (File f : in.getBulkDataFiles()) {
-                f.delete();
-            }
-        }
+    private void assertBinaryValuesAsStrings(Attributes b) {
+        assertEquals("0072005E", b.getString(Tag.SelectorATValue));
+        assertArrayEquals(BYTES_AS_STRING, b.getStrings(Tag.SelectorOBValue));
+        assertArrayEquals(FLOATS_AS_STRINGS, b.getStrings(Tag.SelectorOFValue));
+        assertArrayEquals(INTS_AS_STRING, b.getStrings(Tag.SelectorOWValue));
+        assertArrayEquals(BYTES_AS_STRING, b.getStrings(Tag.SelectorUNValue));
+        assertArrayEquals(INTS_AS_STRING, b.getStrings(Tag.SelectorOLValue));
+        assertArrayEquals(DOUBLES_AS_STRINGS, b.getStrings(Tag.SelectorODValue));
+        assertArrayEquals(DOUBLES_AS_STRINGS, b.getStrings(Tag.SelectorFDValue));
+        assertArrayEquals(FLOATS_AS_STRINGS, b.getStrings(Tag.SelectorFLValue));
+        assertArrayEquals(UINTS_AS_STRINGS, b.getStrings(Tag.SelectorULValue));
+        assertEquals(UINTS_AS_STRINGS[0], b.getString(Tag.SelectorUSValue));
+        assertArrayEquals(INTS_AS_STRING, b.getStrings(Tag.SelectorSLValue));
+        assertEquals(INTS_AS_STRING[0], b.getString(Tag.SelectorSSValue));
+        assertArrayEquals(LONGS_AS_STRINGS, b.getStrings(Tag.SelectorOVValue));
+        assertEquals(LONGS_AS_STRINGS[0], b.getString(Tag.SelectorSVValue));
+        assertEquals(ULONGS_AS_STRINGS[0], b.getString(Tag.SelectorUVValue));
     }
 
     private void assertValues(Attributes b) throws IOException {
@@ -174,7 +184,6 @@ public class AttributesBulkDataTest {
         assertEquals(URI, b.getString(Tag.SelectorURValue));
         assertArrayEquals(FLOATS, b.getFloats(Tag.SelectorDSValue), 0);
         assertArrayEquals(DOUBLES, b.getDoubles(Tag.SelectorODValue), 0);
-        assertArrayEquals(DOUBLES_AS_STRINGS, b.getStrings(Tag.SelectorFDValue));
         assertEquals(DOUBLES[0], b.getDouble(Tag.SelectorFDValue, 0), 0);
         assertArrayEquals(INTS, b.getInts(Tag.SelectorOLValue));
         assertEquals(FLOATS[0], b.getFloat(Tag.SelectorFLValue, 0), 0);

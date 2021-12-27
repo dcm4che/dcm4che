@@ -204,9 +204,10 @@ public class JSONReader {
             }
         }
         expect(JsonParser.Event.END_OBJECT);
-        if (el.vr == null)
-            throw new JsonParsingException("Missing property: vr", parser.getLocation());
-
+        if (el.vr == null) {
+            el.vr = ElementDictionary.getStandardElementDictionary().vrOf(tag);
+            LOG.info("Missing property: vr at {} - treat as '{}'", parser.getLocation(), el.vr);
+        }
         if (el.isEmpty())
             attrs.setNull(tag, el.vr);
         else if (el.bulkDataURI != null) {

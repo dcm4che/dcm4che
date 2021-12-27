@@ -181,7 +181,8 @@ public class JSONReader {
                     try {
                         el.vr = VR.valueOf(valueString());
                     } catch (IllegalArgumentException e) {
-                        throw new JsonParsingException("Invalid vr: " + getString(), parser.getLocation());
+                        el.vr = ElementDictionary.getStandardElementDictionary().vrOf(tag);
+                        LOG.info("Invalid vr: '{}' at {} - treat as '{}'",getString(), parser.getLocation(), el.vr);
                     }
                     break;
                 case "Value":
@@ -268,6 +269,11 @@ public class JSONReader {
     private List<Object> readValues() {
         ArrayList<Object> list = new ArrayList<>();
         next();
+        if( this.event == Event.VALUE_STRING ) {
+            LOG.info("Missing value array at {} - treat as single value", parser.getLocation());
+            list.add(getString());
+            return list;
+        }
         expect(Event.START_ARRAY);
         while (next() != Event.END_ARRAY) {
             switch (event) {

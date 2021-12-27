@@ -636,14 +636,13 @@ public class Transcoder implements Closeable {
                 dataset.setInt(Tag.PlanarConfiguration, VR.US, destTransferSyntaxType.getPlanarConfiguration());
             if (lossyCompression) {
                 dataset.setString(Tag.LossyImageCompression, VR.CS, "01");
-				if ("jpeg2000-cv".equals(compressorParam.formatName)) {
-					for (Property p : compressorParam.getImageWriteParams()) {
-						if ("compressionRatiofactor".equals(p.getName())) {
-							dataset.setFloat(Tag.LossyImageCompressionRatio, VR.DS, ((Double) p.getValue()).floatValue());
-							break;
-						}
-					}
-				}
+                try {
+                    dataset.setFloat(Tag.LossyImageCompressionRatio, VR.DS,
+                            ((Number) compressParam.getClass()
+                                    .getMethod("getCompressionRatiofactor")
+                                    .invoke(compressParam)).floatValue());
+                } catch (Exception ignore) {
+                }
             }
         }
     }

@@ -54,8 +54,8 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\weasis-core-img-${weasis.core.img.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\jai_imageio-1.2-pre-dr-b04.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\clibwrapper_jiio-1.2-pre-dr-b04.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-${slf4j.version}.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-${slf4j.version}.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-${log4j.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\logback-core-${logback.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\logback-classic-${logback.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-${commons-cli.version}.jar
 
 rem Setup the native library path

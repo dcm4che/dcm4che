@@ -531,7 +531,11 @@ public class Attributes implements Serializable {
     }
 
     private Object decodeStringValue(int index) {
-        Object value = loadBulkData(values[index]);
+        Object value = loadBulkData(vrs[index], values[index]);
+        return decodeStringValue(index, value);
+    }
+
+    private Object decodeStringValue(int index, Object value) {
         if (value instanceof byte[]) {
             value = vrs[index].toStrings((byte[]) value, bigEndian,
                     getSpecificCharacterSet(vrs[index]));
@@ -542,14 +546,14 @@ public class Attributes implements Serializable {
         return value;
     }
 
-    private Object loadBulkData(int index) {
-        return values[index] = loadBulkData(values[index]);
+    private Object loadAndStoreBulkData(int index) {
+        return values[index] = loadBulkData(vrs[index], values[index]);
     }
 
-    static Object loadBulkData(Object value) {
+    private Object loadBulkData(VR vr, Object value) {
         try {
             return (value instanceof BulkData)
-                    ? ((BulkData) value).toBytes(null, ((BulkData) value).bigEndian())
+                    ? ((BulkData) value).toBytes(vr, bigEndian)
                     : value;
         } catch (Exception e) {
             LOG.info("Failed to load {}", value);
@@ -844,12 +848,13 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr.isStringType()) {
-            value = decodeStringValue(index);
-            if (value == Value.NULL)
-                return defVal;
-        }
 
+        value = loadBulkData(vr, value);
+        if (vr.isStringType()) {
+            value = decodeStringValue(index, value);
+        }
+        if (value == Value.NULL)
+            return defVal;
         try {
             return vr.toString(value, bigEndian, valueIndex, defVal);
         } catch (UnsupportedOperationException e) {
@@ -879,11 +884,13 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
+
+        value = loadBulkData(vr, value);
         if (vr.isStringType()) {
-            value = decodeStringValue(index);
-            if (value == Value.NULL)
-                return StringUtils.EMPTY_STRING;
+            value = decodeStringValue(index, value);
         }
+        if (value == Value.NULL)
+            return StringUtils.EMPTY_STRING;
         try {
             return toStrings(vr.toStrings(value, bigEndian,
                     getSpecificCharacterSet(vr)));
@@ -934,7 +941,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
+            value = loadAndStoreBulkData(index);
             if (vr == VR.IS)
                 value = decodeISValue(index);
 
@@ -971,7 +978,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
+            value = loadAndStoreBulkData(index);
             if (vr == VR.IS)
                 value = decodeISValue(index);
 
@@ -1020,7 +1027,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
+            value = loadAndStoreBulkData(index);
             if (vr == VR.IS)
                 value = decodeISValue(index);
 
@@ -1057,7 +1064,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
+            value = loadAndStoreBulkData(index);
             if (vr == VR.IS)
                 value = decodeISValue(index);
 
@@ -1106,7 +1113,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
+            value = loadAndStoreBulkData(index);
             if (vr == VR.DS)
                 value = decodeDSValue(index);
 
@@ -1143,7 +1150,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
+            value = loadAndStoreBulkData(index);
             if (vr == VR.DS)
                 value = decodeDSValue(index);
 
@@ -1192,7 +1199,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
+            value = loadAndStoreBulkData(index);
             if (vr == VR.DS)
                 value = decodeDSValue(index);
 
@@ -1229,7 +1236,7 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
+            value = loadAndStoreBulkData(index);
             if (vr == VR.DS)
                 value = decodeDSValue(index);
 

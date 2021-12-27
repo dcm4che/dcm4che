@@ -102,7 +102,7 @@ public class StowRS {
     private String tmpSuffix;
     private File tmpDir;
     private final List<StowChunk> stowChunks = new ArrayList<>();
-    private int limit;
+    private static int limit;
     private int filesScanned;
     private int filesSent;
     private long totalSize;
@@ -248,10 +248,6 @@ public class StowRS {
         this.tmpDir = tmpDir;
     }
 
-    public final void setLimit(int limit) {
-        this.limit = limit;
-    }
-
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         long t1;
@@ -296,12 +292,12 @@ public class StowRS {
         long t2 = System.currentTimeMillis();
         float s = (t2 - t1) / 1000F;
         float mb = stowChunk.getSize() / 1048576F;
-        System.out.println(MessageFormat.format(rb.getString("sent"),
+        System.out.println(MessageFormat.format(rb.getString(limit == 0 ? "sentNoLimit" : "sent"),
                 stowChunk.sent, mb, s, mb / s));
     }
 
     private static void logSent(StowRS stowRS, long t1) {
-        if (stowRS.filesSent == 0 || stowRS.limit == 1)
+        if (stowRS.filesSent == 0 || limit == 0)
             return;
 
         long t2 = System.currentTimeMillis();
@@ -354,7 +350,7 @@ public class StowRS {
         encapsulatedDocLength = cl.hasOption("encapsulatedDocLength");
         if (cl.hasOption("contentType"))
             bulkdataFileContentType = fileContentTypeFromCL = fileContentType(cl.getOptionValue("contentType"));
-        setLimit(Integer.parseInt(cl.getOptionValue("limit", "0")));
+        limit = Integer.parseInt(cl.getOptionValue("limit", "0"));
         configureTmpFile(cl);
         processFirstFile(cl);
         setRequestProperties(requestProperties());
@@ -820,7 +816,6 @@ public class StowRS {
         long t1, t2;
         t1 = System.currentTimeMillis();
         URLConnection urlConnection = new URL(url).openConnection();
-
         final HttpURLConnection connection = (HttpURLConnection) urlConnection;
         t2 = System.currentTimeMillis();
         System.out.println("..");

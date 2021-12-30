@@ -38,10 +38,10 @@
 
 package org.dcm4che3.net.audit;
 
-import java.util.List;
-
 import org.dcm4che3.audit.*;
 import org.dcm4che3.data.Code;
+
+import java.util.List;
 
 /**
  * Specifies criteria for {@link EventIdentification} and optional also for
@@ -67,7 +67,7 @@ public class AuditSuppressCriteria {
     private String commonName;
     private EventID[] eventIDs = {};
     private EventTypeCode[] eventTypeCodes = {};
-    private String eventActionCodes[] = {};
+    private String[] eventActionCodes = {};
     private String[] eventOutcomeIndicators = {};
     private String[] userIDs = {};
     private String[] alternativeUserIDs = {};

@@ -36,20 +36,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.conf.core.api;
+package org.dcm4che3.conf.core.api.tests;
 
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
-import static org.junit.Assert.fail;
+import org.dcm4che3.conf.core.api.InternalConfigChangeEvent;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Stephen Frederick <stephen.frederick@agfa.com>
@@ -74,5 +68,4 @@ public class InternalConfigChangeEventTest {
         Assert.assertEquals(expectedChangedPaths.get(0), actualChangedPaths.get(0));
         Assert.assertEquals(expectedChangedPaths.get(1), actualChangedPaths.get(1));
     }
-
 }

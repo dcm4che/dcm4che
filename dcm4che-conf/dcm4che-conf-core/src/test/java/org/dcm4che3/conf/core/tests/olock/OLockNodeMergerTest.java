@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.OptimisticLockException;
+import org.dcm4che3.conf.core.olock.OLockMergeException;
 import org.dcm4che3.conf.core.olock.OLockNodeMerger;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,10 +56,11 @@ public class OLockNodeMergerTest {
     }
     
     @Test
-    public void merge_ThrowsOptimisticLockException_GivenNodeBeingPersistedWithDifferentHashThanNodeInStorage() {
+    public void merge_ThrowsOLockMergeException_GivenNodeBeingPersistedWithDifferentHashThanNodeInStorage() {
         
-        expectedException.expect(OptimisticLockException.class);
-        expectedException.expectMessage("Concurrent modification at path ''");
+        expectedException.expect(OLockMergeException.class);
+        expectedException.expectMessage(
+            "Cannot merge node because new hash 'bad hash' does not match old one 'I have changed since you asked'");
 
         nodeBeingPersisted.put("setting", "one and only");
         nodeBeingPersisted.put(Configuration.OLOCK_HASH_KEY, "bad hash");
@@ -71,10 +72,10 @@ public class OLockNodeMergerTest {
     }
     
     @Test
-    public void merge_ThrowsOptimisticLockException_GivenNodeBeingPersistedWithDifferentHashThanNewGeneratedOne() {
+    public void merge_ThrowsOLockMergeException_GivenNodeBeingPersistedWithDifferentHashThanNewGeneratedOne() {
         
-        expectedException.expect(OptimisticLockException.class);
-        expectedException.expectMessage("Concurrent modification at path ''");
+        expectedException.expect(OLockMergeException.class);
+        expectedException.expectMessage("Cannot merge node because new hash 'bad hash' does not match old one 'wf8jEDyPvsPKvDHQVrjCCNblq9E='");
 
         nodeBeingPersisted.put("setting", "one and only");
         nodeBeingPersisted.put(Configuration.OLOCK_HASH_KEY, "bad hash");

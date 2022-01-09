@@ -407,8 +407,7 @@ public class AuditSuppressCriteria {
         if (!matchRoleIDCodes(ap.getRoleIDCode()))
             return false;
 
-        return userIsRequestor == null
-                || ap.isUserIsRequestor() == userIsRequestor.booleanValue();
+        return userIsRequestor == null || ap.isUserIsRequestor() == userIsRequestor;
     }
 
     private boolean matchRoleIDCodes(List<RoleIDCode> list) {

@@ -39,7 +39,8 @@
  */
 package org.dcm4che3.audit.keycloak;
 
-import org.dcm4che3.audit.*;
+import org.dcm4che3.audit.AuditMessage;
+import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
@@ -48,10 +49,6 @@ import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -70,13 +67,15 @@ class AuditUtils {
         UPDT_USER(AuditMessages.EventID.SecurityAlert, AuditMessages.EventTypeCode.UserSecurityAttributesChanged),
         ADMIN_EVT(AuditMessages.EventID.SecurityAlert, AuditMessages.EventTypeCode.SecurityConfiguration),
         ROLE_MAPPING(AuditMessages.EventID.SecurityAlert, AuditMessages.EventTypeCode.SecurityRolesChanged);
-        
-        final AuditMessages.EventID eventID;
-        final EventTypeCode eventTypeCode;
 
-        AuditEventType(AuditMessages.EventID eventID, EventTypeCode etc) {
+        final AuditMessages.EventID eventID;
+        final AuditMessages.EventTypeCode eventTypeCode;
+        final String eventActionCode;
+
+        AuditEventType(AuditMessages.EventID eventID, AuditMessages.EventTypeCode etc) {
             this.eventID = eventID;
             this.eventTypeCode = etc;
+            this.eventActionCode = AuditMessages.EventActionCode.Execute;
         }
 
         static AuditEventType forSuperUserAuth(Event event) {
@@ -95,11 +94,11 @@ class AuditUtils {
 
             return opType == OperationType.CREATE
                     && (resourceType == ResourceType.REALM_ROLE_MAPPING
-                        || resourceType == ResourceType.CLIENT_ROLE_MAPPING)
-                        ? ROLE_MAPPING
-                        : opType == OperationType.UPDATE && resourceType == ResourceType.USER
-                            ? UPDT_USER
-                            : ADMIN_EVT;
+                    || resourceType == ResourceType.CLIENT_ROLE_MAPPING)
+                    ? ROLE_MAPPING
+                    : opType == OperationType.UPDATE && resourceType == ResourceType.USER
+                    ? UPDT_USER
+                    : ADMIN_EVT;
         }
 
         static boolean isLogout(Event event) {
@@ -116,52 +115,10 @@ class AuditUtils {
         }
     }
 
-    static void moveFailedFile(Path file, AuditLogger log, Exception e) {
-        LOG.warn("Failed to process Audit Spool File {} of Audit Logger {} : {}",
-                file, log.getCommonName(), e);
-        try {
-            Files.move(file, file.resolveSibling(file.getFileName().toString() + ".failed"));
-        } catch (IOException e1) {
-            LOG.warn("Failed to mark Audit Spool File {} of Audit Logger {} as failed : {}",
-                    file, log.getCommonName(), e);
-        }
-    }
-
-    static EventIdentification eventID(
-            AuditUtils.AuditEventType eventType, AuditLogger auditLogger, String outcome, String adminEventInfo) {
-        return new EventIdentificationBuilder(
-                eventType.eventID,
-                AuditMessages.EventActionCode.Execute,
-                auditLogger.timeStamp(),
-                eventOutcomeIndicator(outcome))
-                .outcomeDesc(adminEventInfo != null
-                        ? outcome != null
-                            ? adminEventInfo + " " + outcome
-                            : adminEventInfo
-                        : outcome)
-                .eventTypeCode(eventType.eventTypeCode)
-                .build();
-    }
-
-    private static String eventOutcomeIndicator(String outcomeDesc) {
+    static String eventOutcomeIndicator(String outcomeDesc) {
         return outcomeDesc != null
                 ? AuditMessages.EventOutcomeIndicator.MinorFailure
                 : AuditMessages.EventOutcomeIndicator.Success;
     }
 
-    static ActiveParticipant[] activeParticipants(AuthInfo info, AuditLogger auditLogger) {
-        ActiveParticipant[] activeParticipants = new ActiveParticipant[2];
-        String userName = info.getField(AuthInfo.USER_NAME);
-        activeParticipants[0] = new ActiveParticipantBuilder(
-                userName,
-                info.getField(AuthInfo.IP_ADDR))
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.PersonID)
-                .isRequester().build();
-        activeParticipants[1] = new ActiveParticipantBuilder(
-                auditLogger.getDevice().getDeviceName(),
-                auditLogger.getConnections().get(0).getHostname())
-                .userIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName)
-                .altUserID(AuditLogger.processID()).build();
-        return activeParticipants;
-    }
 }

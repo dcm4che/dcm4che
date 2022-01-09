@@ -42,17 +42,10 @@ package org.dcm4che3.audit.keycloak;
 import org.dcm4che3.audit.*;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.keycloak.events.admin.AdminEvent;
-import org.keycloak.events.admin.AuthDetails;
 import org.keycloak.models.KeycloakSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.keycloak.models.UserModel;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.util.Optional;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -60,78 +53,89 @@ import java.nio.file.StandardOpenOption;
  * @since Oct 2018
  */
 class AdminEventsAuditService {
-    private static final Logger LOG = LoggerFactory.getLogger(AdminEventsAuditService.class);
-    private static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
+    private static final String REPRESENTATION = "Representation: ";
+    private static final String RESOURCE_PATH = "ResourcePath: ";
+    private static final String REALM = "Realm: ";
 
-    static void spoolAuditMsg(AdminEvent adminEvent, AuditLogger auditLogger, KeycloakSession keycloakSession) {
-        try {
-            Path file = createFile(auditLogger, adminEvent);
-            spoolAndAudit(file, auditLogger, adminEvent, keycloakSession);
-        } catch (Exception e) {
-            LOG.warn("Failed to spool and audit admin event {}: {} ",
-                    adminEvent.getOperationType().name() + " " + adminEvent.getResourceType().name(), e);
-        }
-    }
-
-    private static Path createFile(AuditLogger auditLogger, AdminEvent adminEvent) throws Exception {
-        String dataDir = System.getProperty(JBOSS_SERVER_DATA_DIR);
-        Path dir = Paths.get(dataDir,
-                "audit-auth-spool",
-                auditLogger.getCommonName().replaceAll(" ", "_"));
-
-        if (!Files.exists(dir))
-            Files.createDirectories(dir);
-
-        AuthDetails authDetails = adminEvent.getAuthDetails();
-        return Files.createTempFile(dir, authDetails.getIpAddress() + "-" + authDetails.getUserId(), null);
-    }
-
-    private static void spoolAndAudit(Path file, AuditLogger auditLogger, AdminEvent adminEvent,
-                                      KeycloakSession keycloakSession) throws IOException {
-        try (SpoolFileWriter writer = new SpoolFileWriter(
-                Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
-            writer.writeLine(new AuthInfo(adminEvent, keycloakSession));
-        }
-
-        try {
-            AuditUtils.emitAudit(auditLogger, createAuditMsg(file, adminEvent, auditLogger));
-            Files.delete(file);
-        } catch (Exception e) {
-            LOG.warn("Failed to process Audit Spool File {} of Audit Logger {} : {}",
-                    file, auditLogger.getCommonName(), e);
-            try {
-                Files.move(file, file.resolveSibling(file.getFileName().toString() + ".failed"));
-            } catch (IOException e1) {
-                LOG.warn("Failed to mark Audit Spool File {} of Audit Logger {} as failed : {}",
-                        file, auditLogger.getCommonName(), e);
-            }
-        }
-    }
-
-    private static AuditMessage createAuditMsg(Path file, AdminEvent adminEvent, AuditLogger auditLogger) {
-        AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
+    static void audit(AdminEvent adminEvent, AuditLogger auditLogger, KeycloakSession session) {
         AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forAdminEvent(adminEvent);
-        EventIdentification eventIdentification = AuditUtils.eventID(
-                eventType, auditLogger, adminEvent.getError(), info.getField(AuthInfo.EVENT));
-
-        ActiveParticipant[] activeParticipants = AuditUtils.activeParticipants(info, auditLogger);
-
-        ParticipantObjectIdentification poi = new ParticipantObjectIdentificationBuilder(
-                auditLogger.getDevice().getDeviceName(),
-                AuditMessages.ParticipantObjectIDTypeCode.DeviceName,
-                AuditMessages.ParticipantObjectTypeCode.SystemObject,
-                null)
-                .detail(AuditMessages.createParticipantObjectDetail("Alert Description", alert(info)))
-                .build();
-        return AuditMessages.createMessage(eventIdentification, activeParticipants, poi);
+        AuditMessage auditMsg = new AuditMessage();
+        auditMsg.setEventIdentification(eventIdentification(eventType, adminEvent, auditLogger));
+        auditMsg.getActiveParticipant().add(user(adminEvent, session));
+        auditMsg.getActiveParticipant().add(device(auditLogger));
+        auditMsg.getParticipantObjectIdentification().add(participant(adminEvent, session, auditLogger));
+        AuditUtils.emitAudit(auditLogger, auditMsg);
     }
 
-    private static String alert(AuthInfo info) {
-        String alert = "Representation: " + info.getField(AuthInfo.REPRESENTATION)
-                        + "\nResourcePath: " + info.getField(AuthInfo.RESOURCE_PATH);
-        if (info.getField(AuthInfo.REALM) != null)
-            alert += "\nRealm: " + info.getField(AuthInfo.REALM);
+    private static EventIdentification eventIdentification(
+            AuditUtils.AuditEventType eventType, AdminEvent adminEvent, AuditLogger auditLogger) {
+        EventIdentification eventIdentification = new EventIdentification();
+        eventIdentification.setEventID(eventType.eventID);
+        eventIdentification.setEventActionCode(eventType.eventActionCode);
+        eventIdentification.setEventDateTime(auditLogger.timeStamp());
+        eventIdentification.getEventTypeCode().add(eventType.eventTypeCode);
+        eventIdentification.setEventOutcomeIndicator(AuditUtils.eventOutcomeIndicator(adminEvent.getError()));
+        eventIdentification.setEventOutcomeDescription(outcome(adminEvent));
+        return eventIdentification;
+    }
 
-        return alert;
+    private static String outcome(AdminEvent adminEvent) {
+        String event = adminEvent.getOperationType().name().concat(" ").concat(adminEvent.getResourceType().name());
+        return adminEvent.getError() == null
+                ? event
+                : event.concat(" ").concat(adminEvent.getError());
+    }
+
+    private static ActiveParticipant user(AdminEvent adminEvent, KeycloakSession session) {
+        ActiveParticipant user = new ActiveParticipant();
+        user.setUserID(username(adminEvent, session));
+        user.setNetworkAccessPointID(adminEvent.getAuthDetails().getIpAddress());
+        user.setUserIDTypeCode(AuditMessages.UserIDTypeCode.PersonID);
+        user.setUserIsRequestor(true);
+        return user;
+    }
+
+    private static String username(AdminEvent adminEvent, KeycloakSession session) {
+        Optional<UserModel> userModel = session.users()
+                                                .getUsersStream(session.getContext().getRealm(), false)
+                                                .findFirst();
+        return userModel.isPresent()
+                ? userModel.get().getUsername()
+                : adminEvent.getAuthDetails().getUserId();
+    }
+
+    private static ActiveParticipant device(AuditLogger auditLogger) {
+        ActiveParticipant device = new ActiveParticipant();
+        device.setUserID(auditLogger.getDevice().getDeviceName());
+        device.setAlternativeUserID(AuditLogger.processID());
+        device.setNetworkAccessPointID(auditLogger.getConnections().get(0).getHostname());
+        device.setUserIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName);
+        return device;
+    }
+
+    private static ParticipantObjectIdentification participant(
+            AdminEvent adminEvent, KeycloakSession session, AuditLogger auditLogger) {
+        ParticipantObjectIdentification participant = new ParticipantObjectIdentification();
+        participant.setParticipantObjectID(auditLogger.getDevice().getDeviceName());
+        participant.setParticipantObjectIDTypeCode(AuditMessages.ParticipantObjectIDTypeCode.DeviceName);
+        participant.setParticipantObjectTypeCode(AuditMessages.ParticipantObjectTypeCode.SystemObject);
+        participant.getParticipantObjectDetail()
+                   .add(AuditMessages.createParticipantObjectDetail("Alert Description", alert(adminEvent, session)));
+        return participant;
+    }
+
+    private static String alert(AdminEvent adminEvent, KeycloakSession session) {
+        StringBuilder alert = new StringBuilder(RESOURCE_PATH);
+        alert.append(adminEvent.getResourcePath()).append("\n");
+        if (adminEvent.getRepresentation() != null)
+            alert.append(REPRESENTATION).append(adminEvent.getRepresentation()).append("\n");
+        if (!realmsMatch(adminEvent, session))
+            alert.append(REALM).append(adminEvent.getAuthDetails().getRealmId());
+
+        return alert.toString();
+    }
+
+    private static boolean realmsMatch(AdminEvent adminEvent, KeycloakSession session) {
+        return adminEvent.getAuthDetails().getRealmId().equals(session.getContext().getRealm().getName());
     }
 }

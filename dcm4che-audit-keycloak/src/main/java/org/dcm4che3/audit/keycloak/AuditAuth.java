@@ -39,22 +39,16 @@
  */
 package org.dcm4che3.audit.keycloak;
 
-import org.dcm4che3.audit.*;
+import org.dcm4che3.audit.ActiveParticipant;
+import org.dcm4che3.audit.AuditMessage;
+import org.dcm4che3.audit.AuditMessages;
+import org.dcm4che3.audit.EventIdentification;
 import org.dcm4che3.net.audit.AuditLogger;
-
 import org.keycloak.events.Event;
-import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RoleModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.keycloak.models.UserModel;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.util.Optional;
 
 
 /**
@@ -63,81 +57,80 @@ import java.nio.file.StandardOpenOption;
  * @since Mar 2016
  */
 class AuditAuth {
-    private static final Logger LOG = LoggerFactory.getLogger(AuditAuth.class);
-    private static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
+    private static final String SU_ROLE = System.getProperty("super-user-role");
 
-    static void spoolAuditMsg(Event event, AuditLogger log, KeycloakSession keycloakSession) {
-        String dataDir = System.getProperty(JBOSS_SERVER_DATA_DIR);
-        Path dir = Paths.get(dataDir, "audit-auth-spool", log.getCommonName().replaceAll(" ", "_"));
-        try {
-            if (!Files.exists(dir))
-                Files.createDirectories(dir);
-            if (AuditUtils.AuditEventType.isLogout(event)
-                    && Files.exists(dir.resolve(event.getSessionId()))) {
-                sendAuditMessage(dir.resolve(event.getSessionId()), event, log, keycloakSession);
-                return;
-            }
-            spoolAndAudit(dir, log, event, keycloakSession);
-        } catch (Exception e) {
-            LOG.warn("Failed to spool and audit user auth event {}: {}", event.getType().name(), e);
-        }
-    }
+    static void audit(Event event, AuditLogger auditLogger, KeycloakSession session) {
+        Optional<UserModel> userModel = session.users()
+                                            .getUsersStream(session.getContext().getRealm(), false)
+                                            .findFirst();
+        String username = userModel.isPresent()
+                            ? userModel.get().getUsername()
+                            : event.getDetails() == null
+                                ? event.getUserId()
+                                : event.getDetails().get("username");
 
-    private static void spoolAndAudit(Path dir, AuditLogger log, Event event, KeycloakSession keycloakSession)
-            throws IOException {
-        Path file = event.getSessionId() != null && !Files.exists(dir.resolve(event.getSessionId()))
-                    ? Files.createFile(dir.resolve(event.getSessionId()))
-                    : Files.createTempFile(dir, event.getIpAddress() + "-" + event.getUserId(), null);
-        try (SpoolFileWriter writer = new SpoolFileWriter(
-                Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.APPEND))) {
-            writer.writeLine(new AuthInfo(event, keycloakSession));
-        }
-        sendAuditMessage(file, event, log, keycloakSession);
-    }
+        AuditMessage auditMsg = createAuditMsg(event, username, auditLogger);
+        AuditUtils.emitAudit(auditLogger, auditMsg);
 
-    private static void sendAuditMessage(Path file, Event event, AuditLogger auditLogger, KeycloakSession keycloakSession) {
-        try {
-            AuthInfo info = new AuthInfo(new SpoolFileReader(file).getMainInfo());
-            ActiveParticipant[] activeParticipants = AuditUtils.activeParticipants(info, auditLogger);
-
-            AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forEvent(event);
-            AuditUtils.emitAudit(auditLogger,
-                    AuditMessages.createMessage(
-                            AuditUtils.eventID(eventType, auditLogger, event.getError(), null),
-                            activeParticipants));
-
-            superUserAudit(event, auditLogger, keycloakSession, eventType, activeParticipants);
-            if (event.getType() != EventType.LOGIN)
-                Files.delete(file);
-        } catch (Exception e) {
-            AuditUtils.moveFailedFile(file, auditLogger, e);
-        }
-    }
-
-    private static void superUserAudit(Event event, AuditLogger auditLogger, KeycloakSession keycloakSession,
-                                       AuditUtils.AuditEventType eventType, ActiveParticipant[] activeParticipants) {
-        if (event.getUserId() == null
-                || eventType == AuditUtils.AuditEventType.UPDT_USER
-                || !isSuperUser(event, keycloakSession))
+        if (!oneOfUserAuthEvents(event)
+                || username == null
+                || (userModel.isPresent() && userModel.get()
+                                                        .getRoleMappingsStream()
+                                                        .noneMatch(roleModel -> roleModel.getName().equals(SU_ROLE))))
             return;
 
-        AuditUtils.emitAudit(auditLogger,
-                AuditMessages.createMessage(
-                        AuditUtils.eventID(AuditUtils.AuditEventType.forSuperUserAuth(event),
-                                auditLogger,
-                                event.getError(),
-                                null),
-                        activeParticipants));
+        AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forSuperUserAuth(event);
+        auditMsg.setEventIdentification(eventIdentification(eventType, event, auditLogger));
+        AuditUtils.emitAudit(auditLogger, auditMsg);
     }
 
-    private static boolean isSuperUser(Event event, KeycloakSession keycloakSession) {
-        String suRole = System.getProperty("super-user-role");
-        for (RoleModel roleMapping : keycloakSession.users()
-                .getUserById(event.getUserId(), keycloakSession.getContext().getRealm())
-                .getRoleMappings())
-            if (roleMapping.getName().equals(suRole))
-                return true;
+    private static AuditMessage createAuditMsg(Event event, String username, AuditLogger auditLogger) {
+        AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forEvent(event);
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(eventIdentification(eventType, event, auditLogger));
+        msg.getActiveParticipant().add(user(event, username));
+        msg.getActiveParticipant().add(device(auditLogger));
+        return msg;
+    }
 
+    private static EventIdentification eventIdentification(
+            AuditUtils.AuditEventType eventType, Event event, AuditLogger auditLogger) {
+        EventIdentification eventIdentification = new EventIdentification();
+        eventIdentification.setEventID(eventType.eventID);
+        eventIdentification.setEventActionCode(eventType.eventActionCode);
+        eventIdentification.setEventDateTime(auditLogger.timeStamp());
+        eventIdentification.getEventTypeCode().add(eventType.eventTypeCode);
+        eventIdentification.setEventOutcomeIndicator(AuditUtils.eventOutcomeIndicator(event.getError()));
+        eventIdentification.setEventOutcomeDescription(event.getError());
+        return eventIdentification;
+    }
+
+    private static ActiveParticipant user(Event event, String username) {
+        ActiveParticipant user = new ActiveParticipant();
+        user.setUserID(username);
+        user.setNetworkAccessPointID(event.getIpAddress());
+        user.setUserIDTypeCode(AuditMessages.UserIDTypeCode.PersonID);
+        user.setUserIsRequestor(true);
+        return user;
+    }
+
+    private static ActiveParticipant device(AuditLogger auditLogger) {
+        ActiveParticipant device = new ActiveParticipant();
+        device.setUserID(auditLogger.getDevice().getDeviceName());
+        device.setAlternativeUserID(AuditLogger.processID());
+        device.setNetworkAccessPointID(auditLogger.getConnections().get(0).getHostname());
+        device.setUserIDTypeCode(AuditMessages.UserIDTypeCode.DeviceName);
+        return device;
+    }
+
+    private static boolean oneOfUserAuthEvents(Event event) {
+        switch (event.getType()) {
+            case LOGIN:
+            case LOGIN_ERROR:
+            case LOGOUT:
+            case LOGOUT_ERROR:
+                return true;
+        }
         return false;
     }
 }

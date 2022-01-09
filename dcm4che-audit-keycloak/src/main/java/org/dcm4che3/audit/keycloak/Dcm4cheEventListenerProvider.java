@@ -72,9 +72,10 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
             try {
                 Collection<AuditLogger> loggers = new AuditLoggerFactory().getAuditLoggers();
                 if (loggers != null)
-                    for (AuditLogger logger : loggers)
+                    loggers.forEach(logger -> {
                         if (logger.isInstalled())
-                            AuditAuth.spoolAuditMsg(event, logger, keycloakSession);
+                            AuditAuth.audit(event, logger, keycloakSession);
+                    });
             } catch (Exception e) {
                 LOG.warn("Failed to get audit logger", e);
             }
@@ -86,9 +87,10 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
         try {
             Collection<AuditLogger> loggers = new AuditLoggerFactory().getAuditLoggers();
             if (loggers != null)
-                for (AuditLogger logger : loggers)
+                loggers.forEach(logger -> {
                     if (logger.isInstalled())
-                        AdminEventsAuditService.spoolAuditMsg(adminEvent, logger, keycloakSession);
+                        AdminEventsAuditService.audit(adminEvent, logger, keycloakSession);
+                });
         } catch (Exception e) {
             LOG.warn("Failed to get audit logger", e);
         }

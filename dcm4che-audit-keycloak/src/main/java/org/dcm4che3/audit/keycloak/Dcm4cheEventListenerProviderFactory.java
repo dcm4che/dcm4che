@@ -57,7 +57,7 @@ import java.util.Set;
  * @since Mar 2016
  */
 public class Dcm4cheEventListenerProviderFactory implements EventListenerProviderFactory {
-    private static String[] JBOSS_PROPERITIES = {
+    private static final String[] JBOSS_PROPERTIES = {
             "jboss.home",
             "jboss.modules",
             "jboss.server.base",
@@ -70,7 +70,7 @@ public class Dcm4cheEventListenerProviderFactory implements EventListenerProvide
     private final Set<EventType> includedEvents = new HashSet<EventType>();
 
     static void addJBossDirURLSystemProperties() {
-        for (String key : JBOSS_PROPERITIES) {
+        for (String key : JBOSS_PROPERTIES) {
             String url = new File(System.getProperty(key + ".dir")).toURI().toString();
             System.setProperty(key + ".url", url.substring(0, url.length()-1));
         }
@@ -86,9 +86,8 @@ public class Dcm4cheEventListenerProviderFactory implements EventListenerProvide
         addJBossDirURLSystemProperties();
         String[] includes = scope.getArray("include-events");
         if (includes != null) {
-            for (String e : includes) {
+            for (String e : includes)
                 includedEvents.add(EventType.valueOf(e));
-            }
         }
     }
 

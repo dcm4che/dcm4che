@@ -1,4 +1,3 @@
-// Copyright (c) 2022 Agfa HealthCare Corporation
 package org.dcm4che3.conf.core.api;
 
 /**

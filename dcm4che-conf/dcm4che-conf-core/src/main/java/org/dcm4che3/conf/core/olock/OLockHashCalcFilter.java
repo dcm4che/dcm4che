@@ -87,7 +87,7 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
         hashCalculationNodeStack.push(new byte[20]);
         
         if (ignoredKeys != null) {
-            this.getIgnoredKeys().addAll(Arrays.asList(ignoredKeys));    
+            this.ignoredKeys.addAll(Arrays.asList(ignoredKeys));    
         }
     }
 
@@ -140,7 +140,7 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
     }
 
     private boolean doIgnore(String key) {
-        return Configuration.OLOCK_HASH_KEY.equals(key) || getIgnoredKeys().contains(key);
+        return Configuration.OLOCK_HASH_KEY.equals(key) || ignoredKeys.contains(key);
     }
 
     @Override

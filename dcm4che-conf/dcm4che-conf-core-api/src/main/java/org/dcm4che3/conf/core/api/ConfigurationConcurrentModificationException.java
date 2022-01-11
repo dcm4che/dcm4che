@@ -18,8 +18,8 @@ public class ConfigurationConcurrentModificationException extends ConfigurationE
     /**
      * Constructs a new exception with the specified detail message and cause.
      *
-     * @param  message the detail message 
-     * @param  cause the cause or null if nonexistent or unknown.
+     * @param message the detail message 
+     * @param cause the cause or null if nonexistent or unknown.
      */
     public ConfigurationConcurrentModificationException(
             final String message,

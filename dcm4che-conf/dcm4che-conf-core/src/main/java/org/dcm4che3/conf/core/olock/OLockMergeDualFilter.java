@@ -42,12 +42,15 @@
 
 package org.dcm4che3.conf.core.olock;
 
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.OptimisticLockException;
-import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ADualNodeFilter;
-import org.dcm4che3.conf.core.Nodes;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import java.util.*;
+import org.dcm4che3.conf.core.Nodes;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ADualNodeFilter;
+
 
 /**
  * Performs hash-based optimistic locking logic that is
@@ -62,6 +65,7 @@ import java.util.*;
  * Changes the state of both nodes!
  *
  * @author Roman K
+ * @author Maciek Siemczyk (maciek.siemczyk@agfa.com)
  */
 class OLockMergeDualFilter extends ADualNodeFilter {
 
@@ -72,8 +76,11 @@ class OLockMergeDualFilter extends ADualNodeFilter {
      */
     private final Deque<Boolean> isMerging = new ArrayDeque<>();
 
-
+    /**
+     * Default constructor.
+     */
     public OLockMergeDualFilter() {
+        
         isMerging.push(false);
     }
 
@@ -86,47 +93,106 @@ class OLockMergeDualFilter extends ADualNodeFilter {
             return;
         }
 
-        if (!isMerging.peek()) {
-
+        if (Boolean.FALSE.equals(isMerging.peek())) {
             // We are NOT merging now
-
-            if (newNode.get(OLockNodeMerger.OLD_OLOCK_HASH_KEY).equals(newNode.get(Configuration.OLOCK_HASH_KEY))) {
-                // If we met a olocked node where new node did not change, then we swap and turn on merging (from old to new)
-                isMerging.push(true);
-                swap(oldNode, newNode);
-            } else {
-                if (newNode.get(OLockNodeMerger.OLD_OLOCK_HASH_KEY).equals(oldNode.get(Configuration.OLOCK_HASH_KEY))) {
-                    // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed - keep going
-                    isMerging.push(false);
-                } else {
-                    // If we met a olocked node where new node changed, and the hash in old node has also changed - that's an exception
-                    throw new OptimisticLockException(Nodes.toSimpleEscapedPath(path.descendingIterator()));
-                }
-            }
+            scanCurrentNode(oldNode, newNode);
         } else {
-
             // We ARE merging now
-            // have to be careful since oldNode and newNode are swapped!
-            Map<String, Object> actualNewNode = oldNode;
-            Map<String, Object> actualOldNode = newNode;
+            mergeCurrentNode(oldNode, newNode);
+        }
+    }
 
+    @Override
+    public void afterNode(Map<String, Object> node1, Map<String, Object> node2) {
+        
+        isMerging.pop();
+    }
 
-            if (actualNewNode.get(OLockNodeMerger.OLD_OLOCK_HASH_KEY).equals(actualNewNode.get(Configuration.OLOCK_HASH_KEY))) {
-                // If we met a olocked node where new node did not change, then keep on merging (from old to new)
-                isMerging.push(true);
+    @Override
+    public void beforeNodeProperty(String key) {
+        
+        path.push(key);
+    }
+
+    @Override
+    public void afterNodeProperty(String key) {
+        
+        path.pop();
+    }
+
+    @Override
+    public void beforeListElement(int index1, int index2) {
+        
+        if (Boolean.TRUE.equals(isMerging.peek())) {
+            path.push(Integer.toString(index1));
+        } else {
+            path.push(Integer.toString(index2));
+        }
+    }
+
+    @Override
+    public void afterListElement(int index1, int index2) {
+        
+        path.pop();
+    }
+
+    private void scanCurrentNode(Map<String, Object> oldNode, Map<String, Object> newNode) {
+
+        Object newNodeHash = newNode.get(OLockNodeMerger.OLD_OLOCK_HASH_KEY);
+        
+        if (newNodeHash.equals(newNode.get(Configuration.OLOCK_HASH_KEY))) {
+            // If we met a olocked node where new node did not change, then we swap and turn on merging (from old to new)
+            isMerging.push(true);
+            swap(oldNode, newNode);
+        } else {
+            Object oldNodeHash = oldNode.get(Configuration.OLOCK_HASH_KEY);
+            
+            if (newNodeHash.equals(oldNodeHash)) {
+                // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed - keep going
+                isMerging.push(false);
             } else {
-                if (actualNewNode.get(OLockNodeMerger.OLD_OLOCK_HASH_KEY).equals(actualOldNode.get(Configuration.OLOCK_HASH_KEY))) {
-                    // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed, swap and switch to non-merging mode
-                    isMerging.push(false);
-                    swap(actualOldNode, actualNewNode);
-                } else {
-                    // If we met a olocked node where new node changed, and the hash in old node has also changed - that's an exception
-                    throw new OptimisticLockException(Nodes.toSimpleEscapedPath(path.descendingIterator()));
-                }
+                // If we met a olocked node where new node changed, and the hash in old node has also changed - that's an exception
+                throw new OLockMergeException("Cannot merge " + getUserReadableNodeDescription()
+                        + "because new hash '" + newNodeHash + "' does not match old one '" + oldNodeHash + "'.");
             }
         }
     }
 
+    private void mergeCurrentNode(Map<String, Object> oldNode, Map<String, Object> newNode) {
+
+        // have to be careful since oldNode and newNode are swapped!
+        Map<String, Object> actualNewNode = oldNode;
+        Map<String, Object> actualOldNode = newNode;
+
+        Object newNodeHash = actualNewNode.get(OLockNodeMerger.OLD_OLOCK_HASH_KEY);
+        
+        if (newNodeHash.equals(actualNewNode.get(Configuration.OLOCK_HASH_KEY))) {
+            // If we met a olocked node where new node did not change, then keep on merging (from old to new)
+            isMerging.push(true);
+        } else {
+            Object oldNodeHash = actualOldNode.get(Configuration.OLOCK_HASH_KEY);
+            
+            if (newNodeHash.equals(oldNodeHash)) {
+                // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed, swap and switch to non-merging mode
+                isMerging.push(false);
+                swap(actualOldNode, actualNewNode);
+            } else {
+                // If we met a olocked node where new node changed, and the hash in old node has also changed - that's an exception                
+                throw new OLockMergeException("Cannot merge " + getUserReadableNodeDescription()
+                        + "because new hash '" + newNodeHash + "' does not match old one '" + oldNodeHash + "'.");
+            }
+        }
+    }
+
+    private String getUserReadableNodeDescription() {
+
+        if (path.isEmpty()) {
+            return "node ";
+        }
+        
+        return "'" + Nodes.toSimpleEscapedPath(path.descendingIterator()) + "' node ";
+    }
+    
     /**
      * Swaps the content of the given maps
      *
@@ -134,6 +200,7 @@ class OLockMergeDualFilter extends ADualNodeFilter {
      * @param newNode
      */
     private static void swap(Map<String, Object> oldNode, Map<String, Object> newNode) {
+        
         Map<String, Object> tmpNode = new LinkedHashMap<>(oldNode.size());
         tmpNode.putAll(oldNode);
 
@@ -142,33 +209,5 @@ class OLockMergeDualFilter extends ADualNodeFilter {
 
         newNode.clear();
         newNode.putAll(tmpNode);
-    }
-
-    @Override
-    public void afterNode(Map<String, Object> node1, Map<String, Object> node2) {
-        isMerging.pop();
-    }
-
-    @Override
-    public void beforeNodeProperty(String key) {
-        path.push(key);
-    }
-
-    @Override
-    public void afterNodeProperty(String key) {
-        path.pop();
-    }
-
-    @Override
-    public void beforeListElement(int index1, int index2) {
-        if (isMerging.peek())
-            path.push(Integer.toString(index1));
-        else
-            path.push(Integer.toString(index2));
-    }
-
-    @Override
-    public void afterListElement(int index1, int index2) {
-        path.pop();
     }
 }

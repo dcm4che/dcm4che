@@ -57,7 +57,6 @@ import java.util.*;
  */
 public class ConfigReflection {
 
-
     private static final Map<Class, ClassInfo> classInfoCache = Collections.synchronizedMap(new HashMap<Class, ClassInfo>());
     private static final Map<Class, Boolean> isClassConfigurable = Collections.synchronizedMap(new HashMap<Class, Boolean>());
 
@@ -104,6 +103,16 @@ public class ConfigReflection {
         return getClassInfo(clazz).uuidProperty;
     }
 
+    /**
+     * Gets the configuration property information for OptimisticLockingHash property (if present).
+     * 
+     * @param clazz The configurable class to get info for.
+     * 
+     * @return populated property information or null if property is not present.
+     */
+    public static ConfigProperty getOlockHashPropertyForClass(Class clazz) {
+        return getClassInfo(clazz).olockHashProperty;
+    }
 
     private static ClassInfo processAndCacheClassInfo(Class clazz) {
 

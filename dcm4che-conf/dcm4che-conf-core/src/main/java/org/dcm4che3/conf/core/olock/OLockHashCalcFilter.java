@@ -42,35 +42,58 @@
 
 package org.dcm4che3.conf.core.olock;
 
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
-import org.dcm4che3.util.Base64;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
+
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
+import org.dcm4che3.util.Base64;
 
 /**
  * Calculates and sets olock hashes for nodes that have the _.hash property (ignores the previous value)
  *
  * @author Roman K
+ * @author Maciek Siemczyk (maciek.siemczyk@agfa.com)
  */
 public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
+    
     private final Deque<byte[]> hashCalculationNodeStack = new ArrayDeque<>();
-    private final String ignoredKey;
+    private final List<String> ignoredKeys = new ArrayList<>();
+    
     private MessageDigest cript;
 
+    /**
+     * Default constructor for no additional ignored keys.
+     */
     public OLockHashCalcFilter() {
-       this(null);
-
+        
+        this(new String[0]);
+    }
+ 
+    /**
+     * Parameterized constructor for specifying additional keys to ignore (in hash calculation).
+     * 
+     * @param ignoredKeys One or more config keys to ignore.
+     */
+    public OLockHashCalcFilter(String... ignoredKeys) {
+        
+        hashCalculationNodeStack.push(new byte[20]);
+        
+        if (ignoredKeys != null) {
+            this.ignoredKeys.addAll(Arrays.asList(ignoredKeys));    
+        }
     }
 
-    public OLockHashCalcFilter(String ignoredKey) {
-        hashCalculationNodeStack.push(new byte[20]);
-        this.ignoredKey = ignoredKey;
+    public List<String> getIgnoredKeys() {
+
+        return ignoredKeys;
     }
 
     /**
@@ -117,7 +140,7 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
     }
 
     private boolean doIgnore(String key) {
-        return Configuration.OLOCK_HASH_KEY.equals(key) || ignoredKey != null && ignoredKey.equals(key);
+        return Configuration.OLOCK_HASH_KEY.equals(key) || ignoredKeys.contains(key);
     }
 
     @Override
@@ -148,26 +171,36 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
 
         // don't add for olock hashes and ignored keys
         if (!doIgnore(key)) {
-//            String peekStr = hashToString(stack.peek());
             addHash( hashCalculationNodeStack.peek(), getHash(key + hashToString(valueHash)));
-//            log.info("Added hash of property '{}' ({} -Up> {})", key, peekStr, hashToString(stack.peek()));
         }
     }
 
     @Override
-    public void beforeListElement(Collection list, int index, Object element) {
+    public void beforeListElement(
+            @SuppressWarnings("rawtypes") Collection list,
+            int index,
+            Object element) {
+        
         hashCalculationNodeStack.push(new byte[20]);
     }
 
     @Override
-    public void afterListElement(Collection list, int index, Object element) {
+    public void afterListElement(
+            @SuppressWarnings("rawtypes") Collection list,
+            int index,
+            Object element) {
+        
         byte[] listElementHash = hashCalculationNodeStack.pop();
         byte[] listHash = hashCalculationNodeStack.pop();
+        
         hashCalculationNodeStack.push(getHash(hashToString(listHash) + hashToString(listElementHash)));
     }
 
     @Override
-    public void onPrimitiveListElement(Collection list, Object element) {
+    public void onPrimitiveListElement(
+            @SuppressWarnings("rawtypes") Collection list,
+            Object element) {
+        
         addHash( hashCalculationNodeStack.peek(), getHash(String.valueOf(element)));
     }
 }

@@ -8,6 +8,9 @@ import org.junit.Test;
 
 public class StorageVersionedConfigurableClassTest {
 
+    /**
+     * System Under Test (SUT).
+     */
     private StorageVersionedConfigurableClass storageVersionedConfigurableClass
         = new TestableStorageVersionedConfigurableClass();
     
@@ -25,5 +28,6 @@ public class StorageVersionedConfigurableClassTest {
         assertThat("Wrong version", storageVersionedConfigurableClass.getStorageVersion(), equalTo(2147483648L));
     }
 
+    @SuppressWarnings("serial")
     private static final class TestableStorageVersionedConfigurableClass extends StorageVersionedConfigurableClass { }
 }

@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class DicomInputStream extends FilterInputStream 
+public class DicomInputStream extends FilterInputStream
     implements CloneIt<DicomInputStream,IOException>, DicomInputHandler {
 
     public enum IncludeBulkData { NO, YES, URI }
@@ -751,7 +751,7 @@ public class DicomInputStream extends FilterInputStream
             throws IOException {
         includeFragmentBulkData =
                 includeBulkData == IncludeBulkData.YES || isBulkData(attrs)
-                        ? includeBulkData 
+                        ? includeBulkData
                         : IncludeBulkData.YES;
 
         String privateCreator = attrs.getPrivateCreator(fragsTag);
@@ -825,47 +825,48 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private void guessTransferSyntax() throws IOException {
-        byte[] b132 = new byte[132];
-        mark(132);
-        int rlen = StreamUtils.readAvailable(this, b132, 0, 132);
-        if (rlen == 132) {
-            if (b132[128] == 'D' && b132[129] == 'I' && b132[130] == 'C' && b132[131] == 'M') {
-                preamble = new byte[128];
-                System.arraycopy(b132, 0, preamble, 0, 128);
-                if (!markSupported()) {
-                    hasfmi = true;
-                    tsuid = UID.ExplicitVRLittleEndian;
-                    bigEndian = false;
-                    explicitVR = true;
-                    return;
-                }
-                mark(132);
-                rlen = StreamUtils.readAvailable(this, b132, 0, 132);
+        byte[] b134 = new byte[134];
+        int preambleLength = 128;
+        mark(b134.length);
+        int rlen = StreamUtils.readAvailable(this, b134, 0, b134.length);
+        if (rlen == b134.length) {
+            if (b134[preambleLength] == 'D'
+                    && b134[preambleLength + 1] == 'I'
+                    && b134[preambleLength + 2] == 'C'
+                    && b134[preambleLength + 3] == 'M'
+                    && b134[preambleLength + 4] == 2
+                    && b134[preambleLength + 5] == 0
+            ) {
+                preamble = new byte[preambleLength];
+                System.arraycopy(b134, 0, preamble, 0, preambleLength);
+                reset();
+                skip(preambleLength + 4);
+                mark(b134.length);
+                rlen = StreamUtils.readAvailable(this, b134, 0, b134.length);
             }
         }
         if (rlen < 8
-                || !this.guessTransferSyntax(b132, rlen, false)
-                && !this.guessTransferSyntax(b132, rlen, true))
+                || !guessTransferSyntax(b134, rlen, false)
+                && !guessTransferSyntax(b134, rlen, true))
             throw new DicomStreamException(NOT_A_DICOM_STREAM);
         reset();
-        hasfmi = TagUtils.isFileMetaInformation(
-                ByteUtils.bytesToTag(b132, 0, bigEndian));
+        hasfmi = TagUtils.isFileMetaInformation(ByteUtils.bytesToTag(b134, 0, bigEndian));
     }
 
-    protected boolean guessTransferSyntax(byte[] b128, int rlen, boolean bigEndian)
+    protected boolean guessTransferSyntax(byte[] b132, int rlen, boolean bigEndian)
             throws DicomStreamException {
-        int tag1 = ByteUtils.bytesToTag(b128, 0, bigEndian);
+        int tag1 = ByteUtils.bytesToTag(b132, 0, bigEndian);
         VR vr = ElementDictionary.vrOf(tag1, null);
         if (vr == VR.UN)
             return false;
-        if (ByteUtils.bytesToVR(b128, 4) == vr.code()) {
-            this.tsuid = bigEndian ? UID.ExplicitVRBigEndianRetired 
-                                   : UID.ExplicitVRLittleEndian;
+        if (ByteUtils.bytesToVR(b132, 4) == vr.code()) {
+            this.tsuid = bigEndian ? UID.ExplicitVRBigEndianRetired
+                    : UID.ExplicitVRLittleEndian;
             this.bigEndian = bigEndian;
             this.explicitVR = true;
             return true;
         }
-        int len = ByteUtils.bytesToInt(b128, 4, bigEndian);
+        int len = ByteUtils.bytesToInt(b132, 4, bigEndian);
         if (len < 0 || 8 + len > rlen)
             return false;
 
@@ -918,7 +919,7 @@ public class DicomInputStream extends FilterInputStream
         blkURI = src.blkURI;
         // We can't really handle middle of blk out operations, so ignore blkOut;
     }
-    
+
     @Override
     public DicomInputStream cloneIt() throws IOException {
         return new DicomInputStream(this);

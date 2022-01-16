@@ -91,6 +91,8 @@ public class StoreSCP {
     private int status;
     private int[] receiveDelays;
     private int[] responseDelays;
+    private int renameRetries;
+    private int renameRetryJitter;
     private final BasicCStoreSCP cstoreSCP = new BasicCStoreSCP("*") {
 
         @Override
@@ -157,21 +159,21 @@ public class StoreSCP {
         }
     }
 
-    private static void renameTo(Association as, File from, File dest)
+    private void renameTo(Association as, File from, File dest)
             throws IOException {
         LOG.info("{}: M-RENAME {} to {}", as, from, dest);
-        for(int try_count = 1; try_count <= 3; try_count++) {
+        for(int try_count = 0; try_count <= renameRetries; try_count++) {
             try{
                 dest.getParentFile().mkdirs();
                 Files.move(from.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 return;
             }
             catch (IOException e){
-                if (try_count == 3){
+                if (try_count == renameRetries){
                     throw e;
                 }
                 try {
-                    Thread.sleep((long)(Math.random()*50));
+                    Thread.sleep((long)(Math.random()*renameRetryJitter));
                 } catch (InterruptedException ignore) {
                 }
             }
@@ -224,6 +226,20 @@ public class StoreSCP {
         this.responseDelays = responseDelays;
     }
 
+    public void setRenameRetries(int renameRetries){
+        if (renameRetries <0){
+            throw new IllegalArgumentException("Rename retries must be a non-negative value!");
+        }
+        this.renameRetries = renameRetries;
+    }
+
+    public void setRenameRetryJitter(int renameRetryJitter){
+        if (renameRetryJitter <0){
+            throw new IllegalArgumentException("Rename retry jitter must be a non-negative value!");
+        }
+        this.renameRetryJitter = renameRetryJitter;
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
@@ -235,6 +251,7 @@ public class StoreSCP {
         addDelayOption(opts, "response-delay");
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
+        addRenameRetryOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StoreSCP.class);
     }
 
@@ -284,6 +301,21 @@ public class StoreSCP {
                 .build());
     }
 
+    private static void addRenameRetryOptions(Options opts){
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("count")
+                .desc(rb.getString("rename-retries"))
+                .longOpt("rename-retries")
+                .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("ms")
+                .desc(rb.getString("rename-retry-jitter"))
+                .longOpt("rename-retry-jitter")
+                .build());
+    }
+
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
@@ -295,6 +327,8 @@ public class StoreSCP {
             main.setResponseDelays(CLIUtils.getIntsOption(cl, "response-delay"));
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);
+            main.setRenameRetries(CLIUtils.getIntOption(cl, "rename-retries", 3));
+            main.setRenameRetryJitter(CLIUtils.getIntOption(cl, "rename-retry-jitter", 50));
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();

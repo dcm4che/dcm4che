@@ -40,6 +40,8 @@ package org.dcm4che3.tool.storescp;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -159,8 +161,12 @@ public class StoreSCP {
         LOG.info("{}: M-RENAME {} to {}", as, from, dest);
         if (!dest.getParentFile().mkdirs())
             dest.delete();
-        if (!from.renameTo(dest))
-            throw new IOException("Failed to rename " + from + " to " + dest);
+        try {
+            Files.move(from.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            from.delete();
+            throw e;
+        }
     }
 
     private static Attributes parse(File file) throws IOException {

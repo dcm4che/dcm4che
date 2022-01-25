@@ -42,6 +42,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -67,6 +68,7 @@ class PDUEncoder extends PDVOutputStream {
 
     private Association as;
     private OutputStream out;
+    private AtomicBoolean aborted = new AtomicBoolean((false));
     private byte[] buf = new byte[Connection.DEF_MAX_PDU_LENGTH + 6];
     private int pos;
     private int pdvpcid;
@@ -82,30 +84,42 @@ class PDUEncoder extends PDVOutputStream {
     }
 
     public void write(AAssociateRQ rq) throws IOException {
-        encode(rq, PDUType.A_ASSOCIATE_RQ, ItemType.RQ_PRES_CONTEXT);
-        writePDU(pos - 6);
+        if (!aborted.get()) {
+            encode(rq, PDUType.A_ASSOCIATE_RQ, ItemType.RQ_PRES_CONTEXT);
+            writePDU(pos - 6);
+        }
     }
 
     public void write(AAssociateAC ac) throws IOException {
-        encode(ac, PDUType.A_ASSOCIATE_AC, ItemType.AC_PRES_CONTEXT);
-        writePDU(pos - 6);
+        if (!aborted.get()) {
+            encode(ac, PDUType.A_ASSOCIATE_AC, ItemType.AC_PRES_CONTEXT);
+            writePDU(pos - 6);
+        }
     }
 
     public void write(AAssociateRJ rj) throws IOException {
-        write(PDUType.A_ASSOCIATE_RJ, rj.getResult(), rj.getSource(),
-                rj.getReason());
+        if (!aborted.get()) {
+            write(PDUType.A_ASSOCIATE_RJ, rj.getResult(), rj.getSource(),
+                    rj.getReason());
+        }
     }
 
     public void writeAReleaseRQ() throws IOException {
-        write(PDUType.A_RELEASE_RQ, 0, 0, 0);
+        if (!aborted.get()) {
+            write(PDUType.A_RELEASE_RQ, 0, 0, 0);
+        }
     }
 
     public void writeAReleaseRP() throws IOException {
-        write(PDUType.A_RELEASE_RP, 0, 0, 0);
+        if (!aborted.get()) {
+            write(PDUType.A_RELEASE_RP, 0, 0, 0);
+        }
     }
 
     public void write(AAbort aa) throws IOException {
-        write(PDUType.A_ABORT, 0, aa.getSource(), aa.getReason());
+        if (aborted.compareAndSet(false, true)) {
+            write(PDUType.A_ABORT, 0, aa.getSource(), aa.getReason());
+        }
     }
 
     private synchronized void write(int pdutype, int result, int source,

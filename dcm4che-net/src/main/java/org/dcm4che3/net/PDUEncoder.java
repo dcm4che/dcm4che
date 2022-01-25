@@ -66,9 +66,9 @@ import org.dcm4che3.net.pdu.UserIdentityRQ;
  */
 class PDUEncoder extends PDVOutputStream {
 
-    private Association as;
-    private OutputStream out;
-    private AtomicBoolean aborted = new AtomicBoolean((false));
+    private final Association as;
+    private final OutputStream out;
+    private final AtomicBoolean aborted = new AtomicBoolean(false);
     private byte[] buf = new byte[Connection.DEF_MAX_PDU_LENGTH + 6];
     private int pos;
     private int pdvpcid;
@@ -76,7 +76,7 @@ class PDUEncoder extends PDVOutputStream {
     private int pdvpos;
     private int maxpdulen;
     private Thread th;
-    private Object dimseLock = new Object();
+    private final Object dimseLock = new Object();
 
     public PDUEncoder(Association as, OutputStream out) {
         this.as = as;

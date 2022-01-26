@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>2.26.0</version>
+    <version>5.26.0</version>
   </parent>
   <artifactId>dcm4che-emf</artifactId>
   <packaging>bundle</packaging>

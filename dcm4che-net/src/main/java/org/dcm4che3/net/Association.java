@@ -88,7 +88,7 @@ public class Association {
     private final OutputStream out;
     private final PDUEncoder encoder;
     private PDUDecoder decoder;
-    private State state;
+    private volatile State state;
     private AAssociateRQ rq;
     private AAssociateAC ac;
     private IOException ex;

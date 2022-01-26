@@ -239,7 +239,8 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
 
     protected void releaseStoreAssociation(Association storeas) {
         try {
-            storeas.release();
+            if (storeas.isReadyForDataTransfer())
+                storeas.release();
         } catch (IOException e) {
             LOG.warn("{}: failed to release association to {}",
                     rqas, storeas.getRemoteAET(), e);

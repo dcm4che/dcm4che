@@ -41,11 +41,16 @@
 
 package org.dcm4che3.data;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Aug 2019
  */
 public class TrimISO2020CharacterSetAttributesCoercion implements AttributesCoercion {
+    static final Logger LOG = LoggerFactory.getLogger(TrimISO2020CharacterSetAttributesCoercion.class);
+
     private AttributesCoercion next;
 
     public TrimISO2020CharacterSetAttributesCoercion(AttributesCoercion next) {
@@ -59,6 +64,7 @@ public class TrimISO2020CharacterSetAttributesCoercion implements AttributesCoer
 
     @Override
     public void coerce(Attributes attrs, Attributes modified) throws Exception {
+        LOG.info("ISO 2022 Character Set trimmed by coercion {}", this);
         String[] codes = attrs.getStrings(Tag.SpecificCharacterSet);
         if (SpecificCharacterSet.trimISO2022(codes)) {
             Object originalValue = attrs.setString(Tag.SpecificCharacterSet, VR.CS, codes);

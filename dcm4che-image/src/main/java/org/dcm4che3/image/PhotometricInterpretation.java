@@ -221,7 +221,7 @@ public enum PhotometricInterpretation {
         int[] indicies = new int[samples];
         for (int i = 1; i < samples; i++)
             indicies[i] = i;
-        return banded
+        return banded && samples > 1
                 ? new BandedSampleModel(dataType, w, h,  w, indicies, new int[samples])
                 : new PixelInterleavedSampleModel(dataType, w, h, samples, w * samples, indicies);
     }

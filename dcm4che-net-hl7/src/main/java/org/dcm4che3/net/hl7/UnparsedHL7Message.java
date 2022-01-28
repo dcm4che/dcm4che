@@ -85,6 +85,17 @@ public class UnparsedHL7Message implements Serializable {
         return data;
     }
 
+    @Override
+    public String toString() {
+        if (mshLength == 0) {
+            int mshlen = 0;
+            while (mshlen < data.length && data[mshlen] != '\r')
+                mshlen++;
+            mshLength = mshlen;
+        }
+        return new String(data, 0, mshLength);
+    }
+
     /**
      * Return HL7 message with unescaped hexdata from \Xdddd\ escape sequences.
      * Does not unescape \Xdddd\ escape sequences which contains a field separator,

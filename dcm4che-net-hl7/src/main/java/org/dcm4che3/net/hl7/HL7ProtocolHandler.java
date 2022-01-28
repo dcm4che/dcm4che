@@ -41,10 +41,7 @@ package org.dcm4che3.net.hl7;
 import java.io.IOException;
 import java.net.Socket;
 
-import org.dcm4che3.hl7.HL7Exception;
-import org.dcm4che3.hl7.HL7Message;
-import org.dcm4che3.hl7.MLLPConnection;
-import org.dcm4che3.hl7.MLLPRelease;
+import org.dcm4che3.hl7.*;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.TCPProtocolHandler;
 import org.slf4j.Logger;
@@ -90,9 +87,10 @@ enum HL7ProtocolHandler implements TCPProtocolHandler {
                     UnparsedHL7Message rsp;
                     try {
                         rsp = hl7dev.onMessage(conn, s, msg);
-                    if (monitor != null)
-                        monitor.onMessageProcessed(conn, s, msg, rsp, null);
+                        if (monitor != null)
+                            monitor.onMessageProcessed(conn, s, msg, rsp, null);
                     } catch (HL7Exception e) {
+                        LOG.info("{}: failed to process {}:\n", s, msg, e);
                         rsp = new UnparsedHL7Message(
                                 HL7Message.makeACK(msg.msh(), e).getBytes(null));
                         if (monitor != null)

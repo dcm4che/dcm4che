@@ -1124,6 +1124,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7ApplicationName", ae.getHl7ApplicationName(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmOtherAETitle", ae.getOtherAETitles());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmNoAsyncModeCalledAETitle", ae.getNoAsyncModeCalledAETitles());
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeTo(ldapObj, ae, attrs);
@@ -1618,6 +1619,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ae.setPreferredTransferSyntaxes(LdapUtils.removeOrdinalPrefix(
                 LdapUtils.stringArray(attrs.get("dcmPreferredTransferSyntax"))));
         ae.setOtherAETitles(LdapUtils.stringArray(attrs.get("dcmOtherAETitle")));
+        ae.setNoAsyncModeCalledAETitles(LdapUtils.stringArray(attrs.get("dcmNoAsyncModeCalledAETitle")));
         ae.setMasqueradeCallingAETitles(LdapUtils.stringArray(attrs.get("dcmMasqueradeCallingAETitle")));
         ae.setHl7ApplicationName(LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
         for (LdapDicomConfigurationExtension ext : extensions)
@@ -2014,6 +2016,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(ldapObj, mods, "dcmOtherAETitle",
                 a.getOtherAETitles(),
                 b.getOtherAETitles());
+        LdapUtils.storeDiff(ldapObj, mods, "dcmNoAsyncModeCalledAETitle",
+                a.getNoAsyncModeCalledAETitles(),
+                b.getNoAsyncModeCalledAETitles());
         LdapUtils.storeDiff(ldapObj, mods, "dcmMasqueradeCallingAETitle",
                 a.getMasqueradeCallingAETitles(),
                 b.getMasqueradeCallingAETitles());

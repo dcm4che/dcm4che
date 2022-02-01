@@ -613,6 +613,7 @@ public class JsonConfiguration {
             writer.writeNotEmpty("dcmPreferredTransferSyntax", ae.getPreferredTransferSyntaxes());
             writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
             writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
+            writer.writeNotEmpty("dcmNoAsyncModeCalledAETitle", ae.getNoAsyncModeCalledAETitles());
             writer.writeNotEmpty("dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
             writer.writeNotNullOrDef("hl7ApplicationName", ae.getHl7ApplicationName(), null);
             for (JsonConfigurationExtension ext : extensions)
@@ -686,6 +687,9 @@ public class JsonConfiguration {
                                 break;
                             case "dcmOtherAETitle":
                                 ae.setOtherAETitles(reader.stringArray());
+                                break;
+                            case "dcmNoAsyncModeCalledAETitle":
+                                ae.setNoAsyncModeCalledAETitles(reader.stringArray());
                                 break;
                             case "dcmMasqueradeCallingAETitle":
                                 ae.setMasqueradeCallingAETitles(reader.stringArray());

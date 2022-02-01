@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.dcm4che3.data.Implementation;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
@@ -138,6 +139,7 @@ class PDUEncoder extends PDVOutputStream {
     private void encode(AAssociateRQAC rqac, int pduType, int pcItemType) {
         rqac.checkCallingAET();
         rqac.checkCalledAET();
+        rqac.setImplVersionName(Implementation.getVersionName());
 
         int pdulen = rqac.length();
         if (buf.length < 6 + pdulen)

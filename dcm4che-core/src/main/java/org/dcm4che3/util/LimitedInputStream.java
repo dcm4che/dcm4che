@@ -112,4 +112,8 @@ public final class LimitedInputStream extends FilterInputStream {
     public void close() throws IOException {
         if (closeSource) in.close();
     }
+
+    public long getRemaining() {
+        return remaining;
+    }
 }

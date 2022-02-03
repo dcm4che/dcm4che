@@ -40,6 +40,7 @@ package org.dcm4che3.io;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.LimitedInputStream;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.TagUtils;
@@ -861,10 +862,17 @@ public class DicomInputStream extends FilterInputStream
     public byte[] readValue() throws IOException {
         int valLen = length;
         try {
-            if (valLen < 0)
-            throw new IOException(
-                "internal error: length should have been validated in readHeader");
-            int allocLen = allocateLimit >= 0
+            if (valLen < 0) {
+                throw new IOException(
+                        "internal error: length should have been validated in readHeader");
+            }
+            boolean limitedStream = in instanceof LimitedInputStream;
+            if(limitedStream && valLen > ((LimitedInputStream)in).getRemaining()) {
+                throw new EOFException(
+                        "Length " + valLen + " for tag " + TagUtils.toString(tag) + " @ " + tagPos  +
+                                " exceeds remaining " + ((LimitedInputStream)in).getRemaining() +  " (pos: " + pos + ")");
+            }
+            int allocLen = allocateLimit >= 0 && !limitedStream
                     ? Math.min(valLen, allocateLimit)
                     : valLen;
             byte[] value = new byte[allocLen];

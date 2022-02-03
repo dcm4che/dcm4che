@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.util.LimitedInputStream;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -114,6 +115,22 @@ public class DicomInputStreamTest {
         try ( DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b))) {
             in.readDataset();
         }
+    }
+
+    @Test
+    public void testNoOutOfMemoryErrorOnInvalidLengthIfStreamLengthKnown() throws IOException {
+        byte[] b = { 8, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 'e', 'v', 'i', 'l', 'l', 'e', 'n', 'g', 'h' };
+        EOFException exception = assertThrows(
+                EOFException.class,
+                () -> {
+                    try ( DicomInputStream in = new DicomInputStream(new LimitedInputStream(new ByteArrayInputStream(b), b.length, true))) {
+                        in.readDataset();
+                    }
+                }
+        );
+
+        assertEquals("Length 1735288172 for tag (7665,6C69) @ 12 exceeds remaining 1 (pos: 20)",
+                exception.getMessage());
     }
 
     @Test

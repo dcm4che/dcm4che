@@ -576,7 +576,7 @@ public class DicomInputStream extends FilterInputStream
                                     // will fail on UN fragments!
                 }
                 excludeBulkData = includeBulkData == IncludeBulkData.NO && isBulkData(attrs);
-                includeBulkDataURI = len != 0 && vr != VR.SQ
+                includeBulkDataURI = length != 0 && vr != VR.SQ
                         && includeBulkData == IncludeBulkData.URI && isBulkData(attrs);
                 handler.readValue(this, attrs);
             } else

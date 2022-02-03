@@ -102,6 +102,9 @@ public class DicomInputStream extends FilterInputStream
     private static final int ZLIB_HEADER = 0x789c;
     private static final int DEF_ALLOCATE_LIMIT = 0x4000000; // 64MiB
 
+    private static final int DEFAULT_PREAMBLE_LENGTH = 128;
+    private static final int UNDEFINED_LENGTH = -1;
+
     // Length of the buffer used for readFully(short[], int, int)
     private static final int BYTE_BUF_LENGTH = 8192;
 
@@ -153,7 +156,7 @@ public class DicomInputStream extends FilterInputStream
     public DicomInputStream(InputStream in) throws IOException {
         super(in.markSupported() ? in : new BufferedInputStream(in));
         if( in instanceof CloneIt ) originalInput = (CloneIt<InputStream, IOException>) in;
-        this.guessTransferSyntax(128);
+        this.guessTransferSyntax(DEFAULT_PREAMBLE_LENGTH);
     }
 
     public DicomInputStream(InputStream in, int preambleLength) throws IOException {
@@ -559,15 +562,15 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public void readAllAttributes(Attributes attrs) throws IOException {
-        readAttributes(attrs, -1, o -> false);
+        readAttributes(attrs, UNDEFINED_LENGTH, o -> false);
     }
 
     public Attributes readDataset() throws IOException {
-        return readDataset(-1, o -> false);
+        return readDataset(o -> false);
     }
 
     public Attributes readDatasetUntilPixelData() throws IOException {
-        return readDataset(-1, o -> o.tag == Tag.PixelData);
+        return readDataset(o -> o.tag == Tag.PixelData);
     }
 
     /**
@@ -585,7 +588,7 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public Attributes readDataset(Predicate<DicomInputStream> stopPredicate) throws IOException {
-        return readDataset(-1, stopPredicate);
+        return readDataset(UNDEFINED_LENGTH, stopPredicate);
     }
 
     /**
@@ -648,7 +651,7 @@ public class DicomInputStream extends FilterInputStream
 
     public void readAttributes(Attributes attrs, int len, Predicate<DicomInputStream> stopPredicate)
             throws IOException {
-        boolean undeflen = len == -1;
+        boolean undeflen = len == UNDEFINED_LENGTH;
         long endPos =  pos + (len & 0xffffffffL);
         while (undeflen || this.pos < endPos) {
             try {
@@ -672,7 +675,7 @@ public class DicomInputStream extends FilterInputStream
                         vr = tag == Tag.PurposeOfReferenceCodeSequence
                                 ? probeObservationClass() ? VR.CS : VR.SQ
                                 : ElementDictionary.vrOf(tag, attrs.getPrivateCreator(tag));
-                        if (vr == VR.UN && length == -1)
+                    if (vr == VR.UN && length == UNDEFINED_LENGTH)
                             vr = VR.SQ; // assumes UN with undefined length are SQ,
                                         // will fail on UN fragments!
                     }
@@ -694,13 +697,13 @@ public class DicomInputStream extends FilterInputStream
     public void readValue(DicomInputStream dis, Attributes attrs)
             throws IOException {
         checkIsThis(dis);
-        if (includeBulkData == IncludeBulkData.NO && length != -1 && isBulkData(attrs)) {
+        if (includeBulkData == IncludeBulkData.NO && length != UNDEFINED_LENGTH && isBulkData(attrs)) {
             skipFully(length);
         } else if (length == 0) {
             attrs.setNull(tag, vr);
         } else if (vr == VR.SQ) {
             readSequence(length, attrs, tag);
-        } else if (length == -1) {
+        } else if (length == UNDEFINED_LENGTH) {
             readFragments(attrs, tag, vr);
         } else if (length == BulkData.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
@@ -825,7 +828,7 @@ public class DicomInputStream extends FilterInputStream
         }
         Sequence seq = attrs.newSequence(sqtag, 10);
         String privateCreator = attrs.getPrivateCreator(sqtag);
-        boolean undefLen = len == -1;
+        boolean undefLen = len == UNDEFINED_LENGTH;
         long endPos = pos + (len & 0xffffffffL);
         for (int i = 0; (undefLen || pos < endPos) && readItemHeader(); ++i) {
             addItemPointer(sqtag, privateCreator, i);

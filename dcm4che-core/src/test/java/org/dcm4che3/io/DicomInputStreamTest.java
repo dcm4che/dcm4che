@@ -1,6 +1,7 @@
 package org.dcm4che3.io;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,14 +28,32 @@ public class DicomInputStreamTest {
 
     @Test
     public void testPart10ExplicitVR() throws Exception {
-        Attributes attrs = readFromResource("DICOMDIR", IncludeBulkData.YES);
+        testPart10ExplicitVR(false);
+    }
+
+    @Test
+    public void testPart10ExplicitVRWithLimit() throws Exception {
+        testPart10ExplicitVR(true);
+    }
+
+    private void testPart10ExplicitVR(boolean readWithLimit) throws Exception {
+        Attributes attrs = readFrom("DICOMDIR", IncludeBulkData.YES, readWithLimit);
         Sequence seq = attrs.getSequence(null, Tag.DirectoryRecordSequence);
         assertEquals(44, seq.size());
-   }
+    }
 
     @Test
     public void testPart10Deflated() throws Exception {
-        Attributes attrs = readFromResource("report_dfl", IncludeBulkData.YES);
+        testPart10Deflated(false);
+    }
+
+    @Test
+    public void testPart10DeflatedWithLimit() throws Exception {
+        testPart10Deflated(true);
+    }
+
+    private void testPart10Deflated(boolean readWithLimit) throws Exception {
+        Attributes attrs = readFrom("report_dfl", IncludeBulkData.YES, readWithLimit);
         Sequence seq = attrs.getSequence(null, Tag.ContentSequence);
         assertEquals(5, seq.size());
     }
@@ -67,16 +86,30 @@ public class DicomInputStreamTest {
     }
 
     private static Attributes readFromResource(String name, IncludeBulkData includeBulkData) throws Exception {
+        return readFrom(name, includeBulkData, false);
+    }
+
+    private static Attributes readFrom(String name, IncludeBulkData includeBulkData, boolean readWithLimit) throws Exception {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         URL resource = cl.getResource(name);
         if (resource == null) {
             throw new FileNotFoundException("Could not resolve resource with name: '" + name + "'");
         }
         File file = new File(resource.toURI());
-        try (DicomInputStream in = new DicomInputStream(file)) {
+        try (DicomInputStream in = readWithLimit
+                ? DicomInputStream.createWithLimitFromFileLength(file)
+                : new DicomInputStream(file)) {
             in.setIncludeBulkData(includeBulkData);
             in.setAddBulkDataReferences(includeBulkData == IncludeBulkData.URI);
             return in.readDataset(-1, -1);
+        }
+    }
+
+    @Test(expected = EOFException.class)
+    public void testNoOutOfMemoryErrorOnInvalidLength() throws IOException {
+        byte[] b = { 8, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 'e', 'v', 'i', 'l', 'l', 'e', 'n', 'g', 'h' };
+        try ( DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b))) {
+            in.readDataset(-1, -1);
         }
     }
 

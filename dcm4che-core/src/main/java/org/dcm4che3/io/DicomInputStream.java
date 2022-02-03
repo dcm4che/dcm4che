@@ -152,12 +152,65 @@ public class DicomInputStream extends FilterInputStream
     public DicomInputStream(InputStream in) throws IOException {
         super(in.markSupported() ? in : new BufferedInputStream(in));
         if( in instanceof CloneIt ) originalInput = (CloneIt<InputStream, IOException>) in;
-        this.guessTransferSyntax();
+        this.guessTransferSyntax(128);
+    }
+
+    public DicomInputStream(InputStream in, int preambleLength) throws IOException {
+        super(ensureMarkSupported(in));
+        guessTransferSyntax(preambleLength);
     }
 
     public DicomInputStream(File file) throws IOException {
         this(new FileInputStream(file));
         uri = file.toURI().toString();
+    }
+
+    /**
+     * Create a new DicomInputStream with the given input stream and read limit.
+     * It ensures to never read more than the limit from the stream by wrapping it with a {@link LimitedInputStream}.
+     *
+     * The limit also helps to avoid OutOfMemory errors on parsing corrupt DICOM streams without the need to create
+     * temporary arrays when allocating large tag values. (See also {@link #setAllocateLimit}.)
+     *
+     * @param in input stream to read data from
+     * @param limit limit in bytes
+     * @return new DicomInputStream
+     * @throws IOException if there is a problem reading from the given stream
+     */
+    public static DicomInputStream createWithLimit(InputStream in, long limit) throws IOException {
+        return new DicomInputStream(new LimitedInputStream(ensureMarkSupported(in), limit, true));
+    }
+
+    /**
+     * Create a new DicomInputStream for the given file.
+     *
+     * A limit will be set by reading the length of the file (see also #createWithLimit).
+     *
+     * @param file file to read
+     * @return new DicomInputStream
+     * @throws IOException if there is a problem reading from the given file
+     */
+    public static DicomInputStream createWithLimitFromFileLength(File file) throws IOException {
+        long fileLength = file.length();
+        // Some operating systems may return 0 length for pathnames denoting system-dependent entities such as devices or pipes
+        if(fileLength > 0) {
+            InputStream in = new LimitedInputStream(new BufferedInputStream(new FileInputStream(file)), fileLength, true);
+            DicomInputStream dicomInputStream;
+            try {
+                dicomInputStream = new DicomInputStream(in);
+            } catch (IOException e) {
+                SafeClose.close(in);
+                throw e;
+            }
+            dicomInputStream.setURI(file.toURI().toString());
+            return dicomInputStream;
+        } else {
+            return new DicomInputStream(file);
+        }
+    }
+
+    private static InputStream ensureMarkSupported(InputStream in) {
+        return in.markSupported() ? in : new BufferedInputStream(in);
     }
 
     public final String getTransferSyntax() {
@@ -190,9 +243,13 @@ public class DicomInputStream extends FilterInputStream
      * OutOfMemoryErrors on parsing corrupted DICOM streams.
      * 
      * By default, the limit is set to 67108864 (64 MiB).
-     * 
+     *
+     * Note: If a limit is given using {@link #createWithLimit} or
+     * {@link #createWithLimitFromFileLength} or by supplying a {@link LimitedInputStream},
+     * then this allocateLimit will be ignored (except for deflated data) and no
+     * temporary arrays need to be created.
+     *
      * @param allocateLimit limit of initial allocated memory or -1 for no limit
-     * 
      */
     public final void setAllocateLimit(int allocateLimit) {
         this.allocateLimit = allocateLimit;
@@ -846,9 +903,8 @@ public class DicomInputStream extends FilterInputStream
         return ByteUtils.bytesToUShortBE(buf, 0) == ZLIB_HEADER;
     }
 
-    private void guessTransferSyntax() throws IOException {
+    private void guessTransferSyntax(int preambleLength) throws IOException {
         byte[] b134 = new byte[134];
-        int preambleLength = 128;
         mark(b134.length);
         int rlen = StreamUtils.readAvailable(this, b134, 0, b134.length);
         if (rlen == b134.length) {

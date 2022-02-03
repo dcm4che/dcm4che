@@ -548,11 +548,30 @@ public class DicomInputStream extends FilterInputStream
         return readDataset(-1, o -> o.tag == Tag.PixelData);
     }
 
+    /**
+     * @deprecated Use one of the other {@link #readDataset()} methods instead. If you want to
+     * specify a length limit, you may supply a {@link LimitedInputStream} or use
+     * {@link #createWithLimit} or {@link #createWithLimitFromFileLength}.
+     */
     @Deprecated
     public Attributes readDataset(int len, int stopTag) throws IOException {
         return readDataset(len, tagEqualOrGreater(stopTag));
     }
 
+    public Attributes readDataset(int stopTag) throws IOException {
+        return readDataset(tagEqualOrGreater(stopTag));
+    }
+
+    public Attributes readDataset(Predicate<DicomInputStream> stopPredicate) throws IOException {
+        return readDataset(-1, stopPredicate);
+    }
+
+    /**
+     * @deprecated Use one of the other {@link #readDataset()} methods instead. If you want to
+     * specify a length limit, you may supply a {@link LimitedInputStream} or use
+     * {@link #createWithLimit} or {@link #createWithLimitFromFileLength}.
+     */
+    @Deprecated
     public Attributes readDataset(int len, Predicate<DicomInputStream> stopPredicate) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();

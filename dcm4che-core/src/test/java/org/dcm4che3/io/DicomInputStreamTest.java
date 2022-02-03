@@ -17,10 +17,19 @@ public class DicomInputStreamTest {
 
     @Test
     public void testPart10ExplicitVR() throws Exception {
-        Attributes attrs = readFrom("DICOMDIR", IncludeBulkData.YES);
+        testPart10ExplicitVR(false);
+    }
+
+    @Test
+    public void testPart10ExplicitVRWithLimit() throws Exception {
+        testPart10ExplicitVR(true);
+    }
+
+    private void testPart10ExplicitVR(boolean readWithLimit) throws Exception {
+        Attributes attrs = readFrom("DICOMDIR", IncludeBulkData.YES, readWithLimit);
         Sequence seq = attrs.getSequence(null, Tag.DirectoryRecordSequence);
         assertEquals(44, seq.size());
-   }
+    }
 
     @Test
     public void testPart10SkipNotAllAtOnce() throws Exception {
@@ -42,7 +51,16 @@ public class DicomInputStreamTest {
 
     @Test
     public void testPart10Deflated() throws Exception {
-        Attributes attrs = readFrom("report_dfl", IncludeBulkData.YES);
+        testPart10Deflated(false);
+    }
+
+    @Test
+    public void testPart10DeflatedWithLimit() throws Exception {
+        testPart10Deflated(true);
+    }
+
+    private void testPart10Deflated(boolean readWithLimit) throws Exception {
+        Attributes attrs = readFrom("report_dfl", IncludeBulkData.YES, readWithLimit);
         Sequence seq = attrs.getSequence(null, Tag.ContentSequence);
         assertEquals(5, seq.size());
     }
@@ -103,7 +121,14 @@ public class DicomInputStreamTest {
     }
 
     private static Attributes readFrom(String name, IncludeBulkData includeBulkData) throws Exception {
-        try ( DicomInputStream in = new DicomInputStream(new File("target/test-data/" + name))) {
+        return readFrom(name, includeBulkData, false);
+    }
+
+    private static Attributes readFrom(String name, IncludeBulkData includeBulkData, boolean readWithLimit) throws Exception {
+        try ( DicomInputStream in =
+                readWithLimit ?
+                        DicomInputStream.createWithLimitFromFileLength(new File("target/test-data/" + name)) :
+                        new DicomInputStream(new File("target/test-data/" + name))) {
             in.setIncludeBulkData(includeBulkData);
             return in.readDataset();
         }
@@ -123,7 +148,7 @@ public class DicomInputStreamTest {
         EOFException exception = assertThrows(
                 EOFException.class,
                 () -> {
-                    try ( DicomInputStream in = new DicomInputStream(new LimitedInputStream(new ByteArrayInputStream(b), b.length, true))) {
+                    try ( DicomInputStream in = DicomInputStream.createWithLimit(new ByteArrayInputStream(b), b.length)) {
                         in.readDataset();
                     }
                 }

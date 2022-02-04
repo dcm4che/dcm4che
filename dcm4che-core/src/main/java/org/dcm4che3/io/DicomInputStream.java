@@ -170,7 +170,24 @@ public class DicomInputStream extends FilterInputStream
     }
 
     /**
-     * Create a new DicomInputStream with the given input stream and read limit.
+     * Create a new DicomInputStream for the given input stream, Transfer Syntax UID and read limit.
+     * It ensures to never read more than the limit from the stream by wrapping it with a {@link LimitedInputStream}.
+     *
+     * The limit also helps to avoid OutOfMemory errors on parsing corrupt DICOM streams without the need to create
+     * temporary arrays when allocating large tag values. (See also {@link #setAllocateLimit}.)
+     *
+     * @param in input stream to read data from
+     * @param tsuid Transfer Syntax UID
+     * @param limit limit in bytes
+     * @return new DicomInputStream
+     * @throws IOException if there is a problem reading from the given stream
+     */
+    public static DicomInputStream createWithLimit(InputStream in, String tsuid, long limit) throws IOException {
+        return new DicomInputStream(limited(ensureMarkSupported(in), limit), tsuid);
+    }
+
+    /**
+     * Create a new DicomInputStream for the given input stream and read limit.
      * It ensures to never read more than the limit from the stream by wrapping it with a {@link LimitedInputStream}.
      *
      * The limit also helps to avoid OutOfMemory errors on parsing corrupt DICOM streams without the need to create
@@ -182,7 +199,7 @@ public class DicomInputStream extends FilterInputStream
      * @throws IOException if there is a problem reading from the given stream
      */
     public static DicomInputStream createWithLimit(InputStream in, long limit) throws IOException {
-        return new DicomInputStream(new LimitedInputStream(ensureMarkSupported(in), limit, true));
+        return new DicomInputStream(limited(ensureMarkSupported(in), limit));
     }
 
     /**
@@ -198,7 +215,7 @@ public class DicomInputStream extends FilterInputStream
         long fileLength = file.length();
         // Some operating systems may return 0 length for pathnames denoting system-dependent entities such as devices or pipes
         if(fileLength > 0) {
-            InputStream in = new LimitedInputStream(new BufferedInputStream(new FileInputStream(file)), fileLength, true);
+            InputStream in = limited(new BufferedInputStream(new FileInputStream(file)), fileLength);
             DicomInputStream dicomInputStream;
             try {
                 dicomInputStream = new DicomInputStream(in);
@@ -215,6 +232,10 @@ public class DicomInputStream extends FilterInputStream
 
     private static InputStream ensureMarkSupported(InputStream in) {
         return in.markSupported() ? in : new BufferedInputStream(in);
+    }
+
+    private static LimitedInputStream limited(InputStream in, long limit) {
+        return new LimitedInputStream(in, limit, true);
     }
 
     public final String getTransferSyntax() {

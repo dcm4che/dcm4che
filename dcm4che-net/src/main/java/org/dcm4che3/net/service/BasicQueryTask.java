@@ -134,6 +134,7 @@ public class BasicQueryTask implements QueryTask {
                 filtered.setString(Tag.SpecificCharacterSet, VR.CS, ss);
         }
         filtered.addSelected(match, keys);
+        filtered.supplementEmpty(keys);
         return filtered;
     }
 }

@@ -2341,6 +2341,27 @@ public class Attributes implements Serializable {
         return add(other, null, selection, fromIndex, toIndex, null, null, false, false, null);
     }
 
+    public void supplementEmpty(Attributes selection) {
+        ensureModifiable();
+        final int[] otherTags = selection.tags;
+        final VR[] otherVRs = selection.vrs;
+        final Object[] otherValues = selection.values;
+        for (int i = 0; i < otherTags.length; i++) {
+            int index = indexOf(otherTags[i]);
+            if (index < 0) {
+                insert(-index-1, otherTags[i], otherVRs[i], Value.NULL);
+            } else if (otherValues[i] instanceof Sequence && values[index] instanceof Sequence) {
+                Sequence otherSeq = (Sequence) otherValues[i];
+                Attributes otherItem;
+                if (!otherSeq.isEmpty() && !(otherItem = otherSeq.get(0)).isEmpty()) {
+                    for (Attributes item : (Sequence) values[index]) {
+                        item.supplementEmpty(otherItem);
+                    }
+                }
+            }
+        }
+    }
+
     private boolean add(Attributes other, int[] include, int[] exclude, int fromIndex, int toIndex,
                         Attributes selection, UpdatePolicy updatePolicy, boolean mergeOriginalAttributesSequence,
                         boolean simulate, Attributes modified) {

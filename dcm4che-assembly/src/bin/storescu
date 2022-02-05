@@ -67,7 +67,7 @@ if [ "x$JAVA_LIBRARY_PATH" = "x" ]; then
         ;;
         mac*)
         LIB_NAME=libopencv_java
-        LIB_EXT=jnilib
+        LIB_EXT=dylib
         ;;
         *)
         LIB_NAME=libopencv_java

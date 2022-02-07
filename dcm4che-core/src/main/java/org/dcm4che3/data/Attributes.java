@@ -2346,7 +2346,7 @@ public class Attributes implements Serializable {
         final int[] otherTags = selection.tags;
         final VR[] otherVRs = selection.vrs;
         final Object[] otherValues = selection.values;
-        for (int i = 0; i < otherTags.length; i++) {
+        for (int i = 0; i < selection.size; i++) {
             int index = indexOf(otherTags[i]);
             if (index < 0) {
                 insert(-index-1, otherTags[i], otherVRs[i], Value.NULL);

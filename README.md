@@ -25,6 +25,7 @@ dcm4che uses a native library for the compression and decompression of images. H
 | Windows | x86 32-bit   | windows-x86      | Windows 7, 8, 10 or 11 |
 | Mac OS  | x86 64-bit   | macosx-x86-64    | Mac OS 10.9 or higher  |
 | Mac OS  | ARM 64-bit   | macosx-aarch64   | Mac OS 11 or higher    |
+
 `* The binary is not included in the dcm4che package but downloaded at the first use.`
 
 Build

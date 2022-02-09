@@ -169,7 +169,7 @@ public class DicomInputStreamTest {
         assertEquals("FOR PRESENTATION", attrs.getString(Tag.PresentationIntentType));
     }
 
-    @Test()
+    @Test
     public void testSRTag0040A170IsObservationClass() throws Exception {
         Attributes attrs = readFrom("Tag-0040-A170-VR-CS.dcm", IncludeBulkData.NO);
         Attributes findings = attrs.getNestedDataset(Tag.FindingsSequenceTrial);

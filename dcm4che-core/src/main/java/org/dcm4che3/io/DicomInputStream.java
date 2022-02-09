@@ -262,6 +262,9 @@ public class DicomInputStream extends FilterInputStream
      * @param allocateLimit limit of initial allocated memory or -1 for no limit
      */
     public final void setAllocateLimit(int allocateLimit) {
+        if(allocateLimit < -1 || allocateLimit == 0)
+            throw new IllegalArgumentException("allocateLimit must be a positive number or -1");
+
         this.allocateLimit = allocateLimit;
     }
 
@@ -967,14 +970,14 @@ public class DicomInputStream extends FilterInputStream
                         "Length " + valLen + " for tag " + TagUtils.toString(tag) + " @ " + tagPos  +
                                 " exceeds remaining " + ((LimitedInputStream)in).getRemaining() +  " (pos: " + pos + ")");
             }
-            int allocLen = allocateLimit >= 0 && !limitedStream
+            int allocLen = allocateLimit != -1 && !limitedStream
                     ? Math.min(valLen, allocateLimit)
                     : valLen;
             byte[] value = new byte[allocLen];
             readFully(value, 0, allocLen);
             while (allocLen < valLen) {
                 int newLength = allocLen << 1;
-                if (newLength < 0)
+                if (newLength <= 0)
                     newLength = Integer.MAX_VALUE;
                 if (newLength > valLen)
                     newLength = valLen;

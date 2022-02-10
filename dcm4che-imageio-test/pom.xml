@@ -71,7 +71,22 @@
         <os-name>macosx</os-name>
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
-        <lib-file-ext>jnilib</lib-file-ext>
+        <lib-file-ext>dylib</lib-file-ext>
+      </properties>
+    </profile>
+    <profile>
+      <id>mac-m1</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <skipTests>false</skipTests>
+        <os-name>macosx</os-name>
+        <cpu-name>aarch64</cpu-name>
+        <lib-file-name>libopencv_java</lib-file-name>
+        <lib-file-ext>dylib</lib-file-ext>
       </properties>
     </profile>
     <profile>

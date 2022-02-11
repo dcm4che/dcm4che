@@ -70,8 +70,8 @@ public class SpecificCharacterSetTest {
             "Zhang^XiaoDong=张^小东=";
     private static final String CHINESE_LONG_TEXT_GB2312 =
             "1.第一行文字。\r\n" +
-            "2.第一行文字。\r\n" +
-            "3.第一行文字。\r\n";
+            "2.第二行文字。\r\n" +
+            "3.第三行文字。\r\n";
     private static final String CHINESE_PERSON_NAME_UTF8 =
             "Wang^XiaoDong=王^小東=";
     private static final String CHINESE_PERSON_NAME_GB18030 =
@@ -144,6 +144,25 @@ public class SpecificCharacterSetTest {
             (byte) 0xb1, (byte) 0xe6, (byte) 0xb5, (byte) 0xbf };
 
     private static final byte[] KOREAN_LONG_TEXT_BYTES = {
+            (byte) 0x54, (byte) 0x68, (byte) 0x65, (byte) 0x20, (byte) 0x31,
+            (byte) 0x73, (byte) 0x74, (byte) 0x20, (byte) 0x6c, (byte) 0x69,
+            (byte) 0x6e, (byte) 0x65, (byte) 0x20, (byte) 0x69, (byte) 0x6e,
+            (byte) 0x63, (byte) 0x6c, (byte) 0x75, (byte) 0x64, (byte) 0x65,
+            (byte) 0x73, (byte) 0x20, (byte) 0x1b, (byte) 0x24, (byte) 0x29,
+            (byte) 0x43, (byte) 0xb1, (byte) 0xe6, (byte) 0xb5, (byte) 0xbf,
+            (byte) 0x2e, (byte) 0x0d, (byte) 0x0a, (byte) 0x54, (byte) 0x68,
+            (byte) 0x65, (byte) 0x20, (byte) 0x32, (byte) 0x6e, (byte) 0x64,
+            (byte) 0x20, (byte) 0x6c, (byte) 0x69, (byte) 0x6e, (byte) 0x65,
+            (byte) 0x20, (byte) 0x69, (byte) 0x6e, (byte) 0x63, (byte) 0x6c,
+            (byte) 0x75, (byte) 0x64, (byte) 0x65, (byte) 0x73, (byte) 0x20,
+            (byte) 0x1b, (byte) 0x24, (byte) 0x29, (byte) 0x43, (byte) 0xb1,
+            (byte) 0xe6, (byte) 0xb5, (byte) 0xbf, (byte) 0x2c, (byte) 0x20,
+            (byte) 0x74, (byte) 0x6f, (byte) 0x6f, (byte) 0x2e, (byte) 0x0d,
+            (byte) 0x0a, (byte) 0x54, (byte) 0x68, (byte) 0x65, (byte) 0x20,
+            (byte) 0x33, (byte) 0x72, (byte) 0x64, (byte) 0x20, (byte) 0x6c,
+            (byte) 0x69, (byte) 0x6e, (byte) 0x65, (byte) 0x2e };
+
+    private static final byte[] KOREAN_LONG_TEXT_NO_EXPLICIT_ESCSEQ_BYTES = {
             (byte) 0x1b, (byte) 0x24, (byte) 0x29, (byte) 0x43, (byte) 0x54,
             (byte) 0x68, (byte) 0x65, (byte) 0x20, (byte) 0x31, (byte) 0x73,
             (byte) 0x74, (byte) 0x20, (byte) 0x6c, (byte) 0x69, (byte) 0x6e,
@@ -172,16 +191,16 @@ public class SpecificCharacterSetTest {
             (byte) 0x3D };
 
     private static final byte[] CHINESE_LONG_TEXT_GB2312_BYTES = {
-            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0x31,
-            (byte) 0x2E, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
+            (byte) 0x31, (byte) 0x2e, (byte) 0x1B, (byte) 0x24, (byte) 0x29,
+            (byte) 0x41, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
             (byte) 0xD0, (byte) 0xD0, (byte) 0xCE, (byte) 0xC4, (byte) 0xD7,
             (byte) 0xD6, (byte) 0xA1, (byte) 0xA3, (byte) 0x0D, (byte) 0x0A,
-            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0x32,
-            (byte) 0x2E, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
+            (byte) 0x32, (byte) 0x2e, (byte) 0x1B, (byte) 0x24, (byte) 0x29,
+            (byte) 0x41, (byte) 0xB5, (byte) 0xDA, (byte) 0xB6, (byte) 0xFE,
             (byte) 0xD0, (byte) 0xD0, (byte) 0xCE, (byte) 0xC4, (byte) 0xD7,
             (byte) 0xD6, (byte) 0xA1, (byte) 0xA3, (byte) 0x0D, (byte) 0x0A,
-            (byte) 0x1B, (byte) 0x24, (byte) 0x29, (byte) 0x41, (byte) 0x33,
-            (byte) 0x2E, (byte) 0xB5, (byte) 0xDA, (byte) 0xD2, (byte) 0xBB,
+            (byte) 0x33, (byte) 0x2e, (byte) 0x1B, (byte) 0x24, (byte) 0x29,
+            (byte) 0x41, (byte) 0xB5, (byte) 0xDA, (byte) 0xC8, (byte) 0xFD,
             (byte) 0xD0, (byte) 0xD0, (byte) 0xCE, (byte) 0xC4, (byte) 0xD7,
             (byte) 0xD6, (byte) 0xA1, (byte) 0xA3, (byte) 0x0D, (byte) 0x0A };
 
@@ -395,7 +414,7 @@ public class SpecificCharacterSetTest {
     @Test
     public void testDecodeKoreanLongText() {
         assertEquals(KOREAN_LONG_TEXT,
-                ksx1001().decode(KOREAN_LONG_TEXT_BYTES));
+                ksx1001().decode(KOREAN_LONG_TEXT_NO_EXPLICIT_ESCSEQ_BYTES));
     }
 
     @Test

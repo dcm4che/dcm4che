@@ -189,7 +189,15 @@
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <outputDirectory>/modules/org/dcm4che/imageio/main/lib/macosx-x86_64</outputDirectory>
       <includes>
-        <include>*:*:jnilib:macosx-x86-64:*</include>
+        <include>*:*:dylib:macosx-x86-64:*</include>
+      </includes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/macosx-aarch64</outputDirectory>
+      <includes>
+        <include>*:*:dylib:macosx-aarch64:*</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>

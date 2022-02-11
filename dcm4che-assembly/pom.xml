@@ -549,6 +549,13 @@
       <artifactId>libopencv_java</artifactId>
       <version>${weasis.opencv.native.version}</version>
       <type>so</type>
+      <classifier>linux-s390x</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.thirdparty.org.opencv</groupId>
+      <artifactId>libopencv_java</artifactId>
+      <version>${weasis.opencv.native.version}</version>
+      <type>so</type>
       <classifier>linux-armv7a</classifier>
     </dependency>
     <dependency>
@@ -562,8 +569,15 @@
       <groupId>org.weasis.thirdparty.org.opencv</groupId>
       <artifactId>libopencv_java</artifactId>
       <version>${weasis.opencv.native.version}</version>
-      <type>jnilib</type>
+      <type>dylib</type>
       <classifier>macosx-x86-64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.weasis.thirdparty.org.opencv</groupId>
+      <artifactId>libopencv_java</artifactId>
+      <version>${weasis.opencv.native.version}</version>
+      <type>dylib</type>
+      <classifier>macosx-aarch64</classifier>
     </dependency>
     <dependency>
       <groupId>org.weasis.thirdparty.org.opencv</groupId>

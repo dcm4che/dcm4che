@@ -79,8 +79,10 @@ public class Timeout implements Runnable {
 
     @Override
     public void run() {
-        LOG.info(expiredMsg, as);
-        as.abort();
+        synchronized (as) {
+            LOG.info(expiredMsg, as);
+            as.abort();
+        }
     }
 
 }

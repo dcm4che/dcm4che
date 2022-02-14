@@ -112,11 +112,12 @@ public class Connection implements Serializable {
     public static final int DEF_SOCKETDELAY = 50;
 
     public static final String DEF_BUFFERSIZE_STR = "0";
-    public static final int DEF_BUFFERSIZE = Integer.valueOf(DEF_BUFFERSIZE_STR);
+    public static final int DEF_BUFFERSIZE = 0;
+	
+    public static final int DEF_ABORT_TIMEOUT = 1000;
 
     public static final String DEF_UDP_RECEIVE_BUFFERSIZE_STR = "1048576"; // 1 MB default
     public static final int DEF_UDP_RECEIVE_BUFFERSIZE = Integer.valueOf(DEF_UDP_RECEIVE_BUFFERSIZE_STR);
-
 
     public static final int DEF_MAX_PDU_LENGTH = 16378;
     // to fit into SunJSSE TLS Application Data Length 16408
@@ -185,6 +186,8 @@ public class Connection implements Serializable {
 
     @ConfigurableProperty(name = "dcmTCPCloseDelay", defaultValue = "50")
     private int socketCloseDelay = DEF_SOCKETDELAY;
+	
+    private int abortTimeout = DEF_ABORT_TIMEOUT;
 
     @ConfigurableProperty(name = "dcmTCPSendBufferSize", defaultValue = DEF_BUFFERSIZE_STR)
     private int sendBufferSize;
@@ -651,6 +654,16 @@ public class Connection implements Serializable {
         if (timeout < 0)
             throw new IllegalArgumentException("timeout: " + timeout);
         this.releaseTimeout = timeout;
+    }
+
+    public int getAbortTimeout() {
+        return abortTimeout;
+    }
+
+    public void setAbortTimeout(int delay) {
+        if (delay < 0)
+            throw new IllegalArgumentException("delay: " + delay);
+        this.abortTimeout = delay;
     }
 
     /**
@@ -1351,6 +1364,7 @@ public class Connection implements Serializable {
         setRetrieveTimeout(from.retrieveTimeout);
         setIdleTimeout(from.idleTimeout);
         setSocketTimeout(from.socketTimeout);
+        setAbortTimeout(from.abortTimeout);
         setSocketCloseDelay(from.socketCloseDelay);
         setSendBufferSize(from.sendBufferSize);
         setReceiveBufferSize(from.receiveBufferSize);

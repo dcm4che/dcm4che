@@ -429,6 +429,8 @@ public class JsonConfiguration {
             writer.writeNotDef("dcmRetrieveTimeoutTotal",
                     conn.isRetrieveTimeoutTotal(), false);
             writer.writeNotDef("dcmIdleTimeout", conn.getIdleTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmAATimeout",
+                    conn.getAbortTimeout(), Connection.DEF_ABORT_TIMEOUT);
             writer.writeNotDef("dcmTCPCloseDelay",
                     conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
             writer.writeNotDef("dcmTCPSendBufferSize",
@@ -529,6 +531,9 @@ public class JsonConfiguration {
                                 break;
                             case "dcmIdleTimeout":
                                 conn.setIdleTimeout(reader.intValue());
+                                break;
+                            case "dcmAATimeout":
+                                conn.setAbortTimeout(reader.intValue());
                                 break;
                             case "dcmTCPCloseDelay":
                                 conn.setSocketCloseDelay(reader.intValue());

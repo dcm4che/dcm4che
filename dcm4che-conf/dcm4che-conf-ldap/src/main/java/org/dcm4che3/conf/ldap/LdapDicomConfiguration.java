@@ -1076,6 +1076,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 conn.isRetrieveTimeoutTotal(), false);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
+        LdapUtils.storeNotDef(ldapObj, attrs, "dcmAATimeout",
+                conn.getAbortTimeout(), Connection.NO_TIMEOUT);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPCloseDelay",
                 conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPSendBufferSize",
@@ -1553,6 +1555,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         conn.setRetrieveTimeoutTotal(LdapUtils.booleanValue(attrs.get("dcmRetrieveTimeoutTotal"), false));
         conn.setIdleTimeout(LdapUtils.intValue(attrs.get("dcmIdleTimeout"),
                 Connection.NO_TIMEOUT));
+        conn.setAbortTimeout(LdapUtils.intValue(attrs.get("dcmAATimeout"),
+                Connection.DEF_ABORT_TIMEOUT));
         conn.setSocketCloseDelay(LdapUtils.intValue(attrs.get("dcmTCPCloseDelay"),
                 Connection.DEF_SOCKETDELAY));
         conn.setSendBufferSize(LdapUtils.intValue(attrs.get("dcmTCPSendBufferSize"),
@@ -1914,6 +1918,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 a.getIdleTimeout(),
                 b.getIdleTimeout(),
                 Connection.NO_TIMEOUT);
+        LdapUtils.storeDiff(ldapObj, mods, "dcmAATimeout",
+                a.getAbortTimeout(),
+                b.getAbortTimeout(),
+                Connection.DEF_ABORT_TIMEOUT);
         LdapUtils.storeDiff(ldapObj, mods, "dcmTCPCloseDelay",
                 a.getSocketCloseDelay(),
                 b.getSocketCloseDelay(),

@@ -371,6 +371,11 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.84 NAME 'dcmNoAsyncModeCalledAETitle'
   DESC 'Blacklist AE Title of peer Network AE as not capable to handle Asynchronous Operations Window Negotiation correctly.'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.85 NAME 'dcmAATimeout'
+  DESC 'Timeout in ms for waiting for finishing sending any DIMSE before sending an A-ABORT PDU, triggered by the application or by expiration of a configured other timeout of this Connection; 1000 ms if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'DICOM PS 3.15 A.5 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -625,6 +630,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
     dcmAARQTimeout $
     dcmAAACTimeout $
     dcmARRPTimeout $
+    dcmAATimeout $
     dcmSendTimeout $
     dcmStoreTimeout $
     dcmResponseTimeout $

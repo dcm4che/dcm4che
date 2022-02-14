@@ -429,6 +429,8 @@ public class JsonConfiguration {
             writer.writeNotDef("dcmRetrieveTimeoutTotal",
                     conn.isRetrieveTimeoutTotal(), false);
             writer.writeNotDef("dcmIdleTimeout", conn.getIdleTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmAATimeout",
+                    conn.getAbortTimeout(), Connection.DEF_ABORT_TIMEOUT);
             writer.writeNotDef("dcmTCPCloseDelay",
                     conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
             writer.writeNotDef("dcmTCPSendBufferSize",
@@ -530,6 +532,9 @@ public class JsonConfiguration {
                             case "dcmIdleTimeout":
                                 conn.setIdleTimeout(reader.intValue());
                                 break;
+                            case "dcmAATimeout":
+                                conn.setAbortTimeout(reader.intValue());
+                                break;
                             case "dcmTCPCloseDelay":
                                 conn.setSocketCloseDelay(reader.intValue());
                                 break;
@@ -613,6 +618,7 @@ public class JsonConfiguration {
             writer.writeNotEmpty("dcmPreferredTransferSyntax", ae.getPreferredTransferSyntaxes());
             writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
             writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
+            writer.writeNotEmpty("dcmNoAsyncModeCalledAETitle", ae.getNoAsyncModeCalledAETitles());
             writer.writeNotEmpty("dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
             writer.writeNotNullOrDef("hl7ApplicationName", ae.getHl7ApplicationName(), null);
             for (JsonConfigurationExtension ext : extensions)
@@ -686,6 +692,9 @@ public class JsonConfiguration {
                                 break;
                             case "dcmOtherAETitle":
                                 ae.setOtherAETitles(reader.stringArray());
+                                break;
+                            case "dcmNoAsyncModeCalledAETitle":
+                                ae.setNoAsyncModeCalledAETitles(reader.stringArray());
                                 break;
                             case "dcmMasqueradeCallingAETitle":
                                 ae.setMasqueradeCallingAETitles(reader.stringArray());

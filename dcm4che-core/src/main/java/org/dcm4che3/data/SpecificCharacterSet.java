@@ -53,6 +53,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author Gunter Zeilinger (gunterze@protonmail.com)
+ * @author Itr Tert (itr.tert@gmail.com)
  */
 public class SpecificCharacterSet {
 
@@ -87,8 +88,8 @@ public class SpecificCharacterSet {
         TIS_620(true, 0x2842, 0x2d54, 1),
         JIS_X_208(false, 0x2442, 0, 1),
         JIS_X_212(false, 0x242844, 0, 2),
-        KS_X_1001(false, 0x2842, 0x242943, -1),
-        GB2312(false, 0x2842, 0x242941, -1),
+        KS_X_1001(false, 0, 0x242943, -1),
+        GB2312(false, 0, 0x242941, -1),
         UTF_8(true, 0, 0, -1),
         GB18030(false, 0, 0, -1);
 
@@ -241,6 +242,10 @@ public class SpecificCharacterSet {
         }
     }
 
+    private enum G0G1 {
+        G0, G1, Both
+    }
+
     private static final class Encoder {
         final Codec codec;
         final CharsetEncoder encoder;
@@ -251,7 +256,7 @@ public class SpecificCharacterSet {
         }
 
         public boolean encode(CharBuffer cb, ByteBuffer bb, int escSeq,
-                CodingErrorAction errorAction) {
+                G0G1 useRange, CodingErrorAction errorAction) {
             encoder.onMalformedInput(errorAction)
                     .onUnmappableCharacter(errorAction)
                     .reset();
@@ -259,12 +264,28 @@ public class SpecificCharacterSet {
             int bbmark = bb.position();
             try {
                 escSeq(bb, escSeq);
+                int graphicCharStart = bb.position();
                 CoderResult cr = encoder.encode(cb, bb, true);
                 if (!cr.isUnderflow())
                     cr.throwException();
                 cr = encoder.flush(bb);
                 if (!cr.isUnderflow())
                     cr.throwException();
+
+                if (useRange == G0G1.G0) {
+                    for (int i = graphicCharStart, end = bb.position(); i < end; ++i) {
+                        if (0 > bb.get(i)) {
+                            throw new CharacterCodingException();
+                        }
+                    }
+                } else if (useRange == G0G1.G1) {
+                    for (int i = graphicCharStart, end = bb.position(); i < end; ++i) {
+                        if (0 <= bb.get(i)) {
+                            throw new CharacterCodingException();
+                        }
+                    }
+                }
+                // if useRange == G0G1.Both, then do nothing
             } catch (CharacterCodingException x) {
                 SafeBuffer.position(cb, cbmark);
                 SafeBuffer.position(bb, bbmark);
@@ -305,14 +326,14 @@ public class SpecificCharacterSet {
             ByteBuffer bb = ByteBuffer.wrap(buf);
             // try to encode whole string value with character set specified
             // by value1 of (0008,0005) Specific Character Set
-            if (!enc1.encode(cb, bb, 0, CodingErrorAction.REPORT)) {
+            if (!enc1.encode(cb, bb, 0, G0G1.Both, CodingErrorAction.REPORT)) {
                 // split whole string value according VR specific delimiters
                 // and try to encode each component separately
                 Encoder[] encs = new Encoder[codecs.length];
                 encs[0] = enc1;
                 encs[1] = encoder(cachedEncoder2, codecs[1]);
                 StringTokenizer comps = new StringTokenizer(val, delimiters, true);
-                buf = new byte[2 * strlen + 4 * (comps.countTokens() + 1)];
+                buf = new byte[(2 + 4) * strlen];
                 bb = ByteBuffer.wrap(buf);
                 int[] cur = { 0, 0 };
                 while (comps.hasMoreTokens()) {
@@ -332,12 +353,12 @@ public class SpecificCharacterSet {
 
         private void encodeComponent(Encoder[] encs, CharBuffer cb, ByteBuffer bb, int[] cur) {
             // try to encode component with current active character of G1
-            if (codecs[cur[1]].getEscSeq1() != 0 && encs[cur[1]].encode(cb, bb, 0, CodingErrorAction.REPORT))
+            if (codecs[cur[1]].getEscSeq1() != 0 && encs[cur[1]].encode(cb, bb, 0, G0G1.G1, CodingErrorAction.REPORT))
                 return;
 
             // try to encode component with current active character set of G0, if different to G1
             if ((codecs[cur[1]].getEscSeq1() == 0 || codecs[cur[1]].getEscSeq0() != codecs[cur[0]].getEscSeq0())
-                    && encs[cur[0]].encode(cb, bb, 0, CodingErrorAction.REPORT))
+                    && encs[cur[0]].encode(cb, bb, 0, G0G1.G0, CodingErrorAction.REPORT))
                 return;
 
             int next = encs.length;
@@ -345,12 +366,13 @@ public class SpecificCharacterSet {
                 if (encs[next] == null)
                     encs[next] = new Encoder(codecs[next]);
                 if (codecs[next].getEscSeq1() != 0) {
-                    if (encs[next].encode(cb, bb, codecs[next].getEscSeq1(), CodingErrorAction.REPORT)) {
+                    if (encs[next].encode(cb, bb, codecs[next].getEscSeq1(), G0G1.G1, CodingErrorAction.REPORT)) {
                         cur[1] = next;
                         break;
                     }
-                } else {
-                    if (encs[next].encode(cb, bb, codecs[next].getEscSeq0(), CodingErrorAction.REPORT)) {
+                }
+                if (codecs[next].getEscSeq0() != 0) {
+                    if (encs[next].encode(cb, bb, codecs[next].getEscSeq0(), G0G1.G0, CodingErrorAction.REPORT)) {
                         cur[0] = next;
                         break;
                     }

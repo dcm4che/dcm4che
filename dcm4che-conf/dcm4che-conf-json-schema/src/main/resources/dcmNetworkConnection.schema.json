@@ -14,7 +14,8 @@
     "dcmMaxOpsPerformed",
     "dcmMaxOpsInvoked",
     "dcmPackPDV",
-    "dcmRetrieveTimeoutTotal"
+    "dcmRetrieveTimeoutTotal",
+    "dcmAATimeout"
   ],
   "properties": {
     "dcmProtocol": {
@@ -201,6 +202,13 @@
       "description": "Indicates aborting of idle Associations after specified timeout in ms; no timeout if absent",
       "type": "integer",
       "minimum": 100
+    },
+    "dcmAATimeout": {
+      "title": "A-ABORT Timeout",
+      "description": "Timeout in ms for waiting for finishing sending any DIMSE before sending an A-ABORT PDU, triggered by the application or by expiration of a configured other timeout of this Connection. If the timeout expires, the TCP connection will be closed without sending the A-ABORT.",
+      "type": "integer",
+      "minimum": 0,
+      "default": 1000
     }
   }
 }

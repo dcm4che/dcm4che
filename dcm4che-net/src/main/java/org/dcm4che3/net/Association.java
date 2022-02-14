@@ -340,12 +340,7 @@ public class Association {
     }
 
     void abort(AAbort aa) {
-        try {
-            state.write(this, aa);
-        } catch (IOException e) {
-            // already handled by onIOException()
-            // do not bother user about
-        }
+        state.write(this, aa);
     }
 
     private synchronized void closeSocket() {
@@ -388,7 +383,7 @@ public class Association {
         closeSocket();
     }
 
-    void write(AAbort aa) throws IOException  {
+    void write(AAbort aa)  {
         LOG.info("{} << {}", name, aa.toString());
         encoder.write(aa);
         ex = aa;
@@ -666,7 +661,7 @@ public class Association {
         state.onAReleaseRQ(this);
     }
 
-    void handleAReleaseRQ() throws IOException {
+    void handleAReleaseRQ() {
         if (decoder.isPendingPDV()) {
             LOG.info("{}: unexpected A-RELEASE-RQ after P-DATA-TF with pending PDV", this);
             abort();
@@ -689,7 +684,7 @@ public class Association {
         }
     }
 
-    void handleAReleaseRQCollision() throws IOException {
+    void handleAReleaseRQCollision() {
         if (isRequestor()) {
             enterState(State.Sta9);
             LOG.info("{} << A-RELEASE-RP", name);
@@ -706,11 +701,11 @@ public class Association {
         state.onAReleaseRP(this);
     }
 
-    void handleAReleaseRP() throws IOException {
+    void handleAReleaseRP() {
         closeSocket();
     }
 
-   void handleAReleaseRPCollision() throws IOException {
+   void handleAReleaseRPCollision() {
         enterState(State.Sta12);
         LOG.info("{} << A-RELEASE-RP", name);
         encoder.writeAReleaseRP();

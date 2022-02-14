@@ -42,7 +42,11 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import org.dcm4che3.data.Implementation;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
@@ -75,6 +79,7 @@ class PDUEncoder extends PDVOutputStream {
     private int maxpdulen;
     private Thread th;
     private Object dimseLock = new Object();
+    private Lock writeLock = new ReentrantLock(true);
 
     public PDUEncoder(Association as, OutputStream out) {
         this.as = as;
@@ -92,24 +97,50 @@ class PDUEncoder extends PDVOutputStream {
     }
 
     public void write(AAssociateRJ rj) throws IOException {
-        write(PDUType.A_ASSOCIATE_RJ, rj.getResult(), rj.getSource(),
-                rj.getReason());
+        write(PDUType.A_ASSOCIATE_RJ, rj.getResult(), rj.getSource(), rj.getReason(), true);
     }
 
     public void writeAReleaseRQ() throws IOException {
-        write(PDUType.A_RELEASE_RQ, 0, 0, 0);
+        synchronized (dimseLock) {
+            write(PDUType.A_RELEASE_RQ, 0, 0, 0, true);
+        }
     }
 
-    public void writeAReleaseRP() throws IOException {
-        write(PDUType.A_RELEASE_RP, 0, 0, 0);
+    public void writeAReleaseRP() {
+        try {
+            write(PDUType.A_RELEASE_RP, 0, 0, 0, false);
+        } catch (IOException e) {
+            Association.LOG.info("{} << A-RELEASE-RP failed: {}", as, e.getMessage());
+        }
     }
 
-    public void write(AAbort aa) throws IOException {
-        write(PDUType.A_ABORT, 0, aa.getSource(), aa.getReason());
+    public void write(AAbort aa) {
+        try {
+            write(PDUType.A_ABORT, 0, aa.getSource(), aa.getReason(), false);
+        } catch (IOException e) {
+            Association.LOG.info("{} << {} failed: {}", as, aa, e.getMessage());
+        }
     }
 
-    private synchronized void write(int pdutype, int result, int source,
-            int reason) throws IOException {
+    private void write(int pdutype, int result, int source, int reason, boolean blocking) throws IOException {
+        if (blocking) {
+            writeLock.lock();
+        } else {
+            try {
+                int timeout = as.getConnection().getAbortTimeout();
+                Timeout.LOG.debug("{}: start A-ABORT timeout of {}ms", as, timeout);
+                if (!writeLock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
+                    Timeout.LOG.info("{}: A-ABORT timeout expired", as);
+                    return;
+                }
+            } catch (InterruptedException e) {
+                if (!writeLock.tryLock()) {
+                    Timeout.LOG.info("{}: A-ABORT timeout interrupted: {}", as, e.getMessage());
+                    return;
+                }
+            }
+            Timeout.LOG.debug("{}: stop A-ABORT timeout", as);
+        }
         byte[] b = {
                 (byte) pdutype,
                 0,
@@ -119,17 +150,24 @@ class PDUEncoder extends PDVOutputStream {
                 (byte) source,
                 (byte) reason
         };
-        out.write(b);
-        out.flush();
+        try {
+            out.write(b);
+            out.flush();
+        } finally {
+            writeLock.unlock();
+        }
     }
 
-    private synchronized void writePDU(int pdulen) throws IOException {
+    private void writePDU(int pdulen) throws IOException {
+        writeLock.lock();
         try {
             out.write(buf, 0, 6 + pdulen);
             out.flush();
         } catch (IOException e) {
             as.onIOException(e);
             throw e;
+        } finally {
+            writeLock.unlock();
         }
         pdvpos = 6;
         pos = 12;
@@ -138,6 +176,7 @@ class PDUEncoder extends PDVOutputStream {
     private void encode(AAssociateRQAC rqac, int pduType, int pcItemType) {
         rqac.checkCallingAET();
         rqac.checkCalledAET();
+        rqac.setImplVersionName(Implementation.getVersionName());
 
         int pdulen = rqac.length();
         if (buf.length < 6 + pdulen)

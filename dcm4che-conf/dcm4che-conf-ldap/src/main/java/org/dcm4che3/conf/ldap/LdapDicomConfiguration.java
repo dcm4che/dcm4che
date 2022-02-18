@@ -1077,7 +1077,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmAATimeout",
-                conn.getAbortTimeout(), Connection.NO_TIMEOUT);
+                conn.getAbortTimeout(), Connection.DEF_ABORT_TIMEOUT);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPCloseDelay",
                 conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmTCPSendBufferSize",

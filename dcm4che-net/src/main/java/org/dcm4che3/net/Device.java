@@ -530,7 +530,7 @@ public class Device implements Serializable {
     }
 
     public final void setTrustStorePinProperty(String trustStorePinProperty) {
-        checkNotEmpty("keyPin", keyStoreKeyPin);
+        checkNotEmpty("trustStorePinProperty", trustStorePinProperty);
         this.trustStorePinProperty = trustStorePinProperty;
     }
 
@@ -566,7 +566,7 @@ public class Device implements Serializable {
     }
 
     public final void setKeyStoreType(String keyStoreType) {
-        checkNotEmpty("keyStoreType", keyStoreURL);
+        checkNotEmpty("keyStoreType", keyStoreType);
         this.keyStoreType = keyStoreType;
     }
 

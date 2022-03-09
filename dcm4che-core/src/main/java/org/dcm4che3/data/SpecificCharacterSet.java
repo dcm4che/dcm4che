@@ -557,7 +557,27 @@ public class SpecificCharacterSet {
                 return new String[]{codes[0]};
             }
         }
-        return codes;
+        return ensureFirstContainsASCII(codes);
+    }
+
+    private static String[] ensureFirstContainsASCII(String[] codes) {
+        for (int i = 0; i < codes.length; i++) {
+            if (Codec.forCode(codes[i]).containsASCII()) {
+                if (i == 0) return codes;
+                String[] clone = codes.clone();
+                clone[0] = codes[i];
+                clone[i] = codes[0];
+                LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
+                        StringUtils.concat(codes, '\\'), StringUtils.concat(clone, '\\'));
+                return clone;
+            }
+        }
+        String[] withASCII = new String[1 + codes.length];
+        withASCII[0] = "";
+        System.arraycopy(codes, 0, withASCII, 1, codes.length);
+        LOG.info("Invalid Specific Character Set: [{}] - treat as [{}]",
+                StringUtils.concat(codes, '\\'), StringUtils.concat(withASCII, '\\'));
+        return withASCII;
     }
 
     public String[] toCodes () {

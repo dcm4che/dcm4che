@@ -176,7 +176,6 @@ class PDUEncoder extends PDVOutputStream {
     private void encode(AAssociateRQAC rqac, int pduType, int pcItemType) {
         rqac.checkCallingAET();
         rqac.checkCalledAET();
-        rqac.setImplVersionName(Implementation.getVersionName());
 
         int pdulen = rqac.length();
         if (buf.length < 6 + pdulen)

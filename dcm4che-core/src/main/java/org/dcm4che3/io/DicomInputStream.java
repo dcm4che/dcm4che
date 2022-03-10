@@ -148,20 +148,19 @@ public class DicomInputStream extends FilterInputStream
     @SuppressWarnings("unchecked")
     public DicomInputStream(InputStream in, String tsuid) throws IOException {
         super(in);
-        if( in instanceof CloneIt ) originalInput = (CloneIt<InputStream, IOException>) in;
+        if (in instanceof CloneIt) originalInput = (CloneIt<InputStream, IOException>) in;
         switchTransferSyntax(tsuid);
     }
 
     @SuppressWarnings("unchecked")
-    public DicomInputStream(InputStream in) throws IOException {
-        super(in.markSupported() ? in : new BufferedInputStream(in));
-        if( in instanceof CloneIt ) originalInput = (CloneIt<InputStream, IOException>) in;
-        this.guessTransferSyntax(DEFAULT_PREAMBLE_LENGTH);
-    }
-
     public DicomInputStream(InputStream in, int preambleLength) throws IOException {
         super(ensureMarkSupported(in));
+        if( in instanceof CloneIt ) originalInput = (CloneIt<InputStream, IOException>) in;
         guessTransferSyntax(preambleLength);
+    }
+
+    public DicomInputStream(InputStream in) throws IOException {
+        this(in, DEFAULT_PREAMBLE_LENGTH);
     }
 
     public DicomInputStream(File file) throws IOException {

@@ -43,7 +43,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -67,9 +66,8 @@ import org.dcm4che3.net.pdu.UserIdentityRQ;
  */
 class PDUEncoder extends PDVOutputStream {
 
-    private final Association as;
-    private final OutputStream out;
-    private final AtomicBoolean aborted = new AtomicBoolean(false);
+    private Association as;
+    private OutputStream out;
     private byte[] buf = new byte[Connection.DEF_MAX_PDU_LENGTH + 6];
     private int pos;
     private int pdvpcid;
@@ -77,7 +75,7 @@ class PDUEncoder extends PDVOutputStream {
     private int pdvpos;
     private int maxpdulen;
     private Thread th;
-    private final Object dimseLock = new Object();
+    private Object dimseLock = new Object();
 
     public PDUEncoder(Association as, OutputStream out) {
         this.as = as;
@@ -85,42 +83,30 @@ class PDUEncoder extends PDVOutputStream {
     }
 
     public void write(AAssociateRQ rq) throws IOException {
-        if (!aborted.get()) {
-            encode(rq, PDUType.A_ASSOCIATE_RQ, ItemType.RQ_PRES_CONTEXT);
-            writePDU(pos - 6);
-        }
+        encode(rq, PDUType.A_ASSOCIATE_RQ, ItemType.RQ_PRES_CONTEXT);
+        writePDU(pos - 6);
     }
 
     public void write(AAssociateAC ac) throws IOException {
-        if (!aborted.get()) {
-            encode(ac, PDUType.A_ASSOCIATE_AC, ItemType.AC_PRES_CONTEXT);
-            writePDU(pos - 6);
-        }
+        encode(ac, PDUType.A_ASSOCIATE_AC, ItemType.AC_PRES_CONTEXT);
+        writePDU(pos - 6);
     }
 
     public void write(AAssociateRJ rj) throws IOException {
-        if (!aborted.get()) {
-            write(PDUType.A_ASSOCIATE_RJ, rj.getResult(), rj.getSource(),
-                    rj.getReason());
-        }
+        write(PDUType.A_ASSOCIATE_RJ, rj.getResult(), rj.getSource(),
+                rj.getReason());
     }
 
     public void writeAReleaseRQ() throws IOException {
-        if (!aborted.get()) {
-            write(PDUType.A_RELEASE_RQ, 0, 0, 0);
-        }
+        write(PDUType.A_RELEASE_RQ, 0, 0, 0);
     }
 
     public void writeAReleaseRP() throws IOException {
-        if (!aborted.get()) {
-            write(PDUType.A_RELEASE_RP, 0, 0, 0);
-        }
+        write(PDUType.A_RELEASE_RP, 0, 0, 0);
     }
 
     public void write(AAbort aa) throws IOException {
-        if (aborted.compareAndSet(false, true)) {
-            write(PDUType.A_ABORT, 0, aa.getSource(), aa.getReason());
-        }
+        write(PDUType.A_ABORT, 0, aa.getSource(), aa.getReason());
     }
 
     private synchronized void write(int pdutype, int result, int source,

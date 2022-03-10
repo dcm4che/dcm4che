@@ -1,7 +1,9 @@
 package org.dcm4che3.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 
 import org.dcm4che3.data.Attributes;
@@ -10,11 +12,13 @@ import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.util.LimitedInputStream;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -74,6 +78,18 @@ public class DicomInputStreamTest {
             in.setAddBulkDataReferences(includeBulkData == IncludeBulkData.URI);
             return in.readDataset(-1, -1);
         }
+    }
+
+    @Test
+    public void testNoOutOfMemoryErrorOnInvalidLengthIfStreamLengthKnown() throws IOException {
+        byte[] b = { 8, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 'e', 'v', 'i', 'l', 'l', 'e', 'n', 'g', 'h' };
+            try ( DicomInputStream in = new DicomInputStream(new LimitedInputStream(new ByteArrayInputStream(b), b.length, true))) {
+                in.readDataset(-1, -1);
+                fail("Expected exception to be thrown because length of tag exceeds size of dicom stream");
+            } catch (Exception exception) {
+                assertEquals("Length 1735288172 for tag (7665,6C69) @ 12 exceeds remaining 1 (pos: 20)",
+                        exception.getMessage());
+            }
     }
 
     @Test()

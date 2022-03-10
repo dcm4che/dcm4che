@@ -65,6 +65,7 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.LimitedInputStream;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.TagUtils;
@@ -787,15 +788,27 @@ public class DicomInputStream extends FilterInputStream
     public byte[] readValue() throws IOException {
         int valLen = length;
         try {
-            if (valLen < 0)
-                throw new EOFException(); // assume InputStream length < 2 GiB
-            int allocLen = allocateLimit >= 0
+            if (valLen < 0) {
+                throw new IOException(
+                        "internal error: length should have been validated in readHeader");
+            }
+            boolean limitedStream = in instanceof LimitedInputStream;
+            if(limitedStream && valLen > ((LimitedInputStream)in).getRemaining()) {
+                throw new EOFException(
+                        "Length " + valLen + " for tag " + TagUtils.toString(tag) + " @ " + tagPos  +
+                                " exceeds remaining " + ((LimitedInputStream)in).getRemaining() +  " (pos: " + pos + ")");
+            }
+            int allocLen = allocateLimit >= 0 && !limitedStream
                     ? Math.min(valLen, allocateLimit)
                     : valLen;
             byte[] value = new byte[allocLen];
             readFully(value, 0, allocLen);
             while (allocLen < valLen) {
-                int newLength = Math.min(valLen, allocLen << 1);
+                int newLength = allocLen << 1;
+                if (newLength < 0)
+                    newLength = Integer.MAX_VALUE;
+                if (newLength > valLen)
+                    newLength = valLen;
                 value = Arrays.copyOf(value, newLength);
                 readFully(value, allocLen, newLength - allocLen);
                 allocLen = newLength;

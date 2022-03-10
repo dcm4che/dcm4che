@@ -262,7 +262,7 @@ public class DicomInputStream extends FilterInputStream
      * @param allocateLimit limit of initial allocated memory or -1 for no limit
      */
     public final void setAllocateLimit(int allocateLimit) {
-        if(allocateLimit < -1 || allocateLimit == 0)
+        if (!(allocateLimit > 0 || allocateLimit == -1))
             throw new IllegalArgumentException("allocateLimit must be a positive number or -1");
 
         this.allocateLimit = allocateLimit;

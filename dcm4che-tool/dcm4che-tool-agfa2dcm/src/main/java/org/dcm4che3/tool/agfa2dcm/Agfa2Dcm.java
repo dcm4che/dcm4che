@@ -136,7 +136,7 @@ public class Agfa2Dcm {
                 if (part != null) part.length -= headerLength;
                 dis = new DicomInputStream(in, 128 - headerLength);
                 dis.setIncludeBulkData(DicomInputStream.IncludeBulkData.NO);
-                Attributes attrs = dis.readDataset(-1, Agfa2Dcm::isArchiveBlobTag);
+                Attributes attrs = dis.readDataset(Agfa2Dcm::isArchiveBlobTag);
                 list.add(part = new Part(format.format(attrs), dis.getPosition() + headerLength));
             }
         }

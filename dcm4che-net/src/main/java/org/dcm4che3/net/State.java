@@ -223,7 +223,7 @@ public enum State {
         throw new AssociationStateException(this);
     }
 
-    void write(Association as, AAbort aa) throws IOException {
+    void write(Association as, AAbort aa) {
         as.write(aa);
     }
 

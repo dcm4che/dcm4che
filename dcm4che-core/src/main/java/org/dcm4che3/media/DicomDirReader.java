@@ -74,7 +74,7 @@ public class DicomDirReader implements Closeable {
         try {
             this.in = new DicomInputStream(new RAFInputStreamAdapter(raf));
             this.fmi = in.readFileMetaInformation();
-            this.fsInfo = in.readDataset(-1, Tag.DirectoryRecordSequence);
+            this.fsInfo = in.readDataset(o -> o.tag() == Tag.DirectoryRecordSequence);
             if (in.tag() != Tag.DirectoryRecordSequence)
                 throw new IOException("Missing Directory Record Sequence");
         } catch (IOException e) {

@@ -45,6 +45,7 @@ import java.security.GeneralSecurityException;
 import java.util.*;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Implementation;
 import org.dcm4che3.net.pdu.AAbort;
 import org.dcm4che3.net.pdu.AAssociateAC;
 import org.dcm4che3.net.pdu.AAssociateRQ;
@@ -637,6 +638,7 @@ public class ApplicationEntity implements Serializable {
             throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         checkDevice();
         checkInstalled();
+        rq.setImplVersionName(Implementation.getVersionName());
         if (rq.getCallingAET() == null)
             rq.setCallingAET(getCallingAETitle(rq.getCalledAET()));
         if (!isNoAsyncModeCalledAETitle(rq.getCalledAET())) {

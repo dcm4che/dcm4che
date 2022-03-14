@@ -41,6 +41,7 @@ package org.dcm4che3.net;
 import java.io.IOException;
 import java.util.Objects;
 
+import org.dcm4che3.data.Implementation;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.net.pdu.AAssociateAC;
 import org.dcm4che3.net.pdu.AAssociateRJ;
@@ -97,6 +98,7 @@ public class AssociationHandler {
     protected AAssociateAC makeAAssociateAC(Association as, AAssociateRQ rq,
             UserIdentityAC userIdentity) throws IOException {
         AAssociateAC ac = new AAssociateAC();
+        ac.setImplVersionName(Implementation.getVersionName());
         ac.setCalledAET(rq.getCalledAET());
         ac.setCallingAET(rq.getCallingAET());
         Connection conn = as.getConnection();

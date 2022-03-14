@@ -40,6 +40,7 @@ package org.dcm4che3.io;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.LimitedInputStream;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.TagUtils;
@@ -86,6 +87,9 @@ public class DicomInputStream extends FilterInputStream
     private static final int ZLIB_HEADER = 0x789c;
     private static final int DEF_ALLOCATE_LIMIT = 0x4000000; // 64MiB
 
+    private static final int DEFAULT_PREAMBLE_LENGTH = 128;
+    private static final int UNDEFINED_LENGTH = -1;
+
     // Length of the buffer used for readFully(short[], int, int)
     private static final int BYTE_BUF_LENGTH = 8192;
 
@@ -131,23 +135,92 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public DicomInputStream(InputStream in) throws IOException {
-        this(in, 128);
+        this(in, DEFAULT_PREAMBLE_LENGTH);
     }
 
     public DicomInputStream(InputStream in, int preambleLength) throws IOException {
-        super(in.markSupported() ? in : new BufferedInputStream(in));
+        super(ensureMarkSupported(in));
         guessTransferSyntax(preambleLength);
     }
 
     public DicomInputStream(File file) throws IOException {
         super(new BufferedInputStream(new FileInputStream(file)));
         try {
-            guessTransferSyntax(128);
+            guessTransferSyntax(DEFAULT_PREAMBLE_LENGTH);
         } catch (IOException e) {
             SafeClose.close(in);
             throw e;
         }
         uri = file.toURI().toString();
+    }
+
+    /**
+     * Create a new DicomInputStream for the given input stream, Transfer Syntax UID and read limit.
+     * It ensures to never read more than the limit from the stream by wrapping it with a {@link LimitedInputStream}.
+     *
+     * The limit also helps to avoid OutOfMemory errors on parsing corrupt DICOM streams without the need to create
+     * temporary arrays when allocating large tag values. (See also {@link #setAllocateLimit}.)
+     *
+     * @param in input stream to read data from
+     * @param tsuid Transfer Syntax UID
+     * @param limit limit in bytes
+     * @return new DicomInputStream
+     * @throws IOException if there is a problem reading from the given stream
+     */
+    public static DicomInputStream createWithLimit(InputStream in, String tsuid, long limit) throws IOException {
+        return new DicomInputStream(limited(ensureMarkSupported(in), limit), tsuid);
+    }
+
+    /**
+     * Create a new DicomInputStream for the given input stream and read limit.
+     * It ensures to never read more than the limit from the stream by wrapping it with a {@link LimitedInputStream}.
+     *
+     * The limit also helps to avoid OutOfMemory errors on parsing corrupt DICOM streams without the need to create
+     * temporary arrays when allocating large tag values. (See also {@link #setAllocateLimit}.)
+     *
+     * @param in input stream to read data from
+     * @param limit limit in bytes
+     * @return new DicomInputStream
+     * @throws IOException if there is a problem reading from the given stream
+     */
+    public static DicomInputStream createWithLimit(InputStream in, long limit) throws IOException {
+        return new DicomInputStream(limited(ensureMarkSupported(in), limit));
+    }
+
+    /**
+     * Create a new DicomInputStream for the given file.
+     *
+     * A limit will be set by reading the length of the file (see also #createWithLimit).
+     *
+     * @param file file to read
+     * @return new DicomInputStream
+     * @throws IOException if there is a problem reading from the given file
+     */
+    public static DicomInputStream createWithLimitFromFileLength(File file) throws IOException {
+        long fileLength = file.length();
+        // Some operating systems may return 0 length for pathnames denoting system-dependent entities such as devices or pipes
+        if(fileLength > 0) {
+            InputStream in = limited(new BufferedInputStream(new FileInputStream(file)), fileLength);
+            DicomInputStream dicomInputStream;
+            try {
+                dicomInputStream = new DicomInputStream(in);
+            } catch (IOException e) {
+                SafeClose.close(in);
+                throw e;
+            }
+            dicomInputStream.setURI(file.toURI().toString());
+            return dicomInputStream;
+        } else {
+            return new DicomInputStream(file);
+        }
+    }
+
+    private static InputStream ensureMarkSupported(InputStream in) {
+        return in.markSupported() ? in : new BufferedInputStream(in);
+    }
+
+    private static LimitedInputStream limited(InputStream in, long limit) {
+        return new LimitedInputStream(in, limit, true);
     }
 
     public final String getTransferSyntax() {
@@ -180,11 +253,18 @@ public class DicomInputStream extends FilterInputStream
      * OutOfMemoryErrors on parsing corrupted DICOM streams.
      * 
      * By default, the limit is set to 67108864 (64 MiB).
+     *
+     * Note: If a limit is given using {@link #createWithLimit} or
+     * {@link #createWithLimitFromFileLength} or by supplying a {@link LimitedInputStream},
+     * then this allocateLimit will be ignored (except for deflated data) and no
+     * temporary arrays need to be created.
      * 
      * @param allocateLimit limit of initial allocated memory or -1 for no limit
-     * 
      */
     public final void setAllocateLimit(int allocateLimit) {
+        if (!(allocateLimit > 0 || allocateLimit == -1))
+            throw new IllegalArgumentException("allocateLimit must be a positive number or -1");
+
         this.allocateLimit = allocateLimit;
     }
 
@@ -484,22 +564,41 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public void readAllAttributes(Attributes attrs) throws IOException {
-        readAttributes(attrs, -1, o -> false);
+        readAttributes(attrs, UNDEFINED_LENGTH, o -> false);
     }
 
     public Attributes readDataset() throws IOException {
-        return readDataset(-1, o -> false);
+        return readDataset(o -> false);
     }
 
     public Attributes readDatasetUntilPixelData() throws IOException {
-        return readDataset(-1, o -> o.tag == Tag.PixelData);
+        return readDataset(o -> o.tag == Tag.PixelData);
     }
 
+    /**
+     * @deprecated Use one of the other {@link #readDataset()} methods instead. If you want to
+     * specify a length limit, you may supply a {@link LimitedInputStream} or use
+     * {@link #createWithLimit} or {@link #createWithLimitFromFileLength}.
+     */
     @Deprecated
     public Attributes readDataset(int len, int stopTag) throws IOException {
         return readDataset(len, tagEqualOrGreater(stopTag));
     }
 
+    public Attributes readDataset(int stopTag) throws IOException {
+        return readDataset(tagEqualOrGreater(stopTag));
+    }
+
+    public Attributes readDataset(Predicate<DicomInputStream> stopPredicate) throws IOException {
+        return readDataset(UNDEFINED_LENGTH, stopPredicate);
+    }
+
+    /**
+     * @deprecated Use one of the other {@link #readDataset()} methods instead. If you want to
+     * specify a length limit, you may supply a {@link LimitedInputStream} or use
+     * {@link #createWithLimit} or {@link #createWithLimitFromFileLength}.
+     */
+    @Deprecated
     public Attributes readDataset(int len, Predicate<DicomInputStream> stopPredicate) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();
@@ -554,7 +653,7 @@ public class DicomInputStream extends FilterInputStream
 
     public void readAttributes(Attributes attrs, int len, Predicate<DicomInputStream> stopPredicate)
             throws IOException {
-        boolean undeflen = len == -1;
+        boolean undeflen = len == UNDEFINED_LENGTH;
         long endPos =  pos + (len & 0xffffffffL);
         while (undeflen || this.pos < endPos) {
             try {
@@ -571,7 +670,7 @@ public class DicomInputStream extends FilterInputStream
                     vr = tag == Tag.PurposeOfReferenceCodeSequence
                             ? probeObservationClass() ? VR.CS : VR.SQ
                             : ElementDictionary.vrOf(tag, attrs.getPrivateCreator(tag));
-                    if (vr == VR.UN && length == -1)
+                    if (vr == VR.UN && length == UNDEFINED_LENGTH)
                         vr = VR.SQ; // assumes UN with undefined length are SQ,
                                     // will fail on UN fragments!
                 }
@@ -593,7 +692,7 @@ public class DicomInputStream extends FilterInputStream
             throws IOException {
         checkIsThis(dis);
         if (excludeBulkData) {
-            if (length == -1) {
+            if (length == UNDEFINED_LENGTH) {
                 skipSequence();
             } else {
                 skipFully(length);
@@ -602,7 +701,7 @@ public class DicomInputStream extends FilterInputStream
             attrs.setNull(tag, vr);
         } else if (vr == VR.SQ) {
             readSequence(length, attrs, tag);
-        } else if (length == -1) {
+        } else if (length == UNDEFINED_LENGTH) {
             readFragments(attrs, tag, vr);
         } else if (length == BulkData.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
@@ -633,10 +732,10 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private void skipItem() throws IOException {
-        if (length == -1) {
+        if (length == UNDEFINED_LENGTH) {
             for (;;) {
                 readHeader();
-                if (length == -1) {
+                if (length == UNDEFINED_LENGTH) {
                     skipSequence();
                 } else {
                     skipFully(length);
@@ -746,7 +845,7 @@ public class DicomInputStream extends FilterInputStream
         }
         Sequence seq = attrs.newSequence(sqtag, 10);
         String privateCreator = attrs.getPrivateCreator(sqtag);
-        boolean undefLen = len == -1;
+        boolean undefLen = len == UNDEFINED_LENGTH;
         long endPos = pos + (len & 0xffffffffL);
         boolean explicitVR0 = explicitVR;
         boolean bigEndian0 = bigEndian;
@@ -861,17 +960,24 @@ public class DicomInputStream extends FilterInputStream
     public byte[] readValue() throws IOException {
         int valLen = length;
         try {
-            if (valLen < 0)
-            throw new IOException(
-                "internal error: length should have been validated in readHeader");
-            int allocLen = allocateLimit >= 0
+            if (valLen < 0) {
+                throw new IOException(
+                        "internal error: length should have been validated in readHeader");
+            }
+            boolean limitedStream = in instanceof LimitedInputStream;
+            if(limitedStream && valLen > ((LimitedInputStream)in).getRemaining()) {
+                throw new EOFException(
+                        "Length " + valLen + " for tag " + TagUtils.toString(tag) + " @ " + tagPos  +
+                                " exceeds remaining " + ((LimitedInputStream)in).getRemaining() +  " (pos: " + pos + ")");
+            }
+            int allocLen = allocateLimit != -1 && !limitedStream
                     ? Math.min(valLen, allocateLimit)
                     : valLen;
             byte[] value = new byte[allocLen];
             readFully(value, 0, allocLen);
             while (allocLen < valLen) {
                 int newLength = allocLen << 1;
-                if (newLength < 0)
+                if (newLength <= 0)
                     newLength = Integer.MAX_VALUE;
                 if (newLength > valLen)
                     newLength = valLen;
@@ -896,9 +1002,10 @@ public class DicomInputStream extends FilterInputStream
             if (hasZLIBHeader()) {
                 LOG.warn(DEFLATED_WITH_ZLIB_HEADER);
                 super.in = new InflaterInputStream(super.in);
-            } else
+            } else {
                 super.in = new InflaterInputStream(super.in,
                         inflater = new Inflater(true));
+            }
         }
     }
 

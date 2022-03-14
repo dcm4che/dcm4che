@@ -610,7 +610,7 @@ public class DcmDir {
             din = new DicomInputStream(f);
             din.setIncludeBulkData(IncludeBulkData.NO);
             Attributes fmi = din.readFileMetaInformation();
-            Attributes dataset = din.readDataset(-1, o -> o.tag() > Tag.SeriesInstanceUID);
+            Attributes dataset = din.readDataset(o -> o.tag() > Tag.SeriesInstanceUID);
             iuid = (fmi != null)
                     ? fmi.getString(Tag.MediaStorageSOPInstanceUID, null)
                     : dataset.getString(Tag.SOPInstanceUID, null);

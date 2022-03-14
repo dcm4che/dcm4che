@@ -96,6 +96,10 @@
   <el tag="7777xx68" keyword="ReceivingApplicationEntityTitleOfSeries" vr="AE" vm="1">Receiving Application Entity Title of Series</el>
   <el tag="7777xx69" keyword="SendingPresentationAddressOfSeries" vr="UR" vm="1">Sending Presentation Address of Series</el>
   <el tag="7777xx6A" keyword="ReceivingPresentationAddressOfSeries" vr="UR" vm="1">Receiving Presentation Address of Series</el>
+  <el tag="7777xx6B" keyword="SendingHL7ApplicationOfSeries" vr="LO" vm="1">Sending HL7 Application of Series</el>
+  <el tag="7777xx6C" keyword="SendingHL7FacilityOfSeries" vr="LO" vm="1">Sending HL7 Facility of Series</el>
+  <el tag="7777xx6D" keyword="ReceivingHL7ApplicationOfSeries" vr="LO" vm="1">Receiving HL7 Application of Series</el>
+  <el tag="7777xx6E" keyword="ReceivingHL7FacilityOfSeries" vr="LO" vm="1">Receiving HL7 Facility of Series</el>
   <el tag="7777xx70" keyword="MPPSCreateDateTime" vr="DT" vm="1">MPPS Create Date Time</el>
   <el tag="7777xx71" keyword="MPPSUpdateDateTime" vr="DT" vm="1">MPPS Update Date Time</el>
   <el tag="7777xxE0" keyword="XRoadPersonStatus" vr="CS" vm="1">X-Road Person Status</el>

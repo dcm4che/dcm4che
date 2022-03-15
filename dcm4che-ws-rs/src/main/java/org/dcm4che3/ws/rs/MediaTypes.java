@@ -361,6 +361,17 @@ public class MediaTypes {
     public final static MediaType MODEL_MTL_TYPE =
             new MediaType("model", "mtl");
 
+    /**
+     * "application/x-genozip"
+     */
+    public final static String APPLICATION_X_GENOZIP = "application/x-genozip";
+
+    /**
+     * "application/x-genozip"
+     */
+    public final static MediaType APPLICATION_X_GENOZIP_TYPE =
+            new MediaType("application", "x-genozip");
+
 
     public static MediaType forTransferSyntax(String ts) {
         MediaType type;

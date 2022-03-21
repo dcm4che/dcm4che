@@ -68,14 +68,14 @@ public class DicomInputStream extends FilterInputStream
         LoggerFactory.getLogger(DicomInputStream.class);
 
     private static final String UNEXPECTED_NON_ZERO_ITEM_LENGTH =
-        "Unexpected item value of {} #{} @ {}";
+        "Unexpected item value of {} #{} @ {} during {}";
     private static final String UNEXPECTED_ATTRIBUTE =
-        "Unexpected attribute {} #{} @ {}";
+        "Unexpected attribute {} #{} @ {} during {}";
     private static final String MISSING_TRANSFER_SYNTAX =
         "Missing Transfer Syntax (0002,0010) - assume Explicit VR Little Endian";
     private static final String MISSING_FMI_LENGTH =
         "Missing or wrong File Meta Information Group Length (0002,0000)";
-    private static final String NOT_A_DICOM_STREAM = 
+    private static final String NOT_A_DICOM_STREAM =
         "Not a DICOM Stream";
     private static final String IMPLICIT_VR_BIG_ENDIAN =
         "Implicit VR Big Endian encoded DICOM Stream";
@@ -258,7 +258,7 @@ public class DicomInputStream extends FilterInputStream
      * {@link #createWithLimitFromFileLength} or by supplying a {@link LimitedInputStream},
      * then this allocateLimit will be ignored (except for deflated data) and no
      * temporary arrays need to be created.
-     * 
+     *
      * @param allocateLimit limit of initial allocated memory or -1 for no limit
      */
     public final void setAllocateLimit(int allocateLimit) {
@@ -541,16 +541,17 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public boolean readItemHeader() throws IOException {
+        String methodName = "readItemHeader()";
         for(;;) {
             readHeader();
             if (tag == Tag.Item)
                 return true;
             if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
-                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
+                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH, methodName);
                 return false;
             }
-            skipAttribute(UNEXPECTED_ATTRIBUTE);
+            skipAttribute(UNEXPECTED_ATTRIBUTE, methodName);
         }
     }
 
@@ -630,7 +631,7 @@ public class DicomInputStream extends FilterInputStream
                             .vrOf(tag);
                 handler.readValue(this, attrs);
             } else
-                skipAttribute(UNEXPECTED_ATTRIBUTE);
+                skipAttribute(UNEXPECTED_ATTRIBUTE, "readFileMetaInformation()");
         }
         fileMetaInformation = attrs;
 
@@ -679,7 +680,7 @@ public class DicomInputStream extends FilterInputStream
                         && includeBulkData == IncludeBulkData.URI && isBulkData(attrs);
                 handler.readValue(this, attrs);
             } else
-                skipAttribute(UNEXPECTED_ATTRIBUTE);
+                skipAttribute(UNEXPECTED_ATTRIBUTE, "readAttributes()");
         }
     }
 
@@ -831,10 +832,16 @@ public class DicomInputStream extends FilterInputStream
             throw new IllegalArgumentException("dis != this");
     }
 
-    private void skipAttribute(String message) throws IOException {
-        LOG.warn(message,
-                 new Object[] { TagUtils.toString(tag), length, tagPos });
-        skipFully(length);
+    /**
+     * @param message the message to use in the warning log message
+     * @param methodName the name of the method that is skipping the attribute
+     * @throws IOException potentially thrown when performing the 'skip' operation
+     */
+    private void skipAttribute(String message, String methodName) throws IOException {
+        String tagAsString = TagUtils.toString(this.tag);
+        LOG.warn(message, tagAsString, length, tagPos, methodName);
+        long skipLength = skip(length);
+        LOG.debug("Skipped {} actual bytes for {}", skipLength, tagAsString);
     }
 
     private void readSequence(int len, Attributes attrs, int sqtag)

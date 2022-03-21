@@ -85,9 +85,9 @@ public class DicomInputStream extends FilterInputStream
         LoggerFactory.getLogger(DicomInputStream.class);
 
     private static final String UNEXPECTED_NON_ZERO_ITEM_LENGTH =
-        "Unexpected item value of {} #{} @ {}";
+        "Unexpected item value of {} #{} @ {} during {}";
     private static final String UNEXPECTED_ATTRIBUTE =
-        "Unexpected attribute {} #{} @ {}";
+        "Unexpected attribute {} #{} @ {} during {}";
     private static final String MISSING_TRANSFER_SYNTAX =
         "Missing Transfer Syntax (0002,0010) - assume Explicit VR Little Endian";
     private static final String MISSING_FMI_LENGTH =
@@ -543,16 +543,17 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public boolean readItemHeader() throws IOException {
+        String methodName = "readItemHeader()";
         for(;;) {
             readHeader();
             if (tag == Tag.Item)
                 return true;
             if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
-                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
+                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH, methodName);
                 return false;
             }
-            skipAttribute(UNEXPECTED_ATTRIBUTE);
+            skipAttribute(UNEXPECTED_ATTRIBUTE, methodName);
         }
     }
 
@@ -651,7 +652,7 @@ public class DicomInputStream extends FilterInputStream
                             .vrOf(tag);
                 handler.readValue(this, attrs);
             } else
-                skipAttribute(UNEXPECTED_ATTRIBUTE);
+                skipAttribute(UNEXPECTED_ATTRIBUTE, "readFileMetaInformation()");
         }
         fileMetaInformation = attrs;
 
@@ -708,7 +709,7 @@ public class DicomInputStream extends FilterInputStream
                     explicitVR = prevExplicitVR;
                 }
             } else
-                skipAttribute(UNEXPECTED_ATTRIBUTE);
+                skipAttribute(UNEXPECTED_ATTRIBUTE, "readAttributes()");
         }
     }
 
@@ -837,10 +838,16 @@ public class DicomInputStream extends FilterInputStream
             throw new IllegalArgumentException("dis != this");
     }
 
-    private void skipAttribute(String message) throws IOException {
-        LOG.warn(message,
-                 new Object[] { TagUtils.toString(tag), length, tagPos });
-        skip(length);
+    /**
+     * @param message the message to use in the warning log message
+     * @param methodName the name of the method that is skipping the attribute
+     * @throws IOException potentially thrown when performing the 'skip' operation
+     */
+    private void skipAttribute(String message, String methodName) throws IOException {
+        String tagAsString = TagUtils.toString(this.tag);
+        LOG.warn(message, tagAsString, length, tagPos, methodName);
+        long skipLength = skip(length);
+        LOG.debug("Skipped {} actual bytes for {}", skipLength, tagAsString);
     }
 
     private void readSequence(int len, Attributes attrs, int sqtag)
@@ -886,6 +893,7 @@ public class DicomInputStream extends FilterInputStream
 
     private void readFragments(Attributes attrs, int fragsTag, VR vr)
             throws IOException {
+        String methodName = "readFragments";
         includeFragmentBulkData =
                 includeBulkData == IncludeBulkData.YES || isBulkData(attrs)
                         ? includeBulkData
@@ -899,10 +907,10 @@ public class DicomInputStream extends FilterInputStream
                 handler.readValue(this, frags);
             } else if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
-                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
+                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH, methodName);
                 break;
             } else
-                skipAttribute(UNEXPECTED_ATTRIBUTE);
+                skipAttribute(UNEXPECTED_ATTRIBUTE, methodName);
         }
         if (frags.isEmpty())
             attrs.setNull(fragsTag, vr);

@@ -840,8 +840,8 @@ public class DicomInputStream extends FilterInputStream
     private void skipAttribute(String message, String methodName) throws IOException {
         String tagAsString = TagUtils.toString(this.tag);
         LOG.warn(message, tagAsString, length, tagPos, methodName);
-        long skipLength = skip(length);
-        LOG.debug("Skipped {} actual bytes for {}", skipLength, tagAsString);
+        skipFully(length);
+        LOG.debug("Skipped {} bytes for {}", length, tagAsString);
     }
 
     private void readSequence(int len, Attributes attrs, int sqtag)

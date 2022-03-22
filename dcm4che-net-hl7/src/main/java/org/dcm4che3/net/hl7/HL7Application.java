@@ -290,6 +290,7 @@ public class HL7Application implements Serializable {
             throw new HL7Exception(
                     new ERRSegment(msh)
                             .setHL7ErrorCode(unsupportedMessageTypeOrEventCode(messageType.substring(0,3)))
+                            .setErrorLocation(ERRSegment.MissingMessageType)
                             .setUserMessage("Message Type not supported"));
 
         HL7MessageListener listener = getHL7MessageListener();

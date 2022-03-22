@@ -240,6 +240,30 @@ public class HL7Application implements Serializable {
 
     UnparsedHL7Message onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
         HL7Segment msh = msg.msh();
+        if (msh.getField(2, null) == null)
+            throw new HL7Exception(
+                    new ERRSegment(msh)
+                            .setHL7ErrorCode(ERRSegment.RequiredFieldMissing)
+                            .setErrorLocation(ERRSegment.UnknownSendingApplication)
+                            .setUserMessage("Missing Sending Application"));
+        if (msh.getField(3, null) == null)
+            throw new HL7Exception(
+                    new ERRSegment(msh)
+                            .setHL7ErrorCode(ERRSegment.RequiredFieldMissing)
+                            .setErrorLocation(ERRSegment.UnknownSendingFacility)
+                            .setUserMessage("Missing Sending Facility"));
+        if (msh.getField(4, null) == null)
+            throw new HL7Exception(
+                    new ERRSegment(msh)
+                            .setHL7ErrorCode(ERRSegment.RequiredFieldMissing)
+                            .setErrorLocation(ERRSegment.UnknownReceivingApplication)
+                            .setUserMessage("Missing Receiving Application"));
+        if (msh.getField(5, null) == null)
+            throw new HL7Exception(
+                    new ERRSegment(msh)
+                            .setHL7ErrorCode(ERRSegment.RequiredFieldMissing)
+                            .setErrorLocation(ERRSegment.UnknownReceivingFacility)
+                            .setUserMessage("Missing Receiving Facility"));
         if (!(isInstalled() && conns.contains(conn)))
             throw new HL7Exception(
                     new ERRSegment(msh)

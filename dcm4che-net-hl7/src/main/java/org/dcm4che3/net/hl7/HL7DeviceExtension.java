@@ -144,7 +144,7 @@ public class HL7DeviceExtension extends DeviceExtension {
                     new ERRSegment(msg.msh())
                             .setHL7ErrorCode(ERRSegment.TableValueNotFound)
                             .setErrorLocation(ERRSegment.UnknownReceivingApplication)
-                            .setUserMessage("Receiving Application not recognized"));
+                            .setUserMessage("Receiving Application and/or Facility not recognized"));
         return hl7App.onMessage(conn, s, msg);
     }
 

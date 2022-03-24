@@ -139,7 +139,8 @@ public class Pdf2Dcm {
         CDA("resource:encapsulatedCDAMetadata.xml"),
         STL("resource:encapsulatedSTLMetadata.xml"),
         MTL("resource:encapsulatedMTLMetadata.xml"),
-        OBJ("resource:encapsulatedOBJMetadata.xml");
+        OBJ("resource:encapsulatedOBJMetadata.xml"),
+        GENOZIP("resource:encapsulatedGenozipMetadata.xml");
 
         private final String sampleMetadataFile;
 
@@ -178,6 +179,9 @@ public class Pdf2Dcm {
             case "obj":
             case "model/obj":
                 return FileContentType.OBJ;
+            case "genozip":
+            case "application/x-genozip":
+                return FileContentType.GENOZIP;
             default:
                 throw new IllegalArgumentException(
                         MessageFormat.format(rb.getString("content-type-undetermined"), s));

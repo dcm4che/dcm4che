@@ -401,6 +401,9 @@ public class StowRS {
             case "obj":
             case "model/obj":
                 return FileContentType.OBJ;
+            case "genozip":
+            case "application/x-genozip":
+                return FileContentType.GENOZIP;
             case "jpg":
             case "jpeg":
             case "image/jpeg":
@@ -444,6 +447,8 @@ public class StowRS {
                 "encapsulatedMTLMetadata.xml"),
         OBJ(UID.EncapsulatedOBJStorage, Tag.EncapsulatedDocument, MediaTypes.MODEL_OBJ,
                 "encapsulatedOBJMetadata.xml"),
+        GENOZIP(UID.PrivateDcm4cheEncapsulatedGenozipStorage, Tag.EncapsulatedDocument, MediaTypes.APPLICATION_X_GENOZIP,
+                "encapsulatedGenozipMetadata.xml"),
         JPEG(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
                 Tag.PixelData,
                 MediaTypes.IMAGE_JPEG,
@@ -546,6 +551,7 @@ public class StowRS {
             case PDF:
             case CDA:
             case MTL:
+            case GENOZIP:
                 supplementEncapsulatedDocAttrs(metadata, stowRSBulkdata);
                 contentLocBulkdata.put(contentLoc, stowRSBulkdata);
                 break;

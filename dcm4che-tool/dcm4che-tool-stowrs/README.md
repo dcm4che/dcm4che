@@ -16,7 +16,8 @@
     Supported content types for bulkdata are application/pdf, text/xml (for
     CDA files), image/jpeg, video/mpeg, video/mp4, video/quicktime, image/jp2,
     image/png, image/gif, application/sla (for STL files), model/mtl (for MTL
-    files) and model/obj (for OBJ files).
+    files), model/obj (for OBJ files) and application/x-genozip (for Genozip
+    compressed genomic files).
     For metadata : Send single non bulkdata type of file by specifying a
     metadata file for objects like Structured Reports, Presentation States
     etc.

@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -223,7 +224,6 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
 
     /**
      * Note: This only maps the main AE titles to application entities.
-     * {@link #aliasApplicationEntitiesMap} will contain also alias AE titles.
      */
     @LDAP(noContainerNode = true)
     @ConfigurableProperty(
@@ -240,12 +240,6 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
             description = "Default AE to be used by both services running locally on this device as well as external services"
     )
     private ApplicationEntity defaultAE;
-
-    /**
-     * Maps alias AE titles ({@link ApplicationEntity#getAETitleAliases()}),
-     * including also the main AE title ({@link ApplicationEntity#getAETitle()}), to application entities.
-     */
-    private final transient Map<String, ApplicationEntity> aliasApplicationEntitiesMap = new TreeMap<String, ApplicationEntity>();
 
     @ConfigurableProperty(name = "deviceExtensions", isExtensionsProperty = true)
     private Map<Class<? extends DeviceExtension>, DeviceExtension> extensions =
@@ -945,7 +939,6 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
 
     public void setApplicationEntitiesMap(Map<String, ApplicationEntity> applicationEntitiesMap) {
         this.applicationEntitiesMap.clear();
-        this.aliasApplicationEntitiesMap.clear();
         for (Entry<String, ApplicationEntity> entry : applicationEntitiesMap.entrySet()) {
             addApplicationEntity(entry.getValue());
         }
@@ -966,8 +959,6 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
         ae.setDevice(this);
 
         applicationEntitiesMap.put(ae.getAETitle(), ae);
-
-        addAllAliasesForApplicationEntity(ae);
     }
 
     public ApplicationEntity removeApplicationEntity(ApplicationEntity ae) {
@@ -978,25 +969,9 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
         ApplicationEntity ae = applicationEntitiesMap.remove(aet);
         if (ae != null) {
             ae.setDevice(null);
-
-            removeAllAliasesForApplicationEntity(ae);
         }
 
         return ae;
-    }
-
-    private void addAllAliasesForApplicationEntity(ApplicationEntity ae) {
-        aliasApplicationEntitiesMap.put(ae.getAETitle(), ae);
-        for (String aliasAET : ae.getAETitleAliases()) {
-            aliasApplicationEntitiesMap.put(aliasAET, ae);
-        }
-    }
-
-    private void removeAllAliasesForApplicationEntity(ApplicationEntity ae) {
-        aliasApplicationEntitiesMap.remove(ae.getAETitle());
-        for (String aliasAET : ae.getAETitleAliases()) {
-            aliasApplicationEntitiesMap.remove(aliasAET);
-        }
     }
 
     public void setExtensions(Map<Class<? extends DeviceExtension>, DeviceExtension> extensions) {
@@ -1066,16 +1041,16 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
     }
 
     public ApplicationEntity getApplicationEntity(String aet) {
-
         if(aet == null){
             throw new IllegalArgumentException("Application Entity Title (aet) is null");
         }
 
-        ApplicationEntity ae = aliasApplicationEntitiesMap.get(aet);
+        ApplicationEntity ae = findApplicationEntityByAeTitleOrAlias(aet);
 
-        // special fallback: if one ApplicationEntity defines "*" as an alias AET (or even the main AET), it will get used as a fallback for unknown AETs
+        // special fallback: if one ApplicationEntity defines "*" as an alias AET (or even the main AET),
+        // it will get used as a fallback for unknown AETs
         if (ae == null)
-            ae = aliasApplicationEntitiesMap.get("*");
+            ae = findApplicationEntityByAeTitleOrAlias("*");
 
         return ae;
     }
@@ -1084,7 +1059,12 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
      * @return AE titles of this device, including alias AE titles
      */
     public Collection<String> getApplicationAETitles() {
-        return aliasApplicationEntitiesMap.keySet();
+        Collection<String> aeTitles = new HashSet<>();
+        aeTitles.addAll(applicationEntitiesMap.keySet());
+        //add alias AE titles
+        applicationEntitiesMap.values().forEach(ae -> aeTitles.addAll(ae.getAETitleAliases()));
+
+        return aeTitles;
     }
 
     /**
@@ -1162,6 +1142,18 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
 
     public final TrustManager getTrustManager() {
         return tm;
+    }
+
+    private final ApplicationEntity findApplicationEntityByAeTitleOrAlias(String aet) {
+        ApplicationEntity applicationEntity = applicationEntitiesMap.get(aet);
+        if(applicationEntity == null) {
+            //check alias AE titles
+            applicationEntity =  applicationEntitiesMap.values().stream()
+                .filter(ae -> ae.getAETitleAliases().contains(aet))
+                .findFirst()
+                .orElse(null);
+        }
+        return applicationEntity;
     }
 
     private TrustManager tm() throws GeneralSecurityException, IOException {
@@ -1368,11 +1360,6 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
             if (ae == null)
                 addApplicationEntity(ae = new ApplicationEntity(src.getAETitle()));
             ae.reconfigure(src);
-        }
-
-        aliasApplicationEntitiesMap.clear();
-        for (ApplicationEntity ae : applicationEntitiesMap.values()) {
-            addAllAliasesForApplicationEntity(ae);
         }
     }
 

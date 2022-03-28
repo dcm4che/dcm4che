@@ -28,9 +28,13 @@ dcm4che uses a native library for the compression and decompression of images. H
 
 Build
 -----
-After installation of [Maven 3](http://maven.apache.org):
+Run the [Maven Wrapper](https://maven.apache.org/wrapper/) script for building:
 
-    > mvn install
+    ./mvnw install
+
+or on Windows:
+
+    .\mvnw install
 
 Modules
 -------

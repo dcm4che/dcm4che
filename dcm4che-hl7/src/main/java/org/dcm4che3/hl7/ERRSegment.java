@@ -44,30 +44,31 @@ package org.dcm4che3.hl7;
  */
 public class ERRSegment extends HL7Segment {
 
-    public static final String SegmentSequenceError = "100";
-    public static final String RequiredFieldMissing = "101";
-    public static final String DataTypeError = "102";
-    public static final String TableValueNotFound = "103";
-    public static final String UnsupportedMessageType = "200";
-    public static final String UnsupportedEventCode = "201";
-    public static final String UnsupportedProcessingID = "202";
-    public static final String UnsupportedVersionID = "203";
-    public static final String UnknownKeyIdentifier = "204";
-    public static final String DuplicateKeyIdentifier = "205";
-    public static final String ApplicationRecordLocked = "206";
-    public static final String ApplicationInternalError = "207";
+    public static final String SEGMENT_SEQUENCE_ERROR = "100^Segment sequence error^HL70357";
+    public static final String REQUIRED_FIELD_MISSING = "101^Required field missing^HL70357";
+    public static final String DATA_TYPE_ERROR = "102^Data type error^HL70357";
+    public static final String TABLE_VALUE_NOT_FOUND = "103^Table value not found^HL70357";
+    public static final String UNSUPPORTED_MESSAGE_TYPE = "200^Unsupported message type^HL70357";
+    public static final String UNSUPPORTED_EVENT_CODE = "201^Unsupported event code^HL70357";
+    public static final String UNSUPPORTED_PROCESSING_ID = "202^Unsupported processing id^HL70357";
+    public static final String UNSUPPORTED_VERSION_ID = "203^Unsupported version id^HL70357";
+    public static final String UNKNOWN_KEY_IDENTIFIER = "204^Unknown key identifier^HL70357";
+    public static final String DUPLICATE_KEY_IDENTIFIER = "205^Duplicate key identifier^HL70357";
+    public static final String APPLICATION_RECORD_LOCKED = "206^Application record locked^HL70357";
+    public static final String APPLICATION_INTERNAL_ERROR = "207^Application internal error^HL70357";
 
-    public static final String UnknownSendingApplication = "MSH^1^3";
-    public static final String UnknownSendingFacility = "MSH^1^4";
-    public static final String UnknownReceivingApplication = "MSH^1^5";
-    public static final String UnknownReceivingFacility = "MSH^1^6";
-    public static final String MissingMessageType = "MSH^1^9";
-    public static final String MissingMessageControlID = "MSH^1^10";
+    public static final String SENDING_APPLICATION = "MSH^1^3^1^1";
+    public static final String SENDING_FACILITY = "MSH^1^4^1^1";
+    public static final String RECEIVING_APPLICATION = "MSH^1^5^1^1";
+    public static final String RECEIVING_FACILITY = "MSH^1^6^1^1";
+    public static final String MESSAGE_CODE = "MSH^1^9^1^1";
+    public static final String TRIGGER_EVENT = "MSH^1^9^1^2";
+    public static final String MESSAGE_CONTROL_ID = "MSH^1^10^1^1";
 
     public ERRSegment(char fieldSeparator, String encodingCharacters) {
         super(9, fieldSeparator, encodingCharacters);
         setField(0, "ERR");
-        setHL7ErrorCode(ApplicationInternalError);
+        setHL7ErrorCode(APPLICATION_INTERNAL_ERROR);
         setSeverity("E");
     }
 

@@ -289,6 +289,8 @@ public class CLIUtils {
         opts.addOption(null, "tls13", false, rb.getString("tls13"));
         opts.addOption(null, "ssl3", false, rb.getString("ssl3"));
         opts.addOption(null, "ssl2Hello", false, rb.getString("ssl2Hello"));
+        opts.addOption(null, "tls-eia-https", false, rb.getString("tls-eia-https"));
+        opts.addOption(null, "tls-eia-ldaps", false, rb.getString("tls-eia-ldaps"));
         opts.addOption(null, "tls-noauth", false, rb.getString("tls-noauth"));
         opts.addOption(Option.builder()
                 .hasArg()
@@ -580,6 +582,11 @@ public class CLIUtils {
             conn.setTlsProtocols("SSLv2Hello", "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2");
         else if (cl.hasOption("tls-protocol"))
             conn.setTlsProtocols(cl.getOptionValues("tls-protocol"));
+
+        if (cl.hasOption("tls-eia-https"))
+            conn.setTlsEndpointIdentificationAlgorithm(Connection.EndpointIdentificationAlgorithm.HTTPS);
+        else if (cl.hasOption("tls-eia-ldaps"))
+            conn.setTlsEndpointIdentificationAlgorithm(Connection.EndpointIdentificationAlgorithm.LDAPS);
 
         conn.setTlsNeedClientAuth(!cl.hasOption("tls-noauth"));
 

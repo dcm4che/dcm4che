@@ -451,6 +451,7 @@ public class JsonConfiguration {
             writer.writeNotDef("dcmPackPDV", conn.isPackPDV(), true);
             writer.writeNotEmpty("dcmTLSProtocol", conn.getTlsProtocols(), Connection.DEFAULT_TLS_PROTOCOLS);
             writer.writeNotDef("dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
+            writer.writeNotNullOrDef("dcmTLSEndpointIdentificationAlgorithm", conn.getTlsEndpointIdentificationAlgorithm(), null);
             writer.writeEnd();
         }
         writer.writeEnd();
@@ -558,6 +559,10 @@ public class JsonConfiguration {
                                 break;
                             case "dcmTLSProtocol":
                                 conn.setTlsProtocols(reader.stringArray());
+                                break;
+                            case "dcmTLSEndpointIdentificationAlgorithm":
+                                conn.setTlsEndpointIdentificationAlgorithm(
+                                        Connection.EndpointIdentificationAlgorithm.valueOf(reader.stringValue()));
                                 break;
                             case "dcmSendPDULength":
                                 conn.setSendPDULength(reader.intValue());

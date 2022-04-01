@@ -1,4 +1,3 @@
-```
 usage: hl7snd [options] -c <host>:<port> [<file>..][<directory>..]
 
 Reads HL7 V2 messages from specified files or directories and send them to
@@ -77,6 +76,12 @@ Options:
                                           specified Cipher Suite. Multiple
                                           Cipher Suites may be enabled by
                                           multiple --tls-cipher options
+    --tls-eia-https                       enable server endpoint
+                                          identification according RFC
+                                          2818: HTTP Over TLS
+    --tls-eia-ldaps                       enable server endpoint
+                                          identification according RFC
+                                          2830: LDAP Extension for TLS
     --tls-noauth                          disable client authentification
                                           for TLS
     --tls-null                            enable TLS connection without
@@ -118,4 +123,3 @@ Options:
 Example: hl7snd -c localhost:2575 message.hl7
 => Send HL7 V2 message message.hl7 to HL7 Receiver listening on local port
 2575.
-```

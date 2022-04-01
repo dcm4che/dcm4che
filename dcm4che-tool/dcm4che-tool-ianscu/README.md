@@ -125,7 +125,7 @@ Options:
     --retrieve-url <uri>                  specify value for Retrieve URL
                                           (0008,1190), not included by
                                           default
- -s <[seq/]attr=value>                    specify attributes to overwrite
+ -s <[seq.]attr=value>                    specify attributes to overwrite
                                           referenced object(s). attr can
                                           be specified by keyword or tag
                                           value (in hex), e.g. PatientName
@@ -177,6 +177,12 @@ Options:
                                           specified Cipher Suite. Multiple
                                           Cipher Suites may be enabled by
                                           multiple --tls-cipher options
+    --tls-eia-https                       enable server endpoint
+                                          identification according RFC
+                                          2818: HTTP Over TLS
+    --tls-eia-ldaps                       enable server endpoint
+                                          identification according RFC
+                                          2830: LDAP Extension for TLS
     --tls-noauth                          disable client authentification
                                           for TLS
     --tls-null                            enable TLS connection without

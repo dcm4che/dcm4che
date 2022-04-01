@@ -5,7 +5,7 @@ The hl7pix application queries a PIX Manager for Patient IDs corresponding
 to the specified Patient ID, for all or for a specified list of domains
 using a HL7 V2.5 QBP^Q23 message according IHE ITI-9 Transaction: PIX
 Query.
-<pid> and <domain> shall be formated as HL7 CX data type:
+<pid> and <domain> shall be formatted as HL7 CX data type:
 <pid>: <ID>^^^<namespace ID>&<universal ID>&<universal ID type>
 <domain>: ^^^<namespace ID>&<universal ID>&<universal ID type>
 -
@@ -86,6 +86,12 @@ Options:
                                           specified Cipher Suite. Multiple
                                           Cipher Suites may be enabled by
                                           multiple --tls-cipher options
+    --tls-eia-https                       enable server endpoint
+                                          identification according RFC
+                                          2818: HTTP Over TLS
+    --tls-eia-ldaps                       enable server endpoint
+                                          identification according RFC
+                                          2830: LDAP Extension for TLS
     --tls-noauth                          disable client authentification
                                           for TLS
     --tls-null                            enable TLS connection without

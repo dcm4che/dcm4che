@@ -82,7 +82,7 @@ Options:
                                           If no Information Model is
                                           specified, StudyRoot will be
                                           used.
- -m <attr=value>                          specify matching key. attr can
+ -m <[seq.]attr=value>                    specify matching key. attr can
                                           be specified by keyword or tag
                                           value (in hex), e.g.
                                           StudyInstanceUID or 00200000D.
@@ -195,6 +195,12 @@ Options:
                                           specified Cipher Suite. Multiple
                                           Cipher Suites may be enabled by
                                           multiple --tls-cipher options
+    --tls-eia-https                       enable server endpoint
+                                          identification according RFC
+                                          2818: HTTP Over TLS
+    --tls-eia-ldaps                       enable server endpoint
+                                          identification according RFC
+                                          2830: LDAP Extension for TLS
     --tls-noauth                          disable client authentification
                                           for TLS
     --tls-null                            enable TLS connection without

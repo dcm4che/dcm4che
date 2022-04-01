@@ -59,6 +59,12 @@
         ]
       }
     },
+    "dcmTLSEndpointIdentificationAlgorithm": {
+      "title": "TLS Endpoint Identification Algorithm",
+      "description": "Indicates the endpoint identification or verification procedures during TLS handshaking.",
+      "type": "string",
+      "enum": [ "HTTPS", "LDAPS"]
+    },
     "dcmTCPBacklog": {
       "title": "TCP Backlog",
       "description": "Maximum queue length for incoming TCP connections.",

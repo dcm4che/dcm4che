@@ -1098,6 +1098,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmPackPDV", conn.isPackPDV(), true);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmTLSProtocol", conn.getTlsProtocols(), Connection.DEFAULT_TLS_PROTOCOLS);
         LdapUtils.storeNotDef(ldapObj, attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmTLSEndpointIdentificationAlgorithm",
+                conn.getTlsEndpointIdentificationAlgorithm(), null);
         return attrs;
     }
 
@@ -1568,6 +1570,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         conn.setClientBindAddress(LdapUtils.stringValue(attrs.get("dcmClientBindAddress"), null));
         conn.setTlsNeedClientAuth(LdapUtils.booleanValue(attrs.get("dcmTLSNeedClientAuth"), true));
         conn.setTlsProtocols(LdapUtils.stringArray(attrs.get("dcmTLSProtocol"), Connection.DEFAULT_TLS_PROTOCOLS));
+        conn.setTlsEndpointIdentificationAlgorithm(
+                LdapUtils.enumValue(Connection.EndpointIdentificationAlgorithm.class,
+                        attrs.get("dcmTLSEndpointIdentificationAlgorithm"), null));
         conn.setSendPDULength(LdapUtils.intValue(attrs.get("dcmSendPDULength"),
                 Connection.DEF_MAX_PDU_LENGTH));
         conn.setReceivePDULength(LdapUtils.intValue(attrs.get("dcmReceivePDULength"),
@@ -1952,6 +1957,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 a.isTlsNeedClientAuth(),
                 b.isTlsNeedClientAuth(),
                 true);
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmTLSEndpointIdentificationAlgorithm",
+                a.getTlsEndpointIdentificationAlgorithm(),
+                b.getTlsEndpointIdentificationAlgorithm(),
+                null);
         LdapUtils.storeDiff(ldapObj, mods, "dcmSendPDULength",
                 a.getSendPDULength(),
                 b.getSendPDULength(),

@@ -144,7 +144,7 @@ public class Connection implements Serializable {
     private String[] blacklist = {};
     private Boolean installed;
     private Protocol protocol = Protocol.DICOM;
-    private EndpointIdentificationAlgorithm endpointIdentificationAlgorithm;
+    private EndpointIdentificationAlgorithm tlsEndpointIdentificationAlgorithm;
     private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
             new EnumMap<Protocol, TCPProtocolHandler>(Protocol.class);
     private static final EnumMap<Protocol, UDPProtocolHandler> udpHandlers =
@@ -161,7 +161,7 @@ public class Connection implements Serializable {
         registerTCPProtocolHandler(Protocol.DICOM, DicomProtocolHandler.INSTANCE);
     }
 
-    enum EndpointIdentificationAlgorithm {
+    public enum EndpointIdentificationAlgorithm {
         HTTPS,
         LDAPS
     }
@@ -329,19 +329,12 @@ public class Connection implements Serializable {
         needRebind();
     }
 
-    public EndpointIdentificationAlgorithm getEndpointIdentificationAlgorithm() {
-        return endpointIdentificationAlgorithm;
+    public EndpointIdentificationAlgorithm getTlsEndpointIdentificationAlgorithm() {
+        return tlsEndpointIdentificationAlgorithm;
     }
 
-    public void setEndpointIdentificationAlgorithm( EndpointIdentificationAlgorithm endpointIdentificationAlgorithm )
-    {
-        if (endpointIdentificationAlgorithm == null)
-            throw new NullPointerException();
-
-        if (this.endpointIdentificationAlgorithm == endpointIdentificationAlgorithm)
-            return;
-
-        this.endpointIdentificationAlgorithm = endpointIdentificationAlgorithm;
+    public void setTlsEndpointIdentificationAlgorithm(EndpointIdentificationAlgorithm tlsEndpointIdentificationAlgorithm) {
+        this.tlsEndpointIdentificationAlgorithm = tlsEndpointIdentificationAlgorithm;
     }
 
     boolean isRebindNeeded() {
@@ -1189,12 +1182,11 @@ public class Connection implements Serializable {
         ssl.setEnabledCipherSuites(
                 intersect(remoteConn.getTlsCipherSuites(), getTlsCipherSuites()));
 
-        SSLParameters parameters = ssl.getSSLParameters();
-
-        if ( getEndpointIdentificationAlgorithm() != null )
-            parameters.setEndpointIdentificationAlgorithm( getEndpointIdentificationAlgorithm().name() );
-
-        ssl.setSSLParameters( parameters );
+        if (tlsEndpointIdentificationAlgorithm != null) {
+            SSLParameters parameters = ssl.getSSLParameters();
+            parameters.setEndpointIdentificationAlgorithm(tlsEndpointIdentificationAlgorithm.name());
+            ssl.setSSLParameters(parameters);
+        }
         ssl.startHandshake();
         return ssl;
     }
@@ -1283,6 +1275,7 @@ public class Connection implements Serializable {
         setTlsNeedClientAuth(from.tlsNeedClientAuth);
         setTlsCipherSuites(from.tlsCipherSuites);
         setTlsProtocols(from.tlsProtocols);
+        setTlsEndpointIdentificationAlgorithm(from.tlsEndpointIdentificationAlgorithm);
         setBlacklist(from.blacklist);
         setInstalled(from.installed);
     }

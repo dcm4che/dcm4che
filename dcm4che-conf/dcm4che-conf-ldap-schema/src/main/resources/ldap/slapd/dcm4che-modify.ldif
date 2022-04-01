@@ -377,6 +377,11 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.85 NAME 'dcmAATimeout'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.86 NAME 'dcmTLSEndpointIdentificationAlgorithm'
+  DESC 'Indicates the endpoint identification or verification procedures during TLS handshaking. Enumerated values: "HTTPS", "LDAPS".'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+  SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'DICOM PS 3.15 A.5 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -616,6 +621,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
     dcmHTTPProxy $
     dcmTLSNeedClientAuth $
     dcmTLSProtocol $
+    dcmTLSEndpointIdentificationAlgorithm $
     dcmTCPBacklog $
     dcmTCPConnectTimeout $
     dcmTCPCloseDelay $

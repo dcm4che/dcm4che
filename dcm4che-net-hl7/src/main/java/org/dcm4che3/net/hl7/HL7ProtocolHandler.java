@@ -101,13 +101,11 @@ enum HL7ProtocolHandler implements TCPProtocolHandler {
                     }
                     mllp.writeMessage(rsp.data());
                 }
-            } catch (SocketException e) {
-                if (messageCount > 0)
-                    LOG.warn("Exception on accepted connection {}:", s, e);
-                else
-                    LOG.info("Exception on accepted connection {}: {}", s, e.toString());
             } catch (IOException e) {
-                LOG.warn("Exception on accepted connection {}:", s, e);
+                if (e instanceof SocketException && messageCount == 0)
+                    LOG.info("Exception on accepted connection {}: {}", s, e.toString());
+                else
+                    LOG.warn("Exception on accepted connection {}:", s, e);
             } finally {
                 conn.close(s);
             }

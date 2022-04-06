@@ -64,13 +64,11 @@ import java.util.ResourceBundle;
 public class Dcm2Pdf {
     private static final Logger LOG = LoggerFactory.getLogger(Dcm2Pdf.class);
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.dcm2pdf.messages");
-    private FileType fileType;
 
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
             Dcm2Pdf dcm2pdf = new Dcm2Pdf();
-            dcm2pdf.setFileType(cl);
             final List<String> argList = cl.getArgList();
             int argc = argList.size();
             if (argc < 2)
@@ -95,40 +93,7 @@ public class Dcm2Pdf {
     private static CommandLine parseComandLine(String[] args) throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        OptionGroup group = new OptionGroup();
-        group.addOption(Option.builder()
-                .longOpt("cda")
-                .hasArg(false)
-                .desc(rb.getString("cda"))
-                .build());
-        group.addOption(Option.builder()
-                .longOpt("mtl")
-                .hasArg(false)
-                .desc(rb.getString("mtl"))
-                .build());
-        group.addOption(Option.builder()
-                .longOpt("obj")
-                .hasArg(false)
-                .desc(rb.getString("obj"))
-                .build());
-        group.addOption(Option.builder()
-                .longOpt("stl")
-                .hasArg(false)
-                .desc(rb.getString("stl"))
-                .build());
-        opts.addOptionGroup(group);
         return CLIUtils.parseComandLine(args, opts, rb, Dcm2Pdf.class);
-    }
-
-    private void setFileType(CommandLine cl) {
-        this.fileType = cl.hasOption("cda")
-                ? FileType.CDA
-                : cl.hasOption("mtl")
-                    ? FileType.MTL
-                    : cl.hasOption("obj")
-                        ? FileType.OBJ
-                        : cl.hasOption("stl")
-                            ? FileType.STL :  FileType.PDF;
     }
 
     enum FileType {
@@ -138,45 +103,52 @@ public class Dcm2Pdf {
         OBJ(UID.EncapsulatedOBJStorage, ".obj"),
         STL(UID.EncapsulatedSTLStorage, ".stl");
 
-        private final String cuid;
-        private final String ext;
+        private final String sopClass;
+        private final String fileExt;
 
-        FileType(String cuid, String ext) {
-            this.cuid = cuid;
-            this.ext = ext;
+        FileType(String sopClass, String fileExt) {
+            this.sopClass = sopClass;
+            this.fileExt = fileExt;
         }
 
-        public String getCuid() {
-            return cuid;
+        private String getSOPClass() {
+            return sopClass;
         }
 
-        public String getExt() {
-            return ext;
+        public static String getFileExt(String sopCUID) {
+            for (FileType fileType : values())
+                if (fileType.getSOPClass().equals(sopCUID))
+                    return fileType.getFileExt();
+            return null;
+        }
+
+        private String getFileExt() {
+            return fileExt;
         }
     }
 
     private void convert(List<String> args) throws IOException {
         int argsSize = args.size();
         Path destPath = Paths.get(args.get(argsSize - 1));
+        boolean destIsDir = Files.isDirectory(destPath);
         for (String src : args.subList(0, argsSize - 1)) {
             Path srcPath = Paths.get(src);
-            if (Files.isDirectory(srcPath)) {
-                Files.walkFileTree(srcPath, new Dcm2PdfFileVisitor(srcPath, destPath));
-            } else if (Files.isDirectory(destPath)) {
-                convert(srcPath, destPath.resolve(suffix(srcPath)));
-            } else {
-                convert(srcPath, destPath);
-            }
+            if (Files.isDirectory(srcPath))
+                Files.walkFileTree(srcPath, new Dcm2PdfFileVisitor(srcPath, destPath, destIsDir));
+            else
+                convert(srcPath, destPath, destIsDir);
         }
     }
 
     class Dcm2PdfFileVisitor extends SimpleFileVisitor<Path> {
         private final Path srcPath;
         private final Path destPath;
+        private final boolean destIsDir;
 
-        Dcm2PdfFileVisitor(Path srcPath, Path destPath) {
+        Dcm2PdfFileVisitor(Path srcPath, Path destPath, boolean destIsDir) {
             this.srcPath = srcPath;
             this.destPath = destPath;
+            this.destIsDir = destIsDir;
         }
 
         @Override
@@ -184,7 +156,7 @@ public class Dcm2Pdf {
             Path destFilePath = resolveDestFilePath(srcFilePath);
             if (!Files.isDirectory(destFilePath))
                 Files.createDirectories(destFilePath);
-            convert(srcFilePath, destFilePath.resolve(suffix(srcFilePath)));
+            convert(srcFilePath, destFilePath, destIsDir);
             return FileVisitResult.CONTINUE;
         }
 
@@ -198,27 +170,26 @@ public class Dcm2Pdf {
         }
     }
 
-    private String suffix(Path src) {
-        return src.getFileName() + fileType.getExt();
-    }
-
-    private void convert(Path src, Path dest) {
+    private void convert(Path src, Path dest, boolean destIsDir) {
         try (DicomInputStream dis = new DicomInputStream(src.toFile())) {
             Attributes attributes = dis.readDataset();
             String sopCUID = attributes.getString(Tag.SOPClassUID);
-            if (!sopCUID.equals(fileType.getCuid())) {
-                LOG.info("DICOM file {} with {} SOP Class cannot be converted to file type {}",
-                        src, UID.nameOf(sopCUID), fileType);
+            String ext = FileType.getFileExt(sopCUID);
+            if (ext == null) {
+                LOG.info("DICOM file {} with {} SOP Class cannot be converted to bulkdata file",
+                        src, UID.nameOf(sopCUID));
                 return;
             }
-
-            FileOutputStream fos = new FileOutputStream(dest.toFile());
+            File destFile = destIsDir ? dest.resolve(src.getFileName() + ext).toFile() : dest.toFile();
+            FileOutputStream fos = new FileOutputStream(destFile);
             byte[] value = (byte[]) attributes.getValue(Tag.EncapsulatedDocument);
             fos.write(value, 0, value.length - 1);
             byte lastByte = value[value.length - 1];
             if (lastByte != 0)
                 fos.write(lastByte);
-            System.out.println(MessageFormat.format(rb.getString("converted"), src, dest));
+            System.out.println(MessageFormat.format(rb.getString("converted"),
+                    src,
+                    destIsDir ? destFile.getPath() : dest));
         } catch (Exception e) {
             System.out.println(MessageFormat.format(rb.getString("failed"), src, e.getMessage()));
             e.printStackTrace(System.out);

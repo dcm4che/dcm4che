@@ -320,7 +320,9 @@ public class Transcoder implements Closeable {
         }
         switch (dstTsuid) {
             case UID.JPEGBaseline8Bit:
-                return bitsStored <= 8 ? dstTsuid : bitsStored <= 16 ? UID.JPEGLosslessSV1 : UID.ExplicitVRLittleEndian;
+                return bitsStored <= 8 ? dstTsuid
+                        : !imageDescriptor.isSigned() && bitsStored <= 12 ? UID.JPEGExtended12Bit
+                        : bitsStored <= 16 ? UID.JPEGLosslessSV1 : UID.ExplicitVRLittleEndian;
             case UID.JPEGExtended12Bit:
             case UID.JPEGSpectralSelectionNonHierarchical68:
             case UID.JPEGFullProgressionNonHierarchical1012:

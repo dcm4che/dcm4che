@@ -1,13 +1,11 @@
-    usage: dcm2pdf [<options>] <dicom-file> <pdf|cda|stl|mtl|obj-file>
-    or dcm2pdf [Options] <dicom-file>... <pdf|cda|stl|mtl|obj-outdir>
-    or dcm2pdf [Options] <dicom-dir>... <pdf|cda|stl|mtl|obj-outdir>
+    usage: dcm2pdf [<options>] <dicom-file> <pdf|cda|stl|mtl|obj|genozip-file>
+    or dcm2pdf [Options] <dicom-file>... <pdf|cda|stl|mtl|obj|genozip-outdir>
+    or dcm2pdf [Options] <dicom-dir>... <pdf|cda|stl|mtl|obj|genozip-outdir>
     
     Convert DICOM file(s) to PDF (file extension pdf), CDA (file extension
     xml), STL (file extension stl), MTL (file extension mtl), OBJ (file
-    extension obj) files(s). By default DICOM file(s) will be checked for
-    Encapsulated PDF Storage SOP Class and converted to PDF file(s). To
-    convert Encapsulated CDA / MTL / OBJ / STL DICOM file(s) specify
-    corresponding options as provided.
+    extension obj) or Genozip compressed genomic (file extension genozip)
+    files(s).
     -
     Options:
      -h,--help      display this help and exit

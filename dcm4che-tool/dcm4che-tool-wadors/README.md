@@ -31,6 +31,8 @@
                                  option is specified, a truststore need not be
                                  specified.
      -h,--help                   display this help and exit
+     -H <httpHeader:value>       Specify additional HTTP headers to be sent in
+                                 the invoked request.
         --header                 If specified, Accept value shall be sent as
                                  HTTP Request Header instead being appended to
                                  url as query parameter.

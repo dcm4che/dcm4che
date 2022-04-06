@@ -58,7 +58,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
-import javax.net.ssl.*;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
@@ -200,6 +203,11 @@ public class StowRS {
                 .longOpt("limit")
                 .hasArg()
                 .desc(rb.getString("limit"))
+                .build());
+        opts.addOption(Option.builder("H")
+                .hasArg()
+                .argName("httpHeader:value")
+                .desc(rb.getString("httpHeader"))
                 .build());
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder("u")
@@ -353,7 +361,7 @@ public class StowRS {
         limit = Integer.parseInt(cl.getOptionValue("limit", "0"));
         configureTmpFile(cl);
         processFirstFile(cl);
-        setRequestProperties(requestProperties());
+        setRequestProperties(requestProperties(cl.getOptionValues("H")));
     }
 
     private void configureTmpFile(CommandLine cl) {
@@ -784,7 +792,7 @@ public class StowRS {
         }
     }
 
-    private Map<String, String> requestProperties() {
+    private Map<String, String> requestProperties(String[] httpHeaders) {
         Map<String, String> requestProperties = new HashMap<>();
         requestProperties.put("Content-Type",
                 MediaTypes.MULTIPART_RELATED + "; type=\"" + requestContentType + "\"; boundary=" + boundary);
@@ -792,6 +800,11 @@ public class StowRS {
         requestProperties.put("Connection", "keep-alive");
         if (authorization != null)
             requestProperties.put("Authorization", authorization);
+        if (httpHeaders != null)
+            for (String httpHeader : httpHeaders) {
+                int delim = httpHeader.indexOf(':');
+                requestProperties.put(httpHeader.substring(0, delim), httpHeader.substring(delim + 1));
+            }
         return requestProperties;
     }
 

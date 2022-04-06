@@ -60,6 +60,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -75,9 +76,10 @@ public class WadoRS {
     private static boolean header;
     private static boolean allowAnyHost;
     private static boolean disableTM;
-    private String accept = "*";
+    private static String accept = "*";
     private static String outDir;
     private static String authorization;
+    private static Map<String, String> requestProperties;
 
     public WadoRS() {}
 
@@ -115,6 +117,11 @@ public class WadoRS {
                 .longOpt("accept")
                 .hasArg()
                 .desc(rb.getString("accept"))
+                .build());
+        opts.addOption(Option.builder("H")
+                .hasArg()
+                .argName("httpHeader:value")
+                .desc(rb.getString("httpHeader"))
                 .build());
         opts.addOption(Option.builder()
                 .longOpt("header")
@@ -163,6 +170,7 @@ public class WadoRS {
         authorization = cl.hasOption("u")
                         ? basicAuth(cl.getOptionValue("u"))
                         : cl.hasOption("bearer") ? "Bearer " + cl.getOptionValue("bearer") : null;
+        requestProperties = requestProperties(cl.getOptionValues("H"));
     }
 
     private void wado(String url) throws Exception {
@@ -175,16 +183,27 @@ public class WadoRS {
             wado(new URL(url), uid);
     }
 
+    private static Map<String, String> requestProperties(String[] httpHeaders) {
+        Map<String, String> requestProperties = new HashMap<>();
+        if (header)
+            requestProperties.put("Accept", accept);
+        if (authorization != null)
+            requestProperties.put("Authorization", authorization);
+        if (httpHeaders != null)
+            for (String httpHeader : httpHeaders) {
+                int delim = httpHeader.indexOf(':');
+                requestProperties.put(httpHeader.substring(0, delim), httpHeader.substring(delim + 1));
+            }
+        return requestProperties;
+    }
+
     private void wado(URL url, String uid) throws Exception {
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestMethod("GET");
-        if (header)
-            connection.setRequestProperty("Accept", accept);
-        if (authorization != null)
-            connection.setRequestProperty("Authorization", authorization);
-        logOutgoing(url);
+        requestProperties.forEach(connection::setRequestProperty);
+        logOutgoing(url, connection.getRequestProperties());
         processWadoResp(connection, uid);
         connection.disconnect();
     }
@@ -194,14 +213,11 @@ public class WadoRS {
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestMethod("GET");
-        if (header)
-            connection.setRequestProperty("Accept", accept);
-        if (authorization != null)
-            connection.setRequestProperty("Authorization", authorization);
+        requestProperties.forEach(connection::setRequestProperty);
         if (disableTM)
             connection.setSSLSocketFactory(sslContext().getSocketFactory());
         connection.setHostnameVerifier((hostname, session) -> allowAnyHost);
-        logOutgoing(url);
+        logOutgoing(url, connection.getRequestProperties());
         processWadoHttpsResp(connection, uid);
         connection.disconnect();
     }
@@ -248,11 +264,9 @@ public class WadoRS {
                 : url.substring(url.lastIndexOf('/')+1);
     }
 
-    private void logOutgoing(URL url) {
+    private void logOutgoing(URL url, Map<String, List<String>> headerFields) {
         LOG.info("> GET " + url.toString());
-        LOG.info("> Accept: " + accept);
-        if (authorization != null)
-            LOG.info("> Authorization: " + authorization);
+        headerFields.forEach((k,v) -> LOG.info("> " + k + " : " + String.join(",", v)));
     }
 
     private void processWadoResp(HttpURLConnection connection, String uid) throws Exception {

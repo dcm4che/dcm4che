@@ -61,6 +61,8 @@ Options:
                                   uploads.
  -f,--file <file>                 Specify the file containing the metadata
                                   (in XML format).
+ -H <httpHeader:value>            Specify additional HTTP headers to be sent in
+                                  the invoked request.
  -h,--help                        display this help and exit
  -l,--limit <arg>                 If specified, split number of objects
                                   sent in one request. More objects than

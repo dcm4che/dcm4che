@@ -402,7 +402,7 @@ public class StowRS {
             case "model/obj":
                 return FileContentType.OBJ;
             case "genozip":
-            case "application/x-genozip":
+            case "application/vnd.genozip":
                 return FileContentType.GENOZIP;
             case "jpg":
             case "jpeg":

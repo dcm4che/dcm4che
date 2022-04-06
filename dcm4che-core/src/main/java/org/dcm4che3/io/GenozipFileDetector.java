@@ -53,7 +53,7 @@ import java.nio.file.spi.FileTypeDetector;
  * @since Apr 2022
  */
 public class GenozipFileDetector extends FileTypeDetector {
-    public final static String APPLICATION_X_GENOZIP = "application/x-genozip";
+    public final static String APPLICATION_X_GENOZIP = "application/vnd.genozip";
 
     @Override
     public String probeContentType(Path path) throws IOException {

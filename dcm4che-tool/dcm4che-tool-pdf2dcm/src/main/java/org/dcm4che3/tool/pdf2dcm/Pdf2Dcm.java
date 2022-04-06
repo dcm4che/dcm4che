@@ -180,7 +180,7 @@ public class Pdf2Dcm {
             case "model/obj":
                 return FileContentType.OBJ;
             case "genozip":
-            case "application/x-genozip":
+            case "application/vnd.genozip":
                 return FileContentType.GENOZIP;
             default:
                 throw new IllegalArgumentException(

@@ -31,7 +31,7 @@
         <Value number="1">1</Value>
     </DicomAttribute>
     <DicomAttribute keyword="MIMETypeOfEncapsulatedDocument" tag="00420012" vr="LO">
-        <Value number="1">application/x-genozip</Value>
+        <Value number="1">application/vnd.genozip</Value>
     </DicomAttribute>
     <DicomAttribute keyword="SOPClassUID" tag="00080016" vr="UI">
         <Value number="1">1.2.40.0.13.1.5.1.4.1.1.104.1</Value>

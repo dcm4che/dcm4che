@@ -364,12 +364,12 @@ public class MediaTypes {
     /**
      * "application/vnd.genozip"
      */
-    public final static String APPLICATION_X_GENOZIP = "application/vnd.genozip";
+    public final static String APPLICATION_VND_GENOZIP = "application/vnd.genozip";
 
     /**
      * "application/vnd.genozip"
      */
-    public final static MediaType APPLICATION_X_GENOZIP_TYPE =
+    public final static MediaType APPLICATION_VND_GENOZIP_TYPE =
             new MediaType("application", "vnd.genozip");
 
 

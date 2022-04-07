@@ -40,31 +40,143 @@ package org.dcm4che3.net;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Maciek Siemczyk
  */
 public class DeviceTest {
 
+    private static final String DEVICE_NAME = "AnyDeviceName";
+    
     private static final String AE_TITLE = "MyAeTitle";
-    private static final String FIRST_ALIAS_AE_TITLE = "AliasAeTitle";
-    private static final String SECOND_ALIAS_AE_TITLE = "AnotherAliasAeTitle";
-    private static final String DEFAULT_AE_TITLE = "*";
+    private static final String FIRST_ALIAS_AE_TITLE = "AliasAET";
+    private static final String SECOND_ALIAS_AE_TITLE = "AnotherAliasAET";
 
-    private ApplicationEntity ae;
-    private ApplicationEntity defaultAE;
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+    
+    private ApplicationEntity applicationEntity = new ApplicationEntity(AE_TITLE);
+    
+    /**
+     * System Under Test (SUT).
+     */
+    private Device device = new Device(DEVICE_NAME);
 
     @Test
+    public void getApplicationEntity_ThrowsIllegalArgumentException_GivenNull() {
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Application Entity Title (aet) is null");
+        
+        device.getApplicationEntity(null);
+    }
+    
+    @Test
+    public void getApplicationEntity_ReturnsNull_GivenNotExistingAeTitle() {
+
+        applicationEntity.setAETitleAliases(FIRST_ALIAS_AE_TITLE);
+        device.addApplicationEntity(applicationEntity);
+
+        assertThat("Returned not null value", device.getApplicationEntity("GoodLuck"), is(nullValue()));
+    }
+    
+    @Test
+    public void getApplicationEntity_ReturnsCorrectApplicationEntity_GivenValidAeTitle() {
+
+        // Create and add to device another AE with alias same as the 'main' Application Entity.
+        ApplicationEntity anotherApplicationEntity = new ApplicationEntity("NotMyAeTitle");
+        anotherApplicationEntity.setAETitleAliases(AE_TITLE);
+            
+        device.addApplicationEntity(anotherApplicationEntity);
+        device.addApplicationEntity(applicationEntity);
+
+        assertThat("Returned wrong AE", device.getApplicationEntity(AE_TITLE), is(applicationEntity));
+    }
+    
+    @Test
+    public void getApplicationEntity_ReturnsCorrectApplicationEntity_GivenValidAeTitleAlias() {
+
+        ApplicationEntity aliasedApplicationEntity = new ApplicationEntity("AliasedAe");
+        aliasedApplicationEntity.setAETitleAliases(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE);
+        
+        // Add one alias to the 'main' Application Entity just in case.
+        applicationEntity.setAETitleAliases("alias");
+            
+        device.addApplicationEntity(aliasedApplicationEntity);
+        device.addApplicationEntity(applicationEntity);
+
+        assertThat(
+                "Returned wrong AE",
+                device.getApplicationEntity(SECOND_ALIAS_AE_TITLE),
+                is(aliasedApplicationEntity));
+    }
+
+    @Test
+    public void getApplicationEntity_ReturnsCorrectApplicationEntity_GivenNotExistingAeTitleButDeviceHasAeWithDefaultTitle() {
+
+        ApplicationEntity defaultApplicationEntity = new ApplicationEntity(Device.DEFAULT_AE_TITLE);
+        
+        // Add one alias to the 'main' Application Entity just in case.
+        applicationEntity.setAETitleAliases(FIRST_ALIAS_AE_TITLE);
+        
+        device.addApplicationEntity(defaultApplicationEntity);
+        device.addApplicationEntity(applicationEntity);
+
+        assertThat(
+                "Returned wrong AE",
+                device.getApplicationEntity("ImNotThere"),
+                is(defaultApplicationEntity));
+    }
+
+    @Test
+    public void getApplicationEntity_ReturnsCorrectApplicationEntity_GivenNotExistingAeTitleButDeviceHasAeAliasWithDefaultTitle() {
+
+        ApplicationEntity defaultApplicationEntity = new ApplicationEntity("AET");
+        defaultApplicationEntity.setAETitleAliases(Device.DEFAULT_AE_TITLE);
+        
+        device.addApplicationEntity(defaultApplicationEntity);
+        device.addApplicationEntity(applicationEntity);
+
+        assertThat(
+                "Returned wrong AE",
+                device.getApplicationEntity("ImNotHere"),
+                is(defaultApplicationEntity));
+    }
+    
+    @Test
+    public void getApplicationAETitles_ReturnsAllAeTitlesAndAliases_WhenDeviceHasTwoApplicationEntitiesWithAeTitleAliases() {
+
+        final String aet = "SomeAET";
+        final String aetAlias = "SomeAlias";
+        
+        ApplicationEntity anotherApplicationEntity = new ApplicationEntity(aet);
+        anotherApplicationEntity.setAETitleAliases(aetAlias);
+        
+        applicationEntity.setAETitleAliases(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE);
+        
+        device.addApplicationEntity(anotherApplicationEntity);
+        device.addApplicationEntity(applicationEntity);
+
+        assertThat(
+                "Returned Application Entity titles are not correct",
+                device.getApplicationAETitles(),
+                containsInAnyOrder(AE_TITLE, FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE, aet, aetAlias));
+    }
+    
+    @Test
     public void testReconfigure() throws Exception {
+        
         Device d1 = createDevice("test", "AET1");
         Device d2 = createDevice("test", "AET2");
         d2.setOlockHash("I.hash.you.not");
@@ -80,59 +192,18 @@ public class DeviceTest {
         assertThat("Storage version", d1.getStorageVersion(), equalTo(35L));
     }
 
-    @Test
-    public void getApplicationEntity_ReturnsSameApplicationEntity_GivenAeTitleOrAETitleAliases() {
-
-        Device device = createDevice("AnyDeviceName", AE_TITLE);
-        device.getApplicationEntity(AE_TITLE)
-              .setAETitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE));
-
-        assertThat("Main AE is not correct", device.getApplicationEntity(AE_TITLE), is(ae));
-        assertThat("First alias AE of the device should be same as the main one",
-                   device.getApplicationEntity(FIRST_ALIAS_AE_TITLE),
-                   is(ae));
-        assertThat("Second alias AE of the device should be same as the main one",
-                   device.getApplicationEntity(SECOND_ALIAS_AE_TITLE),
-                   is(ae));
-    }
-
-    @Test
-    public void getApplicationEntity_ReturnsDefault_GivenThatDefaultExistsAndAeTitleOrAETitleAliasesDoesNotExist() {
-
-        Device device = createDevice("AnyDeviceName", AE_TITLE);
-        device.getApplicationEntity(AE_TITLE)
-              .setAETitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE));
-
-        assertThat("Default AE of the device should be returned if AE title does not exist",
-                   device.getApplicationEntity("AnyAeTitleThatDoesNotExist"),
-                   is(defaultAE));
-    }
-
-    @Test
-    public void getApplicationAETitles_ReturnsAETitlesIncludingAliasAeTitles_WhenApplicationEntityHasAliasAeTitle() {
-
-        Device device = createDevice("AnyDeviceName", AE_TITLE);
-        device.getApplicationEntity(AE_TITLE)
-              .setAETitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE));
-
-        assertThat("Application Entity titles are not correct",
-                   device.getApplicationAETitles(),
-                   containsInAnyOrder(AE_TITLE, FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE, DEFAULT_AE_TITLE));
-    }
-
     private Device createDevice(String name, String aet) {
-        Device dev = new Device(name);
-        Connection conn = new Connection("dicom", "localhost", 11112);
-        dev.addConnection(conn);
+        
+        final Device device = new Device(name);
+        
+        Connection connection = new Connection("dicom", "localhost", 11112);
+        device.addConnection(connection);
 
-        defaultAE = new ApplicationEntity("*");
-        dev.addApplicationEntity(defaultAE);
-        defaultAE.addConnection(conn);
-
-        ae = new ApplicationEntity(aet);
-        dev.addApplicationEntity(ae);
-        ae.addConnection(conn);
-        return dev;
+        ApplicationEntity applicationEntity = new ApplicationEntity(aet);
+        applicationEntity.addConnection(connection);
+        
+        device.addApplicationEntity(applicationEntity);
+        
+        return device;
     }
-
 }

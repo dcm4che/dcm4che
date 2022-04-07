@@ -37,11 +37,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.net;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -52,9 +55,14 @@ import org.junit.Test;
  */
 public class DeviceTest {
 
-    /**
-     * Test method for {@link org.dcm4che3.net.Device#reconfigure(org.dcm4che3.net.Device)}.
-     */
+    private static final String AE_TITLE = "MyAeTitle";
+    private static final String FIRST_ALIAS_AE_TITLE = "AliasAeTitle";
+    private static final String SECOND_ALIAS_AE_TITLE = "AnotherAliasAeTitle";
+    private static final String DEFAULT_AE_TITLE = "*";
+
+    private ApplicationEntity ae;
+    private ApplicationEntity defaultAE;
+
     @Test
     public void testReconfigure() throws Exception {
         Device d1 = createDevice("test", "AET1");
@@ -67,17 +75,61 @@ public class DeviceTest {
         assertNotNull(ae);
         List<Connection> conns = ae.getConnections();
         assertEquals(1, conns.size());
-        
-       assertThat("Olock Hash", d1.getOlockHash(), equalTo("I.hash.you.not"));
-       assertThat("Storage version", d1.getStorageVersion(), equalTo(35L));
-       
+
+        assertThat("Olock Hash", d1.getOlockHash(), equalTo("I.hash.you.not"));
+        assertThat("Storage version", d1.getStorageVersion(), equalTo(35L));
+    }
+
+    @Test
+    public void getApplicationEntity_ReturnsSameApplicationEntity_GivenAeTitleOrAETitleAliases() {
+
+        Device device = createDevice("AnyDeviceName", AE_TITLE);
+        device.getApplicationEntity(AE_TITLE)
+              .setAETitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE));
+
+        assertThat("Main AE is not correct", device.getApplicationEntity(AE_TITLE), is(ae));
+        assertThat("First alias AE of the device should be same as the main one",
+                   device.getApplicationEntity(FIRST_ALIAS_AE_TITLE),
+                   is(ae));
+        assertThat("Second alias AE of the device should be same as the main one",
+                   device.getApplicationEntity(SECOND_ALIAS_AE_TITLE),
+                   is(ae));
+    }
+
+    @Test
+    public void getApplicationEntity_ReturnsDefault_GivenThatDefaultExistsAndAeTitleOrAETitleAliasesDoesNotExist() {
+
+        Device device = createDevice("AnyDeviceName", AE_TITLE);
+        device.getApplicationEntity(AE_TITLE)
+              .setAETitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE));
+
+        assertThat("Default AE of the device should be returned if AE title does not exist",
+                   device.getApplicationEntity("AnyAeTitleThatDoesNotExist"),
+                   is(defaultAE));
+    }
+
+    @Test
+    public void getApplicationAETitles_ReturnsAETitlesIncludingAliasAeTitles_WhenApplicationEntityHasAliasAeTitle() {
+
+        Device device = createDevice("AnyDeviceName", AE_TITLE);
+        device.getApplicationEntity(AE_TITLE)
+              .setAETitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE));
+
+        assertThat("Application Entity titles are not correct",
+                   device.getApplicationAETitles(),
+                   containsInAnyOrder(AE_TITLE, FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE, DEFAULT_AE_TITLE));
     }
 
     private Device createDevice(String name, String aet) {
         Device dev = new Device(name);
         Connection conn = new Connection("dicom", "localhost", 11112);
         dev.addConnection(conn);
-        ApplicationEntity ae = new ApplicationEntity(aet);
+
+        defaultAE = new ApplicationEntity("*");
+        dev.addApplicationEntity(defaultAE);
+        defaultAE.addConnection(conn);
+
+        ae = new ApplicationEntity(aet);
         dev.addApplicationEntity(ae);
         ae.addConnection(conn);
         return dev;

@@ -368,6 +368,11 @@
       </DicomAttribute>
       <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
         <Value number="1">1.2.840.10008.5.1.4.1.1.104.1</Value>
+        <Value number="1">1.2.840.10008.5.1.4.1.1.104.2</Value>
+        <Value number="1">1.2.840.10008.5.1.4.1.1.104.3</Value>
+        <Value number="1">1.2.840.10008.5.1.4.1.1.104.4</Value>
+        <Value number="1">1.2.840.10008.5.1.4.1.1.104.5</Value>
+        <Value number="1">1.2.40.0.13.1.5.1.4.1.1.104.1</Value>
       </DicomAttribute>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="ContentDate" tag="00080023" vr="DA"/>
@@ -382,9 +387,7 @@
       <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
         <Value number="1">HL7 STRUC DOC</Value>
       </DicomAttribute>
-      <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
-        <Value number="1">1.2.840.10008.5.1.4.1.1.104.2</Value>
-      </DicomAttribute>
+      <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI"/>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="HL7InstanceIdentifier" tag="0040E001" vr="ST"/>
       <DicomAttribute keyword="HL7DocumentEffectiveTime" tag="0040E004" vr="DT"/>

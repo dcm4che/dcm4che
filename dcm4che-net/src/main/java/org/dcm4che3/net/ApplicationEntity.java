@@ -43,7 +43,6 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -184,14 +183,17 @@ public class ApplicationEntity implements Serializable {
         setAETitle(aeTitle);
     }
 
-    public List<String> getAETitleAliases() {
+    public List<String> getAeTitleAliases() {
         return new ArrayList<>(aeTitleAliases);
     }
 
-    public void setAETitleAliases(String... aets) {
-        
+    public void setAeTitleAliases(List<String> aets) {
         aeTitleAliases.clear();
-        aeTitleAliases.addAll(Arrays.asList(aets));
+        aeTitleAliases.addAll(aets);
+    }
+    
+    public boolean isAeTitleAlias(String aet) {
+        return aeTitleAliases.contains(aet);
     }
 
     public Map<Class<? extends AEExtension>, AEExtension> getExtensions() {
@@ -265,7 +267,7 @@ public class ApplicationEntity implements Serializable {
      * <p/>
      * <p/>
      * Please note that there could also be alias AE titles for the same AE. You
-     * can get them via {@link #getAETitleAliases()}.
+     * can get them via {@link #getAeTitleAliases()}.
      *
      * @return A String containing the AE title.
      */
@@ -807,8 +809,7 @@ public class ApplicationEntity implements Serializable {
     protected void setApplicationEntityAttributes(ApplicationEntity from) {
         setOlockHash(from.olockHash);
         setDescription(from.description);
-        aeTitleAliases.clear();
-        aeTitleAliases.addAll(from.getAETitleAliases());
+        setAeTitleAliases(from.aeTitleAliases);
         setVendorData(from.vendorData);
         setApplicationClusters(from.applicationClusters);
         setPreferredCalledAETitles(from.preferredCalledAETitles);
@@ -890,5 +891,4 @@ public class ApplicationEntity implements Serializable {
 
         return true;
     }
-
 }

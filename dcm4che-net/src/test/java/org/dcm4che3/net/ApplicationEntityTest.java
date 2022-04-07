@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.net;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -58,25 +59,43 @@ public class ApplicationEntityTest {
     private ApplicationEntity applicationEntity = new ApplicationEntity(AE_TITLE);
 
     @Test
-    public void getAETitleAliases_ReturnsEmptyList_WhenThereIsNoAliases() {
+    public void getAeTitleAliases_ReturnsEmptyList_WhenThereIsNoAliases() {
 
-        assertThat("Returned not empty list", applicationEntity.getAETitleAliases(), is(empty()));
+        assertThat("Returned not empty list", applicationEntity.getAeTitleAliases(), is(empty()));
     }
     
     @Test
-    public void getAETitleAliases_ReturnsCorrectlyPopulatedList_WhenThereAreAliases() {
+    public void getAeTitleAliases_ReturnsCorrectlyPopulatedList_WhenThereAreAliases() {
         
         final String firstAlias = "firstAlias";
         final String secondAlias = "secondAlias";
         
         // Set some random alias first to make sure the list is cleared out first.
-        applicationEntity.setAETitleAliases("alias");
+        applicationEntity.setAeTitleAliases(Arrays.asList("alias"));
 
-        applicationEntity.setAETitleAliases(firstAlias, secondAlias);
+        applicationEntity.setAeTitleAliases(Arrays.asList(firstAlias, secondAlias));
         
         assertThat(
                 "Returned wrong aliases",
-                applicationEntity.getAETitleAliases(),
-                is(Arrays.asList(firstAlias, secondAlias)));
+                applicationEntity.getAeTitleAliases(),
+                containsInAnyOrder(firstAlias, secondAlias));
+    }
+    
+    @Test
+    public void isAeTitleAlias_ReturnsTrue_GivenAeTitleThatIsAlias() {
+        
+        final String alias = "iExist";
+        
+        applicationEntity.setAeTitleAliases(Arrays.asList("AET1", "AET2", alias, "AET3"));
+        
+        assertThat("Returned false", applicationEntity.isAeTitleAlias(alias), is(true));
+    }
+    
+    @Test
+    public void isAeTitleAlias_ReturnsFalse_GivenAeTitleThatIsNotAlias() {
+        
+        applicationEntity.setAeTitleAliases(Arrays.asList("alias1", "alias2"));
+        
+        assertThat("Returned true", applicationEntity.isAeTitleAlias(AE_TITLE), is(false));
     }
 }

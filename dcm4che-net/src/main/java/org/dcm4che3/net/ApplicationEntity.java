@@ -38,6 +38,23 @@
 
 package org.dcm4che3.net;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.Socket;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.UUID;
+
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
@@ -45,16 +62,16 @@ import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.api.Parent;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.net.pdu.*;
+import org.dcm4che3.net.pdu.AAbort;
+import org.dcm4che3.net.pdu.AAssociateAC;
+import org.dcm4che3.net.pdu.AAssociateRQ;
+import org.dcm4che3.net.pdu.CommonExtendedNegotiation;
+import org.dcm4che3.net.pdu.ExtendedNegotiation;
+import org.dcm4che3.net.pdu.PresentationContext;
+import org.dcm4che3.net.pdu.RoleSelection;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.Socket;
-import java.security.GeneralSecurityException;
-import java.util.*;
 
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM network service.
@@ -147,7 +164,7 @@ public class ApplicationEntity implements Serializable {
 
     @ConfigurableProperty(name = "dcmAETitleAliases",
             label = "Aliases (alternative AE titles)")
-    private List<String> AETitleAliases = new ArrayList<String>();
+    private final List<String> aeTitleAliases = new ArrayList<>();
 
     @ConfigurableProperty(name = "dcmImplicitRelationalQueryEnabled",
             label = "Enable Implicit Relational C-FIND",
@@ -168,11 +185,13 @@ public class ApplicationEntity implements Serializable {
     }
 
     public List<String> getAETitleAliases() {
-        return new ArrayList<String>(AETitleAliases);
+        return new ArrayList<>(aeTitleAliases);
     }
 
-    public void setAETitleAliases(List<String> AETitleAliases) {
-        this.AETitleAliases = AETitleAliases;
+    public void setAETitleAliases(String... aets) {
+        
+        aeTitleAliases.clear();
+        aeTitleAliases.addAll(Arrays.asList(aets));
     }
 
     public Map<Class<? extends AEExtension>, AEExtension> getExtensions() {
@@ -739,7 +758,7 @@ public class ApplicationEntity implements Serializable {
     public StringBuilder promptTo(StringBuilder sb, String indent) {
         String indent2 = indent + "  ";
         StringUtils.appendLine(sb, indent, "ApplicationEntity[title: ", AETitle);
-        StringUtils.appendLine(sb, indent2, "alias titles: ", AETitleAliases);
+        StringUtils.appendLine(sb, indent2, "alias titles: ", aeTitleAliases);
         StringUtils.appendLine(sb, indent2, "desc: ", description);
         StringUtils.appendLine(sb, indent2, "acceptor: ", associationAcceptor);
         StringUtils.appendLine(sb, indent2, "initiator: ", associationInitiator);
@@ -788,7 +807,8 @@ public class ApplicationEntity implements Serializable {
     protected void setApplicationEntityAttributes(ApplicationEntity from) {
         setOlockHash(from.olockHash);
         setDescription(from.description);
-        setAETitleAliases(from.getAETitleAliases());
+        aeTitleAliases.clear();
+        aeTitleAliases.addAll(from.getAETitleAliases());
         setVendorData(from.vendorData);
         setApplicationClusters(from.applicationClusters);
         setPreferredCalledAETitles(from.preferredCalledAETitles);

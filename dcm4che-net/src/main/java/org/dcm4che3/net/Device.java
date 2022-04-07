@@ -91,6 +91,8 @@ import org.dcm4che3.util.StringUtils;
 public class Device extends StorageVersionedConfigurableClass implements Serializable {
 
     private static final long serialVersionUID = -5816872456184522866L;
+    
+    public static final String DEFAULT_AE_TITLE = "*";
 
     @ConfigurableProperty(name = "dicomDeviceName", label = "Device name", tags = Tag.PRIMARY)
     private String deviceName;
@@ -1041,16 +1043,17 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
     }
 
     public ApplicationEntity getApplicationEntity(String aet) {
-        if(aet == null){
+        if (aet == null) {
             throw new IllegalArgumentException("Application Entity Title (aet) is null");
         }
 
         ApplicationEntity ae = findApplicationEntityByAeTitleOrAlias(aet);
 
-        // special fallback: if one ApplicationEntity defines "*" as an alias AET (or even the main AET),
-        // it will get used as a fallback for unknown AETs
-        if (ae == null)
-            ae = findApplicationEntityByAeTitleOrAlias("*");
+        // Special fallback: if one ApplicationEntity defines "*" as an alias AET (or even the main AET),
+        // it will get used as a fallback for unknown AETs.
+        if (ae == null) {
+            ae = findApplicationEntityByAeTitleOrAlias(DEFAULT_AE_TITLE);
+        }
 
         return ae;
     }
@@ -1060,8 +1063,8 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
      */
     public Collection<String> getApplicationAETitles() {
         Collection<String> aeTitles = new HashSet<>();
+        
         aeTitles.addAll(applicationEntitiesMap.keySet());
-        //add alias AE titles
         applicationEntitiesMap.values().forEach(ae -> aeTitles.addAll(ae.getAETitleAliases()));
 
         return aeTitles;
@@ -1144,15 +1147,16 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
         return tm;
     }
 
-    private final ApplicationEntity findApplicationEntityByAeTitleOrAlias(String aet) {
+    private ApplicationEntity findApplicationEntityByAeTitleOrAlias(String aet) {
         ApplicationEntity applicationEntity = applicationEntitiesMap.get(aet);
-        if(applicationEntity == null) {
-            //check alias AE titles
-            applicationEntity =  applicationEntitiesMap.values().stream()
+        
+        if (applicationEntity == null) {
+            return applicationEntitiesMap.values().stream()
                 .filter(ae -> ae.getAETitleAliases().contains(aet))
                 .findFirst()
                 .orElse(null);
         }
+        
         return applicationEntity;
     }
 

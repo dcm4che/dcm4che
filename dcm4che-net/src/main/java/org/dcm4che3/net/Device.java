@@ -54,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
@@ -1062,10 +1063,10 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
      * @return AE titles of this device, including alias AE titles
      */
     public Collection<String> getApplicationAETitles() {
-        Collection<String> aeTitles = new HashSet<>();
+        Set<String> aeTitles = new HashSet<>();
         
         aeTitles.addAll(applicationEntitiesMap.keySet());
-        applicationEntitiesMap.values().forEach(ae -> aeTitles.addAll(ae.getAETitleAliases()));
+        applicationEntitiesMap.values().forEach(ae -> aeTitles.addAll(ae.getAeTitleAliases()));
 
         return aeTitles;
     }
@@ -1152,9 +1153,9 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
         
         if (applicationEntity == null) {
             return applicationEntitiesMap.values().stream()
-                .filter(ae -> ae.getAETitleAliases().contains(aet))
-                .findFirst()
-                .orElse(null);
+                    .filter(ae -> ae.isAeTitleAlias(aet))
+                    .findFirst()
+                    .orElse(null);
         }
         
         return applicationEntity;

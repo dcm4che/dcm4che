@@ -45,6 +45,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Rule;
@@ -85,7 +86,7 @@ public class DeviceTest {
     @Test
     public void getApplicationEntity_ReturnsNull_GivenNotExistingAeTitle() {
 
-        applicationEntity.setAETitleAliases(FIRST_ALIAS_AE_TITLE);
+        applicationEntity.setAeTitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE));
         device.addApplicationEntity(applicationEntity);
 
         assertThat("Returned not null value", device.getApplicationEntity("GoodLuck"), is(nullValue()));
@@ -96,7 +97,7 @@ public class DeviceTest {
 
         // Create and add to device another AE with alias same as the 'main' Application Entity.
         ApplicationEntity anotherApplicationEntity = new ApplicationEntity("NotMyAeTitle");
-        anotherApplicationEntity.setAETitleAliases(AE_TITLE);
+        anotherApplicationEntity.setAeTitleAliases(Arrays.asList(AE_TITLE));
             
         device.addApplicationEntity(anotherApplicationEntity);
         device.addApplicationEntity(applicationEntity);
@@ -108,10 +109,10 @@ public class DeviceTest {
     public void getApplicationEntity_ReturnsCorrectApplicationEntity_GivenValidAeTitleAlias() {
 
         ApplicationEntity aliasedApplicationEntity = new ApplicationEntity("AliasedAe");
-        aliasedApplicationEntity.setAETitleAliases(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE);
+        aliasedApplicationEntity.setAeTitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE));
         
         // Add one alias to the 'main' Application Entity just in case.
-        applicationEntity.setAETitleAliases("alias");
+        applicationEntity.setAeTitleAliases(Arrays.asList("alias"));
             
         device.addApplicationEntity(aliasedApplicationEntity);
         device.addApplicationEntity(applicationEntity);
@@ -128,7 +129,7 @@ public class DeviceTest {
         ApplicationEntity defaultApplicationEntity = new ApplicationEntity(Device.DEFAULT_AE_TITLE);
         
         // Add one alias to the 'main' Application Entity just in case.
-        applicationEntity.setAETitleAliases(FIRST_ALIAS_AE_TITLE);
+        applicationEntity.setAeTitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE));
         
         device.addApplicationEntity(defaultApplicationEntity);
         device.addApplicationEntity(applicationEntity);
@@ -143,7 +144,7 @@ public class DeviceTest {
     public void getApplicationEntity_ReturnsCorrectApplicationEntity_GivenNotExistingAeTitleButDeviceHasAeAliasWithDefaultTitle() {
 
         ApplicationEntity defaultApplicationEntity = new ApplicationEntity("AET");
-        defaultApplicationEntity.setAETitleAliases(Device.DEFAULT_AE_TITLE);
+        defaultApplicationEntity.setAeTitleAliases(Arrays.asList(Device.DEFAULT_AE_TITLE));
         
         device.addApplicationEntity(defaultApplicationEntity);
         device.addApplicationEntity(applicationEntity);
@@ -161,9 +162,9 @@ public class DeviceTest {
         final String aetAlias = "SomeAlias";
         
         ApplicationEntity anotherApplicationEntity = new ApplicationEntity(aet);
-        anotherApplicationEntity.setAETitleAliases(aetAlias);
+        anotherApplicationEntity.setAeTitleAliases(Arrays.asList(aetAlias));
         
-        applicationEntity.setAETitleAliases(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE);
+        applicationEntity.setAeTitleAliases(Arrays.asList(FIRST_ALIAS_AE_TITLE, SECOND_ALIAS_AE_TITLE));
         
         device.addApplicationEntity(anotherApplicationEntity);
         device.addApplicationEntity(applicationEntity);

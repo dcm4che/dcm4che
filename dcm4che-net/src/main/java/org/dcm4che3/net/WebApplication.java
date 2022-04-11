@@ -70,7 +70,8 @@ public class WebApplication {
         ELASTICSEARCH,
         XDS_RS,
         AGFA_BLOB,
-        J4C_ROUTER
+        J4C_ROUTER,
+        FHIR
     }
 
     private Device device;

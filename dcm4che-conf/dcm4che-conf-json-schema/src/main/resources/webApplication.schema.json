@@ -52,8 +52,12 @@
           "REJECT",
           "MOVE",
           "MOVE_MATCHING",
+          "UPS_MATCHING",
           "ELASTICSEARCH",
-          "XDS_RS"
+          "XDS_RS",
+          "AGFA_BLOB",
+          "J4C_ROUTER",
+          "FHIR"
         ]
       }
     },

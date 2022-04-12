@@ -54,37 +54,37 @@ enum TemporalType {
         public Date parse(TimeZone tz, String s, boolean ceil,
                 DatePrecision precision) {
             precision.lastField = Calendar.DAY_OF_MONTH;
-            return DateUtils.parseDA(null, s, ceil);
+            return DateUtils.parseDA(precision.applyTimezoneOffset ? tz : null, s, ceil);
         }
 
         @Override
         public String format(TimeZone tz, Date date,
                 DatePrecision precision) {
-            return DateUtils.formatDA(null, date);
+            return DateUtils.formatDA(precision.applyTimezoneOffset ? tz : null, date);
         }
     }, DT {
         @Override
         public Date parse(TimeZone tz, String s, boolean ceil,
                 DatePrecision precision) {
-            return DateUtils.parseDT(tz, s, ceil, precision);
+            return DateUtils.parseDT(precision.applyTimezoneOffset ? tz : null, s, ceil, precision);
         }
 
         @Override
         public String format(TimeZone tz, Date date,
                 DatePrecision precision) {
-            return DateUtils.formatDT(tz, date, precision);
+            return DateUtils.formatDT(precision.applyTimezoneOffset ? tz : null, date, precision);
         }
     }, TM {
         @Override
         public Date parse(TimeZone tz, String s, boolean ceil,
                 DatePrecision precision) {
-            return DateUtils.parseTM(tz, s, ceil, precision);
+            return DateUtils.parseTM(precision.applyTimezoneOffset ? tz : null, s, ceil, precision);
         }
 
         @Override
         public String format(TimeZone tz, Date date,
                 DatePrecision precision) {
-            return DateUtils.formatTM(tz, date, precision);
+            return DateUtils.formatTM(precision.applyTimezoneOffset ? tz : null, date, precision);
         }
     };
 

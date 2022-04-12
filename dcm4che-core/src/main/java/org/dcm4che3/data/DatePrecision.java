@@ -50,16 +50,59 @@ public class DatePrecision {
         this(Calendar.MILLISECOND, false);
     }
 
+    public DatePrecision(VR vr) {
+        // apply timezone offset for VR.DT (as that always includes date and time), but not when reading VR.DA and VR.TM
+        // values separately (because a timezone offset cannot be correctly applied for only a date or only a time).
+        this(Calendar.MILLISECOND, false, vr == VR.DT);
+    }
+
     public DatePrecision(int lastField) {
-        this(lastField, false);
+        this(lastField, false, true);
     }
 
     public DatePrecision(int lastField, boolean includeTimezone) {
-        this.lastField = lastField;
-        this.includeTimezone = includeTimezone;
+        this(lastField, includeTimezone, true);
     }
 
+    public DatePrecision(int lastField, boolean includeTimezone, boolean applyTimezoneOffset) {
+        this.lastField = lastField;
+        this.includeTimezone = includeTimezone;
+        this.applyTimezoneOffset = applyTimezoneOffset;
+    }
+
+    public DatePrecision(DatePrecision copyFrom) {
+        this(copyFrom.lastField, copyFrom.includeTimezone, copyFrom.applyTimezoneOffset);
+    }
+
+    /**
+     * Specifies the precision of a date value (e.g. Calendar.MILLISECOND for millisecond precision).
+     *
+     * For methods that format a date (e.g. {@link Attributes#setDate}), this acts as an input to specify the precision
+     * that should be stored.
+     *
+     * For methods that parse a date (e.g. {@link Attributes#getDate}), this field will be used as a return value. It
+     * returns the precision of the date that was parsed.
+     */
     public int lastField;
+
+    /**
+     * Specifies whether a formatted date includes a timezone in the stored value itself.
+     *
+     * This is only used for values of {@link VR#DT}.
+     *
+     * For methods that format a DT date time, this acts as an input to specify whether the timezone offset should
+     * be appended to the formatted date (e.g. "+0100").
+     *
+     * For methods that parse a DT date time, this field will be used as a return value. It returns whether the parsed
+     * date included a timezone offset.
+     */
     public boolean includeTimezone;
 
+    /**
+     * Specifies whether the timezone offset (specified by {@link Tag#TimezoneOffsetFromUTC} or
+     * {@link Attributes#getDefaultTimeZone()}) should be applied when parsing and formatting dates and times.
+     *
+     * This field is always used as an input (for both parsing and formatting), never as a return value.
+     */
+    public boolean applyTimezoneOffset;
 }

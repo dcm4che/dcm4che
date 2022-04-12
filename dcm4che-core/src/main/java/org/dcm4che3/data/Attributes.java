@@ -1251,7 +1251,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(int tag) {
-        return getDate(null, tag, null, 0, null, new DatePrecision());
+        return getDate(null, tag, null, 0, null, null);
     }
 
     public Date getDate(int tag, DatePrecision precision) {
@@ -1259,7 +1259,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(int tag, Date defVal) {
-        return getDate(null, tag, null, 0, defVal, new DatePrecision());
+        return getDate(null, tag, null, 0, defVal, null);
     }
 
     public Date getDate(int tag, Date defVal, DatePrecision precision) {
@@ -1267,7 +1267,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(int tag, int valueIndex) {
-        return getDate(null, tag, null, valueIndex, null, new DatePrecision());
+        return getDate(null, tag, null, valueIndex, null, null);
     }
 
     public Date getDate(int tag, int valueIndex, DatePrecision precision) {
@@ -1275,7 +1275,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(int tag, int valueIndex, Date defVal) {
-        return getDate(null, tag, null, valueIndex, defVal, new DatePrecision());
+        return getDate(null, tag, null, valueIndex, defVal, null);
     }
 
     public Date getDate(int tag, int valueIndex, Date defVal,
@@ -1284,7 +1284,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(String privateCreator, int tag) {
-        return getDate(privateCreator, tag, null, 0, null, new DatePrecision());
+        return getDate(privateCreator, tag, null, 0, null, null);
     }
 
     public Date getDate(String privateCreator, int tag, DatePrecision precision) {
@@ -1297,7 +1297,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(String privateCreator, int tag, VR vr) {
-        return getDate(privateCreator, tag, vr, 0, null, new DatePrecision());
+        return getDate(privateCreator, tag, vr, 0, null, null);
     }
 
     public Date getDate(String privateCreator, int tag, VR vr,
@@ -1306,7 +1306,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(String privateCreator, int tag, VR vr, Date defVal) {
-        return getDate(privateCreator, tag, vr, 0, defVal, new DatePrecision());
+        return getDate(privateCreator, tag, vr, 0, defVal, null);
     }
 
     public Date getDate(String privateCreator, int tag, VR vr, Date defVal,
@@ -1316,7 +1316,7 @@ public class Attributes implements Serializable {
 
     public Date getDate(String privateCreator, int tag, int valueIndex) {
         return getDate(privateCreator, tag, null, valueIndex, null,
-                new DatePrecision());
+                null);
     }
 
     public Date getDate(String privateCreator, int tag, int valueIndex,
@@ -1327,7 +1327,7 @@ public class Attributes implements Serializable {
     public Date getDate(String privateCreator, int tag, int valueIndex,
             Date defVal) {
         return getDate(privateCreator, tag, null, valueIndex, defVal,
-                new DatePrecision());
+                null);
     }
 
     public Date getDate(String privateCreator, int tag, int valueIndex,
@@ -1337,7 +1337,7 @@ public class Attributes implements Serializable {
 
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex) {
         return getDate(privateCreator, tag, vr, valueIndex, null,
-                new DatePrecision());
+                null);
     }
 
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
@@ -1348,7 +1348,7 @@ public class Attributes implements Serializable {
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
             Date defVal) {
         return getDate(privateCreator, tag, vr, valueIndex, defVal,
-                new DatePrecision());
+                null);
     }
 
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
@@ -1374,6 +1374,9 @@ public class Attributes implements Serializable {
             if (value == Value.NULL)
                 return defVal;
 
+            if(precision == null)
+                precision = new DatePrecision(vr);
+
             return vr.toDate(value, getTimeZone(), valueIndex, false, defVal, precision);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
@@ -1382,7 +1385,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(long tag) {
-        return getDate(null, tag, null, new DatePrecision());
+        return getDate(null, tag, null, null);
     }
 
     public Date getDate(long tag, DatePrecision precision) {
@@ -1390,7 +1393,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(long tag, Date defVal) {
-        return getDate(null, tag, defVal, new DatePrecision());
+        return getDate(null, tag, defVal, null);
     }
 
     public Date getDate(long tag, Date defVal, DatePrecision precision) {
@@ -1398,7 +1401,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(String privateCreator, long tag) {
-        return getDate(privateCreator, tag, null, new DatePrecision());
+        return getDate(privateCreator, tag, null, null);
     }
 
     public Date getDate(String privateCreator, long tag, DatePrecision precision) {
@@ -1406,7 +1409,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(String privateCreator, long tag, Date defVal) {
-        return getDate(privateCreator, tag, defVal, new DatePrecision());
+        return getDate(privateCreator, tag, defVal, null);
     }
 
     public Date getDate(String privateCreator, long tag, Date defVal,
@@ -1422,6 +1425,9 @@ public class Attributes implements Serializable {
         if (da == null)
             return defVal;
         try {
+            if(precision == null)
+                precision = new DatePrecision(VR.DT);
+
             return VR.DT.toDate(da + tm, getTimeZone(), 0, false, null,
                     precision);
         } catch (IllegalArgumentException e) {
@@ -1433,7 +1439,7 @@ public class Attributes implements Serializable {
     }
 
     public Date[] getDates(int tag) {
-        return getDates(null, tag, null, new DatePrecisions());
+        return getDates(null, tag, null, null);
     }
 
     public Date[] getDates(int tag, DatePrecisions precisions) {
@@ -1441,7 +1447,7 @@ public class Attributes implements Serializable {
     }
 
     public Date[] getDates(String privateCreator, int tag) {
-        return getDates(privateCreator, tag, null, new DatePrecisions());
+        return getDates(privateCreator, tag, null, null);
     }
 
     public Date[] getDates(String privateCreator, int tag,
@@ -1450,7 +1456,7 @@ public class Attributes implements Serializable {
     }
 
     public Date[] getDates(String privateCreator, int tag, VR vr) {
-        return getDates(privateCreator, tag, vr, new DatePrecisions());
+        return getDates(privateCreator, tag, vr, null);
     }
 
     public Date[] getDates(String privateCreator, int tag, VR vr,
@@ -1476,6 +1482,9 @@ public class Attributes implements Serializable {
             if (value == Value.NULL)
                 return DateUtils.EMPTY_DATES;
 
+            if(precisions == null)
+                precisions = new DatePrecisions(vr);
+
             return vr.toDates(value, getTimeZone(), false, precisions);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
@@ -1484,7 +1493,7 @@ public class Attributes implements Serializable {
     }
 
     public Date[] getDates(long tag) {
-        return getDates(null, tag, new DatePrecisions());
+        return getDates(null, tag, null);
     }
 
     public Date[] getDates(long tag, DatePrecisions precisions) {
@@ -1492,7 +1501,7 @@ public class Attributes implements Serializable {
     }
 
     public Date[] getDates(String privateCreator, long tag) {
-        return getDates(privateCreator, tag, new DatePrecisions());
+        return getDates(privateCreator, tag, null);
     }
 
     public Date[] getDates(String privateCreator, long tag,
@@ -1509,16 +1518,35 @@ public class Attributes implements Serializable {
             return DateUtils.EMPTY_DATES;
         
         Date[] dates = new Date[da.length];
-        precisions.precisions = new DatePrecision[da.length];
+        if (precisions == null) {
+            precisions = new DatePrecisions();
+        }
+        DatePrecision precisionTemplate = null;
+        if (precisions.precisions.length > 0) {
+            precisionTemplate = precisions.precisions[0];
+        }
+        if (precisions.precisions.length != da.length) {
+            precisions.precisions = new DatePrecision[da.length];
+        }
         int i = 0;
         try {
             TimeZone tz = getTimeZone();
-            while (i < tm.length)
+            while (i < tm.length) {
+                if (precisions.precisions[i] == null) {
+                    precisions.precisions[i] =
+                            precisionTemplate == null ? new DatePrecision(VR.DT) : new DatePrecision(precisionTemplate);
+                }
                 dates[i++] = VR.DT.toDate(da[i] + tm[i], tz, 0, false, null,
-                        precisions.precisions[i] = new DatePrecision());
-            while (i < da.length)
+                        precisions.precisions[i]);
+            }
+            while (i < da.length) {
+                if (precisions.precisions[i] == null) {
+                    precisions.precisions[i] =
+                            precisionTemplate == null ? new DatePrecision(VR.DA) : new DatePrecision(precisionTemplate);
+                }
                 dates[i++] = VR.DA.toDate(da[i], tz, 0, false, null,
-                        precisions.precisions[i] = new DatePrecision());
+                        precisions.precisions[i]);
+            }
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} DA or {} TM",
                     TagUtils.toString(daTag),
@@ -1581,7 +1609,7 @@ public class Attributes implements Serializable {
     private DateRange toDateRange(String s, VR vr) {
         String[] range = splitRange(s);
         TimeZone tz = getTimeZone();
-        DatePrecision precision = new DatePrecision();
+        DatePrecision precision = new DatePrecision(vr);
         Date start = range[0] == null ? null
                 : vr.toDate(range[0], tz, 0, false, null, precision);
         Date end = range[1] == null ? null
@@ -1638,7 +1666,7 @@ public class Attributes implements Serializable {
     private DateRange toDateRange(String da, String tm) {
         String[] darange = splitRange(da);
         String[] tmrange = splitRange(tm);
-        DatePrecision precision = new DatePrecision();
+        DatePrecision precision = new DatePrecision(VR.DT);
         return new DateRange(
                 darange[0] == null ? null
                         : VR.DT.toDate(tmrange[0] == null
@@ -2039,7 +2067,7 @@ public class Attributes implements Serializable {
 
     public Object setDate(String privateCreator, int tag, VR vr,
             Date... ds) {
-        return setDate(privateCreator, tag, vr, new DatePrecision(), ds);
+        return setDate(privateCreator, tag, vr, new DatePrecision(vr), ds);
     }
 
     public Object setDate(String privateCreator, int tag, VR vr,
@@ -2057,7 +2085,7 @@ public class Attributes implements Serializable {
     }
 
     public void setDate(String privateCreator, long tag, Date dt) {
-        setDate(privateCreator, tag, new DatePrecision(), dt);
+        setDate(privateCreator, tag, new DatePrecision(VR.DT), dt);
     }
 
     public void setDate(String privateCreator, long tag,
@@ -2077,7 +2105,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setDateRange(String privateCreator, int tag, VR vr, DateRange range) {
-        return setDateRange(privateCreator, tag, vr, new DatePrecision(), range);
+        return setDateRange(privateCreator, tag, vr, new DatePrecision(vr), range);
     }
 
     public Object setDateRange(String privateCreator, int tag, VR vr, DatePrecision precision, DateRange range) {
@@ -3289,7 +3317,7 @@ public class Attributes implements Serializable {
                             continue;
                     if (dateRange != null)
                         if (dateRange.contains(
-                                vr.toDate(val, getTimeZone(), 0, false, null, new DatePrecision())))
+                                vr.toDate(val, getTimeZone(), 0, false, null, new DatePrecision(vr))))
                             return true;
                         else
                             continue;

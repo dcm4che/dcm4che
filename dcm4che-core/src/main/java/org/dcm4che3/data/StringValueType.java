@@ -478,18 +478,32 @@ enum StringValueType implements ValueType {
             throw new UnsupportedOperationException();
 
         if (val instanceof String) {
-            precisions.precisions = new DatePrecision[1];
-            return new Date[] { temporalType.parse(tz, (String) val, ceil,
-                    precisions.precisions[0] = new DatePrecision()) };
+            if (precisions.precisions == null || precisions.precisions.length != 1) {
+                precisions.precisions = new DatePrecision[1];
+            }
+            if (precisions.precisions[0] == null) {
+                precisions.precisions[0] = new DatePrecision();
+            }
+            return new Date[] {temporalType.parse(tz, (String) val, ceil, precisions.precisions[0])};
         }
         if (val instanceof String[]) {
             String[] ss = (String[]) val;
             Date[] is = new Date[ss.length];
-            precisions.precisions = new DatePrecision[ss.length];
+            DatePrecision precisionTemplate;
+            if (precisions.precisions.length > 0 && precisions.precisions[0] != null) {
+                precisionTemplate = precisions.precisions[0];
+            } else {
+                precisionTemplate = new DatePrecision();
+            }
+            if (precisions.precisions.length != ss.length) {
+                precisions.precisions = new DatePrecision[ss.length];
+            }
             for (int i = 0; i < is.length; i++) {
                 if (ss[i] != null) {
-                    is[i] = temporalType.parse(tz, ss[i], ceil, 
-                            precisions.precisions[i] = new DatePrecision());
+                    if (precisions.precisions[i] == null) {
+                        precisions.precisions[i] = new DatePrecision(precisionTemplate);
+                    }
+                    is[i] = temporalType.parse(tz, ss[i], ceil, precisions.precisions[i]);
                 }
             }
             return is;

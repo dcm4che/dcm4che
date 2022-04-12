@@ -44,5 +44,13 @@ package org.dcm4che3.data;
  */
 public class DatePrecisions {
 
+    public DatePrecisions() {
+        // empty
+    }
+
+    public DatePrecisions(VR vr) {
+        this.precisions = new DatePrecision[] {new DatePrecision(vr)};
+    }
+
     public DatePrecision[] precisions;
 }

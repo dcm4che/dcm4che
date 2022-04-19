@@ -2422,6 +2422,7 @@ public class Attributes implements Serializable {
             } else {
                 creatorTag = 0;
                 privateCreator = null;
+                privateCreator0 = null;
             }
 
             if (selection != null && !selection.contains(privateCreator, tag))

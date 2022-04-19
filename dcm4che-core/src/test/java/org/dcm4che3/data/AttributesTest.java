@@ -862,4 +862,18 @@ public class AttributesTest {
         assertTrue(modifiedAttributes.bigEndian());
         assertArrayEquals(modifiedAttributes.getBytes(Tag.PixelRepresentation), new byte[]{0,1});
     }
+
+    @Test
+    public void testThatNoExceptionWhenPublicTagsAfterPrivateCreators() {
+        Attributes attributes = new Attributes();
+        attributes.setString("MyCreator", 0x00290018, VR.LO, "foo");
+
+        Attributes toAdd = new Attributes();
+        toAdd.setString("MyCreator2", 0x00290018, VR.LO, "bar");
+        toAdd.setString(Tag.PerformedProcedureStepDescription, VR.LO, "CTABD  Abdomen");
+
+        attributes.addAll(toAdd);
+
+        assertEquals(5, attributes.size());
+    }
 }

@@ -1669,7 +1669,7 @@
 (0029,00B2) VERS="SSPI" VR="SQ"   VM="1"	Owner="SIEMENS SYNGO ADVANCED PRESENTATION"		Keyword="ImageTextViewContentSequence"				Name="Image Text View Content Sequence"
 (0029,00B3) VERS="SSPI" VR="LO"   VM="1-n"	Owner="SIEMENS SYNGO ADVANCED PRESENTATION"		Keyword="ImageTextLineNames"						Name="Image Text Line Names"
 (0029,00B4) VERS="SSPI" VR="LO"   VM="1-n"	Owner="SIEMENS SYNGO ADVANCED PRESENTATION"		Keyword="ImageTextLineValues"						Name="ImageText Line Values"
-(0029,00B5) VERS="SSPI" VR="LO"   VM="1"	Owner="SIEMENS SYNGO ADVANCED PRESENTATION"		Keyword="MeasurementEvaluationTextPositionSequence"	Name="Measurement Evaluation Text Position Sequence"
+(0029,00B5) VERS="SSPI" VR="LO"   VM="1"	Owner="SIEMENS SYNGO ADVANCED PRESENTATION"		Keyword="?"	                                        Name="?"
 (0029,00B6) VERS="SSPI" VR="CS"   VM="1"	Owner="SIEMENS SYNGO ADVANCED PRESENTATION"		Keyword="MeasurementLinkEvaluationTextFlag"			Name="Measurement Link Evaluation Text Flag"
 (0029,00B7) VERS="SSPI" VR="DS"   VM="3"	Owner="SIEMENS SYNGO ADVANCED PRESENTATION"		Keyword="MeasurementEvaluationTextPositionVector"	Name="Measurement Evaluation Text Position Vector"
 (0029,00B8) VERS="SSPI" VR="OB"   VM="1"	Owner="SIEMENS SYNGO ADVANCED PRESENTATION"		Keyword="ImageTextAlphaBlendingLineValue"			Name="Image Text Alpha Blending Line Value"

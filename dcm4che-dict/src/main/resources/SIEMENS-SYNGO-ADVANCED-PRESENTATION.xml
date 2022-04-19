@@ -184,7 +184,7 @@
   <el keyword="ImageTextViewContentSequence" tag="0029xxB2" vm="1" vr="SQ">Image Text View Content Sequence</el>
   <el keyword="ImageTextLineNames" tag="0029xxB3" vm="1-n" vr="LO">Image Text Line Names</el>
   <el keyword="ImageTextLineValues" tag="0029xxB4" vm="1-n" vr="LO">ImageText Line Values</el>
-  <el keyword="MeasurementEvaluationTextPositionSequence" tag="0029xxB5" vm="1" vr="LO">Measurement Evaluation Text Position Sequence</el>
+  <el keyword="_0029_xxB5_" tag="0029xxB5" vm="1" vr="LO">?</el>
   <el keyword="MeasurementLinkEvaluationTextFlag" tag="0029xxB6" vm="1" vr="CS">Measurement Link Evaluation Text Flag</el>
   <el keyword="MeasurementEvaluationTextPositionVector" tag="0029xxB7" vm="3" vr="DS">Measurement Evaluation Text Position Vector</el>
   <el keyword="ImageTextAlphaBlendingLineValue" tag="0029xxB8" vm="1" vr="OB">Image Text Alpha Blending Line Value</el>

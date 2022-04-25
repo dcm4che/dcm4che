@@ -2044,8 +2044,26 @@ public class Attributes implements Serializable {
 
     public Object setDate(String privateCreator, int tag, VR vr,
             DatePrecision precision, Date... ds) {
+        return setDate(privateCreator, tag, vr, vr == VR.DT, precision, ds);
+    }
+
+    public Object setDate(int tag, VR vr, boolean applyTimezoneOffset, Date... ds) {
+        return setDate(null, tag, vr, applyTimezoneOffset, ds);
+    }
+
+    public Object setDate(int tag, VR vr, boolean applyTimezoneOffset, DatePrecision precision, Date... ds) {
+        return setDate(null, tag, vr, applyTimezoneOffset, precision, ds);
+    }
+
+    public Object setDate(String privateCreator, int tag, VR vr, boolean applyTimezoneOffset,
+            Date... ds) {
+        return setDate(privateCreator, tag, vr, applyTimezoneOffset, new DatePrecision(), ds);
+    }
+
+    public Object setDate(String privateCreator, int tag, VR vr, boolean applyTimezoneOffset,
+            DatePrecision precision, Date... ds) {
         ensureModifiable();
-        return set(privateCreator, tag, vr, vr.toValue(ds, getTimeZone(), precision));
+        return set(privateCreator, tag, vr, vr.toValue(ds, applyTimezoneOffset ? getTimeZone() : null, precision));
     }
 
     public void setDate(long tag, Date dt) {
@@ -2064,8 +2082,8 @@ public class Attributes implements Serializable {
             DatePrecision precision, Date dt) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
-        setDate(privateCreator, daTag, VR.DA, precision, dt);
-        setDate(privateCreator, tmTag, VR.TM, precision, dt);
+        setDate(privateCreator, daTag, VR.DA, true, precision, dt);
+        setDate(privateCreator, tmTag, VR.TM, true, precision, dt);
     }
 
     public Object setDateRange(int tag, VR vr, DateRange range) {

@@ -45,8 +45,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.TimeZone;
 
 import static org.junit.Assert.*;
 
@@ -279,49 +279,75 @@ public class AttributesTest {
         }
     }
 
-    /*
-        @Test
-        public void testSetTimezoneOffsetFromUTC() throws Exception {
-            Attributes a = new Attributes();
-            a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
-            a.setDate(Tag.StudyDateAndTime, new Date(0));
-            a.setString(Tag.PatientBirthDate, VR.DA, "19700101");
-            a.setString(Tag.PatientBirthTime, VR.TM, "000000.000");
-            a.setString(Tag.ContextGroupVersion, VR.DT, "19700101");
-            assertEquals("19700101", a.getString(Tag.StudyDate));
-            assertEquals("000000.000", a.getString(Tag.StudyTime));
+    @Test
+    public void testSetAndGetDateAndTime() {
+        // set system timezone to make this test predictable on any Locale
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
-            a.setTimezoneOffsetFromUTC("+0100");
-            assertEquals("19700101", a.getString(Tag.StudyDate));
-            assertEquals("010000.000", a.getString(Tag.StudyTime));
-            assertEquals("19700101", a.getString(Tag.PatientBirthDate));
-            assertEquals("000000.000", a.getString(Tag.PatientBirthTime));
-            assertEquals("19700101", a.getString(Tag.ContextGroupVersion));
+        Attributes a = new Attributes();
+        a.setTimezoneOffsetFromUTC("+1200");
 
-            a.setTimezoneOffsetFromUTC("-0100");
-            assertEquals("19691231", a.getString(Tag.StudyDate));
-            assertEquals("230000.000", a.getString(Tag.StudyTime));
-            assertEquals("19700101", a.getString(Tag.PatientBirthDate));
-            assertEquals("000000.000", a.getString(Tag.PatientBirthTime));
-            assertEquals("19700101", a.getString(Tag.ContextGroupVersion));
-        }
+        Date dateAndTime = new Date((24*60*60 + 15*60*60)*1000); // 1970-01-02 15:00:00 (UTC)
+        Date dateOnly = new Date(24*60*60*1000); // 1970-01-02 00:00:00 (UTC)
+        Date timeOnly = new Date(15*60*60*1000); // 1970-01-01 15:00:00 (UTC)
 
-        @Test
-        public void testDateRangeSetTimezoneOffsetFromUTC() throws Exception {
-            Attributes a = new Attributes();
-            a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
-            a.setDateRange(Tag.StudyDateAndTime,
-                    new DateRange(new Date(0), new Date(3600000 * 12)));
-            assertEquals("19700101", a.getString(Tag.StudyDate));
-            assertEquals("000000.000-120000.000", a.getString(Tag.StudyTime));
-            a.setTimezoneOffsetFromUTC("-0100");
-            assertEquals("19691231-19700101", a.getString(Tag.StudyDate));
-            assertEquals("230000.000-110000.000", a.getString(Tag.StudyTime));
-            a.setTimezoneOffsetFromUTC("+0100");
-            assertEquals("19700101", a.getString(Tag.StudyDate));
-            assertEquals("010000.000-130000.000", a.getString(Tag.StudyTime));
-        }
-    */
+        // setting/getting StudyDateAndTime together does apply timezone offset (by default)
+        a.setDate(Tag.StudyDateAndTime, dateAndTime);
+        assertEquals("19700103", a.getString(Tag.StudyDate));
+        assertEquals("030000.000", a.getString(Tag.StudyTime));
+        assertEquals(dateAndTime, a.getDate(Tag.StudyDateAndTime));
+
+        // setting/getting date and time separately does not apply timezone offset (by default)
+        a.setDate(Tag.StudyDate, VR.DA, dateAndTime);
+        a.setDate(Tag.StudyTime, VR.TM, dateAndTime);
+        assertEquals("19700102", a.getString(Tag.StudyDate));
+        assertEquals("150000.000", a.getString(Tag.StudyTime));
+        assertEquals(dateOnly, a.getDate(Tag.StudyDate));
+        assertEquals(timeOnly, a.getDate(Tag.StudyTime));
+    }
+
+    @Test
+    public void testSetTimezoneOffsetFromUTC() throws Exception {
+        Attributes a = new Attributes();
+        a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
+        a.setDate(Tag.StudyDateAndTime, new Date(0));
+        a.setString(Tag.PatientBirthDate, VR.DA, "19700101");
+        a.setString(Tag.PatientBirthTime, VR.TM, "000000.000");
+        a.setString(Tag.ContextGroupVersion, VR.DT, "19700101");
+        assertEquals("19700101", a.getString(Tag.StudyDate));
+        assertEquals("000000.000", a.getString(Tag.StudyTime));
+
+        a.setTimezoneOffsetFromUTC("+0100");
+        assertEquals("19700101", a.getString(Tag.StudyDate));
+        assertEquals("010000.000", a.getString(Tag.StudyTime));
+        assertEquals("19700101", a.getString(Tag.PatientBirthDate));
+        assertEquals("000000.000", a.getString(Tag.PatientBirthTime));
+        assertEquals("19700101", a.getString(Tag.ContextGroupVersion));
+
+        a.setTimezoneOffsetFromUTC("-0100");
+        assertEquals("19691231", a.getString(Tag.StudyDate));
+        assertEquals("230000.000", a.getString(Tag.StudyTime));
+        assertEquals("19700101", a.getString(Tag.PatientBirthDate));
+        assertEquals("000000.000", a.getString(Tag.PatientBirthTime));
+        assertEquals("19700101", a.getString(Tag.ContextGroupVersion));
+    }
+
+    @Test
+    public void testDateRangeSetTimezoneOffsetFromUTC() throws Exception {
+        Attributes a = new Attributes();
+        a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
+        a.setDateRange(Tag.StudyDateAndTime,
+                new DateRange(new Date(0), new Date(3600000 * 12)));
+        assertEquals("19700101", a.getString(Tag.StudyDate));
+        assertEquals("000000.000-120000.000", a.getString(Tag.StudyTime));
+        a.setTimezoneOffsetFromUTC("-0100");
+        assertEquals("19691231-19700101", a.getString(Tag.StudyDate));
+        assertEquals("230000.000-110000.000", a.getString(Tag.StudyTime));
+        a.setTimezoneOffsetFromUTC("+0100");
+        assertEquals("19700101", a.getString(Tag.StudyDate));
+        assertEquals("010000.000-130000.000", a.getString(Tag.StudyTime));
+    }
+
     @Test
     public void testGetModified() {
         Attributes original = createOriginal();

@@ -60,7 +60,7 @@ enum TemporalType {
         @Override
         public String format(TimeZone tz, Date date,
                 DatePrecision precision) {
-            return DateUtils.formatDA(null, date);
+            return DateUtils.formatDA(tz, date);
         }
     }, DT {
         @Override
@@ -78,7 +78,7 @@ enum TemporalType {
         @Override
         public Date parse(TimeZone tz, String s, boolean ceil,
                 DatePrecision precision) {
-            return DateUtils.parseTM(tz, s, ceil, precision);
+            return DateUtils.parseTM(null, s, ceil, precision);
         }
 
         @Override

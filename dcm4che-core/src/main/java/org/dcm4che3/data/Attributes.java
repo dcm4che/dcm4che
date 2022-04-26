@@ -2386,13 +2386,29 @@ public class Attributes implements Serializable {
         if (updatePolicy == UpdatePolicy.REPLACE)
             throw new IllegalArgumentException("updatePolicy:" + updatePolicy);
 
-        if (updatePolicy != UpdatePolicy.PRESERVE && !isEmpty() &&
-                !isSpecificCharacterSetCompatible(other, include, exclude, fromIndex, toIndex, selection, updatePolicy))
-            throw new IncompatibleSpecificCharacterSetException("Specific Character Sets " +
-                    Arrays.toString(getSpecificCharacterSet().toCodes()) +
-                    " and " +
-                    Arrays.toString(other.getSpecificCharacterSet().toCodes()) +
-                    " not compatible");
+        boolean decodeStringValue = false;
+        if (updatePolicy != UpdatePolicy.PRESERVE && !isEmpty()) {
+            boolean updateSpecificCharacterSet = isUpdateSpecificCharacterSet(
+                    other, include, exclude, fromIndex, toIndex, selection, updatePolicy);
+            if (!(updateSpecificCharacterSet
+                        ? other.getSpecificCharacterSet().contains(getSpecificCharacterSet())
+                        || !containsNonASCIIStringValues(null, null, 0, 0, null)
+                        : getSpecificCharacterSet().contains(other.getSpecificCharacterSet())
+                        || !other.containsNonASCIIStringValues(include, exclude, fromIndex, toIndex, selection))) {
+                if (!(updateSpecificCharacterSet ? other.getSpecificCharacterSet() : getSpecificCharacterSet()).isUTF8()) {
+                    throw new IncompatibleSpecificCharacterSetException("Specific Character Sets " +
+                            Arrays.toString(getSpecificCharacterSet().toCodes()) +
+                            " and " +
+                            Arrays.toString(other.getSpecificCharacterSet().toCodes()) +
+                            " not compatible");
+                }
+                if (updateSpecificCharacterSet) {
+                    decodeStringValuesUsingSpecificCharacterSet();
+                } else {
+                    decodeStringValue = true;
+                }
+            }
+        }
 
         boolean toggleEndian = bigEndian != other.bigEndian;
         boolean modifiedToggleEndian = modified != null
@@ -2487,6 +2503,9 @@ public class Attributes implements Serializable {
                 } else if (value instanceof Fragments) {
                     set(privateCreator0, tag, (Fragments) value);
                 } else {
+                    if (decodeStringValue && vr.useSpecificCharacterSet() && value instanceof byte[]) {
+                        value = other.getSpecificCharacterSet().decode((byte[]) value);
+                    }
                     set(privateCreator0, tag, vr,
                             toggleEndian(vr, value, toggleEndian));
                 }
@@ -2494,16 +2513,6 @@ public class Attributes implements Serializable {
             numAdd++;
        }
         return numAdd != 0;
-    }
-
-    private boolean isSpecificCharacterSetCompatible(Attributes other,
-            int[] include, int[] exclude, int fromIndex, int toIndex,
-            Attributes selection, UpdatePolicy updatePolicy) {
-        return isUpdateSpecificCharacterSet(other, include, exclude, fromIndex, toIndex, selection, updatePolicy)
-                ? other.getSpecificCharacterSet().contains(getSpecificCharacterSet())
-                    || !containsNonASCIIStringValues(null, null, 0, 0, null)
-                : getSpecificCharacterSet().contains(other.getSpecificCharacterSet())
-                    || !other.containsNonASCIIStringValues(include, exclude, fromIndex, toIndex, selection);
     }
 
     private boolean containsNonASCIIStringValues(int[] include, int[] exclude, int fromIndex, int toIndex,

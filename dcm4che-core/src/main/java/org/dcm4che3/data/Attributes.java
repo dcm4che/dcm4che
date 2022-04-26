@@ -2503,8 +2503,10 @@ public class Attributes implements Serializable {
                 } else if (value instanceof Fragments) {
                     set(privateCreator0, tag, (Fragments) value);
                 } else {
-                    if (decodeStringValue && vr.isStringType() && value instanceof byte[]) {
-                        value = other.getSpecificCharacterSet().decode((byte[]) value);
+                    if (decodeStringValue && vr.useSpecificCharacterSet()) {
+                        value = other.loadBulkData(vr, value);
+                        if (value instanceof byte[])
+                            value = other.getSpecificCharacterSet().decode((byte[]) value);
                     }
                     set(privateCreator0, tag, vr,
                             toggleEndian(vr, value, toggleEndian));

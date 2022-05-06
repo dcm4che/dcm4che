@@ -39,17 +39,15 @@
  */
 package org.dcm4che3.audit.keycloak;
 
+import org.dcm4che3.util.StringUtils;
 import org.keycloak.Config;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventListenerProviderFactory;
-import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -58,18 +56,33 @@ import java.util.Set;
  */
 public class Dcm4cheEventListenerProviderFactory implements EventListenerProviderFactory {
     private static final String[] JBOSS_PROPERTIES = {
-            "jboss.home",
-            "jboss.modules",
-            "jboss.server.base",
             "jboss.server.config",
             "jboss.server.data",
-            "jboss.server.deploy",
             "jboss.server.log",
             "jboss.server.temp",
     };
-    private final Set<EventType> includedEvents = new HashSet<EventType>();
 
     static void addJBossDirURLSystemProperties() {
+        String quarkusHomeDir = System.getProperty("kc.home.dir");
+        if (quarkusHomeDir != null) {
+            try {
+                quarkusHomeDir = new File(quarkusHomeDir).getCanonicalPath() + '/';
+            } catch (IOException ignore) {
+            }
+            String quarkusDataDir = quarkusHomeDir + "data/";
+            System.setProperty("jboss.server.data.dir", quarkusDataDir);
+            System.setProperty("jboss.server.config.dir", quarkusHomeDir + "conf/");
+            System.setProperty("jboss.server.log.dir", quarkusDataDir + "log/");
+            System.setProperty("jboss.server.temp.dir", quarkusDataDir + "tmp/");
+            System.setProperty("org.dcm4che.audit-keycloak.AppName", "keycloak");
+            System.setProperty("com.sun.jndi.ldap.object.disableEndpointIdentification",
+                    StringUtils.replaceSystemProperties("${env.LDAP_DISABLE_HOSTNAME_VERIFICATION:true}"));
+            System.setProperty("org.dcm4che.audit-keycloak.AppName", "keycloak");
+            System.setProperty("keycloak.DeviceName",
+                    StringUtils.replaceSystemProperties("${env.KEYCLOAK_DEVICE_NAME:keycloak}"));
+            System.setProperty("super-user-role",
+                    StringUtils.replaceSystemProperties("${env.SUPER_USER_ROLE:root}"));
+        }
         for (String key : JBOSS_PROPERTIES) {
             String url = new File(System.getProperty(key + ".dir")).toURI().toString();
             System.setProperty(key + ".url", url.substring(0, url.length()-1));
@@ -78,17 +91,12 @@ public class Dcm4cheEventListenerProviderFactory implements EventListenerProvide
 
     @Override
     public EventListenerProvider create(KeycloakSession keycloakSession) {
-        return new Dcm4cheEventListenerProvider(Collections.unmodifiableSet(includedEvents), keycloakSession);
+        return new Dcm4cheEventListenerProvider(keycloakSession, System.getProperty("super-user-role"));
     }
 
     @Override
     public void init(Config.Scope scope) {
         addJBossDirURLSystemProperties();
-        String[] includes = scope.getArray("include-events");
-        if (includes != null) {
-            for (String e : includes)
-                includedEvents.add(EventType.valueOf(e));
-        }
     }
 
     @Override

@@ -307,10 +307,11 @@ public class StringUtils {
                 j = i-1;
                 break;
             }
+            int k = s.lastIndexOf(':', j);
             String val = s.startsWith("env.", i+2)
-                ? System.getenv(s.substring(i+6, j))
-                : System.getProperty(s.substring(i+2, j));
-            sb.append(val != null ? val : s.substring(i, j+1));
+                ? System.getenv(s.substring(i+6, k < 0 ? j : k))
+                : System.getProperty(s.substring(i+2, k < 0 ? j : k));
+            sb.append(val != null ? val : k < 0 ? s.substring(i, j+1) : s.substring(k+1, j));
             i = s.indexOf("${", j+1);
         } while (i != -1);
         sb.append(s.substring(j+1));

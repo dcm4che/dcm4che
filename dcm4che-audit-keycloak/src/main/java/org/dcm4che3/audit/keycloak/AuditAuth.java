@@ -57,9 +57,8 @@ import java.util.Optional;
  * @since Mar 2016
  */
 class AuditAuth {
-    private static final String SU_ROLE = System.getProperty("super-user-role");
 
-    static void audit(Event event, AuditLogger auditLogger, KeycloakSession session) {
+    static void audit(Event event, AuditLogger auditLogger, KeycloakSession session, String suRole) {
         Optional<UserModel> userModel = session.users()
                                             .getUsersStream(session.getContext().getRealm(), false)
                                             .findFirst();
@@ -76,7 +75,7 @@ class AuditAuth {
                 || username == null
                 || (userModel.isPresent() && userModel.get()
                                                         .getRoleMappingsStream()
-                                                        .noneMatch(roleModel -> roleModel.getName().equals(SU_ROLE))))
+                                                        .noneMatch(roleModel -> roleModel.getName().equals(suRole))))
             return;
 
         AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forSuperUserAuth(event);
@@ -123,7 +122,7 @@ class AuditAuth {
         return device;
     }
 
-    private static boolean oneOfUserAuthEvents(Event event) {
+    static boolean oneOfUserAuthEvents(Event event) {
         switch (event.getType()) {
             case LOGIN:
             case LOGIN_ERROR:

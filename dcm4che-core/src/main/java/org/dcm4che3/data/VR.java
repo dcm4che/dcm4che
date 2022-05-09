@@ -241,8 +241,7 @@ public enum VR {
             if (vr != null)
                 return vr;
         } catch (IndexOutOfBoundsException e) {}
-        LOG.warn("Unrecogniced VR code: {0}H - treat as UN",
-                Integer.toHexString(code));
+        LOG.warn("Unrecognized VR code: {}H - treat as UN", Integer.toHexString(code));
         return UN;
     }
 

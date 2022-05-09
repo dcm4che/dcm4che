@@ -101,7 +101,7 @@ public class DicomInputStreamTest {
                 : new DicomInputStream(file)) {
             in.setIncludeBulkData(includeBulkData);
             in.setAddBulkDataReferences(includeBulkData == IncludeBulkData.URI);
-            return in.readDataset();
+            return in.readDataset(-1, -1);
         }
     }
 
@@ -109,7 +109,7 @@ public class DicomInputStreamTest {
     public void testNoOutOfMemoryErrorOnInvalidLength() throws IOException {
         byte[] b = { 8, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 'e', 'v', 'i', 'l', 'l', 'e', 'n', 'g', 'h' };
         try ( DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b))) {
-            in.readDataset();
+            in.readDataset(-1, -1);
         }
     }
 
@@ -117,7 +117,7 @@ public class DicomInputStreamTest {
     public void testNoOutOfMemoryErrorOnInvalidLengthIfStreamLengthKnown() throws IOException {
         byte[] b = { 8, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 'e', 'v', 'i', 'l', 'l', 'e', 'n', 'g', 'h' };
         try ( DicomInputStream in = new DicomInputStream(new LimitedInputStream(new ByteArrayInputStream(b), b.length, true))) {
-            in.readDataset();
+            in.readDataset(-1, -1);
             fail("Expected exception to be thrown because length of tag exceeds size of dicom stream");
         } catch (Exception exception) {
             assertEquals("Length 1735288172 for tag (7665,6C69) @ 12 exceeds remaining 1 (pos: 20)",

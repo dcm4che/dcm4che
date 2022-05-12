@@ -38,34 +38,53 @@
 
 package org.dcm4che3.conf.core.api.tests;
 
-import java.util.ArrayList;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
+
+import java.util.Arrays;
 import java.util.List;
 
 import org.dcm4che3.conf.core.api.InternalConfigChangeEvent;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * @author Stephen Frederick <stephen.frederick@agfa.com>
+ * @author Maciek Siemczyk (maciek.siemczyk@agfa.com)
  */
 public class InternalConfigChangeEventTest {
 
+    /**
+     * System Under Test (SUT).
+     */
+    private InternalConfigChangeEvent event;
+    
     @Test
     public void testDefaultConstructor() {
-        Assert.assertTrue(new InternalConfigChangeEvent().getChangedPaths().isEmpty());
+        
+        event = new InternalConfigChangeEvent();
+        
+        assertThat("Changed paths", event.getChangedPaths(), empty());
     }
 
     @Test
     public void testConstructorWithExpectedPaths() {
-        List<String> expectedChangedPaths = new ArrayList<>();
-        expectedChangedPaths.add("path1");
-        expectedChangedPaths.add("path2");
-        List<String> argChangedPaths = new ArrayList<>();
-        argChangedPaths.add("path1");
-        argChangedPaths.add("path2");
-        List<String> actualChangedPaths = new InternalConfigChangeEvent(argChangedPaths).getChangedPaths();
-        Assert.assertEquals(2, actualChangedPaths.size());
-        Assert.assertEquals(expectedChangedPaths.get(0), actualChangedPaths.get(0));
-        Assert.assertEquals(expectedChangedPaths.get(1), actualChangedPaths.get(1));
+        
+        final List<String> changedPaths = Arrays.asList("path1", "path2");
+        
+        event = new InternalConfigChangeEvent(changedPaths);
+        
+        assertThat("Changed paths", event.getChangedPaths(), sameInstance(changedPaths));
+    }
+    
+    @Test
+    public void toString_ReturnsCorrectString_WhenCalled() {
+        
+        final String expectedToString = "InternalConfigChangeEvent [changedPaths=[1, 2, 3]]";
+
+        event = new InternalConfigChangeEvent(Arrays.asList("1", "2", "3"));
+        
+        assertThat("To String", event.toString(), equalTo(expectedToString));
     }
 }

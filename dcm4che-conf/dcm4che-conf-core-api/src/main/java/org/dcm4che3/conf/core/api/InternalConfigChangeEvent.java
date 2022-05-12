@@ -69,4 +69,8 @@ public class InternalConfigChangeEvent implements Serializable {
         return changedPaths;
     }
 
+    @Override
+    public String toString() {
+        return "InternalConfigChangeEvent [changedPaths=" + changedPaths + "]";
+    }
 }

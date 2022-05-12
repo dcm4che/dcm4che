@@ -255,10 +255,10 @@ public class HL7Rcv {
     private String getMessageFilename(UnparsedHL7Message msg) {
         if (this.useUUIDForFilename)
         {
-            return msg.msh().getField(9, "_NULL_");
+            return String.valueOf(UUID.randomUUID());
         }
         else {
-            return String.valueOf(UUID.randomUUID());
+            return msg.msh().getField(9, "_NULL_");
         }
     }
 

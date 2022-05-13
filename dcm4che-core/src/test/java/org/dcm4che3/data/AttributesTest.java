@@ -852,6 +852,17 @@ public class AttributesTest {
     }
 
     @Test
+    public void testAddCompatibleCharacterSet5() throws IOException {
+        Attributes a = new Attributes();
+        a.setString(Tag.SpecificCharacterSet, VR.CS, "ISO_IR 100");
+        a.setBytes(Tag.PatientName, VR.PN, "Äneas^Rüdiger".getBytes(StandardCharsets.ISO_8859_1));
+        Attributes b = new Attributes();
+        b.setString(Tag.SpecificCharacterSet, VR.CS, "ISO_IR 192");
+        b.addSelected(a, null, Tag.PatientName);
+        assertArrayEquals("Äneas^Rüdiger".getBytes(StandardCharsets.UTF_8), b.getBytes(Tag.PatientName));
+    }
+
+    @Test
     public void testGetValuePrivateCreatorSh() {
         Attributes dataset = new Attributes();
 

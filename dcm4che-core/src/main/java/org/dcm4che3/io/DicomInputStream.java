@@ -841,7 +841,6 @@ public class DicomInputStream extends FilterInputStream
         String tagAsString = TagUtils.toString(this.tag);
         LOG.warn(message, tagAsString, length, tagPos, methodName);
         skipFully(length);
-        LOG.debug("Skipped {} bytes for {}", length, tagAsString);
     }
 
     private void readSequence(int len, Attributes attrs, int sqtag)

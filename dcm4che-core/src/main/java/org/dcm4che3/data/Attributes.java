@@ -2265,20 +2265,28 @@ public class Attributes implements Serializable {
         if (index < 0)
             return false;
 
+        VR vr = other.vrs[index];
         Object value = other.values[index];
         if (!getSpecificCharacterSet().contains(other.getSpecificCharacterSet())
-                && containsNonASCIIStringValues(value, other.vrs[index]))
-            throw new IncompatibleSpecificCharacterSetException("Specific Character Sets " +
-                    Arrays.toString(getSpecificCharacterSet().toCodes()) +
-                    " and " +
-                    Arrays.toString(other.getSpecificCharacterSet().toCodes()) +
-                    " not compatible");
+                && containsNonASCIIStringValues(value, vr)) {
+            if (!(getSpecificCharacterSet()).isUTF8()) {
+                throw new IncompatibleSpecificCharacterSetException("Specific Character Sets " +
+                        Arrays.toString(getSpecificCharacterSet().toCodes()) +
+                        " and " +
+                        Arrays.toString(other.getSpecificCharacterSet().toCodes()) +
+                        " not compatible");
+            }
+            if (vr.useSpecificCharacterSet()) {
+                value = other.loadBulkData(vr, value);
+                if (value instanceof byte[])
+                    value = other.getSpecificCharacterSet().decode((byte[]) value);
+            }
+        }
         if (value instanceof Sequence) {
             set(privateCreator, tag, (Sequence) value, null);
         } else if (value instanceof Fragments) {
             set(privateCreator, tag, (Fragments) value);
         } else {
-            VR vr = other.vrs[index];
             set(privateCreator, tag, vr,
                     toggleEndian(vr, value, bigEndian != other.bigEndian));
         }

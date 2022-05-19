@@ -863,6 +863,36 @@ public class AttributesTest {
     }
 
     @Test
+    public void testAddShouldCorrectlyDecodeStrings() {
+        Attributes aLeft = new Attributes();
+        aLeft.setSpecificCharacterSet("ISO_IR 192");
+
+        Attributes aRight = new Attributes();
+        aRight.setSpecificCharacterSet("ISO_IR 100");
+        byte[] studyid = new byte[] {0x33, 0x33, 0x34, 0x31, 0x34, 0x20};
+        aRight.setBytes(Tag.StudyID, VR.SH, studyid);
+
+        aLeft.addNotSelected(aRight, Tag.SpecificCharacterSet);
+
+        assertEquals("Padding space should be removed", "33414", aLeft.getString(Tag.StudyID));
+    }
+
+    @Test
+    public void testAddSelectedShouldCorrectlyDecodeStrings() {
+        Attributes aLeft = new Attributes();
+        aLeft.setSpecificCharacterSet("ISO_IR 192");
+
+        Attributes aRight = new Attributes();
+        aRight.setSpecificCharacterSet("ISO_IR 100");
+        byte[] studyid = new byte[] {0x33, 0x33, 0x34, 0x31, 0x34, 0x20};
+        aRight.setBytes(Tag.StudyID, VR.SH, studyid);
+
+        aLeft.addSelected(aRight, null, Tag.StudyID);
+
+        assertEquals("Padding space should be removed", "33414", aLeft.getString(Tag.StudyID));
+    }
+
+    @Test
     public void testGetValuePrivateCreatorSh() {
         Attributes dataset = new Attributes();
 

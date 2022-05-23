@@ -156,7 +156,8 @@ public class StoreSCP {
         }
     }
 
-    private static void renameTo(Association as, File from, File dest)
+    /** method is synchronized to prevent (rare) concurrent access to the same file */
+    private synchronized static void renameTo(Association as, File from, File dest)
             throws IOException {
         LOG.info("{}: M-RENAME {} to {}", as, from, dest);
         if (!dest.getParentFile().mkdirs())

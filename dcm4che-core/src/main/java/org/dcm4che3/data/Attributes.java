@@ -2279,7 +2279,7 @@ public class Attributes implements Serializable {
             if (vr.useSpecificCharacterSet()) {
                 value = other.loadBulkData(vr, value);
                 if (value instanceof byte[])
-                    value = other.getSpecificCharacterSet().decode((byte[]) value);
+                    value = vr.toStrings(value, other.bigEndian(), other.getSpecificCharacterSet());
             }
         }
         if (value instanceof Sequence) {
@@ -2514,7 +2514,7 @@ public class Attributes implements Serializable {
                     if (decodeStringValue && vr.useSpecificCharacterSet()) {
                         value = other.loadBulkData(vr, value);
                         if (value instanceof byte[])
-                            value = other.getSpecificCharacterSet().decode((byte[]) value);
+                            value = vr.toStrings(value, other.bigEndian(), other.getSpecificCharacterSet());
                     }
                     set(privateCreator0, tag, vr,
                             toggleEndian(vr, value, toggleEndian));

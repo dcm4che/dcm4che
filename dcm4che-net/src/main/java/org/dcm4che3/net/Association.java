@@ -852,10 +852,13 @@ public class Association {
             datasetType = Commands.getWithDatasetType();
         }
         cmd.setInt(Tag.CommandDataSetType, VR.US, datasetType);
-        encoder.writeDIMSE(pc, cmd, writer);
-        if (!Status.isPending(cmd.getInt(Tag.Status, 0))) {
-            decPerforming();
-            startIdleTimeout();
+        try {
+            encoder.writeDIMSE(pc, cmd, writer);
+        } finally {
+            if (!Status.isPending(cmd.getInt(Tag.Status, 0))) {
+                decPerforming();
+                startIdleTimeout();
+            }
         }
     }
 
@@ -1319,6 +1322,10 @@ public class Association {
 
     public EnumSet<QueryOption> getRequestedQueryOptionsFor(String cuid) {
         return QueryOption.toOptions(rq.getExtNegotiationFor(cuid));
+    }
+
+    public int getPerformingOperationCount() {
+        return performing;
     }
 }
 

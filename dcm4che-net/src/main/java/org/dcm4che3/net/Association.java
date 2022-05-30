@@ -1281,5 +1281,9 @@ public class Association {
     public int getPerformingOperationCount() {
         return performing;
     }
+
+    public int getPerformingOperationCount() {
+        return performing;
+    }
 }
 

@@ -91,7 +91,7 @@ public class DicomServiceRegistry implements DimseRQHandler {
                     e.getLocalizedMessage());
             rspForDimseRQException(as, pc, dimse, cmd, e);
         } catch (DicomServiceException e) {
-            Association.LOG.info("{}: processing {} failed. Caused by:\t",
+            Association.LOG.error("{}: processing {} failed. Caused by:\t",
                     as,
                     dimse.toString(cmd, pc.getPCID(), pc.getTransferSyntax()),
                     e);

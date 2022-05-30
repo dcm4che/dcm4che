@@ -749,10 +749,13 @@ public class Association {
             datasetType = Commands.getWithDatasetType();
         }
         cmd.setInt(Tag.CommandDataSetType, VR.US, datasetType);
-        encoder.writeDIMSE(pc, cmd, writer);
-        if (!Status.isPending(cmd.getInt(Tag.Status, 0))) {
-            decPerforming();
-            startIdleTimeout();
+        try {
+            encoder.writeDIMSE(pc, cmd, writer);
+        } finally {
+            if (!Status.isPending(cmd.getInt(Tag.Status, 0))) {
+                decPerforming();
+                startIdleTimeout();
+            }
         }
     }
 
@@ -1268,6 +1271,10 @@ public class Association {
         } else {
             LOG.warn("Attempted to close the association, but it was not ready for data transfer", new IOException("Association not ready for data transfer"));
         }
+    }
+
+    public int getPerformingOperationCount() {
+        return performing;
     }
 }
 

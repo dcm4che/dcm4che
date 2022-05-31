@@ -95,11 +95,11 @@ public class Association {
     private int performing;
     private Timeout timeout;
     private final IntHashMap<DimseRSPHandler> rspHandlerForMsgId =
-            new IntHashMap<DimseRSPHandler>();
+            new IntHashMap<>();
     private final IntHashMap<CancelRQHandler> cancelHandlerForMsgId =
-            new IntHashMap<CancelRQHandler>();
+            new IntHashMap<>();
     private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
-            new HashMap<String,HashMap<String,PresentationContext>>();
+            new HashMap<>();
 
     Association(ApplicationEntity ae, Connection local, Socket sock)
             throws IOException {
@@ -183,8 +183,9 @@ public class Association {
     }
 
     public Object setProperty(String key, Object value) {
-        if (properties == null)
-            properties = new HashMap<String, Object>();
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
         return properties.put(key, value);
     }
 
@@ -748,6 +749,7 @@ public class Association {
             writer = new DataWriterAdapter(data);
             datasetType = Commands.getWithDatasetType();
         }
+
         cmd.setInt(Tag.CommandDataSetType, VR.US, datasetType);
         try {
             encoder.writeDIMSE(pc, cmd, writer);
@@ -788,8 +790,9 @@ public class Association {
 
     private HashMap<String, PresentationContext> initTSMap(String as) {
         HashMap<String, PresentationContext> tsMap = pcMap.get(as);
-        if (tsMap == null)
-            pcMap.put(as, tsMap = new HashMap<String, PresentationContext>());
+        if (tsMap == null) {
+            pcMap.put(as, tsMap = new HashMap<>());
+        }
         return tsMap;
     }
 
@@ -1269,7 +1272,8 @@ public class Association {
             }
 
         } else {
-            LOG.warn("Attempted to close the association, but it was not ready for data transfer", new IOException("Association not ready for data transfer"));
+            LOG.warn("Attempted to close the association, but it was not ready for data transfer",
+                    new IOException("Association not ready for data transfer"));
         }
     }
 

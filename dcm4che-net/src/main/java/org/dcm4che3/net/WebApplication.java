@@ -71,7 +71,8 @@ public class WebApplication {
         XDS_RS,
         AGFA_BLOB,
         J4C_ROUTER,
-        FHIR
+        FHIR,
+        WORKFLOW_MANAGER
     }
 
     private Device device;

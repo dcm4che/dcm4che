@@ -85,7 +85,7 @@
     <weasis.opencv.native.version>4.5.5-dcm</weasis.opencv.native.version>
     <keycloak.version>18.0.0</keycloak.version>
     <jbossws-cxf-client.version>5.4.4.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>3.4.4</apache-cxf.version>
+    <apache-cxf.version>3.4.5</apache-cxf.version>
     <apache-commons-csv.version>1.9.0</apache-commons-csv.version>
     <apache-commons-compress.version>1.21</apache-commons-compress.version>
     <jakarta.activation.version>1.2.2</jakarta.activation.version>

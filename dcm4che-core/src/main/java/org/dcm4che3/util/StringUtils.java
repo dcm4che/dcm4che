@@ -309,8 +309,8 @@ public class StringUtils {
             }
             int k = s.lastIndexOf(':', j);
             String val = s.startsWith("env.", i+2)
-                ? System.getenv(s.substring(i+6, k < 0 ? j : k))
-                : System.getProperty(s.substring(i+2, k < 0 ? j : k));
+                ? System.getenv(s.substring(i+6, k < i ? j : k))
+                : System.getProperty(s.substring(i+2, k < i ? j : k));
             sb.append(val != null ? val : k < 0 ? s.substring(i, j+1) : s.substring(k+1, j));
             i = s.indexOf("${", j+1);
         } while (i != -1);

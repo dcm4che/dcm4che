@@ -90,6 +90,12 @@ Options:
                                      default.
     --release-timeout <ms>           timeout in ms for receiving
                                      A-RELEASE-RP, no timeout by default
+    --rename-retries <count>         The amount of retries to perform if
+                                     M-RENAME stage fails. 3 retries by
+                                     default.
+    --rename-retry-jitter <ms>       The maximal random jitter inserted
+                                     between M-RENAME retires. 50ms by
+                                     default.
     --request-timeout <ms>           timeout in ms for receiving
                                      A-ASSOCIATE-RQ, no timeout by default
     --response-delay <ms>            delay in ms returning C-STORE-RSPs.
@@ -143,6 +149,11 @@ Options:
                                      Cipher Suite. Multiple Cipher Suites
                                      may be enabled by multiple
                                      --tls-cipher options
+    --tls-eia-https                  enable server endpoint identification
+                                     according RFC 2818: HTTP Over TLS
+    --tls-eia-ldaps                  enable server endpoint identification
+                                     according RFC 2830: LDAP Extension
+                                     for TLS
     --tls-noauth                     disable client authentification for
                                      TLS
     --tls-null                       enable TLS connection without

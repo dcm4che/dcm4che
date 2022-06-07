@@ -84,15 +84,26 @@ public class DicomServiceRegistry implements DimseRQHandler {
             Dimse dimse, Attributes cmd, PDVInputStream data) throws IOException {
         try {
             lookupService(as, dimse, cmd).onDimseRQ(as, pc, dimse, cmd, data);
+        } catch (DicomServiceApplicationException e) {
+            Association.LOG.info("{}: processing {} failed. Caused by: {}",
+                    as,
+                    dimse.toString(cmd, pc.getPCID(), pc.getTransferSyntax()),
+                    e.getLocalizedMessage());
+            rspForDimseRQException(as, pc, dimse, cmd, e);
         } catch (DicomServiceException e) {
             Association.LOG.info("{}: processing {} failed. Caused by:\t",
                     as,
                     dimse.toString(cmd, pc.getPCID(), pc.getTransferSyntax()),
                     e);
-            Attributes rsp = e.mkRSP(dimse.commandFieldOfRSP(), cmd.getInt(Tag.MessageID, 0));
-            as.tryWriteDimseRSP(pc, rsp, e.getDataset());
+            rspForDimseRQException(as, pc, dimse, cmd, e);
         }
     }
+
+    private void rspForDimseRQException(Association as, PresentationContext pc, Dimse dimse, Attributes cmd,
+			DicomServiceException e) {
+		Attributes rsp = e.mkRSP(dimse.commandFieldOfRSP(), cmd.getInt(Tag.MessageID, 0));
+		as.tryWriteDimseRSP(pc, rsp, e.getDataset());
+	}
 
     private DimseRQHandler lookupService(Association as, Dimse dimse, Attributes cmd)
             throws DicomServiceException {

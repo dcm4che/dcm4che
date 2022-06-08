@@ -244,7 +244,7 @@ public class GetSCU {
             addStorageDirectoryOptions(opts);
             addCancelAfterOption(opts);
             CLIUtils.addConnectOption(opts);
-            CLIUtils.addBindOption(opts, "GETSCU");
+            CLIUtils.addBindClientOption(opts, "GETSCU");
             CLIUtils.addAEOptions(opts);
             CLIUtils.addSendTimeoutOption(opts);
             CLIUtils.addRetrieveTimeoutOption(opts);

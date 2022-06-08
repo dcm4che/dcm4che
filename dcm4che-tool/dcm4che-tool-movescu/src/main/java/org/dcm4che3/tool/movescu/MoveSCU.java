@@ -161,7 +161,7 @@ public class MoveSCU extends Device {
             addCancelAfterOption(opts);
             addRetrieveEagerOption(opts);
             CLIUtils.addConnectOption(opts);
-            CLIUtils.addBindOption(opts, "MOVESCU");
+            CLIUtils.addBindClientOption(opts, "MOVESCU");
             CLIUtils.addAEOptions(opts);
             CLIUtils.addSendTimeoutOption(opts);
             CLIUtils.addRetrieveTimeoutOption(opts);

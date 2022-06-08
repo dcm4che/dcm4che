@@ -173,7 +173,7 @@ public class StoreSCU {
             throws ParseException {
         Options opts = new Options();
         CLIUtils.addConnectOption(opts);
-        CLIUtils.addBindOption(opts, "STORESCU");
+        CLIUtils.addBindClientOption(opts, "STORESCU");
         CLIUtils.addAEOptions(opts);
         CLIUtils.addStoreTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);

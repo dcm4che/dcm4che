@@ -13,16 +13,12 @@ Options:
     --accept-timeout <ms>                 timeout in ms for receiving
                                           A-ASSOCIATE-AC, no timeout by
                                           default
- -b,--bind <aet[@ip][:port]>              specify AE Title, local address
+ -b,--bind <aet[@ip]>                     specify AE Title, local address
                                           of the Application Entity
                                           provided by this application;
                                           use GETSCU and pick up any valid
                                           local address to bind the socket
-                                          by default. If also a port is
-                                          specified, the Application
-                                          Entity will listening for
-                                          incoming association requests on
-                                          it.
+                                          by default.
     --big-endian                          propose all uncompressed TS,
                                           explicit VR big endian first
                                           (default: implicit VR little

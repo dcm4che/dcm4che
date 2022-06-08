@@ -204,7 +204,7 @@ public class IanSCU {
         Options opts = new Options();
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
-        CLIUtils.addBindOption(opts, "IANSCU");
+        CLIUtils.addBindClientOption(opts, "IANSCU");
         CLIUtils.addAEOptions(opts);
         CLIUtils.addSendTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);

@@ -81,6 +81,15 @@ public class CLIUtils {
                 .build());
     }
 
+    public static void addBindClientOption(Options opts, String defAET) {
+        opts.addOption(Option.builder("b")
+                .hasArg()
+                .argName("aet[@ip]")
+                .desc(MessageFormat.format(rb.getString("bind-client"), defAET))
+                .longOpt("bind")
+                .build());
+    }
+
     public static void addConnectOption(Options opts) {
         opts.addOption(Option.builder("c")
                 .hasArg()

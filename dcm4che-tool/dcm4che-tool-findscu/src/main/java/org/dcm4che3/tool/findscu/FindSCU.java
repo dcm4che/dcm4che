@@ -215,7 +215,7 @@ public class FindSCU {
             addQueryLevelOption(opts);
             addCancelOption(opts);
             CLIUtils.addConnectOption(opts);
-            CLIUtils.addBindOption(opts, "FINDSCU");
+            CLIUtils.addBindClientOption(opts, "FINDSCU");
             CLIUtils.addAEOptions(opts);
             CLIUtils.addSendTimeoutOption(opts);
             CLIUtils.addResponseTimeoutOption(opts);

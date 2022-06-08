@@ -449,7 +449,7 @@ public class MppsSCU {
         Options opts = new Options();
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
-        CLIUtils.addBindOption(opts, "MPPSSCU");
+        CLIUtils.addBindClientOption(opts, "MPPSSCU");
         CLIUtils.addAEOptions(opts);
         CLIUtils.addSendTimeoutOption(opts);
         CLIUtils.addResponseTimeoutOption(opts);

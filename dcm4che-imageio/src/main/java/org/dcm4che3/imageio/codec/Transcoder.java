@@ -484,8 +484,12 @@ public class Transcoder implements Closeable {
                     dis.readValue(dis, frags);
             } else {
                 int length = dis.length();
-                dos.writeHeader(Tag.Item, null, length);
+                dos.writeHeader(Tag.Item, null, (length + 1) & ~1);
                 StreamUtils.copy(dis, dos, length, buffer());
+                if ((length & 1) != 0) {
+                    LOG.info("Odd length of Pixel Data Fragment: {} - append NULL byte to ensure even length", length);
+                    dos.write(0);
+                }
             }
         }
 
@@ -547,15 +551,20 @@ public class Transcoder implements Closeable {
     private void copyPixelData() throws IOException {
         int length = dis.length();
         writeDataset();
-        dos.writeHeader(Tag.PixelData, dis.vr(), length);
         if (length == -1) {
+            dos.writeHeader(Tag.PixelData, dis.vr(), length);
             dis.readValue(dis, dataset);
             dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
         } else {
+            dos.writeHeader(Tag.PixelData, dis.vr(), (length + 1) & ~1);
             if (dis.bigEndian() == dos.isBigEndian())
                 StreamUtils.copy(dis, dos, length, buffer());
             else
                 StreamUtils.copy(dis, dos, length, dis.vr().numEndianBytes(), buffer());
+            if ((length & 1) != 0) {
+                LOG.info("Odd length of Pixel Data: {} - append NULL byte to ensure even length", length);
+                dos.write(0);
+            }
         }
     }
 

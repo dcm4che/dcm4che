@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
@@ -16,13 +17,14 @@ import org.dcm4che3.net.pdu.AAssociateRJ;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 
 /**
  * Unit tests for the org.dcm4che3.net.Association class
  */
 public class AssociationTest {
 
-    @Test(expected = BadSocketException.class)
+    @Test
     public void writeDimseRsp_pduEncoderThrowsException_performingRqCounterDecremented() throws IOException {
         Socket socket = new BadSocket();
 
@@ -56,13 +58,15 @@ public class AssociationTest {
         cmd.setInt(Tag.Status, VR.US, Status.Success);
 
         int performingCount = association.getPerformingOperationCount();
-        try {
-            association.writeDimseRSP(presentationContext, cmd);
-        } finally {
-            Assert.assertEquals("Performing Operation count did not decrement",
-                    performingCount - 1, association.getPerformingOperationCount());
-            executorService.shutdown();
-        }
+        Assert.assertThrows("OutputStream did not throw exception", BadSocketException.class, new ThrowingRunnable() {
+            @Override public void run() throws Throwable {
+                association.writeDimseRSP(presentationContext, cmd);
+            }
+        });
+
+        Assert.assertEquals("Performing Operation count did not decrement",
+                performingCount - 1, association.getPerformingOperationCount());
+        executorService.shutdown();
     }
 
     private class BadSocket extends Socket {
@@ -78,10 +82,12 @@ public class AssociationTest {
 
     private class DummyInputStream extends InputStream {
 
+        Semaphore semaphore = new Semaphore(-1);
+
         @Override public int read() throws IOException {
             try {
                 // Just a short sleep to simulate the blocking read for nextPDU
-                Thread.sleep(5000);
+                semaphore.acquire();
             } catch (InterruptedException e) {
             }
             return 0;

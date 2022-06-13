@@ -12,6 +12,7 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.net.pdu.AAssociateAC;
+import org.dcm4che3.net.pdu.AAssociateRJ;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,6 +30,19 @@ public class AssociationTest {
 
         Device device = new Device();
         device.setExecutor(executorService);
+        device.setAssociationMonitor(new AssociationMonitor() {
+            @Override public void onAssociationEstablished(Association as) {
+            }
+
+            @Override public void onAssociationFailed(Association as, Throwable e) {
+            }
+
+            @Override public void onAssociationRejected(Association as, AAssociateRJ aarj) {
+            }
+
+            @Override public void onAssociationAccepted(Association as) {
+            }
+        });
 
         Connection connection = new Connection();
         connection.setDevice(device);

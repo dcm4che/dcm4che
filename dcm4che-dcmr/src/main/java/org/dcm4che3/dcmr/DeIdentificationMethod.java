@@ -61,5 +61,6 @@ public class DeIdentificationMethod {
     public static final Code RetainUIDsOption = new Code("113110", "DCM", null, "Retain UIDs Option");
     public static final Code RetainSafePrivateOption = new Code("113111", "DCM", null, "Retain Safe Private Option");
     public static final Code RetainInstitutionIdentityOption = new Code("113112", "DCM", null, "Retain Institution Identity Option");
+    public static final Code RetainPatientIDHashOption = new Code("113113", "99DCM4CHE", null, "Retain Patient ID Hash Option");
 
 }

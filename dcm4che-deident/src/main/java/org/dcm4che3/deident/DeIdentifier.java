@@ -43,8 +43,10 @@ package org.dcm4che3.deident;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.dcmr.DeIdentificationMethod;
+import org.dcm4che3.util.TagUtils;
 import org.dcm4che3.util.UIDUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -407,8 +409,9 @@ public class DeIdentifier {
 //        RetainPatientCharacteristicsOption(DeIdentificationMethod.RetainPatientCharacteristicsOption),
         RetainDeviceIdentityOption(DeIdentificationMethod.RetainDeviceIdentityOption),
         RetainInstitutionIdentityOption(DeIdentificationMethod.RetainInstitutionIdentityOption),
-        RetainUIDsOption(DeIdentificationMethod.RetainUIDsOption);
-//        RetainSafePrivateOption(DeIdentificationMethod.RetainSafePrivateOption);
+        RetainUIDsOption(DeIdentificationMethod.RetainUIDsOption),
+//        RetainSafePrivateOption(DeIdentificationMethod.RetainSafePrivateOption),
+        RetainPatientIDHashOption(DeIdentificationMethod.RetainPatientIDHashOption);
 
         private final Code code;
 
@@ -451,8 +454,10 @@ public class DeIdentifier {
     }
 
     public void deidentify(Attributes attrs) {
+        IDWithIssuer pid = options.contains(Option.RetainPatientIDHashOption) ? IDWithIssuer.pidOf(attrs) : null;
         deidentifyItem(attrs);
         correct(attrs);
+        if (pid != null) attrs.setString(Tag.PatientID, VR.LO, hash(pid));
         attrs.setString(Tag.PatientIdentityRemoved, VR.CS, YES);
         attrs.setString(Tag.LongitudinalTemporalInformationModified, VR.CS,
                 options.contains(Option.RetainLongitudinalTemporalInformationFullDatesOption) ? UNMODIFIED : REMOVED);
@@ -460,6 +465,10 @@ public class DeIdentifier {
         for (Option option : options) {
             sq.add(option.code.toItem());
         }
+    }
+
+    private static String hash(IDWithIssuer pid) {
+        return UUID.nameUUIDFromBytes(pid.toString().getBytes(StandardCharsets.UTF_8)).toString();
     }
 
     public String remapUID(String uid) {

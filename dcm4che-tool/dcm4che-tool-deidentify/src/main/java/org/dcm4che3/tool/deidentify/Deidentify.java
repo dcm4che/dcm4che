@@ -96,6 +96,10 @@ public class Deidentify {
                 .desc(rb.getString("retain-uid"))
                 .longOpt("retain-uid")
                 .build());
+        opts.addOption(Option.builder()
+                .desc(rb.getString("retain-pid-hash"))
+                .longOpt("retain-pid-hash")
+                .build());
         opts.addOption(Option.builder("s")
                 .hasArgs().argName("attr=value").valueSeparator('=')
                 .desc(rb.getString("set"))
@@ -151,6 +155,8 @@ public class Deidentify {
             options.add(DeIdentifier.Option.RetainInstitutionIdentityOption);
         if (cl.hasOption("retain-uid"))
             options.add(DeIdentifier.Option.RetainUIDsOption);
+        if (cl.hasOption("retain-pid-hash"))
+            options.add(DeIdentifier.Option.RetainPatientIDHashOption);
         return options.toArray(new DeIdentifier.Option[0]);
     }
 

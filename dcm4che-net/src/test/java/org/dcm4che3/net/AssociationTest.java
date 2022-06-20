@@ -17,14 +17,13 @@ import org.dcm4che3.net.pdu.AAssociateRJ;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
 
 /**
  * Unit tests for the org.dcm4che3.net.Association class
  */
 public class AssociationTest {
 
-    @Test
+    @Test(expected = BadSocketException.class)
     public void writeDimseRsp_pduEncoderThrowsException_performingRqCounterDecremented() throws IOException {
         Socket socket = new BadSocket();
 
@@ -32,19 +31,6 @@ public class AssociationTest {
 
         Device device = new Device();
         device.setExecutor(executorService);
-        device.setAssociationMonitor(new AssociationMonitor() {
-            @Override public void onAssociationEstablished(Association as) {
-            }
-
-            @Override public void onAssociationFailed(Association as, Throwable e) {
-            }
-
-            @Override public void onAssociationRejected(Association as, AAssociateRJ aarj) {
-            }
-
-            @Override public void onAssociationAccepted(Association as) {
-            }
-        });
 
         Connection connection = new Connection();
         connection.setDevice(device);
@@ -58,15 +44,14 @@ public class AssociationTest {
         cmd.setInt(Tag.Status, VR.US, Status.Success);
 
         int performingCount = association.getPerformingOperationCount();
-        Assert.assertThrows("OutputStream did not throw exception", BadSocketException.class, new ThrowingRunnable() {
-            @Override public void run() throws Throwable {
-                association.writeDimseRSP(presentationContext, cmd);
-            }
-        });
 
-        Assert.assertEquals("Performing Operation count did not decrement",
-                performingCount - 1, association.getPerformingOperationCount());
-        executorService.shutdownNow();
+        try {
+            association.writeDimseRSP(presentationContext, cmd);
+        } finally {
+            Assert.assertEquals("Performing Operation count did not decrement",
+                    performingCount - 1, association.getPerformingOperationCount());
+            executorService.shutdownNow();
+        }
     }
 
     private class BadSocket extends Socket {

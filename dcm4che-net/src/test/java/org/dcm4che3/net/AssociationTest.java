@@ -66,7 +66,7 @@ public class AssociationTest {
 
         Assert.assertEquals("Performing Operation count did not decrement",
                 performingCount - 1, association.getPerformingOperationCount());
-        executorService.shutdown();
+        executorService.shutdownNow();
     }
 
     private class BadSocket extends Socket {
@@ -86,7 +86,7 @@ public class AssociationTest {
 
         @Override public int read() throws IOException {
             try {
-                // Just a short sleep to simulate the blocking read for nextPDU
+                // Simulate the blocking read for nextPDU
                 semaphore.acquire();
             } catch (InterruptedException e) {
             }

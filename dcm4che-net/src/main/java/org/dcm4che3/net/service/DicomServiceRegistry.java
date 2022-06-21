@@ -58,7 +58,7 @@ import org.dcm4che3.net.pdu.PresentationContext;
 public class DicomServiceRegistry implements DimseRQHandler {
 
     private final HashMap<String, DimseRQHandler> services =
-            new HashMap<String, DimseRQHandler>();
+            new HashMap<>();
 
     public void addDicomService(DicomService service) {
         addDimseRQHandler(service, service.getSOPClasses());
@@ -85,7 +85,7 @@ public class DicomServiceRegistry implements DimseRQHandler {
         try {
             lookupService(as, dimse, cmd).onDimseRQ(as, pc, dimse, cmd, data);
         } catch (DicomServiceException e) {
-            Association.LOG.error("{}: processing {} failed. Caused by:\t",
+            Association.LOG.info("{}: processing {} failed. Caused by:\t",
                     as,
                     dimse.toString(cmd, pc.getPCID(), pc.getTransferSyntax()),
                     e);

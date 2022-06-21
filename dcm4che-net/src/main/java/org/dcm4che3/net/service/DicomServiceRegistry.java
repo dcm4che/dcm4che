@@ -58,7 +58,7 @@ import org.dcm4che3.net.pdu.PresentationContext;
 public class DicomServiceRegistry implements DimseRQHandler {
 
     private final HashMap<String, DimseRQHandler> services =
-            new HashMap<String, DimseRQHandler>();
+            new HashMap<>();
 
     public void addDicomService(DicomService service) {
         addDimseRQHandler(service, service.getSOPClasses());

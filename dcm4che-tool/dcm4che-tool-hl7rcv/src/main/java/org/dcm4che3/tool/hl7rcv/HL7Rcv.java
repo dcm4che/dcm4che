@@ -149,7 +149,7 @@ public class HL7Rcv {
     @SuppressWarnings("static-access")
     public static void addOptions(Options opts) {
         opts.addOption(null, "ignore", false, rb.getString("ignore"));
-        opts.addOption(null, "use-uuid-for-filename", false, rb.getString("use-uuid-for-filename"));
+        opts.addOption(null, "uuid", false, rb.getString("uuid"));
         opts.addOption(Option.builder()
                 .hasArg()
                 .argName("path")
@@ -213,7 +213,7 @@ public class HL7Rcv {
 
     private static void configure(HL7Rcv main, CommandLine cl)
             throws Exception {
-        main.setUseUUIDForFilename(cl.hasOption("use-uuid-for-filename"));
+        main.setUseUUIDForFilename(cl.hasOption("uuid"));
         if (!cl.hasOption("ignore"))
             main.setStorageDirectory(
                     cl.getOptionValue("directory", "."));
@@ -246,20 +246,12 @@ public class HL7Rcv {
             if (storageDir != null)
                 storeToFile(msg.data(), new File(
                             new File(storageDir, msg.msh().getMessageType()),
-                        getMessageFilename(msg)));
+                                    useUUIDForFilename
+                                            ? UUID.randomUUID().toString()
+                                            : msg.msh().getField(9, "_NULL_")));
             return new UnparsedHL7Message(tpls == null
                 ? HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null)
                 : xslt(msg));
-    }
-
-    private String getMessageFilename(UnparsedHL7Message msg) {
-        if (this.useUUIDForFilename)
-        {
-            return String.valueOf(UUID.randomUUID());
-        }
-        else {
-            return msg.msh().getField(9, "_NULL_");
-        }
     }
 
     private void storeToFile(byte[] data, File f) throws IOException {

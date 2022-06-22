@@ -17,8 +17,9 @@ Options:
     --directory <path>               directory to which received HL7 V2
                                      messages are stored, using its
                                      Message Type as sub-directory name
-                                     and its Message Control ID as file
-                                     name. '.' by default
+                                     and its Message Control ID or a
+                                     random uuid as file name. '.' by
+                                     default
  -h,--help                           display this help and exit
     --idle-timeout <ms>              timeout in ms for receiving HL7
                                      messages, no timeout by default
@@ -72,6 +73,11 @@ Options:
                                      Cipher Suite. Multiple Cipher Suites
                                      may be enabled by multiple
                                      --tls-cipher options
+    --tls-eia-https                  enable server endpoint identification
+                                     according RFC 2818: HTTP Over TLS
+    --tls-eia-ldaps                  enable server endpoint identification
+                                     according RFC 2830: LDAP Extension
+                                     for TLS
     --tls-noauth                     disable client authentification for
                                      TLS
     --tls-null                       enable TLS connection without
@@ -99,6 +105,8 @@ Options:
                                      certificates, 'secret' by default
     --trust-store-type <storetype>   type of key store with trusted
                                      certificates, PKCS12 by default
+    --uuid                           use a random uuid for message
+                                     filename instead of MSH-9
  -V,--version                        output version information and exit
  -x,--xsl <xsl-file>                 generate response by applying
                                      specified XSLT stylesheet, return

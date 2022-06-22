@@ -59,11 +59,11 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -87,6 +87,8 @@ public class HL7Rcv {
     private String charset;
     private Templates tpls;
     private String[] xsltParams;
+    private boolean useUUIDForFilename;
+
     private final HL7MessageListener handler = new HL7MessageListener() {
 
         @Override
@@ -129,6 +131,10 @@ public class HL7Rcv {
         this.charset = charset;
     }
 
+    public void setUseUUIDForFilename(boolean useUUIDForFilename) {
+        this.useUUIDForFilename = useUUIDForFilename;
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
@@ -143,6 +149,7 @@ public class HL7Rcv {
     @SuppressWarnings("static-access")
     public static void addOptions(Options opts) {
         opts.addOption(null, "ignore", false, rb.getString("ignore"));
+        opts.addOption(null, "use-uuid-for-filename", false, rb.getString("use-uuid-for-filename"));
         opts.addOption(Option.builder()
                 .hasArg()
                 .argName("path")
@@ -206,6 +213,7 @@ public class HL7Rcv {
 
     private static void configure(HL7Rcv main, CommandLine cl)
             throws Exception {
+        main.setUseUUIDForFilename(cl.hasOption("use-uuid-for-filename"));
         if (!cl.hasOption("ignore"))
             main.setStorageDirectory(
                     cl.getOptionValue("directory", "."));
@@ -238,10 +246,20 @@ public class HL7Rcv {
             if (storageDir != null)
                 storeToFile(msg.data(), new File(
                             new File(storageDir, msg.msh().getMessageType()),
-                                msg.msh().getField(9, "_NULL_")));
+                        getMessageFilename(msg)));
             return new UnparsedHL7Message(tpls == null
                 ? HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null)
                 : xslt(msg));
+    }
+
+    private String getMessageFilename(UnparsedHL7Message msg) {
+        if (this.useUUIDForFilename)
+        {
+            return String.valueOf(UUID.randomUUID());
+        }
+        else {
+            return msg.msh().getField(9, "_NULL_");
+        }
     }
 
     private void storeToFile(byte[] data, File f) throws IOException {

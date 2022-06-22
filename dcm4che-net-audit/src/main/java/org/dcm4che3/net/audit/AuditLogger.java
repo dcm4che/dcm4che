@@ -844,6 +844,7 @@ public class AuditLogger extends DeviceExtension {
         setAuditLoggerInstalled(from.auditLoggerInstalled);
         setAuditRecordRepositoryDevices(from.auditRecordRepositoryDevices);
         setAuditSuppressCriteriaList(from.suppressAuditMessageFilters);
+        setDoIncludeInstanceUID(from.doIncludeInstanceUID);
         device.reconfigureConnections(connections, from.connections);
     }
 

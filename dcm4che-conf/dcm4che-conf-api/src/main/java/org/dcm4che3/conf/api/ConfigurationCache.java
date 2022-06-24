@@ -56,14 +56,11 @@ public abstract class ConfigurationCache<C,T> {
         }
     }
 
-    private final HashMap<String, CacheEntry<T>> cache =
-            new HashMap<String, CacheEntry<T>>();
+    private final HashMap<String, CacheEntry<T>> cache = new HashMap<>();
     private final C conf;
     private long staleTimeout;
 
-    public ConfigurationCache(C conf) {
-        if (conf == null)
-            throw new NullPointerException();
+    protected ConfigurationCache(C conf) {
         this.conf = conf;
     }
 
@@ -78,7 +75,6 @@ public abstract class ConfigurationCache<C,T> {
     public void clear() {
         cache.clear();
     }
-
 
     public T get(String key) throws ConfigurationException {
         long now = System.currentTimeMillis();

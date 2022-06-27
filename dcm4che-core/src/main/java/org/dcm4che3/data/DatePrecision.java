@@ -59,7 +59,28 @@ public class DatePrecision {
         this.includeTimezone = includeTimezone;
     }
 
+    /**
+     * Specifies the precision of a date value (e.g. Calendar.MILLISECOND for millisecond precision).
+     *
+     * For methods that format a date (e.g. {@link Attributes#setDate}), this acts as an input to specify the precision
+     * that should be stored.
+     *
+     * For methods that parse a date (e.g. {@link Attributes#getDate}), this field will be used as a return value. It
+     * returns the precision of the date that was parsed.
+     */
     public int lastField;
+
+    /**
+     * Specifies whether a formatted date includes a timezone in the stored value itself.
+     *
+     * This is only used for values of {@link VR#DT}.
+     *
+     * For methods that format a DT date time, this acts as an input to specify whether the timezone offset should
+     * be appended to the formatted date (e.g. "+0100").
+     *
+     * For methods that parse a DT date time, this field will be used as a return value. It returns whether the parsed
+     * date included a timezone offset.
+     */
     public boolean includeTimezone;
 
 }

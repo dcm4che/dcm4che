@@ -157,15 +157,15 @@ public class Code implements Serializable {
             return false;
         Code other = (Code) o;
         return equalsIgnoreMeaning(other)
-                && codeMeaning.equals(other.codeMeaning);
+                && codeMeaning.equals(other.getCodeMeaning());
     }
 
     public boolean equalsIgnoreMeaning(Code other) {
         if (other == this)
             return true;
         return codeValue.equals(other.codeValue)
-                && Objects.equals(codingSchemeDesignator, other.codingSchemeDesignator)
-                && Objects.equals(codingSchemeVersion, other.codingSchemeVersion);
+                && Objects.equals(codingSchemeDesignator, other.getCodingSchemeDesignator())
+                && Objects.equals(codingSchemeVersion, other.getCodingSchemeVersion());
     }
 
     @Override

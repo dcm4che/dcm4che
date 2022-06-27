@@ -39,6 +39,7 @@
 package org.dcm4che3.data;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.dcm4che3.util.StringUtils;
 
@@ -54,7 +55,7 @@ public class Issuer implements Serializable {
     private String universalEntityIDType;
 
     public Issuer(String localNamespaceEntityID, String universalEntityID,
-            String universalEntityIDType) {
+                  String universalEntityIDType) {
         this.localNamespaceEntityID = localNamespaceEntityID;
         this.universalEntityID = universalEntityID;
         this.universalEntityIDType = universalEntityIDType;
@@ -77,20 +78,20 @@ public class Issuer implements Serializable {
 
     public Issuer(String issuerOfPatientID, Attributes qualifiers) {
         this(issuerOfPatientID,
-             qualifiers != null ? qualifiers.getString(Tag.UniversalEntityID) : null,
-             qualifiers != null ? qualifiers.getString(Tag.UniversalEntityIDType) : null);
+                qualifiers != null ? qualifiers.getString(Tag.UniversalEntityID) : null,
+                qualifiers != null ? qualifiers.getString(Tag.UniversalEntityIDType) : null);
     }
 
     public Issuer(Attributes issuerItem) {
         this(issuerItem.getString(Tag.LocalNamespaceEntityID),
-             issuerItem.getString(Tag.UniversalEntityID),
-             issuerItem.getString(Tag.UniversalEntityIDType));
+                issuerItem.getString(Tag.UniversalEntityID),
+                issuerItem.getString(Tag.UniversalEntityIDType));
     }
 
     public Issuer(Issuer other) {
         this(other.getLocalNamespaceEntityID(),
-             other.getUniversalEntityID(),
-             other.getUniversalEntityIDType());
+                other.getUniversalEntityID(),
+                other.getUniversalEntityIDType());
     }
 
     protected Issuer() {} // needed for JPA
@@ -159,7 +160,7 @@ public class Issuer implements Serializable {
         if (mergeLocalNamespace = this.localNamespaceEntityID == null
                 && other.localNamespaceEntityID != null) {
             this.localNamespaceEntityID = other.localNamespaceEntityID;
-         }
+        }
         if (mergeUniversal = this.universalEntityID == null
                 && other.universalEntityID != null) {
             this.universalEntityID = other.universalEntityID;
@@ -172,8 +173,8 @@ public class Issuer implements Serializable {
     public int hashCode() {
         return 37 * (
                 37 * hashCode(localNamespaceEntityID)
-                   + hashCode(universalEntityID))
-                + hashCode(universalEntityIDType);
+                        + hashCode(universalEntityID))
+                + hashCode(universalEntityID);
     }
 
     private int hashCode(String s) {
@@ -187,13 +188,13 @@ public class Issuer implements Serializable {
         if (!(o instanceof Issuer))
             return false;
         Issuer other = (Issuer) o;
-        return equals(localNamespaceEntityID, other.localNamespaceEntityID)
-                && equals(universalEntityID, other.universalEntityID)
-                && equals(universalEntityIDType, other.universalEntityIDType);
+        return equals(localNamespaceEntityID, other.getLocalNamespaceEntityID())
+                && equals(universalEntityID, other.getUniversalEntityID())
+                && equals(universalEntityIDType, other.getUniversalEntityIDType());
     }
 
     private boolean equals(String s1, String s2) {
-        return s1 == s2 || s1 != null && s1.equals(s2);
+        return Objects.equals(s1, s2);
     }
 
     public boolean matches(Issuer other) {
@@ -206,9 +207,9 @@ public class Issuer implements Serializable {
                 && other.universalEntityID != null;
 
         return (matchLocal || matchUniversal)
-            && (!matchLocal
+                && (!matchLocal
                 || localNamespaceEntityID.equals(other.localNamespaceEntityID))
-            && (!matchUniversal
+                && (!matchUniversal
                 || universalEntityID.equals(other.universalEntityID)
                 && universalEntityIDType.equals(other.universalEntityIDType));
     }

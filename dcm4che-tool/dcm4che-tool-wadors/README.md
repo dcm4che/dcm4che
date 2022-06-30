@@ -1,5 +1,5 @@
     usage: wadors [options] [URLs...]
-    
+
     Wado RS client simulator. It supports retrieving Study, Series, Instance,
     Metadata and Bulkdata. One may choose to specify multiple urls as
     arguments. Each of the objects of the Study/series shall be saved to the
@@ -8,7 +8,12 @@
     the url(s) specified. For eg. if study is retrieved the Study IUID will be
     used, if the url is for series retrieval then Series IUID shall be used.
     The extension of individual parts is determined by content type of each
-    part.
+    part. Supported accept types for retrieving bulkdata into multiparts are
+    application/pdf (for PDF files), text/xml (for CDA files), image/jpeg,
+    video/mpeg, video/mp4, video/quicktime, image/jp2, image/png, image/gif,
+    application/sla or model/stl or model/x.stl-binary (for STL files),
+    model/mtl (for MTL files), model/obj (for OBJ files) and
+    application/vnd.genozip (for Genozip compressed genomic files).
     -
     Options:
      -a,--accept <arg>           Specify Acceptable Media Types for the
@@ -64,3 +69,8 @@
     /series/{SeriesIUID}/instances/{SOPIUID}
     Send WADO RS request to Wado RS Receiver to retrieve specified instance as
     a jpeg file.
+    
+    => wadors -a "multipart/related;type=application/vnd.genozip"
+    http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies/{StudyIUID}
+    Send WADO RS request to Wado RS Receiver to retrieve all instances as a
+    Genozip compressed genomic files.

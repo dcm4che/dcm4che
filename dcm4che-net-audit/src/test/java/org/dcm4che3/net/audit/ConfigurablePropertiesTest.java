@@ -55,7 +55,10 @@ public class ConfigurablePropertiesTest extends ConfigurablePropertiesTestBase {
     }
 
     @Override
-    protected Set<Field> getPropertiesToSkip() {
-        return new HashSet<>();
+    protected Set<Field> getPropertiesToSkip() throws NoSuchFieldException {
+        Set<Field> set = new HashSet<>();
+        set.add(AuditRecordRepository.class.getDeclaredField("arrInstalled"));
+        set.add(AuditSuppressCriteria.class.getDeclaredField("userIsRequestor"));
+        return set;
     }
 }

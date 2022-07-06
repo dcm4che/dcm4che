@@ -185,7 +185,7 @@ public class TagUtils {
     }
 
     public static int toPrivateTag(int creatorTag, int elementNumber) {
-        return (creatorTag & 0xffff0000) 
+        return (creatorTag & 0xffff0000)
              | ((creatorTag & 0xff) << 8
              | (elementNumber & 0xff));
     }
@@ -218,7 +218,7 @@ public class TagUtils {
 
     public static int forName(String name) {
         try {
-            return Integer.parseInt(name, 16);
+            return Integer.parseUnsignedInt(name, 16);
         } catch (NumberFormatException nfe) {
             try {
                 return Tag.class.getField(name).getInt(null);

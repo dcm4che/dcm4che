@@ -55,7 +55,7 @@ public class SyslogProtocolHandlerTest {
     private static final int MINIMUM_NUMBER_OF_THREADS = 4;
 
     @Test
-    public void executor_ThreadNamePrefixesWithCustomizedName_WhenNewThreadIsCreated() {
+    public void constructor_ThreadNamePrefixesWithCustomizedName_WhenNewThreadIsCreated() {
 
         ThreadPoolExecutor executor = Whitebox.getInternalState(SyslogProtocolHandler.INSTANCE, "executor");
 
@@ -67,7 +67,7 @@ public class SyslogProtocolHandlerTest {
     }
 
     @Test
-    public void executor_ThreadPoolCoreSizeMatchesAvailableProcessorsOrMinimum4_ForSyslogProtocolHandlerThreadPool() {
+    public void constructor_ThreadPoolCoreSizeMatchesAvailableProcessorsOrMinimum4_ForSyslogProtocolHandlerThreadPool() {
 
         int expectedThreadPoolCoreSize = Math.max( Runtime.getRuntime().availableProcessors(), MINIMUM_NUMBER_OF_THREADS );
 

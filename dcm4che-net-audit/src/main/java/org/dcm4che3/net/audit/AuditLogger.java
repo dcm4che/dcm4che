@@ -722,7 +722,7 @@ public class AuditLogger {
      *         if an I/O error occurs sending the message to the {@code AuditRecordRepository}
      *         or on spooling the message to the file system
      */
-    public SendStatus write(Calendar timeStamp, AuditMessage msg)
+    synchronized public SendStatus write(Calendar timeStamp, AuditMessage msg)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
         if (isAuditMessageSuppressed(msg))
             return SendStatus.SUPPRESSED;
@@ -730,7 +730,7 @@ public class AuditLogger {
         return sendMessage(builder().createMessage(timeStamp, msg));
     }
 
-    public SendStatus write(Calendar timeStamp, Severity severity,
+    synchronized public SendStatus write(Calendar timeStamp, Severity severity,
                             byte[] data, int off, int len)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
         return sendMessage(

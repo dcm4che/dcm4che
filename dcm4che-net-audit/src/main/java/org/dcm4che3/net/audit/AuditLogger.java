@@ -226,7 +226,6 @@ public class AuditLogger {
             new ArrayList<AuditSuppressCriteria>(0);
     private final List<Connection> conns = new ArrayList<Connection>(1);
 
-    private transient MessageBuilder builder;
     private transient ActiveConnection activeConnection;
     private transient ScheduledFuture<?> retryTimer;
     private transient Exception lastException;
@@ -727,21 +726,14 @@ public class AuditLogger {
         if (isAuditMessageSuppressed(msg))
             return SendStatus.SUPPRESSED;
 
-        return sendMessage(builder().createMessage(timeStamp, msg));
+        return sendMessage(new MessageBuilder().createMessage(timeStamp, msg));
     }
 
     public SendStatus write(Calendar timeStamp, Severity severity,
                             byte[] data, int off, int len)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
         return sendMessage(
-                builder().createMessage(timeStamp, severity, data, off, len));
-    }
-
-    private MessageBuilder builder() {
-        if (builder == null)
-            builder = new MessageBuilder();
-
-        return builder;
+                new MessageBuilder().createMessage(timeStamp, severity, data, off, len));
     }
 
     private SendStatus sendMessage(DatagramPacket msg) throws IncompatibleConnectionException,
@@ -981,7 +973,7 @@ public class AuditLogger {
             try {
                 reset();
                 writeHeader(severityOf(msg), timeStamp);
-                AuditMessages.toXML(msg, builder, formatXML, encoding, schemaURI);
+                AuditMessages.toXML(msg, this, formatXML, encoding, schemaURI);
             } catch (IOException e) {
                 assert false : e;
             }

@@ -163,6 +163,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-json2props</include>
         <include>org.dcm4che.tool:dcm4che-tool-json2rst</include>
         <include>org.dcm4che.tool:dcm4che-tool-jpg2dcm</include>
+        <include>org.dcm4che.tool:dcm4che-tool-maskpxdata</include>
         <include>org.dcm4che.tool:dcm4che-tool-mkkos</include>
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscp</include>

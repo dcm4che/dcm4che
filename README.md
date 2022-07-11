@@ -102,6 +102,7 @@ Utilities
 - [jpg2dcm][]: Convert JPEG images or MPEG videos in DICOM files
 - [json2props][]: Convert Archive configuration schema JSON files to key/value properties files and vice versa
 - [json2rst][]: Generate ReStructuredText files from Archive configuration schema JSON files
+- [maskpxdata][]: Mask information burned into the Pixel Data
 - [mkkos][]: Make DICOM Key Object Selection Document
 - [modality][]: Simulates DICOM Modality
 - [movescu][]: Invoke DICOM C-MOVE Retrieve request
@@ -149,6 +150,7 @@ Utilities
 [jpg2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-jpg2dcm/README.md
 [json2props]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-json2props/README.md
 [json2rst]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-json2rst/README.md
+[maskpxdata]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-maskpxdata/README.md
 [mkkos]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mkkos/README.md
 [modality]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ihe/dcm4che-tool-ihe-modality/README.md
 [movescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-movescu/README.md

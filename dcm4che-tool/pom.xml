@@ -83,6 +83,7 @@
     <module>dcm4che-tool-json2index</module>
     <module>dcm4che-tool-json2props</module>
     <module>dcm4che-tool-json2rst</module>
+    <module>dcm4che-tool-maskpxdata</module>
     <module>dcm4che-tool-mkkos</module>
     <module>dcm4che-tool-movescu</module>
     <module>dcm4che-tool-mppsscp</module>

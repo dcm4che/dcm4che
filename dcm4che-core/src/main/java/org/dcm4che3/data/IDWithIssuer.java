@@ -38,10 +38,7 @@
  */
 package org.dcm4che3.data;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 import org.dcm4che3.util.StringUtils;
 
@@ -213,9 +210,7 @@ public class IDWithIssuer {
                 (identifierTypeCode == null
                     ? other.identifierTypeCode == null
                     : identifierTypeCode.equals(identifierTypeCode)) &&
-                (issuer == null 
-                    ? other.issuer == null
-                    : issuer.equals(other.issuer));
+                (Objects.equals(issuer, other.issuer));
     }
 
     public boolean matches(IDWithIssuer other) {

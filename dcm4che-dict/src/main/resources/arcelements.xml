@@ -59,6 +59,7 @@
   <el tag="7777xx2A" keyword="StudySizeBytes" vr="US" vm="1">Study Size Bytes</el>
   <el tag="7777xx2B" keyword="StudyExpirationState" vr="CS" vm="1">Study Expiration State</el>
   <el tag="7777xx2C" keyword="StudyExpirationExporterID" vr="LO" vm="1">Study Expiration Exporter ID</el>
+  <el tag="7777xx2D" keyword="StudyModifiedDateTime" vr="DT" vm="1">Study Modified Date Time</el>
   <el tag="7777xx30" keyword="SeriesReceiveDateTime" vr="DT" vm="1">Series Receive Date Time</el>
   <el tag="7777xx31" keyword="SeriesUpdateDateTime" vr="DT" vm="1">Series Update Date Time</el>
   <el tag="7777xx33" keyword="SeriesExpirationDate" vr="DA" vm="1">Series Expiration Date</el>
@@ -100,6 +101,7 @@
   <el tag="7777xx6C" keyword="SendingHL7FacilityOfSeries" vr="LO" vm="1">Sending HL7 Facility of Series</el>
   <el tag="7777xx6D" keyword="ReceivingHL7ApplicationOfSeries" vr="LO" vm="1">Receiving HL7 Application of Series</el>
   <el tag="7777xx6E" keyword="ReceivingHL7FacilityOfSeries" vr="LO" vm="1">Receiving HL7 Facility of Series</el>
+  <el tag="7777xx6F" keyword="SeriesModifiedDateTime" vr="DT" vm="1">Series Modified Date Time</el>
   <el tag="7777xx70" keyword="MPPSCreateDateTime" vr="DT" vm="1">MPPS Create Date Time</el>
   <el tag="7777xx71" keyword="MPPSUpdateDateTime" vr="DT" vm="1">MPPS Update Date Time</el>
   <el tag="7777xxE0" keyword="XRoadPersonStatus" vr="CS" vm="1">X-Road Person Status</el>

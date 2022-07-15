@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2022b - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2022c - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -2058,6 +2058,9 @@
               <listitem>
                   <para xml:id="para_9a20b99a-9bc1-4bda-84c9-79dd62b6cba5">Failed (Status value is Service Class specific) - Indicates that the C-FIND operation failed at the performing DIMSE Service User.</para>
               </listitem>
+              <listitem>
+                  <para xml:id="para_01241beb-78f1-46ea-89e6-5e10741796e7">Warning (Status value is Service Class specific) - Indicates that the performing DIMSE Service User has terminated the C-FIND operation, and the set of returned matching Identifiers may not be complete.</para>
+              </listitem>
           </orderedlist>
       </section>
 </section>
@@ -2100,7 +2103,7 @@
 <para xml:id="para_cf45e4ab-f1cf-4420-b2a1-364ba6851896">For each match, the performing DIMSE Service User issues a C-FIND response with the status set to Pending and a matching Identifier.</para>
 </listitem>
 <listitem>
-<para xml:id="para_9d955709-5377-4e58-9bb1-d55051b12f54">When the C-FIND operation completes (either in success or in failure), the performing DIMSE Service User issues a C-FIND response with the status set to either Refused, Failed, or Success to the DIMSE Service Provider.</para>
+    <para xml:id="para_9d955709-5377-4e58-9bb1-d55051b12f54">When the C-FIND operation completes (either in success or in failure), the performing DIMSE Service User issues a C-FIND response with the status set to either Refused, Failed, Warning, or Success to the DIMSE Service Provider.</para>
 </listitem>
 </orderedlist>
   <para xml:id="para_c3a574c8-8777-4363-9536-27d7361bc48b">The following C-FIND service procedures apply to the DIMSE Service Provider:</para>

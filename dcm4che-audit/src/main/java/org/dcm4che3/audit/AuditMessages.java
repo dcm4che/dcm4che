@@ -38,19 +38,11 @@
 
 package org.dcm4che3.audit;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.util.*;
+import javax.xml.bind.*;
+import java.io.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -269,6 +261,8 @@ public class AuditMessages {
             new EventTypeCode("ITI-51", "IHE Transactions", "Multi-Patient Query");
         public static final EventTypeCode ITI_63_XCFFetch = 
             new EventTypeCode("ITI-63", "IHE Transactions", "XCF Fetch");
+        public static final EventTypeCode ITI_78_MobilePDQ =
+                new EventTypeCode("ITI-78", "urn:ihe:event-type-code", "Mobile Patient Demographics Query");
         public static final EventTypeCode CancelTask =
                 new EventTypeCode("CANCEL", "99DCM4CHEE", "Cancel Task");
         public static final EventTypeCode RescheduleTask =
@@ -618,6 +612,8 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
         public static final ParticipantObjectIDTypeCode ITI_PatientDemographicsQuery =
                 new ParticipantObjectIDTypeCode("ITI-21", "IHE Transactions", "Patient Demographics Query");
+        public static final ParticipantObjectIDTypeCode ITI_MobilePatientDemographicsQuery =
+                new ParticipantObjectIDTypeCode("ITI-78", "IHE Transactions", "Mobile Patient Demographics Query");
         public static final ParticipantObjectIDTypeCode QIDO_QUERY =
                 new ParticipantObjectIDTypeCode("QIDO","99DCM4CHEE","QIDO_Query");
         public static final ParticipantObjectIDTypeCode TASK =

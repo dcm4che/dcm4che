@@ -246,12 +246,8 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
                                 s);
                         break;
                     }
-
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug( "Received Syslog message of {} bytes from {}",
-                                length, s );
-                    }
-
+                    LOG.info("Received Syslog message of {} bytes from {}",
+                            length, s);
                     onMessage(arr, data, 0, length, conn, s.getInetAddress());
                 }
             } catch (IOException e) {
@@ -275,11 +271,8 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
         @Override
         public void run() {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Received UDP Syslog message of {} bytes from {}",
-                        packet.getLength(), packet.getAddress());
-            }
-
+            LOG.info("Received UDP Syslog message of {} bytes from {}",
+                    packet.getLength(), packet.getAddress());
             onMessage(arr, packet.getData(), packet.getOffset(), packet.getLength(),
                     conn, packet.getAddress());
 

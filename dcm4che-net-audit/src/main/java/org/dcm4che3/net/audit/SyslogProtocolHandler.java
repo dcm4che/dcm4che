@@ -45,6 +45,10 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.TCPProtocolHandler;
@@ -64,16 +68,46 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
     private static final int MAX_MSG_PREFIX = 200;
     private static final int MSG_PROMPT_LEN = 8192;
 
+    private static final int MINIMUM_NUMBER_OF_THREADS = 4;
+    private static final long THREAD_KEEP_ALIVE_TIME_SEC = 60;
+    private static final int EXECUTOR_QUEUE_SIZE = 1000;
+    private static final String AUDIT_SYSLOG_THREAD_NAME_PREFIX = "Audit-Syslog-";
+
     private static Logger LOG = LoggerFactory.getLogger(SyslogProtocolHandler.class);
+
+    private ThreadPoolExecutor executor;
+
+    private SyslogProtocolHandler() {
+        // thread pool core size equals number of processors, or at least 4 if less
+        int threadPoolCoreSize = Math.max( Runtime.getRuntime().availableProcessors(), MINIMUM_NUMBER_OF_THREADS );
+        this.executor = new ThreadPoolExecutor(threadPoolCoreSize,
+                                               threadPoolCoreSize * 2,
+                                               THREAD_KEEP_ALIVE_TIME_SEC,
+                                               TimeUnit.SECONDS,
+                                               new LinkedBlockingQueue<>(EXECUTOR_QUEUE_SIZE),
+                                               new NamedThreadFactory(AUDIT_SYSLOG_THREAD_NAME_PREFIX));
+    }
 
     @Override
     public void onAccept(Connection conn, Socket s) throws IOException {
-        conn.getDevice().execute(new SyslogReceiverTLS(conn, s));
+        execute(new SyslogReceiverTLS(conn, s), conn.getDevice().getExecutor());
     }
 
     @Override
     public void onReceive(Connection conn, DatagramPacket packet) {
-        conn.getDevice().execute(new SyslogReceiverUDP(conn, packet));
+        execute(new SyslogReceiverUDP(conn, packet), conn.getDevice().getExecutor());
+    }
+
+    private void execute ( Runnable runnable, Executor defaultExecutor ) {
+
+        if (executor!=null) {
+            executor.execute( runnable );
+        }
+        else if (defaultExecutor!=null) {
+            defaultExecutor.execute( runnable );
+        }
+        else
+            throw new IllegalStateException("executor not initalized");
     }
 
     private static int readMessageLength(InputStream in, Socket s) throws IOException {
@@ -212,8 +246,12 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
                                 s);
                         break;
                     }
-                    LOG.info("Received Syslog message of {} bytes from {}",
-                            length, s);
+
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug( "Received Syslog message of {} bytes from {}",
+                                length, s );
+                    }
+
                     onMessage(arr, data, 0, length, conn, s.getInetAddress());
                 }
             } catch (IOException e) {
@@ -237,8 +275,11 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
         @Override
         public void run() {
-            LOG.info("Received UDP Syslog message of {} bytes from {}",
-                    packet.getLength(), packet.getAddress());
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Received UDP Syslog message of {} bytes from {}",
+                        packet.getLength(), packet.getAddress());
+            }
+
             onMessage(arr, packet.getData(), packet.getOffset(), packet.getLength(),
                     conn, packet.getAddress());
 

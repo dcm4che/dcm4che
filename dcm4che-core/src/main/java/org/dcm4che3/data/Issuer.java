@@ -39,6 +39,7 @@
 package org.dcm4che3.data;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.dcm4che3.util.StringUtils;
 
@@ -187,13 +188,13 @@ public class Issuer implements Serializable {
         if (!(o instanceof Issuer))
             return false;
         Issuer other = (Issuer) o;
-        return equals(localNamespaceEntityID, other.localNamespaceEntityID)
-                && equals(universalEntityID, other.universalEntityID)
-                && equals(universalEntityIDType, other.universalEntityIDType);
+        return equals(localNamespaceEntityID, other.getLocalNamespaceEntityID())
+                && equals(universalEntityID, other.getUniversalEntityID())
+                && equals(universalEntityIDType, other.getUniversalEntityIDType());
     }
 
     private boolean equals(String s1, String s2) {
-        return s1 == s2 || s1 != null && s1.equals(s2);
+        return Objects.equals(s1, s2);
     }
 
     public boolean matches(Issuer other) {
@@ -201,16 +202,16 @@ public class Issuer implements Serializable {
             return true;
 
         boolean matchLocal = localNamespaceEntityID != null
-                && other.localNamespaceEntityID != null;
+                && other.getLocalNamespaceEntityID() != null;
         boolean matchUniversal = universalEntityID != null
-                && other.universalEntityID != null;
+                && other.getUniversalEntityID() != null;
 
         return (matchLocal || matchUniversal)
             && (!matchLocal
-                || localNamespaceEntityID.equals(other.localNamespaceEntityID))
+                || localNamespaceEntityID.equals(other.getLocalNamespaceEntityID()))
             && (!matchUniversal
-                || universalEntityID.equals(other.universalEntityID)
-                && universalEntityIDType.equals(other.universalEntityIDType));
+                || universalEntityID.equals(other.getUniversalEntityID())
+                && universalEntityIDType.equals(other.getUniversalEntityIDType()));
     }
 
     @Override

@@ -38,7 +38,12 @@
 
 package org.dcm4che3.net.audit;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.powermock.reflect.Whitebox;
 
@@ -50,14 +55,31 @@ import static org.junit.Assert.assertThat;
  * @author Zhirong Liang <zhirong.liang@agfa.com>
  */
 public class SyslogProtocolHandlerTest {
-
-    private static final String AUDIT_SYSLOG_THREAD_NAME_PREFIX = "Audit-Syslog-";
     private static final int MINIMUM_NUMBER_OF_THREADS = 4;
+    private static final long THREAD_KEEP_ALIVE_TIME_SEC = 60;
+    private static final int EXECUTOR_QUEUE_SIZE = 1000;
+    private static final String AUDIT_SYSLOG_THREAD_NAME_PREFIX = "Audit-Syslog-";
+
+    private static Executor executor;
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        // thread pool core size equals number of processors, or at least 4 if less
+        int threadPoolCoreSize = Math.max( Runtime.getRuntime().availableProcessors(), MINIMUM_NUMBER_OF_THREADS );
+        executor = new ThreadPoolExecutor(threadPoolCoreSize,
+                       threadPoolCoreSize * 2,
+                           THREAD_KEEP_ALIVE_TIME_SEC,
+                           TimeUnit.SECONDS,
+                           new LinkedBlockingQueue<>(EXECUTOR_QUEUE_SIZE),
+                           new NamedThreadFactory(AUDIT_SYSLOG_THREAD_NAME_PREFIX));
+
+        SyslogProtocolHandler.setExecutor(executor);
+    }
 
     @Test
-    public void constructor_ThreadNamePrefixesWithCustomizedName_WhenNewThreadIsCreated() {
+    public void setExecutor_ThreadNamePrefixesWithCustomizedName_WhenNewThreadIsCreated() {
 
-        ThreadPoolExecutor executor = Whitebox.getInternalState(SyslogProtocolHandler.INSTANCE, "executor");
+        ThreadPoolExecutor executor = Whitebox.getInternalState(SyslogProtocolHandler.class, "executor");
 
         assertThat("Thread name should prefix with Audit-Syslog-",
                    executor.getThreadFactory()
@@ -67,11 +89,11 @@ public class SyslogProtocolHandlerTest {
     }
 
     @Test
-    public void constructor_ThreadPoolCoreSizeMatchesAvailableProcessorsOrMinimum4_ForSyslogProtocolHandlerThreadPool() {
+    public void setExecutor_ThreadPoolCoreSizeMatchesAvailableProcessorsOrMinimum4_ForSyslogProtocolHandlerThreadPool() {
 
         int expectedThreadPoolCoreSize = Math.max( Runtime.getRuntime().availableProcessors(), MINIMUM_NUMBER_OF_THREADS );
 
-        ThreadPoolExecutor executor = Whitebox.getInternalState(SyslogProtocolHandler.INSTANCE, "executor");
+        ThreadPoolExecutor executor = Whitebox.getInternalState(SyslogProtocolHandler.class, "executor");
 
         assertThat("Thread pool core size should match available processors or minimum 4",
                    executor.getCorePoolSize(),

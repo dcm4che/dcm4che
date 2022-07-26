@@ -45,7 +45,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-
+import java.util.concurrent.Executor;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.TCPProtocolHandler;
 import org.dcm4che3.net.UDPProtocolHandler;
@@ -66,14 +66,26 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
     private static Logger LOG = LoggerFactory.getLogger(SyslogProtocolHandler.class);
 
+    private static volatile Executor executor;
+
+    public static void setExecutor(Executor executor) {
+        SyslogProtocolHandler.executor = executor;
+    }
+
     @Override
-    public void onAccept(Connection conn, Socket s) throws IOException {
-        conn.getDevice().execute(new SyslogReceiverTLS(conn, s));
+    public void onAccept(Connection conn, Socket s) {
+        if (executor != null)
+            executor.execute(new SyslogReceiverTLS(conn, s));
+        else
+            conn.getDevice().execute(new SyslogReceiverTLS(conn, s));
     }
 
     @Override
     public void onReceive(Connection conn, DatagramPacket packet) {
-        conn.getDevice().execute(new SyslogReceiverUDP(conn, packet));
+        if (executor != null)
+            executor.execute(new SyslogReceiverUDP(conn, packet));
+        else
+            conn.getDevice().execute(new SyslogReceiverUDP(conn, packet));
     }
 
     private static int readMessageLength(InputStream in, Socket s) throws IOException {

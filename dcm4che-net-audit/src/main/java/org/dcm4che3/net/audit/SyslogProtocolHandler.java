@@ -38,12 +38,6 @@
 
 package org.dcm4che3.net.audit;
 
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.TCPProtocolHandler;
-import org.dcm4che3.net.UDPProtocolHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -55,6 +49,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.TCPProtocolHandler;
+import org.dcm4che3.net.UDPProtocolHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -72,38 +72,43 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
     private static final int MINIMUM_NUMBER_OF_THREADS = 4;
     private static final long THREAD_KEEP_ALIVE_TIME_SEC = 60;
     private static final int EXECUTOR_QUEUE_SIZE = 1000;
+    private static final String AUDIT_SYSLOG_THREAD_NAME_PREFIX = "Audit-Syslog-";
 
     private static Logger LOG = LoggerFactory.getLogger(SyslogProtocolHandler.class);
 
-    private ThreadPoolExecutor executor;
+    private static volatile Executor executor;
 
-    private SyslogProtocolHandler()
-    {
+    private SyslogProtocolHandler() {
         // thread pool core size equals number of processors, or at least 4 if less
-        int threadPoolCoreSize = Math.max( Runtime.getRuntime().availableProcessors(), MINIMUM_NUMBER_OF_THREADS );
-        this.executor = new ThreadPoolExecutor( threadPoolCoreSize, threadPoolCoreSize * 2, THREAD_KEEP_ALIVE_TIME_SEC, TimeUnit.SECONDS, new LinkedBlockingQueue<>( EXECUTOR_QUEUE_SIZE ));
+        int threadPoolCoreSize = Math.max(Runtime.getRuntime()
+                                                 .availableProcessors(), MINIMUM_NUMBER_OF_THREADS);
+        Executor executor = new ThreadPoolExecutor(threadPoolCoreSize,
+                                                   threadPoolCoreSize * 2,
+                                                   THREAD_KEEP_ALIVE_TIME_SEC,
+                                                   TimeUnit.SECONDS,
+                                                   new LinkedBlockingQueue<>(EXECUTOR_QUEUE_SIZE),
+                                                   new NamedThreadFactory(AUDIT_SYSLOG_THREAD_NAME_PREFIX));
+        setExecutor(executor);
+    }
+
+    public static void setExecutor(Executor executor) {
+        SyslogProtocolHandler.executor = executor;
     }
 
     @Override
-    public void onAccept(Connection conn, Socket s) throws IOException {
-        execute(new SyslogReceiverTLS(conn, s), conn.getDevice().getExecutor());
+    public void onAccept(Connection conn, Socket s) {
+        if (executor != null)
+            executor.execute(new SyslogReceiverTLS(conn, s));
+        else
+            conn.getDevice().execute(new SyslogReceiverTLS(conn, s));
     }
 
     @Override
     public void onReceive(Connection conn, DatagramPacket packet) {
-        execute(new SyslogReceiverUDP(conn, packet), conn.getDevice().getExecutor());
-    }
-
-    private void execute ( Runnable runnable, Executor defaultExecutor ) {
-
-        if (executor!=null) {
-            executor.execute( runnable );
-        }
-        else if (defaultExecutor!=null) {
-            defaultExecutor.execute( runnable );
-        }
+        if (executor != null)
+            executor.execute(new SyslogReceiverUDP(conn, packet));
         else
-            throw new IllegalStateException("executor not initalized");
+            conn.getDevice().execute(new SyslogReceiverUDP(conn, packet));
     }
 
     private static int readMessageLength(InputStream in, Socket s) throws IOException {

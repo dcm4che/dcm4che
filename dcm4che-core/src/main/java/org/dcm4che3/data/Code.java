@@ -41,8 +41,7 @@ package org.dcm4che3.data;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import org.dcm4che3.data.Tag;
+import java.util.Objects;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -184,13 +183,13 @@ public class Code implements Serializable {
             return false;
         Code other = (Code) o;
         return codeValue.equals(other.codeValue)
-                && codingSchemeDesignator.equals(other.codingSchemeDesignator)
-                && equals(codingSchemeVersion, other.codingSchemeVersion)
-                && (ignoreMeaning || codeMeaning.equals(other.codeMeaning));
+                && codingSchemeDesignator.equals(other.getCodingSchemeDesignator())
+                && equals(codingSchemeVersion, other.getCodingSchemeVersion())
+                && (ignoreMeaning || codeMeaning.equals(other.getCodeMeaning()));
     }
 
     private boolean equals(String s1, String s2) {
-        return s1 == s2 || s1 != null && s1.equals(s2);
+        return Objects.equals(s1, s2);
     }
 
     @Override

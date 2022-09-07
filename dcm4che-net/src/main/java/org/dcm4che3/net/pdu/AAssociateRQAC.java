@@ -66,7 +66,7 @@ public abstract class AAssociateRQAC {
     protected String callingAET;
     protected String applicationContext = UID.DICOMApplicationContext;
     protected String implClassUID = Implementation.getClassUID();
-    protected String implVersionName;
+    protected String implVersionName = Implementation.getVersionName();
     protected UserIdentityRQ userIdentityRQ;
     protected UserIdentityAC userIdentityAC;
     protected final ArrayList<PresentationContext>

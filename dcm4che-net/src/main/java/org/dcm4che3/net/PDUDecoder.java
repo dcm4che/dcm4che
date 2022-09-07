@@ -256,6 +256,7 @@ class PDUDecoder extends PDVInputStream {
     private AAssociateRQAC decode(AAssociateRQAC rqac)
             throws AAbort {
         try {
+            rqac.setImplVersionName(null);
             rqac.setProtocolVersion(getUnsignedShort());
             get();
             get();

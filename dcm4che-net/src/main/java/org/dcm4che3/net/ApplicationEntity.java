@@ -638,7 +638,6 @@ public class ApplicationEntity implements Serializable {
             throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         checkDevice();
         checkInstalled();
-        rq.setImplVersionName(Implementation.getVersionName());
         if (rq.getCallingAET() == null)
             rq.setCallingAET(getCallingAETitle(rq.getCalledAET()));
         if (!isNoAsyncModeCalledAETitle(rq.getCalledAET())) {

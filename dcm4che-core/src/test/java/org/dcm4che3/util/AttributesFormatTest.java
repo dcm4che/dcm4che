@@ -111,4 +111,11 @@ public class AttributesFormatTest {
         attrs.setString(Tag.PatientID, VR.LO, "123456789");
         assertEquals("456789/456/789/456", new AttributesFormat(TEST_PATTERN_SLICE).format(attrs));
     }
+
+    @Test
+    public void testUpper() {
+        Attributes attrs = new Attributes(1);
+        attrs.setString(Tag.PatientName, VR.PN, "Simson^Homer");
+        assertEquals("SIMSON^HOMER", new AttributesFormat("{00100010,upper}").format(attrs));
+    }
 }

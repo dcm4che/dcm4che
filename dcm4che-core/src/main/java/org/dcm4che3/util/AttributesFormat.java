@@ -250,6 +250,12 @@ public class AttributesFormat extends Format {
                 return attrs.getString(tag, index, "");
             }
         },
+        upper {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> splice) {
+                return attrs.getString(tag, index, "").toUpperCase();
+            }
+        },
         slice {
             @Override
             Object toArg(Attributes attrs, int tag, int index, int offset, UnaryOperator<String> slice) {

@@ -83,9 +83,9 @@
     <logback.version>1.2.9</logback.version>
     <weasis.core.img.version>4.5.5</weasis.core.img.version>
     <weasis.opencv.native.version>4.5.5-dcm</weasis.opencv.native.version>
-    <keycloak.version>18.0.2</keycloak.version>
-    <jbossws-cxf-client.version>5.4.4.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>3.4.5</apache-cxf.version>
+    <keycloak.version>19.0.1</keycloak.version>
+    <jbossws-cxf-client.version>5.5.0.Final</jbossws-cxf-client.version>
+    <apache-cxf.version>3.4.7</apache-cxf.version>
     <apache-commons-csv.version>1.9.0</apache-commons-csv.version>
     <apache-commons-compress.version>1.21</apache-commons-compress.version>
     <jakarta.activation.version>1.2.2</jakarta.activation.version>
@@ -96,8 +96,8 @@
     <jakarta.ws.rs.version>2.1.6</jakarta.ws.rs.version>
     <jakarta.json.version>1.1.6</jakarta.json.version>
     <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
-    <com.sun.istack.version>3.0.10</com.sun.istack.version>
-    <com.sun.xml.messaging.saaj.version>1.5.1</com.sun.xml.messaging.saaj.version>
+    <com.sun.istack.version>3.0.12</com.sun.istack.version>
+    <com.sun.xml.messaging.saaj.version>1.5.3</com.sun.xml.messaging.saaj.version>
     <com.sun.xml.stream.buffer.version>1.5.7</com.sun.xml.stream.buffer.version>
     <com.sun.xml.ws.policy.version>2.7.6</com.sun.xml.ws.policy.version>
     <org.glassfish.gmbal.version>4.0.0</org.glassfish.gmbal.version>

@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>5.28.0</version>
+    <version>5.29.0</version>
   </parent>
   <artifactId>dcm4che-tool-ianscp</artifactId>
   <name>dcm4che-tool-ianscp</name>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2022c - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2022d - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -12528,7 +12528,7 @@
         <para xml:id="para_c8253ecd-389d-4a34-bcd8-36dc84a07fad">The choices made for the default roles are based on clarification made to previous versions of the Standard. Association-requesters that wish to offer Abstract Syntax Names using the SCP role must support this item. Association-acceptors that wish to accept Abstract Syntax Names using the SCU role must support this item.</para>
       </listitem>
       <listitem>
-        <para xml:id="para_8ed7bad9-2b19-4b3a-855a-c2ec0b6ae329">If an Association-requestor offers an SCP/SCU Role Selection item for an Abstract Syntax Name but the Association-acceptor does not return a SCP/SCU Role Selection item for the same Abstract Syntax Name then the proposed roles have not been accepted and the default roles apply (i.e., Association-requester is SCU and Association-acceptor is SCP).</para>
+        <para xml:id="para_8ed7bad9-2b19-4b3a-855a-c2ec0b6ae329">If an Association-requestor offers an SCP/SCU Role Selection item for an Abstract Syntax Name but the Association-acceptor does not return an SCP/SCU Role Selection item for the same Abstract Syntax Name then the proposed roles have not been accepted and the default roles apply (i.e., Association-requester is SCU and Association-acceptor is SCP).</para>
       </listitem>
     </orderedlist>
   </note>
@@ -12635,7 +12635,7 @@
         <para xml:id="para_c608f09a-00dd-46d0-905d-a228c5a0dce2">SOP-class-uid</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_97dba67d-c728-4745-9b91-aedb52d29550">This variable field shall contain the SOP Class UID or Meta SOP Class UID that may be used to identify the corresponding Abstract Syntax for which this Sub-Item pertains. It shall be encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>.</para>
+        <para xml:id="para_97dba67d-c728-4745-9b91-aedb52d29550">This variable field shall contain the SOP Class UID or Meta SOP Class UID that may be used to identify the corresponding Abstract Syntax for which this Sub-Item pertains. It shall be encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="chapter_9" xrefstyle="template:Section %n “%t” in PS3.5"/>.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -12748,7 +12748,7 @@
         <para xml:id="para_f0efbdf1-fa4f-49f7-b81c-c578b7947a13">SOP-class-uid</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_1ffd380b-9a03-4c96-bd6c-bcc2c3a29d8a">This variable field shall contain the SOP Class UID or Meta SOP Class UID that may be used to identify the corresponding Abstract Syntax for which this Sub-Item pertains. It shall be encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>.</para>
+        <para xml:id="para_1ffd380b-9a03-4c96-bd6c-bcc2c3a29d8a">This variable field shall contain the SOP Class UID or Meta SOP Class UID that may be used to identify the corresponding Abstract Syntax for which this Sub-Item pertains. It shall be encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="chapter_9" xrefstyle="template:Section %n “%t” in PS3.5"/>.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -12886,7 +12886,7 @@
         <para xml:id="para_46041e4e-5439-4115-9f3f-bff0ccb31581">SOP-class-uid</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_80d0f1f3-bd27-4969-9d18-124d3e24366d">The SOP Class or Meta SOP Class identifier encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>.</para>
+        <para xml:id="para_80d0f1f3-bd27-4969-9d18-124d3e24366d">The SOP Class or Meta SOP Class identifier encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="chapter_9" xrefstyle="template:Section %n “%t” in PS3.5"/>.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -12924,7 +12924,7 @@
   <note>
     <orderedlist>
       <listitem>
-        <para xml:id="para_bb3042a5-8bba-4839-913e-9a25292b34ea">Consider the example of negotiation of support for a Procedure Log Storage SOP Class. That SOP Class is of the Storage Service Class. The encoding of the IOD would be compatible with the more general Enhanced SR Storage SOP Class. Therefore, the following common extended negotiation sub-item could optionally be included:</para>
+        <para xml:id="para_bb3042a5-8bba-4839-913e-9a25292b34ea">Consider the example of negotiation of support for a Procedure Log Storage SOP Class. That SOP Class is of the Storage Service Class. The encoding of the IOD would be compatible with the more general Enhanced SR Storage SOP Class. Therefore, the following common Extended Negotiation sub-item could optionally be included:</para>
         <itemizedlist mark="none">
           <listitem>
 <para xml:id="para_73d2309e-dbd7-4ba4-bece-6c515aaaaeae">SOP Class UID: 1.2.840.10008.5.1.4.1.1.88.40 Procedure Log</para>
@@ -13040,7 +13040,7 @@
         <para xml:id="para_17ee4fde-a1ed-4134-a52e-244ec9821eb6">SOP-class-uid</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_074f4df0-0251-4831-bf56-59973a5fcfcf">The SOP Class identifier encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>.</para>
+        <para xml:id="para_074f4df0-0251-4831-bf56-59973a5fcfcf">The SOP Class identifier encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="chapter_9" xrefstyle="template:Section %n “%t” in PS3.5"/>.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -13062,7 +13062,7 @@
         <para xml:id="para_dc308de3-1a1e-4a88-a760-4677759a081c">Service-class-uid</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_397240b0-9b52-4948-9b97-438100981009">The Service Class identifier encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>.</para>
+        <para xml:id="para_397240b0-9b52-4948-9b97-438100981009">The Service Class identifier encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="chapter_9" xrefstyle="template:Section %n “%t” in PS3.5"/>.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -13101,8 +13101,6 @@
     </tr>
    </tbody>
   </table>
-
-
     <table frame="box" label="D.3-13" rules="all" xml:id="table_D.3-13">
     <caption>Related-General-SOP-Class-Identification Sub-Fields</caption>
     <thead>
@@ -13144,13 +13142,11 @@
         <para xml:id="para_33356b54-196e-4214-8c19-3d249e1ce097">Related-general-sop-class-uid</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_2e95f653-0c7a-4048-bc93-c23c86d179c2">The Related General SOP Class identifier encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>.</para>
+          <para xml:id="para_2e95f653-0c7a-4048-bc93-c23c86d179c2">The Related General SOP Class identifier encoded as a UID as defined in <olink targetdoc="PS3.5" targetptr="chapter_9" xrefstyle="template:Section %n “%t” in PS3.5"/>.</para>
       </td>
     </tr>
    </tbody>
   </table>
-
-
   </section>
 </section>
 <section label="D.3.3.7" status="4" xml:id="sect_D.3.3.7">

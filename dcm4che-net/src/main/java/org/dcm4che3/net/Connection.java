@@ -90,14 +90,14 @@ public class Connection implements Serializable {
     }
 
     public enum Protocol {
-        DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP;
+        DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP, SYSLOG_NONENCRYPTED;
 
         public boolean isTCP() {
             return this != SYSLOG_UDP;
         }
 
         public boolean isSyslog() {
-            return this == SYSLOG_TLS || this == SYSLOG_UDP;
+            return this == SYSLOG_TLS || this == SYSLOG_UDP || this == SYSLOG_NONENCRYPTED;
         }
     }
 

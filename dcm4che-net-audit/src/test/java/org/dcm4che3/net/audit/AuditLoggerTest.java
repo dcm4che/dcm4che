@@ -38,6 +38,7 @@
 package org.dcm4che3.net.audit;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.dcm4che3.net.Connection;
@@ -330,7 +331,9 @@ public class AuditLoggerTest {
 
         final Connection auditTCP = createConnection("audit-tcp", 516, Connection.Protocol.SYSLOG_TLS);
         auditTCP.setDevice(logger.getDevice());
-        logger.setConnections(Collections.singletonList(auditTCP));
+        final Connection auditTCP2 = createConnection("audit-tcp-2", 517, Connection.Protocol.SYSLOG_NONENCRYPTED);
+        auditTCP2.setDevice(logger.getDevice());
+        logger.setConnections(Arrays.asList(auditTCP, auditTCP2));
 
         mockDevice.reconfigureConnections(logger.getConnections(), newLogger.getConnections());
         expectLastCall().andVoid();

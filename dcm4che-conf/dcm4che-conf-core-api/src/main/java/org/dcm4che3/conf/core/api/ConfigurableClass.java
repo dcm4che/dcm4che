@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.core.api;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -46,15 +47,23 @@ import java.lang.annotation.Target;
  * Marks a class as a configurable class
  * 
  * @author Roman K
- * 
+ * @author Maciek Siemczyk (maciek.siemczyk@agfa.com)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Documented
 public @interface ConfigurableClass {
+    
     /**
      * Marks this class as a potential target for references.
      * All reference target classes MUST be marked with this annotation property.
      * A referable class MUST NOT be an extension class (i.e. MUST NOT extend {@link org.dcm4che3.conf.core.api.ConfigurableClassExtension}).
      */
     boolean referable() default false;
+    
+    /**
+     * Hides this class from configuration UI. For example, when extension was deprecated and
+     * settings were migrated somewhere else and we don't want users to be adding them back.
+     */
+    boolean isHidden() default false;
 }

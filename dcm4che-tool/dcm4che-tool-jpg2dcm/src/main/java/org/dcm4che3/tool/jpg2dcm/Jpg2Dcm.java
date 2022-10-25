@@ -88,6 +88,7 @@ public class Jpg2Dcm {
 
     private boolean noAPPn;
     private boolean photo;
+    private String tsuid;
     private Attributes staticMetadata = new Attributes();
     private byte[] buf = new byte[BUFFER_SIZE];
 
@@ -97,6 +98,10 @@ public class Jpg2Dcm {
 
     private void setPhoto(boolean photo) {
         this.photo = photo;
+    }
+
+    private void setTSUID(String tsuid) {
+        this.tsuid = tsuid;
     }
 
     public static void main(String[] args) {
@@ -114,6 +119,7 @@ public class Jpg2Dcm {
                         MessageFormat.format(rb.getString("nodestdir"), dest));
             main.setNoAPPn(cl.hasOption("no-app"));
             main.setPhoto(cl.hasOption("xc"));
+            main.setTSUID(cl.getOptionValue("tsuid", null));
             createStaticMetadata(cl, main.staticMetadata);
             main.convert(cl.getArgList());
         } catch (ParseException e) {
@@ -144,6 +150,11 @@ public class Jpg2Dcm {
                 .longOpt("xc")
                 .hasArg(false)
                 .desc(rb.getString("xc"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("tsuid")
+                .hasArg()
+                .desc(rb.getString("tsuid"))
                 .build());
         opts.addOption(Option.builder()
                 .longOpt("no-app")
@@ -224,7 +235,8 @@ public class Jpg2Dcm {
                 DicomOutputStream dos = new DicomOutputStream(destFilePath.toFile())) {
             XPEGParser parser = fileType.newParser(channel);
             parser.getAttributes(fileMetadata);
-            dos.writeDataset(fileMetadata.createFileMetaInformation(parser.getTransferSyntaxUID()), fileMetadata);
+            dos.writeDataset(fileMetadata.createFileMetaInformation(tsuid != null ? tsuid : parser.getTransferSyntaxUID()),
+                            fileMetadata);
             dos.writeHeader(Tag.PixelData, VR.OB, -1);
             dos.writeHeader(Tag.Item, null, 0);
             if (noAPPn && parser.getPositionAfterAPPSegments() > 0) {

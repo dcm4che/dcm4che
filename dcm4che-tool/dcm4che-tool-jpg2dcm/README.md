@@ -28,6 +28,9 @@
         --no-app             remove application segments APPn from
                              encapsulated JPEG stream; encapsulate JPEG stream
                              verbatim by default.
+        --tsuid <arg>        Explicitly specify Transfer Syntax UID to
+                             override the one returned by parser, added in the
+                             file meta information.
      -V,--version            output version information and exit
         --xc                 generate sample metadata for VL Photographic
                              Image from

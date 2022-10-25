@@ -77,14 +77,6 @@ Options:
                                   file paths and folder paths or if
                                   several folder paths contains files less
                                   than specified limit.
- -m <[seq.]attr=value>            Specify metadata attributes. attr can be
-                                  specified by keyword or tag value (in
-                                  hex), e.g. PatientName or 00100010.
-                                  Attributes in nested Datasets can be
-                                  specified by including the keyword/tag
-                                  value of the sequence attribute, e.g.
-                                  00400275.00400009 for Scheduled
-                                  Procedure Step ID in the Request.
     --no-app                      Application segments APPn are to be
                                   excluded from JPEG stream. If absent
                                   JPEG stream verbatim encapsulated by
@@ -95,6 +87,15 @@ Options:
                                   images, mpeg, mp4 and quicktime videos
                                   in addition to the metadata generation
                                   as explained above in description.
+ -s <[seq.]attr=value>            Specify attributes added to sent
+                                  objects. Attribute can be specified by
+                                  keyword or tag value (in hex), e.g.
+                                  PatientName or 00100010. Attributes in
+                                  nested Datasets can be specified by
+                                  including the keyword/tag value of the
+                                  sequence attribute, e.g.
+                                  00400275.00400009 for Scheduled
+                                  Procedure Step ID in the Request.
  -t,--type <type>                 Specify the value for Content-type
                                   header : xml or json. The value of
                                   Content-type will then be sent in

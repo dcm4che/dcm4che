@@ -133,9 +133,9 @@ public class StowRS {
     private static CommandLine parseCommandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
-        opts.addOption(Option.builder("m")
+        opts.addOption(Option.builder("s")
                 .numberOfArgs(2).argName("[seq.]attr=value")
-                .desc(rb.getString("metadata"))
+                .desc(rb.getString("set"))
                 .build());
         opts.addOption(Option.builder("f")
                 .hasArg()
@@ -347,7 +347,7 @@ public class StowRS {
         tsuid = cl.hasOption("tsuid");
         pixelHeader = cl.hasOption("pixel-header");
         noApp = cl.hasOption("no-appn");
-        keys = cl.getOptionValues("m");
+        keys = cl.getOptionValues("s");
         authorization = cl.hasOption("u")
                 ? basicAuth(cl.getOptionValue("u"))
                 : cl.hasOption("bearer") ? "Bearer " + cl.getOptionValue("bearer") : null;

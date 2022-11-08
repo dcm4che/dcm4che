@@ -95,7 +95,8 @@ Options:
                                   including the keyword/tag value of the
                                   sequence attribute, e.g.
                                   00400275.00400009 for Scheduled
-                                  Procedure Step ID in the Request.
+                                  Procedure Step ID in the Request
+                                  Attributes Sequence.
  -t,--type <type>                 Specify the value for Content-type
                                   header : xml or json. The value of
                                   Content-type will then be sent in

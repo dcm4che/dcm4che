@@ -45,6 +45,8 @@ import org.dcm4che3.imageio.codec.jpeg.JPEG;
 import org.dcm4che3.imageio.codec.jpeg.JPEGParser;
 import org.dcm4che3.imageio.codec.mp4.MP4Parser;
 import org.dcm4che3.imageio.codec.mpeg.MPEG2Parser;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXTransformer;
 import org.dcm4che3.json.JSONWriter;
@@ -86,7 +88,6 @@ import java.util.stream.Collectors;
 public class StowRS {
     private static final Logger LOG = LoggerFactory.getLogger(StowRS.class);
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.stowrs.messages");
-    private static String[] keys;
     private static String url;
     private boolean noApp;
     private boolean pixelHeader;
@@ -101,6 +102,7 @@ public class StowRS {
     private static boolean encapsulatedDocLength;
     private static String authorization;
     private boolean tsuid;
+    private Attributes attrs = new Attributes();
     private String tmpPrefix;
     private String tmpSuffix;
     private File tmpDir;
@@ -347,7 +349,7 @@ public class StowRS {
         tsuid = cl.hasOption("tsuid");
         pixelHeader = cl.hasOption("pixel-header");
         noApp = cl.hasOption("no-appn");
-        keys = cl.getOptionValues("s");
+        CLIUtils.addAttributes(attrs, cl.getOptionValues("s"));
         authorization = cl.hasOption("u")
                 ? basicAuth(cl.getOptionValue("u"))
                 : cl.hasOption("bearer") ? "Bearer " + cl.getOptionValue("bearer") : null;
@@ -603,7 +605,7 @@ public class StowRS {
             addAttributesFromFile(metadata);
             supplementSOPClass(metadata, firstBulkdataFileContentType.getSOPClassUID());
         }
-        CLIUtils.addAttributes(metadata, keys);
+        metadata.addAll(attrs);
         if (!url.endsWith("studies"))
             metadata.setString(Tag.StudyInstanceUID, VR.UI, url.substring(url.lastIndexOf("/") + 1));
         supplementMissingUIDs(metadata);
@@ -945,8 +947,37 @@ public class StowRS {
             return;
         }
         writePartHeaders(out, requestContentType, null);
-        Files.copy(path, out);
+        Files.copy(updateAttrs(path), out);
         stowChunk.setAttributes(path.toFile().length());
+    }
+
+    private Path updateAttrs(Path path) {
+        if (attrs.isEmpty())
+            return path;
+
+        try {
+            DicomInputStream in = new DicomInputStream(path.toFile());
+            File tmpFile = File.createTempFile("stowrs-", null, null);
+            tmpFile.deleteOnExit();
+            Attributes fmi = in.readFileMetaInformation();
+            Attributes data = in.readDataset();
+            CLIUtils.updateAttributes(data, attrs, null);
+            String tsuid = in.getTransferSyntax();
+            try (DicomOutputStream dos = new DicomOutputStream(new BufferedOutputStream(new FileOutputStream(tmpFile)),
+                    fmi != null
+                            ? UID.ExplicitVRLittleEndian
+                            : tsuid != null
+                            ? tsuid
+                            : UID.ImplicitVRLittleEndian)) {
+                dos.writeDataset(fmi, data);
+                dos.finish();
+                dos.flush();
+            }
+            return tmpFile.toPath();
+        } catch (Exception e) {
+            LOG.info("Failed to update attributes for file {}\n", path, e);
+        }
+        return path;
     }
 
     private void writeMetadataAndBulkData(OutputStream out, List<String> files, final Attributes staticMetadata, StowChunk stowChunk)

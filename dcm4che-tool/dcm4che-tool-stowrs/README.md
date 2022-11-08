@@ -6,7 +6,7 @@ For DICOM files : Send multiple dicom files or directories containing
 DICOM files to STOW-RS receiver at a time.
 For metadata+bulkdata : Send multiple bulkdata files or directories
 containing bulkdata files to STOW-RS receiver at a time. DICOM attributes
-can be specified via command line (using -m option) or a XML file (using
+can be specified via command line (using -s option) or a XML file (using
 -f option) If both the options are specified, system will generate
 metadata first from sample metadata file then from file specified by user
 and lastly add the attributes specified individually on command line. The

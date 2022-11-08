@@ -122,6 +122,9 @@ Options:
                                   or video/quicktime files.
  -u,--user <user:password>        Specify the user name and password to
                                   use for server authentication.
+    --uid-suffix <suffix>         specify suffix to be appended to the
+                                  Study, Series and SOP Instance UID of
+                                  the sent DICOM object(s).
     --url <url>                   Specify the request URL.
  -V,--version                     output version information and exit
     --video                       Send gif file as Video Photographic

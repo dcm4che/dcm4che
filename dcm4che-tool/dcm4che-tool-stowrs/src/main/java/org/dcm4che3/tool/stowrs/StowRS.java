@@ -102,7 +102,8 @@ public class StowRS {
     private static boolean encapsulatedDocLength;
     private static String authorization;
     private boolean tsuid;
-    private Attributes attrs = new Attributes();
+    private final Attributes attrs = new Attributes();
+    private String uidSuffix;
     private String tmpPrefix;
     private String tmpSuffix;
     private File tmpDir;
@@ -211,6 +212,9 @@ public class StowRS {
                 .argName("httpHeader:value")
                 .desc(rb.getString("httpHeader"))
                 .build());
+        opts.addOption(Option.builder().hasArg().argName("suffix")
+                .desc(rb.getString("uid-suffix"))
+                .longOpt("uid-suffix").build());
         OptionGroup group = new OptionGroup();
         group.addOption(Option.builder("u")
                 .hasArg()
@@ -350,6 +354,7 @@ public class StowRS {
         pixelHeader = cl.hasOption("pixel-header");
         noApp = cl.hasOption("no-appn");
         CLIUtils.addAttributes(attrs, cl.getOptionValues("s"));
+        uidSuffix = cl.getOptionValue("uid-suffix");
         authorization = cl.hasOption("u")
                 ? basicAuth(cl.getOptionValue("u"))
                 : cl.hasOption("bearer") ? "Bearer " + cl.getOptionValue("bearer") : null;
@@ -952,7 +957,7 @@ public class StowRS {
     }
 
     private Path updateAttrs(Path path) {
-        if (attrs.isEmpty())
+        if (attrs.isEmpty() && uidSuffix == null)
             return path;
 
         try {
@@ -961,7 +966,7 @@ public class StowRS {
             tmpFile.deleteOnExit();
             Attributes fmi = in.readFileMetaInformation();
             Attributes data = in.readDataset();
-            CLIUtils.updateAttributes(data, attrs, null);
+            CLIUtils.updateAttributes(data, attrs, uidSuffix);
             String tsuid = in.getTransferSyntax();
             try (DicomOutputStream dos = new DicomOutputStream(new BufferedOutputStream(new FileOutputStream(tmpFile)),
                     fmi != null

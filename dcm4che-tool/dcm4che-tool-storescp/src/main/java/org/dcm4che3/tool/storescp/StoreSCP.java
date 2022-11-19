@@ -108,7 +108,7 @@ public class StoreSCP {
                 String cuid = rq.getString(Tag.AffectedSOPClassUID);
                 String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
                 String tsuid = pc.getTransferSyntax();
-                File file = File.createTempFile(iuid, PART_EXT, storageDir);
+                File file = Files.createTempFile(storageDir.toPath(), iuid, PART_EXT).toFile();
                 try {
                     storeTo(as, as.createFileMetaInformation(iuid, cuid, tsuid),
                             data, file);

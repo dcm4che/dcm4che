@@ -56,6 +56,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.security.AccessController;
 import java.security.GeneralSecurityException;
 import java.security.PrivilegedAction;
@@ -784,7 +785,7 @@ public class AuditLogger {
 
         File f = null;
         try {
-            f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, spoolDirectory());
+            f = Files.createTempFile(spoolDirectory().toPath(), spoolFileNamePrefix, spoolFileNameSuffix).toFile();
 
             LOG.info("Spool audit message to {}", f);
             FileOutputStream out = new FileOutputStream(f);

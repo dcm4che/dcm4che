@@ -1,6 +1,7 @@
 package org.dcm4che3.io;
 
 import java.io.*;
+import java.nio.file.Files;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.util.UIDUtils;
@@ -19,7 +20,7 @@ public class DicomOutputStreamTest {
 
     @Before
     public void setUp() throws IOException {
-        file = File.createTempFile("test", ".dcm");
+        file = Files.createTempFile("test", ".dcm").toFile();
     }
 
     @After

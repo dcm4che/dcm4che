@@ -756,7 +756,7 @@ public class StowRS {
 
     private void scanFilesNoLimit(List<String> files) {
         try {
-            File tmpFile = File.createTempFile("stowrs-", null, null);
+            File tmpFile = Files.createTempFile("stowrs-", null).toFile();
             tmpFile.deleteOnExit();
             StowChunk stowChunk = new StowChunk(tmpFile);
             try (FileOutputStream out = new FileOutputStream(tmpFile)) {
@@ -777,7 +777,7 @@ public class StowRS {
             return;
 
         try {
-            File tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
+            File tmpFile = Files.createTempFile(tmpDir.toPath(), tmpPrefix, tmpSuffix).toFile();
             tmpFile.deleteOnExit();
             StowChunk stowChunk = new StowChunk(tmpFile);
             try (FileOutputStream out = new FileOutputStream(tmpFile)) {
@@ -962,7 +962,7 @@ public class StowRS {
 
         try {
             DicomInputStream in = new DicomInputStream(path.toFile());
-            File tmpFile = File.createTempFile("stowrs-", null, null);
+            File tmpFile = Files.createTempFile("stowrs-", null).toFile();
             tmpFile.deleteOnExit();
             Attributes fmi = in.readFileMetaInformation();
             Attributes data = in.readDataset();

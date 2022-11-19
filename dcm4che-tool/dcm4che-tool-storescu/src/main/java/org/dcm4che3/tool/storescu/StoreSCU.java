@@ -62,6 +62,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.*;
@@ -381,7 +382,7 @@ public class StoreSCU {
 
     public void scanFiles(List<String> fnames, boolean printout)
             throws IOException {
-        tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
+        tmpFile = Files.createTempFile(tmpDir.toPath(), tmpPrefix, tmpSuffix).toFile();
         tmpFile.deleteOnExit();
         final BufferedWriter fileInfos = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(tmpFile)));

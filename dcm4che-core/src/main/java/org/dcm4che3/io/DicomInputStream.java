@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -756,8 +757,7 @@ public class DicomInputStream extends FilterInputStream
             skipFully(length);
         } else {
             if (blkOut == null) {
-                File blkfile = File.createTempFile(blkFilePrefix,
-                        blkFileSuffix, blkDirectory);
+                File blkfile = Files.createTempFile(blkDirectory.toPath(), blkFilePrefix, blkFileSuffix).toFile();
                 if (blkFiles == null)
                     blkFiles = new ArrayList<File>();
                 blkFiles.add(blkfile);

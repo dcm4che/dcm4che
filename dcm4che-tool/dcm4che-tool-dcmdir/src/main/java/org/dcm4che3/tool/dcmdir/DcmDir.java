@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
@@ -328,7 +329,7 @@ public class DcmDir {
     }
 
     private void compact(File f, File bak) throws IOException {
-        File tmp = File.createTempFile("DICOMDIR", null, f.getParentFile());
+        File tmp = Files.createTempFile(f.getParentFile().toPath(), "DICOMDIR", null).toFile();
         DicomDirReader r = new DicomDirReader(f);
         try {
             fsInfo.setFilesetUID(r.getFileSetUID());

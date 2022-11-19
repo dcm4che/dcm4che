@@ -53,6 +53,7 @@ import org.dcm4che3.tool.storescu.StoreSCU;
 import org.dcm4che3.util.UIDUtils;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -362,7 +363,7 @@ public class Modality {
             File tmpDir, final MppsSCU mppsscu, final StoreSCU storescu, final StgCmtSCU stgcmtscu)
             throws IOException {
         printNextStepMessage("Will now scan files in " + fnames);
-        File tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
+        File tmpFile = Files.createTempFile(tmpDir.toPath(), tmpPrefix, tmpSuffix).toFile();
         tmpFile.deleteOnExit();
         final BufferedWriter fileInfos = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(tmpFile)));

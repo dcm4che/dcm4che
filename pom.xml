@@ -96,13 +96,13 @@
     <jakarta.ws.rs.version>2.1.6</jakarta.ws.rs.version>
     <jakarta.json.version>1.1.6</jakarta.json.version>
     <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
-    <com.sun.istack.version>3.0.12</com.sun.istack.version>
-    <com.sun.xml.messaging.saaj.version>1.5.3</com.sun.xml.messaging.saaj.version>
+    <com.sun.istack.version>3.0.10</com.sun.istack.version>
+    <com.sun.xml.messaging.saaj.version>1.5.1</com.sun.xml.messaging.saaj.version>
     <com.sun.xml.stream.buffer.version>1.5.7</com.sun.xml.stream.buffer.version>
     <com.sun.xml.ws.policy.version>2.7.6</com.sun.xml.ws.policy.version>
     <org.glassfish.gmbal.version>4.0.0</org.glassfish.gmbal.version>
     <org.jvnet.mimepull.version>1.9.11</org.jvnet.mimepull.version>
-    <org.jvnet.staxex.version>1.8.3</org.jvnet.staxex.version>
+    <org.jvnet.staxex.version>1.8.1</org.jvnet.staxex.version>
     <commons-cli.version>1.4</commons-cli.version>
 
     <!-- for SonarCloud / SonarQube -->

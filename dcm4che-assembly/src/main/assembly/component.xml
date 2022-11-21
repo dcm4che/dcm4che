@@ -191,19 +191,20 @@
         <include>ch.qos.logback:logback-classic</include>
         <include>commons-cli:commons-cli</include>
         <include>org.glassfish:jakarta.json</include>
-        <include>com.sun.activation:jakarta.activation</include>
+        <include>jakarta.activation:jakarta.activation-api</include>
+        <include>org.eclipse.angus:angus-activation</include>
         <include>jakarta.xml.bind:jakarta.xml.bind-api</include>
         <include>org.glassfish.jaxb:jaxb-runtime</include>
+        <include>org.glassfish.jaxb:jaxb-core</include>
         <include>com.sun.istack:istack-commons-runtime</include>
         <include>jakarta.xml.ws:jakarta.xml.ws-api</include>
         <include>com.sun.xml.ws:rt</include>
         <include>com.sun.xml.stream.buffer:streambuffer</include>
         <include>com.sun.xml.ws:policy</include>
         <include>org.jvnet.staxex:stax-ex</include>
-        <include>jakarta.jws:jakarta.jws-api</include>
         <include>jakarta.xml.soap:jakarta.xml.soap-api</include>
         <include>com.sun.xml.messaging.saaj:saaj-impl</include>
-        <include>org.glassfish.gmbal:gmbal</include>
+        <include>org.glassfish.gmbal:gmbal-api-only</include>
         <include>org.jvnet.mimepull:mimepull</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>

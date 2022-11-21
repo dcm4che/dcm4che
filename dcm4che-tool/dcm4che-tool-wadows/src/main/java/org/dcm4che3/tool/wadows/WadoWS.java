@@ -38,6 +38,9 @@
 
 package org.dcm4che3.tool.wadows;
 
+import jakarta.activation.DataHandler;
+import jakarta.xml.ws.soap.AddressingFeature;
+import jakarta.xml.ws.soap.MTOMFeature;
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomInputStream;
@@ -53,9 +56,6 @@ import org.dcm4che3.xdsi.RetrieveRenderedImagingDocumentSetRequestType.StudyRequ
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.activation.DataHandler;
-import javax.xml.ws.soap.AddressingFeature;
-import javax.xml.ws.soap.MTOMFeature;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;

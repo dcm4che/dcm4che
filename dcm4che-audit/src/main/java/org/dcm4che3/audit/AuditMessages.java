@@ -38,7 +38,7 @@
 
 package org.dcm4che3.audit;
 
-import javax.xml.bind.*;
+import jakarta.xml.bind.*;
 import java.io.*;
 import java.util.HashSet;
 import java.util.Set;

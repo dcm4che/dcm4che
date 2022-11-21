@@ -79,31 +79,31 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <slf4j.version>1.7.32</slf4j.version>
-    <logback.version>1.2.9</logback.version>
+    <slf4j.version>1.7.36</slf4j.version>
+    <logback.version>1.2.11</logback.version>
     <weasis.core.img.version>4.5.5</weasis.core.img.version>
     <weasis.opencv.native.version>4.5.5-dcm</weasis.opencv.native.version>
-    <keycloak.version>19.0.3</keycloak.version>
-    <jbossws-cxf-client.version>5.5.0.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>3.4.7</apache-cxf.version>
+    <keycloak.version>20.0.1</keycloak.version>
+    <jbossws-cxf-client.version>6.1.0.Final</jbossws-cxf-client.version>
+    <apache-cxf.version>3.5.2-jbossorg-3</apache-cxf.version>
     <apache-commons-csv.version>1.9.0</apache-commons-csv.version>
-    <apache-commons-compress.version>1.21</apache-commons-compress.version>
-    <jakarta.activation.version>1.2.2</jakarta.activation.version>
-    <jakarta.xml.bind.version>2.3.2</jakarta.xml.bind.version>
-    <jaxb-runtime.version>2.3.3-b02</jaxb-runtime.version>
-    <jakarta.xml.ws.version>2.3.2</jakarta.xml.ws.version>
-    <jakarta.xml.soap-api.version>1.4.1</jakarta.xml.soap-api.version>
-    <jakarta.ws.rs.version>2.1.6</jakarta.ws.rs.version>
+    <apache-commons-compress.version>1.22</apache-commons-compress.version>
+    <jakarta.activation.version>2.1.1.jbossorg-1</jakarta.activation.version>
+    <eclipse.angus.activation.version>1.0.0</eclipse.angus.activation.version>
+    <jakarta.xml.bind.version>4.0.0</jakarta.xml.bind.version>
+    <jaxb-runtime.version>4.0.1</jaxb-runtime.version>
+    <jakarta.xml.ws.version>4.0.0</jakarta.xml.ws.version>
+    <jakarta.xml.soap-api.version>3.0.0</jakarta.xml.soap-api.version>
+    <jakarta.ws.rs.version>3.1.0</jakarta.ws.rs.version>
     <jakarta.json.version>1.1.6</jakarta.json.version>
-    <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
-    <com.sun.istack.version>3.0.12</com.sun.istack.version>
-    <com.sun.xml.messaging.saaj.version>1.5.3</com.sun.xml.messaging.saaj.version>
-    <com.sun.xml.stream.buffer.version>1.5.7</com.sun.xml.stream.buffer.version>
-    <com.sun.xml.ws.policy.version>2.7.6</com.sun.xml.ws.policy.version>
-    <org.glassfish.gmbal.version>4.0.0</org.glassfish.gmbal.version>
-    <org.jvnet.mimepull.version>1.9.11</org.jvnet.mimepull.version>
-    <org.jvnet.staxex.version>1.8.3</org.jvnet.staxex.version>
-    <commons-cli.version>1.4</commons-cli.version>
+    <com.sun.istack.version>4.1.1</com.sun.istack.version>
+    <com.sun.xml.messaging.saaj.version>3.0.0</com.sun.xml.messaging.saaj.version>
+    <com.sun.xml.stream.buffer.version>2.1.0</com.sun.xml.stream.buffer.version>
+    <com.sun.xml.ws.policy.version>4.0.0</com.sun.xml.ws.policy.version>
+    <org.glassfish.gmbal.version>4.0.3</org.glassfish.gmbal.version>
+    <org.jvnet.mimepull.version>1.10.0</org.jvnet.mimepull.version>
+    <org.jvnet.staxex.version>2.1.0</org.jvnet.staxex.version>
+    <commons-cli.version>1.5.0</commons-cli.version>
 
     <!-- for SonarCloud / SonarQube -->
     <sonar.organization>dcm4che</sonar.organization>
@@ -160,12 +160,12 @@
         <plugin>
           <groupId>org.jboss.ws.plugins</groupId>
           <artifactId>jaxws-tools-maven-plugin</artifactId>
-          <version>1.2.1.Final</version>
+          <version>1.3.0.Final</version>
         </plugin>
         <plugin>
           <groupId>org.apache.cxf</groupId>
           <artifactId>cxf-xjc-plugin</artifactId>
-          <version>3.3.2</version>
+          <version>4.0.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
@@ -283,7 +283,7 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <scope>test</scope>
-        <version>4.13.1</version>
+        <version>4.13.2</version>
       </dependency>
       <dependency>
         <groupId>jakarta.activation</groupId>
@@ -291,9 +291,9 @@
         <version>${jakarta.activation.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.sun.activation</groupId>
-        <artifactId>jakarta.activation</artifactId>
-        <version>${jakarta.activation.version}</version>
+        <groupId>org.eclipse.angus</groupId>
+        <artifactId>angus-activation</artifactId>
+        <version>${eclipse.angus.activation.version}</version>
       </dependency>
       <dependency>
         <groupId>jakarta.xml.bind</groupId>

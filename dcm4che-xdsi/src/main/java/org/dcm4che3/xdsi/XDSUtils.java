@@ -48,8 +48,8 @@ import org.apache.cxf.transport.http.HTTPConduit;
 import org.dcm4che3.data.DatePrecision;
 import org.dcm4che3.util.DateUtils;
 
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.handler.Handler;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.handler.Handler;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;

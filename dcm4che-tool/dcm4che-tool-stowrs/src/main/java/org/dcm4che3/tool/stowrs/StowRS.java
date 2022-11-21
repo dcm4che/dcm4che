@@ -38,6 +38,7 @@
 
 package org.dcm4che3.tool.stowrs;
 
+import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.*;
 import org.dcm4che3.imageio.codec.XPEGParser;
@@ -64,7 +65,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.ws.rs.core.MediaType;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.HttpURLConnection;

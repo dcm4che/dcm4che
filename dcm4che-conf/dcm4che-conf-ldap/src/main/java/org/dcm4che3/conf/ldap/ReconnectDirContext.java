@@ -46,7 +46,8 @@ class ReconnectDirContext implements Closeable {
     public Attributes getAttributes(String name) throws NamingException {
         try {
             return ctx.getAttributes(name);
-        } catch (CommunicationException | NotContextException e) {
+        } catch (NamingException e) {
+            if (!isLdap_connection_has_been_closed(e)) throw e;
             reconnect();
             return ctx.getAttributes(name);
         }
@@ -55,7 +56,8 @@ class ReconnectDirContext implements Closeable {
     public Attributes getAttributes(String name, String[] attrIds) throws NamingException {
         try {
             return ctx.getAttributes(name, attrIds);
-        } catch (CommunicationException | NotContextException e) {
+        } catch (NamingException e) {
+            if (!isLdap_connection_has_been_closed(e)) throw e;
             reconnect();
             return ctx.getAttributes(name, attrIds);
         }
@@ -64,7 +66,8 @@ class ReconnectDirContext implements Closeable {
     public void destroySubcontext(String name) throws NamingException {
         try {
             ctx.destroySubcontext(name);
-        } catch (CommunicationException | NotContextException e) {
+        } catch (NamingException e) {
+            if (!isLdap_connection_has_been_closed(e)) throw e;
             reconnect();
             ctx.destroySubcontext(name);
         }
@@ -74,7 +77,8 @@ class ReconnectDirContext implements Closeable {
             throws NamingException {
         try {
             return ctx.search(name, filter, cons);
-        } catch (CommunicationException | NotContextException e) {
+        } catch (NamingException e) {
+            if (!isLdap_connection_has_been_closed(e)) throw e;
             reconnect();
             return ctx.search(name, filter, cons);
         }
@@ -83,7 +87,8 @@ class ReconnectDirContext implements Closeable {
     public void createSubcontextAndClose(String name, Attributes attrs) throws NamingException {
         try {
             ctx.createSubcontext(name, attrs).close();
-        } catch (CommunicationException | NotContextException e) {
+        } catch (NamingException e) {
+            if (!isLdap_connection_has_been_closed(e)) throw e;
             reconnect();
             ctx.createSubcontext(name, attrs).close();
         }
@@ -92,7 +97,8 @@ class ReconnectDirContext implements Closeable {
     public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
         try {
             return ctx.list(name);
-        } catch (CommunicationException | NotContextException e) {
+        } catch (NamingException e) {
+            if (!isLdap_connection_has_been_closed(e)) throw e;
             reconnect();
             return ctx.list(name);
         }
@@ -101,7 +107,8 @@ class ReconnectDirContext implements Closeable {
     public void modifyAttributes(String name, ModificationItem... mods) throws NamingException {
         try {
             ctx.modifyAttributes(name, mods);
-        } catch (CommunicationException | NotContextException e) {
+        } catch (NamingException e) {
+            if (!isLdap_connection_has_been_closed(e)) throw e;
             reconnect();
             ctx.modifyAttributes(name, mods);
         }
@@ -110,9 +117,17 @@ class ReconnectDirContext implements Closeable {
     public void modifyAttributes(String name, int mod_op, Attributes attrs) throws NamingException {
         try {
             ctx.modifyAttributes(name, mod_op, attrs);
-        } catch (CommunicationException | NotContextException e) {
+        } catch (NamingException e) {
+            if (!isLdap_connection_has_been_closed(e)) throw e;
             reconnect();
             ctx.modifyAttributes(name, mod_op, attrs);
         }
+    }
+
+    private static boolean isLdap_connection_has_been_closed(NamingException e) {
+        return e instanceof CommunicationException
+                || e instanceof ServiceUnavailableException
+                || e instanceof NotContextException
+                || e.getMessage().startsWith("LDAP connection has been closed");
     }
 }

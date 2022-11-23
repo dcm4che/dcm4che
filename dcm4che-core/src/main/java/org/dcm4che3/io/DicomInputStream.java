@@ -535,9 +535,6 @@ public class DicomInputStream extends FilterInputStream
             }
         }
         length = ByteUtils.bytesToInt(buf, 4, bigEndian);
-        if (length < -1) {
-            throw tagValueTooLargeException();
-        }
     }
 
     public boolean readItemHeader() throws IOException {
@@ -655,7 +652,7 @@ public class DicomInputStream extends FilterInputStream
     public void readAttributes(Attributes attrs, int len, Predicate<DicomInputStream> stopPredicate)
             throws IOException {
         boolean undeflen = len == UNDEFINED_LENGTH;
-        long endPos =  pos + (len & 0xffffffffL);
+        long endPos =  pos + toLongLength(len);
         while (undeflen || this.pos < endPos) {
             try {
                 readHeader(stopPredicate);
@@ -678,10 +675,21 @@ public class DicomInputStream extends FilterInputStream
                 excludeBulkData = includeBulkData == IncludeBulkData.NO && isBulkData(attrs);
                 includeBulkDataURI = length != 0 && vr != VR.SQ
                         && includeBulkData == IncludeBulkData.URI && isBulkData(attrs);
+                if (length < -1 && !excludeBulkData && !includeBulkDataURI) {
+                    throw tagValueTooLargeException();
+                }
                 handler.readValue(this, attrs);
             } else
                 skipAttribute(UNEXPECTED_ATTRIBUTE, "readAttributes()");
         }
+    }
+
+    private static long toLongLength(int len) {
+        return len & 0xffffffffL;
+    }
+
+    public long longLength() {
+        return toLongLength(length);
     }
 
     private boolean probeObservationClass() {
@@ -753,7 +761,7 @@ public class DicomInputStream extends FilterInputStream
             BulkData bulkData;
         if (uri != null && !(super.in instanceof InflaterInputStream)) {
             bulkData = new BulkData(uri, pos, length, bigEndian);
-            skipFully(length);
+            skipFully(longLength());
         } else {
             if (blkOut == null) {
                 File blkfile = File.createTempFile(blkFilePrefix,
@@ -852,7 +860,7 @@ public class DicomInputStream extends FilterInputStream
         Sequence seq = attrs.newSequence(sqtag, 10);
         String privateCreator = attrs.getPrivateCreator(sqtag);
         boolean undefLen = len == UNDEFINED_LENGTH;
-        long endPos = pos + (len & 0xffffffffL);
+        long endPos = pos + toLongLength(len);
         boolean explicitVR0 = explicitVR;
         boolean bigEndian0 = bigEndian;
         if (encodedVR == 0x554e // UN

@@ -249,7 +249,7 @@ public class SAXWriter implements DicomInputHandler {
             startElement("DicomAttribute");
             if (vr == VR.SQ || len == -1) {
                 dis.readValue(dis, attrs);
-            } else if (len > 0) {
+            } else if (len != 0) {
                 if (dis.isIncludeBulkDataURI()) {
                     writeBulkData(dis.createBulkData(dis));
                 } else {

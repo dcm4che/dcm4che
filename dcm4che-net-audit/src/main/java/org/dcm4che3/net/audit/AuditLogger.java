@@ -957,28 +957,32 @@ public class AuditLogger extends DeviceExtension {
 
     private SendStatus sendMessage(String clientName, DatagramPacket msg) throws IncompatibleConnectionException,
             GeneralSecurityException, IOException {
-        String deviceName;
         SendStatus status = SendStatus.SENT;
+        StringJoiner failedDeviceNames = new StringJoiner(", ");
         for (Device arrDev : auditRecordRepositoryDevices) {
-        	deviceName = arrDev.getDeviceName();
-	        if (getNumberOfQueuedMessages(deviceName) > 0) {
-	            spoolMessage(deviceName, msg);
-	        } else {
-	            try {
-	                activeConnection(clientName, arrDev).sendMessage(msg);
-	                lastSentTimeInMillis = System.currentTimeMillis();
-	            } catch (IOException e) {
-	                lastException = e;
-	                if (retryInterval > 0) {
-	                    LOG.info("Failed to send audit message:", e);
-	                    spoolMessage(deviceName, msg);
-	                    scheduleRetry();
-	                    status = SendStatus.QUEUED;
-	                } else {
-	                    throw e;
-	                }
-	            }
-	        }
+            String deviceName = arrDev.getDeviceName();
+            if (getNumberOfQueuedMessages(deviceName) > 0) {
+                spoolMessage(deviceName, msg);
+            } else {
+                try {
+                    activeConnection(clientName, arrDev).sendMessage(msg);
+                    lastSentTimeInMillis = System.currentTimeMillis();
+                } catch (IOException e) {
+                    if (retryInterval > 0) {
+                        LOG.info("Failed to send audit message:", e);
+                        spoolMessage(deviceName, msg);
+                        scheduleRetry();
+                        status = SendStatus.QUEUED;
+                    } else {
+                        LOG.warn("Failed to send audit message to device name {}", deviceName, e);
+                        failedDeviceNames.add(deviceName);
+                    }
+                }
+            }
+        }
+
+        if (failedDeviceNames.length() > 0) {
+            throw new IOException("Unable to send audit message to device name(s) " + failedDeviceNames.toString());
         }
         return status;
     }
@@ -1215,7 +1219,7 @@ public class AuditLogger extends DeviceExtension {
                         activeConnection = conn.getProtocol().isTCP()
                                         ? new TCPConnection(conn, remoteConn)
                                         : new UDPConnection(conn, remoteConn);
-                        this.activeConnection.put(clientName+"."+arrDev.getDeviceName(), activeConnection);
+                        this.activeConnection.put(clientName + "." + arrDev.getDeviceName(), activeConnection);
                         return activeConnection;
                     }
         throw new IncompatibleConnectionException(

@@ -37,20 +37,34 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.net.audit;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
+import java.security.GeneralSecurityException;
+import java.util.Calendar;
 import java.util.Collections;
 
+import org.dcm4che3.audit.AuditMessage;
+import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
+import org.dcm4che3.net.IncompatibleConnectionException;
+import org.dcm4che3.net.audit.AuditLogger.SendStatus;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.dcm4che3.net.Connection.Protocol.SYSLOG_TLS;
+import static org.dcm4che3.net.Connection.Protocol.SYSLOG_UDP;
 import static org.easymock.EasyMock.createMockBuilder;
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marryat Ma
@@ -59,14 +73,25 @@ public class AuditLoggerTest {
 
     private final AuditLogger newLogger = new AuditLogger();
     private final AuditLogger logger = new AuditLogger();
-    private final Device mockDevice = createMockBuilder(Device.class)
+    private final Device mockHubDevice = createMockBuilder(Device.class)
             .withConstructor()
             .addMockedMethod("reconfigureConnections")
             .createNiceMock();
 
+    private final Device mockSyslogDevice = createMockBuilder(Device.class)
+            .withConstructor()
+            .createNiceMock();
+
+    private static final String CIPHER = "TLS_RSA_WITH_AES_128_CBC_SHA";
+    private static final int AUDIT_PORT_TLS = 6514;
+    private static final int AUDIT_PORT_NO_TLS = 6515;
+    private static final int AUDIT_PORT_UDP = 4000;
+    private static final String INTERNAL_DEVICE_NAME = "dcm4chee-arc";
+    private static final String EXTERNAL_DEVICE_NAME = "syslog";
+
     @Before
     public void before() {
-        logger.setDevice(mockDevice);
+        logger.setDevice(mockHubDevice);
     }
 
     @Test
@@ -274,8 +299,8 @@ public class AuditLoggerTest {
     public void reconfigure_UpdatesAuditLoggerInstalled_WhenCalled() {
         newLogger.setAuditLoggerInstalled(false);
 
-        mockDevice.setConnections(Collections.emptyList());
-        mockDevice.setInstalled(true);
+        mockHubDevice.setConnections(Collections.emptyList());
+        mockHubDevice.setInstalled(true);
         logger.setAuditLoggerInstalled(true);
 
         logger.reconfigure(newLogger);
@@ -289,7 +314,7 @@ public class AuditLoggerTest {
         final Device oldARRDevice = createAuditRecordRepository(auditUDP, "syslog");
         newLogger.setAuditRecordRepositoryDevices(Collections.singletonList(oldARRDevice));
 
-        final Connection auditTCP = createConnection("audit-tcp", 516, Connection.Protocol.SYSLOG_TLS);
+        final Connection auditTCP = createConnection("audit-tcp", 516, SYSLOG_TLS);
         final Device newARRDevice = createAuditRecordRepository(auditTCP, "syslog2");
         logger.setAuditRecordRepositoryDevices(Collections.singletonList(newARRDevice));
 
@@ -328,18 +353,325 @@ public class AuditLoggerTest {
         final Connection auditUDP = createConnection("audit-udp", 514, Connection.Protocol.SYSLOG_UDP);
         newLogger.setConnections(Collections.singletonList(auditUDP));
 
-        final Connection auditTCP = createConnection("audit-tcp", 516, Connection.Protocol.SYSLOG_TLS);
+        final Connection auditTCP = createConnection("audit-tcp", 516, SYSLOG_TLS);
         auditTCP.setDevice(logger.getDevice());
         logger.setConnections(Collections.singletonList(auditTCP));
 
-        mockDevice.reconfigureConnections(logger.getConnections(), newLogger.getConnections());
+        mockHubDevice.reconfigureConnections(logger.getConnections(), newLogger.getConnections());
         expectLastCall().andVoid();
-        replay(mockDevice);
+        replay(mockHubDevice);
 
         logger.reconfigure(newLogger);
 
-        verify(mockDevice);
+        verify(mockHubDevice);
     }
+
+    @Test
+    public void sendMessage_DoesNotThrowIOException_WhenOneTLSInternalARRDeviceSucceeds()
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException {
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(AuditMessages.createEventIdentification(
+                AuditMessages.EventID.ApplicationActivity, AuditMessages.EventActionCode.Execute,
+                Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success, null,
+                AuditMessages.EventTypeCode.ApplicationStart));
+
+        final Connection auditConnTLS = createNiceMock(Connection.class);
+        auditConnTLS.setTlsCipherSuites(CIPHER);
+        auditConnTLS.setPort(AUDIT_PORT_TLS);
+        expect(auditConnTLS.getProtocol()).andStubReturn(SYSLOG_TLS);
+        expect(auditConnTLS.getDevice()).andStubReturn(mockHubDevice);
+        expect(auditConnTLS.isInstalled()).andStubReturn(true);
+        expect(auditConnTLS.isCompatible(auditConnTLS)).andStubReturn(true);
+
+        final Socket socket = createNiceMock(Socket.class);
+        expect(auditConnTLS.connect(auditConnTLS)).andStubReturn(socket);
+        expect(socket.getOutputStream()).andStubReturn(new ByteArrayOutputStream());
+
+        replay(auditConnTLS, socket);
+
+        final AuditRecordRepository arr = new AuditRecordRepository();
+        arr.addConnection(auditConnTLS);
+        mockHubDevice.addDeviceExtension(arr);
+        mockHubDevice.addConnection(auditConnTLS);
+        mockHubDevice.setDeviceName(INTERNAL_DEVICE_NAME);
+
+        logger.setAuditRecordRepositoryDevices(Collections.singletonList(mockHubDevice));
+        logger.addConnection(auditConnTLS);
+
+        try {
+            SendStatus status = logger.write(Calendar.getInstance(), msg);
+            assertThat("Unexpected send status", status, is(SendStatus.SENT));
+        } catch (IOException e) {
+            fail("Expected no IOException, but one was thrown");
+        }
+    }
+
+    @Test
+    public void sendMessage_ThrowsIOException_WhenOneTLSInternalARRDeviceFails()
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException {
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(AuditMessages.createEventIdentification(
+                AuditMessages.EventID.ApplicationActivity, AuditMessages.EventActionCode.Execute,
+                Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success, null,
+                AuditMessages.EventTypeCode.ApplicationStart));
+
+        final Connection auditConnNoTLS = createNiceMock(Connection.class);
+        auditConnNoTLS.setPort(AUDIT_PORT_NO_TLS);
+        expect(auditConnNoTLS.getProtocol()).andStubReturn(SYSLOG_TLS);
+        expect(auditConnNoTLS.getDevice()).andStubReturn(mockHubDevice);
+        expect(auditConnNoTLS.isInstalled()).andStubReturn(true);
+        expect(auditConnNoTLS.isCompatible(auditConnNoTLS)).andStubReturn(true);
+        expect(auditConnNoTLS.connect(auditConnNoTLS)).andThrow(new IOException());
+
+        replay(auditConnNoTLS);
+
+        final AuditRecordRepository arr = new AuditRecordRepository();
+        arr.addConnection(auditConnNoTLS);
+        mockHubDevice.addDeviceExtension(arr);
+        mockHubDevice.addConnection(auditConnNoTLS);
+        mockHubDevice.setDeviceName(INTERNAL_DEVICE_NAME);
+
+        logger.setAuditRecordRepositoryDevices(Collections.singletonList(mockHubDevice));
+        logger.addConnection(auditConnNoTLS);
+
+        try {
+            logger.write(Calendar.getInstance(), msg);
+            fail("Expected an IOException, but no exception was thrown");
+        } catch (IOException e) {
+            assertThat("Unexpected exception message", e.getMessage(),
+                    is("Unable to send audit message to device name(s) " + INTERNAL_DEVICE_NAME));
+        }
+    }
+
+    @Test
+    public void sendMessage_DoesNotThrowIOException_WhenOneTLSInternalARRDeviceAndOneTLSExternalARRDeviceSucceeds()
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException {
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(AuditMessages.createEventIdentification(
+                AuditMessages.EventID.ApplicationActivity, AuditMessages.EventActionCode.Execute,
+                Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success, null,
+                AuditMessages.EventTypeCode.ApplicationStart));
+
+        final Connection auditConnTLS = createNiceMock(Connection.class);
+        auditConnTLS.setTlsCipherSuites(CIPHER);
+        auditConnTLS.setPort(AUDIT_PORT_TLS);
+        expect(auditConnTLS.getProtocol()).andStubReturn(SYSLOG_TLS);
+        expect(auditConnTLS.getDevice()).andStubReturn(mockHubDevice);
+        expect(auditConnTLS.isInstalled()).andStubReturn(true);
+        expect(auditConnTLS.isCompatible(auditConnTLS)).andStubReturn(true);
+
+        final Socket socket = createNiceMock(Socket.class);
+        expect(auditConnTLS.connect(auditConnTLS)).andStubReturn(socket);
+        expect(socket.getOutputStream()).andStubReturn(new ByteArrayOutputStream());
+
+        final Connection auditConnNoTLS = createNiceMock(Connection.class);
+        auditConnNoTLS.setPort(AUDIT_PORT_NO_TLS);
+        expect(auditConnNoTLS.getProtocol()).andStubReturn(SYSLOG_TLS);
+        expect(auditConnNoTLS.getDevice()).andStubReturn(mockSyslogDevice);
+        expect(auditConnNoTLS.isInstalled()).andStubReturn(true);
+
+        expect(auditConnTLS.isCompatible(auditConnNoTLS)).andStubReturn(true);
+        expect(auditConnTLS.connect(auditConnNoTLS)).andStubReturn(socket);
+
+        replay(auditConnTLS, auditConnNoTLS, socket);
+
+        final AuditRecordRepository arr1 = new AuditRecordRepository();
+        arr1.addConnection(auditConnTLS);
+        mockHubDevice.addDeviceExtension(arr1);
+        mockHubDevice.addConnection(auditConnTLS);
+        mockHubDevice.setDeviceName(INTERNAL_DEVICE_NAME);
+
+        logger.addAuditRecordRepositoryDevice(mockHubDevice);
+        logger.addConnection(auditConnTLS);
+
+        final AuditRecordRepository arr2 = new AuditRecordRepository();
+        arr2.addConnection(auditConnNoTLS);
+        mockSyslogDevice.addDeviceExtension(arr2);
+        mockSyslogDevice.addConnection(auditConnNoTLS);
+        mockSyslogDevice.setDeviceName(EXTERNAL_DEVICE_NAME);
+
+        logger.addAuditRecordRepositoryDevice(mockSyslogDevice);
+
+        try {
+            SendStatus status = logger.write(Calendar.getInstance(), msg);
+            assertThat("Unexpected send status", status, is(SendStatus.SENT));
+        } catch (IOException e) {
+            fail("Expected no IOException, but one was thrown");
+        }
+    }
+
+    @Test
+    public void sendMessage_ThrowsIOException_WhenOneTLSInternalARRDeviceAndOneTLSExternalARRDeviceFails()
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException {
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(AuditMessages.createEventIdentification(
+                AuditMessages.EventID.ApplicationActivity, AuditMessages.EventActionCode.Execute,
+                Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success, null,
+                AuditMessages.EventTypeCode.ApplicationStart));
+
+        final Connection auditConnTLS = createNiceMock(Connection.class);
+        auditConnTLS.setTlsCipherSuites(CIPHER);
+        auditConnTLS.setPort(AUDIT_PORT_TLS);
+        expect(auditConnTLS.getProtocol()).andStubReturn(SYSLOG_TLS);
+        expect(auditConnTLS.getDevice()).andStubReturn(mockHubDevice);
+        expect(auditConnTLS.isInstalled()).andStubReturn(true);
+        expect(auditConnTLS.isCompatible(auditConnTLS)).andStubReturn(true);
+        expect(auditConnTLS.connect(auditConnTLS)).andThrow(new IOException());
+
+        final Connection auditConnNoTLS = createNiceMock(Connection.class);
+        auditConnNoTLS.setPort(AUDIT_PORT_NO_TLS);
+        expect(auditConnNoTLS.getProtocol()).andStubReturn(SYSLOG_TLS);
+        expect(auditConnNoTLS.getDevice()).andStubReturn(mockSyslogDevice);
+        expect(auditConnNoTLS.isInstalled()).andStubReturn(true);
+
+        expect(auditConnTLS.isCompatible(auditConnNoTLS)).andStubReturn(true);
+        expect(auditConnTLS.connect(auditConnNoTLS)).andThrow(new IOException());
+
+        replay(auditConnTLS, auditConnNoTLS);
+
+        final AuditRecordRepository arr1 = new AuditRecordRepository();
+        arr1.addConnection(auditConnTLS);
+        mockHubDevice.addDeviceExtension(arr1);
+        mockHubDevice.addConnection(auditConnTLS);
+        mockHubDevice.setDeviceName(INTERNAL_DEVICE_NAME);
+
+        logger.addAuditRecordRepositoryDevice(mockHubDevice);
+        logger.addConnection(auditConnTLS);
+
+        final AuditRecordRepository arr2 = new AuditRecordRepository();
+        arr2.addConnection(auditConnNoTLS);
+        mockSyslogDevice.addDeviceExtension(arr2);
+        mockSyslogDevice.addConnection(auditConnNoTLS);
+        mockSyslogDevice.setDeviceName(EXTERNAL_DEVICE_NAME);
+
+        logger.addAuditRecordRepositoryDevice(mockSyslogDevice);
+
+        try {
+            logger.write(Calendar.getInstance(), msg);
+            fail("Expected an IOException, but no exception was thrown");
+        } catch (IOException e) {
+            assertThat("Unexpected exception message", e.getMessage(),
+                    is("Unable to send audit message to device name(s) " + INTERNAL_DEVICE_NAME + ", " + EXTERNAL_DEVICE_NAME));
+        }
+    }
+
+    @Test
+    public void sendMessage_ThrowsIOException_WhenOneTLSInternalARRDeviceSucceedsAndOneUDPExternalARRDeviceFails()
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException {
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(AuditMessages.createEventIdentification(
+                AuditMessages.EventID.ApplicationActivity, AuditMessages.EventActionCode.Execute,
+                Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success, null,
+                AuditMessages.EventTypeCode.ApplicationStart));
+
+        final Connection auditConnNoTLS = createNiceMock(Connection.class);
+        auditConnNoTLS.setPort(AUDIT_PORT_NO_TLS);
+        expect(auditConnNoTLS.getProtocol()).andStubReturn(SYSLOG_TLS);
+        expect(auditConnNoTLS.getDevice()).andStubReturn(mockHubDevice);
+        expect(auditConnNoTLS.isInstalled()).andStubReturn(true);
+        expect(auditConnNoTLS.isCompatible(auditConnNoTLS)).andStubReturn(true);
+
+        final Socket socket = createNiceMock(Socket.class);
+        expect(auditConnNoTLS.connect(auditConnNoTLS)).andStubReturn(socket);
+        expect(socket.getOutputStream()).andStubReturn(new ByteArrayOutputStream());
+
+        final Connection auditConnUDP = createNiceMock(Connection.class);
+        auditConnUDP.setPort(AUDIT_PORT_UDP);
+        expect(auditConnUDP.getProtocol()).andStubReturn(SYSLOG_UDP);
+        expect(auditConnUDP.getDevice()).andStubReturn(mockSyslogDevice);
+        expect(auditConnUDP.isInstalled()).andStubReturn(true);
+
+        expect(auditConnNoTLS.isCompatible(auditConnUDP)).andStubReturn(true);
+        expect(auditConnNoTLS.connect(auditConnUDP)).andThrow(new IOException());
+
+        replay(auditConnNoTLS, auditConnUDP, socket);
+
+        final AuditRecordRepository arr1 = new AuditRecordRepository();
+        arr1.addConnection(auditConnNoTLS);
+        mockHubDevice.addDeviceExtension(arr1);
+        mockHubDevice.addConnection(auditConnNoTLS);
+        mockHubDevice.setDeviceName(INTERNAL_DEVICE_NAME);
+
+        logger.addAuditRecordRepositoryDevice(mockHubDevice);
+        logger.addConnection(auditConnNoTLS);
+
+        final AuditRecordRepository arr2 = new AuditRecordRepository();
+        arr2.addConnection(auditConnUDP);
+        mockSyslogDevice.addDeviceExtension(arr2);
+        mockSyslogDevice.addConnection(auditConnUDP);
+        mockSyslogDevice.setDeviceName(EXTERNAL_DEVICE_NAME);
+
+        logger.addAuditRecordRepositoryDevice(mockSyslogDevice);
+
+        try {
+            logger.write(Calendar.getInstance(), msg);
+            fail("Expected an IOException, but no exception was thrown");
+        } catch (IOException e) {
+            assertThat("Unexpected exception message", e.getMessage(),
+                    is("Unable to send audit message to device name(s) " + EXTERNAL_DEVICE_NAME));
+        }
+    }
+
+    @Test
+    public void sendMessage_ThrowsIOException_WhenOneTLSInternalARRDeviceFailsAndOneTLSExternalARRDeviceSucceeds()
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException {
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(AuditMessages.createEventIdentification(
+                AuditMessages.EventID.ApplicationActivity, AuditMessages.EventActionCode.Execute,
+                Calendar.getInstance(), AuditMessages.EventOutcomeIndicator.Success, null,
+                AuditMessages.EventTypeCode.ApplicationStart));
+
+        final Connection auditConnNoTLS = createNiceMock(Connection.class);
+        auditConnNoTLS.setPort(AUDIT_PORT_NO_TLS);
+        expect(auditConnNoTLS.getProtocol()).andStubReturn(SYSLOG_TLS);
+        expect(auditConnNoTLS.getDevice()).andStubReturn(mockHubDevice);
+        expect(auditConnNoTLS.isInstalled()).andStubReturn(true);
+        expect(auditConnNoTLS.isCompatible(auditConnNoTLS)).andStubReturn(true);
+        expect(auditConnNoTLS.connect(auditConnNoTLS)).andThrow(new IOException());
+
+        final Connection auditConnTLS = createNiceMock(Connection.class);
+        auditConnTLS.setTlsCipherSuites(CIPHER);
+        auditConnTLS.setPort(AUDIT_PORT_TLS);
+        expect(auditConnTLS.getProtocol()).andStubReturn(SYSLOG_TLS);
+        expect(auditConnTLS.getDevice()).andStubReturn(mockSyslogDevice);
+        expect(auditConnTLS.isInstalled()).andStubReturn(true);
+        expect(auditConnTLS.isCompatible(auditConnTLS)).andStubReturn(true);
+
+        final Socket socket = createNiceMock(Socket.class);
+        expect(auditConnTLS.connect(auditConnTLS)).andStubReturn(socket);
+        expect(socket.getOutputStream()).andStubReturn(new ByteArrayOutputStream());
+
+        expect(auditConnNoTLS.isCompatible(auditConnTLS)).andStubReturn(true);
+        expect(auditConnNoTLS.connect(auditConnTLS)).andStubReturn(socket);
+
+        replay(auditConnNoTLS, auditConnTLS, socket);
+
+        final AuditRecordRepository arr1 = new AuditRecordRepository();
+        arr1.addConnection(auditConnNoTLS);
+        mockHubDevice.addDeviceExtension(arr1);
+        mockHubDevice.addConnection(auditConnNoTLS);
+        mockHubDevice.setDeviceName(INTERNAL_DEVICE_NAME);
+
+        logger.addAuditRecordRepositoryDevice(mockHubDevice);
+        logger.addConnection(auditConnNoTLS);
+
+        final AuditRecordRepository arr2 = new AuditRecordRepository();
+        arr2.addConnection(auditConnTLS);
+        mockSyslogDevice.addDeviceExtension(arr2);
+        mockSyslogDevice.addConnection(auditConnTLS);
+        mockSyslogDevice.setDeviceName(EXTERNAL_DEVICE_NAME);
+
+        logger.addAuditRecordRepositoryDevice(mockSyslogDevice);
+
+        try {
+            logger.write(Calendar.getInstance(), msg);
+            fail("Expected an IOException, but no exception was thrown");
+        } catch (IOException e) {
+            assertThat("Unexpected exception message", e.getMessage(),
+                    is("Unable to send audit message to device name(s) " + INTERNAL_DEVICE_NAME));
+        }
+    }
+
 
     private static Connection createConnection(final String connectionName, final int port, final Connection.Protocol protocol) {
         final Connection connection = new Connection(connectionName, "localhost", port);

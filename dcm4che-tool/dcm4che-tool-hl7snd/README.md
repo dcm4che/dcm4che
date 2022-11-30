@@ -1,3 +1,4 @@
+```
 usage: hl7snd [options] -c <host>:<port> [<file>..][<directory>..]
 
 Reads HL7 V2 messages from specified files or directories and send them to
@@ -123,3 +124,4 @@ Options:
 Example: hl7snd -c localhost:2575 message.hl7
 => Send HL7 V2 message message.hl7 to HL7 Receiver listening on local port
 2575.
+```

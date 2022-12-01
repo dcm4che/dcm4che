@@ -194,7 +194,7 @@ public class MP4Parser implements XPEGParser {
     private Box nextBox(SeekableByteChannel channel, long remaining) throws IOException {
         long pos = channel.position();
         long type = readLong(channel);
-        int size = (int) (type >> 32);
+        long size = type >>> 32;
         return new Box((int) type, pos + (size == 0 ? remaining : size == 1 ? readLong(channel) : size));
     }
 

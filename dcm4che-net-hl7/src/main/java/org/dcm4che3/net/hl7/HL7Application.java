@@ -307,6 +307,13 @@ public class HL7Application implements Serializable {
                             .setHL7ErrorCode(ERRSegment.APPLICATION_INTERNAL_ERROR)
                             .setUserMessage("No HL7 Message Listener configured"));
 
+        if (msh.getField(6, null) == null)
+            throw new HL7Exception(
+                    new ERRSegment(msh)
+                            .setHL7ErrorCode(ERRSegment.REQUIRED_FIELD_MISSING)
+                            .setErrorLocation(ERRSegment.MESSAGE_DATETIME)
+                            .setUserMessage("Missing Date/Time of Message"));
+
         if (msh.getMessageControlID() == null)
             throw new HL7Exception(
                 new ERRSegment(msh)

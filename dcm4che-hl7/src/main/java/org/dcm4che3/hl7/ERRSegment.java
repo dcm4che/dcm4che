@@ -63,6 +63,7 @@ public class ERRSegment extends HL7Segment {
     public static final String RECEIVING_FACILITY = "MSH^1^6^1^1";
     public static final String MESSAGE_CODE = "MSH^1^9^1^1";
     public static final String TRIGGER_EVENT = "MSH^1^9^1^2";
+    public static final String MESSAGE_DATETIME = "MSH^1^7^1^1";
     public static final String MESSAGE_CONTROL_ID = "MSH^1^10^1^1";
 
     public ERRSegment(char fieldSeparator, String encodingCharacters) {

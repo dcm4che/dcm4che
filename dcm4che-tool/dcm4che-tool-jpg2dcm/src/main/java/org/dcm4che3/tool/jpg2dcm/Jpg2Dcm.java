@@ -48,6 +48,7 @@ import org.dcm4che3.imageio.codec.mpeg.MPEG2Parser;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.SafeBuffer;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.UIDUtils;
@@ -89,6 +90,7 @@ public class Jpg2Dcm {
     private boolean noAPPn;
     private boolean photo;
     private String tsuid;
+    private long fragmentLength = 4294967294L; // 2^32-2;
     private Attributes staticMetadata = new Attributes();
     private byte[] buf = new byte[BUFFER_SIZE];
 
@@ -102,6 +104,12 @@ public class Jpg2Dcm {
 
     private void setTSUID(String tsuid) {
         this.tsuid = tsuid;
+    }
+
+    public void setFragmentLength(long fragmentLength) {
+        if (fragmentLength < 1024 || fragmentLength > 4294967294L)
+            throw new IllegalArgumentException("Maximal Fragment Length must be in the range of [1024, 4294967294].");
+        this.fragmentLength = fragmentLength & ~1;
     }
 
     public static void main(String[] args) {
@@ -120,6 +128,8 @@ public class Jpg2Dcm {
             main.setNoAPPn(cl.hasOption("no-app"));
             main.setPhoto(cl.hasOption("xc"));
             main.setTSUID(cl.getOptionValue("tsuid", null));
+            if (cl.hasOption("F"))
+                main.setFragmentLength(Long.parseLong(cl.getOptionValue("F")));
             createStaticMetadata(cl, main.staticMetadata);
             main.convert(cl.getArgList());
         } catch (ParseException e) {
@@ -154,12 +164,19 @@ public class Jpg2Dcm {
         opts.addOption(Option.builder()
                 .longOpt("tsuid")
                 .hasArg()
+                .argName("uid")
                 .desc(rb.getString("tsuid"))
                 .build());
         opts.addOption(Option.builder()
                 .longOpt("no-app")
                 .hasArg(false)
                 .desc(rb.getString("no-app"))
+                .build());
+        opts.addOption(Option.builder("F")
+                .longOpt("fragment")
+                .hasArg()
+                .argName("length")
+                .desc(rb.getString("fragment"))
                 .build());
         return CLIUtils.parseComandLine(args, opts, rb, Jpg2Dcm.class);
     }
@@ -235,38 +252,43 @@ public class Jpg2Dcm {
                 DicomOutputStream dos = new DicomOutputStream(destFilePath.toFile())) {
             XPEGParser parser = fileType.newParser(channel);
             parser.getAttributes(fileMetadata);
-            dos.writeDataset(fileMetadata.createFileMetaInformation(tsuid != null ? tsuid : parser.getTransferSyntaxUID()),
+            byte[] prefix = ByteUtils.EMPTY_BYTES;
+            if (noAPPn && parser.getPositionAfterAPPSegments() > 0) {
+                channel.position(parser.getPositionAfterAPPSegments());
+                prefix = new byte[] { (byte) 0xFF, (byte) JPEG.SOI };
+            } else {
+                channel.position(parser.getCodeStreamPosition());
+            }
+            long codeStreamSize = channel.size() - channel.position() + prefix.length;
+            dos.writeDataset(fileMetadata.createFileMetaInformation(
+                    tsuid != null ? tsuid : parser.getTransferSyntaxUID(codeStreamSize > fragmentLength)),
                             fileMetadata);
             dos.writeHeader(Tag.PixelData, VR.OB, -1);
             dos.writeHeader(Tag.Item, null, 0);
-            if (noAPPn && parser.getPositionAfterAPPSegments() > 0) {
-                copyPixelData(channel, parser.getPositionAfterAPPSegments(), dos,
-                        (byte) 0xFF, (byte) JPEG.SOI);
-            } else {
-                copyPixelData(channel, parser.getCodeStreamPosition(), dos);
-            }
+            do {
+                long len = Math.min(codeStreamSize, fragmentLength);
+                dos.writeHeader(Tag.Item, null, (int) ((len + 1) & ~1));
+                dos.write(prefix);
+                copy(channel, len - prefix.length, dos);
+                if ((len & 1) != 0)
+                    dos.write(0);
+                prefix = ByteUtils.EMPTY_BYTES;
+                codeStreamSize -= len;
+            } while (codeStreamSize > 0);
             dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
         }
         System.out.println(MessageFormat.format(rb.getString("converted"), srcFilePath, destFilePath));
     }
 
-    private void copyPixelData(SeekableByteChannel channel, long position, DicomOutputStream dos, byte... prefix)
-            throws IOException {
-        long codeStreamSize = channel.size() - position + prefix.length;
-        dos.writeHeader(Tag.Item, null, (int) ((codeStreamSize + 1) & ~1));
-        dos.write(prefix);
-        channel.position(position);
-        copy(channel, dos);
-        if ((codeStreamSize & 1) != 0)
-            dos.write(0);
-    }
-
-    private void copy(ByteChannel in, OutputStream out) throws IOException {
+    private void copy(ByteChannel in, long len, OutputStream out) throws IOException {
         ByteBuffer bb = ByteBuffer.wrap(buf);
         int read;
-        while ((read = in.read(bb)) > 0) {
+        while (len > 0){
+            bb.position(0);
+            bb.limit((int) Math.min(len, buf.length));
+            read = in.read(bb);
             out.write(buf, 0, read);
-            SafeBuffer.clear(bb);
+            len -= read;
         }
     }
 

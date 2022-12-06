@@ -1097,7 +1097,7 @@ public class StowRS {
         StowRSBulkdata stowRSBulkdata = contentLocBulkdata.get(contentLocation);
         XPEGParser parser = stowRSBulkdata.getParser();
         if (bulkdataFileContentType.getBulkdataTypeTag() == Tag.PixelData && tsuid)
-            bulkdataContentType1 = bulkdataContentType1 + "; transfer-syntax=" + parser.getTransferSyntaxUID();
+            bulkdataContentType1 = bulkdataContentType1 + "; transfer-syntax=" + parser.getTransferSyntaxUID(false);
         LOG.info("> Bulkdata Content Type: " + bulkdataContentType1);
         writePartHeaders(out, bulkdataContentType1, contentLocation);
 

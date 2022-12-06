@@ -153,8 +153,10 @@ public class MPEG2Parser implements XPEGParser {
     }
 
     @Override
-    public String getTransferSyntaxUID() {
-        return frameRate <= 5 && columns <= 720 ? UID.MPEG2MPML : UID.MPEG2MPHL;
+    public String getTransferSyntaxUID(boolean fragmented) {
+        return frameRate <= 5 && columns <= 720
+                ? fragmented ? UID.MPEG2MPMLF : UID.MPEG2MPML
+                : fragmented ? UID.MPEG2MPHLF : UID.MPEG2MPHL;
     }
 
     private void findSequenceHeader(SeekableByteChannel channel, int length) throws IOException {

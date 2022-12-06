@@ -57,5 +57,5 @@ public interface XPEGParser {
 
     Attributes getAttributes(Attributes attrs);
 
-    String getTransferSyntaxUID() throws XPEGParserException;
+    String getTransferSyntaxUID(boolean fragmented) throws XPEGParserException;
 }

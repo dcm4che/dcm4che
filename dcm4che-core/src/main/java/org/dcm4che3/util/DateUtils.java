@@ -280,12 +280,13 @@ public class DateUtils {
                     cal.set(precision.lastField = Calendar.SECOND,
                             Integer.parseInt(s.substring(pos, pos + 2)));
                     pos += 2;
-                    if (pos < length) {
-                        float f = Float.parseFloat(s.substring(pos));
-                        if (f >= 1 || f < 0)
+                    int nffffff = length - pos;
+                    if (nffffff > 0) {
+                        int fffffff;
+                        if (s.charAt(pos++) != '.' || nffffff > 7 || (fffffff = Integer.parseInt(s.substring(pos))) < 0)
                             throw new IllegalArgumentException(s);
-                        cal.set(precision.lastField = Calendar.MILLISECOND, 
-                                (int) (f * 1000));
+                        cal.set(precision.lastField = Calendar.MILLISECOND,
+                                (fffffff * (new int[]{ 100000, 10000, 1000, 100, 10, 1 })[nffffff - 2] + 500) / 1000);
                         return cal.getTime();
                     }
                 }

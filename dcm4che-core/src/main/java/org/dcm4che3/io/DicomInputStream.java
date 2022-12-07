@@ -110,7 +110,7 @@ public class DicomInputStream extends FilterInputStream
     private int tag;
     private VR vr;
     private int encodedVR;
-    private int length;
+    private long length;
     private DicomInputHandler handler = this;
     private BulkDataCreator bulkDataCreator = this;
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
@@ -371,6 +371,10 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public final int length() {
+        return (int) length;
+    }
+
+    public long longLength() {
         return length;
     }
 
@@ -534,10 +538,11 @@ public class DicomInputStream extends FilterInputStream
                 vr = VR.UN;
             }
         }
-        length = ByteUtils.bytesToInt(buf, 4, bigEndian);
-        if (length < -1) {
-            throw tagValueTooLargeException();
-        }
+        length = toLongOrUndefined(ByteUtils.bytesToInt(buf, 4, bigEndian));
+    }
+
+    static long toLongOrUndefined(int length) {
+        return length == UNDEFINED_LENGTH ? length : length & 0xffffffffL ;
     }
 
     public boolean readItemHeader() throws IOException {
@@ -652,7 +657,7 @@ public class DicomInputStream extends FilterInputStream
         return stopTag != -1 ? o -> Integer.compareUnsigned(o.tag, stopTag) >= 0 : o -> false;
     }
 
-    public void readAttributes(Attributes attrs, int len, Predicate<DicomInputStream> stopPredicate)
+    public void readAttributes(Attributes attrs, long len, Predicate<DicomInputStream> stopPredicate)
             throws IOException {
         boolean undeflen = len == UNDEFINED_LENGTH;
         long endPos =  pos + (len & 0xffffffffL);
@@ -753,7 +758,7 @@ public class DicomInputStream extends FilterInputStream
             BulkData bulkData;
         if (uri != null && !(super.in instanceof InflaterInputStream)) {
             bulkData = new BulkData(uri, pos, length, bigEndian);
-            skipFully(length);
+            skipFully(length & 0xffffffffL);
         } else {
             if (blkOut == null) {
                 File blkfile = File.createTempFile(blkFilePrefix,
@@ -781,7 +786,7 @@ public class DicomInputStream extends FilterInputStream
 
     private boolean isBulkData(Attributes attrs) {
         return bulkDataDescriptor.isBulkData(itemPointers,
-                attrs.getPrivateCreator(tag), tag, vr, length);
+                attrs.getPrivateCreator(tag), tag, vr, (int) length);
     }
 
     @Override
@@ -839,11 +844,11 @@ public class DicomInputStream extends FilterInputStream
      */
     private void skipAttribute(String message, String methodName) throws IOException {
         String tagAsString = TagUtils.toString(this.tag);
-        LOG.warn(message, tagAsString, length, tagPos, methodName);
-        skipFully(length);
+        LOG.warn(message, tagAsString, longLength(), tagPos, methodName);
+        skipFully(longLength());
     }
 
-    private void readSequence(int len, Attributes attrs, int sqtag)
+    private void readSequence(long len, Attributes attrs, int sqtag)
             throws IOException {
         if (len == 0) {
             attrs.setNull(sqtag, VR.SQ);
@@ -942,7 +947,7 @@ public class DicomInputStream extends FilterInputStream
         return attrs;
     }
 
-    public void readItemValue(Attributes attrs, int length) throws IOException {
+    public void readItemValue(Attributes attrs, long length) throws IOException {
         readAttributes(attrs, length, dis -> dis.tag == Tag.ItemDelimitationItem);
     }
 
@@ -964,12 +969,11 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public byte[] readValue() throws IOException {
-        int valLen = length;
+        int valLen = (int) length;
+        if (valLen < 0) {
+            throw tagValueTooLargeException();
+        }
         try {
-            if (valLen < 0) {
-                throw new IOException(
-                        "internal error: length should have been validated in readHeader");
-            }
             boolean limitedStream = in instanceof LimitedInputStream;
             if(limitedStream && valLen > ((LimitedInputStream)in).getRemaining()) {
                 throw new EOFException(

@@ -43,6 +43,8 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 import java.io.IOException;
 
+import static java.lang.String.format;
+
 /**
  * Return a subset of an image input stream.  The local variables track the location within the offset/length
  * bounds which are mapped onto the underlying full image input stream.
@@ -57,6 +59,16 @@ public class BulkURIImageInputStream extends ImageInputStreamImpl {
 
 
     public BulkURIImageInputStream(ImageInputStream iis, long offset, int length) throws IOException {
+        if(iis == null) {
+            throw new IllegalArgumentException("iis is null");
+        }
+        if(offset < 0) {
+            throw new IllegalArgumentException("Offset "+offset);
+        }
+        if(length < 0) {
+            throw new IllegalArgumentException("Length "+offset);
+        }
+
         this.iis = iis;
         this.offset = offset;
         this.length = length;
@@ -95,8 +107,13 @@ public class BulkURIImageInputStream extends ImageInputStreamImpl {
             }
             else if(bytesRead == -1) {
                 // EOF, but did we read everything?
-                if(this.streamPos < length()) {
-                    throw new TruncatedPixelDataException();
+                if(this.streamPos < this.length) {
+                    String message = format("Segment ended at %s of %s.  The segment is offset %s into a stream of length %s.",
+                            this.streamPos,
+                            this.length,
+                            this.offset,
+                            this.iis.length());
+                    throw new TruncatedPixelDataException(message);
                 }
             }
         }

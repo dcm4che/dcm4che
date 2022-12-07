@@ -95,9 +95,26 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
         return this.attributes;
     }
 
+    /**
+     * Ensure that the instance has a PixelData tag and that it is of non-zero size.  This is a pretty course measurement
+     * of pixel data availability, but it allows us to fail fast when there are obvious problems.
+     */
     @Override
     public boolean containsPixelData() {
-        return getPixelDataValue() != null;
+        boolean containsPixelData;
+
+        Object pixelDataValue = getPixelDataValue();
+        if(pixelDataValue == null) {
+            containsPixelData = false;
+        }
+        else if(pixelDataValue instanceof Fragments) {
+            containsPixelData = !((Fragments)pixelDataValue).isEmpty();
+        }
+        else {
+            containsPixelData = Fragments.length(pixelDataValue) > 0;
+        }
+
+        return containsPixelData;
     }
 
     @Override
@@ -138,8 +155,9 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
         else {
             int frameLength = calculateFrameLength();
             long pixelDataLength = Fragments.length(getPixelDataValue());
-            if(pixelDataLength % frameLength <= 1) {
-                // Must be within 1 bytes to account for padding
+
+            if(frameLength > 0 && pixelDataLength % frameLength <= 1) {
+                // We allow for a byte of padding for odd length pixel data
                 frames = (int) pixelDataLength / frameLength;
             }
             else {
@@ -174,7 +192,7 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
             }
 
             Fragments fragments = (Fragments) pixelData;
-            ImageInputStream iisOfFile = uriLoader.openStream(this.uri);
+            ImageInputStream iisOfFile = openStreamForFile();
             iisOfFrame = new SegmentedImageInputStream(iisOfFile,fragments, frameIndex);
         }
         else {
@@ -207,6 +225,18 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
                 : ByteOrder.LITTLE_ENDIAN);
 
         return iisOfFrame;
+    }
+
+    private ImageInputStream openStreamForFile() throws IOException {
+        ImageInputStream iisOfFile;
+        if(this.uri.getScheme().equals("java")) {
+            // If the protocol is java:iis then we now that we do not have a file to read from, so an empty IIS is returned
+            iisOfFile =  new ByteArrayImageInputStream(new byte[0]);
+        }
+        else {
+            iisOfFile = uriLoader.openStream(this.uri);
+        }
+        return iisOfFile;
     }
 
     protected  void checkFrameIndex(int frameIndex) throws IOException {

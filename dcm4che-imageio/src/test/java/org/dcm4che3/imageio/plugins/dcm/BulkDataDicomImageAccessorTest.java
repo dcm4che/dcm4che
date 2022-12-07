@@ -39,25 +39,36 @@
 package org.dcm4che3.imageio.plugins.dcm;
 
 
+import org.dcm4che.test.data.TestData;
+import org.dcm4che3.data.DatasetWithFMI;
+import org.dcm4che3.data.ItemPointer;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.metadata.DefaultMetaDataFactory;
 import org.dcm4che3.imageio.metadata.DicomMetaDataFactory;
 import org.dcm4che3.io.BulkDataDescriptor;
+import org.dcm4che3.io.DicomInputStream;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 
 @RunWith(Parameterized.class)
 public class BulkDataDicomImageAccessorTest extends DicomMetaDataTest {
-    @Parameterized.Parameters(name="{1} -> Read entire file: {0}")
+
+
+    @Parameterized.Parameters(name="{1} -> Read entire: {0}.  InputStream: {2}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                {true, BulkDataDescriptor.DEFAULT},
-                {true, BulkDataDescriptor.PIXELDATA},
-                {false, BulkDataDescriptor.DEFAULT },
-                {false, BulkDataDescriptor.PIXELDATA}
+                {true, BulkDataDescriptor.DEFAULT, false},
+                {false, BulkDataDescriptor.DEFAULT , false},
+                {true, BulkDataDescriptor.DEFAULT , true},
+                {true, BulkDataDescriptor.PIXELDATA, false},
+                {false, BulkDataDescriptor.PIXELDATA, false},
+                {true, BulkDataDescriptor.PIXELDATA, true},
         });
     }
 
@@ -67,10 +78,28 @@ public class BulkDataDicomImageAccessorTest extends DicomMetaDataTest {
     @Parameterized.Parameter(1)
     public BulkDataDescriptor descriptor;
 
+    @Parameterized.Parameter(2)
+    public boolean useInputStream;
+
     @Override
     DicomMetaDataFactory createMetadataFactory() {
         DefaultMetaDataFactory factory = new DefaultMetaDataFactory(readEntireFile);
         factory.setDescriptor(descriptor);
         return factory;
+    }
+
+    @Override
+    protected DicomMetaData createMetadata(TestData data) throws IOException {
+        if(useInputStream) {
+            // People can still manually construct DicomMetadata from Attributes
+            try(DicomInputStream dis = new DicomInputStream(data.toURL().openStream())) {
+                dis.setIncludeBulkData(DicomInputStream.IncludeBulkData.YES);
+                DatasetWithFMI datasetWithFMI = dis.readDatasetWithFMI();
+                return new DicomMetaData(datasetWithFMI.getFileMetaInformation(), datasetWithFMI.getDataset());
+            }
+        }
+        else {
+            return this.createMetadataFactory().readMetaData(data.toFile());
+        }
     }
 }

@@ -1,5 +1,6 @@
 package org.dcm4che3.io.stream;
 
+import org.dcm4che3.error.TruncatedPixelDataException;
 import org.junit.Test;
 
 import javax.imageio.stream.FileImageInputStream;
@@ -37,6 +38,40 @@ public class BulkURIImageInputStreamTest {
         }
     }
 
+
+    @Test(expected = IllegalArgumentException.class)
+    public void constructor_NegativeOffset_ThrowsIllegalArgumentException() throws IOException {
+        MockImageInputStream iis = new MockImageInputStream();
+        long offset = -5;
+        int length = 5;
+        new BulkURIImageInputStream(iis, offset, length);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void constructor_NegativeLength_ThrowsIllegalArgumentException() throws IOException {
+        MockImageInputStream iis = new MockImageInputStream();
+        long offset = 0;
+        int length = -1;
+        new BulkURIImageInputStream(iis, offset, length);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void constructor_StreamIsNull_ThrowsIllegalArgumentException() throws IOException {
+        long offset = 5;
+        int length = 50;
+        new BulkURIImageInputStream(null, offset, length);
+    }
+
+    @Test(expected = TruncatedPixelDataException.class)
+    public void read_EndsPrematurely_ThrowsTruncatedPixelDataException() throws IOException {
+        long offset = 0;
+        int length = 100;
+
+        try(ImageInputStream iis = new BulkURIImageInputStream( new MockImageInputStream(), offset, length);) {
+            byte[] buffer = new byte[30];
+            iis.read(buffer);
+        }
+    }
 
     private class MockImageInputStream extends ImageInputStreamImpl {
 

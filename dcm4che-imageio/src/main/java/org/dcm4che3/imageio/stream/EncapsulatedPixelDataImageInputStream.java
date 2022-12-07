@@ -149,7 +149,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
             endOfStream = true;
             return false;
         }
-        fragmEndPos = streamPos + dis.longLength();
+        fragmEndPos = streamPos + dis.unsignedLength();
         mark();
         fragmStartWord = (super.read() << 8) | super.read();
         reset();

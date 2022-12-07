@@ -139,7 +139,7 @@ public class DcmDump implements DicomInputHandler {
     }
 
     private byte[] probeValue(DicomInputStream dis) throws IOException {
-        long len = dis.longLength();
+        long len = dis.unsignedLength();
         if (len == 0) return ByteUtils.EMPTY_BYTES;
         int read = (int) Math.min(len, (width + 7) & ~7);
         byte[] b = new byte[read];
@@ -191,7 +191,7 @@ public class DcmDump implements DicomInputHandler {
         VR vr = dis.vr();
         if (vr != null)
             line.append(vr).append(' ');
-        line.append('#').append(dis.longLength());
+        line.append('#').append(dis.unsignedLength());
     }
 
     private void appendKeyword(DicomInputStream dis, String privateCreator, StringBuilder line) {

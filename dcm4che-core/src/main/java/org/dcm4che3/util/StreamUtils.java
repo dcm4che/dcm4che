@@ -96,7 +96,7 @@ public class StreamUtils {
     }
 
     public static  void copy(InputStream in, OutputStream out, int len, byte buf[]) throws IOException {
-        copy(in, out, len & 0xffffffffL, buf);
+        copy(in, out, unsignedInt(len), buf);
     }
 
     public static  void copy(InputStream in, OutputStream out, long len, byte buf[]) throws IOException {
@@ -112,7 +112,7 @@ public class StreamUtils {
     }
 
     public static  void copy(InputStream in, OutputStream out, int len) throws IOException {
-        copy(in, out, len & 0xffffffffL);
+        copy(in, out, unsignedInt(len));
     }
 
     public static  void copy(InputStream in, OutputStream out, long len) throws IOException {
@@ -121,7 +121,7 @@ public class StreamUtils {
 
     public static void copy(InputStream in, OutputStream out, int len,
             int swapBytes, byte buf[]) throws IOException {
-        copy(in, out, len & 0xffffffffL, swapBytes, buf);
+        copy(in, out, unsignedInt(len), swapBytes, buf);
     }
 
     public static void copy(InputStream in, OutputStream out, long len,
@@ -162,7 +162,11 @@ public class StreamUtils {
 
     public static void copy(InputStream in, OutputStream out, int len,
             int swapBytes) throws IOException {
-        copy(in, out, len & 0xffffffffL, swapBytes);
+        copy(in, out, unsignedInt(len), swapBytes);
+    }
+
+    private static long unsignedInt(int len) {
+        return len & 0xffffffffL;
     }
 
     public static void copy(InputStream in, OutputStream out, long len,

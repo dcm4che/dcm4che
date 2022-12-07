@@ -370,11 +370,21 @@ public class DicomInputStream extends FilterInputStream
         return vr;
     }
 
+    /**
+     * Returns value length of last parsed data element header. May be negative for value length >= 2^31.
+     * -1 indicates an Undefined Length.
+     * @return value length of last parsed data element header.
+     */
     public final int length() {
         return (int) length;
     }
 
-    public long longLength() {
+    /**
+     * Returns value length of last parsed data element header.
+     * -1 indicates an Undefined Length.
+     * @return value length of last parsed data element header.
+     */
+    public long unsignedLength() {
         return length;
     }
 
@@ -605,7 +615,7 @@ public class DicomInputStream extends FilterInputStream
      * {@link #createWithLimit} or {@link #createWithLimitFromFileLength}.
      */
     @Deprecated
-    public Attributes readDataset(int len, Predicate<DicomInputStream> stopPredicate) throws IOException {
+    public Attributes readDataset(long len, Predicate<DicomInputStream> stopPredicate) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian, 64);
@@ -649,7 +659,7 @@ public class DicomInputStream extends FilterInputStream
         return attrs;
     }
 
-    public void readAttributes(Attributes attrs, int len, int stopTag) throws IOException {
+    public void readAttributes(Attributes attrs, long len, int stopTag) throws IOException {
         readAttributes(attrs, len, tagEqualOrGreater(stopTag));
     }
 
@@ -758,7 +768,7 @@ public class DicomInputStream extends FilterInputStream
             BulkData bulkData;
         if (uri != null && !(super.in instanceof InflaterInputStream)) {
             bulkData = new BulkData(uri, pos, length, bigEndian);
-            skipFully(length & 0xffffffffL);
+            skipFully(length);
         } else {
             if (blkOut == null) {
                 File blkfile = File.createTempFile(blkFilePrefix,
@@ -844,8 +854,8 @@ public class DicomInputStream extends FilterInputStream
      */
     private void skipAttribute(String message, String methodName) throws IOException {
         String tagAsString = TagUtils.toString(this.tag);
-        LOG.warn(message, tagAsString, longLength(), tagPos, methodName);
-        skipFully(longLength());
+        LOG.warn(message, tagAsString, length, tagPos, methodName);
+        skipFully(length);
     }
 
     private void readSequence(long len, Attributes attrs, int sqtag)

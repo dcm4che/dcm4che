@@ -220,7 +220,7 @@ public class JSONWriter implements DicomInputHandler {
             throws IOException {
         int tag = dis.tag();
         VR vr = dis.vr();
-        long len = dis.longLength();
+        long len = dis.unsignedLength();
         if (TagUtils.isGroupLength(tag)) {
             dis.readValue(dis, attrs);
         } else if (dis.isExcludeBulkData()) {

@@ -110,12 +110,14 @@ class NativeJ2kImageWriter extends ImageWriter {
             ImageCV mat = null;
             try {
                 // Band interleaved mode (PlanarConfiguration = 1) is converted to pixel interleaved
-                // So the input image has always a pixel interleaved mode mode((PlanarConfiguration = 0)
-                mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), false);
+                // So the input image has always a pixel interleaved mode((PlanarConfiguration = 0)
+                boolean signed = desc.isSigned();
+                // J2K codec requires BGR as input color model
+                mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), true, signed);
 
                 int cvType = mat.type();
                 int channels = CvType.channels(cvType);
-                boolean signed = desc.isSigned();
+                int epi = channels == 1 ? Imgcodecs.EPI_Monochrome2 : Imgcodecs.EPI_RGB;
                 int dcmFlags = signed ? Imgcodecs.DICOM_FLAG_SIGNED : Imgcodecs.DICOM_FLAG_UNSIGNED;
 
                 int[] params = new int[16];
@@ -127,6 +129,7 @@ class NativeJ2kImageWriter extends ImageWriter {
                 params[Imgcodecs.DICOM_PARAM_COMPONENTS] = channels; // Number of components
                 params[Imgcodecs.DICOM_PARAM_BITS_PER_SAMPLE] = desc.getBitsCompressed(); // Bits per sample
                 params[Imgcodecs.DICOM_PARAM_INTERLEAVE_MODE] = Imgcodecs.ILV_SAMPLE; // Interleave mode
+                params[Imgcodecs.DICOM_PARAM_COLOR_MODEL] = epi; // Photometric interpretation
                 params[Imgcodecs.DICOM_PARAM_J2K_COMPRESSION_FACTOR] = j2kParams.getCompressionRatiofactor(); // JPEG-2000 lossy ratio factor
 
                 dicomParams = new MatOfInt(params);

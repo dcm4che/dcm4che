@@ -208,7 +208,7 @@ public class DateUtils {
     public static Date parseDA(TimeZone tz, String s, boolean ceil) {
         Calendar cal = cal(tz);
         int length = s.length();
-        if (!(length == 8 || length == 10 && !Character.isDigit(s.charAt(4)) && !Character.isDigit(s.charAt(7))))
+        if (!(length == 8 || length == 10 && !Character.isDigit(s.charAt(4)) && s.charAt(7) == s.charAt(4)))
             throw new IllegalArgumentException(s);
         int pos = 0;
         cal.set(Calendar.YEAR,
@@ -216,11 +216,11 @@ public class DateUtils {
                 parseDigit(s, pos++) * 100 +
                 parseDigit(s, pos++) * 10 +
                 parseDigit(s, pos++));
-        if (!Character.isDigit(s.charAt(pos)))
+        if (length == 10)
             pos++;
         cal.set(Calendar.MONTH,
                 parseDigit(s, pos++) * 10 + parseDigit(s, pos++) - 1);
-        if (!Character.isDigit(s.charAt(pos)))
+        if (length == 10)
             pos++;
         cal.set(Calendar.DAY_OF_MONTH,
                 parseDigit(s, pos++) * 10 + parseDigit(s, pos++));

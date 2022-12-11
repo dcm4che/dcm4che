@@ -14,6 +14,6 @@ Options:
  -V,--version   output version information and exit
 Example:
 $ dcmbenchmark image.dcm
-Read DICOM file image.dcm without Pixel Data 10 times with one measurement
-per 10 parsings.
+Read DICOM file image.dcm without Pixel Data 100 times with one
+measurement per 10 parsings.
 ```

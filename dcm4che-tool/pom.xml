@@ -60,8 +60,9 @@
     <module>dcm4che-tool-dcm2pdf</module>
     <module>dcm4che-tool-dcm2str</module>
     <module>dcm4che-tool-dcm2xml</module>
-    <module>dcm4che-tool-dcmdump</module>
+    <module>dcm4che-tool-dcmbenchmark</module>
     <module>dcm4che-tool-dcmdir</module>
+    <module>dcm4che-tool-dcmdump</module>
     <module>dcm4che-tool-dcmldap</module>
     <module>dcm4che-tool-dcmqrscp</module>
     <module>dcm4che-tool-dcmvalidate</module>

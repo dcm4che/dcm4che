@@ -133,14 +133,15 @@
         <include>org.dcm4che.tool:dcm4che-tool-agfa2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-agfa2sr</include>
         <include>org.dcm4che.tool:dcm4che-tool-common</include>
-        <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2jpg</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2json</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2pdf</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2str</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmbenchmark</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmldap</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmvalidate</include>

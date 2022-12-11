@@ -83,6 +83,7 @@ Utilities
 - [dcm2pdf][]: Extract encapsulated PDF, CDA or STL from DICOM file
 - [dcm2str][]: Apply Attributes Format Pattern to dicom file or command line parameters.
 - [dcm2xml][]: Convert DICOM file in XML presentation
+- [dcmbenchmark][]: Parse a DICOM file repetitively, measuring time and used memory
 - [dcmdir][]: Dump, create or update DICOMDIR file
 - [dcmdump][]: Dump DICOM file in textual form
 - [dcmldap][]: Insert/remove configuration entries for Network AEs into/from LDAP server
@@ -131,6 +132,7 @@ Utilities
 [dcm2pdf]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2pdf/README.md
 [dcm2str]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2str/README.md
 [dcm2xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2xml/README.md
+[dcmbenchmark]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmbenchmark/README.md
 [dcmdir]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdir/README.md
 [dcmdump]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdump/README.md
 [dcmldap]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmldap/README.md

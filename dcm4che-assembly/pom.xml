@@ -274,11 +274,6 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
-      <artifactId>dcm4che-tool-dcmdump</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-dcm2dcm</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -309,7 +304,17 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-dcmbenchmark</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-dcmdir</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-dcmdump</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

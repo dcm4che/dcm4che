@@ -418,9 +418,8 @@ public class Attributes implements Serializable {
     }
 
     public Attributes getNestedDataset(String privateCreator, int sequenceTag, int itemIndex) {
-        ensureModifiable();
-        Object value = getValue(privateCreator, sequenceTag);
-        if (!(value instanceof Sequence))
+        Object value = getSequence(privateCreator, sequenceTag);
+        if (value == null)
             return null;
 
         Sequence sq = (Sequence) value;
@@ -744,14 +743,36 @@ public class Attributes implements Serializable {
     }
 
     public Sequence getSequence(String privateCreator, int tag) {
-        int index = indexOf(privateCreator, tag);
+        int sqtag = tag;
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
+            if (creatorTag == -1)
+                return null;
+            sqtag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(sqtag);
         if (index < 0)
             return null;
-        
+
+        VR vr = vrs[index];
+        if (vr != VR.SQ && vr != VR.UN)
+            return null;
+
         Object value = values[index];
+        if (value instanceof Sequence)
+            return (Sequence) value;
+
         if (value == Value.NULL)
-            return (Sequence) (values[index] = new Sequence(this, privateCreator, tag, 0));
-        return value instanceof Sequence ? (Sequence) value : null;
+            values[index] = new Sequence(this, privateCreator, tag, 0);
+        else {
+            try {
+                DicomInputStream.parseUNSequence((byte[]) value, this, sqtag);
+            } catch (IOException e) {
+                return null;
+            }
+        }
+        vrs[index] = VR.SQ;
+        return (Sequence) values[index];
     }
 
     public byte[] getBytes(int tag) throws IOException {

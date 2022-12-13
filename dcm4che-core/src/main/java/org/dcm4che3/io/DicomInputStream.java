@@ -154,6 +154,13 @@ public class DicomInputStream extends FilterInputStream
         uri = file.toURI().toString();
     }
 
+    public static void parseUNSequence(byte[] buf, Attributes attrs, int sqtag) throws IOException {
+        DicomInputStream dis = new DicomInputStream(new ByteArrayInputStream(buf),
+                attrs.bigEndian() ? UID.ExplicitVRBigEndian : UID.ExplicitVRLittleEndian);
+        dis.encodedVR = 0x554e;
+        dis.readSequence(buf.length, attrs, sqtag);
+    }
+
     /**
      * Create a new DicomInputStream for the given input stream, Transfer Syntax UID and read limit.
      * It ensures to never read more than the limit from the stream by wrapping it with a {@link LimitedInputStream}.
@@ -900,41 +907,7 @@ public class DicomInputStream extends FilterInputStream
             int len = in.read(buf);
             ((PushbackInputStream) in).unread(buf, 0, len);
         }
-        switch (ByteUtils.bytesToVR(buf, 12)) {
-            case 0x4145: // AE
-            case 0x4153: // AS
-            case 0x4154: // AT
-            case 0x4353: // CS
-            case 0x4441: // DA
-            case 0x4453: // DS
-            case 0x4454: // DT
-            case 0x4644: // FD
-            case 0x464c: // FL
-            case 0x4953: // IS
-            case 0x4c4f: // LO
-            case 0x4c54: // LT
-            case 0x4f42: // OB
-            case 0x4f44: // OD
-            case 0x4f46: // OF
-            case 0x4f4c: // OL
-            case 0x4f57: // OW
-            case 0x504e: // PN
-            case 0x5348: // SH
-            case 0x534c: // SL
-            case 0x5351: // SQ
-            case 0x5353: // SS
-            case 0x5354: // ST
-            case 0x544d: // TM
-            case 0x5543: // UC
-            case 0x5549: // UI
-            case 0x554c: // UL
-            case 0x554e: // UN
-            case 0x5552: // UR
-            case 0x5553: // US
-            case 0x5554: // UT
-                return true;
-        }
-        return false;
+        return VR.valueOf(ByteUtils.bytesToVR(buf, 12)) != null;
     }
 
     private void addItemPointer(int sqtag, String privateCreator, int itemIndex) {

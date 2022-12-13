@@ -140,12 +140,19 @@ public enum TransferSyntaxType {
             case UID.JPIPReferencedDeflate:
                 return JPIP;
             case UID.MPEG2MPML:
+            case UID.MPEG2MPMLF:
             case UID.MPEG2MPHL:
+            case UID.MPEG2MPHLF:
             case UID.MPEG4HP41:
+            case UID.MPEG4HP41F:
             case UID.MPEG4HP41BD:
+            case UID.MPEG4HP41BDF:
             case UID.MPEG4HP422D:
+            case UID.MPEG4HP422DF:
             case UID.MPEG4HP423D:
+            case UID.MPEG4HP423DF:
             case UID.MPEG4HP42STEREO:
+            case UID.MPEG4HP42STEREOF:
             case UID.HEVCMP51:
             case UID.HEVCM10P51:
                 return MPEG;
@@ -165,12 +172,19 @@ public enum TransferSyntaxType {
             case UID.JPEG2000:
             case UID.JPEG2000MC:
             case UID.MPEG2MPML:
+            case UID.MPEG2MPMLF:
             case UID.MPEG2MPHL:
+            case UID.MPEG2MPHLF:
             case UID.MPEG4HP41:
+            case UID.MPEG4HP41F:
             case UID.MPEG4HP41BD:
+            case UID.MPEG4HP41BDF:
             case UID.MPEG4HP422D:
+            case UID.MPEG4HP422DF:
             case UID.MPEG4HP423D:
+            case UID.MPEG4HP423DF:
             case UID.MPEG4HP42STEREO:
+            case UID.MPEG4HP42STEREOF:
             case UID.HEVCMP51:
             case UID.HEVCM10P51:
                 return true;

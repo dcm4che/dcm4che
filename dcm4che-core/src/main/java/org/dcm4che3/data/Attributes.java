@@ -762,16 +762,16 @@ public class Attributes implements Serializable {
         if (value instanceof Sequence)
             return (Sequence) value;
 
-        if (value == Value.NULL)
+        if (value == Value.NULL) {
+            vrs[index] = VR.SQ;
             values[index] = new Sequence(this, privateCreator, tag, 0);
-        else {
+        } else {
             try {
                 DicomInputStream.parseUNSequence((byte[]) value, this, sqtag);
             } catch (IOException e) {
                 return null;
             }
         }
-        vrs[index] = VR.SQ;
         return (Sequence) values[index];
     }
 

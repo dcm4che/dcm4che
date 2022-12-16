@@ -58,19 +58,44 @@ import java.security.NoSuchAlgorithmException;
 import static org.junit.Assert.*;
 
 public class BulkDataTest {
-    private static final String US_MF_RLE = "../../src/test/data/US-PAL-8-10x-echo";
-
-
     public static final String URL_PATH = "file:/path";
     public static final String URL_OFFSET = "file:/path?offset=1234&length=5678";
     public static final String URL_OFFSETS = "file:/path?offsets=1,2,3,4&lengths=5,6,7,8";
     public static final long[] OFFSETS = { 1, 2, 3, 4 };
-    public static final int[] LENGTHS = { 5, 6, 7, 8 };
+    public static final long[] LENGTHS = { 5, 6, 7, 8 };
     public static final int OFFSET = 1234;
     public static final int LENGTH = 5678;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @Test
+    public void testBulkdata_create() {
+    	long offset = 3l*Integer.MAX_VALUE;
+        long length = 0xFFFF0000l;
+    	BulkData bulk = new BulkData(URL_PATH, offset, length,false);
+        assertEquals(URL_PATH + "?offset=" + offset + "&length=" + length, bulk.getURI());
+        assertEquals(length,bulk.longLength());
+        assertEquals(offset,bulk.offset());
+        BulkData bulk2 = new BulkData(URL_PATH, offset, length, false);
+        assertEquals(bulk,bulk2);
+        assertEquals(bulk.hashCode(),bulk2.hashCode());
+    }
+    
+    @Test
+    public void testBulkdata_update() {
+    	long offset = 3l*Integer.MAX_VALUE - 1;
+        long length = 0xFFFF0000l;
+    	BulkData bulk = new BulkData(URL_PATH, offset, length,false);
+        BulkData bulkUnknown = new BulkData(URL_PATH,-1l, -1, false);
+        assertEquals(URL_PATH+"?offset=-1&length=-1",bulkUnknown.getURI());
+        assertEquals(-1,bulkUnknown.longLength());
+        assertEquals(-1,bulkUnknown.offset());
+        bulkUnknown.setLength(length);
+        bulkUnknown.setOffset(offset);
+        assertEquals(bulk,bulkUnknown);
+        assertEquals(bulk.hashCode(),bulkUnknown.hashCode());
+    }
 
     @Test
     public void testParseOffset() {
@@ -102,11 +127,11 @@ public class BulkDataTest {
     @Test
     public void writeTo_ReadSectionOfText() throws URISyntaxException, IOException {
         URI log4jURI = getClass().getResource("/log4j.properties").toURI();
-        BulkData bd = new BulkData(log4jURI.toString(), 0, 21, false );
+        BulkData bd = new BulkData(log4jURI.toString(), 0, 22, false );
 
         byte[] bytes = bd.toBytes(VR.ST, false);
         String actual = new String(bytes);
-        assertEquals("log4j.rootLogger=INFO", actual);
+        assertEquals("log4j.rootLogger=INFO,", actual);
     }
 
     @Test

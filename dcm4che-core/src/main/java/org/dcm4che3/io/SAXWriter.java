@@ -236,7 +236,7 @@ public class SAXWriter implements DicomInputHandler {
             throws IOException {
         int tag = dis.tag();
         VR vr = dis.vr();
-        int len = dis.length();
+        long len = dis.unsignedLength();
         if (TagUtils.isGroupLength(tag) || TagUtils.isPrivateCreator(tag)) {
             dis.readValue(dis, attrs);
         } else if (dis.getIncludeBulkData() == IncludeBulkData.NO
@@ -307,7 +307,7 @@ public class SAXWriter implements DicomInputHandler {
     @Override
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
-        int len = dis.length();
+        long len = dis.unsignedLength();
         Object frag = ByteUtils.EMPTY_BYTES;
         if (len > 0)
             switch (dis.getIncludeFragmentBulkData()) {

@@ -97,7 +97,9 @@ public class DicomInputStream extends FilterInputStream
         "Implicit VR Big Endian encoded DICOM Stream";
     private static final String DEFLATED_WITH_ZLIB_HEADER =
         "Deflated DICOM Stream with ZLIB Header";
-
+    /* VisibleForTesting */ static final String VALUE_TOO_LARGE =
+        "tag value too large, must be less than 2Gib";
+    
     private static final int ZLIB_HEADER = 0x789c;
     private static final int DEF_ALLOCATE_LIMIT = 0x4000000; // 64MiB
 
@@ -125,7 +127,7 @@ public class DicomInputStream extends FilterInputStream
     private long markPos;
     private int tag;
     private VR vr;
-    private int length;
+    private long length;
     private DicomInputHandler handler = this;
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
@@ -412,7 +414,21 @@ public class DicomInputStream extends FilterInputStream
         return vr;
     }
 
+    /**
+     * Returns value length of last parsed data element header. May be negative for value length >= 2^31.
+     * -1 indicates an Undefined Length.
+     * @return value length of last parsed data element header.
+     */
     public final int length() {
+        return (int) length;
+    }
+
+    /**
+     * Returns value length of last parsed data element header.
+     * -1 indicates an Undefined Length.
+     * @return value length of last parsed data element header.
+     */
+    public long unsignedLength() {
         return length;
     }
 
@@ -515,6 +531,11 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
+    private DicomStreamException tagValueTooLargeException()  {
+        return new DicomStreamException(
+            String.format("0x%s %s", TagUtils.toHexString(tag), VALUE_TOO_LARGE));
+    }
+
     public int readHeader() throws IOException {
         byte[] buf = buffer;
         tagPos = pos; 
@@ -537,8 +558,12 @@ public class DicomInputStream extends FilterInputStream
                 vr = VR.UN;
             }
         }
-        length = ByteUtils.bytesToInt(buf, 4, bigEndian);
+        length = toLongOrUndefined(ByteUtils.bytesToInt(buf, 4, bigEndian));
         return tag;
+    }
+
+    static long toLongOrUndefined(int length) {
+        return length == UNDEFINED_LENGTH ? length : length & 0xffffffffL ;
     }
 
     public boolean readItemHeader() throws IOException {
@@ -579,12 +604,12 @@ public class DicomInputStream extends FilterInputStream
      *
      * @return file meta information and dataset
      */
-    public DatasetWithFMI readDatasetWithFMI(int len, int stopTag) throws IOException {
+    public DatasetWithFMI readDatasetWithFMI(long len, int stopTag) throws IOException {
         Attributes dataset = readDataset(len, stopTag);
         return new DatasetWithFMI(getFileMetaInformation(), dataset);
     }
 
-    public Attributes readDataset(int len, int stopTag) throws IOException {
+    public Attributes readDataset(long len, int stopTag) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian, 64);
@@ -628,8 +653,7 @@ public class DicomInputStream extends FilterInputStream
         return attrs;
     }
 
-
-    public void readAttributes(Attributes attrs, int len, int stopTag)
+    public void readAttributes(Attributes attrs, long len, int stopTag)
             throws IOException {
         boolean undeflen = len == UNDEFINED_LENGTH;
         boolean hasStopTag = stopTag != -1;
@@ -744,7 +768,7 @@ public class DicomInputStream extends FilterInputStream
 
     public boolean isBulkData(Attributes attrs) {
         return bulkDataDescriptor.isBulkData(itemPointers,
-                attrs.getPrivateCreator(tag), tag, vr, length);
+                attrs.getPrivateCreator(tag), tag, vr, (int) length);
     }
 
     @Override
@@ -806,7 +830,7 @@ public class DicomInputStream extends FilterInputStream
         skipFully(length);
     }
 
-    private void readSequence(int len, Attributes attrs, int sqtag)
+    private void readSequence(long len, Attributes attrs, int sqtag)
             throws IOException {
         if (len == 0) {
             attrs.setNull(sqtag, VR.SQ);
@@ -877,12 +901,11 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public byte[] readValue() throws IOException {
-        int valLen = length;
+        int valLen = (int) length;
+        if (valLen < 0) {
+            throw tagValueTooLargeException();
+        }
         try {
-            if (valLen < 0) {
-                throw new IOException(
-                        "internal error: length should have been validated in readHeader");
-            }
             boolean limitedStream = in instanceof LimitedInputStream;
             if(limitedStream && valLen > ((LimitedInputStream)in).getRemaining()) {
                 throw new EOFException(

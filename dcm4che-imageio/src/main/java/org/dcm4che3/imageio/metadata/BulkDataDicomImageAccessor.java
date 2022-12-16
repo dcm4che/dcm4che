@@ -140,7 +140,7 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
             long pixelDataLength = Fragments.length(getPixelDataValue());
             if(pixelDataLength % frameLength <= 1) {
                 // Must be within 1 bytes to account for padding
-                frames = (int) pixelDataLength / frameLength;
+                frames = (int)(pixelDataLength / frameLength);
             }
             else {
                 // Number of frames is ambiguous:  return -1.
@@ -180,7 +180,7 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
         else {
             // Uncompressed data stored directly into the PixelData tag.
             int frameLength = calculateFrameLength();
-            long offset  = frameLength * frameIndex;
+            long offset = (long) frameLength * frameIndex;
 
             ImageInputStream iisOfPixelData;
             if(pixelData instanceof BulkData) {

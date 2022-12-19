@@ -266,7 +266,7 @@ public class Fragments extends ArrayList<Object> implements Value {
         if(value == Value.NULL) {
             length = 0;
         } else if(value instanceof BulkData) {
-            length = ((BulkData) value).length();
+            length = ((BulkData) value).longLength();
         } else {
             length = ((byte[]) value).length;
         }

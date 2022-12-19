@@ -96,7 +96,7 @@ public class CloseableImageInputStreamAdapter extends InputStream {
 
     @Override
     public long skip(long n) throws IOException {
-        return iis.skipBytes((int) n);
+        return iis.skipBytes(n);
     }
 
     @Override

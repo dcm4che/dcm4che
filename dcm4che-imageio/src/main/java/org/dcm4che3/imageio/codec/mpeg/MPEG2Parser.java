@@ -93,11 +93,14 @@ public class MPEG2Parser implements XPEGParser {
     private final int duration;
 
     public MPEG2Parser(SeekableByteChannel channel) throws IOException {
-        Packet packet;
-        while (!isVideoStream((packet = nextPacket(channel)).startCode)) {
-            skip(channel, packet.length);
+        int startCode = readStartCode(channel);
+        if (!isSequenceHeader(startCode)) {
+            while (!isVideoStream(startCode)) {
+                skip(channel, packetLength(channel, startCode));
+                startCode = readStartCode(channel);
+            }
+            findSequenceHeader(channel, packetLength(channel, startCode));
         }
-        findSequenceHeader(channel, packet.length);
         SafeBuffer.clear(buf).limit(7);
         channel.read(buf);
         columns = ((data[0] & 0xff) << 4) | ((data[1] & 0xf0) >> 4);
@@ -203,34 +206,31 @@ public class MPEG2Parser implements XPEGParser {
         throw new XPEGParserException("last MPEG2 Group of Pictures not found");
     }
 
-    private static class Packet {
-        final int startCode;
-        final int length;
-
-        private Packet(int startCode, int length) {
-            this.startCode = startCode;
-            this.length = length;
-        }
-    }
-
-    private Packet nextPacket(SeekableByteChannel channel) throws IOException {
-        SafeBuffer.clear(buf).limit(6);
+    private int readStartCode(SeekableByteChannel channel) throws IOException {
+        SafeBuffer.clear(buf).limit(4);
         channel.read(buf);
         SafeBuffer.rewind(buf);
         int startCode = buf.getInt();
         if ((startCode & 0xfffffe00) != 0) {
             throw new XPEGParserException(
-                    String.format("Invalid MPEG2 start code %4XH on position %d", startCode, channel.position() - 6));
+                    String.format("Invalid MPEG2 start code %4XH on position %d", startCode, channel.position() - 4));
         }
-        return new Packet(startCode, packetLength(startCode));
+        return startCode;
     }
 
-    private int packetLength(int startCode) {
-        return isPackHeader(startCode) ? ((data[4] & 0xc0) != 0) ? 8 : 6 : buf.getShort() & 0xffff;
+    private int packetLength(SeekableByteChannel channel, int startCode) throws IOException {
+        SafeBuffer.clear(buf).limit(2);
+        channel.read(buf);
+        SafeBuffer.rewind(buf);
+        return isPackHeader(startCode) ? ((data[0] & 0xc0) != 0) ? 8 : 6 : buf.getShort() & 0xffff;
     }
 
     private static boolean isPackHeader(int startCode) {
         return startCode == 0x1ba;
+    }
+
+    private static boolean isSequenceHeader(int startCode) {
+        return startCode == 0x1b3;
     }
 
     private static boolean isVideoStream(int startCode) {

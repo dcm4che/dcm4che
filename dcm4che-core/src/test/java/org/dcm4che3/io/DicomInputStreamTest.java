@@ -8,6 +8,7 @@ import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -77,12 +78,11 @@ public class DicomInputStreamTest {
     }
 
     @Test
-    public void testBulkDataLimit() throws Exception {
-        try {
-            readFrom("3gb-bulk-data-truncated", IncludeBulkData.URI);
-        } catch (DicomStreamException e) {
-            assertEquals("0x7FE00010 " + DicomInputStream.VALUE_TOO_LARGE, e.getMessage());
-        }
+    public void testBulkDataLarger2GiB() throws Exception {
+            Attributes attrs = readFrom("3gb-bulk-data-truncated", IncludeBulkData.URI);
+            Object blkdata = attrs.getValue(Tag.PixelData);
+            assertTrue(blkdata instanceof BulkData);
+            assertEquals(3221225472L, ((BulkData) blkdata).longLength());
     }
 
     @Test

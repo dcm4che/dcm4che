@@ -2926,10 +2926,19 @@ public class Attributes implements Serializable {
     }
 
     private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix) {
+        if (tags[0] >= 0) {
+            return appendAttributes(limit, maxWidth, sb, prefix, 0, size);
+        }
+        int lines, index0 = -(1 + indexOf(0));
+        return (lines = appendAttributes(limit, maxWidth, sb, prefix, index0, size))
+                + appendAttributes(limit - lines, maxWidth, sb, prefix, 0, index0);
+    }
+
+    private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix, int start, int end) {
         int lines = 0;
         int creatorTag = 0;
         String privateCreator = null;
-        for (int i = 0; i < size; i++) {
+        for (int i = start; i < end; i++) {
             if (++lines > limit)
                 break;
             int tag = tags[i];

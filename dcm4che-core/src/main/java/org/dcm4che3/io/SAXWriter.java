@@ -139,7 +139,8 @@ public class SAXWriter implements DicomInputHandler {
 
     private void startDocument() throws SAXException {
         ch.startDocument();
-        startElement("NativeDicomModel", "xml:space", "preserve");
+        atts.addAttribute("", "space", "xml:space", "NMTOKEN", "preserve");
+        startElement("NativeDicomModel");
     }
 
     private void endDocument() throws SAXException {

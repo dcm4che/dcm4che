@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
@@ -604,16 +605,48 @@ public class DicomInputStream extends FilterInputStream
      *
      * @return file meta information and dataset
      */
-    public DatasetWithFMI readDatasetWithFMI(long len, int stopTag) throws IOException {
+    public DatasetWithFMI readDatasetWithFMI(int len, int stopTag) throws IOException {
         Attributes dataset = readDataset(len, stopTag);
         return new DatasetWithFMI(getFileMetaInformation(), dataset);
     }
 
-    public Attributes readDataset(long len, int stopTag) throws IOException {
+    public Attributes readDataset() throws IOException {
+        return readDataset(o -> false);
+    }
+
+    public Attributes readDatasetUntilPixelData() throws IOException {
+        return readDataset(o -> o.tag == Tag.PixelData);
+    }
+
+    /**
+     * @deprecated Use one of the other {@link #readDataset()} methods instead. If you want to
+     * specify a length limit, you may supply a {@link LimitedInputStream} or use
+     * {@link #createWithLimit} or {@link #createWithLimitFromFileLength}.
+     */
+    @Deprecated
+    public Attributes readDataset(int len, int stopTag) throws IOException {
+        return readDataset(len, tagEqualOrGreater(stopTag));
+    }
+
+    public Attributes readDataset(int stopTag) throws IOException {
+        return readDataset(tagEqualOrGreater(stopTag));
+    }
+
+    public Attributes readDataset(Predicate<DicomInputStream> stopPredicate) throws IOException {
+        return readDataset(UNDEFINED_LENGTH, stopPredicate);
+    }
+
+    /**
+     * @deprecated Use one of the other {@link #readDataset()} methods instead. If you want to
+     * specify a length limit, you may supply a {@link LimitedInputStream} or use
+     * {@link #createWithLimit} or {@link #createWithLimitFromFileLength}.
+     */
+    @Deprecated
+    public Attributes readDataset(long len, Predicate<DicomInputStream> stopPredicate) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian, 64);
-        readAttributes(attrs, len, stopTag);
+        readAttributes(attrs, len, stopPredicate);
         attrs.trimToSize();
         handler.endDataset(this);
         return attrs;
@@ -653,10 +686,17 @@ public class DicomInputStream extends FilterInputStream
         return attrs;
     }
 
-    public void readAttributes(Attributes attrs, long len, int stopTag)
+    public void readAttributes(Attributes attrs, long len, int stopTag) throws IOException {
+        readAttributes(attrs, len, tagEqualOrGreater(stopTag));
+    }
+
+    private static Predicate<DicomInputStream> tagEqualOrGreater(int stopTag) {
+        return stopTag != -1 ? o -> Integer.compareUnsigned(o.tag, stopTag) >= 0 : o -> false;
+    }
+
+    public void readAttributes(Attributes attrs, long len, Predicate<DicomInputStream> stopPredicate)
             throws IOException {
         boolean undeflen = len == UNDEFINED_LENGTH;
-        boolean hasStopTag = stopTag != -1;
         long endPos =  pos + (len & 0xffffffffL);
         while (undeflen || this.pos < endPos) {
             try {
@@ -666,7 +706,7 @@ public class DicomInputStream extends FilterInputStream
                     break;
                 throw e;
             }
-            if (hasStopTag && tag == stopTag)
+            if (stopPredicate.test(this))
                 break;
             if (vr != null) {
                 boolean prevBigEndian = bigEndian;

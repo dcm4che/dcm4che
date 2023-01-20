@@ -582,14 +582,17 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-
     public Attributes readCommand() throws IOException {
         if (bigEndian || explicitVR)
             throw new IllegalStateException(
                     "bigEndian=" + bigEndian + ", explicitVR=" + explicitVR );
         Attributes attrs = new Attributes(9);
-        readAttributes(attrs, -1, -1);
+        readAllAttributes(attrs);
         return attrs;
+    }
+
+    public void readAllAttributes(Attributes attrs) throws IOException {
+        readAttributes(attrs, UNDEFINED_LENGTH, o -> false);
     }
 
     /**
@@ -821,7 +824,7 @@ public class DicomInputStream extends FilterInputStream
         }
         Attributes attrs = new Attributes(seq.getParent().bigEndian());
         seq.add(attrs);
-        readAttributes(attrs, length, Tag.ItemDelimitationItem);
+        readItemValue(attrs, length);
         attrs.trimToSize();
     }
 
@@ -906,9 +909,13 @@ public class DicomInputStream extends FilterInputStream
                     + TagUtils.toString(tag) + " #" + length + " @ " + pos);
         Attributes attrs = new Attributes(bigEndian);
         attrs.setItemPosition(tagPos);
-        readAttributes(attrs, length, Tag.ItemDelimitationItem);
+        readItemValue(attrs, length);
         attrs.trimToSize();
         return attrs;
+    }
+
+    public void readItemValue(Attributes attrs, long length) throws IOException {
+        readAttributes(attrs, length, dis -> dis.tag == Tag.ItemDelimitationItem);
     }
 
     private void readFragments(Attributes attrs, int fragsTag, VR vr)

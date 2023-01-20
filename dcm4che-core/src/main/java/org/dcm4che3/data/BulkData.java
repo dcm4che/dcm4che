@@ -271,9 +271,6 @@ public class BulkData implements Value {
     }
     
     public void setLength(long newLength) {
-        if( newLength!=-1 && (newLength & 1)==1 ) {
-            throw new IllegalArgumentException("Length of bulk data must be even, but was: "+newLength);
-        }
         if( newLength > 0xFFFFFFFEL || newLength<-1 ) {
             throw new IllegalArgumentException("Length of bulk data must not be negative or larger than an unsigned int, but was:"+newLength);
         }

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2022e - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2023a - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2022</year>
+      <year>2023</year>
       <holder>NEMA</holder>
     </copyright>
       <legalnotice>
@@ -732,7 +732,7 @@
   <varlistentry>
 <term>PDV</term>
 <listitem>
-<para xml:id="para_4e6c9796-0342-4afd-b2a3-34b137b64eef">Protocol Data Value</para>
+    <para xml:id="para_4e6c9796-0342-4afd-b2a3-34b137b64eef">Presentation Data Value</para>
 </listitem>
 </varlistentry>
   <varlistentry>
@@ -768,7 +768,7 @@
   <varlistentry>
 <term>UL</term>
 <listitem>
-<para xml:id="para_d62d31a3-46d9-47ec-845d-b09cc4ff62a1">Upper Layers</para>
+<para xml:id="para_d62d31a3-46d9-47ec-845d-b09cc4ff62a1">Upper Layer</para>
 </listitem>
 </varlistentry>
   </variablelist>

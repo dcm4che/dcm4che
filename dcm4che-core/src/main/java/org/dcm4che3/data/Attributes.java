@@ -2926,6 +2926,7 @@ public class Attributes implements Serializable {
     }
 
     private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix) {
+        if (size == 0) return 0;
         if (tags[0] >= 0) {
             return appendAttributes(limit, maxWidth, sb, prefix, 0, size);
         }

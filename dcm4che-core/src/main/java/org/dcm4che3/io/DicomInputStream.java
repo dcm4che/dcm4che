@@ -729,6 +729,8 @@ public class DicomInputStream extends FilterInputStream
         } else if (length == BulkData.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
             attrs.setValue(tag, vr, deserializeBulkData((ObjectInputStream) super.in));
+        } else if (length > Integer.MAX_VALUE) {
+            attrs.setValue(tag, vr, bulkDataCreator.createBulkData(this));
         } else if (includeBulkDataURI) {
             attrs.setValue(tag, vr, bulkDataCreator.createBulkData(this));
         } else {

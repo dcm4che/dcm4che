@@ -239,7 +239,7 @@ public class Json2Rst {
 
         String url = desc.substring(urlIndex + 9, desc.indexOf("\" target"));
         String placeholder = desc.substring(desc.indexOf(">") + 1, desc.indexOf("</a>"));
-        return desc.substring(0, urlIndex) + '`' + placeholder + " <" + url + ">`_";
+        return desc.substring(0, urlIndex) + '`' + placeholder + " <" + url + ">`_"  + desc.substring(desc.indexOf("</a>") + 4);
     }
 
     private String ensureNoUndefinedSubstitutionReferenced(String desc) {

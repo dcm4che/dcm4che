@@ -86,6 +86,85 @@ public class DicomInputStreamTest {
     }
 
     @Test
+    public void testPixelDataLarger2GiB() throws Exception {
+
+        // Two temporary files - one to hold 2.1+Gib of PixelData and one to
+        // hold the encoded DICOM file containing that PixelData. The goal of
+        // this test is to ensure that DicomInputStream doesn't throw an
+        // exception when it receives PixelData in excess of Integer.MAX_VALUE.
+        final File pixelDataFile = File.createTempFile("dcm3che-", "-3gib-pixel-data");
+        final File dicomFile = File.createTempFile("dcm3che-", "-3gib-dicom");
+
+        try {
+
+            // This will hold the total number of pixel data written.
+            long totalPixelDataBytes = 0;
+
+            // Fill a buffer with random data. We're going to verify that
+            // the data we read back in matches this buffer.
+            final byte[] buffer = new byte[1024 * 1024 * 18];
+            for (int i = 0; i < buffer.length; ++i)
+                buffer[i] = (byte) Math.round(Math.random() * 128);
+
+            // This test writes in excess of 2.5GiB of data for good measure.
+            try (final FileOutputStream outputStream = new FileOutputStream(pixelDataFile)) {
+                while (totalPixelDataBytes < 2508221998L) {
+                    outputStream.write(buffer);
+                    totalPixelDataBytes += buffer.length;
+                }
+            }
+
+            final String patientId = "ABC123";
+
+            // Need a DICOM file with a regular attribute to verify that we
+            // can read the resulting file back.
+            final Attributes attributes = new Attributes();
+            attributes.setString(Tag.PatientID, VR.LO, patientId);
+            attributes.setValue(Tag.PixelData, VR.OB, new BulkData(pixelDataFile.toURI().toString(), 0, totalPixelDataBytes, false));
+
+            final Attributes fmi = new Attributes();
+            fmi.setString(Tag.FileMetaInformationGroupLength, VR.UL, "1");
+            fmi.setString(Tag.MediaStorageSOPClassUID, VR.UI, UID.ComputedRadiographyImageStorage);
+            fmi.setString(Tag.TransferSyntaxUID, VR.UI, UID.ExplicitVRLittleEndian);
+
+            try (final DicomOutputStream outputStream = new DicomOutputStream(dicomFile)) {
+                outputStream.writeDataset(fmi, attributes);
+            }
+
+            // Now read the resulting file back in. Verify that both the regular
+            // tags and the giant PixelData is valid.
+            try (final DicomInputStream inputStream = new DicomInputStream(dicomFile)) {
+                final Attributes _attributes = inputStream.readDataset();
+                assert(_attributes.getString(Tag.PatientID).equals(patientId));
+
+                final Object _pixelData = _attributes.getValue(Tag.PixelData);
+                assert(_pixelData instanceof BulkData);
+
+                final BulkData pixelData = (BulkData) _pixelData;
+                assert(pixelData.longLength() == totalPixelDataBytes);
+
+                // We're not going to compare the whole thing - just the first
+                // segment should match byte-for-byte. We assume the rest of
+                // the data will be correct.
+                try (final InputStream inputStream2 = pixelData.openStream()) {
+                    final byte[] buffer2 = new byte[buffer.length];
+                    inputStream2.read(buffer2);
+
+                    for (int i = 0; i < buffer.length; ++i) {
+                        assert(buffer[i] == buffer2[i]);
+                    }
+                }
+
+            }
+
+        } finally {
+            pixelDataFile.delete();
+            dicomFile.delete();
+        }
+
+    }
+
+    @Test
     public void testSpoolDataFragments() throws Exception {
         List<File> bulkDataFiles;
         Object pixeldata;

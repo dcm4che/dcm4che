@@ -210,7 +210,7 @@ public class Json2Rst {
         out.print(isObj ? "object" : typeObj.getString("type"));
         out.print(",\"");
         out.print(ensureNoUndefinedSubstitutionReferenced(
-                property.getString("description").replace("\"","\"\"")));
+                formatURL(property.getString("description")).replace("\"","\"\"")));
         JsonArray anEnum = typeObj.getJsonArray("enum");
         if (anEnum != null) {
             out.print(" Enumerated values: ");
@@ -230,6 +230,16 @@ public class Json2Rst {
             out.print(')');
         }
         out.println('"');
+    }
+
+    private String formatURL(String desc) {
+        int urlIndex = desc.indexOf("<a href");
+        if (urlIndex == -1)
+            return desc;
+
+        String url = desc.substring(urlIndex + 9, desc.indexOf("\" target"));
+        String placeholder = desc.substring(desc.indexOf(">") + 1, desc.indexOf("</a>"));
+        return desc.substring(0, urlIndex) + '`' + placeholder + " <" + url + ">`_"  + desc.substring(desc.indexOf("</a>") + 4);
     }
 
     private String ensureNoUndefinedSubstitutionReferenced(String desc) {

@@ -51,8 +51,8 @@ import java.util.Set;
  */
 
 public class ParticipantObjectDescriptionBuilder {
-    private Boolean encrypted = Boolean.FALSE;
-    private Boolean anonymized = Boolean.FALSE;
+    private Boolean encrypted;
+    private Boolean anonymized;
     private String[] pocsStudyUIDs = {};
     private String[] accNumbers = {};
     private String[] mppsUIDs = {};

@@ -69,8 +69,8 @@
   </dependencies>
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.cxf</groupId>
+	  <plugin>
+		<groupId>org.apache.cxf</groupId>
         <artifactId>cxf-xjc-plugin</artifactId>
         <executions>
           <execution>
@@ -95,6 +95,13 @@
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
         <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Import-Package>
+              !javax.xml.*;
+            </Import-Package>
+          </instructions>
+        </configuration>
       </plugin>
     </plugins>
   </build>

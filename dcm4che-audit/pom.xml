@@ -69,8 +69,8 @@
   </dependencies>
   <build>
     <plugins>
-	  <plugin>
-		<groupId>org.apache.cxf</groupId>
+	    <plugin>
+		    <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-xjc-plugin</artifactId>
         <executions>
           <execution>

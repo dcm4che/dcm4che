@@ -45,7 +45,7 @@
     <xsl:text>","</xsl:text>
     <xsl:apply-templates select="DicomAttribute[@tag='00080052']"/>
     <xsl:text>","</xsl:text>
-    <xsl:apply-templates select="DicomAttribute[@tag='00100010']"/>
+    <xsl:apply-templates select="DicomAttribute[@tag='00100010']" mode="PN"/>
     <xsl:text>","</xsl:text>
     <xsl:apply-templates select="DicomAttribute[@tag='00100020']"/>
     <xsl:text>","</xsl:text>

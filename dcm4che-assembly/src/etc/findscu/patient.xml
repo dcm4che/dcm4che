@@ -6,4 +6,5 @@
     <DicomAttribute keyword="PatientID" tag="00100020" vr="LO"/>
     <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA"/>
     <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS"/>
+    <DicomAttribute keyword="NumberOfPatientRelatedStudies" tag="00201200" vr="IS"/>
 </NativeDicomModel>

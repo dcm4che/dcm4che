@@ -238,8 +238,9 @@ public class Json2Rst {
             return desc;
 
         String url = desc.substring(urlIndex + 9, desc.indexOf("\" target"));
-        String placeholder = desc.substring(desc.indexOf(">") + 1, desc.indexOf("</a>"));
-        return desc.substring(0, urlIndex) + '`' + placeholder + " <" + url + ">`_"  + desc.substring(desc.indexOf("</a>") + 4);
+        String placeholder = desc.substring(desc.indexOf("target=\"_blank\">") + 16, desc.indexOf("</a>"));
+        String desc2 = desc.substring(0, urlIndex) + '`' + placeholder + " <" + url + ">`_" + desc.substring(desc.indexOf("</a>") + 4);
+        return desc2.contains("<a href") ? formatURL(desc2) : desc2;
     }
 
     private String ensureNoUndefinedSubstitutionReferenced(String desc) {

@@ -274,8 +274,8 @@ AuditMessageType =
   attribute UID { OID }
   }*
   },
-  attribute Encrypted { xsd:boolean }?,
-  attribute Anonymized { xsd:boolean }?
+  element Encrypted { xsd:boolean }?,
+  element Anonymized { xsd:boolean }?
   
   CodedValueType =
   attribute csd-code { xsd:string },

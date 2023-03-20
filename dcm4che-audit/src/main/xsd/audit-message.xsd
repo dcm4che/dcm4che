@@ -526,9 +526,9 @@
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="Accession"/>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="SOPClass"/>
       <xs:element ref="ParticipantObjectContainsStudy"/>
+      <xs:element minOccurs="0" name="Encrypted" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="Anonymized" type="xs:boolean"/>
     </xs:sequence>
-    <xs:attribute name="Encrypted" type="xs:boolean"/>
-    <xs:attribute name="Anonymized" type="xs:boolean"/>
   </xs:complexType>
   <xs:element name="MPPS">
     <xs:complexType>

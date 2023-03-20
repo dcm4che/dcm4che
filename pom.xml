@@ -87,7 +87,7 @@
     <jbossws-cxf-client.version>5.5.0.Final</jbossws-cxf-client.version>
     <apache-cxf.version>3.4.7</apache-cxf.version>
     <apache-commons-csv.version>1.9.0</apache-commons-csv.version>
-    <apache-commons-compress.version>1.21</apache-commons-compress.version>
+    <apache-commons-compress.version>1.22</apache-commons-compress.version>
     <jakarta.activation.version>1.2.2</jakarta.activation.version>
     <jakarta.xml.bind.version>2.3.2</jakarta.xml.bind.version>
     <jaxb-runtime.version>2.3.3-b02</jaxb-runtime.version>

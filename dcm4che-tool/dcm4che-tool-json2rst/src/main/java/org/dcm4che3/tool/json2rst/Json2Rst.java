@@ -210,7 +210,9 @@ public class Json2Rst {
         out.print(isObj ? "object" : typeObj.getString("type"));
         out.print(",\"");
         out.print(ensureNoUndefinedSubstitutionReferenced(
-                formatURL(property.getString("description")).replace("\"","\"\"")));
+                formatURL(property.getString("description"))
+                        .replace("\"","\"\"")
+                        .replaceAll("<br>", "\n\n\t")));
         JsonArray anEnum = typeObj.getJsonArray("enum");
         if (anEnum != null) {
             out.print(" Enumerated values: ");

@@ -62,7 +62,7 @@ public class BulkDataTest {
     public static final String URL_OFFSET = "file:/path?offset=1234&length=5678";
     public static final String URL_OFFSETS = "file:/path?offsets=1,2,3,4&lengths=5,6,7,8";
     public static final long[] OFFSETS = { 1, 2, 3, 4 };
-    public static final long[] LENGTHS = { 5, 6, 7, 8 };
+    public static final int[] LENGTHS = { 5, 6, 7, 8 };
     public static final int OFFSET = 1234;
     public static final int LENGTH = 5678;
 

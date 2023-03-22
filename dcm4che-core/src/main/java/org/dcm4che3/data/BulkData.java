@@ -77,7 +77,7 @@ public class BulkData implements Value {
     private long offset;
     private long length = -1;
     private long[] offsets;
-    private long[] lengths;
+    private int[] lengths;
 
     public BulkData(String uuid, String uri, boolean bigEndian) {
         if (uri != null) {
@@ -92,6 +92,16 @@ public class BulkData implements Value {
         this.bigEndian = bigEndian;
     }
 
+    // Required for shared client/server code while client code still uses this constructor. 
+    public BulkData(String uri, long offset, int length, boolean bigEndian) {
+        this.uuid = null;
+        this.uriPathEnd = uri.length();
+        this.uri = uri + "?offset=" + offset + "&length=" + length;
+        this.offset = offset;
+        this.length = length;
+        this.bigEndian = bigEndian;
+    }
+
     public BulkData(String uri, long offset, long length, boolean bigEndian) {
         this.uuid = null;
         this.uriPathEnd = uri.length();
@@ -101,7 +111,7 @@ public class BulkData implements Value {
         setLength(length);
     }
 
-    public BulkData(String uri, long[] offsets, long[] lengths, boolean bigEndian) {
+    public BulkData(String uri, long[] offsets, int[] lengths, boolean bigEndian) {
         if (offsets.length == 0)
             throw new IllegalArgumentException("offsets.length == 0");
 
@@ -145,7 +155,7 @@ public class BulkData implements Value {
         int size = bulkDataFragments.size();
         String uri = null;
         long[] offsets = new long[size];
-        long[] lengths = new long[size];
+        int[] lengths = new int[size];
         for (int i = 0; i < size; i++) {
             Object value = bulkDataFragments.get(i);
             if (value == Value.NULL) {
@@ -159,11 +169,11 @@ public class BulkData implements Value {
             } else if (!uri.equals(uriWithoutQuery)) {
                 throw new IllegalArgumentException("BulkData URIs references different Resources");
             }
-            if (bulkdata.longLength() == -1) {
+            if (bulkdata.length() == -1) {
                 throw new IllegalArgumentException("BulkData Reference with unspecified length");
             }
             offsets[i] = bulkdata.offset();
-            lengths[i] = bulkdata.longLength();
+            lengths[i] = bulkdata.length();
         }
         return new BulkData(uri, offsets, lengths, false);
     }
@@ -240,7 +250,7 @@ public class BulkData implements Value {
             return;
         try {
             offsets = parseLongs(uri.substring(from, index));
-            lengths = parseLongs(uri.substring(index + 9));
+            lengths = parseInts(uri.substring(index + 9));
         } catch (NumberFormatException e) {}
     }
 
@@ -253,14 +263,23 @@ public class BulkData implements Value {
         return longs;
     }
 
-    private String appendQuery(String uri, long[] offsets, long[] lengths) {
+    private static int[] parseInts(String s) {
+        String[] ss = StringUtils.split(s, ',');
+        int[] ints = new int[ss.length];
+        for (int i = 0; i < ss.length; i++) {
+            ints[i] = Integer.parseInt(ss[i]);
+        }
+        return ints;
+    }
+
+    private String appendQuery(String uri, long[] offsets, int[] lengths) {
         StringBuilder sb = new StringBuilder(uri);
         sb.append("?offsets=");
         for (long offset : offsets)
             sb.append(offset).append(',');
         sb.setLength(sb.length()-1);
         sb.append("&lengths=");
-        for (long length : lengths)
+        for (int length : lengths)
             sb.append(length).append(',');
         sb.setLength(sb.length() - 1);
         return sb.toString();
@@ -294,7 +313,7 @@ public class BulkData implements Value {
         return offsets;
     }
 
-    public long[] lengths() {
+    public int[] lengths() {
         return lengths;
     }
 

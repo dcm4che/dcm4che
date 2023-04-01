@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2023a - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2023b - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -419,35 +419,35 @@
                     <glossterm>Attribute</glossterm>
                     <glossdef>
                         <para xml:id="para_cf1c950d-06cd-4d93-bb87-08c5681125ee">
-<olink targetdoc="PS3.1" targetptr="glossentry_Attribute"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_Attribute" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_Command" xreflabel="Command">
                     <glossterm>Command</glossterm>
                     <glossdef>
                         <para xml:id="para_9c77bff1-6371-4397-9e6b-042b7ad6277e">
-<olink targetdoc="PS3.1" targetptr="glossentry_Command"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_Command" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_CommandStream" xreflabel="Command Stream">
                     <glossterm>Command Stream</glossterm>
                     <glossdef>
                         <para xml:id="para_d4e06e32-9ad2-42ee-b332-391260946139">
-<olink targetdoc="PS3.1" targetptr="glossentry_CommandStream"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_CommandStream" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_DataStream" xreflabel="Data Stream">
                     <glossterm>Data Stream</glossterm>
                     <glossdef>
                         <para xml:id="para_e5fb897a-5aba-4911-997d-88a634a48dd5">
-<olink targetdoc="PS3.1" targetptr="glossentry_DataStream"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_DataStream" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_Message" xreflabel="Message">
                     <glossterm>Message</glossterm>
                     <glossdef>
                         <para xml:id="para_3f8985fa-4622-4005-bb67-05cb04ac49fb">
-<olink targetdoc="PS3.1" targetptr="glossentry_Message"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_Message" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceObjectPairClass" xreflabel="Service-Object Pair Class (SOP Class)">
@@ -455,7 +455,7 @@
                     <acronym>SOP Class</acronym>
                     <glossdef>
                         <para xml:id="para_d817266c-7b16-4f0d-b445-1cc5ac471535">
-<olink targetdoc="PS3.1" targetptr="glossentry_ServiceObjectPairClass"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_ServiceObjectPairClass" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
 
@@ -467,7 +467,7 @@
                     <glossterm>DICOM Upper Layer Service</glossterm>
                     <glossdef>
                         <para xml:id="para_cbe60261-1d0b-4e56-9976-7a46e9d64e64">
-<olink targetdoc="PS3.8" targetptr="glossentry_DICOMUpperLayerService"/>.</para>
+<olink targetdoc="PS3.8" targetptr="glossentry_DICOMUpperLayerService" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
             </glossdiv>
@@ -479,7 +479,7 @@
                     <glossterm>Service Class</glossterm>
                     <glossdef>
                         <para xml:id="para_8eaf6120-8fa9-462b-83ea-17ca2a1ae13f">
-<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClass"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClass" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceClassUser" xreflabel="Service Class User (SCU)">
@@ -487,7 +487,7 @@
                     <acronym>SCU</acronym>
                     <glossdef>
                         <para xml:id="para_64e262c0-ca44-4150-8964-65be3bb7602c">
-<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassUser"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassUser" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceClassProvider" xreflabel="Service Class Provider (SCP)">
@@ -495,7 +495,7 @@
                     <acronym>SCP</acronym>
                     <glossdef>
                         <para xml:id="para_d9b29f4d-7253-4a1c-be92-acbc14a9c36a">
-<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassProvider"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassProvider" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceObjectPairInstance" xreflabel="Service-Object Pair Instance (SOP Instance)">
@@ -503,14 +503,14 @@
                     <acronym>SOP Instance</acronym>
                     <glossdef>
                         <para xml:id="para_2e7e6955-0206-4cc4-94c7-88f02c7fe363">
-<olink targetdoc="PS3.4" targetptr="glossentry_ServiceObjectPairInstance"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceObjectPairInstance" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_RelatedGeneralSOPClass" xreflabel="Related General SOP Class">
                     <glossterm>Related General SOP Class</glossterm>
                     <glossdef>
                         <para xml:id="para_f3a04b8a-0ff4-4fea-9dd2-a7df569f63b3">
-<olink targetdoc="PS3.4" targetptr="glossentry_RelatedGeneralSOPClass"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_RelatedGeneralSOPClass" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
             </glossdiv>
@@ -522,14 +522,14 @@
                     <glossterm>Data Element</glossterm>
                     <glossdef>
                         <para xml:id="para_df12b47e-bab1-4176-a433-2b31e9f92a91">
-<olink targetdoc="PS3.5" targetptr="glossentry_DataElement"/>.</para>
+<olink targetdoc="PS3.5" targetptr="glossentry_DataElement" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_DataSet" xreflabel="Data Set">
                     <glossterm>Data Set</glossterm>
                     <glossdef>
                         <para xml:id="para_25abcf40-abfa-48dc-a604-66c17e1642a5">
-<olink targetdoc="PS3.5" targetptr="glossentry_DataSet"/>.</para>
+<olink targetdoc="PS3.5" targetptr="glossentry_DataSet" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_UniqueIdentifier" xreflabel="Unique Identifier (UID)">
@@ -537,7 +537,7 @@
                     <acronym>UID</acronym>
                     <glossdef>
                         <para xml:id="para_1093a8dd-2fe3-4fbc-aae7-763f86229b9a">
-<olink targetdoc="PS3.8" targetptr="glossentry_UniqueIdentifier"/>.</para>
+<olink targetdoc="PS3.8" targetptr="glossentry_UniqueIdentifier" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
 

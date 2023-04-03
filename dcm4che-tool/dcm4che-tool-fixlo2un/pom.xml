@@ -52,5 +52,12 @@
 
   <artifactId>dcm4che-tool-fixlo2un</artifactId>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 
 </project>

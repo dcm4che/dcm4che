@@ -54,6 +54,11 @@
       <groupId>org.glassfish</groupId>
       <artifactId>jakarta.json</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
 </project>

@@ -38,6 +38,8 @@ fi
 
 # Setup the classpath
 CP="$DCM4CHE_HOME/lib/$MAIN_JAR"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/commons-cli-${commons-cli.version}.jar"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

@@ -39,8 +39,10 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/planarconfig/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
+CP="$CP:$DCM4CHE_HOME/lib/commons-cli-${commons-cli.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-image-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-${slf4j.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/logback-core-${logback.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/logback-classic-${logback.version}.jar"

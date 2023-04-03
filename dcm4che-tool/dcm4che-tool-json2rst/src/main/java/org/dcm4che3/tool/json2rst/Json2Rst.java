@@ -40,11 +40,17 @@
 
 package org.dcm4che3.tool.json2rst;
 
-import javax.json.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.dcm4che3.tool.common.CLIUtils;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,14 +59,7 @@ import java.util.regex.Pattern;
  * @since Aug 2016
  */
 public class Json2Rst {
-
-    private static final String[] USAGE = {
-            "usage: json2rst <path-to-device.schema.json> <output-dir> [<tabular-columns>]",
-            "",
-            "The json2rst utility generates ReStructuredText files from Archive",
-            "configuration schema JSON files used for documentation of Archive",
-            "configuration attributes in the DICOM Conformance Statement."
-    };
+    private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.json2rst.messages");
     private static final String UNDERLINE = "===============================================================";
     private final File indir;
     private final File outdir;
@@ -78,17 +77,30 @@ public class Json2Rst {
         this.tabularColumns = tabularColumns;
     }
 
+    private static CommandLine parseCommandLine(String[] args)
+            throws ParseException {
+        Options opts = new Options();
+        CLIUtils.addCommonOptions(opts);
+        return CLIUtils.parseComandLine(args, opts, rb, Json2Rst.class);
+    }
+
     public static void main(String[] args) throws Exception {
-        if (args.length < 2) {
-            for (String line : USAGE) {
-                System.out.println(line);
-            }
-            System.exit(-1);
+        try {
+            CommandLine cl = parseCommandLine(args);
+            List<String> argList = cl.getArgList();
+            Json2Rst json2Rst = new Json2Rst(new File(argList.get(0)), new File(argList.get(1)));
+            if (argList.size() > 2)
+                json2Rst.setTabularColumns(argList.get(2));
+            json2Rst.process();
+        } catch (ParseException e) {
+            System.err.println("json2rst: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
+        } catch (Exception e) {
+            System.err.println("json2rst: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
         }
-        Json2Rst json2Rst = new Json2Rst(new File(args[0]), new File(args[1]));
-        if (args.length > 2)
-            json2Rst.setTabularColumns(args[2]);
-        json2Rst.process();
     }
 
     private void process() throws IOException {

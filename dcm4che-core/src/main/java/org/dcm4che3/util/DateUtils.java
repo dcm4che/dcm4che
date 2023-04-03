@@ -275,7 +275,7 @@ public class DateUtils {
                         parseDigit(s, pos++) * 10 + parseDigit(s, pos++));
                 int n = length - pos;
                 if (n > 0) {
-                    if (s.charAt(pos++) != '.' || n > 7)
+                    if (s.charAt(pos++) != '.')
                         throw new IllegalArgumentException(s);
 
                     int d, millis = 0;

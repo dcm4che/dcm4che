@@ -113,6 +113,7 @@ Utilities
 - [mppsscp][]: DICOM Modality Performed Procedure Step Receiver
 - [mppsscu][]: Send DICOM Modality Performed Procedure Step
 - [pdf2dcm][]: Convert PDF file into DICOM file
+- [planarconfig][]: Detects the actual planar configuration of uncompressed pixel data of color images with Photometric Interpretation RGB or YBR_FULL and optionally correct non matching values of attribute Planar Configuration of the image
 - [stgcmtscu][]: Invoke DICOM Storage Commitment Request
 - [storescp][]: DICOM Composite Object Receiver
 - [storescu][]: Send DICOM Composite Objects
@@ -166,6 +167,7 @@ Utilities
 [mppsscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscp/README.md
 [mppsscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscu/README.md
 [pdf2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-pdf2dcm/README.md
+[planarconfig]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-planarconfig/README.md
 [stgcmtscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stgcmtscu/README.md
 [storescp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescp/README.md
 [storescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescu/README.md

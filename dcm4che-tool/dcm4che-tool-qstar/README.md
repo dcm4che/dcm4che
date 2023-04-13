@@ -10,5 +10,5 @@ Options:
                              server authentication
  -V,--version                output version information and exit
 -
-Example: qstar -u user:secret http://127.0.0.1:18083 full/path/to/file
+Example: qstar -u user:secret http://127.0.0.1:18083 /full/path/to/file
 ```

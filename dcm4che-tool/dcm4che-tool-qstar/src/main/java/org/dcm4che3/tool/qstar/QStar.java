@@ -129,7 +129,7 @@ public class QStar {
             WSGetFileInfoResponse fileInfo = port.wsGetFileInfo(rq);
             LOG.info(">> WSGetFileInfoResponse{status={}, info={}}", fileInfo.getStatus(), toString(fileInfo.getInfo()));
         } catch (Exception e) {
-            LOG.info("GetFileInfo Failed:\n", e);
+            LOG.info("GetFileInfo Failed: {}", e.getMessage(), e);
         }
     }
 
@@ -208,7 +208,7 @@ public class QStar {
             WSUserLogoutResponse userLogout = port.wsUserLogout(rq);
             LOG.info(">> WSUserLogoutResponse{result={}}", userLogout.getResult());
         } catch (Exception e) {
-            LOG.info("Logout Failed:\n", e);
+            LOG.info("Logout Failed: {}", e.getMessage(), e);
         }
     }
 

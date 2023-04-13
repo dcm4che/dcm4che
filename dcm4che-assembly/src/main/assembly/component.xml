@@ -127,6 +127,7 @@
         <include>org.dcm4che:dcm4che-net</include>
         <include>org.dcm4che:dcm4che-net-audit</include>
         <include>org.dcm4che:dcm4che-net-hl7</include>
+        <include>org.dcm4che:dcm4che-qstar</include>
         <include>org.dcm4che:dcm4che-soundex</include>
         <include>org.dcm4che:dcm4che-ws-rs</include>
         <include>org.dcm4che:dcm4che-xdsi</include>
@@ -171,6 +172,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-mppsscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-pdf2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-planarconfig</include>
+        <include>org.dcm4che.tool:dcm4che-tool-qstar</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescp</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-stgcmtscu</include>

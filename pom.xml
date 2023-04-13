@@ -214,6 +214,7 @@
     <module>dcm4che-net-audit</module>
     <module>dcm4che-net-hl7</module>
     <module>dcm4che-net-imageio</module>
+    <module>dcm4che-qstar</module>
     <module>dcm4che-soundex</module>
     <module>dcm4che-ws-rs</module>
     <module>dcm4che-xdsi</module>
@@ -303,6 +304,11 @@
       <dependency>
         <groupId>org.glassfish.jaxb</groupId>
         <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb-runtime.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-xjc</artifactId>
         <version>${jaxb-runtime.version}</version>
       </dependency>
       <dependency>

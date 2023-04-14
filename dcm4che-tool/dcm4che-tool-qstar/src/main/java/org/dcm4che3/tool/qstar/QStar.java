@@ -47,7 +47,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.ws.BindingProvider;
-import java.util.Iterator;
+import java.math.BigInteger;
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -61,6 +63,39 @@ public class QStar {
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.qstar.messages");
     private static final WSWebService service = new WSWebService();
     private static final ObjectFactory factory = new ObjectFactory();
+    private static final String[] ACCESS_STATES = {
+            "0 - ACCESS_STATE_NONE",
+            "1 - ACCESS_STATE_EMPTY",
+            "2 - ACCESS_STATE_UNSTABLE",
+            "3 - ACCESS_STATE_STABLE",
+            "4 - ACCESS_STATE_OUT_OF_CACHE",
+            "5 - ACCESS_STATE_OFFLINE"
+    };
+    private static final String[] DETAILED_ACCESS_STATES = {
+            "0 - DETAILED_ACCESS_STATE_NONE",
+            "1 - DETAILED_ACCESS_STATE_EMPTY",
+            "2 - DETAILED_ACCESS_STATE_CACHED_PRIMARY",
+            "3 - DETAILED_ACCESS_STATE_CACHED_MIG",
+            "4 - DETAILED_ACCESS_STATE_CACHED_MIG_OUT",
+            "5 - DETAILED_ACCESS_STATE_CACHED_MIG_REP",
+            "6 - DETAILED_ACCESS_STATE_CACHED_REP_OUT",
+            "7 - DETAILED_ACCESS_STATE_MIGRATED",
+            "8 - DETAILED_ACCESS_STATE_MIGRATED_OUT",
+            "9 - DETAILED_ACCESS_STATE_ARCHIVED_REP",
+            "10 - DETAILED_ACCESS_STATE_ARCHIVED_OUT",
+            "11 - DETAILED_ACCESS_STATE_REPLICATED_OUT",
+            "12 - DETAILED_ACCESS_STATE_REPLICATED",
+            "13 - DETAILED_ACCESS_STATE_OUT_OF_CACHE",
+            "14 - DETAILED_ACCESS_STATE_OFFLINE"
+    };
+    private static final String[] JOB_STATUS_NAMES = {
+            "0",
+            "1 - INQUEUE",
+            "2 - PROCESSING",
+            "3 - COMPLETED",
+            "4 - FAILED",
+            "5 - PARTIALLY_COMPLETED"
+    };
 
     private final WSWebServiceSoapPort port;
     private WSUserLoginResponse userLogin;
@@ -79,14 +114,25 @@ public class QStar {
             if (user == null)
                 throw new MissingOptionException(
                         rb.getString("missing-user-opt"));
-            Iterator<String> argsIter = cl.getArgList().iterator();
-            if (!argsIter.hasNext())
-                throw new ParseException(rb.getString("missing-url"));
+            String url = cl.getOptionValue("url");
+            if (url == null)
+                throw new MissingOptionException(
+                        rb.getString("missing-url-opt"));
 
-            QStar qstar = new QStar(argsIter.next());
+            QStar qstar = new QStar(url);
+            List<String> fileList = cl.getArgList();
             if (qstar.login(user[0], user[1])) {
-                while (argsIter.hasNext()) {
-                    qstar.getFileInfo(argsIter.next());
+                if (cl.hasOption("retrieve")) {
+                    qstar.batchFileRetrieve(
+                            ((Number) cl.getParsedOptionValue("retrieve")).longValue(),
+                            fileList,
+                            cl.getOptionValue("target-dir", ""));
+                } else if (cl.hasOption("job")) {
+                    qstar.batchJobStatus(((Number) cl.getParsedOptionValue("job")).longValue());
+                } else {
+                    for (String file : fileList) {
+                        qstar.getFileInfo(file);
+                    }
                 }
                 qstar.logout();
             }
@@ -99,6 +145,47 @@ public class QStar {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    private static CommandLine parseComandLine(String[] args) throws ParseException {
+        Options opts = new Options();
+        CLIUtils.addCommonOptions(opts);
+        opts.addOption(Option.builder("u")
+                .longOpt("user")
+                .numberOfArgs(2)
+                .valueSeparator(':')
+                .argName("user:password")
+                .desc(rb.getString("user"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("url")
+                .hasArg()
+                .argName("url")
+                .desc(rb.getString("url"))
+                .build());
+        OptionGroup group = new OptionGroup();
+        group.addOption(Option.builder()
+                .longOpt("retrieve")
+                .hasArg()
+                .type(Number.class)
+                .argName("priority")
+                .desc(rb.getString("retrieve"))
+                .build());
+        group.addOption(Option.builder()
+                .longOpt("job")
+                .hasArg()
+                .type(Number.class)
+                .argName("jobId")
+                .desc(rb.getString("job"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("target-dir")
+                .hasArg()
+                .argName("path")
+                .desc(rb.getString("target-dir"))
+                .build());
+        opts.addOptionGroup(group);
+        return CLIUtils.parseComandLine(args, opts, rb, QStar.class);
     }
 
     private boolean login(String userName, String userPassword) {
@@ -120,6 +207,18 @@ public class QStar {
         }
     }
 
+    private void logout() {
+        try {
+            WSUserLogoutRequest rq = factory.createWSUserLogoutRequest();
+            rq.setUserToken(userLogin.getUserToken());
+            LOG.info("<< WSUserLogoutRequest{userToken='{}'}", userLogin.getUserToken());
+            WSUserLogoutResponse userLogout = port.wsUserLogout(rq);
+            LOG.info(">> WSUserLogoutResponse{result={}}", userLogout.getResult());
+        } catch (Exception e) {
+            LOG.info("Logout Failed: {}", e.getMessage(), e);
+        }
+    }
+
     private void getFileInfo(String filePath) {
         try {
             WSGetFileInfoRequest rq = factory.createWSGetFileInfoRequest();
@@ -130,6 +229,53 @@ public class QStar {
             LOG.info(">> WSGetFileInfoResponse{status={}, info={}}", fileInfo.getStatus(), toString(fileInfo.getInfo()));
         } catch (Exception e) {
             LOG.info("GetFileInfo Failed: {}", e.getMessage(), e);
+        }
+    }
+
+    private void batchFileRetrieve(long jobPriority, List<String> fileList, String targetDir) {
+        try {
+            WSBatchFileRetrieveRequest rq = factory.createWSBatchFileRetrieveRequest();
+            rq.setJobPriority(jobPriority);
+            rq.setFileCount(BigInteger.valueOf(fileList.size()));
+            rq.setFileList(createWSFileList(fileList));
+            rq.setTargetDir(targetDir);
+            rq.setUserToken(userLogin.getUserToken());
+            LOG.info("<< WSBatchFileRetrieveRequest{jobPriority={}, fileCount='{}', targetDir='{}', userToken='{}'}",
+                    jobPriority,
+                    fileList.size(),
+                    targetDir,
+                    userLogin.getUserToken());
+            WSBatchFileRetrieveResponse fileRetrieve = port.wsBatchFileRetrieve(rq);
+            LOG.info(">> WSBatchFileRetrieveResponse{jobId={}}", fileRetrieve.getJobId());
+        } catch (Exception e) {
+            LOG.info("BatchFileRetrieve Failed: {}", e.getMessage(), e);
+        }
+    }
+
+    private static WSFileList createWSFileList(List<String> fileList) {
+        WSFileList wsFileList = factory.createWSFileList();
+        wsFileList.getFileName().addAll(fileList);
+        return wsFileList;
+    }
+
+    private void batchJobStatus(long jobId) {
+        try {
+            WSBatchJobStatusRequest rq = factory.createWSBatchJobStatusRequest();
+            rq.setJobId(BigInteger.valueOf(jobId));
+            rq.setUserToken(userLogin.getUserToken());
+            LOG.info("<< WSBatchJobStatusRequest{jobId={}, userToken='{}'}", jobId, userLogin.getUserToken());
+            WSBatchJobStatusResponse jobStatus = port.wsBatchJobStatus(rq);
+            LOG.info(">> WSBatchJobStatusResponse{jobStatus={}}", toString(jobStatus.getJobStatus(), JOB_STATUS_NAMES));
+        } catch (Exception e) {
+            LOG.info("BatchJobStatus Failed: {}", e.getMessage(), e);
+        }
+    }
+
+    private static String toString(long i, String[] values) {
+        try {
+            return values[(int) i];
+        } catch (IndexOutOfBoundsException e) {
+            return Long.toString(i);
         }
     }
 
@@ -147,15 +293,15 @@ public class QStar {
         sb.append(",\n    replicatedCount=").append(info.getReplicatedCount());
         sb.append(",\n    archivedCount=").append(info.getArchivedCount());
         sb.append(",\n    pageSize=").append(info.getPageSize());
-        sb.append(",\n    aTime=").append(info.getATime());
-        sb.append(",\n    mTime=").append(info.getMTime());
-        sb.append(",\n    cTime=").append(info.getCTime());
-        sb.append(",\n    crTime=").append(info.getCrTime());
-        sb.append(",\n    cmTime=").append(info.getCmTime());
+        sb.append(",\n    aTime=").append(toInstant(info.getATime()));
+        sb.append(",\n    mTime=").append(toInstant(info.getMTime()));
+        sb.append(",\n    cTime=").append(toInstant(info.getCTime()));
+        sb.append(",\n    crTime=").append(toInstant(info.getCrTime()));
+        sb.append(",\n    cmTime=").append(toInstant(info.getCmTime()));
         sb.append(",\n    onOff=").append(info.getOnOff());
-        sb.append(",\n    retentionEndTime=").append(info.getRetentionEndTime());
-        appendNotNull(sb, ",\n    digest=", info.getDigest());
-        appendNotNull(sb, ",\n    objectId=", info.getObjectId());
+        sb.append(",\n    retentionEndTime=").append(toInstant(info.getRetentionEndTime()));
+        sb.append(",\n    digest=").append(quote(info.getDigest()));
+        sb.append(",\n    objectId=").append(quote(info.getObjectId()));
         sb.append(",\n    objectIdLength=").append(info.getObjectIdLength());
         sb.append(",\n    digestType=").append(info.getDigestType());
         sb.append(",\n    encryptionType=").append(info.getEncryptionType());
@@ -167,18 +313,18 @@ public class QStar {
             sb.append(",\n        vol=").append(extent.getVol());
             sb.append(",\n        pos=").append(extent.getPos());
             sb.append(",\n        isOffline=").append(extent.getIsOffline());
-            appendNotNull(sb, ",\n        mediaBarcode=", extent.getMediaBarcode());
-            appendNotNull(sb, ",\n        libraryName=", extent.getLibraryName());
-            appendNotNull(sb, ",\n        offlineLocation=", extent.getOfflineLocation());
+            sb.append(",\n        mediaBarcode=").append(quote(extent.getMediaBarcode()));
+            sb.append(",\n        libraryName=").append(quote(extent.getLibraryName()));
+            sb.append(",\n        offlineLocation=").append(quote(extent.getOfflineLocation()));
             sb.append(",\n        extentCopies=[");
             for (WSFileExtentCopyInfo copy : extent.getExtentCopies().getCopies()) {
                 sb.append("\n          WSFileExtentCopyInfo{\n            isOffline=").append(copy.getIsOffline());
-                appendNotNull(sb, ",\n            mediaBarcode=", copy.getMediaBarcode());
-                appendNotNull(sb, ",\n            offlineLocation=", copy.getOfflineLocation());
+                sb.append(",\n            mediaBarcode=").append(quote(copy.getMediaBarcode()));
+                sb.append(",\n            offlineLocation=").append(quote(copy.getOfflineLocation()));
                 sb.append(",\n            copyNumber=").append(copy.getCopyNumber());
-                appendNotNull(sb, ",\n            deviceName=", copy.getDeviceName());
+                sb.append(",\n            deviceName=").append(quote(copy.getDeviceName()));
                 sb.append(",\n            slotNumber=").append(copy.getSlotNumber());
-                appendNotNull(sb, ",\n            side=", copy.getSide());
+                sb.append(",\n            side=").append(quote(copy.getSide()));
                 sb.append(",\n            copyInSet=").append(copy.getCopyInSet());
                 sb.append(",\n            copyInDB=").append(copy.getCopyInDB());
                 sb.append(",\n            copyInDevice=").append(copy.getCopyInDevice());
@@ -188,40 +334,18 @@ public class QStar {
             sb.append('}');
         }
         sb.append("],\n    extCount=").append(info.getExtCount());
-        appendNotNull(sb, ",\n    flocError=", info.getFlocError());
-        sb.append(",\n    stateAccess=").append(info.getStateAccess());
-        sb.append(",\n    stateAccessDetailed=").append(info.getStateAccessDetailed());
+        sb.append(",\n    flocError=").append(quote(info.getFlocError()));
+        sb.append(",\n    stateAccess=").append(toString(info.getStateAccess(), ACCESS_STATES));
+        sb.append(",\n    stateAccessDetailed=").append(toString(info.getStateAccessDetailed(), DETAILED_ACCESS_STATES));
         sb.append('}');
         return sb.toString();
     }
 
-    private static void appendNotNull(StringBuilder sb, String prompt, String value) {
-        sb.append(prompt);
-        if (value != null) sb.append('\'').append(value).append('\'');
+    private static Object toInstant(BigInteger value) {
+        return value.signum() == 0 ? "" : Instant.ofEpochSecond(value.longValue());
     }
 
-    private void logout() {
-        try {
-            WSUserLogoutRequest rq = factory.createWSUserLogoutRequest();
-            rq.setUserToken(userLogin.getUserToken());
-            LOG.info("<< WSUserLogoutRequest{userToken='{}'}", userLogin.getUserToken());
-            WSUserLogoutResponse userLogout = port.wsUserLogout(rq);
-            LOG.info(">> WSUserLogoutResponse{result={}}", userLogout.getResult());
-        } catch (Exception e) {
-            LOG.info("Logout Failed: {}", e.getMessage(), e);
-        }
-    }
-
-    private static CommandLine parseComandLine(String[] args) throws ParseException {
-        Options opts = new Options();
-        CLIUtils.addCommonOptions(opts);
-        opts.addOption(Option.builder("u")
-                .longOpt("user")
-                .numberOfArgs(2)
-                .valueSeparator(':')
-                .argName("user:password")
-                .desc(rb.getString("user"))
-                .build());
-        return CLIUtils.parseComandLine(args, opts, rb, QStar.class);
+    private static String quote(String value) {
+        return value == null ? "" : '\'' + value + '\'';
     }
 }

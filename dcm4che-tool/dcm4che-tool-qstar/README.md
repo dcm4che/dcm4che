@@ -1,14 +1,42 @@
 ```
-usage: qstar -u <user:password> <url> [<file-path>..]
+usage: qstar -u <user:password> --url <url> [options] [<file-path>..]
 
-QStar SOAP Client to fetch file information of specified files. If no
-<file-path> is specified, only test user authentication.
+QStar SOAP Client to fetch file information of specified files or to
+retrieve/prefetch the specified files.
 -
 Options:
  -h,--help                   display this help and exit
- -u,--user <user:password>   Specify the user name and password to use for
-                             server authentication
+    --job <jobId>            get status of retrieve job with specified
+                             jobId. Can't be used with option --retrieve.
+    --retrieve <priority>    retrieve specified files with specified
+                             priority (1 - LOW, 2 - NORMAL, 3 -HIGH). If
+                             no target directory is specified, the files
+                             will be prefetched to cache and no file will
+                             be created in the filesystem.
+    --target-dir <path>      directory to which retrieved files are
+                             stored.
+ -u,--user <user:password>   user name and password to use for server
+                             authentication.
+    --url <url>              request URL.
  -V,--version                output version information and exit
 -
-Example: qstar -u user:secret http://127.0.0.1:18083 /full/path/to/file
+Examples:
+=> qstar -u user:secret --url http://127.0.0.1:18083
+Verify authentication of user with password.
+
+=> qstar -u user:secret --url http://127.0.0.1:18083 /full/path/to/file
+Fetch file information of file with full path /full/path/to/file
+
+=> qstar -u user:secret --url http://127.0.0.1:18083 --retrieve 3
+/full/path/to/file
+Prefetch file with full path /full/path/to/file with high priority to the
+QStar cache
+
+=> qstar -u user:secret --url http://127.0.0.1:18083 --retrieve 1
+--target-dir /tmp /full/path/to/file
+Retrieve file with full path /full/path/to/file with low priority to
+directory /tmp
+
+=> qstar -u user:secret --url http://127.0.0.1:18083 --job 42
+Fetch job status of retrieve job with jobId 42
 ```

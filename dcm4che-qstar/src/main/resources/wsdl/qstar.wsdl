@@ -49,6 +49,12 @@
         </s:sequence>
       </s:complexType>
 
+      <s:complexType name="WSFileList">
+        <s:sequence>
+          <s:element name="fileName" type="s:string" maxOccurs="unbounded" />
+        </s:sequence>
+      </s:complexType>
+
       <s:complexType name="WSFileInfo">
         <s:sequence>
           <s:element name="size" type="s:unsignedLong"/>
@@ -96,6 +102,33 @@
         </s:sequence>
       </s:complexType>
 
+      <s:complexType name="WSBatchJobStatusRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string" />
+          <s:element name="jobId" type="s:unsignedLong" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSBatchJobStatusResponse">
+        <s:sequence>
+          <s:element name="jobStatus" type="s:unsignedInt"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSBatchFileRetrieveRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string" />
+          <s:element name="jobPriority" type="s:unsignedInt" />
+          <s:element name="fileCount" type="s:unsignedLong" />
+          <s:element name="fileList" type="tns:WSFileList" />
+          <s:element name="targetDir" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSBatchFileRetrieveResponse">
+        <s:sequence>
+          <s:element name="jobId" type="s:unsignedLong"/>
+        </s:sequence>
+      </s:complexType>
+
       <s:complexType name="WSUserLoginRequest">
         <s:sequence>
           <s:element name="userName" type="s:string" />
@@ -128,6 +161,18 @@
   <wsdl:message name="WSGetFileInfoSoapOut">
     <wsdl:part name="parameters" type="tns:WSGetFileInfoResponse"></wsdl:part>
   </wsdl:message>
+  <wsdl:message name="WSBatchFileRetrieveSoapIn">
+    <wsdl:part name="parameters" type="tns:WSBatchFileRetrieveRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchFileRetrieveSoapOut">
+    <wsdl:part name="parameters" type="tns:WSBatchFileRetrieveResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchJobStatusSoapIn">
+    <wsdl:part name="parameters" type="tns:WSBatchJobStatusRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchJobStatusSoapOut">
+    <wsdl:part name="parameters" type="tns:WSBatchJobStatusResponse"></wsdl:part>
+  </wsdl:message>
   <wsdl:message name="WSUserLoginSoapIn">
     <wsdl:part name="parameters" type="tns:WSUserLoginRequest"></wsdl:part>
   </wsdl:message>
@@ -147,6 +192,16 @@
       <wsdl:input message="tns:WSGetFileInfoSoapIn"/>
       <wsdl:output message="tns:WSGetFileInfoSoapOut"/>
     </wsdl:operation>
+    <wsdl:operation name="WSBatchFileRetrieve">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Retrieve a set of files.</wsdl:documentation>
+      <wsdl:input message="tns:WSBatchFileRetrieveSoapIn" />
+      <wsdl:output message="tns:WSBatchFileRetrieveSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchJobStatus">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get batch job status.</wsdl:documentation>
+      <wsdl:input message="tns:WSBatchJobStatusSoapIn" />
+      <wsdl:output message="tns:WSBatchJobStatusSoapOut" />
+    </wsdl:operation>
     <wsdl:operation name="WSUserLogin">
       <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Authenticate user using provided username and password.</wsdl:documentation>
       <wsdl:input message="tns:WSUserLoginSoapIn" />
@@ -162,6 +217,24 @@
     <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="WSGetFileInfo">
       <soap:operation soapAction="WSGetFileInfo" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchFileRetrieve">
+      <soap:operation soapAction="WSBatchFileRetrieve" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchJobStatus">
+      <soap:operation soapAction="WSBatchJobStatus" style="rpc" />
       <wsdl:input>
         <soap:body use="literal" namespace="WSWebService" />
       </wsdl:input>

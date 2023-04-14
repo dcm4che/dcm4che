@@ -9,7 +9,7 @@ Options:
     --job <jobId>            get status of retrieve job with specified
                              jobId. Can't be used with option --retrieve.
     --retrieve <priority>    retrieve specified files with specified
-                             priority (1 - LOW, 2 - NORMAL, 3 -HIGH). If
+                             priority (1 - LOW, 2 - NORMAL, 3 - HIGH). If
                              no target directory is specified, the files
                              will be prefetched to cache and no file will
                              be created in the filesystem.

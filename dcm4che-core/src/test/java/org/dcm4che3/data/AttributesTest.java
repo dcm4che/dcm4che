@@ -311,11 +311,14 @@ public class AttributesTest {
         Attributes a = new Attributes();
         a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
         a.setDate(Tag.StudyDateAndTime, new Date(0));
+        a.setDate(Tag.DateAndTimeOfLastCalibration, new Date(0), new Date(100000000));
         a.setString(Tag.PatientBirthDate, VR.DA, "19700101");
         a.setString(Tag.PatientBirthTime, VR.TM, "000000.000");
         a.setString(Tag.ContextGroupVersion, VR.DT, "19700101");
         assertEquals("19700101", a.getString(Tag.StudyDate));
         assertEquals("000000.000", a.getString(Tag.StudyTime));
+        assertArrayEquals(new String[] {"19700101", "19700102"}, a.getStrings(Tag.DateOfLastCalibration));
+        assertArrayEquals(new String[] {"000000.000", "034640.000"}, a.getStrings(Tag.TimeOfLastCalibration));
 
         a.setTimezoneOffsetFromUTC("+0100");
         assertEquals("19700101", a.getString(Tag.StudyDate));
@@ -323,6 +326,8 @@ public class AttributesTest {
         assertEquals("19700101", a.getString(Tag.PatientBirthDate));
         assertEquals("000000.000", a.getString(Tag.PatientBirthTime));
         assertEquals("19700101", a.getString(Tag.ContextGroupVersion));
+        assertArrayEquals(new String[] {"19700101", "19700102"}, a.getStrings(Tag.DateOfLastCalibration));
+        assertArrayEquals(new String[] {"010000.000", "044640.000"}, a.getStrings(Tag.TimeOfLastCalibration));
 
         a.setTimezoneOffsetFromUTC("-0100");
         assertEquals("19691231", a.getString(Tag.StudyDate));
@@ -330,6 +335,8 @@ public class AttributesTest {
         assertEquals("19700101", a.getString(Tag.PatientBirthDate));
         assertEquals("000000.000", a.getString(Tag.PatientBirthTime));
         assertEquals("19700101", a.getString(Tag.ContextGroupVersion));
+        assertArrayEquals(new String[] {"19691231", "19700102"}, a.getStrings(Tag.DateOfLastCalibration));
+        assertArrayEquals(new String[] {"230000.000", "024640.000"}, a.getStrings(Tag.TimeOfLastCalibration));
     }
 
     @Test

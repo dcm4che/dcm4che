@@ -2087,20 +2087,20 @@ public class Attributes implements Serializable {
         return set(privateCreator, tag, vr, vr.toValue(ds, applyTimezoneOffset ? getTimeZone() : null, precision));
     }
 
-    public void setDate(long tag, Date dt) {
+    public void setDate(long tag, Date... dt) {
         setDate(null, tag, dt);
     }
 
-    public void setDate(long tag, DatePrecision precision, Date dt) {
+    public void setDate(long tag, DatePrecision precision, Date... dt) {
         setDate(null, tag, precision, dt);
     }
 
-    public void setDate(String privateCreator, long tag, Date dt) {
+    public void setDate(String privateCreator, long tag, Date... dt) {
         setDate(privateCreator, tag, new DatePrecision(), dt);
     }
 
     public void setDate(String privateCreator, long tag,
-            DatePrecision precision, Date dt) {
+            DatePrecision precision, Date... dt) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
         setDate(privateCreator, daTag, VR.DA, true, precision, dt);

@@ -86,6 +86,7 @@
   <el tag="7777xx54" keyword="StorageObjectDigest" vr="LO" vm="1">Storage Object Digest</el>
   <el tag="7777xx55" keyword="OtherStorageSequence" vr="LO" vm="1">Other Storage Sequence</el>
   <el tag="7777xx56" keyword="StorageObjectStatus" vr="CS" vm="1">Storage Object Status</el>
+  <el tag="7777xx57" keyword="StorageObjectMultiReference" vr="IS" vm="1">Storage Object Multi-Reference</el>
   <el tag="7777xx60" keyword="ScheduledStorageVerificationDateTimeOfSeries" vr="DT" vm="1">Scheduled Storage Verification Date Time of Series</el>
   <el tag="7777xx61" keyword="FailuresOfLastStorageVerificationOfSeries" vr="US" vm="1">Failures of last Storage Verification of Series</el>
   <el tag="7777xx62" keyword="ScheduledCompressionDateTimeOfSeries" vr="DT" vm="1">Scheduled Compression Date Time of Series</el>

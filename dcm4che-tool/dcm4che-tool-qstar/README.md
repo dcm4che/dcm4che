@@ -25,7 +25,7 @@ Examples:
 Verify authentication of user with password.
 
 => qstar -u user:secret --url http://127.0.0.1:18083 /full/path/to/file
-Fetch file information of file with full path /full/path/to/file
+Get file information of file with full path /full/path/to/file
 
 => qstar -u user:secret --url http://127.0.0.1:18083 --retrieve 3
 /full/path/to/file
@@ -38,5 +38,10 @@ Retrieve file with full path /full/path/to/file with low priority to
 directory /tmp
 
 => qstar -u user:secret --url http://127.0.0.1:18083 --job 42
-Fetch job status of retrieve job with jobId 42
+Get job status of retrieve job with jobId 42
+
+=> qstar -u user:secret --url http://127.0.0.1:18083 --job 42
+/full/path/to/file
+Get job status of retrieve of file with full path /full/path/to/file by
+job with jobId 42
 ```

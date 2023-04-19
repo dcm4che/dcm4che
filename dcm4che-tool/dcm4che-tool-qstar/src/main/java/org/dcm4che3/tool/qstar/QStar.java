@@ -128,7 +128,14 @@ public class QStar {
                             fileList,
                             cl.getOptionValue("target-dir", ""));
                 } else if (cl.hasOption("job")) {
-                    qstar.batchJobStatus(((Number) cl.getParsedOptionValue("job")).longValue());
+                    long jobId = ((Number) cl.getParsedOptionValue("job")).longValue();
+                    if (fileList.isEmpty()) {
+                        qstar.batchJobStatus(jobId);
+                    } else {
+                        for (String file : fileList) {
+                            qstar.batchJobObjectStatus(jobId, file);
+                        }
+                    }
                 } else {
                     for (String file : fileList) {
                         qstar.getFileInfo(file);
@@ -265,9 +272,26 @@ public class QStar {
             rq.setUserToken(userLogin.getUserToken());
             LOG.info("<< WSBatchJobStatusRequest{jobId={}, userToken='{}'}", jobId, userLogin.getUserToken());
             WSBatchJobStatusResponse jobStatus = port.wsBatchJobStatus(rq);
-            LOG.info(">> WSBatchJobStatusResponse{jobStatus={}}", toString(jobStatus.getJobStatus(), JOB_STATUS_NAMES));
+            LOG.info(">> WSBatchJobStatusResponse{jobStatus={}}",
+                    toString(jobStatus.getJobStatus(), JOB_STATUS_NAMES));
         } catch (Exception e) {
             LOG.info("BatchJobStatus Failed: {}", e.getMessage(), e);
+        }
+    }
+
+    private void batchJobObjectStatus(long jobId, String file) {
+        try {
+            WSBatchJobObjectStatusRequest rq = factory.createWSBatchJobObjectStatusRequest();
+            rq.setJobId(BigInteger.valueOf(jobId));
+            rq.setJobObjectName(file);
+            rq.setUserToken(userLogin.getUserToken());
+            LOG.info("<< WSBatchJobObjectStatusRequest{jobId={}, jobObjectName='{}', userToken='{}'}",
+                    jobId, file, userLogin.getUserToken());
+            WSBatchJobObjectStatusResponse jobObjectStatus = port.wsBatchJobObjectStatus(rq);
+            LOG.info(">> WSBatchJobObjectStatusResponse{jobObjectStatus={}}",
+                    toString(jobObjectStatus.getJobObjectStatus(), JOB_STATUS_NAMES));
+        } catch (Exception e) {
+            LOG.info("BatchJobObjectStatus Failed: {}", e.getMessage(), e);
         }
     }
 

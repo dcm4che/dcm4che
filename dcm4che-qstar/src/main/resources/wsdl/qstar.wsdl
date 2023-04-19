@@ -129,6 +129,19 @@
         </s:sequence>
       </s:complexType>
 
+      <s:complexType name="WSBatchJobObjectStatusRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string" />
+          <s:element name="jobId" type="s:unsignedLong" />
+          <s:element name="jobObjectName" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSBatchJobObjectStatusResponse">
+        <s:sequence>
+          <s:element name="jobObjectStatus" type="s:unsignedInt"/>
+        </s:sequence>
+      </s:complexType>
+
       <s:complexType name="WSUserLoginRequest">
         <s:sequence>
           <s:element name="userName" type="s:string" />
@@ -173,6 +186,12 @@
   <wsdl:message name="WSBatchJobStatusSoapOut">
     <wsdl:part name="parameters" type="tns:WSBatchJobStatusResponse"></wsdl:part>
   </wsdl:message>
+  <wsdl:message name="WSBatchJobObjectStatusSoapIn">
+    <wsdl:part name="parameters" type="tns:WSBatchJobObjectStatusRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchJobObjectStatusSoapOut">
+    <wsdl:part name="parameters" type="tns:WSBatchJobObjectStatusResponse"></wsdl:part>
+  </wsdl:message>
   <wsdl:message name="WSUserLoginSoapIn">
     <wsdl:part name="parameters" type="tns:WSUserLoginRequest"></wsdl:part>
   </wsdl:message>
@@ -201,6 +220,11 @@
       <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get batch job status.</wsdl:documentation>
       <wsdl:input message="tns:WSBatchJobStatusSoapIn" />
       <wsdl:output message="tns:WSBatchJobStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchJobObjectStatus">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get batch job object status.</wsdl:documentation>
+      <wsdl:input message="tns:WSBatchJobObjectStatusSoapIn" />
+      <wsdl:output message="tns:WSBatchJobObjectStatusSoapOut" />
     </wsdl:operation>
     <wsdl:operation name="WSUserLogin">
       <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Authenticate user using provided username and password.</wsdl:documentation>
@@ -235,6 +259,15 @@
     </wsdl:operation>
     <wsdl:operation name="WSBatchJobStatus">
       <soap:operation soapAction="WSBatchJobStatus" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchJobObjectStatus">
+      <soap:operation soapAction="WSBatchJobObjectStatus" style="rpc" />
       <wsdl:input>
         <soap:body use="literal" namespace="WSWebService" />
       </wsdl:input>

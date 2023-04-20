@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.ws.BindingProvider;
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -123,12 +124,30 @@ public class QStar {
             List<String> fileList = cl.getArgList();
             if (qstar.login(user[0], user[1])) {
                 if (cl.hasOption("retrieve")) {
-                    qstar.batchFileRetrieve(
+                    BigInteger jobId = qstar.batchFileRetrieve(
                             ((Number) cl.getParsedOptionValue("retrieve")).longValue(),
                             fileList,
                             cl.getOptionValue("target-dir", ""));
+                    if (jobId != null && cl.hasOption("p")) {
+                        Number delay = (Number) cl.getParsedOptionValue("p");
+                        while (!fileList.isEmpty()) {
+                            Iterator<String> iterator = fileList.iterator();
+                            while (iterator.hasNext()) {
+                                if (delay != null)
+                                    Thread.sleep(delay.longValue());
+                                switch (qstar.batchJobObjectStatus(jobId, iterator.next())) {
+                                    case 1: // INQUEUE
+                                    case 2: // PROCESSING
+                                        break;
+                                    default:
+                                        iterator.remove();
+                                }
+                            }
+                        }
+                        qstar.batchJobStatus(jobId);
+                     }
                 } else if (cl.hasOption("job")) {
-                    long jobId = ((Number) cl.getParsedOptionValue("job")).longValue();
+                    BigInteger jobId = BigInteger.valueOf(((Number) cl.getParsedOptionValue("job")).longValue());
                     if (fileList.isEmpty()) {
                         qstar.batchJobStatus(jobId);
                     } else {
@@ -191,6 +210,13 @@ public class QStar {
                 .argName("path")
                 .desc(rb.getString("target-dir"))
                 .build());
+        opts.addOption(Option.builder("p")
+                .longOpt("progress")
+                .optionalArg(true)
+                .type(Number.class)
+                .argName("ms")
+                .desc(rb.getString("progress"))
+                .build());
         opts.addOptionGroup(group);
         return CLIUtils.parseComandLine(args, opts, rb, QStar.class);
     }
@@ -239,7 +265,7 @@ public class QStar {
         }
     }
 
-    private void batchFileRetrieve(long jobPriority, List<String> fileList, String targetDir) {
+    private BigInteger batchFileRetrieve(long jobPriority, List<String> fileList, String targetDir) {
         try {
             WSBatchFileRetrieveRequest rq = factory.createWSBatchFileRetrieveRequest();
             rq.setJobPriority(jobPriority);
@@ -254,9 +280,11 @@ public class QStar {
                     userLogin.getUserToken());
             WSBatchFileRetrieveResponse fileRetrieve = port.wsBatchFileRetrieve(rq);
             LOG.info(">> WSBatchFileRetrieveResponse{jobId={}}", fileRetrieve.getJobId());
+            return fileRetrieve.getJobId();
         } catch (Exception e) {
             LOG.info("BatchFileRetrieve Failed: {}", e.getMessage(), e);
         }
+        return null;
     }
 
     private static WSFileList createWSFileList(List<String> fileList) {
@@ -265,24 +293,26 @@ public class QStar {
         return wsFileList;
     }
 
-    private void batchJobStatus(long jobId) {
+    private int batchJobStatus(BigInteger jobId) {
         try {
             WSBatchJobStatusRequest rq = factory.createWSBatchJobStatusRequest();
-            rq.setJobId(BigInteger.valueOf(jobId));
+            rq.setJobId(jobId);
             rq.setUserToken(userLogin.getUserToken());
             LOG.info("<< WSBatchJobStatusRequest{jobId={}, userToken='{}'}", jobId, userLogin.getUserToken());
             WSBatchJobStatusResponse jobStatus = port.wsBatchJobStatus(rq);
             LOG.info(">> WSBatchJobStatusResponse{jobStatus={}}",
                     toString(jobStatus.getJobStatus(), JOB_STATUS_NAMES));
+            return (int) jobStatus.getJobStatus();
         } catch (Exception e) {
             LOG.info("BatchJobStatus Failed: {}", e.getMessage(), e);
         }
+        return 0;
     }
 
-    private void batchJobObjectStatus(long jobId, String file) {
+    private int batchJobObjectStatus(BigInteger jobId, String file) {
         try {
             WSBatchJobObjectStatusRequest rq = factory.createWSBatchJobObjectStatusRequest();
-            rq.setJobId(BigInteger.valueOf(jobId));
+            rq.setJobId(jobId);
             rq.setJobObjectName(file);
             rq.setUserToken(userLogin.getUserToken());
             LOG.info("<< WSBatchJobObjectStatusRequest{jobId={}, jobObjectName='{}', userToken='{}'}",
@@ -290,9 +320,11 @@ public class QStar {
             WSBatchJobObjectStatusResponse jobObjectStatus = port.wsBatchJobObjectStatus(rq);
             LOG.info(">> WSBatchJobObjectStatusResponse{jobObjectStatus={}}",
                     toString(jobObjectStatus.getJobObjectStatus(), JOB_STATUS_NAMES));
+            return (int) jobObjectStatus.getJobObjectStatus();
         } catch (Exception e) {
             LOG.info("BatchJobObjectStatus Failed: {}", e.getMessage(), e);
         }
+        return 0;
     }
 
     private static String toString(long i, String[] values) {

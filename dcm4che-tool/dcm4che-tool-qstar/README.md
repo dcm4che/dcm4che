@@ -6,8 +6,18 @@ retrieve/prefetch the specified files.
 -
 Options:
  -h,--help                   display this help and exit
-    --job <jobId>            get status of retrieve job with specified
+    --job <jobId>            get retrieve status of specified files
+                             retrieved by job with specified jobId. If no
+                             file-path is specified, get the overall
+                             status of the retrieve job with specified
                              jobId. Can't be used with option --retrieve.
+ -p,--progress               continue fetching the retrieve status of
+                             specified files in specified interval after
+                             invoking the retrieve request until the
+                             retrieve job is completed. If no interval is
+                             specified, fetch status continuously without
+                             delay between successive object status
+                             requests.
     --retrieve <priority>    retrieve specified files with specified
                              priority (1 - LOW, 2 - NORMAL, 3 - HIGH). If
                              no target directory is specified, the files
@@ -24,24 +34,25 @@ Examples:
 => qstar -u user:secret --url http://127.0.0.1:18083
 Verify authentication of user with password.
 
-=> qstar -u user:secret --url http://127.0.0.1:18083 /full/path/to/file
-Get file information of file with full path /full/path/to/file
+=> qstar -u user:secret --url http://127.0.0.1:18083 /path/to/file
+Get file information of file with full path /path/to/file.
+
+=> qstar -u user:secret --url http://127.0.0.1:18083 --retrieve 1 -p 100
+/path/to/file1 /path/to/file2
+Prefetch files with full path /path/to/file1 and /path/to/file2 with low
+priority to the QStar cache and continue fetching the retrieve status of
+the specified files in 100ms interval until the prefetch job is completed.
 
 => qstar -u user:secret --url http://127.0.0.1:18083 --retrieve 3
-/full/path/to/file
-Prefetch file with full path /full/path/to/file with high priority to the
-QStar cache
-
-=> qstar -u user:secret --url http://127.0.0.1:18083 --retrieve 1
---target-dir /tmp /full/path/to/file
-Retrieve file with full path /full/path/to/file with low priority to
-directory /tmp
+--target-dir /path/to/dir /path/to/file1 /path/to/file2
+Retrieve files with full path /path/to/file1 and /path/to/file2 with high
+priority to directory /path/to/dir.
 
 => qstar -u user:secret --url http://127.0.0.1:18083 --job 42
-Get job status of retrieve job with jobId 42
+Get job status of retrieve job with jobId 42.
 
 => qstar -u user:secret --url http://127.0.0.1:18083 --job 42
-/full/path/to/file
-Get job status of retrieve of file with full path /full/path/to/file by
-job with jobId 42
+/path/to/file1 /path/to/file2
+Get retrieve status of files with full path /path/to/file1 and
+/path/to/file2 retrieved by job with jobId 42.
 ```

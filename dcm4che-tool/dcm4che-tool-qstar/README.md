@@ -5,8 +5,10 @@ QStar SOAP Client to fetch file information of specified files or to
 retrieve/prefetch the specified files.
 -
 Options:
+ -D,--target-dir <path>      directory to which retrieved files are
+                             stored.
  -h,--help                   display this help and exit
-    --job <jobId>            get retrieve status of specified files
+ -j,--job <jobId>            get retrieve status of specified files
                              retrieved by job with specified jobId. If no
                              file-path is specified, get the overall
                              status of the retrieve job with specified
@@ -18,16 +20,14 @@ Options:
                              specified, fetch status continuously without
                              delay between successive object status
                              requests.
-    --retrieve <priority>    retrieve specified files with specified
+ -r,--retrieve <priority>    retrieve specified files with specified
                              priority (1 - LOW, 2 - NORMAL, 3 - HIGH). If
                              no target directory is specified, the files
                              will be prefetched to cache and no file will
                              be created in the filesystem.
-    --target-dir <path>      directory to which retrieved files are
-                             stored.
  -u,--user <user:password>   user name and password to use for server
                              authentication.
-    --url <url>              request URL.
+ -U,--url <url>              request URL.
  -V,--version                output version information and exit
 -
 Examples:

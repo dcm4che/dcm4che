@@ -115,7 +115,7 @@ public class QStar {
             if (user == null)
                 throw new MissingOptionException(
                         rb.getString("missing-user-opt"));
-            String url = cl.getOptionValue("url");
+            String url = cl.getOptionValue("U");
             if (url == null)
                 throw new MissingOptionException(
                         rb.getString("missing-url-opt"));
@@ -123,11 +123,11 @@ public class QStar {
             QStar qstar = new QStar(url);
             List<String> fileList = cl.getArgList();
             if (qstar.login(user[0], user[1])) {
-                if (cl.hasOption("retrieve")) {
+                if (cl.hasOption("r")) {
                     BigInteger jobId = qstar.batchFileRetrieve(
-                            ((Number) cl.getParsedOptionValue("retrieve")).longValue(),
+                            ((Number) cl.getParsedOptionValue("r")).longValue(),
                             fileList,
-                            cl.getOptionValue("target-dir", ""));
+                            cl.getOptionValue("D", ""));
                     if (jobId != null && cl.hasOption("p")) {
                         Number delay = (Number) cl.getParsedOptionValue("p");
                         while (!fileList.isEmpty()) {
@@ -146,8 +146,8 @@ public class QStar {
                         }
                         qstar.batchJobStatus(jobId);
                      }
-                } else if (cl.hasOption("job")) {
-                    BigInteger jobId = BigInteger.valueOf(((Number) cl.getParsedOptionValue("job")).longValue());
+                } else if (cl.hasOption("j")) {
+                    BigInteger jobId = BigInteger.valueOf(((Number) cl.getParsedOptionValue("j")).longValue());
                     if (fileList.isEmpty()) {
                         qstar.batchJobStatus(jobId);
                     } else {
@@ -183,28 +183,28 @@ public class QStar {
                 .argName("user:password")
                 .desc(rb.getString("user"))
                 .build());
-        opts.addOption(Option.builder()
+        opts.addOption(Option.builder("U")
                 .longOpt("url")
                 .hasArg()
                 .argName("url")
                 .desc(rb.getString("url"))
                 .build());
         OptionGroup group = new OptionGroup();
-        group.addOption(Option.builder()
+        group.addOption(Option.builder("r")
                 .longOpt("retrieve")
                 .hasArg()
                 .type(Number.class)
                 .argName("priority")
                 .desc(rb.getString("retrieve"))
                 .build());
-        group.addOption(Option.builder()
+        group.addOption(Option.builder("j")
                 .longOpt("job")
                 .hasArg()
                 .type(Number.class)
                 .argName("jobId")
                 .desc(rb.getString("job"))
                 .build());
-        opts.addOption(Option.builder()
+        opts.addOption(Option.builder("D")
                 .longOpt("target-dir")
                 .hasArg()
                 .argName("path")

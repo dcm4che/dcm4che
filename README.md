@@ -114,7 +114,7 @@ Utilities
 - [mppsscu][]: Send DICOM Modality Performed Procedure Step
 - [pdf2dcm][]: Convert PDF file into DICOM file
 - [planarconfig][]: Detects the actual planar configuration of uncompressed pixel data of color images with Photometric Interpretation RGB or YBR_FULL and optionally correct non matching values of attribute Planar Configuration of the image
-- [qstar][]: QStar SOAP Client to fetch file information of specified files
+- [qstar][]: QStar SOAP Client to prefetch/retrieve or fetch file information of specified files
 - [stgcmtscu][]: Invoke DICOM Storage Commitment Request
 - [storescp][]: DICOM Composite Object Receiver
 - [storescu][]: Send DICOM Composite Objects

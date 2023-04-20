@@ -1,8 +1,8 @@
 ```
 usage: qstar -u <user:password> --url <url> [options] [<file-path>..]
 
-QStar SOAP Client to fetch file information of specified files or to
-retrieve/prefetch the specified files.
+QStar SOAP Client to prefetch/retrieve or fetch file information of
+specified files.
 -
 Options:
  -D,--target-dir <path>      directory to which retrieved files are

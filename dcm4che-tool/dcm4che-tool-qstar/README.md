@@ -11,7 +11,7 @@ Options:
                              file-path is specified, get the overall
                              status of the retrieve job with specified
                              jobId. Can't be used with option --retrieve.
- -p,--progress               continue fetching the retrieve status of
+ -p,--progress <ms>          continue fetching the retrieve status of
                              specified files in specified interval after
                              invoking the retrieve request until the
                              retrieve job is completed. If no interval is

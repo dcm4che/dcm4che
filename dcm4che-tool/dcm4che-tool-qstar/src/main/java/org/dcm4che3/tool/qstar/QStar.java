@@ -212,6 +212,7 @@ public class QStar {
                 .build());
         opts.addOption(Option.builder("p")
                 .longOpt("progress")
+                .hasArg()
                 .optionalArg(true)
                 .type(Number.class)
                 .argName("ms")

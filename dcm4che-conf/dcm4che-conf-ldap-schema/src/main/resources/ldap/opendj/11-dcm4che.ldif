@@ -558,6 +558,10 @@ attributeTypes: ( 1.2.40.0.13.1.15.3.3.6 NAME 'hl7SendingCharacterSet'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
   SINGLE-VALUE )
+attributeTypes: ( 1.2.40.0.13.1.15.3.3.7 NAME 'hl7RequiredMSHField'
+  DESC 'MSH fields to be validated if missing or not, according to IHE RAD TF Vol 2 Message Control requirements. If absent, previous default checks in dcm4che library are applied.'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
 attributeTypes: ( 1.2.40.0.13.1.15.4.3.1 NAME 'dcmIIOFormatName'
   DESC 'Image IO Reader or Writer Format Name'
   EQUALITY caseExactMatch
@@ -783,6 +787,7 @@ objectClasses: ( 1.2.40.0.13.1.15.3.4.5 NAME 'hl7Application'
     hl7AcceptedMessageType $
     hl7DefaultCharacterSet $
     hl7SendingCharacterSet $
+    hl7RequiredMSHField $
     dicomDescription $
     dicomApplicationCluster $
     dicomInstalled ) )

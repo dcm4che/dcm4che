@@ -38,25 +38,25 @@
 
 package org.dcm4che3.conf.ldap.hl7;
 
+import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.hl7.HL7ApplicationAlreadyExistsException;
 import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
-import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
-import org.dcm4che3.net.hl7.HL7ApplicationInfo;
 import org.dcm4che3.net.hl7.HL7Application;
+import org.dcm4che3.net.hl7.HL7ApplicationInfo;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.dcm4che3.util.StringUtils;
 
-import javax.naming.*;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.naming.directory.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -311,6 +311,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 hl7App.getHL7DefaultCharacterSet(), "ASCII");
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7SendingCharacterSet",
                 hl7App.getHL7SendingCharacterSet(), "ASCII");
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "hl7RequiredMSHField", hl7App.getHl7RequiredMSHFields());
         LdapUtils.storeConnRefs(ldapObj, attrs, hl7App.getConnections(), deviceDN);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDescription", hl7App.getDescription(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomApplicationCluster", hl7App.getApplicationClusters());
@@ -358,6 +359,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         hl7app.setAcceptedMessageTypes(LdapUtils.stringArray(attrs.get("hl7AcceptedMessageType")));
         hl7app.setHL7DefaultCharacterSet(LdapUtils.stringValue(attrs.get("hl7DefaultCharacterSet"), "ASCII"));
         hl7app.setHL7SendingCharacterSet(LdapUtils.stringValue(attrs.get("hl7SendingCharacterSet"), "ASCII"));
+        hl7app.setHl7RequiredMSHFields(LdapUtils.intArray(attrs.get("hl7RequiredMSHField")));
         hl7app.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
         hl7app.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         hl7app.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
@@ -423,6 +425,9 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         LdapUtils.storeDiffObject(ldapObj, mods, "hl7SendingCharacterSet",
                 a.getHL7SendingCharacterSet(),
                 b.getHL7SendingCharacterSet(), "ASCII");
+        LdapUtils.storeDiff(ldapObj, mods, "hl7RequiredMSHField",
+                a.getHl7RequiredMSHFields(),
+                b.getHl7RequiredMSHFields());
         LdapUtils.storeDiff(ldapObj, mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),
@@ -440,6 +445,8 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
             ext.storeDiffs(ldapObj, a, b, mods);
         return mods;
     }
+
+
 
     @Override
     protected void register(Device device, List<String> dns) throws ConfigurationException {

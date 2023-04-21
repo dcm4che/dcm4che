@@ -67,6 +67,7 @@ public class HL7Application implements Serializable {
     private String hl7SendingCharacterSet = "ASCII";
     private Boolean installed;
     private String description;
+    private int[] hl7RequiredMSHFields = {};
     private String[] applicationClusters = {};
 
     private final LinkedHashSet<String> acceptedSendingApplications =
@@ -178,6 +179,14 @@ public class HL7Application implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int[] getHl7RequiredMSHFields() {
+        return hl7RequiredMSHFields;
+    }
+
+    public void setHl7RequiredMSHFields(int[] hl7RequiredMSHFields) {
+        this.hl7RequiredMSHFields = hl7RequiredMSHFields;
     }
 
     public String[] getApplicationClusters() {
@@ -387,6 +396,7 @@ public class HL7Application implements Serializable {
         applicationClusters = src.applicationClusters;
         hl7DefaultCharacterSet = src.hl7DefaultCharacterSet;
         hl7SendingCharacterSet = src.hl7SendingCharacterSet;
+        hl7RequiredMSHFields = src.hl7RequiredMSHFields;
         acceptedSendingApplications.clear();
         acceptedSendingApplications.addAll(src.acceptedSendingApplications);
         otherApplicationNames.clear();

@@ -51,6 +51,14 @@
       "type": "string",
       "default": "ASCII"
     },
+    "hl7RequiredMSHField": {
+      "title": "HL7 Required MSH Fields",
+      "description": "MSH fields to be validated if missing or not, according to IHE RAD TF Vol 2 Message Control requirements. If absent, previous default checks in dcm4che library are applied.",
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
     "dicomDescription": {
       "title": "HL7 Description",
       "description": "Unconstrained text description of the HL7 Application",

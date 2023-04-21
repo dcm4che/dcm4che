@@ -393,6 +393,14 @@ public class LdapUtils {
     }
 
     public static <T> void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
+                                     String attrId, int[] prevs, int[] vals, int... defVals) {
+        storeDiff(ldapObj, mods, attrId,
+                Arrays.stream(prevs).boxed().toArray(Integer[]::new),
+                Arrays.stream(vals).boxed().toArray(Integer[]::new),
+                Arrays.stream(defVals).boxed().toArray(Integer[]::new));
+    }
+
+    public static <T> void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
                                      String attrId, T[] prevs, T[] vals, T... defVals) {
         if (!LdapUtils.equals(prevs, vals)) {
             mods.add((vals.length == 0 || LdapUtils.equals(defVals, vals))

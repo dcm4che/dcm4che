@@ -60,6 +60,7 @@ import java.util.*;
 public class HL7Application implements Serializable {
 
     private static final long serialVersionUID = -1765110968524548056L;
+    public static final int[] HL7_REQUIRED_MSH_FIELDS = { 3, 4, 5, 6, 7, 9, 10, 11, 12 };
 
     private Device device;
     private String name;
@@ -186,7 +187,7 @@ public class HL7Application implements Serializable {
     }
 
     public void setHl7RequiredMSHFields(int[] hl7RequiredMSHFields) {
-        this.hl7RequiredMSHFields = hl7RequiredMSHFields;
+        this.hl7RequiredMSHFields = hl7RequiredMSHFields.length == 0 ? HL7_REQUIRED_MSH_FIELDS : hl7RequiredMSHFields;
     }
 
     public String[] getApplicationClusters() {

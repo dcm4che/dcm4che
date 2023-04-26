@@ -186,12 +186,12 @@ public class HL7Application implements Serializable {
         return hl7RequiredMSHFields;
     }
 
-    public void setHl7RequiredMSHFields(int[] vals) {
-        this.hl7RequiredMSHFields = requiredMSHFields(vals);
+    public void setHl7RequiredMSHFields(int[] hl7RequiredMSHFields) {
+        this.hl7RequiredMSHFields = hl7RequiredMSHFields;
     }
 
-    private int[] requiredMSHFields(int[] vals) {
-        return vals.length == 0 ? DEFAULT_HL7_REQUIRED_MSH_FIELDS : vals;
+    private int[] requiredMSHFields() {
+        return hl7RequiredMSHFields.length == 0 ? DEFAULT_HL7_REQUIRED_MSH_FIELDS : hl7RequiredMSHFields;
     }
 
     public String[] getApplicationClusters() {
@@ -268,7 +268,7 @@ public class HL7Application implements Serializable {
                             .setErrorLocation(ERRSegment.SENDING_APPLICATION)
                             .setUserMessage("Sending Application and/or Facility not recognized"));
         validateMessageType(msh);
-        for (int mshField : requiredMSHFields(hl7RequiredMSHFields)) {
+        for (int mshField : requiredMSHFields()) {
             switch (mshField) {
                 case 3 :
                     validateMissingRequiredFields(msh, 2, ERRSegment.SENDING_APPLICATION,

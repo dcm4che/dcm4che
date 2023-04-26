@@ -53,10 +53,21 @@
     },
     "hl7RequiredMSHField": {
       "title": "HL7 Required MSH Fields",
-      "description": "MSH fields to be validated if missing or not, according to IHE RAD TF Vol 2 Message Control requirements. If absent, previous default checks in dcm4che library are applied.",
+      "description": "MSH fields to be validated if missing or not, according to IHE RAD TF Vol 2 Message Control requirements. If absent, previous default checks in dcm4che library are applied. By default, all of the displayed MSH fields are validated.",
       "type": "array",
       "items": {
-        "type": "integer"
+        "type": "integer",
+        "enum": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12
+        ]
       }
     },
     "dicomDescription": {

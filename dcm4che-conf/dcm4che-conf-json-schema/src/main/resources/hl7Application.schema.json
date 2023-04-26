@@ -51,9 +51,9 @@
       "type": "string",
       "default": "ASCII"
     },
-    "hl7RequiredMSHField": {
-      "title": "HL7 Required MSH Fields",
-      "description": "MSH fields to be validated if missing or not, according to IHE RAD TF Vol 2 Message Control requirements. If absent, previous default checks in dcm4che library are applied. By default, all of the displayed MSH fields are validated.",
+    "hl7OptionalMSHField": {
+      "title": "HL7 Optional MSH Field",
+      "description": "Accept HL7 Messages with missing values for specified MSH fields, even they are required according to <a href=\"https://www.ihe.net/uploadedFiles/Documents/Radiology/IHE_RAD_TF_Vol2.pdf#page=43\" target=\"_blank\">IHE RAD TF Vol 2 Message Control requirements</a>",
       "type": "array",
       "items": {
         "type": "integer",
@@ -63,7 +63,6 @@
           5,
           6,
           7,
-          9,
           10,
           11,
           12

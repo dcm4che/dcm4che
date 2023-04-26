@@ -311,7 +311,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 hl7App.getHL7DefaultCharacterSet(), "ASCII");
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7SendingCharacterSet",
                 hl7App.getHL7SendingCharacterSet(), "ASCII");
-        LdapUtils.storeNotEmpty(ldapObj, attrs, "hl7RequiredMSHField", hl7App.getHl7RequiredMSHFields());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "hl7OptionalMSHField", hl7App.getOptionalMSHFields());
         LdapUtils.storeConnRefs(ldapObj, attrs, hl7App.getConnections(), deviceDN);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dicomDescription", hl7App.getDescription(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dicomApplicationCluster", hl7App.getApplicationClusters());
@@ -359,7 +359,7 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         hl7app.setAcceptedMessageTypes(LdapUtils.stringArray(attrs.get("hl7AcceptedMessageType")));
         hl7app.setHL7DefaultCharacterSet(LdapUtils.stringValue(attrs.get("hl7DefaultCharacterSet"), "ASCII"));
         hl7app.setHL7SendingCharacterSet(LdapUtils.stringValue(attrs.get("hl7SendingCharacterSet"), "ASCII"));
-        hl7app.setHl7RequiredMSHFields(LdapUtils.intArray(attrs.get("hl7RequiredMSHField")));
+        hl7app.setOptionalMSHFields(LdapUtils.intArray(attrs.get("hl7OptionalMSHField")));
         hl7app.setDescription(LdapUtils.stringValue(attrs.get("dicomDescription"), null));
         hl7app.setApplicationClusters(LdapUtils.stringArray(attrs.get("dicomApplicationCluster")));
         hl7app.setInstalled(LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
@@ -425,9 +425,9 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         LdapUtils.storeDiffObject(ldapObj, mods, "hl7SendingCharacterSet",
                 a.getHL7SendingCharacterSet(),
                 b.getHL7SendingCharacterSet(), "ASCII");
-        LdapUtils.storeDiff(ldapObj, mods, "hl7RequiredMSHField",
-                a.getHl7RequiredMSHFields(),
-                b.getHl7RequiredMSHFields());
+        LdapUtils.storeDiff(ldapObj, mods, "hl7OptionalMSHField",
+                a.getOptionalMSHFields(),
+                b.getOptionalMSHFields());
         LdapUtils.storeDiff(ldapObj, mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),

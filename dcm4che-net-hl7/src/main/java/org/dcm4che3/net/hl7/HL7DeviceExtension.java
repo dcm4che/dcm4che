@@ -139,7 +139,7 @@ public class HL7DeviceExtension extends DeviceExtension {
 
     UnparsedHL7Message onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
         HL7Application hl7App = getHL7Application(msg.msh().getReceivingApplicationWithFacility(), true);
-        if (hl7App == null)
+        if (hl7App == null || !hl7App.isInstalled() || !hl7App.getConnections().contains(conn))
             throw new HL7Exception(
                     new ERRSegment(msg.msh())
                             .setHL7ErrorCode(ERRSegment.TABLE_VALUE_NOT_FOUND)

@@ -55,7 +55,7 @@ import java.util.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  */
 public class HL7Application implements Serializable {
 
@@ -68,7 +68,7 @@ public class HL7Application implements Serializable {
     private String hl7SendingCharacterSet = "ASCII";
     private Boolean installed;
     private String description;
-    private int[] hl7RequiredMSHFields = {};
+    private int[] optionalMSHFields = {};
     private String[] applicationClusters = {};
 
     private final LinkedHashSet<String> acceptedSendingApplications =
@@ -182,16 +182,12 @@ public class HL7Application implements Serializable {
         this.description = description;
     }
 
-    public int[] getHl7RequiredMSHFields() {
-        return hl7RequiredMSHFields;
+    public int[] getOptionalMSHFields() {
+        return optionalMSHFields;
     }
 
-    public void setHl7RequiredMSHFields(int[] hl7RequiredMSHFields) {
-        this.hl7RequiredMSHFields = hl7RequiredMSHFields;
-    }
-
-    private int[] requiredMSHFields() {
-        return hl7RequiredMSHFields.length == 0 ? DEFAULT_HL7_REQUIRED_MSH_FIELDS : hl7RequiredMSHFields;
+    public void setOptionalMSHFields(int... optionalMSHFields) {
+        this.optionalMSHFields = optionalMSHFields;
     }
 
     public String[] getApplicationClusters() {
@@ -254,64 +250,7 @@ public class HL7Application implements Serializable {
 
     UnparsedHL7Message onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
         HL7Segment msh = msg.msh();
-        if (!(isInstalled() && conns.contains(conn)))
-            throw new HL7Exception(
-                    new ERRSegment(msh)
-                            .setHL7ErrorCode(ERRSegment.TABLE_VALUE_NOT_FOUND)
-                            .setErrorLocation(ERRSegment.RECEIVING_APPLICATION)
-                            .setUserMessage("Receiving Application and/or Facility not recognized"));
-        if (!(acceptedSendingApplications.isEmpty()
-                || acceptedSendingApplications.contains(msh.getSendingApplicationWithFacility())))
-            throw new HL7Exception(
-                    new ERRSegment(msh)
-                            .setHL7ErrorCode(ERRSegment.TABLE_VALUE_NOT_FOUND)
-                            .setErrorLocation(ERRSegment.SENDING_APPLICATION)
-                            .setUserMessage("Sending Application and/or Facility not recognized"));
-        validateMessageType(msh);
-        for (int mshField : requiredMSHFields()) {
-            switch (mshField) {
-                case 3 :
-                    validateMissingRequiredFields(msh, 2, ERRSegment.SENDING_APPLICATION,
-                            "Missing Sending Application");
-                    break;
-                case 4 :
-                    validateMissingRequiredFields(msh, 3, ERRSegment.SENDING_APPLICATION,
-                            "Missing Sending Facility");
-                    break;
-                case 5:
-                    validateMissingRequiredFields(msh, 4, ERRSegment.RECEIVING_APPLICATION,
-                            "Missing Receiving Application");
-                    break;
-                case 6:
-                    validateMissingRequiredFields(msh, 5, ERRSegment.RECEIVING_FACILITY,
-                            "Missing Receiving Facility");
-                    break;
-                case 7:
-                    validateMissingRequiredFields(msh, 6, ERRSegment.MESSAGE_DATETIME,
-                            "Missing Date/Time of Message");
-                    break;
-                case 9:
-                    validateMissingRequiredFields(msh, 8, ERRSegment.MESSAGE_CODE,
-                            "Missing Message Type");
-                    break;
-                case 10:
-                    validateMissingRequiredFields(msh, 9, ERRSegment.MESSAGE_CONTROL_ID,
-                            "Missing Message Control ID");
-                    break;
-                case 11:
-                    validateMissingRequiredFields(msh, 10, ERRSegment.MESSAGE_PROCESSING_ID,
-                            "Missing Processing ID");
-                    break;
-                case 12:
-                    validateMissingRequiredFields(msh, 11, ERRSegment.MESSAGE_VERSION_ID,
-                            "Missing Version ID");
-                    break;
-                default:
-                    throw new HL7Exception(new ERRSegment(msh)
-                            .setHL7ErrorCode(ERRSegment.APPLICATION_INTERNAL_ERROR)
-                            .setUserMessage("Invalid HL7 Required MSH Field configured for HL7 application : " + name));
-            }
-        }
+        validateMSH(msh);
         HL7MessageListener listener = getHL7MessageListener();
         if (listener == null)
             throw new HL7Exception(new ERRSegment(msh)
@@ -320,25 +259,55 @@ public class HL7Application implements Serializable {
         return listener.onMessage(this, conn, s, msg);
     }
 
-    private void validateMissingRequiredFields(HL7Segment msh, int field, String errorLocation, String userMsg)
-            throws HL7Exception {
-        if (msh.getField(field, null) == null)
+    private void validateMSH(HL7Segment msh) throws HL7Exception {
+        String[] errorLocations = {
+                ERRSegment.SENDING_APPLICATION,     // MSH-3
+                ERRSegment.SENDING_FACILITY,        // MSH-4
+                ERRSegment.RECEIVING_APPLICATION,   // MSH-5
+                ERRSegment.RECEIVING_FACILITY,      // MSH-6
+                ERRSegment.MESSAGE_DATETIME,        // MSH-7
+                null,                               // MSH-8
+                ERRSegment.MESSAGE_CODE,            // MSH-9
+                ERRSegment.MESSAGE_CONTROL_ID,      // MSH-10
+                ERRSegment.MESSAGE_PROCESSING_ID,   // MSH-11
+                ERRSegment.MESSAGE_VERSION_ID,      // MSH-12
+        };
+        String[] userMsg = {
+                "Missing Sending Application",
+                "Missing Sending Facility",
+                "Missing Receiving Application",
+                "Missing Receiving Facility",
+                "Missing Date/Time of Message",
+                null,
+                "Missing Message Type",
+                "Missing Message Control ID",
+                "Missing Processing ID",
+                "Missing Version ID"
+        };
+        for (int hl7OptionalMSHField : optionalMSHFields) {
+            try {
+                errorLocations[hl7OptionalMSHField-3] = null;
+            } catch (IndexOutOfBoundsException ignore) {
+            }
+        }
+        errorLocations[6] = ERRSegment.MESSAGE_CODE; // never optional
+        for (int i = 0; i < errorLocations.length; i++) {
+            if (errorLocations[i] != null)
+                if (msh.getField(i+2, null) == null)
+                    throw new HL7Exception(
+                            new ERRSegment(msh)
+                                    .setHL7ErrorCode(ERRSegment.REQUIRED_FIELD_MISSING)
+                                    .setErrorLocation(errorLocations[i])
+                                    .setUserMessage(userMsg[i]));
+        }
+        if (!(acceptedSendingApplications.isEmpty()
+                || acceptedSendingApplications.contains(msh.getSendingApplicationWithFacility())))
             throw new HL7Exception(
                     new ERRSegment(msh)
-                            .setHL7ErrorCode(ERRSegment.REQUIRED_FIELD_MISSING)
-                            .setErrorLocation(errorLocation)
-                            .setUserMessage(userMsg));
-    }
-
-    private void validateMessageType(HL7Segment msh) throws HL7Exception {
+                            .setHL7ErrorCode(ERRSegment.TABLE_VALUE_NOT_FOUND)
+                            .setErrorLocation(ERRSegment.SENDING_APPLICATION)
+                            .setUserMessage("Sending Application and/or Facility not recognized"));
         String messageType = msh.getMessageType();
-        if (messageType.equals(""))
-            throw new HL7Exception(
-                    new ERRSegment(msh)
-                            .setHL7ErrorCode(ERRSegment.REQUIRED_FIELD_MISSING)
-                            .setErrorLocation(ERRSegment.MESSAGE_CODE)
-                            .setUserMessage("Missing Message Type"));
-
         if (!(acceptedMessageTypes.contains("*")
                 || acceptedMessageTypes.contains(messageType))) {
             if (unsupportedMessageCode(messageType.substring(0, 3)))
@@ -460,7 +429,7 @@ public class HL7Application implements Serializable {
         applicationClusters = src.applicationClusters;
         hl7DefaultCharacterSet = src.hl7DefaultCharacterSet;
         hl7SendingCharacterSet = src.hl7SendingCharacterSet;
-        hl7RequiredMSHFields = src.hl7RequiredMSHFields;
+        optionalMSHFields = src.optionalMSHFields;
         acceptedSendingApplications.clear();
         acceptedSendingApplications.addAll(src.acceptedSendingApplications);
         otherApplicationNames.clear();

@@ -38,11 +38,7 @@
 
 package org.dcm4che3.data;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Objects;
+import java.util.*;
 
 import org.dcm4che3.util.StringUtils;
 
@@ -159,6 +155,11 @@ public class IDWithIssuer {
                     : issuer.matches(other.issuer));
     }
 
+    public boolean matches2(IDWithIssuer other) {
+        return id.equals(other.id) &&
+                (issuer == null || other.issuer == null || issuer.matches(other.issuer));
+    }
+
     public Attributes exportPatientIDWithIssuer(Attributes attrs) {
         if (attrs == null)
             attrs = new Attributes(3);
@@ -219,16 +220,26 @@ public class IDWithIssuer {
     public static Set<IDWithIssuer> pidsOf(Attributes attrs) {
         IDWithIssuer pid = IDWithIssuer.pidOf(attrs);
         Sequence opidseq = attrs.getSequence(Tag.OtherPatientIDsSequence);
-        if (opidseq == null)
+        if (opidseq == null || opidseq.isEmpty())
             if (pid == null)
                 return Collections.emptySet();
             else
                 return Collections.singleton(pid);
         
-        Set<IDWithIssuer> pids =
-                new HashSet<IDWithIssuer>((1 + opidseq.size()) << 1);
+        Set<IDWithIssuer> pids = new LinkedHashSet<>((1 + opidseq.size()) << 1);
         if (pid != null)
             pids.add(pid);
+        for (Attributes item : opidseq)
+            addTo(IDWithIssuer.pidOf(item), pids);
+        return pids;
+    }
+
+    public static Set<IDWithIssuer> opidsOf(Attributes attrs) {
+        Sequence opidseq = attrs.getSequence(Tag.OtherPatientIDsSequence);
+        if (opidseq == null || opidseq.isEmpty())
+            return Collections.emptySet();
+
+        Set<IDWithIssuer> pids = new LinkedHashSet<>((opidseq.size()) << 1);
         for (Attributes item : opidseq)
             addTo(IDWithIssuer.pidOf(item), pids);
         return pids;
@@ -240,7 +251,7 @@ public class IDWithIssuer {
 
         for (Iterator<IDWithIssuer> itr = pids.iterator(); itr.hasNext();) {
             IDWithIssuer next = itr.next();
-            if (next.matches(pid)) {
+            if (next.matches2(pid)) {
                 // replace existing matching pid if it is lesser qualified
                 if (pid.issuer != null && (next.issuer == null
                         || next.issuer.isLesserQualifiedThan(pid.issuer)))

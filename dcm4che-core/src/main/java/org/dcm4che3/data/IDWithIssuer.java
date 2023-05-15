@@ -148,6 +148,13 @@ public class IDWithIssuer {
                 (Objects.equals(issuer, other.issuer));
     }
 
+    /**
+     * Test if this ID equals other ID and this issuer matches other issuer.
+     * If this ID equals other ID but only this or other is qualified by an issuer, the test fails.
+     *
+     * @param other-the @{code IDWithIssuer} to compare.
+     * @return {@code true}, if this ID equals other ID and this issuer matches other issuer, otherwise {@code false}.
+     */
     public boolean matches(IDWithIssuer other) {
         return id.equals(other.id) &&
                 (issuer == null 
@@ -155,7 +162,14 @@ public class IDWithIssuer {
                     : issuer.matches(other.issuer));
     }
 
-    public boolean matches2(IDWithIssuer other) {
+    /**
+     * Test if this ID equals other ID and this issuer matches other issuer.
+     * If this ID equals other ID but only this or other is qualified by an issuer, the test succeeds.
+     *
+     * @param other-the @{code IDWithIssuer} to compare.
+     * @return {@code true}, if this ID equals other ID and this issuer matches other issuer, otherwise {@code false}.
+     */
+    public boolean matchesWithoutIssuer(IDWithIssuer other) {
         return id.equals(other.id) &&
                 (issuer == null || other.issuer == null || issuer.matches(other.issuer));
     }
@@ -251,7 +265,7 @@ public class IDWithIssuer {
 
         for (Iterator<IDWithIssuer> itr = pids.iterator(); itr.hasNext();) {
             IDWithIssuer next = itr.next();
-            if (next.matches2(pid)) {
+            if (next.matchesWithoutIssuer(pid)) {
                 // replace existing matching pid if it is lesser qualified
                 if (pid.issuer != null && (next.issuer == null
                         || next.issuer.isLesserQualifiedThan(pid.issuer)))

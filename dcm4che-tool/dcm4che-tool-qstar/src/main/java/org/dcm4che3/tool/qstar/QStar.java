@@ -155,6 +155,10 @@ public class QStar {
                             qstar.batchJobObjectStatus(jobId, file);
                         }
                     }
+                } else if (cl.hasOption("P")) {
+                    for (String file : fileList) {
+                        qstar.purgeFile(file);
+                    }
                 } else {
                     for (String file : fileList) {
                         qstar.getFileInfo(file);
@@ -203,6 +207,10 @@ public class QStar {
                 .type(Number.class)
                 .argName("jobId")
                 .desc(rb.getString("job"))
+                .build());
+        group.addOption(Option.builder("P")
+                .longOpt("purge")
+                .desc(rb.getString("purge"))
                 .build());
         opts.addOption(Option.builder("D")
                 .longOpt("target-dir")
@@ -326,6 +334,19 @@ public class QStar {
             LOG.info("BatchJobObjectStatus Failed: {}", e.getMessage(), e);
         }
         return 0;
+    }
+
+    private void purgeFile(String filePath) {
+        try {
+            WSMMPurgeFileRequest rq = factory.createWSMMPurgeFileRequest();
+            rq.setFileName(filePath);
+            rq.setUserToken(userLogin.getUserToken());
+            LOG.info("<< WSMMPurgeFileRequest{fileName='{}', userToken='{}'}", filePath, userLogin.getUserToken());
+            WSMMPurgeFileResponse purgeFile = port.wsmmPurgeFile(rq);
+            LOG.info(">> WSMMPurgeFileResponse{error={}, description={}}", purgeFile.getError(), purgeFile.getDescription());
+        } catch (Exception e) {
+            LOG.info("GetFileInfo Failed: {}", e.getMessage(), e);
+        }
     }
 
     private static String toString(long i, String[] values) {

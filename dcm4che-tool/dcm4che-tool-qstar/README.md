@@ -20,11 +20,12 @@ Options:
                              specified, fetch status continuously without
                              delay between successive object status
                              requests.
+ -P,--purge                  purge specified files from the QStar cache.
  -r,--retrieve <priority>    retrieve specified files with specified
                              priority (1 - LOW, 2 - NORMAL, 3 - HIGH). If
                              no target directory is specified, the files
-                             will be prefetched to cache and no file will
-                             be created in the filesystem.
+                             will be prefetched to the QStar cache and no
+                             file will be created in the filesystem.
  -u,--user <user:password>   user name and password to use for server
                              authentication.
  -U,--url <url>              request URL.
@@ -55,4 +56,7 @@ Get job status of retrieve job with jobId 42.
 /path/to/file1 /path/to/file2
 Get retrieve status of files with full path /path/to/file1 and
 /path/to/file2 retrieved by job with jobId 42.
+
+=> qstar -u user:secret --url http://127.0.0.1:18083 --purge /path/to/file
+Purge file with full path /path/to/file from QStar cache.
 ```

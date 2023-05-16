@@ -156,6 +156,7 @@
           <s:element name="resultString" type="s:string"/>
         </s:sequence>
       </s:complexType>
+
       <s:complexType name="WSUserLogoutRequest">
         <s:sequence>
           <s:element name="userToken" type="s:string" />
@@ -164,6 +165,19 @@
       <s:complexType name="WSUserLogoutResponse">
         <s:sequence>
           <s:element name="result" type="s:int"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSMMPurgeFileRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string" />
+          <s:element name="fileName" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSMMPurgeFileResponse">
+        <s:sequence>
+          <s:element name="error" type="s:unsignedInt" />
+          <s:element name="description" type="s:string" />
         </s:sequence>
       </s:complexType>
     </schema>
@@ -204,6 +218,12 @@
   <wsdl:message name="WSUserLogoutSoapOut">
     <wsdl:part name="parameters" type="tns:WSUserLogoutResponse"></wsdl:part>
   </wsdl:message>
+  <wsdl:message name="WSMMPurgeFileSoapIn">
+    <wsdl:part name="parameters" type="tns:WSMMPurgeFileRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSMMPurgeFileSoapOut">
+    <wsdl:part name="parameters" type="tns:WSMMPurgeFileResponse"></wsdl:part>
+  </wsdl:message>
   <wsdl:portType name="WSWebServiceSoapPort">
     <wsdl:operation name="WSGetFileInfo">
       <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get WS file or directory information.
@@ -235,6 +255,11 @@
       <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Invalidate provided user token</wsdl:documentation>
       <wsdl:input message="tns:WSUserLogoutSoapIn" />
       <wsdl:output message="tns:WSUserLogoutSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WSMMPurgeFile">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Removes file data from cache for a specified object</wsdl:documentation>
+      <wsdl:input message="tns:WSMMPurgeFileSoapIn" />
+      <wsdl:output message="tns:WSMMPurgeFileSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="WSWebServiceSoapBinding" type="tns:WSWebServiceSoapPort">
@@ -286,6 +311,15 @@
     </wsdl:operation>
     <wsdl:operation name="WSUserLogout">
       <soap:operation soapAction="WSUserLogout" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSMMPurgeFile">
+      <soap:operation soapAction="WSMMPurgeFile" style="rpc" />
       <wsdl:input>
         <soap:body use="literal" namespace="WSWebService" />
       </wsdl:input>

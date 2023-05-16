@@ -58,5 +58,5 @@ Get retrieve status of files with full path /path/to/file1 and
 /path/to/file2 retrieved by job with jobId 42.
 
 => qstar -u user:secret --url http://127.0.0.1:18083 --purge /path/to/file
-Purge file with full path /path/to/file from QStar cache.
+Purge file with full path /path/to/file from the QStar cache.
 ```

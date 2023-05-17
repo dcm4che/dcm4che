@@ -201,7 +201,7 @@ public class QStar {
 
         @Override
         public int compareTo(FilePosition o) {
-            return vol < o.vol ? -1 : vol > o.vol ? 1 : pos < o.pos ? -1 : pos > o.pos ? 1 : 0;
+            return vol < o.vol ? -1 : vol > o.vol ? 1 : pos < o.pos ? -1 : pos > o.pos ? 1 : filePath.compareTo(o.filePath);
         }
 
         @Override

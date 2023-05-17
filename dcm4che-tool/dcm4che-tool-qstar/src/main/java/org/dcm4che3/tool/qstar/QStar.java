@@ -269,7 +269,7 @@ public class QStar {
                 .argName("ms")
                 .desc(rb.getString("progress"))
                 .build());
-        group.addOption(Option.builder("s")
+        opts.addOption(Option.builder("s")
                 .longOpt("sort")
                 .desc(rb.getString("sort"))
                 .build());

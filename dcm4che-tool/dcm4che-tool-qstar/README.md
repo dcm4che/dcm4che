@@ -26,6 +26,8 @@ Options:
                              no target directory is specified, the files
                              will be prefetched to the QStar cache and no
                              file will be created in the filesystem.
+ -s,--sort                   sort specified list of files for retrieve by
+                             its position on the media.
  -u,--user <user:password>   user name and password to use for server
                              authentication.
  -U,--url <url>              request URL.

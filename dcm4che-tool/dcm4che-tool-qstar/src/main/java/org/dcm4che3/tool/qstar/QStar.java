@@ -49,10 +49,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.ws.BindingProvider;
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * @author Gunter Zeilinger (gunterze@protonmail.com)
@@ -124,6 +121,16 @@ public class QStar {
             List<String> fileList = cl.getArgList();
             if (qstar.login(user[0], user[1])) {
                 if (cl.hasOption("r")) {
+                    if (cl.hasOption("s")) {
+                        SortedSet<FilePosition> filePositions = new TreeSet<>();
+                        for (String filePath : fileList) {
+                            filePositions.add(new FilePosition(filePath, qstar.getFileInfo(filePath)));
+                        }
+                        fileList.clear();
+                        for (FilePosition filePosition : filePositions) {
+                            fileList.add(filePosition.filePath);
+                        }
+                    }
                     BigInteger jobId = qstar.batchFileRetrieve(
                             ((Number) cl.getParsedOptionValue("r")).longValue(),
                             fileList,
@@ -177,6 +184,42 @@ public class QStar {
         }
     }
 
+    private static class FilePosition implements Comparable<FilePosition> {
+        private final String filePath;
+        private long vol;
+        private long pos;
+
+        public FilePosition(String filePath, WSGetFileInfoResponse fileInfo) {
+            this.filePath = filePath;
+            if (fileInfo == null) return;
+            List<WSFileExtentInfo> extent = fileInfo.getInfo().getFlocExtents().getExtent();
+            if (extent.isEmpty()) return;
+            WSFileExtentInfo wsFileExtentInfo = extent.get(0);
+            this.vol = wsFileExtentInfo.getVol();
+            this.pos = wsFileExtentInfo.getPos();
+        }
+
+        @Override
+        public int compareTo(FilePosition o) {
+            return vol < o.vol ? -1 : vol > o.vol ? 1 : pos < o.pos ? -1 : pos > o.pos ? 1 : 0;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            FilePosition that = (FilePosition) o;
+
+            return filePath.equals(that.filePath);
+        }
+
+        @Override
+        public int hashCode() {
+            return filePath.hashCode();
+        }
+    }
+
     private static CommandLine parseComandLine(String[] args) throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
@@ -226,6 +269,10 @@ public class QStar {
                 .argName("ms")
                 .desc(rb.getString("progress"))
                 .build());
+        group.addOption(Option.builder("s")
+                .longOpt("sort")
+                .desc(rb.getString("sort"))
+                .build());
         opts.addOptionGroup(group);
         return CLIUtils.parseComandLine(args, opts, rb, QStar.class);
     }
@@ -261,7 +308,7 @@ public class QStar {
         }
     }
 
-    private void getFileInfo(String filePath) {
+    private WSGetFileInfoResponse getFileInfo(String filePath) {
         try {
             WSGetFileInfoRequest rq = factory.createWSGetFileInfoRequest();
             rq.setSFileFullPath(filePath);
@@ -269,9 +316,11 @@ public class QStar {
             LOG.info("<< WSGetFileInfoRequest{sFileFullPath='{}', userToken='{}'}", filePath, userLogin.getUserToken());
             WSGetFileInfoResponse fileInfo = port.wsGetFileInfo(rq);
             LOG.info(">> WSGetFileInfoResponse{status={}, info={}}", fileInfo.getStatus(), toString(fileInfo.getInfo()));
+            return fileInfo;
         } catch (Exception e) {
             LOG.info("GetFileInfo Failed: {}", e.getMessage(), e);
         }
+        return null;
     }
 
     private BigInteger batchFileRetrieve(long jobPriority, List<String> fileList, String targetDir) {

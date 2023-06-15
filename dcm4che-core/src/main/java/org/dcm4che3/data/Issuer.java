@@ -152,7 +152,7 @@ public class Issuer implements Serializable {
     }
 
     public boolean merge(Issuer other) {
-        if (!matches(other))
+        if (!matches(other, true, true))
             throw new IllegalArgumentException("other=" + other);
 
         boolean mergeLocalNamespace;
@@ -198,16 +198,23 @@ public class Issuer implements Serializable {
     }
 
     public boolean matches(Issuer other) {
-        if (this == other || other == null)
+        return matches(other, true, false);
+    }
+
+    public boolean matches(Issuer other, boolean matchNoIssuer, boolean matchOnNoMismatch) {
+        if (this == other)
             return true;
+
+        if (other == null)
+            return matchNoIssuer;
 
         boolean matchLocal = localNamespaceEntityID != null
                 && other.getLocalNamespaceEntityID() != null;
         boolean matchUniversal = universalEntityID != null
                 && other.getUniversalEntityID() != null;
 
-        return (matchLocal || matchUniversal)
-            && (!matchLocal
+        return !matchLocal && !matchUniversal ? matchOnNoMismatch
+            : (!matchLocal
                 || localNamespaceEntityID.equals(other.getLocalNamespaceEntityID()))
             && (!matchUniversal
                 || universalEntityID.equals(other.getUniversalEntityID())

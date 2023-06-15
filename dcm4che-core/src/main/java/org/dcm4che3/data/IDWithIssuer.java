@@ -156,22 +156,30 @@ public class IDWithIssuer {
      * @return {@code true}, if this ID equals other ID and this issuer matches other issuer, otherwise {@code false}.
      */
     public boolean matches(IDWithIssuer other) {
-        return id.equals(other.id) &&
-                (issuer == null 
-                    ? other.issuer == null
-                    : issuer.matches(other.issuer));
+        return matches(other, false, false);
     }
 
     /**
      * Test if this ID equals other ID and this issuer matches other issuer.
-     * If this ID equals other ID but only this or other is qualified by an issuer, the test succeeds.
+     * <p>If this ID equals other ID but only this or other is qualified by an issuer,
+     * the test returns the value passed by param <em>matchNoIssuer</em>.
      *
-     * @param other-the @{code IDWithIssuer} to compare.
+     * <p>If this ID equals other ID and the issuer of this is only identified by its <em>Local Namespace Entity ID</em>
+     * and the issuer of this is only identified by its <em>Universal Entity ID</em> and <em>Universal Entity ID Type</em> or
+     * the issuer of this is only identified by its <em>Universal Entity ID</em> and Universal Entity ID Type</em>
+     * and the issuer of this is only identified by its <em>Local Namespace Entity ID</em>
+     * the test returns the value passed by param <em>matchOnNoMismatch</em>.
+     *
+     * @param other              the @{code IDWithIssuer} to compare.
+     * @param matchNoIssuer      value returned if only this or other is qualified by an issuer
+     * @param matchOnNoMismatch  value returned if the issuer of this and the other includes different types of identifiers
      * @return {@code true}, if this ID equals other ID and this issuer matches other issuer, otherwise {@code false}.
      */
-    public boolean matchesWithoutIssuer(IDWithIssuer other) {
-        return id.equals(other.id) &&
-                (issuer == null || other.issuer == null || issuer.matches(other.issuer));
+    public boolean matches(IDWithIssuer other, boolean matchNoIssuer, boolean matchOnNoMismatch) {
+        return id.equals(other.id)
+                && (issuer == null
+                    ? (other.issuer == null || matchNoIssuer)
+                    : issuer.matches(other.issuer, matchNoIssuer, matchOnNoMismatch));
     }
 
     public Attributes exportPatientIDWithIssuer(Attributes attrs) {
@@ -265,7 +273,7 @@ public class IDWithIssuer {
 
         for (Iterator<IDWithIssuer> itr = pids.iterator(); itr.hasNext();) {
             IDWithIssuer next = itr.next();
-            if (next.matchesWithoutIssuer(pid)) {
+            if (next.matches(pid, true, true)) {
                 // replace existing matching pid if it is lesser qualified
                 if (pid.issuer != null && (next.issuer == null
                         || next.issuer.isLesserQualifiedThan(pid.issuer)))

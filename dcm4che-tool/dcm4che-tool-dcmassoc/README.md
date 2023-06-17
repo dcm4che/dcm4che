@@ -1,13 +1,8 @@
 ```
-usage: storescu [options] -c <aet>@<host>:<port> [<file>..][<directory>..]
+usage: dcmassoc [options] -c <aet>@<host>:<port>
 
-The storescu application implements a Service Class User (SCU) for the
-Storage Service Class and for the Verification SOP Class. For each DICOM
-file on the command line it sends a C-STORE message to a Storage Service
-Class Provider (SCP) and waits for a response. If no DICOM file is
-specified, it sends a DICOM C-ECHO message and waits for a response. The
-application can be used to transmit DICOM images and other DICOM composite
-objects and to verify basic DICOM connectivity.
+The dcmassoc application creates an association request to a remote AE,
+allowing full control over the presentation contexts offered.
 -
 Options:
     --accept-timeout <ms>                 timeout in ms for receiving
@@ -16,7 +11,7 @@ Options:
  -b,--bind <aet[@ip]>                     specify AE Title, local address
                                           of the Application Entity
                                           provided by this application;
-                                          use STORESCU and pick up any
+                                          use DCMASSOC and pick up any
                                           valid local address to bind the
                                           socket by default.
  -c,--connect <aet@host:port>             specify AE Title, remote address
@@ -70,39 +65,27 @@ Options:
                                           P-Data-TF PDU; pack command and
                                           data PDV in one P-DATA-TF PDU by
                                           default
-    --prior-high                          set HIGH priority in invoked
-                                          DIMSE-C operation, MEDIUM by
-                                          default
-    --prior-low                           set LOW priority in invoked
-                                          DIMSE-C operation, MEDIUM by
-                                          default
+    --pc <number:cuid:tsuid[(,|;)...]>    specifies Presentation Contexts
+                                          to be negotiated probing the
+                                          Association Acceptance Policy of
+                                          the DICOM SCP. SOP Class and
+                                          Transfer Syntaxes can be
+                                          specified by its UID or its name
+                                          in camel-case (e.g.
+                                          1.2.840.10008.5.1.4.1.1.2 or
+                                          CTImageStorage). Semicolon
+                                          separated Transfer Syntaxes will
+                                          be offered in separate
+                                          Presentation Contexts, where
+                                          comma separated Transfer
+                                          Syntaxes will be offered in one
+                                          Presentation Context.
     --proxy <[user:password@]host:port>   specify host and port of the
                                           HTTP Proxy to tunnel the DICOM
                                           connection.
-    --rel-ext-neg                         enable SOP Class Relationship
-                                          Extended Negotiation
-    --rel-sop-classes <file|url>          file path or URL of definition
-                                          of Related General SOP Classes,
-                                          resource:rel-sop-classes.propert
-                                          ies by default
     --release-timeout <ms>                timeout in ms for receiving
                                           A-RELEASE-RP, no timeout by
                                           default
-    --response-timeout <ms>               timeout in ms for receiving
-                                          other outstanding DIMSE RSPs
-                                          than C-MOVE or C-GET RSPs, no
-                                          timeout by default
- -s <[seq.]attr=value>                    specify attributes added to the
-                                          sent object(s). attr can be
-                                          specified by keyword or tag
-                                          value (in hex), e.g. PatientName
-                                          or 00100010. Attributes in
-                                          nested Datasets can be specified
-                                          by including the keyword/tag
-                                          value of the sequence attribute,
-                                          e.g. 00400275.00400009 for
-                                          Scheduled Procedure Step ID in
-                                          the Request Attributes Sequence.
     --soclose-delay <ms>                  delay in ms after sending
                                           A-ASSOCATE-RJ, A-RELEASE-RQ or
                                           A-ABORT before the socket is
@@ -122,37 +105,6 @@ Options:
     --ssl3                                enable only TLS/SSL protocol
                                           SSLv3; equivalent to
                                           --tls-protocol SSLv3
-    --store-tc <cuid:tsuid[(,|;)...]>     specifies Storage Transfer
-                                          Capability offered additionally
-                                          to the Verification SOP Class if
-                                          no DICOM file is specified,
-                                          probing the Association
-                                          Acceptance Policy of the Storage
-                                          SCP. SOP Class and Transfer
-                                          Syntaxes can be specified by its
-                                          UID or its name in camel-Case
-                                          (e.g. 1.2.840.10008.5.1.4.1.1.2
-                                          or CTImageStorage). Semicolon
-                                          separated Transfer Syntaxes will
-                                          be offered in separate
-                                          Presentation Contexts, where
-                                          comma separated Transfer
-                                          Syntaxes will be offered in one
-                                          Presentation Context.
-    --store-tcs <file|url>                specifies file which defines
-                                          negotiated Storage Transfer
-                                          Capabilities offered
-                                          additionally to the Verification
-                                          SOP Class if no DICOM file is
-                                          specified, probing the
-                                          Association Acceptance Policy of
-                                          the Storage SCP. Storage
-                                          Transfer Capabilities are
-                                          formatted as values of option
-                                          --store-tc.
-    --store-timeout <ms>                  timeout in ms for sending
-                                          C-STORE sRQ, no timeout by
-                                          default
     --tcp-delay                           set TCP_NODELAY socket option to
                                           false, true by default
     --tls                                 enable TLS connection without
@@ -211,18 +163,6 @@ Options:
     --tls13                               enable only TLS/SSL protocol
                                           TLSv1.3; equivalent to
                                           --tls-protocol TLSv1.3
-    --tmp-file-dir <directory>            directory were temporary file
-                                          with File Meta Information from
-                                          scanned files is stored; if not
-                                          specified, the file is stored
-                                          into the default temporary-file
-                                          directory
-    --tmp-file-prefix <prefix>            prefix for generated file name
-                                          for temporary file; 'storescu-'
-                                          by default
-    --tmp-file-suffix <suffix>            suffix for generated file name
-                                          for temporary file; '.tmp' by
-                                          default
     --trust-store <file|url>              file path of key store
                                           containing trusted certificates,
                                           resource:cacerts.p12 by default
@@ -231,10 +171,6 @@ Options:
                                           by default
     --trust-store-type <storetype>        type of key store with trusted
                                           certificates, PKCS12 by default
-    --uid-suffix <suffix>                 specify suffix to be appended to
-                                          the Study, Series and SOP
-                                          Instance UID of the sent
-                                          object(s).
     --user <name>                         negotiate user identity with
                                           specified user name
     --user-jwt <token>                    negotiate user identity with
@@ -248,7 +184,12 @@ Options:
  -V,--version                             output version information and
                                           exit
 -
-Example: storescu -c STORESCP@localhost:11112 image.dcm
-=> Send DICOM image image.dcm to Storage Service Class Provider STORESCP,
-listening on local port 11112.
+Example: dcmassoc -c STORESCP@localhost:11112 -pc
+1:CTImageStorage:ImplicitVRLittleEndian -pc
+3:MRImageStorage:ImplicitVRLittleEndian,ExplicitVRLittleEndian
+=> Probe association to Storage Service Class Provider STORESCP listening
+on remote port 11112 offering CTImageStorage with ImplicitVRLittleEndian
+in first presentation context and MRImageStorage with
+ImplicitVRLittleEndian and ExplicitVRLittleEndian in third presentation
+context.
 ```

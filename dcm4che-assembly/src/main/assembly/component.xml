@@ -140,6 +140,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcm2pdf</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2str</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmassoc</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmbenchmark</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>

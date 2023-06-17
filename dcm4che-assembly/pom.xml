@@ -309,6 +309,11 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-dcmassoc</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-dcmbenchmark</artifactId>
       <version>${project.version}</version>
     </dependency>

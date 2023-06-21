@@ -187,7 +187,7 @@
     },
     "dcmResponseTimeout": {
       "title": "Response Timeout",
-      "description": "Timeout in ms for receive of other outstanding DIMSE RSPs than C-MOVE  or C-GET RSPs; no timeout if absent",
+      "description": "Timeout in ms for receive of outstanding <br>- DIMSE RSPs other than C-MOVE / C-GET RSPs <br>- responses of outgoing HL7 messages <br>- HTTP(S) responses <br>No timeout if absent",
       "type": "integer",
       "minimum": 100
     },

@@ -106,6 +106,7 @@
     <module>dcm4che-tool-wadows</module>
     <module>dcm4che-tool-xml2dcm</module>
     <module>dcm4che-tool-xml2hl7</module>
+    <module>dcm4che-tool-xroad</module>
   </modules>
   <build>
     <plugins>

@@ -155,6 +155,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-xroad</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.weasis.core</groupId>
       <artifactId>weasis-core-img</artifactId>
       <version>${weasis.core.img.version}</version>

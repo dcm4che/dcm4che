@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.1" name="org.dcm4che.xroad">
+    <resources>
+        <resource-root path="dcm4che-xroad-${version}.jar"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.dcm4che.core" export="true"/>
+        <module name="org.slf4j"/>
+        <module name="org.apache.cxf.impl" export="true"/>
+        <module name="javax.api"/>
+        <module name="javax.jws.api"/>
+        <module name="javax.xml.bind.api"/>
+        <module name="javax.xml.soap.api"/>
+        <module name="javax.xml.ws.api"/>
+    </dependencies>
+</module>

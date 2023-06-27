@@ -129,6 +129,7 @@ Utilities
 - [wadows][]: Wado WS Client Simulator 
 - [xml2dcm][]: Create/Update DICOM file from/with XML presentation
 - [xml2hl7][]: Create HL7 v2.x message from XML presentation
+- [xroad][]: XRoad SOAP Client to query Estonia National Patient Registry for Patient Demographics
 
 [agfa2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-agfa2dcm/README.md
 [agfa2sr]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-agfa2sr/README.md
@@ -184,6 +185,7 @@ Utilities
 [wadows]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-wadows/README.md
 [xml2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2dcm/README.md
 [xml2hl7]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2hl7/README.md
+[xroad]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xroad/README.md
 
 License
 -------

@@ -131,6 +131,7 @@
         <include>org.dcm4che:dcm4che-soundex</include>
         <include>org.dcm4che:dcm4che-ws-rs</include>
         <include>org.dcm4che:dcm4che-xdsi</include>
+        <include>org.dcm4che:dcm4che-xroad</include>
         <include>org.dcm4che.tool:dcm4che-tool-agfa2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-agfa2sr</include>
         <include>org.dcm4che.tool:dcm4che-tool-common</include>
@@ -185,6 +186,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-wadows</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
+        <include>org.dcm4che.tool:dcm4che-tool-xroad</include>
         <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
         <include>org.weasis.core:weasis-core-img</include>
         <include>com.sun.media:jai_imageio</include>

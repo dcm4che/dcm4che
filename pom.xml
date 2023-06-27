@@ -218,6 +218,7 @@
     <module>dcm4che-soundex</module>
     <module>dcm4che-ws-rs</module>
     <module>dcm4che-xdsi</module>
+    <module>dcm4che-xroad</module>
     <module>dcm4che-tool</module>
     <module>dcm4che-assembly</module>
     <module>dcm4che-jboss-modules</module>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified"
+        targetNamespace="http://x-road.eu/xsd/xroad.xsd"
+        xmlns="http://x-road.eu/xsd/xroad.xsd"
+        xmlns:id="http://x-road.eu/xsd/identifiers"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+            schemaLocation="xml.xsd"/>
+    <xs:import id="id" namespace="http://x-road.eu/xsd/identifiers"
+            schemaLocation="identifiers.xsd"/>
+
+    <!-- Header elements -->
+    <xs:element name="client" type="id:XRoadClientIdentifierType">
+        <xs:annotation>
+            <xs:documentation>Identies service client</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="service" type="id:XRoadServiceIdentifierType">
+        <xs:annotation>
+            <xs:documentation>Identies the service
+                that is invoked by the request</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="centralService"
+            type="id:XRoadCentralServiceIdentifierType">
+        <xs:annotation>
+            <xs:documentation>Identies the central service
+                that is invoked by the request.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="id" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>Unique identier
+                for this message</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="userId" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>User whose action initiated
+                the request</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="requestHash">
+        <xs:annotation>
+            <xs:documentation>Base64 encoded hash of
+                the SOAP request message</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="algorithmId" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>Identies hash algorithm
+                                that was used to calculate the value
+                                of the requestHash field.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="issue" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>Identies received application, issue or document
+                that was the cause of the service request.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="protocolVersion" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>X-Road message protocol version</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <!-- Elements describing other elements and operations-->
+    <xs:element name="version" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>Version of the service</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="title">
+        <xs:annotation>
+            <xs:documentation>Title of the service</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute default="en" ref="xml:lang"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="notes">
+        <xs:annotation>
+            <xs:documentation>Notes for user</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute ref="xml:lang" default="en" />
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="techNotes">
+        <xs:annotation>
+            <xs:documentation>Notes for technical stuff</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute ref="xml:lang" default="en" />
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

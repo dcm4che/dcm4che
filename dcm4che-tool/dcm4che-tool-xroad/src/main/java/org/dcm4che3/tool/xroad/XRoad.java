@@ -65,6 +65,7 @@ public class XRoad implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(XRoad.class);
     private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.xroad.messages");
     private static final String[] HEADERS = {
+            "#",
             "cIsikukoodid",
             "cValjad",
             "cIsikukood",
@@ -208,42 +209,49 @@ public class XRoad implements AutoCloseable {
                 rq.getCIsikukoodid(),
                 rq.getCValjad(),
                 new Object() { public String toString() { return XRoad.this.toString(rsp); }});
-        if (csvWriter != null) writeCsvRow(rq, rsp);
+        if (csvWriter != null) writeCsvRows(rq, rsp);
     }
 
     private String toString(RR441ResponseType rsp) {
         StringBuffer sb = new StringBuffer(256);
         List<RR441ResponseType.TtIsikuid.TtIsikud> ttIsikudList = rsp.getTtIsikuid().getTtIsikud();
         if (!ttIsikudList.isEmpty()) {
-            RR441ResponseType.TtIsikuid.TtIsikud ttIsikud = ttIsikudList.get(0);
-            appendTo(sb,0, ttIsikud.getTtIsikudCIsikukood());
-            appendTo(sb,1, ttIsikud.getTtIsikudCPerenimi());
-            appendTo(sb,2, ttIsikud.getTtIsikudCEesnimi());
-            appendTo(sb,3, ttIsikud.getTtIsikudCMPerenimed());
-            appendTo(sb,4, ttIsikud.getTtIsikudCMEesnimed());
-            appendTo(sb,5, ttIsikud.getTtIsikudCRiikKood());
-            appendTo(sb,6, ttIsikud.getTtIsikudCRiik());
-            appendTo(sb,7, ttIsikud.getTtIsikudCIsanimi());
-            appendTo(sb,8, ttIsikud.getTtIsikudCSugu());
-            appendTo(sb,9, ttIsikud.getTtIsikudCSynniaeg());
-            appendTo(sb,10, ttIsikud.getTtIsikudCSurmKpv());
-            appendTo(sb,11, ttIsikud.getTtIsikudCTeoVoime());
-            appendTo(sb,12, ttIsikud.getTtIsikudCIsStaatus());
-            appendTo(sb,13, ttIsikud.getTtIsikudCKirjeStaatus());
-            appendTo(sb,14, ttIsikud.getTtIsikudCEKRiik());
-            appendTo(sb,15, ttIsikud.getTtIsikudCEKMaak());
-            appendTo(sb,16, ttIsikud.getTtIsikudCEKVald());
-            appendTo(sb,17, ttIsikud.getTtIsikudCEKAsula());
-            appendTo(sb,18, ttIsikud.getTtIsikudCEKTanav());
-            appendTo(sb,19, ttIsikud.getTtIsikudCEKIndeks());
-            appendTo(sb,20, ttIsikud.getTtIsikudCEKAlgKpv());
-            appendTo(sb,21, ttIsikud.getTtIsikudCEKVallaKpv());
-            appendTo(sb,22, ttIsikud.getTtIsikudCEKAadress());
-            appendTo(sb,23, ttIsikud.getTtIsikudCSynniRiik());
-            appendTo(sb,24, ttIsikud.getTtIsikudCSaabusEestiKpv());
+            sb.append('[');
+            for (RR441ResponseType.TtIsikuid.TtIsikud ttIsikud : ttIsikudList) {
+                sb.append('(');
+                appendTo(sb, 1, ttIsikud.getTtIsikudCIsikukood());
+                appendTo(sb, 2, ttIsikud.getTtIsikudCPerenimi());
+                appendTo(sb, 3, ttIsikud.getTtIsikudCEesnimi());
+                appendTo(sb, 4, ttIsikud.getTtIsikudCMPerenimed());
+                appendTo(sb, 5, ttIsikud.getTtIsikudCMEesnimed());
+                appendTo(sb, 6, ttIsikud.getTtIsikudCRiikKood());
+                appendTo(sb, 7, ttIsikud.getTtIsikudCRiik());
+                appendTo(sb, 8, ttIsikud.getTtIsikudCIsanimi());
+                appendTo(sb, 9, ttIsikud.getTtIsikudCSugu());
+                appendTo(sb, 10, ttIsikud.getTtIsikudCSynniaeg());
+                appendTo(sb, 11, ttIsikud.getTtIsikudCSurmKpv());
+                appendTo(sb, 12, ttIsikud.getTtIsikudCTeoVoime());
+                appendTo(sb, 13, ttIsikud.getTtIsikudCIsStaatus());
+                appendTo(sb, 14, ttIsikud.getTtIsikudCKirjeStaatus());
+                appendTo(sb, 15, ttIsikud.getTtIsikudCEKRiik());
+                appendTo(sb, 16, ttIsikud.getTtIsikudCEKMaak());
+                appendTo(sb, 17, ttIsikud.getTtIsikudCEKVald());
+                appendTo(sb, 18, ttIsikud.getTtIsikudCEKAsula());
+                appendTo(sb, 19, ttIsikud.getTtIsikudCEKTanav());
+                appendTo(sb, 20, ttIsikud.getTtIsikudCEKIndeks());
+                appendTo(sb, 21, ttIsikud.getTtIsikudCEKAlgKpv());
+                appendTo(sb, 22, ttIsikud.getTtIsikudCEKVallaKpv());
+                appendTo(sb, 23, ttIsikud.getTtIsikudCEKAadress());
+                appendTo(sb, 24, ttIsikud.getTtIsikudCSynniRiik());
+                appendTo(sb, 25, ttIsikud.getTtIsikudCSaabusEestiKpv());
+                sb.setLength(sb.length()-2);
+                sb.append(')').append(',').append(' ');
+            }
+            sb.setLength(sb.length()-2);
+            sb.append(']').append(',').append(' ');
         }
-        appendTo(sb,25, rsp.getFaultCode());
-        appendTo(sb,26, rsp.getFaultString());
+        appendTo(sb,26, rsp.getFaultCode());
+        appendTo(sb,27, rsp.getFaultString());
         sb.setLength(sb.length()-2);
         return sb.toString();
     }
@@ -253,16 +261,25 @@ public class XRoad implements AutoCloseable {
             sb.append(HEADERS[index]).append('=').append(value).append(',').append(' ');
     }
 
-    private void writeCsvRow(RR441RequestType rq, RR441ResponseType rsp) throws IOException {
-        writeCsvValue(rq.getCIsikukoodid());
+    private void writeCsvRows(RR441RequestType rq, RR441ResponseType rsp) throws IOException {
+        int size = rsp.getTtIsikuid().getTtIsikud().size();
+        if (size == 0)
+            writeCsvRow(rq, rsp, -1);
+        else for (int i = 0; i < size; i++) {
+            writeCsvRow(rq, rsp, i);
+        }
+    }
+
+    private void writeCsvRow(RR441RequestType rq, RR441ResponseType rsp, int index) throws IOException {
+        writeCsvValue(Integer.toString(index + 1));
+        writeCsvDelimiterAndValue(rq.getCIsikukoodid());
         writeCsvDelimiterAndValue(rq.getCValjad());
-        List<RR441ResponseType.TtIsikuid.TtIsikud> ttIsikudList = rsp.getTtIsikuid().getTtIsikud();
-        if (ttIsikudList.isEmpty()) {
+        if (index < 0) {
             for (int i = 0; i < HEADERS.length - 4; i++) {
                 csvWriter.write(csvDelim);
             }
         } else {
-            RR441ResponseType.TtIsikuid.TtIsikud ttIsikud = ttIsikudList.get(0);
+            RR441ResponseType.TtIsikuid.TtIsikud ttIsikud = rsp.getTtIsikuid().getTtIsikud().get(index);
             writeCsvDelimiterAndValue(ttIsikud.getTtIsikudCIsikukood());
             writeCsvDelimiterAndValue(ttIsikud.getTtIsikudCPerenimi());
             writeCsvDelimiterAndValue(ttIsikud.getTtIsikudCEesnimi());

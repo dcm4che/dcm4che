@@ -204,11 +204,13 @@ public class XRoad implements AutoCloseable {
 
     private void rr441(String pid) throws IOException {
         RR441RequestType rq = XRoadUtils.createRR441RequestType(cValjad, pid);
+        LOG.info("<< RR441Request{cIsikukoodid={}, cValjad={}}", pid, cValjad);
         RR441ResponseType rsp = rr441(rq);
-        LOG.info("RR441Request{cIsikukoodid={}, cValjad={}} -> RR441Response{{}}",
-                rq.getCIsikukoodid(),
-                rq.getCValjad(),
-                new Object() { public String toString() { return XRoad.this.toString(rsp); }});
+        LOG.info("<< RR441Response{{}}", new Object() {
+            public String toString() {
+                return XRoad.this.toString(rsp);
+            }
+        });
         if (csvWriter != null) writeCsvRows(rq, rsp);
     }
 
@@ -313,7 +315,7 @@ public class XRoad implements AutoCloseable {
 
     private void writeCsvDelimiterAndValue(String value) throws IOException {
         csvWriter.write(csvDelim);
-        if (value != null) writeCsvValue(value);
+        if (value != null && !value.isEmpty()) writeCsvValue(value);
     }
 
     private void writeCsvValue(String value) throws IOException {

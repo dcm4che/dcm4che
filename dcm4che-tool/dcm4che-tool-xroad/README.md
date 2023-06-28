@@ -37,11 +37,11 @@ Options:
                                        property "xRoadInstance", "EE" by
                                        default.
     --csv <csv-file>                   write query results in CSV file.
-    --csv-delim <csv-delim>            delimiter character for CSV file
+    --csv-delim <char>                 delimiter character for CSV file
                                        specified by --csv. Defaults to ,
                                        (comma).
     --csv-no-header                    write CSV file without header line.
-    --csv-quote <csv-quote>            quote character for CSV file
+    --csv-quote <char>                 quote character for CSV file
                                        specified by --csv. By default,
                                        only fields containing a
                                        line-break, double-quote or

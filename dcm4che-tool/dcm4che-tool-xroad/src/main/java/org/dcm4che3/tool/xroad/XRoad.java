@@ -486,13 +486,13 @@ public class XRoad implements AutoCloseable {
         opts.addOption(Option.builder()
                 .longOpt("csv-delim")
                 .hasArg()
-                .argName("csv-delim")
+                .argName("char")
                 .desc(rb.getString("csv-delim"))
                 .build());
         opts.addOption(Option.builder()
                 .longOpt("csv-quote")
                 .hasArg()
-                .argName("csv-quote")
+                .argName("char")
                 .desc(rb.getString("csv-quote"))
                 .build());
         return CLIUtils.parseComandLine(args, opts, rb, XRoad.class);

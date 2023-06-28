@@ -206,7 +206,7 @@ public class XRoad implements AutoCloseable {
         RR441RequestType rq = XRoadUtils.createRR441RequestType(cValjad, pid);
         LOG.info("<< RR441Request{cIsikukoodid={}, cValjad={}}", pid, cValjad);
         RR441ResponseType rsp = rr441(rq);
-        LOG.info("<< RR441Response{{}}", new Object() {
+        LOG.info(">> RR441Response{{}}", new Object() {
             public String toString() {
                 return XRoad.this.toString(rsp);
             }
@@ -254,7 +254,7 @@ public class XRoad implements AutoCloseable {
         }
         appendTo(sb,26, rsp.getFaultCode());
         appendTo(sb,27, rsp.getFaultString());
-        sb.setLength(Math.min(0, sb.length()-2));
+        sb.setLength(Math.max(0, sb.length()-2));
         return sb.toString();
     }
 

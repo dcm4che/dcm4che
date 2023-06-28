@@ -93,7 +93,8 @@ Examples:
 Query Patient Registry with User ID EE123 at http://xtee1trt.pacs.ee for
 Patient with Patient ID 49202247013.
 
-=> xroad -u EE123 --url http://xtee1trt.pacs.ee --csv result.csv @pids.txt
+=> xroad -u EE123 --url http://xtee1trt.pacs.ee -c --csv out.csv @in.txt
 Query Patient Registry for Patients with Patient IDs listed in file:
-pids.txt and store results in CVS file: result.csv.
+in.txt, continue on errors receiving response messages and store results
+in CVS file: out.csv.
 ```

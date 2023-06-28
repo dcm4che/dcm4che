@@ -254,7 +254,7 @@ public class XRoad implements AutoCloseable {
         }
         appendTo(sb,26, rsp.getFaultCode());
         appendTo(sb,27, rsp.getFaultString());
-        sb.setLength(sb.length()-2);
+        sb.setLength(Math.min(0, sb.length()-2));
         return sb.toString();
     }
 

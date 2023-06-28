@@ -3,7 +3,8 @@ usage: xroad -u <user> --url <url> [options] <patientID> [..]
 
 XRoad SOAP Client to query Estonia National Patient Registry for Patient
 Demographics and optionally write query results in a CSV file with header
-names reflect the Estonian property names in the SOAP messages.
+names reflecting the Estonian property names in the SOAP messages.
+
 Technically a response message may contain multiple patient records, which
 is reflected by the first field "#", specifying the index of the patient
 record in the response message contained by that CSV row: "1" marks the
@@ -42,9 +43,10 @@ Options:
     --csv-no-header                    write CSV file without header line.
     --csv-quote <csv-quote>            quote character for CSV file
                                        specified by --csv. By default,
-                                       only values which contain the
-                                       delimiter or " (quote) are quoted
-                                       using " (quote).
+                                       only fields containing a
+                                       line-break, double-quote or
+                                       delimiters (commas) are quoted by a
+                                       double-quote.
  -h,--help                             display this help and exit
     --id <value>                       set unique identifier for this
                                        message.

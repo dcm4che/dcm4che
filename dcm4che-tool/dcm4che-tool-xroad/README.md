@@ -7,20 +7,27 @@ names reflecting the Estonian property names in the SOAP messages.
 
 Technically a response message may contain multiple patient records, which
 is reflected by the first field "#", specifying the index of the patient
-record in the response message contained by that CSV row: "1" marks the
-first patient record in the response message, "2" the second, and so on.
-"0" indicates, there was no patient record in the response message at all,
-typically because there is no patient record with the given <patientID> in
-the National Patient Registry. The second ("cIsikukoodid") and the third
-("cValjad") field contain properties of the request message, the remaining
-fields ("cIsikukood", "cPerenimi", "cEesnimi", "cMPerenimed",
-"cMEesnimed", "cRiikKood", "cRiik", "cIsanimi", "cSugu", "cSynniaeg",
-"cSurmKpv", "cTeoVoime",  "cIsStaatus", "cKirjeStaatus", "cEKRiik",
-"cEKMaak", "cEKVald", "cEKAsula", "cEKTanav", "cEKIndeks", "cEKAlgKpv",
-"cEKVallaKpv", "cEKAadress", "cSynniRiik", "cSaabusEestiKpv", "faultCode",
-"faultString") contain properties of the response message.
+record in the response message contained by that CSV row:
+- "1" marks the first patient record in the response message, "2" the
+second, and so on.
+- "0" indicates, there was no patient record in the response message at
+all, typically because there is no patient record with the given
+<patientID> in the National Patient Registry.
+- "-1" signals an error receiving the response message, with last field
+("faultString") containing an error message.
+
+The second ("cIsikukoodid") and the third ("cValjad") field contain
+properties of the request message, the remaining fields ("cIsikukood",
+"cPerenimi", "cEesnimi", "cMPerenimed", "cMEesnimed", "cRiikKood",
+"cRiik", "cIsanimi", "cSugu", "cSynniaeg", "cSurmKpv", "cTeoVoime",
+"cIsStaatus", "cKirjeStaatus", "cEKRiik", "cEKMaak", "cEKVald",
+"cEKAsula", "cEKTanav", "cEKIndeks", "cEKAlgKpv", "cEKVallaKpv",
+"cEKAadress", "cSynniRiik", "cSaabusEestiKpv", "faultCode", "faultString")
+contain properties of the response message.
 -
 Options:
+ -c                                    continue on errors receiving
+                                       response messages.
     --client.memberClass <value>       set XRoad Client Identifier
                                        property "memberClass", "NGO" by
                                        default.

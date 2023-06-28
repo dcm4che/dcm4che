@@ -107,6 +107,7 @@ public class XRoad implements AutoCloseable {
     private final boolean csvHeader;
     private final char csvDelim;
     private final Character csvQuote;
+    private final boolean continueOnError;
 
     private XRoad(String userID, String url, CommandLine cl) throws IOException {
         port = new XRoadService().getXRoadServicePort();
@@ -133,7 +134,7 @@ public class XRoad implements AutoCloseable {
         csvHeader = !cl.hasOption("csv-no-header");
         csvDelim = csvDelim(cl.getOptionValue("csv-delim"));
         csvQuote = csvQuote(cl.getOptionValue("csv-quote"));
-
+        continueOnError = cl.hasOption("c");
     }
 
     private BufferedWriter newBufferedWriter(String pathName) throws IOException {
@@ -202,16 +203,23 @@ public class XRoad implements AutoCloseable {
         }
     }
 
-    private void rr441(String pid) throws IOException {
+    private void rr441(String pid) throws Exception {
         RR441RequestType rq = XRoadUtils.createRR441RequestType(cValjad, pid);
         LOG.info("<< RR441Request{cIsikukoodid={}, cValjad={}}", pid, cValjad);
-        RR441ResponseType rsp = rr441(rq);
-        LOG.info(">> RR441Response{{}}", new Object() {
-            public String toString() {
-                return XRoad.this.toString(rsp);
-            }
-        });
-        if (csvWriter != null) writeCsvRows(rq, rsp);
+        try {
+            RR441ResponseType rsp = rr441(rq);
+            LOG.info(">> RR441Response{{}}", new Object() {
+                public String toString() {
+                    return XRoad.this.toString(rsp);
+                }
+            });
+            if (csvWriter != null) writeCsvRows(rq, rsp);
+        } catch (Exception e) {
+            LOG.warn("Failed to receive RR441Response for RR441Request{cIsikukoodid={}, cValjad={}}:\n",
+                    pid, cValjad, e);
+            if (!continueOnError) throw e;
+            if (csvWriter != null) writeCsvRow(rq, e);
+        }
     }
 
     private String toString(RR441ResponseType rsp) {
@@ -270,6 +278,17 @@ public class XRoad implements AutoCloseable {
         else for (int i = 0; i < size; i++) {
             writeCsvRow(rq, rsp, i);
         }
+    }
+
+    private void writeCsvRow(RR441RequestType rq, Exception e) throws IOException {
+        writeCsvValue("-1");
+        writeCsvDelimiterAndValue(rq.getCIsikukoodid());
+        writeCsvDelimiterAndValue(rq.getCValjad());
+        for (int i = 0; i < HEADERS.length - 3; i++) {
+            csvWriter.write(csvDelim);
+        }
+        writeCsvDelimiterAndValue(e.getMessage());
+        csvWriter.write("\r\n");
     }
 
     private void writeCsvRow(RR441RequestType rq, RR441ResponseType rsp, int index) throws IOException {
@@ -494,6 +513,9 @@ public class XRoad implements AutoCloseable {
                 .hasArg()
                 .argName("char")
                 .desc(rb.getString("csv-quote"))
+                .build());
+        opts.addOption(Option.builder("c")
+                .desc(rb.getString("continue-on-error"))
                 .build());
         return CLIUtils.parseComandLine(args, opts, rb, XRoad.class);
     }

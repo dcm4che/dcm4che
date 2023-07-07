@@ -46,6 +46,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
@@ -227,4 +230,31 @@ public class TranscoderTest {
             transcoder.transcode(handler);
         }
     }
+
+    @Test
+    public void testTranscodeFileMultipleTimes() throws Exception {
+        test("MR-JPEGLosslessSV1.dcm", UID.JPEGLSLossless, UID.JPEGLosslessSV1);
+        test("CT-JPEGLosslessSV1.dcm", UID.ExplicitVRLittleEndian, UID.JPEGLSLossless, UID.JPEGLosslessSV1);
+    }
+
+    private void test(String srcFileName, String... transferSyntaxList) throws Exception {
+        String newSrcFileName = null;
+
+        for (int i = 0; i < transferSyntaxList.length; i++) {
+            String transferSyntax = transferSyntaxList[i];
+            String dstFileName = transferSyntax + ".dcm";
+
+            if (i == 0) {
+                test(srcFileName, dstFileName, transferSyntax, true);
+            } else {
+                test(newSrcFileName, dstFileName, transferSyntax, true);
+            }
+
+            Path source = Paths.get("target/test-out/", dstFileName);
+            Path target = Paths.get("target/test-data/", dstFileName);
+            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+            newSrcFileName = dstFileName;
+        }
+    }
+
 }

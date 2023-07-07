@@ -164,6 +164,14 @@ public class BufferedImageUtils {
             dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         }
         DataBuffer srcBuffer = src.getRaster().getDataBuffer();
+
+        if (srcBuffer instanceof DataBufferByte) {
+            byte[] srcData = ((DataBufferByte) srcBuffer).getData();
+            byte[] dstData = ((DataBufferByte) dst.getRaster().getDataBuffer()).getData();
+            System.arraycopy(srcData, 0, dstData, 0, srcData.length);
+            return dst;
+        }
+
         short[] srcData = srcBuffer instanceof DataBufferUShort
                 ? ((DataBufferUShort) srcBuffer).getData()
                 : ((DataBufferShort) srcBuffer).getData();

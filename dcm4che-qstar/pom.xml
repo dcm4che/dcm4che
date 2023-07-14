@@ -53,9 +53,10 @@
   <packaging>bundle</packaging>
 
   <dependencies>
-     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-net</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <!-- used to pull correct dependencies for jaxws-tools-maven-plugin  -->
     <dependency>

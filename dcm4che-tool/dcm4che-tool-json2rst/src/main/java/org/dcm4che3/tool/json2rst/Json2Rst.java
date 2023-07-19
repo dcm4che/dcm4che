@@ -224,17 +224,25 @@ public class Json2Rst {
         out.print(ensureNoUndefinedSubstitutionReferenced(
                 formatURL(property.getString("description"))
                         .replace("\"","\"\"")
-                        .replaceAll("<br>", "\n\n\t")));
+                        .replaceAll("<br>", "\n\n\t")
+                        .replaceAll("\\(hover on options to see their descriptions\\)", "")));
         JsonArray anEnum = typeObj.getJsonArray("enum");
         if (anEnum != null) {
-            out.print(" Enumerated values: ");
+            out.println();
+            out.println();
+            out.print("    ");
+            out.print("Enumerated values:");
             int last = anEnum.size()-1;
             for (int i = 0; i <= last; i++) {
-                if (i > 0)
-                    out.print(i < last ? ", " : " or ");
-                out.print(anEnum.get(i).toString().replace("\"",""));
+                out.println();
+                out.println();
+                out.print("    ");
+                String enumOption = anEnum.get(i).toString()
+                        .replace("\"", "");
+                out.print(enumOption.contains("|")
+                            ? enumOption.replaceAll("\\|", " (= ") + ")"
+                            : enumOption);
             }
-            out.print('.');
         }
         if (!isObj) {
             out.println();

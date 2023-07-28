@@ -87,13 +87,13 @@ Options:
                                   images, mpeg, mp4 and quicktime videos
                                   in addition to the metadata generation
                                   as explained above in description.
- -s <[seq.]attr=value>            Specify attributes added to sent
-                                  objects. Attribute can be specified by
-                                  keyword or tag value (in hex), e.g.
-                                  PatientName or 00100010. Attributes in
-                                  nested Datasets can be specified by
-                                  including the keyword/tag value of the
-                                  sequence attribute, e.g.
+ -s <[seq.]attr=value>            Specify attributes added to sent DICOM
+                                  or Bulkdata objects. Attribute can be
+                                  specified by keyword or tag value (in
+                                  hex), e.g. PatientName or 00100010.
+                                  Attributes in nested Datasets can be
+                                  specified by including the keyword/tag
+                                  value of the sequence attribute, e.g.
                                   00400275.00400009 for Scheduled
                                   Procedure Step ID in the Request
                                   Attributes Sequence.
@@ -138,7 +138,7 @@ Options:
                                   etc/stowrs/vlPhotographicImageMetadata.x
                                   ml file.
 -
-Example: stowrs -m PatientName=John^Doe --url
+Example: stowrs -s PatientName=John^Doe --url
 http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies img.jpeg
 => Send stow request to stowRS Receiver with the attribute given and
 img.jpeg bulkData.
@@ -163,7 +163,7 @@ specified study. Additionally content type of the
 file returned by system will be ignored and instead specified content type
 shall be considered in multipart request.
 -
-Example: stowrs -t json -m StudyInstanceUID=1.2.3.4.5.6.7.8.9.10 --url
+Example: stowrs -t json -s StudyInstanceUID=1.2.3.4.5.6.7.8.9.10 --url
 http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies file1.pdf
 file2.pdf file3.pdf
 => Send stow request to stowRS Receiver first generating metadata from

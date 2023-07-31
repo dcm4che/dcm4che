@@ -84,7 +84,7 @@ public class DicomFileDetector extends FileTypeDetector {
         int tag = ByteUtils.bytesToTagLE(b134, 0);
         int vlen = ByteUtils.bytesToIntLE(b134, 4);
         return TagUtils.isGroupLength(tag) ? vlen == 4
-                : (ElementDictionary.getStandardElementDictionary().vrOf(tag) != null && (8 + vlen) <= rlen);
+                : (ElementDictionary.getStandardElementDictionary().vrOf(tag) != VR.UN && (16 + vlen) <= rlen);
     }
 
     private static boolean isEVR(byte[] b134, int rlen) {

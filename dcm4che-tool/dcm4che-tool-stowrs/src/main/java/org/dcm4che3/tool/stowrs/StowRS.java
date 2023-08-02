@@ -364,7 +364,7 @@ public class StowRS {
         disableTM = cl.hasOption("disableTM");
         encapsulatedDocLength = cl.hasOption("encapsulatedDocLength");
         if (cl.hasOption("contentType"))
-            bulkdataFileContentType = fileContentTypeFromCL = fileContentType(cl.getOptionValue("contentType"));
+            fileContentTypeFromCL = fileContentType(cl.getOptionValue("contentType"));
         limit = Integer.parseInt(cl.getOptionValue("limit", "0"));
         configureTmpFile(cl);
         processFirstFile(cl);
@@ -380,19 +380,22 @@ public class StowRS {
 
     private void processFirstFile(CommandLine cl) throws Exception {
         if (cl.getArgList().isEmpty()) {
-            setContentAndAcceptType(cl, false);
+            setRequestContentAndAcceptTypes(cl, false);
             return;
         }
 
-        applyFunctionToFile(cl.getArgList().get(0), false, path -> {
-            String contentType = Files.probeContentType(path);
-            if (contentType == null || !contentType.equals(MediaTypes.APPLICATION_DICOM)) {
-                firstBulkdataFileContentType = FileContentType.valueOf(contentType, path);
-                if (fileContentTypeFromCL == null)
-                    bulkdataFileContentType = firstBulkdataFileContentType;
-            }
-            setContentAndAcceptType(cl, contentType != null && contentType.equals(MediaTypes.APPLICATION_DICOM));
-        });
+        if (fileContentTypeFromCL == null)
+            applyFunctionToFile(cl.getArgList().get(0), false, path -> {
+                String contentType = Files.probeContentType(path);
+                setRequestContentAndAcceptTypes(cl, contentType != null && contentType.equals(MediaTypes.APPLICATION_DICOM));
+                if (contentType == null || !contentType.equals(MediaTypes.APPLICATION_DICOM))
+                    firstBulkdataFileContentType = bulkdataFileContentType = FileContentType.valueOf(contentType, path);
+            });
+        else {
+            LOG.info("Ignoring checking of content type of first file");
+            firstBulkdataFileContentType = bulkdataFileContentType = fileContentTypeFromCL;
+            setRequestContentAndAcceptTypes(cl, false);
+        }
     }
 
     private static FileContentType fileContentType(String s) {
@@ -526,7 +529,7 @@ public class StowRS {
         }
     }
 
-    private static void setContentAndAcceptType(CommandLine cl, boolean dicom) {
+    private static void setRequestContentAndAcceptTypes(CommandLine cl, boolean dicom) {
         if (dicom) {
             requestContentType = MediaTypes.APPLICATION_DICOM;
             requestAccept = cl.hasOption("a") ? getOptionValue("a", cl) : MediaTypes.APPLICATION_DICOM_XML;
@@ -603,13 +606,9 @@ public class StowRS {
     private Attributes createStaticMetadata() throws Exception {
         LOG.info("Creating static metadata. Set defaults, if essential attributes are not present.");
         Attributes metadata;
-        if (firstBulkdataFileContentType == null)
-            metadata = SAXReader.parse(StreamUtils.openFileOrURL(metadataFilePathStr));
-        else {
-            metadata = SAXReader.parse(StreamUtils.openFileOrURL(firstBulkdataFileContentType.getSampleMetadataResourceURL()));
-            addAttributesFromFile(metadata);
-            supplementSOPClass(metadata, firstBulkdataFileContentType.getSOPClassUID());
-        }
+        metadata = SAXReader.parse(StreamUtils.openFileOrURL(firstBulkdataFileContentType.getSampleMetadataResourceURL()));
+        addAttributesFromFile(metadata);
+        supplementSOPClass(metadata, firstBulkdataFileContentType.getSOPClassUID());
         metadata.addAll(attrs);
         if (!url.endsWith("studies"))
             metadata.setString(Tag.StudyInstanceUID, VR.UI, url.substring(url.lastIndexOf("/") + 1));
@@ -1001,18 +1000,11 @@ public class StowRS {
 
                     for (String file : files)
                         applyFunctionToFile(file, true, path -> {
-                            if (ignoreNonMatchingFileContentTypes(path))
-                                LOG.info(MessageFormat.format(rb.getString(
-                                                "ignore-non-matching-file-content-type"),
-                                        path,
-                                        bulkdataFileContentType,
-                                        fileContentTypeFromCL != null
-                                                ? fileContentTypeFromCL : firstBulkdataFileContentType));
-                            else {
+                            if (!ignoreNonMatchingFileContentTypes(path))
                                 new JSONWriter(gen).write(
                                         supplementMetadataFromFile(path, createMetadata(staticMetadata)));
-                            }
                         });
+
                     gen.writeEnd();
                     gen.flush();
                 }
@@ -1033,19 +1025,13 @@ public class StowRS {
         }
 
         for (String file : files)
-            applyFunctionToFile(file, true, path -> writeXMLMetadataAndBulkdataForEach(out, staticMetadata, path, stowChunk));
+            applyFunctionToFile(file, true, path -> writeXMLMetadataAndBulkdata(out, staticMetadata, path, stowChunk));
     }
 
-    private void writeXMLMetadataAndBulkdataForEach(OutputStream out, Attributes staticMetadata, Path bulkdataFilePath, StowChunk stowChunk) {
+    private void writeXMLMetadataAndBulkdata(OutputStream out, Attributes staticMetadata, Path bulkdataFilePath, StowChunk stowChunk) {
         try {
-            if (ignoreNonMatchingFileContentTypes(bulkdataFilePath)) {
-                LOG.info(MessageFormat.format(rb.getString(
-                                "ignore-non-matching-file-content-type"),
-                        bulkdataFilePath,
-                        bulkdataFileContentType,
-                        fileContentTypeFromCL != null ? fileContentTypeFromCL : firstBulkdataFileContentType));
+            if (ignoreNonMatchingFileContentTypes(bulkdataFilePath))
                 return;
-            }
 
             Attributes metadata = supplementMetadataFromFile(bulkdataFilePath, createMetadata(staticMetadata));
             try (ByteArrayOutputStream bOut = new ByteArrayOutputStream()) {
@@ -1059,11 +1045,18 @@ public class StowRS {
     }
 
     private boolean ignoreNonMatchingFileContentTypes(Path path) throws IOException {
-        if (fileCount.incrementAndGet() == 1 || fileContentTypeFromCL != null)
-            return false;
-
-        bulkdataFileContentType = FileContentType.valueOf(Files.probeContentType(path), path);
-        return !firstBulkdataFileContentType.equals(bulkdataFileContentType);
+        if (fileCount.incrementAndGet() > 1) {
+            if (fileContentTypeFromCL == null) {
+                bulkdataFileContentType = FileContentType.valueOf(Files.probeContentType(path), path);
+                if (!firstBulkdataFileContentType.equals(bulkdataFileContentType)) {
+                    LOG.info(MessageFormat.format(rb.getString("ignore-non-matching-file-content-type"),
+                            path, bulkdataFileContentType, firstBulkdataFileContentType));
+                    return true;
+                }
+            } else
+                LOG.info("Ignoring checking of content type of subsequent file {}", path);
+        }
+        return false;
     }
 
     private void writeXMLMetadata(OutputStream out, Attributes staticMetadata) {

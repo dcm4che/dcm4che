@@ -376,6 +376,8 @@
         <Value number="1">1.2.840.10008.5.1.4.1.1.104.4</Value>
         <Value number="1">1.2.840.10008.5.1.4.1.1.104.5</Value>
         <Value number="1">1.2.40.0.13.1.5.1.4.1.1.104.1</Value>
+        <Value number="1">1.2.40.0.13.1.5.1.4.1.1.104.2</Value>
+        <Value number="1">1.2.40.0.13.1.5.1.4.1.1.104.3</Value>
       </DicomAttribute>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="ContentDate" tag="00080023" vr="DA"/>

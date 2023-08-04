@@ -384,15 +384,15 @@ public class MediaTypes {
             new MediaType("application", "x-bzip2");
 
     /**
-     * "application/prs.vcfbzip"
+     * "application/prs.vcfbzip2"
      */
-    public final static String APPLICATION_PRS_VCFBZIP = "application/prs.vcfbzip";
+    public final static String APPLICATION_PRS_VCFBZIP2 = "application/prs.vcfbzip2";
 
     /**
      * "application/prs.vcfbzip"
      */
-    public final static MediaType APPLICATION_PRS_VCFBZIP_TYPE =
-            new MediaType("application", "prs.vcfbzip");
+    public final static MediaType APPLICATION_PRS_VCFBZIP2_TYPE =
+            new MediaType("application", "prs.vcfbzip2");
 
 
     public static MediaType forTransferSyntax(String ts) {

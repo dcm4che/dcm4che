@@ -372,6 +372,28 @@ public class MediaTypes {
     public final static MediaType APPLICATION_VND_GENOZIP_TYPE =
             new MediaType("application", "vnd.genozip");
 
+    /**
+     * "application/x-bzip2"
+     */
+    public final static String APPLICATION_X_BZIP2 = "application/x-bzip2";
+
+    /**
+     * "application/x-bzip2"
+     */
+    public final static MediaType APPLICATION_X_BZIP2_TYPE =
+            new MediaType("application", "x-bzip2");
+
+    /**
+     * "application/prs.vcfbzip"
+     */
+    public final static String APPLICATION_PRS_VCFBZIP = "application/prs.vcfbzip";
+
+    /**
+     * "application/prs.vcfbzip"
+     */
+    public final static MediaType APPLICATION_PRS_VCFBZIP_TYPE =
+            new MediaType("application", "prs.vcfbzip");
+
 
     public static MediaType forTransferSyntax(String ts) {
         MediaType type;

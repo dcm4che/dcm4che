@@ -273,7 +273,7 @@ public class IDWithIssuer {
 
         for (Iterator<IDWithIssuer> itr = pids.iterator(); itr.hasNext();) {
             IDWithIssuer next = itr.next();
-            if (next.matches(pid, true, true)) {
+            if (next.matches(pid, true, false)) {
                 // replace existing matching pid if it is lesser qualified
                 if (pid.issuer != null && (next.issuer == null
                         || next.issuer.isLesserQualifiedThan(pid.issuer)))

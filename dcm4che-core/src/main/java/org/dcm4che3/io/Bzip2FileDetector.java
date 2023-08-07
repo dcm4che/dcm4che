@@ -64,7 +64,7 @@ public class Bzip2FileDetector extends FileTypeDetector {
                     && b[0] == 0x42
                     && b[1] == 0x5A
                     && b[2] == 0x68
-                    ? endsWith(path.getFileName(),
+                    ? endsWith(path.getFileName().toString().toLowerCase(),
                           ".vcf.bz2" ,
                                 ".vcfbzip2",
                                 ".vcfbz2")
@@ -74,7 +74,7 @@ public class Bzip2FileDetector extends FileTypeDetector {
         }
     }
 
-    private static boolean endsWith(Path filename, String... exts) {
+    private static boolean endsWith(String filename, String... exts) {
         for (String ext : exts) {
             if (filename.endsWith(ext)) {
                 return true;

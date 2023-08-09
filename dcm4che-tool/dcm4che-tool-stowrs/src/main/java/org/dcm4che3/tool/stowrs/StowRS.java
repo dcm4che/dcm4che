@@ -422,6 +422,15 @@ public class StowRS {
             case "genozip":
             case "application/vnd.genozip":
                 return FileContentType.GENOZIP;
+            case "vcf.bz2":
+            case "vcfbzip2":
+            case "vcfbz2":
+            case "application/prs.vcfbzip2":
+                return FileContentType.VCF_BZIP2;
+            case "boz":
+            case "bz2":
+            case "application/x-bzip2":
+                return FileContentType.DOC_BZIP2;
             case "jpg":
             case "jpeg":
             case "image/jpeg":
@@ -467,6 +476,10 @@ public class StowRS {
                 "encapsulatedOBJMetadata.xml"),
         GENOZIP(UID.PrivateDcm4cheEncapsulatedGenozipStorage, Tag.EncapsulatedDocument, MediaTypes.APPLICATION_VND_GENOZIP,
                 "encapsulatedGenozipMetadata.xml"),
+        VCF_BZIP2(UID.PrivateDcm4cheEncapsulatedBzip2VCFStorage, Tag.EncapsulatedDocument, MediaTypes.APPLICATION_PRS_VCFBZIP2,
+                "encapsulatedVCFBzip2Metadata.xml"),
+        DOC_BZIP2(UID.PrivateDcm4cheEncapsulatedBzip2DocumentStorage, Tag.EncapsulatedDocument, MediaTypes.APPLICATION_X_BZIP2,
+                "encapsulatedDocumentBzip2Metadata.xml"),
         JPEG(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
                 Tag.PixelData,
                 MediaTypes.IMAGE_JPEG,
@@ -570,6 +583,8 @@ public class StowRS {
             case CDA:
             case MTL:
             case GENOZIP:
+            case VCF_BZIP2:
+            case DOC_BZIP2:
                 supplementEncapsulatedDocAttrs(metadata, stowRSBulkdata);
                 contentLocBulkdata.put(contentLoc, stowRSBulkdata);
                 break;

@@ -19,7 +19,9 @@ text/xml (for CDA files), image/jpeg, video/mpeg, video/mp4,
 video/quicktime, image/jp2, image/png, image/gif, application/sla or
 model/stl or model/x.stl-binary (for STL files), model/mtl (for MTL
 files), model/obj (for OBJ files) and application/vnd.genozip (for Genozip
-compressed genomic files).
+compressed genomic files), application/prs.vcfbzip2 (for Bzip2 compressed
+genomic data VCF files) and application/x-bzip2 (for Bzip2 compressed
+genomic data Document files).
 For metadata : Send single non bulkdata type of file by specifying a
 metadata file for objects like Structured Reports, Presentation States
 etc.
@@ -204,6 +206,14 @@ http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies
 path-to-genozip-file.genozip
 => Send stow request to stowRS Receiver for specified Genozip compressed
 genomic file. Additionally content type of the
+file returned by system will be ignored and instead specified content type
+shall be considered in multipart request.
+-
+Example: stowrs --contentType application/prs.vcfbzip2 --url
+http[s]://<host>:<port>/dcm4chee-arc/aets/{AETitle}/rs/studies
+path-to-vcf-bzip2-file.vcfbz2
+=> Send stow request to stowRS Receiver for specified Bzip2 compressed
+genomic data VCF file. Additionally content type of the
 file returned by system will be ignored and instead specified content type
 shall be considered in multipart request.
 ```

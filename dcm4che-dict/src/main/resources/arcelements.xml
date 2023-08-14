@@ -79,6 +79,8 @@
   <el tag="7777xx41" keyword="InstanceUpdateDateTime" vr="DT" vm="1">Instance Update Date Time</el>
   <el tag="7777xx42" keyword="RejectionCodeSequence" vr="SQ" vm="1">Rejection Code Sequence</el>
   <el tag="7777xx43" keyword="InstanceExternalRetrieveAETitle" vr="AE" vm="1">Instance External Retrieve AE Title</el>
+  <el tag="7777xx44" keyword="SeriesExternalRetrieveAETitle" vr="AE" vm="1">Series External Retrieve AE Title</el>
+  <el tag="7777xx45" keyword="StudyExternalRetrieveAETitle" vr="AE" vm="1">Study External Retrieve AE Title</el>
   <el tag="7777xx50" keyword="StorageID" vr="LO" vm="1">Storage ID</el>
   <el tag="7777xx51" keyword="StoragePath" vr="LO" vm="1-n">Storage Path</el>
   <el tag="7777xx52" keyword="StorageTransferSyntaxUID" vr="UI" vm="1">Storage Transfer Syntax UID</el>

@@ -83,7 +83,7 @@
     <logback.version>1.4.4</logback.version>
     <weasis.core.img.version>4.6.0</weasis.core.img.version>
     <weasis.opencv.native.version>4.6.0-dcm</weasis.opencv.native.version>
-    <keycloak.version>21.1.2</keycloak.version>
+    <keycloak.version>22.0.1</keycloak.version>
     <jbossws-cxf-client.version>6.2.0.Final</jbossws-cxf-client.version>
     <apache-cxf.version>4.0.0</apache-cxf.version>
     <apache-commons-csv.version>1.10.0</apache-commons-csv.version>

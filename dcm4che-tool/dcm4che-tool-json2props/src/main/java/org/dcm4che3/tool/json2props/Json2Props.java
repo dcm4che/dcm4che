@@ -41,12 +41,19 @@
 
 package org.dcm4che3.tool.json2props;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.dcm4che3.tool.common.CLIUtils;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Properties;
+import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger (gunterze@protonmail.com)
@@ -54,14 +61,7 @@ import java.util.Properties;
  */
 public class Json2Props {
 
-    private static final String[] USAGE = {
-            "usage: json2props <schema-dir> <props-dir>",
-            "    or json2props <schema-dir> <props-dir> <out-schema-dir>",
-            "",
-            "The json2props utility converts Archive configuration schema JSON files",
-            "to key-value properties files and vice versa to ease translation of",
-            "attribute names and descriptions to other languages than English."
-    };
+    private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.json2props.messages");
     private final File schemaDir;
     private final File propsDir;
 
@@ -70,24 +70,45 @@ public class Json2Props {
         this.propsDir = propsDir;
     }
 
-    public static void main(String[] args) throws Exception {
-        switch (args.length) {
-            case 2:
-                json2props(new File(args[0]), new File(args[1]));
-                break;
-            case 3:
-                props2json(new File(args[0]), new File(args[1]), new File(args[2]));
-                break;
-            default:
-                for (String line : USAGE) {
-                    System.out.println(line);
-                }
-                System.exit(-1);
+    private static CommandLine parseCommandLine(String[] args)
+            throws ParseException {
+        Options opts = new Options();
+        CLIUtils.addCommonOptions(opts);
+        return CLIUtils.parseComandLine(args, opts, rb, Json2Props.class);
+    }
+
+    public static void main(String[] args) {
+        try {
+            CommandLine cl = parseCommandLine(args);
+            List<String> argsList = cl.getArgList();
+            switch (argsList.size()) {
+                case 2:
+                    json2props(new File(argsList.get(0)), new File(argsList.get(1)));
+                    break;
+                case 3:
+                    props2json(new File(argsList.get(0)), new File(argsList.get(1)), new File(argsList.get(2)));
+                    break;
+                default:
+            }
+        } catch (ParseException e) {
+            System.err.println("json2props: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
+        } catch (Exception e) {
+            System.err.println("json2props: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
         }
     }
 
     public static void json2props(File schemaDir, File propsDir) throws IOException {
         propsDir.mkdirs();
+        if (schemaDir.isFile()) {
+            System.err.println("Schema directory not specified");
+            System.err.println(rb.getString("try"));
+            return;
+        }
+
         for (String fname : schemaDir.list((dir, name) -> name.endsWith(".schema.json"))) {
             String prefix = fname.substring(0, fname.length() - 11);
             json2props1(

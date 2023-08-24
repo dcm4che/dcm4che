@@ -38,11 +38,7 @@
 
 package org.dcm4che3.data;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Objects;
+import java.util.*;
 
 import org.dcm4che3.util.StringUtils;
 
@@ -152,11 +148,38 @@ public class IDWithIssuer {
                 (Objects.equals(issuer, other.issuer));
     }
 
+    /**
+     * Test if this ID equals other ID and this issuer matches other issuer.
+     * If this ID equals other ID but only this or other is qualified by an issuer, the test fails.
+     *
+     * @param other-the @{code IDWithIssuer} to compare.
+     * @return {@code true}, if this ID equals other ID and this issuer matches other issuer, otherwise {@code false}.
+     */
     public boolean matches(IDWithIssuer other) {
-        return id.equals(other.id) &&
-                (issuer == null 
-                    ? other.issuer == null
-                    : issuer.matches(other.issuer));
+        return matches(other, false, false);
+    }
+
+    /**
+     * Test if this ID equals other ID and this issuer matches other issuer.
+     * <p>If this ID equals other ID but only this or other is qualified by an issuer,
+     * the test returns the value passed by param <em>matchNoIssuer</em>.
+     *
+     * <p>If this ID equals other ID and the issuer of this is only identified by its <em>Local Namespace Entity ID</em>
+     * and the issuer of this is only identified by its <em>Universal Entity ID</em> and <em>Universal Entity ID Type</em> or
+     * the issuer of this is only identified by its <em>Universal Entity ID</em> and Universal Entity ID Type</em>
+     * and the issuer of this is only identified by its <em>Local Namespace Entity ID</em>
+     * the test returns the value passed by param <em>matchOnNoMismatch</em>.
+     *
+     * @param other              the @{code IDWithIssuer} to compare.
+     * @param matchNoIssuer      value returned if only this or other is qualified by an issuer
+     * @param matchOnNoMismatch  value returned if the issuer of this and the other includes different types of identifiers
+     * @return {@code true}, if this ID equals other ID and this issuer matches other issuer, otherwise {@code false}.
+     */
+    public boolean matches(IDWithIssuer other, boolean matchNoIssuer, boolean matchOnNoMismatch) {
+        return id.equals(other.id)
+                && (issuer == null
+                    ? (other.issuer == null || matchNoIssuer)
+                    : issuer.matches(other.issuer, matchNoIssuer, matchOnNoMismatch));
     }
 
     public Attributes exportPatientIDWithIssuer(Attributes attrs) {
@@ -219,16 +242,26 @@ public class IDWithIssuer {
     public static Set<IDWithIssuer> pidsOf(Attributes attrs) {
         IDWithIssuer pid = IDWithIssuer.pidOf(attrs);
         Sequence opidseq = attrs.getSequence(Tag.OtherPatientIDsSequence);
-        if (opidseq == null)
+        if (opidseq == null || opidseq.isEmpty())
             if (pid == null)
                 return Collections.emptySet();
             else
                 return Collections.singleton(pid);
         
-        Set<IDWithIssuer> pids =
-                new HashSet<IDWithIssuer>((1 + opidseq.size()) << 1);
+        Set<IDWithIssuer> pids = new LinkedHashSet<>((1 + opidseq.size()) << 1);
         if (pid != null)
             pids.add(pid);
+        for (Attributes item : opidseq)
+            addTo(IDWithIssuer.pidOf(item), pids);
+        return pids;
+    }
+
+    public static Set<IDWithIssuer> opidsOf(Attributes attrs) {
+        Sequence opidseq = attrs.getSequence(Tag.OtherPatientIDsSequence);
+        if (opidseq == null || opidseq.isEmpty())
+            return Collections.emptySet();
+
+        Set<IDWithIssuer> pids = new LinkedHashSet<>((opidseq.size()) << 1);
         for (Attributes item : opidseq)
             addTo(IDWithIssuer.pidOf(item), pids);
         return pids;
@@ -240,7 +273,7 @@ public class IDWithIssuer {
 
         for (Iterator<IDWithIssuer> itr = pids.iterator(); itr.hasNext();) {
             IDWithIssuer next = itr.next();
-            if (next.matches(pid)) {
+            if (next.matches(pid, true, false)) {
                 // replace existing matching pid if it is lesser qualified
                 if (pid.issuer != null && (next.issuer == null
                         || next.issuer.isLesserQualifiedThan(pid.issuer)))

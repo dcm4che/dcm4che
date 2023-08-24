@@ -40,6 +40,8 @@
 
   <xsl:template name="uidsEx">
     <uid value="1.2.40.0.13.1.5.1.4.1.1.104.1" keyword="PrivateDcm4cheEncapsulatedGenozipStorage" type="SOPClass">Private Dcm4che Encapsulated Genozip Storage</uid>
+    <uid value="1.2.40.0.13.1.5.1.4.1.1.104.2" keyword="PrivateDcm4cheEncapsulatedBzip2VCFStorage" type="SOPClass">Private Dcm4che Encapsulated Bzip2 VCF Storage</uid>
+    <uid value="1.2.40.0.13.1.5.1.4.1.1.104.3" keyword="PrivateDcm4cheEncapsulatedBzip2DocumentStorage" type="SOPClass">Private Dcm4che Encapsulated Bzip2 Document Storage</uid>
     <uid value="1.2.124.113532.3500.7" keyword="PrivateAgfaBasicAttributePresentationState" type="SOPClass">Private Agfa Basic Attribute Presentation State</uid>
     <uid value="1.2.124.113532.3500.8.1" keyword="PrivateAgfaArrivalTransaction" type="SOPClass">Private Agfa Arrival Transaction</uid>
     <uid value="1.2.124.113532.3500.8.2" keyword="PrivateAgfaDictationTransaction" type="SOPClass">Private Agfa Dictation Transaction</uid>

@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>5.29.1</version>
+    <version>5.31.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-assembly</artifactId>
@@ -249,6 +249,11 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-qstar</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-soundex</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -263,6 +268,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-xroad</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-agfa2dcm</artifactId>
       <version>${project.version}</version>
@@ -270,11 +280,6 @@
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-agfa2sr</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che.tool</groupId>
-      <artifactId>dcm4che-tool-dcmdump</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -309,7 +314,17 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-dcmbenchmark</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-dcmdir</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-dcmdump</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -454,6 +469,11 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-qstar</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-stgcmtscu</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -520,6 +540,11 @@
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-xml2hl7</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-xroad</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

@@ -5,10 +5,10 @@ import java.util.List;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.util.LimitedInputStream;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -78,12 +78,11 @@ public class DicomInputStreamTest {
     }
 
     @Test
-    public void testBulkDataLimit() throws Exception {
-        try {
-            readFrom("3gb-bulk-data-truncated", IncludeBulkData.URI);
-        } catch (DicomStreamException e) {
-            assertEquals("0x7FE00010 " + DicomInputStream.VALUE_TOO_LARGE, e.getMessage());
-        }
+    public void testBulkDataLarger2GiB() throws Exception {
+            Attributes attrs = readFrom("3gb-bulk-data-truncated", IncludeBulkData.URI);
+            Object blkdata = attrs.getValue(Tag.PixelData);
+            assertTrue(blkdata instanceof BulkData);
+            assertEquals(3221225472L, ((BulkData) blkdata).longLength());
     }
 
     @Test
@@ -179,4 +178,62 @@ public class DicomInputStreamTest {
         assertEquals(VR.CS, contentItem1.getVR(Tag.PurposeOfReferenceCodeSequence));
         assertEquals("NAMED TYPE", contentItem1.getString(Tag.PurposeOfReferenceCodeSequence));
     }
+
+    @Test
+    public void testUNSequenceIVR_LE() throws Exception {
+        byte[] data = {
+                0x23, 0x01, 0x10, 0x00, 4, 0, 0, 0, 'T', 'E', 'S', 'T',
+                0x23, 0x01, 0x56, 0x10, 18, 0, 0, 0,
+                -2, -1, 0, -32, 10, 0, 0, 0,
+                0x08, 0x00, 0x01, 0x03, 2, 0, 0, 0, 0x23, 0x01};
+        testUNSequence(data, UID.ImplicitVRLittleEndian);
+    }
+
+    @Test
+    public void testUNSequenceEVR_LE_UN_IVR_LE() throws Exception {
+        byte[] data = {
+                0x23, 0x01, 0x10, 0x00, 'L', 'O', 4, 0, 'T', 'E', 'S', 'T',
+                0x23, 0x01, 0x56, 0x10, 'U', 'N', 0, 0, 18, 0, 0, 0,
+                -2, -1, 0, -32, 10, 0, 0, 0,
+                0x08, 0x00, 0x01, 0x03, 2, 0, 0, 0, 0x23, 0x01};
+        testUNSequence(data, UID.ExplicitVRLittleEndian);
+    }
+
+    @Test
+    public void testUNSequenceEVR_LE_UN_EVR_LE() throws Exception {
+        byte[] data = {
+                0x23, 0x01, 0x10, 0x00, 'L', 'O', 4, 0, 'T', 'E', 'S', 'T',
+                0x23, 0x01, 0x56, 0x10, 'U', 'N', 0, 0, 18, 0, 0, 0,
+                -2, -1, 0, -32, 10, 0, 0, 0,
+                0x08, 0x00, 0x01, 0x03, 'U', 'S', 2, 0, 0x23, 0x01};
+        testUNSequence(data, UID.ExplicitVRLittleEndian);
+    }
+
+    @Test
+    public void testUNSequenceEVR_BE_UN_IVR_LE() throws Exception {
+        byte[] data = {
+                0x01, 0x23, 0x00, 0x10, 'L', 'O', 0, 4, 'T', 'E', 'S', 'T',
+                0x01, 0x23, 0x10, 0x56, 'U', 'N', 0, 0, 0, 0, 0, 18,
+                -2, -1, 0, -32, 10, 0, 0, 0,
+                0x08, 0x00, 0x01, 0x03, 2, 0, 0, 0, 0x23, 0x01};
+        testUNSequence(data, UID.ExplicitVRBigEndian);
+    }
+    @Test
+    public void testUNSequenceEVR_BE_UN_EVR_BE() throws Exception {
+        byte[] data = {
+                0x01, 0x23, 0x00, 0x10, 'L', 'O', 0, 4, 'T', 'E', 'S', 'T',
+                0x01, 0x23, 0x10, 0x56, 'U', 'N', 0, 0, 0, 0, 0, 18,
+                -1, -2, -32, 0, 0, 0, 0, 10,
+                0x00, 0x08, 0x03, 0x01, 'U', 'S', 0, 2, 0x01, 0x23};
+        testUNSequence(data, UID.ExplicitVRBigEndian);
+    }
+
+    private void testUNSequence(byte[] value, String tsuid) throws IOException {
+        assertEquals(0x0123,
+                new DicomInputStream(new ByteArrayInputStream(value), tsuid)
+                        .readDataset()
+                        .getNestedDataset("TEST", 0x01230056)
+                        .getInt(Tag.PrivateGroupReference, 0));
+    }
+
 }

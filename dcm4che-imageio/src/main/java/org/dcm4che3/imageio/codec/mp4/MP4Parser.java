@@ -145,19 +145,19 @@ public class MP4Parser implements XPEGParser {
     }
 
     @Override
-    public String getTransferSyntaxUID() throws XPEGParserException {
+    public String getTransferSyntaxUID(boolean fragmented) throws XPEGParserException {
         switch (visualSampleEntryType) {
             case VisualSampleEntryTypeAVC1:
                 switch (profile_idc) {
                     case 100: // High Profile
                         if (level_idc <= 41)
                             return isBDCompatible()
-                                    ? UID.MPEG4HP41BD
-                                    : UID.MPEG4HP41;
+                                    ? fragmented ? UID.MPEG4HP41BDF : UID.MPEG4HP41BD
+                                    : fragmented ? UID.MPEG4HP41F : UID.MPEG4HP41;
                         else if (level_idc <= 42)
                             // TODO: distinguish between MPEG4HP422D
                             //  and MPEG4HP423D
-                            return UID.MPEG4HP422D;
+                            return fragmented ? UID.MPEG4HP422DF : UID.MPEG4HP422D;
                         break;
                     case 128: // Stereo High Profile
                         if (level_idc <= 42)
@@ -194,7 +194,7 @@ public class MP4Parser implements XPEGParser {
     private Box nextBox(SeekableByteChannel channel, long remaining) throws IOException {
         long pos = channel.position();
         long type = readLong(channel);
-        int size = (int) (type >> 32);
+        long size = type >>> 32;
         return new Box((int) type, pos + (size == 0 ? remaining : size == 1 ? readLong(channel) : size));
     }
 

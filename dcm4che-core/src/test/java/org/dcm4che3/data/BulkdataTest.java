@@ -51,14 +51,14 @@ public class BulkdataTest {
     long offset = 3l*Integer.MAX_VALUE;
     long length = 0xFFFF0000l;
     String url = "file:///someFile.dcm";
-    BulkData bulk = new BulkData(url,offset,(int) length,false);
+    BulkData bulk = new BulkData(url, offset, length,false);
 
     @Test
     public void testBulkdata_create() {
-        assertEquals(url+"?offset="+offset+"&length="+((int) length),bulk.getURI());
+        assertEquals(url + "?offset=" + offset + "&length=" + length, bulk.getURI());
         assertEquals(length,bulk.longLength());
         assertEquals(offset,bulk.offset());
-        BulkData bulk2 = new BulkData(url,offset,(int) length, false);
+        BulkData bulk2 = new BulkData(url, offset, length, false);
         assertEquals(bulk,bulk2);
         assertEquals(bulk.hashCode(),bulk2.hashCode());
     }

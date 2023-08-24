@@ -43,11 +43,12 @@ package org.dcm4che3.deident;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.dcmr.DeIdentificationMethod;
-import org.dcm4che3.util.TagUtils;
 import org.dcm4che3.util.UIDUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.UUID;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -227,6 +228,7 @@ public class DeIdentifier {
     private static final int[] X_INSTITUTION = {
             Tag.InstitutionAddress,
             Tag.InstitutionalDepartmentName,
+            Tag.InstitutionalDepartmentTypeCodeSequence
     };
 
     private static final int[] X_DEVICE = {
@@ -296,7 +298,7 @@ public class DeIdentifier {
     };
 
     private static final int[] Z_INSTITUTION = {
-            Tag.InstitutionCodeSequence,
+            Tag.InstitutionCodeSequence
     };
 
     private static final int[] Z_DATES = {

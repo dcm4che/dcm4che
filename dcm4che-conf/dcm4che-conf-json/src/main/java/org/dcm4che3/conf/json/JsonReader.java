@@ -129,7 +129,13 @@ public class JsonReader {
         return a.toArray((T[]) Array.newInstance(enumType, a.size()));
    }
 
-    public int intValue() {
+    public long longValue() {
+        next();
+        expect(JsonParser.Event.VALUE_NUMBER);
+        return Long.parseLong(getString());
+    }
+
+   public int intValue() {
         next();
         expect(JsonParser.Event.VALUE_NUMBER);
         return Integer.parseInt(getString());

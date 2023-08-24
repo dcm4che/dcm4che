@@ -208,27 +208,24 @@ public class DateUtils {
     public static Date parseDA(TimeZone tz, String s, boolean ceil) {
         Calendar cal = cal(tz);
         int length = s.length();
-        if (!(length == 8 || length == 10 && !Character.isDigit(s.charAt(4))))
+        if (!(length == 8 || length == 10 && !Character.isDigit(s.charAt(4)) && s.charAt(7) == s.charAt(4)))
             throw new IllegalArgumentException(s);
-        try {
-            int pos = 0;
-            cal.set(Calendar.YEAR,
-                    Integer.parseInt(s.substring(pos, pos + 4)));
-            pos += 4;
-            if (!Character.isDigit(s.charAt(pos)))
-                pos++;
-            cal.set(Calendar.MONTH,
-                    Integer.parseInt(s.substring(pos, pos + 2)) - 1);
-            pos += 2;
-            if (!Character.isDigit(s.charAt(pos)))
-                pos++;
-            cal.set(Calendar.DAY_OF_MONTH,
-                    Integer.parseInt(s.substring(pos)));
-            if (ceil)
-                ceil(cal, Calendar.DAY_OF_MONTH);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(s);
-        }
+        int pos = 0;
+        cal.set(Calendar.YEAR,
+                parseDigit(s, pos++) * 1000 +
+                parseDigit(s, pos++) * 100 +
+                parseDigit(s, pos++) * 10 +
+                parseDigit(s, pos++));
+        if (length == 10)
+            pos++;
+        cal.set(Calendar.MONTH,
+                parseDigit(s, pos++) * 10 + parseDigit(s, pos++) - 1);
+        if (length == 10)
+            pos++;
+        cal.set(Calendar.DAY_OF_MONTH,
+                parseDigit(s, pos++) * 10 + parseDigit(s, pos++));
+        if (ceil)
+            ceil(cal, Calendar.DAY_OF_MONTH);
         return cal.getTime();
     }
 
@@ -259,43 +256,52 @@ public class DateUtils {
         if (pos + 2 > length)
             throw new IllegalArgumentException(s);
 
-        try {
-            cal.set(precision.lastField = Calendar.HOUR_OF_DAY,
-                    Integer.parseInt(s.substring(pos, pos + 2)));
-            pos += 2;
+        cal.set(precision.lastField = Calendar.HOUR_OF_DAY,
+            parseDigit(s, pos++) * 10 + parseDigit(s, pos++));
+        if (pos < length) {
+            if (!Character.isDigit(s.charAt(pos)))
+                pos++;
+            if (pos + 2 > length)
+                throw new IllegalArgumentException(s);
+
+            cal.set(precision.lastField = Calendar.MINUTE,
+                parseDigit(s, pos++) * 10 + parseDigit(s, pos++));
             if (pos < length) {
                 if (!Character.isDigit(s.charAt(pos)))
                     pos++;
                 if (pos + 2 > length)
                     throw new IllegalArgumentException(s);
-
-                cal.set(precision.lastField = Calendar.MINUTE,
-                        Integer.parseInt(s.substring(pos, pos + 2)));
-                pos += 2;
-                if (pos < length) {
-                    if (!Character.isDigit(s.charAt(pos)))
-                        pos++;
-                    if (pos + 2 > length)
+                cal.set(precision.lastField = Calendar.SECOND,
+                        parseDigit(s, pos++) * 10 + parseDigit(s, pos++));
+                int n = length - pos;
+                if (n > 0) {
+                    if (s.charAt(pos++) != '.')
                         throw new IllegalArgumentException(s);
-                    cal.set(precision.lastField = Calendar.SECOND,
-                            Integer.parseInt(s.substring(pos, pos + 2)));
-                    pos += 2;
-                    if (pos < length) {
-                        float f = Float.parseFloat(s.substring(pos));
-                        if (f >= 1 || f < 0)
-                            throw new IllegalArgumentException(s);
-                        cal.set(precision.lastField = Calendar.MILLISECOND, 
-                                (int) (f * 1000));
-                        return cal.getTime();
+
+                    int d, millis = 0;
+                    for (int i = 1; i < n; ++i) {
+                        d = parseDigit(s, pos++);
+                        if (i < 4)
+                            millis += d;
+                        else if (i == 4 & d > 4) // round up
+                            millis++;
+                        if (i < 3) millis *= 10;
                     }
+                    for (int i = n; i < 3; ++i) millis *= 10;
+                    cal.set(precision.lastField = Calendar.MILLISECOND, millis);
+                    return cal.getTime();
                 }
             }
-            if (ceil)
-                ceil(cal, precision.lastField);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(s);
         }
+        if (ceil)
+            ceil(cal, precision.lastField);
         return cal.getTime();
+    }
+
+    private static int parseDigit(String s, int index) {
+        int d = s.charAt(index) - '0';
+        if (d < 0 || d > 9) throw new IllegalArgumentException(s);
+        return d;
     }
 
     public static Date parseDT(TimeZone tz, String s, DatePrecision precision) {
@@ -347,36 +353,32 @@ public class DateUtils {
             tz = tz1;
         }
         Calendar cal = cal(tz);
-        try {
-            int pos = 0;
-            if (pos + 4 > length)
+        int pos = 0;
+        if (pos + 4 > length)
+            throw new IllegalArgumentException(s);
+        cal.set(precision.lastField = Calendar.YEAR,
+                parseDigit(s, pos++) * 1000 +
+                parseDigit(s, pos++) * 100 +
+                parseDigit(s, pos++) * 10 +
+                parseDigit(s, pos++));
+        if (pos < length) {
+            if (!Character.isDigit(s.charAt(pos)))
+                pos++;
+            if (pos + 2 > length)
                 throw new IllegalArgumentException(s);
-            cal.set(precision.lastField = Calendar.YEAR,
-                    Integer.parseInt(s.substring(pos, pos + 4)));
-            pos += 4;
+            cal.set(precision.lastField = Calendar.MONTH,
+                    parseDigit(s, pos++) * 10 + parseDigit(s, pos++) - 1);
             if (pos < length) {
                 if (!Character.isDigit(s.charAt(pos)))
                     pos++;
                 if (pos + 2 > length)
                     throw new IllegalArgumentException(s);
-                cal.set(precision.lastField = Calendar.MONTH,
-                        Integer.parseInt(s.substring(pos,  pos + 2)) - 1);
-                pos += 2;
-                if (pos < length) {
-                    if (!Character.isDigit(s.charAt(pos)))
-                        pos++;
-                    if (pos + 2 > length)
-                        throw new IllegalArgumentException(s);
-                    cal.set(precision.lastField = Calendar.DAY_OF_MONTH,
-                            Integer.parseInt(s.substring(pos, pos + 2)));
-                    pos += 2;
-                    if (pos < length)
-                        return parseTM(cal, s.substring(pos, length), ceil,
-                                precision);
-                }
+                cal.set(precision.lastField = Calendar.DAY_OF_MONTH,
+                        parseDigit(s, pos++) * 10 + parseDigit(s, pos++));
+                if (pos < length)
+                    return parseTM(cal, s.substring(pos, length), ceil,
+                            precision);
             }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(s);
         }
         if (ceil)
             ceil(cal, precision.lastField);

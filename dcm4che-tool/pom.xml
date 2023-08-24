@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>5.29.1</version>
+    <version>5.31.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4che.tool</groupId>
@@ -60,8 +60,9 @@
     <module>dcm4che-tool-dcm2pdf</module>
     <module>dcm4che-tool-dcm2str</module>
     <module>dcm4che-tool-dcm2xml</module>
-    <module>dcm4che-tool-dcmdump</module>
+    <module>dcm4che-tool-dcmbenchmark</module>
     <module>dcm4che-tool-dcmdir</module>
+    <module>dcm4che-tool-dcmdump</module>
     <module>dcm4che-tool-dcmldap</module>
     <module>dcm4che-tool-dcmqrscp</module>
     <module>dcm4che-tool-dcmvalidate</module>
@@ -90,6 +91,7 @@
     <module>dcm4che-tool-mppsscu</module>
     <module>dcm4che-tool-pdf2dcm</module>
     <module>dcm4che-tool-planarconfig</module>
+    <module>dcm4che-tool-qstar</module>
     <module>dcm4che-tool-stgcmtscu</module>
     <module>dcm4che-tool-storescp</module>
     <module>dcm4che-tool-storescu</module>
@@ -104,6 +106,7 @@
     <module>dcm4che-tool-wadows</module>
     <module>dcm4che-tool-xml2dcm</module>
     <module>dcm4che-tool-xml2hl7</module>
+    <module>dcm4che-tool-xroad</module>
   </modules>
   <build>
     <plugins>

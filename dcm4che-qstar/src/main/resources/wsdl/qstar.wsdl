@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="WSWebService"
+                  targetNamespace="WSWebService"
+                  xmlns:tns="WSWebService"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:s="http://www.w3.org/2001/XMLSchema"
+                  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <schema targetNamespace="WSWebService"
+            xmlns="http://www.w3.org/2001/XMLSchema">
+      <s:complexType name="WSFileExtentCopyInfo">
+        <s:sequence>
+          <s:element name="isOffline" type="s:unsignedInt"/>
+          <s:element minOccurs="0" maxOccurs="1" name="mediaBarcode" type="s:string"/>
+          <s:element minOccurs="0" maxOccurs="1" name="offlineLocation" type="s:string"/>
+          <s:element name="copyNumber" type="s:unsignedInt"/>
+          <s:element minOccurs="0" maxOccurs="1" name="deviceName" type="s:string"/>
+          <s:element name="slotNumber" type="s:unsignedInt"/>
+          <s:element minOccurs="0" maxOccurs="1" name="side" type="s:string"/>
+          <s:element name="copyInSet" type="s:unsignedInt"/>
+          <s:element name="copyInDB" type="s:unsignedInt"/>
+          <s:element name="copyInDevice" type="s:unsignedInt"/>
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSFileExtentCopiesList">
+        <s:sequence>
+          <s:element name="copies" type="tns:WSFileExtentCopyInfo" minOccurs="0" maxOccurs="unbounded"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSFileExtentInfo">
+        <s:sequence>
+          <s:element name="offset" type="s:unsignedLong"/>
+          <s:element name="size" type="s:unsignedLong"/>
+          <s:element name="vol" type="s:unsignedInt"/>
+          <s:element name="pos" type="s:unsignedInt"/>
+          <s:element name="isOffline" type="s:unsignedInt"/>
+          <s:element minOccurs="0" maxOccurs="1" name="mediaBarcode" type="s:string"/>
+          <s:element minOccurs="0" maxOccurs="1" name="libraryName" type="s:string"/>
+          <s:element minOccurs="0" maxOccurs="1" name="offlineLocation" type="s:string"/>
+          <s:element name="extentCopies" type="tns:WSFileExtentCopiesList"/>
+          <s:element name="copiesCount" type="s:unsignedInt"/>
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSFileExtentsList">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="extent" type="tns:WSFileExtentInfo"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSFileList">
+        <s:sequence>
+          <s:element name="fileName" type="s:string" maxOccurs="unbounded" />
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSFileInfo">
+        <s:sequence>
+          <s:element name="size" type="s:unsignedLong"/>
+          <s:element name="mode" type="s:int"/>
+          <s:element name="uid" type="s:unsignedInt"/>
+          <s:element name="gid" type="s:unsignedInt"/>
+          <s:element name="nlink" type="s:unsignedInt"/>
+          <s:element name="flags" type="s:int"/>
+          <s:element name="presentCount" type="s:unsignedLong"/>
+          <s:element name="primaryCount" type="s:unsignedLong"/>
+          <s:element name="replicatedCount" type="s:unsignedLong"/>
+          <s:element name="archivedCount" type="s:unsignedLong"/>
+          <s:element name="pageSize" type="s:unsignedLong"/>
+          <s:element name="aTime" type="s:unsignedLong"/>
+          <s:element name="mTime" type="s:unsignedLong"/>
+          <s:element name="cTime" type="s:unsignedLong"/>
+          <s:element name="crTime" type="s:unsignedLong"/>
+          <s:element name="cmTime" type="s:unsignedLong"/>
+          <s:element name="onOff" type="s:unsignedInt"/>
+          <s:element name="retentionEndTime" type="s:unsignedLong"/>
+          <s:element minOccurs="0" maxOccurs="1" name="digest" type="s:string"/>
+          <s:element minOccurs="0" maxOccurs="1" name="objectId" type="s:string"/>
+          <s:element name="objectIdLength" type="s:unsignedShort"/>
+          <s:element name="digestType" type="s:unsignedShort"/>
+          <s:element name="encryptionType" type="s:unsignedShort"/>
+          <s:element name="cryptoFlags" type="s:short"/>
+          <s:element name="flocExtents" type="tns:WSFileExtentsList"/>
+          <s:element name="extCount" type="s:int"/>
+          <s:element minOccurs="0" maxOccurs="1" name="flocError" type="s:string"/>
+          <s:element name="stateAccess" type="s:unsignedInt"/>
+          <s:element name="stateAccessDetailed" type="s:unsignedInt"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSGetFileInfoRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string"/>
+          <s:element name="sFileFullPath" type="s:string"/>
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSGetFileInfoResponse">
+        <s:sequence>
+          <s:element name="status" type="s:int"/>
+          <s:element minOccurs="0" name="info" type="tns:WSFileInfo"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSBatchJobStatusRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string" />
+          <s:element name="jobId" type="s:unsignedLong" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSBatchJobStatusResponse">
+        <s:sequence>
+          <s:element name="jobStatus" type="s:unsignedInt"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSBatchFileRetrieveRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string" />
+          <s:element name="jobPriority" type="s:unsignedInt" />
+          <s:element name="fileCount" type="s:unsignedLong" />
+          <s:element name="fileList" type="tns:WSFileList" />
+          <s:element name="targetDir" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSBatchFileRetrieveResponse">
+        <s:sequence>
+          <s:element name="jobId" type="s:unsignedLong"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSBatchJobObjectStatusRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string" />
+          <s:element name="jobId" type="s:unsignedLong" />
+          <s:element name="jobObjectName" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSBatchJobObjectStatusResponse">
+        <s:sequence>
+          <s:element name="jobObjectStatus" type="s:unsignedInt"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSUserLoginRequest">
+        <s:sequence>
+          <s:element name="userName" type="s:string" />
+          <s:element name="userPassword" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSUserLoginResponse">
+        <s:sequence>
+          <s:element name="userToken" type="s:string"/>
+          <s:element name="wsdlVersion" type="s:string" minOccurs="1" maxOccurs="1" default="2.0.0.0" />
+          <s:element name="result" type="s:int"/>
+          <s:element name="resultString" type="s:string"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSUserLogoutRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSUserLogoutResponse">
+        <s:sequence>
+          <s:element name="result" type="s:int"/>
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="WSMMPurgeFileRequest">
+        <s:sequence>
+          <s:element name="userToken" type="s:string" />
+          <s:element name="fileName" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WSMMPurgeFileResponse">
+        <s:sequence>
+          <s:element name="error" type="s:unsignedInt" />
+          <s:element name="description" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+    </schema>
+  </wsdl:types>
+  <wsdl:message name="WSGetFileInfoSoapIn">
+    <wsdl:part name="parameters" type="tns:WSGetFileInfoRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSGetFileInfoSoapOut">
+    <wsdl:part name="parameters" type="tns:WSGetFileInfoResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchFileRetrieveSoapIn">
+    <wsdl:part name="parameters" type="tns:WSBatchFileRetrieveRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchFileRetrieveSoapOut">
+    <wsdl:part name="parameters" type="tns:WSBatchFileRetrieveResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchJobStatusSoapIn">
+    <wsdl:part name="parameters" type="tns:WSBatchJobStatusRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchJobStatusSoapOut">
+    <wsdl:part name="parameters" type="tns:WSBatchJobStatusResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchJobObjectStatusSoapIn">
+    <wsdl:part name="parameters" type="tns:WSBatchJobObjectStatusRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSBatchJobObjectStatusSoapOut">
+    <wsdl:part name="parameters" type="tns:WSBatchJobObjectStatusResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSUserLoginSoapIn">
+    <wsdl:part name="parameters" type="tns:WSUserLoginRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSUserLoginSoapOut">
+    <wsdl:part name="parameters" type="tns:WSUserLoginResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSUserLogoutSoapIn">
+    <wsdl:part name="parameters" type="tns:WSUserLogoutRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSUserLogoutSoapOut">
+    <wsdl:part name="parameters" type="tns:WSUserLogoutResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSMMPurgeFileSoapIn">
+    <wsdl:part name="parameters" type="tns:WSMMPurgeFileRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="WSMMPurgeFileSoapOut">
+    <wsdl:part name="parameters" type="tns:WSMMPurgeFileResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="WSWebServiceSoapPort">
+    <wsdl:operation name="WSGetFileInfo">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get WS file or directory information.
+      </wsdl:documentation>
+      <wsdl:input message="tns:WSGetFileInfoSoapIn"/>
+      <wsdl:output message="tns:WSGetFileInfoSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchFileRetrieve">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Retrieve a set of files.</wsdl:documentation>
+      <wsdl:input message="tns:WSBatchFileRetrieveSoapIn" />
+      <wsdl:output message="tns:WSBatchFileRetrieveSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchJobStatus">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get batch job status.</wsdl:documentation>
+      <wsdl:input message="tns:WSBatchJobStatusSoapIn" />
+      <wsdl:output message="tns:WSBatchJobStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchJobObjectStatus">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get batch job object status.</wsdl:documentation>
+      <wsdl:input message="tns:WSBatchJobObjectStatusSoapIn" />
+      <wsdl:output message="tns:WSBatchJobObjectStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WSUserLogin">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Authenticate user using provided username and password.</wsdl:documentation>
+      <wsdl:input message="tns:WSUserLoginSoapIn" />
+      <wsdl:output message="tns:WSUserLoginSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WSUserLogout">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Invalidate provided user token</wsdl:documentation>
+      <wsdl:input message="tns:WSUserLogoutSoapIn" />
+      <wsdl:output message="tns:WSUserLogoutSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WSMMPurgeFile">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Removes file data from cache for a specified object</wsdl:documentation>
+      <wsdl:input message="tns:WSMMPurgeFileSoapIn" />
+      <wsdl:output message="tns:WSMMPurgeFileSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="WSWebServiceSoapBinding" type="tns:WSWebServiceSoapPort">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="WSGetFileInfo">
+      <soap:operation soapAction="WSGetFileInfo" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchFileRetrieve">
+      <soap:operation soapAction="WSBatchFileRetrieve" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchJobStatus">
+      <soap:operation soapAction="WSBatchJobStatus" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSBatchJobObjectStatus">
+      <soap:operation soapAction="WSBatchJobObjectStatus" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSUserLogin">
+      <soap:operation soapAction="WSUserLogin" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSUserLogout">
+      <soap:operation soapAction="WSUserLogout" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WSMMPurgeFile">
+      <soap:operation soapAction="WSMMPurgeFile" style="rpc" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="WSWebService" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="WSWebService">
+    <wsdl:port name="WSWebServiceSoapPort" binding="tns:WSWebServiceSoapBinding">
+      <soap:address location="https://127.0.0.1:18082" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

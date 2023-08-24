@@ -1,0 +1,72 @@
+#!/bin/sh
+# -------------------------------------------------------------------------
+# qstar Launcher
+# -------------------------------------------------------------------------
+
+MAIN_CLASS=org.dcm4che3.tool.qstar.QStar
+MAIN_JAR=dcm4che-tool-qstar-${project.version}.jar
+
+DIRNAME="`dirname "$0"`"
+
+# OS specific support (must be 'true' or 'false').
+cygwin=false;
+case "`uname`" in
+    CYGWIN*)
+        cygwin=true
+        ;;
+esac
+
+# For Cygwin, ensure paths are in UNIX format before anything is touched
+if $cygwin ; then
+    [ -n "$DCM4CHE_HOME" ] &&
+        DCM4CHE_HOME=`cygpath --unix "$DCM4CHE_HOME"`
+    [ -n "$JAVA_HOME" ] &&
+        JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
+fi
+
+# Setup DCM4CHE_HOME
+if [ "x$DCM4CHE_HOME" = "x" ]; then
+    DCM4CHE_HOME=`cd "$DIRNAME"/..; pwd`
+fi
+
+# Setup the JVM
+if [ "x$JAVA_HOME" != "x" ]; then
+    JAVA=$JAVA_HOME/bin/java
+else
+    JAVA="java"
+fi
+
+# Setup the classpath
+CP="$DCM4CHE_HOME/etc/qstar/"
+CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-qstar-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-${slf4j.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/logback-core-${logback.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/logback-classic-${logback.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/commons-cli-${commons-cli.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/jakarta.activation-${jakarta.activation.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/jakarta.xml.bind-api-${jakarta.xml.bind.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/jaxb-runtime-${jaxb-runtime.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/jakarta.xml.ws-api-${jakarta.xml.ws.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/rt-${jakarta.xml.ws.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/jakarta.xml.soap-api-${jakarta.xml.soap-api.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/jakarta.jws-api-${jakarta.jws-api.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/istack-commons-runtime-${com.sun.istack.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/saaj-impl-${com.sun.xml.messaging.saaj.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/streambuffer-${com.sun.xml.stream.buffer.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/policy-${com.sun.xml.ws.policy.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/gmbal-${org.glassfish.gmbal.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/mimepull-${org.jvnet.mimepull.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/stax-ex-${org.jvnet.staxex.version}.jar"
+
+# For Cygwin, switch paths to Windows format before running java
+if $cygwin; then
+    JAVA=`cygpath --path --windows "$JAVA"`
+    CP=`cygpath --path --windows "$CP"`
+fi
+
+# Execute the JVM
+exec "$JAVA" $JAVA_OPTS -cp "$CP" $MAIN_CLASS "$@"

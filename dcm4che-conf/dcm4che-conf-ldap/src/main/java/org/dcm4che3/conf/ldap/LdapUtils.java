@@ -37,20 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.ldap;
 
-import java.lang.reflect.Array;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-
 import org.dcm4che3.conf.api.ConfigurationChanges;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.DatePrecision;
@@ -59,6 +45,14 @@ import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
+
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.*;
+import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -220,6 +214,18 @@ public class LdapUtils {
             LdapUtils.storeInt(attrs, attrID, val);
     }
 
+    public static void storeNotDef(
+            ConfigurationChanges.ModifiedObject ldapObj, Attributes attrs, String attrID, long val, long defVal) {
+        if (val != defVal) {
+            LdapUtils.storeLong(attrs, attrID, val);
+            if (ldapObj != null) {
+                ConfigurationChanges.ModifiedAttribute attribute = new ConfigurationChanges.ModifiedAttribute(attrID);
+                attribute.addValue(val);
+                ldapObj.add(attribute);
+            }
+        }
+    }
+
     public static void storeNotDef(ConfigurationChanges.ModifiedObject ldapObj, Attributes attrs, String attrID, boolean val, boolean defVal) {
         if (val != defVal) {
             LdapUtils.storeBoolean(attrs, attrID, val);
@@ -255,6 +261,10 @@ public class LdapUtils {
 
     public static Attribute storeInt(Attributes attrs, String attrID, int val) {
         return attrs.put(attrID, Integer.toString(val));
+    }
+
+    public static Attribute storeLong(Attributes attrs, String attrID, long val) {
+        return attrs.put(attrID, Long.toString(val));
     }
 
     public static String dnOf(Connection conn, String deviceDN) {
@@ -315,6 +325,19 @@ public class LdapUtils {
         }
     }
 
+    public static void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
+                                 String attrId, long prev, long val, long defVal) {
+        if (val != prev) {
+            mods.add((val == defVal)
+                    ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+                    new BasicAttribute(attrId))
+                    : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                    new BasicAttribute(attrId, Long.toString(val))));
+            if (ldapObj != null)
+                ldapObj.add(new ConfigurationChanges.ModifiedAttribute(attrId, prev, val));
+        }
+    }
+
     public static <T> void storeDiffObject(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
                                            String attrId, T prev, T val, T defVal) {
         if (val == null || val.equals(defVal)) {
@@ -367,6 +390,14 @@ public class LdapUtils {
                 return false;
         }
         return true;
+    }
+
+    public static <T> void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
+                                     String attrId, int[] prevs, int[] vals, int... defVals) {
+        storeDiff(ldapObj, mods, attrId,
+                Arrays.stream(prevs).boxed().toArray(Integer[]::new),
+                Arrays.stream(vals).boxed().toArray(Integer[]::new),
+                Arrays.stream(defVals).boxed().toArray(Integer[]::new));
     }
 
     public static <T> void storeDiff(ConfigurationChanges.ModifiedObject ldapObj, List<ModificationItem> mods,
@@ -507,8 +538,16 @@ public class LdapUtils {
         return ss;
     }
 
+    public static long longValue(Attribute attr, long defVal) throws NamingException {
+        return attr != null ? Long.parseLong((String) attr.get()) : defVal;
+    }
+
     public static int intValue(Attribute attr, int defVal) throws NamingException {
         return attr != null ? Integer.parseInt((String) attr.get()) : defVal;
+    }
+
+    public static Long longValue(Attribute attr, Long defVal) throws NamingException {
+        return attr != null ? Long.valueOf((String) attr.get()) : defVal;
     }
 
     public static Integer intValue(Attribute attr, Integer defVal) throws NamingException {

@@ -45,6 +45,7 @@ import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 
+import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -97,8 +98,8 @@ class AdminEventsAuditService {
 
     private static String username(AdminEvent adminEvent, KeycloakSession session) {
         Optional<UserModel> userModel = session.users()
-                                                .getUsersStream(session.getContext().getRealm(), false)
-                                                .findFirst();
+                .searchForUserStream(session.getContext().getRealm(), Collections.EMPTY_MAP)
+                .findFirst();
         return userModel.isPresent()
                 ? userModel.get().getUsername()
                 : adminEvent.getAuthDetails().getUserId();

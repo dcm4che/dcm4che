@@ -134,4 +134,14 @@ public class IDWithIssuerTest {
         attributes.setString(IssuerOfPatientID, VR.LO, ns);
         return attributes;
     }
+
+    @Test
+    public void doNotMatchIssuerOnNoMismatch() {
+        Attributes attrs = new IDWithIssuer("PID123^^^ISS1").exportPatientIDWithIssuer(null);
+        Sequence sq = attrs.newSequence(OtherPatientIDsSequence, 3);
+        sq.add( new IDWithIssuer("PID123^^^ISS2").exportPatientIDWithIssuer(null));
+        sq.add( new IDWithIssuer("PID123^^^&1.2.3&ISO").exportPatientIDWithIssuer(null));
+        Set<IDWithIssuer> pids = IDWithIssuer.pidsOf(attrs);
+        assertEquals(3, pids.size());
+    }
 }

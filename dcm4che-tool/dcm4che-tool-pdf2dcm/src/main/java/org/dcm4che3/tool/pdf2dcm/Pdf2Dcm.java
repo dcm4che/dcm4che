@@ -140,7 +140,9 @@ public class Pdf2Dcm {
         STL("resource:encapsulatedSTLMetadata.xml"),
         MTL("resource:encapsulatedMTLMetadata.xml"),
         OBJ("resource:encapsulatedOBJMetadata.xml"),
-        GENOZIP("resource:encapsulatedGenozipMetadata.xml");
+        GENOZIP("resource:encapsulatedGenozipMetadata.xml"),
+        VCF_BZIP2("resource:encapsulatedVCFBzip2Metadata.xml"),
+        DOC_BZIP2("resource:encapsulatedDocumentBzip2Metadata.xml");
 
         private final String sampleMetadataFile;
 
@@ -182,6 +184,15 @@ public class Pdf2Dcm {
             case "genozip":
             case "application/vnd.genozip":
                 return FileContentType.GENOZIP;
+            case "vcf.bz2":
+            case "vcfbzip2":
+            case "vcfbz2":
+            case "application/prs.vcfbzip2":
+                return FileContentType.VCF_BZIP2;
+            case "boz":
+            case "bz2":
+            case "application/x-bzip2":
+                return FileContentType.DOC_BZIP2;
             default:
                 throw new IllegalArgumentException(
                         MessageFormat.format(rb.getString("content-type-undetermined"), s));

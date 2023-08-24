@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns:xrd="http://x-road.eu/xsd/xroad.xsd"
+			 xmlns:tns="http://rr.x-road.eu/producer"
+			 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			 xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+			 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+			 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+			 xmlns:xml="http://www.w3.org/XML/1998/namespace"
+			 xmlns:id="http://x-road.eu/xsd/identifiers"
+			 xmlns="http://schemas.xmlsoap.org/wsdl/"
+			 targetNamespace="http://rr.x-road.eu/producer">
+
+	<types>
+		<schema targetNamespace="http://rr.x-road.eu/producer" xmlns="http://www.w3.org/2001/XMLSchema">
+			<import namespace="http://x-road.eu/xsd/xroad.xsd" schemaLocation="../schema/xroad.xsd"></import>
+
+			<complexType name="XRoadResponseBaseType" abstract="true">
+				<sequence>
+					<element name="faultCode" type="string" minOccurs="0"/>
+					<element name="faultString" type="string" minOccurs="0"/>
+				</sequence>
+			</complexType>
+
+			<simpleType name="PersonalCode">
+				<restriction base="string">
+					<pattern value="[1,2,3,4,5,6][0-9]{2}((0[0-9])|(1[0-2]))(([0-2][0-9])|(3[0,1]))[0-9]{4}"/>
+				</restriction>
+			</simpleType>
+
+			<complexType name="RR441RequestType">
+				<sequence>
+					<element name="cValjad" type="string" minOccurs="0">
+						<annotation>
+							<appinfo>
+								<xrd:title>Andmeväljad</xrd:title>
+							</appinfo>
+						</annotation>
+					</element>
+					<element name="cIsikukoodid" type="tns:PersonalCode" minOccurs="1" maxOccurs="1">
+						<annotation>
+							<appinfo>
+								<xrd:title>Isikukoodid</xrd:title>
+							</appinfo>
+						</annotation>
+					</element>
+				</sequence>
+			</complexType>
+
+			<element name="RR441">
+				<complexType>
+					<sequence>
+						<element name="request" type="tns:RR441RequestType"/>
+					</sequence>
+				</complexType>
+			</element>
+
+			<complexType name="RR441ResponseType">
+				<complexContent>
+					<extension base="tns:XRoadResponseBaseType">
+						<sequence>
+							<element name="ttIsikuid">
+								<annotation>
+									<appinfo>
+										<xrd:title/>
+									</appinfo>
+								</annotation>
+								<complexType>
+									<sequence>
+										<element name="ttIsikud" minOccurs="0" maxOccurs="unbounded">
+											<complexType>
+												<sequence>
+													<element name="ttIsikud.cIsikukood" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Isikukood</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cPerenimi" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Perenimi</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEesnimi" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Eesnimi</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cMPerenimed" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Muud perenimed</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cMEesnimed" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Muud eesnimed</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cRiikKood" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Selle riigi kood, mille kodanik isik on</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cRiik" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Selle riigi nimetus, mille kodanik isik on</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cIsanimi" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Isanimi</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cSugu" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Sugu</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cSynniaeg" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Sünniaeg</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cSurmKpv" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Surma kuupäev</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cTeoVoime" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Teovõime</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cIsStaatus" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Isiku staatus</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cKirjeStaatus" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Kirje staatus</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEKRiik" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Elukoha (aadressi) riik</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEKMaak" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Elukoha (aadressi) maakond</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEKVald" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Elukoha (aadressi) vald</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEKAsula" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Elukoha (aadressi) asula</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEKTanav" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Elukoha (aadressi) tänava nimi, maja number, korteri number</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEKIndeks" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Elukoha (aadressi)  postiindeks</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEKAlgKpv" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Elukoha (aadressi) alguse kuupäev</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEKVallaKpv" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Elukoha (aadressi)  valla alguse kuupäev</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cEKAadress" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Elukoha aadress tekstina</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cSynniRiik" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Sünnikoha riik</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+													<element name="ttIsikud.cSaabusEestiKpv" type="string">
+														<annotation>
+															<appinfo>
+																<xrd:title>Saabus Eestisse</xrd:title>
+															</appinfo>
+														</annotation>
+													</element>
+												</sequence>
+											</complexType>
+										</element>
+									</sequence>
+								</complexType>
+							</element>
+						</sequence>
+					</extension>
+				</complexContent>
+			</complexType>
+
+			<element name="RR441Response">
+				<complexType>
+					<sequence>
+						<element name="request" type="tns:RR441RequestType"/>
+						<element name="response" type="tns:RR441ResponseType"/>
+					</sequence>
+				</complexType>
+			</element>
+
+		</schema>
+	</types>
+
+	<message name="RR441">
+		<part name="body" element="tns:RR441"></part>
+	</message>
+	<message name="RR441Response">
+		<part name="body" element="tns:RR441Response"></part>
+	</message>
+	<message name="requestHeader">
+		<part name="client" element="xrd:client"></part>
+		<part name="service" element="xrd:service"></part>
+		<part name="userId" element="xrd:userId"></part>
+		<part name="id" element="xrd:id"></part>
+		<part name="protocolVersion" element="xrd:protocolVersion"></part>
+		<part name="requestHash" element="xrd:requestHash"></part>
+	</message>
+
+	<portType name="XRoadAdapterPortType">
+		<operation name="RR441">
+			<documentation>
+				<xrd:title xml:lang="et">RR441_v1 - Isikuandmete ja sünnikoha päring isikukoodide alusel.</xrd:title>
+				<xrd:notes xml:lang="et">RR441_v1 - Teenus tagastab edastatud isikukoodidele ja väljastavate andmeväljade loendile vastavate isikute andmed. ADS andmed.</xrd:notes>
+			</documentation>
+			<input message="tns:RR441"></input>
+			<output message="tns:RR441Response"></output>
+		</operation>
+	</portType>
+
+	<binding name="XRoadBinding" type="tns:XRoadAdapterPortType">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+		<operation name="RR441">
+			<soap:operation soapAction="uri" style="document"></soap:operation>
+			<xrd:version>v1</xrd:version>
+			<input>
+				<soap:body use="literal"></soap:body>
+				<soap:header message="tns:requestHeader" part="client" use="literal"></soap:header>
+				<soap:header message="tns:requestHeader" part="service" use="literal"></soap:header>
+				<soap:header message="tns:requestHeader" part="userId" use="literal"></soap:header>
+				<soap:header message="tns:requestHeader" part="id" use="literal"></soap:header>
+				<soap:header message="tns:requestHeader" part="protocolVersion" use="literal"></soap:header>
+			</input>
+			<output>
+				<soap:body use="literal"></soap:body>
+				<soap:header message="tns:requestHeader" part="client" use="literal"></soap:header>
+				<soap:header message="tns:requestHeader" part="service" use="literal"></soap:header>
+				<soap:header message="tns:requestHeader" part="userId" use="literal"></soap:header>
+				<soap:header message="tns:requestHeader" part="id" use="literal"></soap:header>
+				<soap:header message="tns:requestHeader" part="protocolVersion" use="literal"></soap:header>
+				<soap:header message="tns:requestHeader" part="requestHash" use="literal"></soap:header>
+			</output>
+		</operation>
+	</binding>
+
+	<service name="XRoadService">
+		<port name="XRoadService_Port" binding="tns:XRoadBinding">
+			<soap:address location="http://servicelocation/XRoadService"></soap:address>
+			<xrd:title xml:lang="et">RRver6 ADAPTER</xrd:title>
+		</port>
+	</service>
+
+</definitions>

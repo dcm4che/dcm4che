@@ -41,6 +41,11 @@
 
 package org.dcm4che3.tool.fixlo2un;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.dcm4che3.tool.common.CLIUtils;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -49,6 +54,8 @@ import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -56,6 +63,7 @@ import java.util.EnumSet;
  */
 public class FixLO2UN extends SimpleFileVisitor<Path> {
 
+    private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.fixlo2un.messages");
     private final ByteBuffer buffer = ByteBuffer.wrap(new byte[] { 0x55, 0x4e, 0, 0, 0, 0, 0, 0 })
             .order(ByteOrder.LITTLE_ENDIAN);
     private final Path srcPath;
@@ -68,21 +76,35 @@ public class FixLO2UN extends SimpleFileVisitor<Path> {
         this.dest = dest;
     }
 
-    public static void main(String[] args) throws IOException {
-        if (args.length < 2) {
-            System.out.println("Usage: fixlo2un SOURCE DEST");
-            System.out.println("       fixlo2un SOURCE... DIRECTORY");
-            System.exit(-1);
-        }
-        Path destPath = Paths.get(args[args.length - 1]);
-        if (!Files.isDirectory(destPath) && (args.length > 2 || !Files.isRegularFile(Paths.get(args[0])))) {
-            System.out.printf("target '%s' is not a directory%n", destPath);
-            System.exit(-1);
-        }
-        Dest dest = Dest.of(destPath);
-        for (int i = 0; i < args.length - 1; i++) {
-            Path srcPath = Paths.get(args[i]);
-            Files.walkFileTree(srcPath, new FixLO2UN(srcPath, destPath, dest));
+    private static CommandLine parseCommandLine(String[] args)
+            throws ParseException {
+        Options opts = new Options();
+        CLIUtils.addCommonOptions(opts);
+        return CLIUtils.parseComandLine(args, opts, rb, FixLO2UN.class);
+    }
+
+    public static void main(String[] args) {
+        try {
+            CommandLine cl = parseCommandLine(args);
+            List<String> argList = cl.getArgList();
+            Path destPath = Paths.get(argList.get(argList.size() - 1));
+            if (!Files.isDirectory(destPath) && (argList.size() > 2 || !Files.isRegularFile(Paths.get(argList.get(0))))) {
+                System.out.printf("target '%s' is not a directory%n", destPath);
+                System.exit(-1);
+            }
+            Dest dest = Dest.of(destPath);
+            for (int i = 0; i < argList.size() - 1; i++) {
+                Path srcPath = Paths.get(argList.get(i));
+                Files.walkFileTree(srcPath, new FixLO2UN(srcPath, destPath, dest));
+            }
+        } catch (ParseException e) {
+            System.err.println("json2rst: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
+        } catch (Exception e) {
+            System.err.println("json2rst: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
         }
     }
 

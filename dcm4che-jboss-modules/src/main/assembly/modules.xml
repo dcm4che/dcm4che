@@ -274,6 +274,14 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/qstar/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-qstar</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/modules/org/dcm4che/soundex/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-soundex</include>
@@ -293,6 +301,14 @@
       <outputDirectory>/modules/org/dcm4che/xdsi/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-xdsi</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/xroad/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-xroad</include>
       </includes>
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <useProjectArtifact>false</useProjectArtifact>

@@ -43,7 +43,7 @@
   <artifactId>dcm4che-parent</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>5.29.1</version>
+  <version>5.31.0</version>
   <description>dcm4che DICOM toolkit and utilities</description>
   <licenses>
     <license>
@@ -79,17 +79,17 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <slf4j.version>1.7.36</slf4j.version>
-    <logback.version>1.2.11</logback.version>
-    <weasis.core.img.version>4.5.5</weasis.core.img.version>
-    <weasis.opencv.native.version>4.5.5-dcm</weasis.opencv.native.version>
-    <keycloak.version>20.0.1</keycloak.version>
-    <jbossws-cxf-client.version>6.1.0.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>3.5.2-jbossorg-3</apache-cxf.version>
-    <apache-commons-csv.version>1.9.0</apache-commons-csv.version>
-    <apache-commons-compress.version>1.22</apache-commons-compress.version>
-    <jakarta.activation.version>2.1.1.jbossorg-1</jakarta.activation.version>
-    <eclipse.angus.activation.version>1.0.0</eclipse.angus.activation.version>
+    <slf4j.version>2.0.1</slf4j.version>
+    <logback.version>1.4.4</logback.version>
+    <weasis.core.img.version>4.6.0</weasis.core.img.version>
+    <weasis.opencv.native.version>4.6.0-dcm</weasis.opencv.native.version>
+    <keycloak.version>21.1.2</keycloak.version>
+    <jbossws-cxf-client.version>6.2.0.Final</jbossws-cxf-client.version>
+    <apache-cxf.version>4.0.0</apache-cxf.version>
+    <apache-commons-csv.version>1.10.0</apache-commons-csv.version>
+    <apache-commons-compress.version>1.23</apache-commons-compress.version>
+    <jakarta.activation.version>2.1.2</jakarta.activation.version>
+    <eclipse.angus.activation.version>2.0.1</eclipse.angus.activation.version>
     <jakarta.xml.bind.version>4.0.0</jakarta.xml.bind.version>
     <jaxb-runtime.version>4.0.1</jaxb-runtime.version>
     <jakarta.xml.ws.version>4.0.0</jakarta.xml.ws.version>
@@ -214,9 +214,11 @@
     <module>dcm4che-net-audit</module>
     <module>dcm4che-net-hl7</module>
     <module>dcm4che-net-imageio</module>
+    <module>dcm4che-qstar</module>
     <module>dcm4che-soundex</module>
     <module>dcm4che-ws-rs</module>
     <module>dcm4che-xdsi</module>
+    <module>dcm4che-xroad</module>
     <module>dcm4che-tool</module>
     <module>dcm4che-assembly</module>
     <module>dcm4che-jboss-modules</module>
@@ -303,6 +305,11 @@
       <dependency>
         <groupId>org.glassfish.jaxb</groupId>
         <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb-runtime.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-xjc</artifactId>
         <version>${jaxb-runtime.version}</version>
       </dependency>
       <dependency>

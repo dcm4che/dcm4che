@@ -418,9 +418,8 @@ public class Attributes implements Serializable {
     }
 
     public Attributes getNestedDataset(String privateCreator, int sequenceTag, int itemIndex) {
-        ensureModifiable();
-        Object value = getValue(privateCreator, sequenceTag);
-        if (!(value instanceof Sequence))
+        Object value = getSequence(privateCreator, sequenceTag);
+        if (value == null)
             return null;
 
         Sequence sq = (Sequence) value;
@@ -744,14 +743,36 @@ public class Attributes implements Serializable {
     }
 
     public Sequence getSequence(String privateCreator, int tag) {
-        int index = indexOf(privateCreator, tag);
+        int sqtag = tag;
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
+            if (creatorTag == -1)
+                return null;
+            sqtag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(sqtag);
         if (index < 0)
             return null;
-        
+
+        VR vr = vrs[index];
+        if (vr != VR.SQ && vr != VR.UN)
+            return null;
+
         Object value = values[index];
-        if (value == Value.NULL)
-            return (Sequence) (values[index] = new Sequence(this, privateCreator, tag, 0));
-        return value instanceof Sequence ? (Sequence) value : null;
+        if (value instanceof Sequence)
+            return (Sequence) value;
+
+        if (value == Value.NULL) {
+            vrs[index] = VR.SQ;
+            values[index] = new Sequence(this, privateCreator, tag, 0);
+        } else {
+            try {
+                DicomInputStream.parseUNSequence((byte[]) value, this, sqtag);
+            } catch (IOException e) {
+                return null;
+            }
+        }
+        return (Sequence) values[index];
     }
 
     public byte[] getBytes(int tag) throws IOException {
@@ -2066,20 +2087,20 @@ public class Attributes implements Serializable {
         return set(privateCreator, tag, vr, vr.toValue(ds, applyTimezoneOffset ? getTimeZone() : null, precision));
     }
 
-    public void setDate(long tag, Date dt) {
+    public void setDate(long tag, Date... dt) {
         setDate(null, tag, dt);
     }
 
-    public void setDate(long tag, DatePrecision precision, Date dt) {
+    public void setDate(long tag, DatePrecision precision, Date... dt) {
         setDate(null, tag, precision, dt);
     }
 
-    public void setDate(String privateCreator, long tag, Date dt) {
+    public void setDate(String privateCreator, long tag, Date... dt) {
         setDate(privateCreator, tag, new DatePrecision(), dt);
     }
 
     public void setDate(String privateCreator, long tag,
-            DatePrecision precision, Date dt) {
+            DatePrecision precision, Date... dt) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
         setDate(privateCreator, daTag, VR.DA, true, precision, dt);
@@ -2905,10 +2926,20 @@ public class Attributes implements Serializable {
     }
 
     private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix) {
+        if (size == 0) return 0;
+        if (tags[0] >= 0) {
+            return appendAttributes(limit, maxWidth, sb, prefix, 0, size);
+        }
+        int lines, index0 = -(1 + indexOf(0));
+        return (lines = appendAttributes(limit, maxWidth, sb, prefix, index0, size))
+                + appendAttributes(limit - lines, maxWidth, sb, prefix, 0, index0);
+    }
+
+    private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix, int start, int end) {
         int lines = 0;
         int creatorTag = 0;
         String privateCreator = null;
-        for (int i = 0; i < size; i++) {
+        for (int i = start; i < end; i++) {
             if (++lines > limit)
                 break;
             int tag = tags[i];

@@ -124,7 +124,7 @@ public class JPEGParser implements XPEGParser {
     }
 
     @Override
-    public String getTransferSyntaxUID() throws XPEGParserException {
+    public String getTransferSyntaxUID(boolean fragmented) throws XPEGParserException {
         return params.transferSyntaxUID();
     }
 

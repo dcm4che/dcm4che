@@ -1,3 +1,4 @@
+```
 usage: hl7snd [options] -c <host>:<port> [<file>..][<directory>..]
 
 Reads HL7 V2 messages from specified files or directories and send them to
@@ -120,6 +121,45 @@ Options:
  -V,--version                             output version information and
                                           exit
 -
-Example: hl7snd -c localhost:2575 message.hl7
-=> Send HL7 V2 message message.hl7 to HL7 Receiver listening on local port
-2575.
+Example: hl7snd -c localhost:2575 adt.hl7
+=> Send HL7 V2 patient management ADT message adt.hl7 to HL7 Receiver
+listening on local port 2575.
+Sample HL7 ADT messages may be referred at
+https://github.com/dcm4che/dcm4che/tree/master/dcm4che-assembly/src/etc/te
+stdata/hl7
+HL7 ADT messages to DICOM Patient entity level mappings may be referred at
+https://dcm4chee-arc-hl7cs.readthedocs.io/en/latest/adt/inbound.html#hl7-a
+dt-to-dicom-mapping
+-
+Example: hl7snd -c localhost:2575 order.hl7
+=> Send HL7 V2 order message order.hl7 to HL7 Receiver listening on local
+port 2575.
+Sample HL7 order messages may be referred at
+https://github.com/dcm4che/dcm4che/tree/master/dcm4che-assembly/src/etc/te
+stdata/hl7
+HL7 order messages to DICOM Modality Worklist entity level mappings may be
+referred at
+https://dcm4chee-arc-hl7cs.readthedocs.io/en/latest/orm/inbound.html#hl7-o
+rder-to-dicom-mwl-mapping
+-
+Example: hl7snd -c localhost:2575 report.hl7
+=> Send HL7 V2 ORU messages report.hl7 to HL7 Receiver listening on local
+port 2575.
+Sample HL7 ORU messages may be referred at
+https://github.com/dcm4che/dcm4che/tree/master/dcm4che-assembly/src/etc/te
+stdata/hl7
+HL7 ORU messages to DICOM Basic Text SR or Encapsulated PDF entity level
+mappings may be referred at
+https://dcm4chee-arc-hl7cs.readthedocs.io/en/latest/oru/inbound.html#hl7-o
+ru-to-dicom-mapping
+-
+Example: hl7snd -c localhost:2575 appointment.hl7
+=> Send HL7 V2 SIU messages appointment.hl7 to HL7 Receiver listening on
+local port 2575.
+Sample HL7 SIU message may be referred at
+https://github.com/dcm4che/dcm4che/tree/master/dcm4che-assembly/src/etc/te
+stdata/hl7
+HL7 SIU messages accepted by the archive may be referred at
+https://dcm4chee-arc-hl7cs.readthedocs.io/en/latest/siu/index.html
+-
+```

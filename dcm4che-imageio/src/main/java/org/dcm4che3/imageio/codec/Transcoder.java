@@ -479,12 +479,12 @@ public class Transcoder implements Closeable {
         public void readValue(DicomInputStream dis, Fragments frags) throws IOException {
             if (dos == null) {
                 if (nullifyPixelData)
-                    StreamUtils.skipFully(dis, dis.length());
+                    StreamUtils.skipFully(dis, dis.unsignedLength());
                 else
                     dis.readValue(dis, frags);
             } else {
-                int length = dis.length();
-                dos.writeHeader(Tag.Item, null, (length + 1) & ~1);
+                long length = dis.unsignedLength();
+                dos.writeHeader(Tag.Item, null, (int)(length + 1) & ~1);
                 StreamUtils.copy(dis, dos, length, buffer());
                 if ((length & 1) != 0) {
                     LOG.info("Odd length of Pixel Data Fragment: {} - append NULL byte to ensure even length", length);
@@ -549,14 +549,14 @@ public class Transcoder implements Closeable {
     }
 
     private void copyPixelData() throws IOException {
-        int length = dis.length();
+        long length = dis.unsignedLength();
         writeDataset();
         if (length == -1) {
-            dos.writeHeader(Tag.PixelData, dis.vr(), length);
+            dos.writeHeader(Tag.PixelData, dis.vr(), -1);
             dis.readValue(dis, dataset);
             dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
         } else {
-            dos.writeHeader(Tag.PixelData, dis.vr(), (length + 1) & ~1);
+            dos.writeHeader(Tag.PixelData, dis.vr(), (int) (length + 1) & ~1);
             if (dis.bigEndian() == dos.isBigEndian())
                 StreamUtils.copy(dis, dos, length, buffer());
             else
@@ -569,7 +569,7 @@ public class Transcoder implements Closeable {
     }
 
     private void compressPixelData() throws IOException {
-        int padding = dis.length() - imageDescriptor.getLength();
+        int padding = (int) (dis.unsignedLength() - imageDescriptor.getLength());
         for (int i = 0; i < imageDescriptor.getFrames(); i++) {
             if (decompressor == null)
                 readFrame();

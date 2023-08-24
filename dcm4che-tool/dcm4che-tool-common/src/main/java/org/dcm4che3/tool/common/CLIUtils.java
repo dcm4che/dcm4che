@@ -679,7 +679,7 @@ public class CLIUtils {
 
     public static int toTag(String tagOrKeyword) {
         try {
-            return Integer.parseInt(tagOrKeyword, 16);
+            return Integer.parseUnsignedInt(tagOrKeyword, 16);
         } catch (IllegalArgumentException e) {
             int tag = ElementDictionary.tagForKeyword(tagOrKeyword, null);
             if (tag == -1)

@@ -4,7 +4,7 @@
   "type": "object",
   "required": ["dicomDeviceName", "dicomInstalled"],
   "groups": {
-    "Manufactorer Information": [
+    "Manufacturer Information": [
       "dicomManufacturer",
       "dicomManufacturerModelName",
       "dicomSoftwareVersion",
@@ -60,19 +60,19 @@
     },
     "dicomManufacturer": {
       "title": "Manufacturer",
-      "description": "Should be the same as the value of Manufacturer (0008,0070) in SOP instances created by this device",
+      "description": "Manufacturer of the device. Default value of Manufacturer (0008,0070) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement this attribute from this device</a> when it is missing in the SOP Instances created by the invoking archive device.",
       "type": "string",
       "order":4
     },
     "dicomManufacturerModelName": {
       "title": "Manufacturer Model Name",
-      "description": "Should be the same as the value of Manufacturer Model Name (0008,1090) in SOP instances created by this device",
+      "description": "Manufacturer Model Name of the device. Default value of Manufacturer Model Name (0008,1090) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement this attribute from this device</a> when it is missing in the SOP Instances created by the invoking archive device.",
       "type": "string",
       "order":5
     },
     "dicomSoftwareVersion": {
       "title": "Software Version",
-      "description": "Should be the same as the values of Software Versions (0018,1020) in SOP instances created by this device",
+      "description": "Software Versions of the device. Default values of Software Versions (0018,1020) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement this attribute from this device</a> when it is missing in the SOP Instances created by the invoking archive device.",
       "type": "array",
       "order":6,
       "items": {
@@ -81,13 +81,13 @@
     },
     "dicomStationName": {
       "title": "Station Name",
-      "description": "Should be the same as the value of Station Name (0008,1010) in SOP instances created by this device",
+      "description": "Station Name of the device. Default value of Station Name (0008,1010) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement this attribute from this device</a> when it is missing in the SOP Instances created by the invoking archive device.",
       "type": "string",
       "order":7
     },
     "dicomDeviceSerialNumber": {
       "title": "Device Serial Number",
-      "description": "Should be the same as the value of Device Serial Number (0018,1000) in SOP instances created by this device",
+      "description": "Device Serial Number of the device. Default value of Device Serial Number (0018,1000) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement this attribute from this device</a> when it is missing in the SOP Instances created by the invoking archive device.",
       "type": "string",
       "order":8
     },
@@ -96,13 +96,66 @@
       "description": "Represents the kind of device and is most applicable for acquisition modalities",
       "type": "array",
       "order":9,
-      "items": {
-        "type": "string"
+      "items" : {
+        "type": "string",
+        "enum":[
+          "ARCHIVE",
+          "COMP",
+          "CAD",
+          "DSS",
+          "FILMD",
+          "M3D",
+          "MCD",
+          "PRINT",
+          "CAPTURE",
+          "LOG",
+          "RT",
+          "WSD",
+          "AR",
+          "BMD",
+          "BDUS",
+          "EPS",
+          "CR",
+          "CT",
+          "DX",
+          "ECG",
+          "ES",
+          "XC",
+          "GM",
+          "HD",
+          "IO",
+          "IVOCT",
+          "IVUS",
+          "KER",
+          "LEN",
+          "MR",
+          "MG",
+          "NM",
+          "OAM",
+          "OCT",
+          "OPM",
+          "OP",
+          "OPR",
+          "OPT",
+          "OPTBSV",
+          "OPTENF",
+          "OPV",
+          "OSS",
+          "PX",
+          "PT",
+          "RF",
+          "RG",
+          "SM",
+          "SRF",
+          "US",
+          "VA",
+          "XA"
+        ]
       }
     },
     "dicomInstitutionName": {
       "title": "Institution Name",
-      "description": "Should be the same as the value of Institution Name (0008,0080) in SOP Instances created by this device",
+      "description": "Institution Name of the device. Default value of Institution Name (0008,0080) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement this attribute from this device</a> when it is missing in the SOP Instances created by the invoking archive device. Only the first configured value gets used by supplementing coercion, as the field is single-valued according to the <a href=\"https://dicom.nema.org/medical/dicom/current/output/html/part03.html#table_C.7-8\" target=\"_blank\">General Equipment Module Attributes</a>. Multi-valued possibility for this field here is to fulfill the requirement in <a href=\"https://dicom.nema.org/medical/dicom/current/output/html/part15.html#sect_H.1.3\" target=\"_blank\">DICOM Part 15 - Security and System Management Profiles - LDAP Schema For Objects and Attributes</a>.",
       "type": "array",
       "order":10,
       "items": {
@@ -111,7 +164,7 @@
     },
     "dicomInstitutionCode": {
       "title": "Institution Code",
-      "description": "Institution Code(s) in format (CV, CSD, \"CM\")",
+      "description": "Institution Code of the device. Default value of Institution Code Sequence (0008,0082) in format (CV, CSD, \"CM\") on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement this attribute from this device</a> when it is missing in the SOP Instances created by the invoking archive device. Only the first configured value gets used by supplementing coercion, as the field is single-valued according to the <a href=\"https://dicom.nema.org/medical/dicom/current/output/html/part03.html#table_C.7-8\" target=\"_blank\">General Equipment Module Attributes</a>. Multi-valued possibility for this field here is to fulfill the requirement in <a href=\"https://dicom.nema.org/medical/dicom/current/output/html/part15.html#sect_H.1.3\" target=\"_blank\">DICOM Part 15 - Security and System Management Profiles - LDAP Schema For Objects and Attributes</a>.",
       "type": "array",
       "order":11,
       "items": {
@@ -120,7 +173,7 @@
     },
     "dicomInstitutionAddress": {
       "title": "Institution Address",
-      "description": "Should be the same as the value of Institution Address (0008,0081) attribute in SOP Instances created by this device",
+      "description": "Institution Address of the device. Default value of Institution Address (0008,0081) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement this attribute from this device</a> when it is missing in the SOP Instances created by the invoking archive device. Only the first configured value gets used by supplementing coercion, as the field is single-valued according to the <a href=\"https://dicom.nema.org/medical/dicom/current/output/html/part03.html#table_C.7-8\" target=\"_blank\">General Equipment Module Attributes</a>. Multi-valued possibility for this field here is to fulfill the requirement in <a href=\"https://dicom.nema.org/medical/dicom/current/output/html/part15.html#sect_H.1.3\" target=\"_blank\">DICOM Part 15 - Security and System Management Profiles - LDAP Schema For Objects and Attributes</a>.",
       "type": "array",
       "order":12,
       "items": {
@@ -129,7 +182,7 @@
     },
     "dicomInstitutionDepartmentName": {
       "title": "Institution Department Name",
-      "description": "Should be the same as the value of Institutional Department Name (0008,1040) in SOP Instances created by this device",
+      "description": "Institutional Department Name of the device. Default value of Institutional Department Name (0008,1040) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement this attribute from this device</a> when it is missing in the SOP Instances created by the invoking archive device. Only the first configured value gets used by supplementing coercion, as the field is single-valued according to the <a href=\"https://dicom.nema.org/medical/dicom/current/output/html/part03.html#table_C.7-8\" target=\"_blank\">General Equipment Module Attributes</a>. Multi-valued possibility for this field here is to fulfill the requirement in <a href=\"https://dicom.nema.org/medical/dicom/current/output/html/part15.html#sect_H.1.3\" target=\"_blank\">DICOM Part 15 - Security and System Management Profiles - LDAP Schema For Objects and Attributes</a>.",
       "type": "array",
       "order":13,
       "items": {
@@ -138,49 +191,49 @@
     },
     "dicomIssuerOfPatientID": {
       "title": "Issuer of Patient ID",
-      "description": "Default value for the Issuer of Patient ID (0010,0021), and optionally also default values for the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Patient ID Qualifiers Sequence (0010,0024) for SOP Instances created or queried by this device. Format: <Issuer of Patient ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
+      "description": "Default value for the Issuer of Patient ID (0010,0021), and optionally also default values for the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Patient ID Qualifiers Sequence (0010,0024) for SOP Instances created by this device when Patient ID (0010,0020) is missing; may be overridden with values received in a worklist or other source. It is also used on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement from this device</a> when assigning authority of Patient ID (0010,0020) is missing : <br>- on receive and creation of SOP instances by the invoking archive device<br>- on receive and creation of MPPS by the invoking archive device<br>- on DICOM (MWl) C-FIND requests from external systems to invoking archive device<br>- on DICOM (MWl) C-FIND requests from invoking archive device to external systems <br>- on DICOM (MWl) C-FIND responses from external systems to invoking archive device. <br>Format: {Issuer of Patient ID}[&{UniversalEntityID}&{UniversalEntityIDType}]",
       "type": "string",
       "order":14
     },
     "dicomIssuerOfAccessionNumber": {
       "title": "Issuer of Accession Number",
-      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Accession Number Sequence (0008,0051) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
+      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Accession Number Sequence (0008,0051) for Modality Worklist items created or updated by this device when Accession Number (0008,0050) is missing; may be overridden with values received in a worklist or other source. It is also used on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement from this device</a> when assigning authority of Accession Number (0008,0050) is missing : <br>- within Request Attributes Sequence (0040,0275) item and root level attributes on receive and creation of SOP instances by the invoking archive device<br>- within Scheduled Step Attributes Sequence (0040,0270) item and root level attributes on receive and creation of MPPS by the invoking archive device<br>- within Request Attributes Sequence (0040,0275) item and root level attributes on DICOM (MWl) C-FIND requests from external systems to invoking archive device<br>- within Request Attributes Sequence (0040,0275) item and root level attributes on DICOM (MWl) C-FIND requests from invoking archive device to external systems <br>- within Request Attributes Sequence (0040,0275) item and root level attributes on DICOM (MWl) C-FIND responses from external systems to invoking archive device. <br>Format: {LocalNamespaceEntityID}[&{UniversalEntityID}&{UniversalEntityIDType}]",
       "type": "string",
       "order":15
     },
     "dicomOrderPlacerIdentifier": {
       "title": "Order Placer Identifier",
-      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Placer Identifier Sequence (0040,0026) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
+      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Placer Identifier Sequence (0040,0026) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement from this device</a> when assigning authority of Placer Order Number / Imaging Service Request (0040,2016) is missing : <br>- within Request Attributes Sequence (0040,0275) item on receive and creation of SOP instances by the invoking archive device<br>- within Scheduled Step Attributes Sequence (0040,0270) on receive and creation of MPPS by the invoking archive device<br>- within Request Attributes Sequence (0040,0275) item on DICOM C-FIND / root level attributes on DICOM MWL C-FIND requests respectively, from external systems to invoking archive device<br>- within Request Attributes Sequence (0040,0275) item on DICOM C-FIND / root level attributes on DICOM MWL C-FIND requests respectively, from invoking archive device to external systems <br>- within Request Attributes Sequence (0040,0275) item on DICOM C-FIND / root level attributes on DICOM MWL C-FIND responses respectively, from external systems to invoking archive device. <br>May be overridden by the values received in a worklist or other source. Format: {LocalNamespaceEntityID}[&{UniversalEntityID}&{UniversalEntityIDType}]",
       "type": "string",
       "order":16
     },
     "dicomOrderFillerIdentifier": {
       "title": "Order Filler Identifier",
-      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Filler Identifier Sequence (0040,0027) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
+      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Filler Identifier Sequence (0040,0027) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement from this device</a> when assigning authority of Filler Order Number / Imaging Service Request (0040,2017) is missing : <br>- within Request Attributes Sequence (0040,0275) item on receive and creation of SOP instances by the invoking archive device<br>- within Scheduled Step Attributes Sequence (0040,0270) on receive and creation of MPPS by the invoking archive device<br>- within Request Attributes Sequence (0040,0275) item on DICOM C-FIND / root level attributes on DICOM MWL C-FIND requests respectively, from external systems to invoking archive device<br>- within Request Attributes Sequence (0040,0275) item on DICOM C-FIND / root level attributes on DICOM MWL C-FIND requests respectively, from invoking archive device to external systems <br>- within Request Attributes Sequence (0040,0275) item on DICOM C-FIND / root level attributes on DICOM MWL C-FIND responses respectively, from external systems to invoking archive device. <br>May be overridden by the values received in a worklist or other source. Format: {LocalNamespaceEntityID}[&{UniversalEntityID}&{UniversalEntityIDType}]",
       "type": "string",
       "order":17
     },
     "dicomIssuerOfAdmissionID": {
       "title": "Issuer of Admission ID",
-      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Admission ID Sequence (0038,0014) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
+      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Admission ID Sequence (0038,0014) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement from this device</a> when assigning authority of Admission ID (0038,0010) is missing : <br>- on receive and creation of SOP instances by the invoking archive device<br>- on receive and creation of MPPS by the invoking archive device<br>- on DICOM (MWl) C-FIND requests from external systems to invoking archive device<br>- on DICOM (MWl) C-FIND requests from invoking archive device to external systems <br>- on DICOM (MWl) C-FIND responses from external systems to invoking archive device. <br>May be overridden by the values received in a worklist or other source. Format: {LocalNamespaceEntityID}[&{UniversalEntityID}&{UniversalEntityIDType}]",
       "type": "string",
       "order":18
     },
     "dicomIssuerOfServiceEpisodeID": {
       "title": "Issuer of Service Episode ID",
-      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Service Episode ID Sequence (0038,0064) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
+      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Service Episode ID Sequence (0038,0064) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement from this device</a> when assigning authority of Service Episode ID (0038,0060) is missing : <br>- on receive and creation of SOP instances by the invoking archive device<br>- on receive and creation of MPPS by the invoking archive device<br>- on DICOM (MWl) C-FIND requests from external systems to invoking archive device<br>- on DICOM (MWl) C-FIND requests from invoking archive device to external systems <br>- on DICOM (MWl) C-FIND responses from external systems to invoking archive device. <br>May be overridden by the values received in a worklist or other source. Format: {LocalNamespaceEntityID}[&{UniversalEntityID}&{UniversalEntityIDType}]",
       "type": "string",
       "order":19
     },
     "dicomIssuerOfContainerIdentifier": {
       "title": "Issuer of Container Identifier",
-      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Container Identifier Sequence (0040,0513) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
+      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Container Identifier Sequence (0040,0513) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement from this device</a> when assigning authority of Container Identifier (0040,0512) is missing : <br>- on receive and creation of SOP instances by the invoking archive device<br>- on receive and creation of MPPS by the invoking archive device<br>- on DICOM (MWl) C-FIND requests from external systems to invoking archive device<br>- on DICOM (MWl) C-FIND requests from invoking archive device to external systems <br>- on DICOM (MWl) C-FIND responses from external systems to invoking archive device. <br>May be overridden by the values received in a worklist or other source. Format: {LocalNamespaceEntityID}[&{UniversalEntityID}&{UniversalEntityIDType}]",
       "type": "string",
       "order":20
     },
     "dicomIssuerOfSpecimenIdentifier": {
       "title": "Issuer of Specimen Identifier",
-      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Specimen Identifier Sequence (0040,0562) for SOP Instances created or queried by this device. Format: <Local Namespace Entity ID>['&'<Universal Entity ID>'&'<Universal Entity ID Type>]",
+      "description": "Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Specimen Identifier Sequence (0040,0562) on <a href=\"https://github.com/dcm4che/dcm4chee-arc-light/wiki/Supplement-Dataset-Attributes-from-Device#overview\" target=\"_blank\">invocation by archive attribute coercions on an archive device to supplement from this device</a> when assigning authority of Specimen Identifier (0040,0551) is missing : <br>- on receive and creation of SOP instances by the invoking archive device<br>- on receive and creation of MPPS by the invoking archive device<br>- on DICOM (MWl) C-FIND requests from external systems to invoking archive device<br>- on DICOM (MWl) C-FIND requests from invoking archive device to external systems <br>- on DICOM (MWl) C-FIND responses from external systems to invoking archive device. <br>May be overridden by the values received in a worklist or other source. Format: {LocalNamespaceEntityID}[&{UniversalEntityID}&{UniversalEntityIDType}]",
       "type": "string",
       "order":21
     },

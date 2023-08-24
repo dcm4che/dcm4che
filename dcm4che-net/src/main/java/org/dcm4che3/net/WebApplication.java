@@ -201,7 +201,7 @@ public class WebApplication {
         return getServiceURL(firstInstalledConnection());
     }
 
-    private Connection firstInstalledConnection() {
+    public Connection firstInstalledConnection() {
         for (Connection conn : conns) {
             if (conn.isInstalled())
                 return conn;

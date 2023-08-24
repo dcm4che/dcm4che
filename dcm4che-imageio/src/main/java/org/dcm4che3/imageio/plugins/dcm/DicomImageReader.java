@@ -122,7 +122,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
 
     private byte[] pixeldataBytes;
 
-    private int pixelDataLength;
+    private long pixelDataLength;
 
     private VR pixelDataVR;
 
@@ -194,7 +194,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
             pixelDataVR = holder.vr;
             if (value instanceof BulkData) {
                 pixelData = (BulkData) value;
-                pixelDataLength = pixelData.length();
+                pixelDataLength = pixelData.longLength();
             } else if( value instanceof byte[] ) {
                 pixeldataBytes = (byte[]) value;
                 pixelDataLength = pixeldataBytes.length;
@@ -751,7 +751,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
             if (dis.tag() == Tag.PixelData) {
                 imageDescriptor = new ImageDescriptor(ds);
                 pixelDataVR = dis.vr();
-                pixelDataLength = dis.length();
+                pixelDataLength = dis.unsignedLength();
                 if (pixelDataLength == -1)
                     epdiis = new EncapsulatedPixelDataImageInputStream(dis, imageDescriptor);
             } else {
@@ -774,7 +774,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
         if( dis.tag() == Tag.PixelData ) {
             imageDescriptor = new ImageDescriptor(ds);
             pixelDataVR = dis.vr();
-            pixelDataLength = dis.length();            
+            pixelDataLength = dis.unsignedLength();
         } else {
             try {
                 dis.readAllAttributes(ds);

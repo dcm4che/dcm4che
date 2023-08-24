@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2022d - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2023c - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2022</year>
+      <year>2023</year>
       <holder>NEMA</holder>
     </copyright>
       <legalnotice>
@@ -419,35 +419,35 @@
                     <glossterm>Attribute</glossterm>
                     <glossdef>
                         <para xml:id="para_cf1c950d-06cd-4d93-bb87-08c5681125ee">
-<olink targetdoc="PS3.1" targetptr="glossentry_Attribute"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_Attribute" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_Command" xreflabel="Command">
                     <glossterm>Command</glossterm>
                     <glossdef>
                         <para xml:id="para_9c77bff1-6371-4397-9e6b-042b7ad6277e">
-<olink targetdoc="PS3.1" targetptr="glossentry_Command"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_Command" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_CommandStream" xreflabel="Command Stream">
                     <glossterm>Command Stream</glossterm>
                     <glossdef>
                         <para xml:id="para_d4e06e32-9ad2-42ee-b332-391260946139">
-<olink targetdoc="PS3.1" targetptr="glossentry_CommandStream"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_CommandStream" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_DataStream" xreflabel="Data Stream">
                     <glossterm>Data Stream</glossterm>
                     <glossdef>
                         <para xml:id="para_e5fb897a-5aba-4911-997d-88a634a48dd5">
-<olink targetdoc="PS3.1" targetptr="glossentry_DataStream"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_DataStream" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_Message" xreflabel="Message">
                     <glossterm>Message</glossterm>
                     <glossdef>
                         <para xml:id="para_3f8985fa-4622-4005-bb67-05cb04ac49fb">
-<olink targetdoc="PS3.1" targetptr="glossentry_Message"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_Message" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceObjectPairClass" xreflabel="Service-Object Pair Class (SOP Class)">
@@ -455,7 +455,7 @@
                     <acronym>SOP Class</acronym>
                     <glossdef>
                         <para xml:id="para_d817266c-7b16-4f0d-b445-1cc5ac471535">
-<olink targetdoc="PS3.1" targetptr="glossentry_ServiceObjectPairClass"/>.</para>
+<olink targetdoc="PS3.1" targetptr="glossentry_ServiceObjectPairClass" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
 
@@ -467,7 +467,7 @@
                     <glossterm>DICOM Upper Layer Service</glossterm>
                     <glossdef>
                         <para xml:id="para_cbe60261-1d0b-4e56-9976-7a46e9d64e64">
-<olink targetdoc="PS3.8" targetptr="glossentry_DICOMUpperLayerService"/>.</para>
+<olink targetdoc="PS3.8" targetptr="glossentry_DICOMUpperLayerService" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
             </glossdiv>
@@ -479,7 +479,7 @@
                     <glossterm>Service Class</glossterm>
                     <glossdef>
                         <para xml:id="para_8eaf6120-8fa9-462b-83ea-17ca2a1ae13f">
-<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClass"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClass" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceClassUser" xreflabel="Service Class User (SCU)">
@@ -487,7 +487,7 @@
                     <acronym>SCU</acronym>
                     <glossdef>
                         <para xml:id="para_64e262c0-ca44-4150-8964-65be3bb7602c">
-<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassUser"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassUser" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceClassProvider" xreflabel="Service Class Provider (SCP)">
@@ -495,7 +495,7 @@
                     <acronym>SCP</acronym>
                     <glossdef>
                         <para xml:id="para_d9b29f4d-7253-4a1c-be92-acbc14a9c36a">
-<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassProvider"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceClassProvider" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_ServiceObjectPairInstance" xreflabel="Service-Object Pair Instance (SOP Instance)">
@@ -503,14 +503,14 @@
                     <acronym>SOP Instance</acronym>
                     <glossdef>
                         <para xml:id="para_2e7e6955-0206-4cc4-94c7-88f02c7fe363">
-<olink targetdoc="PS3.4" targetptr="glossentry_ServiceObjectPairInstance"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_ServiceObjectPairInstance" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_RelatedGeneralSOPClass" xreflabel="Related General SOP Class">
                     <glossterm>Related General SOP Class</glossterm>
                     <glossdef>
                         <para xml:id="para_f3a04b8a-0ff4-4fea-9dd2-a7df569f63b3">
-<olink targetdoc="PS3.4" targetptr="glossentry_RelatedGeneralSOPClass"/>.</para>
+<olink targetdoc="PS3.4" targetptr="glossentry_RelatedGeneralSOPClass" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
             </glossdiv>
@@ -522,14 +522,14 @@
                     <glossterm>Data Element</glossterm>
                     <glossdef>
                         <para xml:id="para_df12b47e-bab1-4176-a433-2b31e9f92a91">
-<olink targetdoc="PS3.5" targetptr="glossentry_DataElement"/>.</para>
+<olink targetdoc="PS3.5" targetptr="glossentry_DataElement" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_DataSet" xreflabel="Data Set">
                     <glossterm>Data Set</glossterm>
                     <glossdef>
                         <para xml:id="para_25abcf40-abfa-48dc-a604-66c17e1642a5">
-<olink targetdoc="PS3.5" targetptr="glossentry_DataSet"/>.</para>
+<olink targetdoc="PS3.5" targetptr="glossentry_DataSet" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
                 <glossentry xml:id="glossentry_UniqueIdentifier" xreflabel="Unique Identifier (UID)">
@@ -537,7 +537,7 @@
                     <acronym>UID</acronym>
                     <glossdef>
                         <para xml:id="para_1093a8dd-2fe3-4fbc-aae7-763f86229b9a">
-<olink targetdoc="PS3.8" targetptr="glossentry_UniqueIdentifier"/>.</para>
+<olink targetdoc="PS3.8" targetptr="glossentry_UniqueIdentifier" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
 
@@ -732,7 +732,7 @@
   <varlistentry>
 <term>PDV</term>
 <listitem>
-<para xml:id="para_4e6c9796-0342-4afd-b2a3-34b137b64eef">Protocol Data Value</para>
+    <para xml:id="para_4e6c9796-0342-4afd-b2a3-34b137b64eef">Presentation Data Value</para>
 </listitem>
 </varlistentry>
   <varlistentry>
@@ -768,7 +768,7 @@
   <varlistentry>
 <term>UL</term>
 <listitem>
-<para xml:id="para_d62d31a3-46d9-47ec-845d-b09cc4ff62a1">Upper Layers</para>
+<para xml:id="para_d62d31a3-46d9-47ec-845d-b09cc4ff62a1">Upper Layer</para>
 </listitem>
 </varlistentry>
   </variablelist>
@@ -1613,7 +1613,7 @@
 <section label="8.2" status="2" xml:id="sect_8.2">
     <title>Association Protocol</title>
   
-  <para xml:id="para_7dddd977-4921-45ac-a73f-a9a77770ab1f">The establishment of an Association involves two DIMSE Service Users, one that is the Association-requester and one that is the Association-acceptor. A DIMSE Service User may initiate an Association establishment by using the A-ASSOCIATE service described in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>.</para>
+  <para xml:id="para_7dddd977-4921-45ac-a73f-a9a77770ab1f">The establishment of an Association involves two DIMSE Service Users, one that is the Association-requestor and one that is the Association-acceptor. A DIMSE Service User may initiate an Association establishment by using the A-ASSOCIATE service described in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>.</para>
   <para xml:id="para_f5e4307f-c8a2-4bf9-9ba6-4997ca3a64ea">Included in the parameters of the A-ASSOCIATE service is the Application Context that specifies, among other things, the rules required for the coordination of initialization information corresponding to different DICOM Application Entities. The Application Contexts permitted for DIMSE are specified in <xref linkend="chapter_A" xrefstyle="template:Annex %n"/>.</para>
   </section>
 <section label="8.3" status="2" xml:id="sect_8.3">
@@ -9170,7 +9170,7 @@
     <title>Application Context Definition</title>
   
   <para xml:id="para_520d19a5-b440-4f5a-a397-73c0b93c8075">An Application Context explicitly defines the set of application service elements, related options and any other information necessary for the inter working of Application Entities on an Association; in particular, it specifies the DIMSE Protocol used by the Application Layer.</para>
-  <para xml:id="para_d5d3f029-caf1-428a-babf-92108a0a7d9e">Two Application Entities establish an Association by agreeing on an Application Context. The requester of an Association proposes an Application Context Name and the acceptor returns either the same or a different Application Context Name. The returned name specifies the Application Context to be used for this Association. The offer of an alternate Application Context by the acceptor provides a mechanism for limited negotiation. If the requester cannot operate in the acceptor's Application Context, it shall issue an A-Abort request primitive. Such a negotiation will facilitate the introduction of new versions of the DICOM Message Exchange Protocol in the future.</para>
+  <para xml:id="para_d5d3f029-caf1-428a-babf-92108a0a7d9e">Two Application Entities establish an Association by agreeing on an Application Context. The requestor of an Association proposes an Application Context Name and the acceptor returns either the same or a different Application Context Name. The returned name specifies the Application Context to be used for this Association. The offer of an alternate Application Context by the acceptor provides a mechanism for limited negotiation. If the requestor cannot operate in the acceptor's Application Context, it shall issue an A-Abort request primitive. Such a negotiation will facilitate the introduction of new versions of the DICOM Message Exchange Protocol in the future.</para>
   </section>
 <section label="A.2" status="2" xml:id="sect_A.2">
     <title>DICOM Application Context Name Encoding and Registration</title>
@@ -9195,7 +9195,7 @@
 <section label="A.3" status="2" xml:id="sect_A.3">
     <title>Association Initialization for DICOM Application Entity</title>
   
-  <para xml:id="para_69e24d1e-38c8-499b-a3fa-e5a01dfeef89">The establishment of an Association involves two DICOM AEs, one that is the Association-requester and one that is the Association-acceptor.</para>
+  <para xml:id="para_69e24d1e-38c8-499b-a3fa-e5a01dfeef89">The establishment of an Association involves two DICOM AEs, one that is the Association-requestor and one that is the Association-acceptor.</para>
   <para xml:id="para_1bcfe078-d216-4a45-bcf0-99c953972d94">A DICOM AE shall initiate an Association establishment by using the A-ASSOCIATE request service defined in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>. It shall provide the Application Association Information as defined by <xref linkend="chapter_D" xrefstyle="template:Annex %n"/>.</para>
   </section>
 <section label="A.4" status="2" xml:id="sect_A.4">
@@ -9220,14 +9220,14 @@
 <section label="A.5" status="2" xml:id="sect_A.5">
     <title>Association Release for DICOM AE</title>
   
-  <para xml:id="para_91a4e5d8-6a9f-4bca-b4a9-7ce85ffcbaed">Only the DICOM AE Association-requester may initiate an orderly release of the Association. This shall be accomplished by using the A-RELEASE service defined in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>.</para>
-  <para xml:id="para_44f5f234-ac38-43ac-8bee-59367aaba4fc">The DICOM AE Association-requester shall not release the Association until all operations invoked have been confirmed.</para>
+  <para xml:id="para_91a4e5d8-6a9f-4bca-b4a9-7ce85ffcbaed">Only the DICOM AE Association-requestor may initiate an orderly release of the Association. This shall be accomplished by using the A-RELEASE service defined in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>.</para>
+  <para xml:id="para_44f5f234-ac38-43ac-8bee-59367aaba4fc">The DICOM AE Association-requestor shall not release the Association until all operations invoked have been confirmed.</para>
   </section>
 <section label="A.6" status="2" xml:id="sect_A.6">
     <title>Association Abort for DICOM AE</title>
   
   <para xml:id="para_90e34f74-1b78-4cbd-80d2-f1fa7b8d716e">Either DICOM AE may initiate an abrupt termination of an Association. This shall be accomplished by using the A-ABORT service defined in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>.</para>
-  <para xml:id="para_eac788fb-74bf-48dc-9fd0-8395336cfd94">Upon receiving or issuing the A-ABORT service primitive, the DICOM AE Association-requester and DICOM AE Association-acceptor shall fail any operation that is outstanding.</para>
+  <para xml:id="para_eac788fb-74bf-48dc-9fd0-8395336cfd94">Upon receiving or issuing the A-ABORT service primitive, the DICOM AE Association-requestor and DICOM AE Association-acceptor shall fail any operation that is outstanding.</para>
   <note>
     <para xml:id="para_23d4e095-3059-41c5-96cc-57227dbf4dd8">The Association services and presentation services defined in the Upper Layer Service in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/> are a fully conformant subset of the services offered by the ACSE and the OSI Presentation Layer.</para>
   </note>
@@ -11890,7 +11890,7 @@
 <xref linkend="figure_D.3-1" xrefstyle="select: label"/> provides an illustration of Presentation Context Negotiation with the key points as follows:</para>
   <orderedlist numeration="loweralpha">
 <listitem>
-<para xml:id="para_906d97aa-10e2-4bc1-a880-3900ae0719b2">the Association-requester may offer multiple Presentation Contexts per Association.</para>
+<para xml:id="para_906d97aa-10e2-4bc1-a880-3900ae0719b2">the Association-requestor may offer multiple Presentation Contexts per Association.</para>
 </listitem>
 <listitem>
 <para xml:id="para_c8e6a72d-5d48-4b1d-a1fc-05f7f31a2d61">each Presentation Context supports one Abstract Syntax (related to a SOP Class or Meta SOP Class) and one or more Transfer Syntaxes.</para>
@@ -12048,7 +12048,7 @@
         <para xml:id="para_de73b646-b331-4923-b426-a27792d445f7">Implementation-class-uid</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_8755f80e-976f-4f72-b17b-7bc957bd18e8">This variable field shall contain the Implementation-class-uid of the Association-requester as defined in <xref linkend="sect_D.3.3.2" xrefstyle="select: label"/>. The Implementation-class-uid field is structured as a UID as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>.</para>
+        <para xml:id="para_8755f80e-976f-4f72-b17b-7bc957bd18e8">This variable field shall contain the Implementation-class-uid of the Association-requestor as defined in <xref linkend="sect_D.3.3.2" xrefstyle="select: label"/>. The Implementation-class-uid field is structured as a UID as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>.</para>
       </td>
     </tr>
     </tbody>
@@ -12196,7 +12196,7 @@
         <para xml:id="para_0d131830-16d8-4329-9144-4139e0134673">Implementation-version-name</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_365c39f2-50c6-4f79-99ca-57e0df543fe6">This variable field shall contain the Implementation-version-name of the Association-requester as defined in <xref linkend="sect_D.3.3.2" xrefstyle="select: label"/>. It shall be encoded as a string of 1 to 16 ISO 646:1990 (basic G0 set) characters.</para>
+        <para xml:id="para_365c39f2-50c6-4f79-99ca-57e0df543fe6">This variable field shall contain the Implementation-version-name of the Association-requestor as defined in <xref linkend="sect_D.3.3.2" xrefstyle="select: label"/>. It shall be encoded as a string of 1 to 16 ISO 646:1990 (basic G0 set) characters.</para>
       </td>
     </tr>
     </tbody>
@@ -12281,7 +12281,7 @@
     <title>Asynchronous Operations (And Sub-Operations) Window Negotiation</title>
   
   <para xml:id="para_f5c2eda1-19b4-4574-8c81-e1ad78efbf1a">The Asynchronous Operations Window is used to negotiate the maximum number of outstanding operation or sub-operation requests (i.e., command requests) for each direction. The synchronous operations mode is the default mode and shall be supported by all DICOM AEs. This negotiation is optional.</para>
-  <para xml:id="para_0d523164-c3de-45b4-b8f4-8f09cf7dca68">The Association-requester conveys in the A-ASSOCIATE request:</para>
+  <para xml:id="para_0d523164-c3de-45b4-b8f4-8f09cf7dca68">The Association-requestor conveys in the A-ASSOCIATE request:</para>
 <itemizedlist>
   <listitem>
 <para xml:id="para_3fa86715-9353-40df-80ee-9230d225f0f4">when negotiating the SCU role for operations, the maximum number of outstanding operations it may invoke asynchronously; when negotiating the SCP role for operations, the maximum number of outstanding sub-operations it may invoke asynchronously; when negotiating the SCP role for notifications, the maximum number of notifications it may invoke asynchronously</para>
@@ -12296,16 +12296,16 @@
   <para xml:id="para_a1bee3e4-adaf-45e9-912b-c94b3ba453f2">The Association-acceptor conveys in the A-ASSOCIATE response:</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_517295fc-18cb-4e69-a11f-dd3d2353f3bd">when negotiating the SCP role for operations, the maximum number of outstanding operations; when negotiating the SCU role for operations, the maximum number of sub-operations it allows the Association-requester to invoke asynchronously; when negotiating the SCU role for notifications, the maximum number of outstanding notifications it allows the Association-requester to invoke asynchronously when negotiating the SCU role. This number shall be equal or less than the number of outstanding notifications, operations and/or sub-operations the Association-requester offers to invoke (by the A-ASSOCIATE indication).</para>
+<para xml:id="para_517295fc-18cb-4e69-a11f-dd3d2353f3bd">when negotiating the SCP role for operations, the maximum number of outstanding operations; when negotiating the SCU role for operations, the maximum number of sub-operations it allows the Association-requestor to invoke asynchronously; when negotiating the SCU role for notifications, the maximum number of outstanding notifications it allows the Association-requestor to invoke asynchronously when negotiating the SCU role. This number shall be equal or less than the number of outstanding notifications, operations and/or sub-operations the Association-requestor offers to invoke (by the A-ASSOCIATE indication).</para>
 </listitem>
   <listitem>
-<para xml:id="para_fa94c939-ba09-4e2f-ac61-230fc3dd4355">when negotiating the SCU role for operations, the maximum number of outstanding operations; when negotiating the SCP role for operations, the maximum number of sub-operations it allows the Association-requester to perform asynchronously; when negotiating the SCP role for notifications, the maximum number of outstanding notifications it allows the Association-requester to perform asynchronously. This number shall be equal or less than the number of outstanding notifications, operations and/or sub-operations the Association-requester offers to perform (by the A-ASSOCIATE indication).</para>
+<para xml:id="para_fa94c939-ba09-4e2f-ac61-230fc3dd4355">when negotiating the SCU role for operations, the maximum number of outstanding operations; when negotiating the SCP role for operations, the maximum number of sub-operations it allows the Association-requestor to perform asynchronously; when negotiating the SCP role for notifications, the maximum number of outstanding notifications it allows the Association-requestor to perform asynchronously. This number shall be equal or less than the number of outstanding notifications, operations and/or sub-operations the Association-requestor offers to perform (by the A-ASSOCIATE indication).</para>
 </listitem>
 </itemizedlist>
   <para xml:id="para_c2b260ec-b0c5-447d-9957-ac82ccb34bf4">A value of zero indicates that the above parameters are unlimited. If the Asynchronous Operations Window is absent the default for the above parameters shall be equal to one. Figures D.3-5 and D.3-6 illustrate examples of Asynchronous Operations Window negotiation.</para>
   <para xml:id="para_6dc8d08d-2763-4c45-a743-32b2a8a5bab9">If this negotiation is not present in the A-ASSOCIATE indication it shall be omitted in the A-ASSOCIATE response.</para>
   <note>
-    <para xml:id="para_1eae59f1-14f6-4849-af72-2c070e3bfa59">The case where the Association-requester offers the value of zero (which indicates unlimited operations), the Association-acceptor may return zero (agreeing to unlimited operations) or negotiate the parameter down by conveying a value other than zero.</para>
+    <para xml:id="para_1eae59f1-14f6-4849-af72-2c070e3bfa59">The case where the Association-requestor offers the value of zero (which indicates unlimited operations), the Association-acceptor may return zero (agreeing to unlimited operations) or negotiate the parameter down by conveying a value other than zero.</para>
   </note>
   <para xml:id="para_1171c173-4014-4c0d-adbe-1435203cf4ee">
 <figure label="D.3-5" pgwide="1" xml:id="figure_D.3-5">
@@ -12397,7 +12397,7 @@
         <para xml:id="para_15171cc3-84cd-41bf-a141-ae1c2be87715">Maximum-number-operations-invoked</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_2172db9c-445b-4310-a50e-ca10e37bdc1e">This field shall contain the Maximum-number-operations-invoked as defined for the Association-requester in <xref linkend="sect_D.3.3.3" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary number.</para>
+        <para xml:id="para_2172db9c-445b-4310-a50e-ca10e37bdc1e">This field shall contain the Maximum-number-operations-invoked as defined for the Association-requestor in <xref linkend="sect_D.3.3.3" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary number.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -12408,7 +12408,7 @@
         <para xml:id="para_e713bfd9-1b23-499b-a5da-58c46fd4c8e1">Maximum-number-operations-performed</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_df3df07e-4003-43ea-85ea-6e226f4f209e">This field shall contain the Maximum-number-operations-performed as defined for the Association-requester in <xref linkend="sect_D.3.3.3" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary number.</para>
+        <para xml:id="para_df3df07e-4003-43ea-85ea-6e226f4f209e">This field shall contain the Maximum-number-operations-performed as defined for the Association-requestor in <xref linkend="sect_D.3.3.3" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary number.</para>
       </td>
     </tr>
     </tbody>
@@ -12506,29 +12506,29 @@
     <title>SCP/SCU Role Selection Negotiation</title>
   
   <para xml:id="para_b557f018-3b8e-481b-98b2-1c3e7d8af750">The SCP/SCU Role Selection Negotiation allows peer AEs to negotiate the roles in which they will serve for each SOP Class or Meta SOP Class supported on the Association. This negotiation is optional.</para>
-  <para xml:id="para_13a813d8-4463-4f40-9c6e-2b050415cc54">The Association-requester, for each SOP Class UID or Meta SOP Class UID, may use one SCP/SCU Role Selection item. The SOP Class or Meta SOP Class shall be identified by its corresponding Abstract Syntax Name followed by one of the three role values:</para>
+  <para xml:id="para_13a813d8-4463-4f40-9c6e-2b050415cc54">The Association-requestor, for each SOP Class UID or Meta SOP Class UID, may use one SCP/SCU Role Selection item. The SOP Class or Meta SOP Class shall be identified by its corresponding Abstract Syntax Name followed by one of the three role values:</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_85ebcc95-6b8b-4bba-89b6-8f3cc8517db1">Association-requester is SCU only</para>
+<para xml:id="para_85ebcc95-6b8b-4bba-89b6-8f3cc8517db1">Association-requestor is SCU only</para>
 </listitem>
   <listitem>
-<para xml:id="para_7260706a-d509-40dd-9e97-e8f7293d217e">Association-requester is SCP only</para>
+<para xml:id="para_7260706a-d509-40dd-9e97-e8f7293d217e">Association-requestor is SCP only</para>
 </listitem>
   <listitem>
-<para xml:id="para_761d216f-7704-4265-a695-041155f46a78">Association-requester is both SCU and SCP</para>
+<para xml:id="para_761d216f-7704-4265-a695-041155f46a78">Association-requestor is both SCU and SCP</para>
 </listitem>
 </itemizedlist>
-  <para xml:id="para_b7de055c-3e50-427e-ad0b-f69a6ac9fd40">If the SCP/SCU Role Selection item is absent the default role of the Association-requester shall be SCU and the default role of the Association-acceptor shall be SCP.</para>
-  <para xml:id="para_40cf24e8-2bff-4bb7-b1d0-df3bbb754804">The Association-acceptor, for each SCP/SCU Role Selection item offered, either accepts the Association-requester proposal by returning the same value (1) or turns down the proposal by returning the value (0). The Association-acceptor shall not return the value (1) if the Association-requester has not proposed the role, i.e., it has sent a value (0). The Association-requester shall ignore the response if it has not proposed the role.</para>
-  <para xml:id="para_3745c745-d4a1-4cde-8fb7-e39265a1c212">If the SCP/SCU Role Selection item is not returned by the Association-acceptor then the role of the Association-requester shall be SCU and the role of the Association-acceptor shall be SCP. <xref linkend="figure_D.3-7" xrefstyle="select: label"/> illustrates the SCP/SCU Role Selection Negotiation.</para>
+  <para xml:id="para_b7de055c-3e50-427e-ad0b-f69a6ac9fd40">If the SCP/SCU Role Selection item is absent the default role of the Association-requestor shall be SCU and the default role of the Association-acceptor shall be SCP.</para>
+  <para xml:id="para_40cf24e8-2bff-4bb7-b1d0-df3bbb754804">The Association-acceptor, for each SCP/SCU Role Selection item offered, either accepts the Association-requestor proposal by returning the same value (1) or turns down the proposal by returning the value (0). The Association-acceptor shall not return the value (1) if the Association-requestor has not proposed the role, i.e., it has sent a value (0). The Association-requestor shall ignore the response if it has not proposed the role.</para>
+  <para xml:id="para_3745c745-d4a1-4cde-8fb7-e39265a1c212">If the SCP/SCU Role Selection item is not returned by the Association-acceptor then the role of the Association-requestor shall be SCU and the role of the Association-acceptor shall be SCP. <xref linkend="figure_D.3-7" xrefstyle="select: label"/> illustrates the SCP/SCU Role Selection Negotiation.</para>
   <para xml:id="para_203f3f14-1a13-4e03-9923-a1e6e7ba065d">If the SCP/SCU Role Selection items do not exist in the A-ASSOCIATE indication they shall be omitted in the A-ASSOCIATE response.</para>
   <note>
     <orderedlist numeration="arabic">
       <listitem>
-        <para xml:id="para_c8253ecd-389d-4a34-bcd8-36dc84a07fad">The choices made for the default roles are based on clarification made to previous versions of the Standard. Association-requesters that wish to offer Abstract Syntax Names using the SCP role must support this item. Association-acceptors that wish to accept Abstract Syntax Names using the SCU role must support this item.</para>
+        <para xml:id="para_c8253ecd-389d-4a34-bcd8-36dc84a07fad">The choices made for the default roles are based on clarification made to previous versions of the Standard. Association-requestors that wish to offer Abstract Syntax Names using the SCP role must support this item. Association-acceptors that wish to accept Abstract Syntax Names using the SCU role must support this item.</para>
       </listitem>
       <listitem>
-        <para xml:id="para_8ed7bad9-2b19-4b3a-855a-c2ec0b6ae329">If an Association-requestor offers an SCP/SCU Role Selection item for an Abstract Syntax Name but the Association-acceptor does not return an SCP/SCU Role Selection item for the same Abstract Syntax Name then the proposed roles have not been accepted and the default roles apply (i.e., Association-requester is SCU and Association-acceptor is SCP).</para>
+        <para xml:id="para_8ed7bad9-2b19-4b3a-855a-c2ec0b6ae329">If an Association-requestor offers an SCP/SCU Role Selection item for an Abstract Syntax Name but the Association-acceptor does not return an SCP/SCU Role Selection item for the same Abstract Syntax Name then the proposed roles have not been accepted and the default roles apply (i.e., Association-requestor is SCU and Association-acceptor is SCP).</para>
       </listitem>
     </orderedlist>
   </note>
@@ -12559,7 +12559,7 @@
   <section label="D.3.3.4.1" status="5" xml:id="sect_D.3.3.4.1">
     <title>SCP/SCU Role Selection Sub-Item Structure (A-ASSOCIATE-RQ)</title>
   
-  <para xml:id="para_fdf0743d-03b5-4604-a4a2-805d7e5743a3">The SCP/SCU Role Selection Sub-Item shall be made of a sequence of mandatory fields. This Sub-Item is optional and if supported, one or more SCP/SCU Role Selection Sub-Items may be present in the User Data Item of the A-ASSOCIATE-RQ. The Association-requester may only offer one SOP Class SCP/SCU Role Selection Sub-Item for each SOP Class UID or Meta SOP Class that is present in the A-ASSOCIATE request. <xref linkend="table_D.3-9" xrefstyle="select: label"/> shows the sequence of the mandatory fields.</para>
+  <para xml:id="para_fdf0743d-03b5-4604-a4a2-805d7e5743a3">The SCP/SCU Role Selection Sub-Item shall be made of a sequence of mandatory fields. This Sub-Item is optional and if supported, one or more SCP/SCU Role Selection Sub-Items may be present in the User Data Item of the A-ASSOCIATE-RQ. The Association-requestor may only offer one SOP Class SCP/SCU Role Selection Sub-Item for each SOP Class UID or Meta SOP Class that is present in the A-ASSOCIATE request. <xref linkend="table_D.3-9" xrefstyle="select: label"/> shows the sequence of the mandatory fields.</para>
     <table frame="box" label="D.3-9" rules="all" xml:id="table_D.3-9">
     <caption>SCP/SCU Role Selection Sub-Item Fields (A-ASSOCIATE-RQ)</caption>
     <thead>
@@ -12646,7 +12646,7 @@
         <para xml:id="para_29659ae2-8a4b-4b0b-8e7e-8429a8ae262d">SCU-role</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_26414a13-e956-45cd-8eca-40383c1d67c1">This byte field shall contain the SCU-role as defined for the Association-requester in <xref linkend="sect_D.3.3.4" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary and shall use one of the following values:</para>
+        <para xml:id="para_26414a13-e956-45cd-8eca-40383c1d67c1">This byte field shall contain the SCU-role as defined for the Association-requestor in <xref linkend="sect_D.3.3.4" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary and shall use one of the following values:</para>
         <para xml:id="para_ce83748c-077f-4bd8-9d26-fe35014dc5b3">0 - non support of the SCU role</para>
         <para xml:id="para_a3068a65-9e0a-4661-b0ff-e160cc451777">1 - support of the SCU role</para>
       </td>
@@ -12659,7 +12659,7 @@
         <para xml:id="para_f25d4130-a412-4855-9ea8-f08903a4b3e2">SCP-role</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_e76d909d-6b8f-46b9-b2c8-337a8439454b">This byte field shall contain the SCP-role as defined for the Association-requester in <xref linkend="sect_D.3.3.4" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary and shall use one of the following values:</para>
+        <para xml:id="para_e76d909d-6b8f-46b9-b2c8-337a8439454b">This byte field shall contain the SCP-role as defined for the Association-requestor in <xref linkend="sect_D.3.3.4" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary and shall use one of the following values:</para>
         <para xml:id="para_0784015d-0e01-4ead-b779-18d1f30cc956">0 - non support of the SCP role</para>
         <para xml:id="para_2e34636c-e932-4354-ae04-2ebe0260aa81">1 - support of the SCP role.</para>
       </td>
@@ -12760,8 +12760,8 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_65822dbd-89d8-4be3-9386-44547813e961">This byte field shall contain the SCU-role as defined in <xref linkend="sect_D.3.3.4" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary and shall use one of the following values:</para>
-        <para xml:id="para_adb8d2bd-7743-4b78-a1cb-dff23e013521">0 - The Association-acceptor rejects the Association-requester's proposal of the SCU role selection</para>
-        <para xml:id="para_eacbd064-f29c-405c-b3a5-e552a61be15c">1 - The Association-acceptor accepts the Association-requester's proposal of the SCU role selection</para>
+        <para xml:id="para_adb8d2bd-7743-4b78-a1cb-dff23e013521">0 - The Association-acceptor rejects the Association-requestor's proposal of the SCU role selection</para>
+        <para xml:id="para_eacbd064-f29c-405c-b3a5-e552a61be15c">1 - The Association-acceptor accepts the Association-requestor's proposal of the SCU role selection</para>
       </td>
     </tr>
     <tr valign="top">
@@ -12773,8 +12773,8 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_67451cde-f1c2-4a3f-a20e-1a7dda245ebf">This byte field shall contain the SCP-role as defined for the Association-acceptor in <xref linkend="sect_D.3.3.4" xrefstyle="select: label"/>. It shall be encoded as an unsigned binary and shall use one of the following values:</para>
-        <para xml:id="para_7c4b6838-4e41-4e85-a3b1-47246dba060e">0 - The Association-acceptor rejects the Association-requester's proposal of the SCP role selection</para>
-        <para xml:id="para_9b48ad11-09f8-4db2-847b-52cbc03918db">1 - The Association-acceptor accepts the Association-requester's proposal of the SCP role selection</para>
+        <para xml:id="para_7c4b6838-4e41-4e85-a3b1-47246dba060e">0 - The Association-acceptor rejects the Association-requestor's proposal of the SCP role selection</para>
+        <para xml:id="para_9b48ad11-09f8-4db2-847b-52cbc03918db">1 - The Association-acceptor accepts the Association-requestor's proposal of the SCP role selection</para>
       </td>
     </tr>
    </tbody>
@@ -12805,7 +12805,7 @@
   <note>
     <para xml:id="para_3a13094c-f617-4958-a275-f1c849b804f9">The use of the SOP Class Extended Negotiation is not limited to Service Classes defined by this Standard. It may also be used for privately defined Service Classes.</para>
   </note>
-  <para xml:id="para_3d0d0aec-0c16-45dc-97ee-f1a49f3f3c1a">The Association-requester may only offer one SOP Class Extended Negotiation Sub-Item for each SOP Class UID or Meta SOP Class that is present in the A-ASSOCIATE request.</para>
+  <para xml:id="para_3d0d0aec-0c16-45dc-97ee-f1a49f3f3c1a">The Association-requestor may only offer one SOP Class Extended Negotiation Sub-Item for each SOP Class UID or Meta SOP Class that is present in the A-ASSOCIATE request.</para>
   <para xml:id="para_f401f31e-34f0-46fb-83d1-4975d488ff15">If the SOP Class Extended Negotiation Sub-Items do not exist in the A-ASSOCIATE indication they shall be omitted in the A-ASSOCIATE response.</para>
   <section label="D.3.3.5.1" status="5" xml:id="sect_D.3.3.5.1">
     <title>SOP Class Extended Negotiation Sub-Item Structure (A-ASSOCIATE-RQ)</title>
@@ -12914,7 +12914,7 @@
 <section label="D.3.3.6" status="4" xml:id="sect_D.3.3.6">
     <title>Service-Object Pair (SOP) Class Common Extended Negotiation</title>
   
-  <para xml:id="para_31aef017-4efe-427c-aed9-8e73d8e2adce">The SOP Class Common Extended Negotiation allows, at Association establishment, peer DICOM AEs to exchange application information, the form of which is generic, and not specific to individual Service Classes, as compared to the information defined in D.3.3.5. This is an optional feature that Association-requesters and Association-acceptors may or may not choose to support.</para>
+  <para xml:id="para_31aef017-4efe-427c-aed9-8e73d8e2adce">The SOP Class Common Extended Negotiation allows, at Association establishment, peer DICOM AEs to exchange application information, the form of which is generic, and not specific to individual Service Classes, as compared to the information defined in D.3.3.5. This is an optional feature that Association-requestors and Association-acceptors may or may not choose to support.</para>
   <para xml:id="para_1112a3d6-e978-4d89-ba35-29379a13ae8a">The information included for each SOP Class for which a sub-item is present consists of a Service Class UID and (optionally) a Related General SOP Class UID.</para>
   <para xml:id="para_e93d0c95-8354-4562-aadd-6d8915d628d0">The Service Class UID conveys the Service Class of the SOP Class.</para>
   <note>
@@ -12959,7 +12959,7 @@
       </listitem>
     </orderedlist>
   </note>
-  <para xml:id="para_f4662e06-8779-4663-abb4-1cf8103deba1">The Association-requester may only offer one SOP Class Common Extended Negotiation Sub-Item for each SOP Class UID that is present in the A-ASSOCIATE request.</para>
+  <para xml:id="para_f4662e06-8779-4663-abb4-1cf8103deba1">The Association-requestor may only offer one SOP Class Common Extended Negotiation Sub-Item for each SOP Class UID that is present in the A-ASSOCIATE request.</para>
   <para xml:id="para_9ec8279a-4d21-424e-bd44-42e3a63dce41">No response is necessary, hence the SOP Class Common Extended Negotiation Sub-Items shall be omitted in the A-ASSOCIATE response.</para>
   <section label="D.3.3.6.1" status="5" xml:id="sect_D.3.3.6.1">
     <title>SOP Class Common Extended Negotiation Sub-Item Structure (A-ASSOCIATE-RQ)</title>
@@ -13153,7 +13153,7 @@
     <title>User Identity Negotiation</title>
   
   <para xml:id="para_c76d31f1-77e6-442b-a30d-5d1dab8537a8">The User Identity Negotiation is used to notify the association acceptor of the user identity of the association requestor. It may also request that the association acceptor respond with the server identity. This negotiation is optional. If this sub-item is not present in the A-ASSOCIATE request the A-ASSOCIATE response shall not contain a user identity response sub-item.</para>
-  <para xml:id="para_f091ab35-d0f1-4f10-8a5b-c4c1338240d7">The Association-requester conveys in the A-ASSOCIATE request:</para>
+  <para xml:id="para_f091ab35-d0f1-4f10-8a5b-c4c1338240d7">The Association-requestor conveys in the A-ASSOCIATE request:</para>
 <itemizedlist>
   <listitem>
     <para xml:id="para_df2b7b69-7b34-4e4a-a627-a88c6cd6f2dd">the form of user identity being provided, either a username, username and passcode, a Kerberos service ticket, a SAML assertion, or a JSON Web Token (JWT).</para>

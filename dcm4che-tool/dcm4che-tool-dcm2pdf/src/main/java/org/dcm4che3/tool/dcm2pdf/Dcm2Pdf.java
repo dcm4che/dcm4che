@@ -102,7 +102,9 @@ public class Dcm2Pdf {
         MTL(UID.EncapsulatedMTLStorage, ".mtl"),
         OBJ(UID.EncapsulatedOBJStorage, ".obj"),
         STL(UID.EncapsulatedSTLStorage, ".stl"),
-        GENOZIP(UID.PrivateDcm4cheEncapsulatedGenozipStorage, ".genozip");
+        GENOZIP(UID.PrivateDcm4cheEncapsulatedGenozipStorage, ".genozip"),
+        VCF_BZIP2(UID.PrivateDcm4cheEncapsulatedBzip2VCFStorage, ".vcfbz2"),
+        DOC_BZIP2(UID.PrivateDcm4cheEncapsulatedBzip2DocumentStorage, ".bz2");
 
         private final String sopClass;
         private final String fileExt;

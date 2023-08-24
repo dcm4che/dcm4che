@@ -96,7 +96,7 @@ public class StreamUtils {
     }
 
     public static  void copy(InputStream in, OutputStream out, int len, byte buf[]) throws IOException {
-        copy(in, out, (long) len, buf);
+        copy(in, out, unsignedInt(len), buf);
     }
 
     public static  void copy(InputStream in, OutputStream out, long len, byte buf[]) throws IOException {
@@ -112,14 +112,19 @@ public class StreamUtils {
     }
 
     public static  void copy(InputStream in, OutputStream out, int len) throws IOException {
-        copy(in, out, (long) len);
+        copy(in, out, unsignedInt(len));
     }
 
     public static  void copy(InputStream in, OutputStream out, long len) throws IOException {
-        copy(in, out, (long) len, new byte[(int) Math.min(len, COPY_BUFFER_SIZE)]);
+        copy(in, out, len & 0xffffffffL, new byte[(int) Math.min(len, COPY_BUFFER_SIZE)]);
     }
 
     public static void copy(InputStream in, OutputStream out, int len,
+            int swapBytes, byte buf[]) throws IOException {
+        copy(in, out, unsignedInt(len), swapBytes, buf);
+    }
+
+    public static void copy(InputStream in, OutputStream out, long len,
             int swapBytes, byte buf[]) throws IOException {
         if (swapBytes == 1) {
             copy(in, out, len, buf);
@@ -131,7 +136,7 @@ public class StreamUtils {
             throw new IllegalArgumentException("length: " + len);
         int off = 0;
         while (len > 0) {
-            int count = in.read(buf, off, Math.min(len, buf.length - off));
+            int count = in.read(buf, off, (int) Math.min(len, buf.length - off));
             if (count < 0)
                 throw new EOFException();
             len -= count;
@@ -157,8 +162,17 @@ public class StreamUtils {
 
     public static void copy(InputStream in, OutputStream out, int len,
             int swapBytes) throws IOException {
+        copy(in, out, unsignedInt(len), swapBytes);
+    }
+
+    private static long unsignedInt(int len) {
+        return len & 0xffffffffL;
+    }
+
+    public static void copy(InputStream in, OutputStream out, long len,
+            int swapBytes) throws IOException {
         copy(in, out, len, swapBytes,
-                new byte[Math.min(len, COPY_BUFFER_SIZE)]);
+                new byte[(int) Math.min(len, COPY_BUFFER_SIZE)]);
     }
 
     public static InputStream openFileOrURL(String name) throws IOException {

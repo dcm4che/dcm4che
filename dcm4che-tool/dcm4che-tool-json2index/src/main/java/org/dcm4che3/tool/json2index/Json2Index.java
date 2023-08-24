@@ -38,12 +38,20 @@
 
 package org.dcm4che3.tool.json2index;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.dcm4che3.tool.common.CLIUtils;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.stream.JsonGenerator;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 /**
@@ -52,6 +60,7 @@ import java.util.*;
  */
 public class Json2Index {
 
+    private static final ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.json2index.messages");
     private final File indir;
     private final Map<String,ParentRef> parents = new HashMap<>();
 
@@ -59,13 +68,27 @@ public class Json2Index {
         this.indir = indir;
     }
 
-    public static void main(String[] args) throws Exception {
-        if (args.length < 1) {
-            System.out.println("Usage: json2index <schema-dir>");
-            System.exit(-1);
+    private static CommandLine parseCommandLine(String[] args)
+            throws ParseException {
+        Options opts = new Options();
+        CLIUtils.addCommonOptions(opts);
+        return CLIUtils.parseComandLine(args, opts, rb, Json2Index.class);
+    }
+
+    public static void main(String[] args) {
+        try {
+            CommandLine cl = parseCommandLine(args);
+            Json2Index json2index = new Json2Index(new File(cl.getArgList().get(0)));
+            json2index.process();
+        } catch (ParseException e) {
+            System.err.println("json2index: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
+        } catch (Exception e) {
+            System.err.println("json2index: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
         }
-        Json2Index json2Rst = new Json2Index(new File(args[0]));
-        json2Rst.process();
     }
 
     private void process() throws IOException {
@@ -73,6 +96,9 @@ public class Json2Index {
             gen.writeStartObject();
             gen.writeStartObject("schemas");
             for (File file : indir.listFiles()) {
+                if (file.isDirectory())
+                    continue;
+
                 gen.writeStartObject(file.getName());
                 processFile(file, gen);
                 gen.writeEnd();

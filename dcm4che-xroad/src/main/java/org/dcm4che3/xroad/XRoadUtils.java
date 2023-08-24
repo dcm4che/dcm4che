@@ -50,8 +50,8 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.dict.archive.PrivateTag;
 import org.dcm4che3.net.Device;
 
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Holder;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Holder;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;

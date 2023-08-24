@@ -48,7 +48,7 @@ import org.dcm4che3.net.Device;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.ws.BindingProvider;
+import jakarta.xml.ws.BindingProvider;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;

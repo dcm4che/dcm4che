@@ -46,7 +46,7 @@ import org.dcm4che3.xroad.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.ws.Holder;
+import jakarta.xml.ws.Holder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;

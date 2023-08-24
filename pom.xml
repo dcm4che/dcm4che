@@ -43,7 +43,7 @@
   <artifactId>dcm4che-parent</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>5.31.0</version>
+  <version>5.31.1</version>
   <description>dcm4che DICOM toolkit and utilities</description>
   <licenses>
     <license>
@@ -87,7 +87,7 @@
     <jbossws-cxf-client.version>6.2.0.Final</jbossws-cxf-client.version>
     <apache-cxf.version>4.0.0</apache-cxf.version>
     <apache-commons-csv.version>1.10.0</apache-commons-csv.version>
-    <apache-commons-compress.version>1.23</apache-commons-compress.version>
+    <apache-commons-compress.version>1.23.0</apache-commons-compress.version>
     <jakarta.activation.version>2.1.2</jakarta.activation.version>
     <eclipse.angus.activation.version>2.0.1</eclipse.angus.activation.version>
     <jakarta.xml.bind.version>4.0.0</jakarta.xml.bind.version>

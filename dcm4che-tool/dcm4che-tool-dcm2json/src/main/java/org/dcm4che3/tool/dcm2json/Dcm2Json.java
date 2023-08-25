@@ -38,6 +38,9 @@
 
 package org.dcm4che3.tool.dcm2json;
 
+import jakarta.json.Json;
+import jakarta.json.JsonValue;
+import jakarta.json.stream.JsonGenerator;
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.BasicBulkDataDescriptor;
@@ -46,9 +49,6 @@ import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
 
-import javax.json.Json;
-import javax.json.JsonValue;
-import javax.json.stream.JsonGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;

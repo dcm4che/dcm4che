@@ -40,14 +40,14 @@
 
 package org.dcm4che3.conf.json;
 
+import jakarta.json.stream.JsonGenerator;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParsingException;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.io.BasicBulkDataDescriptor;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.hl7.HL7ApplicationInfo;
 
-import javax.json.stream.JsonGenerator;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParsingException;
 import java.util.*;
 
 /**

@@ -40,7 +40,7 @@
 
 package org.dcm4che3.conf.json.audit;
 
-
+import jakarta.json.stream.JsonParser;
 import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.json.ConfigurationDelegate;
@@ -55,7 +55,6 @@ import org.dcm4che3.net.audit.AuditSuppressCriteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.json.stream.JsonParser;
 import java.util.List;
 
 /**

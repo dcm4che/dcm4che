@@ -44,9 +44,8 @@ import java.util.Deque;
 import java.util.EnumMap;
 import java.util.function.LongFunction;
 
-import javax.json.JsonValue;
-import javax.json.stream.JsonGenerator;
-
+import jakarta.json.JsonValue;
+import jakarta.json.stream.JsonGenerator;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;

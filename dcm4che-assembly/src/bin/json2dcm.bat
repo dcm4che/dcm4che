@@ -49,6 +49,7 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-${slf4j.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\logback-core-${logback.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\logback-classic-${logback.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-${commons-cli.version}.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\jakarta.json-${jakarta.json.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jakarta.json-api-${jakarta.json.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\parsson-${org.eclipse.parsson.version}.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

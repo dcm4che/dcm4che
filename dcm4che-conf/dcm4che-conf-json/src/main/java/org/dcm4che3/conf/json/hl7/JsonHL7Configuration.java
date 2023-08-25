@@ -40,6 +40,7 @@
 
 package org.dcm4che3.conf.json.hl7;
 
+import jakarta.json.stream.JsonParser;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.json.ConfigurationDelegate;
 import org.dcm4che3.conf.json.JsonConfigurationExtension;
@@ -50,7 +51,6 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.hl7.HL7Application;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
 
-import javax.json.stream.JsonParser;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -40,6 +40,8 @@
 
 package org.dcm4che3.conf.json;
 
+import jakarta.json.Json;
+import jakarta.json.stream.JsonGenerator;
 import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
@@ -66,10 +68,7 @@ import org.dcm4che3.net.imageio.ImageReaderExtension;
 import org.dcm4che3.net.imageio.ImageWriterExtension;
 import org.junit.Test;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;

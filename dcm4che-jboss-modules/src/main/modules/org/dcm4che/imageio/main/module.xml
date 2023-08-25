@@ -10,7 +10,10 @@
         <module name="org.dcm4che.image" export="true"/>
         <module name="org.dcm4che.imageio-rle" services="export" export="true"/>
         <module name="com.sun.media.imageio" services="export" export="true"/>
-        <module name="javax.api"/>
+        <module name="java.se" export="true"/>
+        <module name="java.xml" export="true"/>
+        <module name="java.xml.crypto" export="true"/>
+        <module name="jdk.xml.dom" export="true"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>

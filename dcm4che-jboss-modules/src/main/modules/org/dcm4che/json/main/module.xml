@@ -11,8 +11,11 @@
         <module name="org.dcm4che.net-audit" export="true"/>
         <module name="org.dcm4che.net-hl7" export="true"/>
         <module name="org.dcm4che.net-imageio" export="true"/>
-        <module name="javax.json.api" export="true"/>
-        <module name="javax.api"/>
+        <module name="jakarta.json.api" export="true"/>
+        <module name="java.se" export="true"/>
+        <module name="java.xml" export="true"/>
+        <module name="java.xml.crypto" export="true"/>
+        <module name="jdk.xml.dom" export="true"/>
         <module name="org.slf4j"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>

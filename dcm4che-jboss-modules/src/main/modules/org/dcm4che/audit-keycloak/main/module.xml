@@ -50,8 +50,11 @@
         <module name="org.keycloak.keycloak-core" export="true"/>
         <module name="org.keycloak.keycloak-server-spi" export="true"/>
         <module name="org.keycloak.keycloak-server-spi-private" export="true"/>
-        <module name="javax.api"/>
-        <module name="javax.servlet.api" export="true"/>
+        <module name="java.se" export="true"/>
+        <module name="java.xml" export="true"/>
+        <module name="java.xml.crypto" export="true"/>
+        <module name="jdk.xml.dom" export="true"/>
+        <module name="jakarta.servlet.api" export="true"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs" export="true"/>
         <module name="org.slf4j"/>
     </dependencies>

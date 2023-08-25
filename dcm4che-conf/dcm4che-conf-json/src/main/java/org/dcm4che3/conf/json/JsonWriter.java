@@ -40,10 +40,10 @@
 
 package org.dcm4che3.conf.json;
 
+import jakarta.json.stream.JsonGenerator;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.util.DateUtils;
 
-import javax.json.stream.JsonGenerator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;

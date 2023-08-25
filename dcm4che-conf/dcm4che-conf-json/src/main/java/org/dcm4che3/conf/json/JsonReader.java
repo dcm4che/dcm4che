@@ -40,6 +40,9 @@
 
 package org.dcm4che3.conf.json;
 
+import jakarta.json.stream.JsonLocation;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParsingException;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.DatePrecision;
 import org.dcm4che3.data.Issuer;
@@ -48,9 +51,6 @@ import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.json.stream.JsonLocation;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParsingException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;

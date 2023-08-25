@@ -48,7 +48,10 @@
     <dependencies>
         <module name="org.dcm4che.core" export="true"/>
         <module name="org.dcm4che.dcmr" export="true"/>
-        <module name="javax.api"/>
+        <module name="java.se" export="true"/>
+        <module name="java.xml" export="true"/>
+        <module name="java.xml.crypto" export="true"/>
+        <module name="jdk.xml.dom" export="true"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>

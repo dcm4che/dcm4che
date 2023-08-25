@@ -38,6 +38,7 @@
 
 package org.dcm4che3.tool.json2dcm;
 
+import jakarta.json.Json;
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
@@ -51,7 +52,6 @@ import org.dcm4che3.json.JSONReader;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
 
-import javax.json.Json;
 import java.io.*;
 import java.util.List;
 import java.util.ResourceBundle;

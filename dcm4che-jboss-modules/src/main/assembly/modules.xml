@@ -322,6 +322,22 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/modules/org/keycloak/keycloak-common/main</outputDirectory>
+      <includes>
+        <include>org.keycloak:keycloak-common</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>/modules/org/keycloak/keycloak-core/main</outputDirectory>
+      <includes>
+        <include>org.keycloak:keycloak-core</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/modules/org/apache/commons/compress/main</outputDirectory>
       <includes>
         <include>org.apache.commons:commons-compress</include>

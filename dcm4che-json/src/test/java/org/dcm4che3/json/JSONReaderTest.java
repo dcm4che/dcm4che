@@ -41,11 +41,11 @@
 
 package org.dcm4che3.json;
 
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
 import org.dcm4che3.data.*;
 import org.junit.Test;
 
-import javax.json.Json;
-import javax.json.stream.JsonParser;
 import java.io.StringReader;
 
 import static org.junit.Assert.*;

@@ -40,6 +40,7 @@
 
 package org.dcm4che3.conf.json.imageio;
 
+import jakarta.json.stream.JsonParser;
 import org.dcm4che3.conf.json.ConfigurationDelegate;
 import org.dcm4che3.conf.json.JsonConfigurationExtension;
 import org.dcm4che3.conf.json.JsonReader;
@@ -48,7 +49,6 @@ import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.imageio.ImageReaderExtension;
 
-import javax.json.stream.JsonParser;
 import java.util.Map;
 
 /**

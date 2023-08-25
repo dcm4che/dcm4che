@@ -5,6 +5,9 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.se" export="true"/>
+        <module name="java.xml" export="true"/>
+        <module name="java.xml.crypto" export="true"/>
+        <module name="jdk.xml.dom" export="true"/>
     </dependencies>
 </module>

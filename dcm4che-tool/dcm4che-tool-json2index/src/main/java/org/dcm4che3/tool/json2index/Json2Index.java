@@ -38,16 +38,16 @@
 
 package org.dcm4che3.tool.json2index;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonString;
+import jakarta.json.stream.JsonGenerator;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.tool.common.CLIUtils;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.stream.JsonGenerator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

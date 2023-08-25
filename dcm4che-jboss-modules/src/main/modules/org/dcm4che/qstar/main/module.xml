@@ -7,10 +7,12 @@
     <dependencies>
         <module name="org.slf4j"/>
         <module name="org.apache.cxf.impl" export="true"/>
-        <module name="javax.api"/>
-        <module name="javax.jws.api"/>
-        <module name="javax.xml.bind.api"/>
-        <module name="javax.xml.soap.api"/>
-        <module name="javax.xml.ws.api"/>
+        <module name="java.se" export="true"/>
+        <module name="java.xml" export="true"/>
+        <module name="java.xml.crypto" export="true"/>
+        <module name="jdk.xml.dom" export="true"/>
+        <module name="jakarta.xml.bind.api"/>
+        <module name="jakarta.xml.soap.api"/>
+        <module name="jakarta.xml.ws.api"/>
     </dependencies>
 </module>

@@ -95,7 +95,8 @@
     <jakarta.xml.ws.version>4.0.0</jakarta.xml.ws.version>
     <jakarta.xml.soap-api.version>3.0.0</jakarta.xml.soap-api.version>
     <jakarta.ws.rs.version>3.1.0</jakarta.ws.rs.version>
-    <jakarta.json.version>1.1.6</jakarta.json.version>
+    <jakarta.json.version>2.1.2</jakarta.json.version>
+    <org.eclipse.parsson.version>1.1.3</org.eclipse.parsson.version>
     <com.sun.istack.version>4.1.1</com.sun.istack.version>
     <com.sun.xml.messaging.saaj.version>3.0.0</com.sun.xml.messaging.saaj.version>
     <com.sun.xml.stream.buffer.version>2.1.0</com.sun.xml.stream.buffer.version>
@@ -261,9 +262,15 @@
         <scope>runtime</scope>
       </dependency>
       <dependency>
-        <groupId>org.glassfish</groupId>
-        <artifactId>jakarta.json</artifactId>
+        <groupId>jakarta.json</groupId>
+        <artifactId>jakarta.json-api</artifactId>
         <version>${jakarta.json.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.parsson</groupId>
+        <artifactId>parsson</artifactId>
+        <version>${org.eclipse.parsson.version}</version>
+        <scope>runtime</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>

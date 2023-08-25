@@ -38,6 +38,8 @@
 
 package org.dcm4che3.tool.stowrs;
 
+import jakarta.json.Json;
+import jakarta.json.stream.JsonGenerator;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.cli.*;
 import org.dcm4che3.data.*;
@@ -59,8 +61,6 @@ import org.dcm4che3.ws.rs.MediaTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;

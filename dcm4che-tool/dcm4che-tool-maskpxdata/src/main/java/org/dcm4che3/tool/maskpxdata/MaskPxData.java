@@ -189,7 +189,6 @@ public class MaskPxData {
 
     private void maskPxData(RandomAccessFile raf, boolean bigEndian, Attributes attrs, BulkData bulkData)
             throws IOException {
-        byte[] b = new byte[bulkData.length()];
         int rows = attrs.getInt(Tag.Rows, 0);
         int columns = attrs.getInt(Tag.Columns, 0);
         int frames = attrs.getInt(Tag.NumberOfFrames, 1);
@@ -200,16 +199,19 @@ public class MaskPxData {
         Mask mask = samples == 3
                 ? planarConfig == 0 ? this::maskColorByPixel : this::maskColorByPlane
                 : bytesAllocated == 1 ? this::maskByte : this::maskWord;
-        raf.seek(bulkData.offset());
-        raf.readFully(b);
-        for (int i = 0; i < regions.length; i += 4)
-            for (int j = 0; j < regions[i + 3]; j++)
-                for (int f = 0; f < frames; f++)
-                    for (int k = 0, off = (j + regions[i + 1]) * columns + regions[i] + f * planeSize;
-                         k < regions[i + 2]; k++)
+        int frameSize = planeSize * samples * bytesAllocated;
+        byte[] b = new byte[frameSize];
+        for (int f = 0; f < frames; f++) {
+            long pos = bulkData.offset() + f * frameSize;
+            raf.seek(pos);
+            raf.readFully(b);
+            for (int i = 0; i < regions.length; i += 4)
+                for (int j = 0; j < regions[i + 3]; j++)
+                    for (int k = 0, off = (j + regions[i + 1]) * columns + regions[i]; k < regions[i + 2]; k++)
                         mask.apply(b, off + k, bigEndian, planeSize);
-        raf.seek(bulkData.offset());
-        raf.write(b);
+            raf.seek(pos);
+            raf.write(b);
+        }
     }
 
     interface Mask {

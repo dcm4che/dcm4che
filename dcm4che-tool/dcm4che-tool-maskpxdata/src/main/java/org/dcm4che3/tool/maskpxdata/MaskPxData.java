@@ -192,6 +192,7 @@ public class MaskPxData {
         byte[] b = new byte[bulkData.length()];
         int rows = attrs.getInt(Tag.Rows, 0);
         int columns = attrs.getInt(Tag.Columns, 0);
+        int frames = attrs.getInt(Tag.NumberOfFrames, 1);
         int samples = attrs.getInt(Tag.SamplesPerPixel, 1);
         int planeSize = rows * columns;
         int bytesAllocated = attrs.getInt(Tag.BitsAllocated, 16) / 8;
@@ -203,8 +204,10 @@ public class MaskPxData {
         raf.readFully(b);
         for (int i = 0; i < regions.length; i += 4)
             for (int j = 0; j < regions[i + 3]; j++)
-                for (int k = 0, off = (j + regions[i + 1]) * columns + regions[i]; k < regions[i + 2]; k++)
-                    mask.apply(b, off + k, bigEndian, planeSize);
+                for (int f = 0; f < frames; f++)
+                    for (int k = 0, off = (j + regions[i + 1]) * columns + regions[i] + f * planeSize;
+                         k < regions[i + 2]; k++)
+                        mask.apply(b, off + k, bigEndian, planeSize);
         raf.seek(bulkData.offset());
         raf.write(b);
     }

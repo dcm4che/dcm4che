@@ -425,13 +425,11 @@ public class Transcoder implements Closeable {
             verifier.dispose();
         if (closeInputStream)
             SafeClose.close(dis);
+        if (closeOutputStream) {
+            SafeClose.close(dos);
         if (deleteBulkDataFiles)
             for (File tmpFile : dis.getBulkDataFiles())
                 tmpFile.delete();
-        if (dos != null) {
-            dos.finish();
-            if (closeOutputStream)
-                dos.close();
         }
     }
 
@@ -449,6 +447,7 @@ public class Transcoder implements Closeable {
             writeDataset();
         } else
             dataset.writePostPixelDataTo(dos);
+        dos.finish();
     }
 
     private final DicomInputHandler dicomInputHandler = new DicomInputHandler() {

@@ -865,10 +865,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         value = loadBulkData(vr, value);
         if (vr.isStringType()) {
@@ -901,10 +898,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return StringUtils.EMPTY_STRING;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         value = loadBulkData(vr, value);
         if (vr.isStringType()) {
@@ -956,10 +950,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         try {
             value = loadAndStoreBulkData(index);
@@ -993,10 +984,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return ByteUtils.EMPTY_INTS;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         try {
             value = loadAndStoreBulkData(index);
@@ -1042,10 +1030,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         try {
             value = loadAndStoreBulkData(index);
@@ -1079,10 +1064,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return ByteUtils.EMPTY_LONGS;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         try {
             value = loadAndStoreBulkData(index);
@@ -1128,10 +1110,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         try {
             value = loadAndStoreBulkData(index);
@@ -1165,10 +1144,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return ByteUtils.EMPTY_FLOATS;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         try {
             value = loadAndStoreBulkData(index);
@@ -1214,10 +1190,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         try {
             value = loadAndStoreBulkData(index);
@@ -1251,10 +1224,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return ByteUtils.EMPTY_DOUBLES;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
 
         try {
             value = loadAndStoreBulkData(index);
@@ -1382,24 +1352,29 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
         if (!vr.isTemporalType()) {
             LOG.info("Attempt to access {} {} as date", TagUtils.toString(tag), vr);
             return defVal;
         }
         try {
-            value = decodeStringValue(index);
+        value = decodeStringValue(index);
             if (value == Value.NULL)
-                return defVal;
+            return defVal;
 
             return vr.toDate(value, getTimeZone(), valueIndex, false, defVal, precision);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
             return defVal;
         }
+    }
+
+    private VR getOrUpdateVR(VR vr, int index) {
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
+        return vr;
     }
 
     public Date getDate(long tag) {
@@ -1484,10 +1459,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return DateUtils.EMPTY_DATES;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
         if (!vr.isTemporalType()) {
             LOG.info("Attempt to access {} {} as date", TagUtils.toString(tag), vr);
             return DateUtils.EMPTY_DATES;
@@ -1578,10 +1550,7 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        if (vr == null)
-            vr = vrs[index];
-        else
-            updateVR(index, vr);
+        vr = getOrUpdateVR(vr, index);
         if (!vr.isTemporalType()) {
             LOG.info("Attempt to access {} {} as date", TagUtils.toString(tag), vr);
             return defVal;

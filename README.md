@@ -28,6 +28,9 @@ dcm4che uses a native library for the compression and decompression of images. H
 
 Build
 -----
+
+Make sure you have Java 17 (JDK) or newer installed.
+
 Run the [Maven Wrapper](https://maven.apache.org/wrapper/) script for building:
 
     ./mvnw install

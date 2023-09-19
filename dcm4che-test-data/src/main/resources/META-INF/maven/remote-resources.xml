@@ -62,6 +62,8 @@
         <remoteResource>3gb-bulk-data-truncated</remoteResource>
         <remoteResource>no_preamble_dicm_in_data</remoteResource>
         <remoteResource>Tag-0040-A170-VR-CS.dcm</remoteResource>
+        <remoteResource>CT-JPEGLosslessSV1.dcm</remoteResource>
+        <remoteResource>MR-JPEGLosslessSV1.dcm</remoteResource>
     </remoteResources>
     <sourceEncoding>UTF-8</sourceEncoding>
 </remoteResourcesBundle>

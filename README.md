@@ -16,13 +16,13 @@ dcm4che uses a native library for the compression and decompression of images. H
 
 | System  | Architecture | Package        | Requirement            |
 |:--------|:-------------|:---------------|:-----------------------|
-| Linux   | x86 64-bit   | linux-x86-64   | GLIBC_2.14             |
-| Linux   | x86 32-bit   | linux-x86      | GLIBC_2.7              |
+| Linux   | x86 64-bit   | linux-x86-64   | GLIBC_2.17             |
+| Linux   | x86 32-bit   | linux-x86      | GLIBC_2.17             |
 | Linux   | ARM 64-bit   | linux-aarch64  | GLIBC_2.27             |
-| Linux   | ARM 32-bit   | linux-armv7a   | GLIBC_2.7              |
-| Linux   | s390x        | linux-s390x    | GLIBC_2.7              |
-| Windows | x86 64-bit   | windows-x86-64 | Windows 7, 8, 10 or 11 |
-| Windows | x86 32-bit   | windows-x86    | Windows 7, 8, 10 or 11 |
+| Linux   | ARM 32-bit   | linux-armv7a   | GLIBC_2.17             |
+| Linux   | s390x        | linux-s390x    | GLIBC_2.17             |
+| Windows | x86 64-bit   | windows-x86-64 | Windows 7 or higher    |
+| Windows | x86 32-bit   | windows-x86    | Windows 7 or higher    |
 | Mac OS  | x86 64-bit   | macosx-x86-64  | Mac OS 10.13 or higher |
 | Mac OS  | ARM 64-bit   | macosx-aarch64 | Mac OS 11 or higher    |
 

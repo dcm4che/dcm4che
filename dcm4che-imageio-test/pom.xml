@@ -53,21 +53,64 @@
   <artifactId>dcm4che-imageio-test</artifactId>
 
   <properties>
-    <!-- Skip test by default except for some architecture related to the native library -->
-    <skipTests>true</skipTests>
-    <!-- empty default argLine for tests, will be extended by jacoco and surefire later -->
-    <argLine></argLine>
+    <!-- Tests require the OpenCV native library and can only be run on Linux, Windows and macOS-->
+    <argLine>-Djava.library.path=${project.build.directory}/lib/${os-name}-${cpu-name} -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.desktop/javax.imageio.stream=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED</argLine>
   </properties>
   <profiles>
     <profile>
-      <id>mac</id>
+      <id>linux-x86_64</id>
       <activation>
         <os>
-          <family>mac</family>
+          <name>linux</name>
+          <arch>amd64</arch>
         </os>
       </activation>
       <properties>
-        <skipTests>false</skipTests>
+        <os-name>linux</os-name>
+        <cpu-name>x86-64</cpu-name>
+        <lib-file-name>libopencv_java</lib-file-name>
+        <lib-file-ext>so</lib-file-ext>
+      </properties>
+    </profile>
+    <profile>
+      <id>linux-aarch64</id>
+      <activation>
+        <os>
+          <name>linux</name>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <os-name>linux</os-name>
+        <cpu-name>aarch64</cpu-name>
+        <lib-file-name>libopencv_java</lib-file-name>
+        <lib-file-ext>so</lib-file-ext>
+      </properties>
+    </profile>
+    <profile>
+      <id>linux-arm32</id>
+      <activation>
+        <os>
+          <name>linux</name>
+          <arch>arm</arch>
+        </os>
+      </activation>
+      <properties>
+        <os-name>linux</os-name>
+        <cpu-name>armv7a</cpu-name>
+        <lib-file-name>libopencv_java</lib-file-name>
+        <lib-file-ext>so</lib-file-ext>
+      </properties>
+    </profile>
+    <profile>
+      <id>macosx-x86_64</id>
+      <activation>
+        <os>
+          <name>mac os x</name>
+          <arch>x86_64</arch>
+        </os>
+      </activation>
+      <properties>
         <os-name>macosx</os-name>
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
@@ -75,14 +118,14 @@
       </properties>
     </profile>
     <profile>
-      <id>mac-m1</id>
+      <id>macosx-aarch64</id>
       <activation>
         <os>
-          <family>mac</family>
+          <name>mac os x</name>
+          <arch>aarch64</arch>
         </os>
       </activation>
       <properties>
-        <skipTests>false</skipTests>
         <os-name>macosx</os-name>
         <cpu-name>aarch64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
@@ -90,58 +133,7 @@
       </properties>
     </profile>
     <profile>
-      <id>unix</id>
-      <activation>
-        <os>
-          <family>unix</family>
-          <name>Linux</name>
-          <arch>amd64</arch>
-        </os>
-      </activation>
-      <properties>
-        <skipTests>false</skipTests>
-        <os-name>linux</os-name>
-        <cpu-name>x86-64</cpu-name>
-        <lib-file-name>libopencv_java</lib-file-name>
-        <lib-file-ext>so</lib-file-ext>
-      </properties>
-    </profile>
-    <profile>
-      <id>unix2</id>
-      <activation>
-        <os>
-          <family>unix</family>
-          <name>Linux</name>
-          <arch>x86_64</arch>
-        </os>
-      </activation>
-      <properties>
-        <skipTests>false</skipTests>
-        <os-name>linux</os-name>
-        <cpu-name>x86-64</cpu-name>
-        <lib-file-name>libopencv_java</lib-file-name>
-        <lib-file-ext>so</lib-file-ext>
-      </properties>
-    </profile>
-    <profile>
-      <id>unix-32</id>
-      <activation>
-        <os>
-          <family>unix</family>
-          <name>Linux</name>
-          <arch>i386</arch>
-        </os>
-      </activation>
-      <properties>
-        <skipTests>false</skipTests>
-        <os-name>linux</os-name>
-        <cpu-name>x86</cpu-name>
-        <lib-file-name>libopencv_java</lib-file-name>
-        <lib-file-ext>so</lib-file-ext>
-      </properties>
-    </profile>
-    <profile>
-      <id>windows</id>
+      <id>windows-x86_64</id>
       <activation>
         <os>
           <family>windows</family>
@@ -149,7 +141,6 @@
         </os>
       </activation>
       <properties>
-        <skipTests>false</skipTests>
         <os-name>windows</os-name>
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>opencv_java</lib-file-name>
@@ -157,23 +148,7 @@
       </properties>
     </profile>
     <profile>
-      <id>windows2</id>
-      <activation>
-        <os>
-          <family>windows</family>
-          <arch>x86_64</arch>
-        </os>
-      </activation>
-      <properties>
-        <skipTests>false</skipTests>
-        <os-name>windows</os-name>
-        <cpu-name>x86-64</cpu-name>
-        <lib-file-name>opencv_java</lib-file-name>
-        <lib-file-ext>dll</lib-file-ext>
-      </properties>
-    </profile>
-    <profile>
-      <id>windows-32</id>
+      <id>windows-x86</id>
       <activation>
         <os>
           <family>windows</family>
@@ -181,7 +156,6 @@
         </os>
       </activation>
       <properties>
-        <skipTests>false</skipTests>
         <os-name>windows</os-name>
         <cpu-name>x86</cpu-name>
         <lib-file-name>opencv_java</lib-file-name>
@@ -221,7 +195,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-install-plugin</artifactId>
-        <version>3.0.0-M1</version>
+        <version>3.1.1</version>
         <configuration>
           <skip>true</skip>
         </configuration>
@@ -229,7 +203,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
-        <version>3.0.0-M1</version>
+        <version>3.1.1</version>
         <configuration>
           <skip>true</skip>
         </configuration>
@@ -278,13 +252,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <argLine>@{argLine} -Djava.library.path=${project.build.directory}/lib/${os-name}-${cpu-name} -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.desktop/javax.imageio.stream=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED</argLine>
-          <skipTests>${skipTests}</skipTests>
-        </configuration>
       </plugin>
     </plugins>
   </build>

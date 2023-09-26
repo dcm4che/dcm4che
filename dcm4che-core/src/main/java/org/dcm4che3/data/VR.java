@@ -38,6 +38,10 @@
 
 package org.dcm4che3.data;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -334,6 +338,10 @@ public enum VR {
 
     public double[] toDoubles(Object val, boolean bigEndian) {
         return valueType.toDoubles(val, bigEndian);
+    }
+
+    public Temporal toTemporal(Object val, int valueIndex, Temporal defVal, DatePrecision precision) {
+        return valueType.toTemporal(val, valueIndex, defVal, precision);
     }
 
     public Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,

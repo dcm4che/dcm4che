@@ -39,8 +39,10 @@
 package org.dcm4che3.audit;
 
 import jakarta.xml.bind.*;
+
 import java.io.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -877,6 +879,18 @@ public class AuditMessages {
         for (ActiveParticipant activeParticipant : activeParticipants)
             if (activeParticipant != null)
                 msg.getActiveParticipant().add(activeParticipant);
+        for (ParticipantObjectIdentification participantObjectIdentification : participantObjectIdentifications)
+            msg.getParticipantObjectIdentification().add(participantObjectIdentification);
+        return msg;
+    }
+
+    public static AuditMessage createMessage(
+            EventIdentification eventIdentification, List<ActiveParticipant> activeParticipants,
+            ParticipantObjectIdentification... participantObjectIdentifications) {
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(eventIdentification);
+        for (ActiveParticipant activeParticipant : activeParticipants)
+            msg.getActiveParticipant().add(activeParticipant);
         for (ParticipantObjectIdentification participantObjectIdentification : participantObjectIdentifications)
             msg.getParticipantObjectIdentification().add(participantObjectIdentification);
         return msg;

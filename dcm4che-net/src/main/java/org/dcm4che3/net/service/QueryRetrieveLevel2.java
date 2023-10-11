@@ -134,15 +134,18 @@ public enum QueryRetrieveLevel2 {
     private void checkUniqueKey(Attributes keys, boolean optional, boolean lenient, boolean multiple)
             throws DicomServiceException {
         String[] ids = keys.getStrings(uniqueKey);
-        if (ids == null || ids.length == 0) {
+        if (!multiple && ids != null && ids.length > 1)
+            throw invalidAttributeValue(uniqueKey, StringUtils.concat(ids, '\\'));
+        if (ids == null || ids.length == 0 || ids[0].indexOf('*') >= 0 || ids[0].indexOf('?') >= 0) {
             if (!optional)
                 if (lenient)
-                    LOG.info("Missing " + DICT.keywordOf(uniqueKey) + " " + TagUtils.toString(uniqueKey)
+                    LOG.info("Missing or wildcard " + DICT.keywordOf(uniqueKey) + " " + TagUtils.toString(uniqueKey)
                             + " in Query/Retrieve Identifier");
                 else
-                    throw missingAttribute(uniqueKey);
-        } else if (!multiple && ids.length > 1)
-            throw invalidAttributeValue(uniqueKey, StringUtils.concat(ids, '\\'));
+                    throw ids == null || ids.length == 0
+                            ? missingAttribute(uniqueKey)
+                            : invalidAttributeValue(uniqueKey, ids[0]);
+        }
     }
 
     private static DicomServiceException missingAttribute(int tag) {

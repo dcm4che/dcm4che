@@ -156,7 +156,7 @@ public enum QueryRetrieveLevel2 {
     private static DicomServiceException invalidAttributeValue(int tag, String value) {
         return identifierDoesNotMatchSOPClass(
                 "Invalid " + DICT.keywordOf(tag) + " " + TagUtils.toString(tag) + " - " + value,
-                Tag.QueryRetrieveLevel);
+                tag);
     }
 
     private static DicomServiceException identifierDoesNotMatchSOPClass(String comment, int tag) {

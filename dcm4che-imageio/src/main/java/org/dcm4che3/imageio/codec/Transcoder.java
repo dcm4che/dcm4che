@@ -425,9 +425,9 @@ public class Transcoder implements Closeable {
             verifier.dispose();
         if (closeInputStream)
             SafeClose.close(dis);
-        if (closeOutputStream) {
+        if (closeOutputStream)
             SafeClose.close(dos);
-        if (deleteBulkDataFiles)
+        if (deleteBulkDataFiles) {
             for (File tmpFile : dis.getBulkDataFiles())
                 tmpFile.delete();
         }

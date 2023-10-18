@@ -51,6 +51,7 @@ import org.dcm4che3.tool.common.CLIUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -172,6 +173,7 @@ public class Json2Props {
                 StandardCharsets.UTF_8))) {
             props.load(reader1);
         } catch (FileNotFoundException e) {}
+        List<String> invalidProperties = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
                     new FileInputStream(schemaFile),
@@ -182,17 +184,25 @@ public class Json2Props {
                         StandardCharsets.UTF_8))) {
                 String line;
                 String indent = "  ";
-                String value = props.getProperty(prefix.substring(0, prefix.length() - 1));
                 int endTitle = -1;
-                int field = value != null ? 0 : 3;
+                int field = 3;
                 int fieldAfterDescription = 3;
+                String key = prefix.substring(0, prefix.length() - 1);
+                String value = props.getProperty(key);
+                if (value != null) {
+                    endTitle = value.indexOf('|');
+                    if (endTitle > 0) {
+                        field = 0;
+                    } else {
+                        invalidProperties.add(key);
+                    }
+                }
                 while ((line = reader.readLine()) != null) {
                     switch (field) {
                         case 0:
                             field = 1;
                             break;
                         case 1:
-                            endTitle = value.indexOf('|');
                             line = indent + "\"title\": \"" + value.substring(0, endTitle) + "\",";
                             field = 2;
                             break;
@@ -212,9 +222,15 @@ public class Json2Props {
                             break;
                         case 4:
                             if (line.startsWith("    \"")) {
-                                value = props.getProperty(prefix + line.substring(5, line.length() - 4));
+                                key = prefix + line.substring(5, line.length() - 4);
+                                value = props.getProperty(key);
                                 if (value != null) {
-                                    field = 1;
+                                    endTitle = value.indexOf('|');
+                                    if (endTitle > 0) {
+                                        field = 1;
+                                    } else {
+                                        invalidProperties.add(key);
+                                    }
                                 }
                             }
                     }
@@ -222,6 +238,10 @@ public class Json2Props {
                     writer.write('\n');
                 }
             }
+        }
+        if (!invalidProperties.isEmpty()) {
+            System.out.printf("IGNORED %d PROPERTIES WITH MISSING |:%n", invalidProperties.size());
+            invalidProperties.forEach(key -> System.out.printf("%s:%s%n", key, props.get(key)));
         }
     }
 

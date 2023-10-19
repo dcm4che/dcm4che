@@ -203,11 +203,11 @@ public class Json2Props {
                             field = 1;
                             break;
                         case 1:
-                            line = indent + "\"title\": \"" + value.substring(0, endTitle) + "\",";
+                            line = indent + "\"title\": \"" + value.substring(0, endTitle).trim() + "\",";
                             field = 2;
                             break;
                         case 2:
-                            line = indent + "\"description\": \"" + value.substring(endTitle + 1)
+                            line = indent + "\"description\": \"" + value.substring(endTitle + 1).trim()
                                     .replace("\\", "\\\\")
                                     .replace("\"", "\\\"")
                                     + "\",";

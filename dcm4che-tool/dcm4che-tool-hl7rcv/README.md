@@ -37,6 +37,8 @@ Options:
                                      private key, PKCS12 by default
     --mllp2                          use MLLP Release 2 with Commit
                                      Acknowledgement Block
+    --response-delay <ms>            delay in ms returning response
+                                     message. No delay by default.
     --sorcv-buffer <length>          set SO_RCVBUF socket option to
                                      specified value
     --sosnd-buffer <length>          set SO_SNDBUF socket option to

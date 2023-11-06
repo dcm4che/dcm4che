@@ -477,6 +477,8 @@ public class AuditMessages {
                 new MediaType("110010", "DCM", "Film");
         public static final MediaType PaperDocument =
                 new MediaType("110038", "DCM", "Paper Document");
+        public static final MediaType QStar =
+                new MediaType("QSTAR", "99DCM4CHEE", "QSTAR");
 
         public MediaType(String code, String codeSystemName,
                 String originalText) {

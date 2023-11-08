@@ -81,6 +81,12 @@ public class DicomInputStream extends FilterInputStream
         "Implicit VR Big Endian encoded DICOM Stream";
     private static final String DEFLATED_WITH_ZLIB_HEADER =
         "Deflated DICOM Stream with ZLIB Header";
+    private static final String SEQUENCE_EXCEED_ENCODED_LENGTH =
+        "Actual length of Sequence %s exceeds encoded length: %d";
+    private static final String TREAT_SQ_AS_UN =
+        "Actual length of Sequence {} exceeds encoded length: {} - treat as UN";
+    private static final int TREAT_SQ_AS_UN_MAX_EXCEED_LENGTH = 1024;
+
     /* VisibleForTesting */ static final String VALUE_TOO_LARGE =
       "tag value too large, must be less than 2Gib";
 
@@ -882,6 +888,9 @@ public class DicomInputStream extends FilterInputStream
             explicitVR = false;
             bigEndian = false;
         }
+        boolean recoverSequenceExceedsEncodedLength = !undefLen && markSupported() && len < allocateLimit;
+        if (recoverSequenceExceedsEncodedLength)
+            mark((int) len + TREAT_SQ_AS_UN_MAX_EXCEED_LENGTH);
         for (int i = 0; (undefLen || pos < endPos) && readItemHeader(); ++i) {
             addItemPointer(sqtag, privateCreator, i);
             handler.readValue(this, seq);
@@ -891,7 +900,16 @@ public class DicomInputStream extends FilterInputStream
         bigEndian = bigEndian0;
         if (seq.isEmpty())
             attrs.setNull(sqtag, VR.SQ);
-        else
+        else if (!undefLen && pos != endPos) {
+            if (!recoverSequenceExceedsEncodedLength || (pos - endPos) > TREAT_SQ_AS_UN_MAX_EXCEED_LENGTH)
+                throw new DicomStreamException(String.format(SEQUENCE_EXCEED_ENCODED_LENGTH, TagUtils.toString(sqtag), len));
+            LOG.info(TREAT_SQ_AS_UN, TagUtils.toString(sqtag), len);
+            reset();
+            tag = sqtag;
+            vr = VR.UN;
+            length = len;
+            handler.readValue(this, attrs);
+        } else
             seq.trimToSize();
     }
 

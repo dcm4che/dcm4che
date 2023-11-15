@@ -696,12 +696,39 @@ public class DicomInputStream extends FilterInputStream
                 break;
             if (vr != null) {
                 if (vr == VR.UN) {
-                    vr = tag == Tag.PurposeOfReferenceCodeSequence
-                            ? probeObservationClass() ? VR.CS : VR.SQ
-                            : ElementDictionary.vrOf(tag, attrs.getPrivateCreator(tag));
-                    if (vr == VR.UN && length == UNDEFINED_LENGTH)
-                        vr = VR.SQ; // assumes UN with undefined length are SQ,
-                                    // will fail on UN fragments!
+                    switch (tag) {
+                        case Tag.SmallestValidPixelValue:
+                        case Tag.LargestValidPixelValue:
+                        case Tag.SmallestImagePixelValue:
+                        case Tag.LargestImagePixelValue:
+                        case Tag.SmallestPixelValueInSeries:
+                        case Tag.LargestPixelValueInSeries:
+                        case Tag.SmallestImagePixelValueInPlane:
+                        case Tag.LargestImagePixelValueInPlane:
+                        case Tag.PixelPaddingValue:
+                        case Tag.PixelPaddingRangeLimit:
+                        case Tag.GrayLookupTableDescriptor:
+                        case Tag.RedPaletteColorLookupTableDescriptor:
+                        case Tag.GreenPaletteColorLookupTableDescriptor:
+                        case Tag.BluePaletteColorLookupTableDescriptor:
+                        case Tag.LargeRedPaletteColorLookupTableDescriptor:
+                        case Tag.LargeGreenPaletteColorLookupTableDescriptor:
+                        case Tag.LargeBluePaletteColorLookupTableDescriptor:
+                        case Tag.RealWorldValueLastValueMapped:
+                        case Tag.RealWorldValueFirstValueMapped:
+                        case Tag.HistogramFirstBinValue:
+                        case Tag.HistogramLastBinValue:
+                            vr = attrs.getRoot().getInt(Tag.PixelRepresentation, 0) == 0 ? VR.US : VR.SS;
+                            break;
+                        case Tag.PurposeOfReferenceCodeSequence:
+                            vr = probeObservationClass() ? VR.CS : VR.SQ;
+                            break;
+                        default:
+                            vr = ElementDictionary.vrOf(tag, attrs.getPrivateCreator(tag));
+                            if (vr == VR.UN && length == UNDEFINED_LENGTH)
+                                vr = VR.SQ; // assumes UN with undefined length are SQ,
+                            // will fail on UN fragments!
+                    }
                 }
                 excludeBulkData = includeBulkData == IncludeBulkData.NO && isBulkData(attrs);
                 includeBulkDataURI = length != 0 && vr != VR.SQ

@@ -154,7 +154,8 @@ public class DicomOutputStream extends FilterOutputStream {
         bigEndian = tsuid.equals(UID.ExplicitVRBigEndian);
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
-                        || tsuid.equals(UID.JPIPReferencedDeflate)) {
+                        || tsuid.equals(UID.JPIPReferencedDeflate)
+                        || tsuid.equals(UID.JPIPHTJ2KReferencedDeflate)) {
                 this.countingOutputStream = new CountingOutputStream(super.out);
                 super.out = new DeflaterOutputStream(countingOutputStream,
                         deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true));

@@ -1036,7 +1036,8 @@ public class DicomInputStream extends FilterInputStream
         bigEndian = tsuid.equals(UID.ExplicitVRBigEndian);
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
-                        || tsuid.equals(UID.JPIPReferencedDeflate)) {
+                        || tsuid.equals(UID.JPIPReferencedDeflate)
+                        || tsuid.equals(UID.JPIPHTJ2KReferencedDeflate)) {
             if (hasZLIBHeader()) {
                 LOG.warn(DEFLATED_WITH_ZLIB_HEADER);
                 super.in = new InflaterInputStream(super.in);

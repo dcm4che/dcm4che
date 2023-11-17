@@ -334,6 +334,9 @@ public class Transcoder implements Closeable {
             case UID.JPEGLSNearLossless:
             case UID.JPEG2000Lossless:
             case UID.JPEG2000:
+            case UID.HTJ2KLossless:
+            case UID.HTJ2KLosslessRPCL:
+            case UID.HTJ2K:
                 return bitsStored <= 16 ? dstTsuid : UID.ExplicitVRLittleEndian;
             default:
                 return dstTsuid;

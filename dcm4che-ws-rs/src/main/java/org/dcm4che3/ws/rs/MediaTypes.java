@@ -157,10 +157,21 @@ public class MediaTypes {
     public final static String IMAGE_JPX = "image/jpx";
 
     /**
-     * "image/dicom+jpeg-jpx"
+     * "image/jpx"
      */
     public final static MediaType IMAGE_JPX_TYPE =
             new MediaType("image", "jpx");
+
+    /**
+     * "image/jphc"
+     */
+    public final static String IMAGE_JPHC = "image/jphc";
+
+    /**
+     * "image/jphc"
+     */
+    public final static MediaType IMAGE_JPHC_TYPE =
+            new MediaType("image", "jphc");
 
     /**
      * "image/dicom-rle"
@@ -408,6 +419,8 @@ public class MediaTypes {
                 return IMAGE_JP2_TYPE;
             case UID.JPEG2000MCLossless:
                 return IMAGE_JPX_TYPE;
+            case UID.HTJ2KLossless:
+                return IMAGE_JPHC_TYPE;
             case UID.RLELossless:
                 return IMAGE_DICOM_RLE_TYPE;
             case UID.JPEGBaseline8Bit:
@@ -424,6 +437,9 @@ public class MediaTypes {
             case UID.JPEG2000MC:
                 type = IMAGE_JPX_TYPE;
                 break;
+            case UID.HTJ2KLosslessRPCL:
+            case UID.HTJ2K:
+                return IMAGE_JPHC_TYPE;
             case UID.MPEG2MPML:
             case UID.MPEG2MPHL:
                 type = VIDEO_MPEG_TYPE;

@@ -79,7 +79,6 @@
         <configuration>
           <extension>true</extension>
           <verbose>true</verbose>
-          <target>2.2</target>
           <endpointClass/>
           <!-- some JDK implementations forbid file access for external schema,
                see http://docs.oracle.com/javase/8/docs/api/javax/xml/XMLConstants.html#ACCESS_EXTERNAL_SCHEMA -->

@@ -138,8 +138,10 @@ public class JPEGParser implements XPEGParser {
         long size = channel.size();
         long boxPos = channel.position();
         long boxLengthType;
-        while (((boxLengthType = readLong(channel)) & 0xffffffff) != CONTIGUOUS_CODESTREAM_BOX) {
-            if ((boxPos += (boxLengthType >>> 32)) > size) {
+        while ((int) (boxLengthType = readLong(channel)) != CONTIGUOUS_CODESTREAM_BOX) {
+            long boxLength = boxLengthType >>> 32;
+            if (boxLength == 1) boxLength = readLong(channel);
+            if (boxLength <= 0 || (boxPos += boxLength) > size) {
                 channel.position(startPos);
                 return;
             }
@@ -342,7 +344,9 @@ public class JPEGParser implements XPEGParser {
 
         @Override
         public String transferSyntaxUID() {
-            return lossyImageCompression() ? UID.JPEG2000 : UID.JPEG2000Lossless;
+            return sizParams.get(0) == 0
+                    ? lossyImageCompression() ? UID.JPEG2000 : UID.JPEG2000Lossless
+                    : lossyImageCompression() ? UID.HTJ2K : UID.HTJ2KLossless;
         }
     }
 }

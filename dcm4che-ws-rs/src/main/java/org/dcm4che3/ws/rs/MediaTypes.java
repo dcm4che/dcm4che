@@ -152,6 +152,17 @@ public class MediaTypes {
             new MediaType("image", "jp2");
 
     /**
+     * "image/jpc"
+     */
+    public final static String IMAGE_JPC = "image/jpc";
+
+    /**
+     * "image/jpc"
+     */
+    public final static MediaType IMAGE_JPC_TYPE =
+            new MediaType("image", "jpc");
+
+    /**
      * "image/jpx"
      */
     public final static String IMAGE_JPX = "image/jpx";
@@ -161,6 +172,17 @@ public class MediaTypes {
      */
     public final static MediaType IMAGE_JPX_TYPE =
             new MediaType("image", "jpx");
+
+    /**
+     * "image/jph"
+     */
+    public final static String IMAGE_JPH = "image/jph";
+
+    /**
+     * "image/jph"
+     */
+    public final static MediaType IMAGE_JPH_TYPE =
+            new MediaType("image", "jph");
 
     /**
      * "image/jphc"
@@ -439,7 +461,8 @@ public class MediaTypes {
                 break;
             case UID.HTJ2KLosslessRPCL:
             case UID.HTJ2K:
-                return IMAGE_JPHC_TYPE;
+                type = IMAGE_JPHC_TYPE;
+                break;
             case UID.MPEG2MPML:
             case UID.MPEG2MPHL:
                 type = VIDEO_MPEG_TYPE;

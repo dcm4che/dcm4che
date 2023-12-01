@@ -346,7 +346,11 @@ public class JPEGParser implements XPEGParser {
         public String transferSyntaxUID() {
             return sizParams.get(0) == 0
                     ? lossyImageCompression() ? UID.JPEG2000 : UID.JPEG2000Lossless
-                    : lossyImageCompression() ? UID.HTJ2K : UID.HTJ2KLossless;
+                    : lossyImageCompression() ? UID.HTJ2K : isRPCL() ? UID.HTJ2KLosslessRPCL : UID.HTJ2KLossless;
+        }
+
+        private boolean isRPCL() {
+            return codParams.get(1) == 2;
         }
     }
 }

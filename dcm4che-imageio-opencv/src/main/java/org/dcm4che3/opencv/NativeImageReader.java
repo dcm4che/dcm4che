@@ -301,6 +301,8 @@ public class NativeImageReader extends ImageReader implements Closeable {
             case MONOCHROME1:
             case MONOCHROME2:
             case PALETTE_COLOR:
+            case YBR_ICT:
+            case YBR_RCT:
                 return false;
             case RGB:
                 // Force JPEG Baseline (1.2.840.10008.1.2.4.50) to YBR_FULL_422 color model when RGB with JFIF header

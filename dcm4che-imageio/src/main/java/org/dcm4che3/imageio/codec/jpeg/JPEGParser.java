@@ -287,6 +287,42 @@ public class JPEGParser implements XPEGParser {
             }
             throw new XPEGParserException(String.format("JPEG SOF%d not supported", sof & 0xf));
         }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder(512);
+            sb.append("JPEGParams{\n SOF").append(sof & 0xf).append("{Lf=").append(sofParams.limit() + 2);
+            sb.append(", P=").append(sofParams.get(0) & 0xff);
+            sb.append(", Y=").append(sofParams.getShort(1) & 0xffff);
+            sb.append(", X=").append(sofParams.getShort(3) & 0xffff);
+            sb.append(", Nf=").append(sofParams.get(5) & 0xff);
+            sb.append(", Comps{");
+            for (int i = 6; i + 2 < sofParams.limit();) {
+                sb.append('{').append(sofParams.get(i++) & 0xff)
+                        .append(':').append((sofParams.get(i) & 0xf0) >>> 4)
+                        .append(':').append(sofParams.get(i++) & 0xf)
+                        .append(':').append(sofParams.get(i++) & 0xff)
+                        .append('}').append(',');;
+            }
+            sb.setLength(sb.length()-1);
+            sb.append("}},\n SOS{Ls=").append(sosParams.limit() + 2);
+            sb.append(", Ns=").append(sosParams.get(0) & 0xff);
+            sb.append(", Comps{");
+            int i = 1;
+            while (i + 4 < sosParams.limit()) {
+                sb.append('{').append(sosParams.get(i++) & 0xff)
+                        .append(':').append((sosParams.get(i) & 0xf0) >>> 4)
+                        .append(':').append(sosParams.get(i++) & 0xf)
+                        .append('}').append(',');
+            }
+            sb.setLength(sb.length()-1);
+            sb.append("}, Ss=").append(sosParams.get(i++) & 0xff);
+            sb.append(", Se=").append(sosParams.get(i++) & 0xff);
+            sb.append(", Ah=").append((sosParams.get(i) & 0xf0) >>> 4);
+            sb.append(", Al=").append(sosParams.get(i) & 0xf);
+            sb.append("}}");
+            return sb.toString();
+        }
     }
 
     private class JPEG2000Params implements Params {
@@ -344,9 +380,92 @@ public class JPEGParser implements XPEGParser {
 
         @Override
         public String transferSyntaxUID() {
-            return sizParams.get(0) == 0
-                    ? lossyImageCompression() ? UID.JPEG2000 : UID.JPEG2000Lossless
-                    : lossyImageCompression() ? UID.HTJ2K : isRPCL() ? UID.HTJ2KLosslessRPCL : UID.HTJ2KLossless;
+            return (sizParams.getShort(0) & 0b0100_0000_0000_0000) != 0
+                    ? lossyImageCompression() ? UID.HTJ2K : isRPCL() ? UID.HTJ2KLosslessRPCL : UID.HTJ2KLossless
+                    : lossyImageCompression() ? UID.JPEG2000 : UID.JPEG2000Lossless;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder(512);
+            sb.append("JPEG2000Params{\n SIZ{Lsiz=").append(sizParams.limit() + 2);
+            sb.append(", Rsiz=").append(toBinaryString(sizParams.getShort(0) & 0xffff));
+            sb.append(", Xsiz=").append(sizParams.getInt(2) & 0xffffffffL);
+            sb.append(", Ysiz=").append(sizParams.getInt(6) & 0xffffffffL);
+            sb.append(", XOsiz=").append(sizParams.getInt(10) & 0xffffffffL);
+            sb.append(", YOsiz=").append(sizParams.getInt(14) & 0xffffffffL);
+            sb.append(", XTsiz=").append(sizParams.getInt(18) & 0xffffffffL);
+            sb.append(", YTsiz=").append(sizParams.getInt(22) & 0xffffffffL);
+            sb.append(", XTOsiz=").append(sizParams.getInt(26) & 0xffffffffL);
+            sb.append(", YTOsiz=").append(sizParams.getInt(30) & 0xffffffffL);
+            sb.append(", Csiz=").append(sizParams.getShort(34) & 0xffff);
+            sb.append(", Comps{");
+            for (int i = 36; i + 2 < sizParams.limit();) {
+                sb.append('{');
+                int ssiz = sizParams.get(i++);
+                if (ssiz < 0) sb.append('±');
+                sb.append((ssiz & 0x7f) + 1)
+                        .append(':')
+                        .append(sizParams.get(i++) & 0xff)
+                        .append(':')
+                        .append(sizParams.get(i++) & 0xff)
+                        .append('}').append(',');
+            }
+            sb.setLength(sb.length()-1);
+            sb.append("}},\n COD{Lcod=").append(codParams.limit() + 2);
+            sb.append(", Scod=").append(toBinaryString(codParams.get(0) & 0xff));
+            sb.append(", SGcod{Progression-order=").append(toProgressionOrder(codParams.get(1) & 0xff));
+            sb.append(", Layers=").append(codParams.getShort(2) & 0xffff);
+            sb.append(", RCT/ICT=").append(codParams.get(4));
+            sb.append("}, SPcod{NL=").append(codParams.get(5) & 0xff);
+            sb.append(", xcb=").append(codParams.get(6) & 0xff);
+            sb.append(", ycb=").append(codParams.get(7) & 0xff);
+            sb.append(", cb-style=").append(toBinaryString(codParams.get(8) & 0xff));
+            sb.append(", Wavelet=").append(toTransformation(codParams.get(9) & 0xff));
+            sb.append(", Precincts{");
+            for (int i = 10; i < codParams.limit(); i++) {
+                sb.append('{').append(codParams.get(i) & 0xf)
+                        .append(',').append((codParams.get(i) & 0xf0) >>> 4)
+                        .append('}').append(',');
+            }
+            sb.setLength(sb.length()-1);
+            sb.append("}}}}");
+            return sb.toString();
+        }
+
+        private String toTransformation(int i) {
+            switch (i) {
+                case 0:
+                    return "9-7";
+                case 1:
+                    return "5-3";
+            }
+            return Integer.toString(i);
+        }
+
+        private String toProgressionOrder(int i) {
+            switch (i) {
+                case 0:
+                    return "LRCP";
+                case 1:
+                    return "RLCP";
+                case 2:
+                    return "RPCL";
+                case 3:
+                    return "PCRL";
+                case 4:
+                    return "CPRL";
+            }
+            return Integer.toString(i);
+        }
+
+        private String toBinaryString(int i) {
+            String s = Integer.toBinaryString(i);
+            int l = s.length();
+            if (l <= 4) return s;
+            StringBuilder sb = new StringBuilder(s);
+            while (l > 4) sb.insert(l -= 4, '_');
+            return sb.toString();
         }
 
         private boolean isRPCL() {

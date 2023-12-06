@@ -414,7 +414,7 @@ public class JPEGParser implements XPEGParser {
             sb.setLength(sb.length()-1);
             sb.append("}},\n COD{Lcod=").append(codParams.limit() + 2);
             sb.append(", Scod=").append(toBinaryString(codParams.get(0) & 0xff));
-            sb.append(", SGcod{Progression-order=").append(toProgressionOrder(codParams.get(1) & 0xff));
+            sb.append(", SGcod{P=").append(toProgressionOrder(codParams.get(1) & 0xff));
             sb.append(", Layers=").append(codParams.getShort(2) & 0xffff);
             sb.append(", RCT/ICT=").append(codParams.get(4));
             sb.append("}, SPcod{NL=").append(codParams.get(5) & 0xff);

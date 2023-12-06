@@ -336,19 +336,27 @@ public class JPEGParser implements XPEGParser {
 
     private class JPEG2000Params implements Params {
 
-        final ByteBuffer sizParams;
-        final ByteBuffer codParams;
+        ByteBuffer sizParams;
+        ByteBuffer codParams;
+        boolean tlm;
 
         JPEG2000Params(SeekableByteChannel channel) throws IOException {
             Segment segment;
-            while ((segment = nextSegment(channel)).marker != JPEG.SIZ) {
-                skip(channel, segment.contentSize);
-            }
-            channel.read(sizParams = ByteBuffer.allocate(segment.contentSize));
-            while ((segment = nextSegment(channel)).marker != JPEG.COD) {
-                skip(channel, segment.contentSize);
-            }
-            channel.read(codParams = ByteBuffer.allocate(segment.contentSize));
+            do {
+                segment = nextSegment(channel);
+                switch (segment.marker) {
+                    case JPEG.SIZ:
+                        channel.read(sizParams = ByteBuffer.allocate(segment.contentSize));
+                        break;
+                    case JPEG.COD:
+                        channel.read(codParams = ByteBuffer.allocate(segment.contentSize));
+                        break;
+                    case JPEG.TLM:
+                        tlm = true;
+                    default:
+                        skip(channel, segment.contentSize);
+                }
+            } while (segment.marker != JPEG.SOT);
         }
 
         @Override
@@ -390,7 +398,13 @@ public class JPEGParser implements XPEGParser {
         @Override
         public String transferSyntaxUID() {
             return (sizParams.getShort(0) & 0b0100_0000_0000_0000) != 0
-                    ? lossyImageCompression() ? UID.HTJ2K : isRPCL() ? UID.HTJ2KLosslessRPCL : UID.HTJ2KLossless
+                    ? lossyImageCompression() ? UID.HTJ2K
+                        : tlm && isRPCL()
+                            && isBlockSize64x64()
+                            && hasSingleTile()
+                            && isBaseResolutionLess64x64()
+                                ? UID.HTJ2KLosslessRPCL
+                                : UID.HTJ2KLossless
                     : lossyImageCompression() ? UID.JPEG2000 : UID.JPEG2000Lossless;
         }
 
@@ -427,8 +441,8 @@ public class JPEGParser implements XPEGParser {
             sb.append(", Layers=").append(codParams.getShort(2) & 0xffff);
             sb.append(", RCT/ICT=").append(codParams.get(4));
             sb.append("}, SPcod{NL=").append(codParams.get(5) & 0xff);
-            sb.append(", xcb=").append(codParams.get(6) & 0xff);
-            sb.append(", ycb=").append(codParams.get(7) & 0xff);
+            sb.append(", cb-width=").append(4 << (codParams.get(6) & 0xff));
+            sb.append(", cb-height=").append(4 << (codParams.get(7) & 0xff));
             sb.append(", cb-style=").append(toBinaryString(codParams.get(8) & 0xff));
             sb.append(", Wavelet=").append(toTransformation(codParams.get(9) & 0xff));
             sb.append(", Precincts{");
@@ -438,7 +452,7 @@ public class JPEGParser implements XPEGParser {
                         .append('}').append(',');
             }
             sb.setLength(sb.length()-1);
-            sb.append("}}}}");
+            sb.append(tlm ? "}}}\n  TLM}" : "}}}}");
             return sb.toString();
         }
 
@@ -479,6 +493,25 @@ public class JPEGParser implements XPEGParser {
 
         private boolean isRPCL() {
             return codParams.get(1) == 2;
+        }
+
+        private boolean isBaseResolutionLess64x64() {
+            int d = (codParams.get(5) & 0xff);
+            return (((rows() >>> d) - 1) >>> 6) == 0
+                    || (((columns() >>> d) - 1) >>> 6) == 0;
+        }
+
+        private boolean isBlockSize64x64() {
+            return (codParams.get(6) & 0xff) == 4 && (codParams.get(7) & 0xff) == 4;
+        }
+
+        private boolean hasSingleTile() {
+            return ((sizParams.getInt(2) & 0xffffffffL) // Xsiz
+                    - (sizParams.getInt(26) & 0xffffffffL) // XTOsiz
+                    <= (sizParams.getInt(18) & 0xffffffffL)) // XTsiz
+                    && ((sizParams.getInt(6) & 0xffffffffL) // Ysiz
+                    - (sizParams.getInt(30) & 0xffffffffL) // YTOsiz
+                    <= (sizParams.getInt(22) & 0xffffffffL)); // YTsiz
         }
     }
 }

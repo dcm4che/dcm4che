@@ -58,6 +58,12 @@ public class JPEG {
     public static final int SIZ = 0x51;
     /** Coding style default */
     public static final int COD = 0x52;
+    /** Tile-part lengths */
+    public static final int TLM = 0x55;
+    /** Start of tile-part */
+    public static final int SOT = 0x90;
+    /** Start of data */
+    public static final int SOD = 0x93;
 
     // SOF markers for Nondifferential Huffman coding
     /** Baseline DCT */

@@ -84,6 +84,15 @@ public class JPEGParser implements XPEGParser {
     }
 
     @Override
+    public String toString() {
+        return "JPEGParser{" +
+                "codeStreamPos=" + codeStreamPosition +
+                ", posAfterAPP=" + positionAfterAPP +
+                ", " + params +
+                '}';
+    }
+
+    @Override
     public long getCodeStreamPosition() {
         return codeStreamPosition;
     }
@@ -291,7 +300,7 @@ public class JPEGParser implements XPEGParser {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(512);
-            sb.append("JPEGParams{\n SOF").append(sof & 0xf).append("{Lf=").append(sofParams.limit() + 2);
+            sb.append("JPEGParams{\n  SOF").append(sof & 0xf).append("{Lf=").append(sofParams.limit() + 2);
             sb.append(", P=").append(sofParams.get(0) & 0xff);
             sb.append(", Y=").append(sofParams.getShort(1) & 0xffff);
             sb.append(", X=").append(sofParams.getShort(3) & 0xffff);
@@ -305,7 +314,7 @@ public class JPEGParser implements XPEGParser {
                         .append('}').append(',');;
             }
             sb.setLength(sb.length()-1);
-            sb.append("}},\n SOS{Ls=").append(sosParams.limit() + 2);
+            sb.append("}},\n  SOS{Ls=").append(sosParams.limit() + 2);
             sb.append(", Ns=").append(sosParams.get(0) & 0xff);
             sb.append(", Comps{");
             int i = 1;
@@ -388,7 +397,7 @@ public class JPEGParser implements XPEGParser {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(512);
-            sb.append("JPEG2000Params{\n SIZ{Lsiz=").append(sizParams.limit() + 2);
+            sb.append("JPEG2000Params{\n  SIZ{Lsiz=").append(sizParams.limit() + 2);
             sb.append(", Rsiz=").append(toBinaryString(sizParams.getShort(0) & 0xffff));
             sb.append(", Xsiz=").append(sizParams.getInt(2) & 0xffffffffL);
             sb.append(", Ysiz=").append(sizParams.getInt(6) & 0xffffffffL);
@@ -412,7 +421,7 @@ public class JPEGParser implements XPEGParser {
                         .append('}').append(',');
             }
             sb.setLength(sb.length()-1);
-            sb.append("}},\n COD{Lcod=").append(codParams.limit() + 2);
+            sb.append("}},\n  COD{Lcod=").append(codParams.limit() + 2);
             sb.append(", Scod=").append(toBinaryString(codParams.get(0) & 0xff));
             sb.append(", SGcod{P=").append(toProgressionOrder(codParams.get(1) & 0xff));
             sb.append(", Layers=").append(codParams.getShort(2) & 0xffff);

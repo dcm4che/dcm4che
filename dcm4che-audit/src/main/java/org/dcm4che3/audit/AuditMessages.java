@@ -735,14 +735,17 @@ public class AuditMessages {
         return asi;
    }
 
-    public static ParticipantObjectDetail createParticipantObjectDetail(
-            String type, String value) {
+    public static ParticipantObjectDetail createParticipantObjectDetail(String type, String value) {
         if (value == null)
             return null;
 
+        return toParticipantObjectDetail(type, value.getBytes());
+    }
+
+    public static ParticipantObjectDetail toParticipantObjectDetail(String type, byte[] value) {
         ParticipantObjectDetail detail = new ParticipantObjectDetail();
         detail.setType(type);
-        detail.setValue(value.getBytes());
+        detail.setValue(value);
         return detail;
     }
 

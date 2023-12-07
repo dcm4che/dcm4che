@@ -434,14 +434,16 @@ public class StowRS {
             case "jhc":
             case "jph":
             case "image/jph":
-            case "image/jhc":
-            case "image/j2c":
             case "image/jphc":
                 return FileContentType.JPHC;
             case "jpg":
             case "jpeg":
             case "image/jpeg":
                 return FileContentType.JPEG;
+            case "j2c":
+            case "j2k":
+            case "image/j2c":
+                return FileContentType.J2C;
             case "jp2":
             case "image/jp2":
                 return FileContentType.JP2;
@@ -498,6 +500,10 @@ public class StowRS {
         JP2(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
                 Tag.PixelData,
                 MediaTypes.IMAGE_JP2,
+                vlPhotographicImage ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
+        J2C(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
+                Tag.PixelData,
+                MediaTypes.IMAGE_J2C,
                 vlPhotographicImage ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
         PNG(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
                 Tag.PixelData,
@@ -602,6 +608,7 @@ public class StowRS {
             case JPHC:
             case JPEG:
             case JP2:
+            case J2C:
             case PNG:
             case GIF:
             case MPEG:
@@ -712,7 +719,9 @@ public class StowRS {
         }
 
         static CompressedPixelData valueOf() {
-            return bulkdataFileContentType == FileContentType.JP2 || bulkdataFileContentType == FileContentType.JPHC
+            return bulkdataFileContentType == FileContentType.JP2
+                        || bulkdataFileContentType == FileContentType.J2C
+                        || bulkdataFileContentType == FileContentType.JPHC
                     ? JPEG
                     : bulkdataFileContentType == FileContentType.QUICKTIME
                     ? MP4 : valueOf(bulkdataFileContentType.name());

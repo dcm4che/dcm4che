@@ -336,11 +336,14 @@ public class JPEGParser implements XPEGParser {
 
     private class JPEG2000Params implements Params {
 
-        ByteBuffer sizParams;
-        ByteBuffer codParams;
-        boolean tlm;
+        final ByteBuffer sizParams;
+        final ByteBuffer codParams;
+        final boolean tlm;
 
         JPEG2000Params(SeekableByteChannel channel) throws IOException {
+            ByteBuffer sizParams = null;
+            ByteBuffer codParams = null;
+            boolean tlm = false;
             Segment segment;
             do {
                 segment = nextSegment(channel);
@@ -357,6 +360,9 @@ public class JPEGParser implements XPEGParser {
                         skip(channel, segment.contentSize);
                 }
             } while (segment.marker != JPEG.SOT);
+            this.sizParams = sizParams;
+            this.codParams = codParams;
+            this.tlm = tlm;
         }
 
         @Override
@@ -398,13 +404,7 @@ public class JPEGParser implements XPEGParser {
         @Override
         public String transferSyntaxUID() {
             return (sizParams.getShort(0) & 0b0100_0000_0000_0000) != 0
-                    ? lossyImageCompression() ? UID.HTJ2K
-                        : tlm && isRPCL()
-                            && isBlockSize64x64()
-                            && hasSingleTile()
-                            && isBaseResolutionLess64x64()
-                                ? UID.HTJ2KLosslessRPCL
-                                : UID.HTJ2KLossless
+                    ? lossyImageCompression() ? UID.HTJ2K : isRPCL() ? UID.HTJ2KLosslessRPCL : UID.HTJ2KLossless
                     : lossyImageCompression() ? UID.JPEG2000 : UID.JPEG2000Lossless;
         }
 
@@ -421,6 +421,8 @@ public class JPEGParser implements XPEGParser {
             sb.append(", YTsiz=").append(sizParams.getInt(22) & 0xffffffffL);
             sb.append(", XTOsiz=").append(sizParams.getInt(26) & 0xffffffffL);
             sb.append(", YTOsiz=").append(sizParams.getInt(30) & 0xffffffffL);
+            sb.append(", numXTiles=").append(numXTiles());
+            sb.append(", numYTiles=").append(numYTiles());
             sb.append(", Csiz=").append(sizParams.getShort(34) & 0xffff);
             sb.append(", Comps{");
             for (int i = 36; i + 2 < sizParams.limit();) {
@@ -492,6 +494,14 @@ public class JPEGParser implements XPEGParser {
         }
 
         private boolean isRPCL() {
+            return tlm && isProgressionOrderRPCL()
+                    && isBlockSize64x64()
+                    && numXTiles() == 1
+                    && numYTiles() == 1
+                    && isBaseResolutionLess64x64();
+        }
+
+        private boolean isProgressionOrderRPCL() {
             return codParams.get(1) == 2;
         }
 
@@ -505,13 +515,19 @@ public class JPEGParser implements XPEGParser {
             return (codParams.get(6) & 0xff) == 4 && (codParams.get(7) & 0xff) == 4;
         }
 
-        private boolean hasSingleTile() {
-            return ((sizParams.getInt(2) & 0xffffffffL) // Xsiz
-                    - (sizParams.getInt(26) & 0xffffffffL) // XTOsiz
-                    <= (sizParams.getInt(18) & 0xffffffffL)) // XTsiz
-                    && ((sizParams.getInt(6) & 0xffffffffL) // Ysiz
-                    - (sizParams.getInt(30) & 0xffffffffL) // YTOsiz
-                    <= (sizParams.getInt(22) & 0xffffffffL)); // YTsiz
+        private int numXTiles() {
+            return numTiles(2, 18, 26);
+        }
+
+        private int numYTiles() {
+            return numTiles(6, 22, 30);
+        }
+
+        private int numTiles(int iSize, int iTsiz, int iTOsiz) {
+            long tSize = sizParams.getInt(iTsiz) & 0xffffffffL;
+            return (int) (((sizParams.getInt(iSize) & 0xffffffffL)
+                    - (sizParams.getInt(iTOsiz) & 0xffffffffL) + tSize - 1)
+                    / tSize);
         }
     }
 }

@@ -431,6 +431,13 @@ public class StowRS {
             case "bz2":
             case "application/x-bzip2":
                 return FileContentType.DOC_BZIP2;
+            case "jhc":
+            case "jph":
+            case "image/jph":
+            case "image/jhc":
+            case "image/j2c":
+            case "image/jphc":
+                return FileContentType.JPHC;
             case "jpg":
             case "jpeg":
             case "image/jpeg":
@@ -480,6 +487,10 @@ public class StowRS {
                 "encapsulatedVCFBzip2Metadata.xml"),
         DOC_BZIP2(UID.PrivateDcm4cheEncapsulatedBzip2DocumentStorage, Tag.EncapsulatedDocument, MediaTypes.APPLICATION_X_BZIP2,
                 "encapsulatedDocumentBzip2Metadata.xml"),
+        JPHC(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
+                Tag.PixelData,
+                MediaTypes.IMAGE_JPHC,
+                vlPhotographicImage ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
         JPEG(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
                 Tag.PixelData,
                 MediaTypes.IMAGE_JPEG,
@@ -588,6 +599,7 @@ public class StowRS {
                 supplementEncapsulatedDocAttrs(metadata, stowRSBulkdata);
                 contentLocBulkdata.put(contentLoc, stowRSBulkdata);
                 break;
+            case JPHC:
             case JPEG:
             case JP2:
             case PNG:
@@ -700,7 +712,7 @@ public class StowRS {
         }
 
         static CompressedPixelData valueOf() {
-            return bulkdataFileContentType == FileContentType.JP2
+            return bulkdataFileContentType == FileContentType.JP2 || bulkdataFileContentType == FileContentType.JPHC
                     ? JPEG
                     : bulkdataFileContentType == FileContentType.QUICKTIME
                     ? MP4 : valueOf(bulkdataFileContentType.name());

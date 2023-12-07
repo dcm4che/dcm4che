@@ -375,7 +375,7 @@ public class Jpg2Dcm {
             switch (type.toLowerCase()) {
                 case "image/jpeg":
                 case "image/jp2":
-                case "image/jpc":
+                case "image/j2c":
                 case "image/jph":
                 case "image/jphc":
                     return ContentType.IMAGE_JPEG;

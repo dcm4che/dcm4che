@@ -152,15 +152,15 @@ public class MediaTypes {
             new MediaType("image", "jp2");
 
     /**
-     * "image/jpc"
+     * "image/j2c"
      */
-    public final static String IMAGE_JPC = "image/jpc";
+    public final static String IMAGE_JC2 = "image/j2c";
 
     /**
-     * "image/jpc"
+     * "image/j2c"
      */
-    public final static MediaType IMAGE_JPC_TYPE =
-            new MediaType("image", "jpc");
+    public final static MediaType IMAGE_JC2_TYPE =
+            new MediaType("image", "j2c");
 
     /**
      * "image/jpx"

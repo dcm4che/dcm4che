@@ -442,18 +442,20 @@ public class JPEGParser implements XPEGParser {
             sb.append(", SGcod{P=").append(toProgressionOrder(codParams.get(1) & 0xff));
             sb.append(", Layers=").append(codParams.getShort(2) & 0xffff);
             sb.append(", RCT/ICT=").append(codParams.get(4));
-            sb.append("}, SPcod{NL=").append(codParams.get(5) & 0xff);
+            sb.append("}, SPcod{NL=").append(decompositions());
             sb.append(", cb-width=").append(4 << (codParams.get(6) & 0xff));
             sb.append(", cb-height=").append(4 << (codParams.get(7) & 0xff));
             sb.append(", cb-style=").append(toBinaryString(codParams.get(8) & 0xff));
             sb.append(", Wavelet=").append(toTransformation(codParams.get(9) & 0xff));
-            sb.append(", Precincts{");
-            for (int i = 10; i < codParams.limit(); i++) {
-                sb.append('{').append(codParams.get(i) & 0xf)
-                        .append(',').append((codParams.get(i) & 0xf0) >>> 4)
-                        .append('}').append(',');
+            if (codParams.limit() > 10) {
+                sb.append(", Precincts{");
+                for (int i = 10; i < codParams.limit(); i++) {
+                    sb.append('{').append(codParams.get(i) & 0xf)
+                            .append(',').append((codParams.get(i) & 0xf0) >>> 4)
+                            .append('}').append(',');
+                }
+                sb.setLength(sb.length() - 1);
             }
-            sb.setLength(sb.length()-1);
             sb.append(tlm ? "}}}\n  TLM}" : "}}}}");
             return sb.toString();
         }
@@ -498,17 +500,15 @@ public class JPEGParser implements XPEGParser {
                     && isBlockSize64x64()
                     && numXTiles() == 1
                     && numYTiles() == 1
-                    && isBaseResolutionLess64x64();
+                    && (Math.min(rows(), columns()) >>> decompositions()) <= 64;
         }
 
         private boolean isProgressionOrderRPCL() {
             return codParams.get(1) == 2;
         }
 
-        private boolean isBaseResolutionLess64x64() {
-            int d = (codParams.get(5) & 0xff);
-            return (((rows() >>> d) - 1) >>> 6) == 0
-                    || (((columns() >>> d) - 1) >>> 6) == 0;
+        private int decompositions() {
+            return codParams.get(5) & 0xff;
         }
 
         private boolean isBlockSize64x64() {

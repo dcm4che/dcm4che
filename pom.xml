@@ -79,15 +79,15 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <slf4j.version>2.0.1</slf4j.version>
-    <logback.version>1.4.4</logback.version>
+    <slf4j.version>2.0.9</slf4j.version>
+    <logback.version>1.4.14</logback.version>
     <weasis.core.img.version>4.8.1</weasis.core.img.version>
     <weasis.opencv.native.version>4.8.1-dcm</weasis.opencv.native.version>
     <keycloak.version>23.0.1</keycloak.version>
     <jbossws-cxf-client.version>7.0.0.Final</jbossws-cxf-client.version>
     <apache-cxf.version>4.0.0</apache-cxf.version>
     <apache-commons-csv.version>1.10.0</apache-commons-csv.version>
-    <apache-commons-compress.version>1.23.0</apache-commons-compress.version>
+    <apache-commons-compress.version>1.25.0</apache-commons-compress.version>
     <jakarta.activation.version>2.1.2</jakarta.activation.version>
     <eclipse.angus.activation.version>2.0.1</eclipse.angus.activation.version>
     <jakarta.xml.bind.version>4.0.0</jakarta.xml.bind.version>
@@ -104,7 +104,7 @@
     <org.glassfish.gmbal.version>4.0.3</org.glassfish.gmbal.version>
     <org.jvnet.mimepull.version>1.10.0</org.jvnet.mimepull.version>
     <org.jvnet.staxex.version>2.1.0</org.jvnet.staxex.version>
-    <commons-cli.version>1.5.0</commons-cli.version>
+    <commons-cli.version>1.6.0</commons-cli.version>
 
     <!-- for SonarCloud / SonarQube -->
     <sonar.organization>dcm4che</sonar.organization>

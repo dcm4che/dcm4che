@@ -111,7 +111,7 @@ public class Pdf2Dcm {
     private static CommandLine parseComandLine(String[] args) throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        opts.addOption(Option.builder("m")
+        opts.addOption(Option.builder("s")
                 .hasArgs()
                 .argName("[seq.]attr=value")
                 .desc(rb.getString("metadata"))
@@ -211,7 +211,7 @@ public class Pdf2Dcm {
         if (cl.hasOption("f"))
             staticMetadata = SAXReader.parse(cl.getOptionValue("f"));
 
-        CLIUtils.addAttributes(staticMetadata, cl.getOptionValues("m"));
+        CLIUtils.addAttributes(staticMetadata, cl.getOptionValues("s"));
         supplementMissingUIDs(staticMetadata);
         supplementType2Tags(staticMetadata);
     }

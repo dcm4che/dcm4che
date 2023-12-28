@@ -155,7 +155,7 @@ public class Jpg2Dcm {
     private static CommandLine parseComandLine(String[] args) throws ParseException {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
-        opts.addOption(Option.builder("m")
+        opts.addOption(Option.builder("s")
                 .hasArgs()
                 .argName("[seq.]attr=value")
                 .desc(rb.getString("metadata"))
@@ -200,7 +200,7 @@ public class Jpg2Dcm {
         if (cl.hasOption("f"))
             SAXReader.parse(cl.getOptionValue("f"), staticMetadata);
 
-        CLIUtils.addAttributes(staticMetadata, cl.getOptionValues("m"));
+        CLIUtils.addAttributes(staticMetadata, cl.getOptionValues("s"));
         supplementMissingUIDs(staticMetadata);
         supplementMissingValue(staticMetadata, Tag.SeriesNumber, "999");
         supplementMissingValue(staticMetadata, Tag.InstanceNumber, "1");

@@ -29,7 +29,7 @@ Options:
                             Fragmentable Encapsulated Transfer Syntax;
                             4294967294 (=2^32-2) by default.
  -h,--help                  display this help and exit
- -m <[seq.]attr=value>      specify included DICOM Attribute. attr can be
+ -s <[seq.]attr=value>      specify included DICOM Attribute. attr can be
                             specified by keyword or tag value (in hex),
                             e.g. PatientName or00100010. Attributes in
                             nested Datasets can be specified by including

@@ -75,8 +75,7 @@ public class AttributesFormat extends Format {
     private final int[][] tagPaths;
     private final int[] index;
     private final int[] offsets;
-    private final Period[] dateOffsets;
-    private final Duration[] timeOffsets;
+    private final Object[] dateTimeOffsets;
     private final UnaryOperator<String>[] slices;
     private final Type[] types;
     private final MessageFormat format;
@@ -89,8 +88,7 @@ public class AttributesFormat extends Format {
         this.index = new int[n];
         this.types = new Type[n];
         this.offsets = new int[n];
-        this.dateOffsets = new Period[n];
-        this.timeOffsets = new Duration[n];
+        this.dateTimeOffsets = new Object[n];
         this.slices = new UnaryOperator[n];
         this.format = buildMessageFormat(tokens);
     }
@@ -163,12 +161,12 @@ public class AttributesFormat extends Format {
                     if (tagStr.startsWith("date", typeStart)) {
                         types[i] = Type.date;
                         if (typeStart + 4 < typeEnd) {
-                            dateOffsets[i] = Period.parse(tagStr.substring(typeStart + 4, typeEnd));
+                            dateTimeOffsets[i] = Period.parse(tagStr.substring(typeStart + 4, typeEnd));
                         }
                     } else if (tagStr.startsWith("time", typeStart)) {
                         types[i] = Type.time;
                         if (typeStart + 4 < typeEnd) {
-                            timeOffsets[i] = Duration.parse(tagStr.substring(typeStart + 4, typeEnd));
+                            dateTimeOffsets[i] = Duration.parse(tagStr.substring(typeStart + 4, typeEnd));
                         }
                     } else {
                         types[i] = Type.valueOf(tagStr.substring(typeStart, typeEnd));
@@ -245,7 +243,7 @@ public class AttributesFormat extends Format {
                     if (item == null) continue outer;
                 }
             }
-            args[i] = types[i].toArg(item, tag, index[i], offsets[i], dateOffsets[i], timeOffsets[i], slices[i]);
+            args[i] = types[i].toArg(item, tag, index[i], offsets[i], dateTimeOffsets[i], slices[i]);
         }
         return args;
     }
@@ -263,45 +261,46 @@ public class AttributesFormat extends Format {
     private enum Type {
         none {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 return attrs.getString(tag, index, "");
             }
         },
         upper {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 return attrs.getString(tag, index, "").toUpperCase();
             }
         },
         slice {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> slice) {
                 return slice.apply(attrs.getString(tag, index));
             }
         },
         number {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 return attrs.getDouble(tag, index, 0.);
             }
         },
         offset {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 return Integer.toString(attrs.getInt(tag, index, 0) + offset);
             }
         },
         date {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 Date date = tag != 0 ? attrs.getDate(tag, index) : new Date();
-                if (dateOffset == null) return date;
+                if (!(dateTimeOffset instanceof Period)) return date;
+                Period dateOffset = (Period) dateTimeOffset;
                 Calendar cal = Calendar.getInstance(attrs.getTimeZone());
                 cal.setTime(date);
                 cal.add(Calendar.YEAR, dateOffset.getYears());
@@ -312,10 +311,11 @@ public class AttributesFormat extends Format {
         },
         time {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 Date date = tag != 0 ? attrs.getDate(tag, index) : new Date();
-                if (timeOffset == null) return date;
+                if (!(dateTimeOffset instanceof Duration)) return date;
+                Duration timeOffset = (Duration) dateTimeOffset;
                 Calendar cal = Calendar.getInstance(attrs.getTimeZone());
                 cal.setTime(date);
                 cal.add(Calendar.SECOND, (int) timeOffset.getSeconds());
@@ -324,14 +324,14 @@ public class AttributesFormat extends Format {
         },
         choice {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 return attrs.getDouble(tag, index, 0.);
             }
         },
         hash {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 String s = attrs.getString(tag, index);
                 return s != null ? TagUtils.toHexString(s.hashCode()) : null;
@@ -339,7 +339,7 @@ public class AttributesFormat extends Format {
         },
         md5 {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 String s = attrs.getString(tag, index);
                 return s != null ? getMD5String(s) : null;
@@ -347,7 +347,7 @@ public class AttributesFormat extends Format {
         },
         urlencoded {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 String s = attrs.getString(tag, index);
                 try {
@@ -359,27 +359,27 @@ public class AttributesFormat extends Format {
         },
         rnd {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 return TagUtils.toHexString(ThreadLocalRandom.current().nextInt());
             }
         },
         uuid {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 return UUID.randomUUID();
             }
         },
         uid {
             @Override
-            Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+            Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                          UnaryOperator<String> splice) {
                 return UIDUtils.createUID();
             }
         };
 
-        abstract Object toArg(Attributes attrs, int tag, int index, int offset, Period dateOffset, Duration timeOffset,
+        abstract Object toArg(Attributes attrs, int tag, int index, int offset, Object dateTimeOffset,
                               UnaryOperator<String> splice);
 
         String getMD5String( String s ) {

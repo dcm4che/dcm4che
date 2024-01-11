@@ -83,6 +83,9 @@ public class Json2Props {
             CommandLine cl = parseCommandLine(args);
             List<String> argsList = cl.getArgList();
             switch (argsList.size()) {
+                case 0:
+                case 1:
+                    throw new ParseException(rb.getString("missing-args"));
                 case 2:
                     json2props(new File(argsList.get(0)), new File(argsList.get(1)));
                     break;
@@ -90,6 +93,7 @@ public class Json2Props {
                     props2json(new File(argsList.get(0)), new File(argsList.get(1)), new File(argsList.get(2)));
                     break;
                 default:
+                    throw new ParseException(rb.getString("to-many-args"));
             }
         } catch (ParseException e) {
             System.err.println("json2props: " + e.getMessage());
@@ -103,14 +107,14 @@ public class Json2Props {
     }
 
     public static void json2props(File schemaDir, File propsDir) throws IOException {
-        propsDir.mkdirs();
-        if (schemaDir.isFile()) {
-            System.err.println("Schema directory not specified");
+        String[] fnames = schemaDir.list((dir, name) -> name.endsWith(".schema.json"));
+        if (fnames == null || fnames.length == 0) {
+            System.err.println("No schema files found in " + schemaDir);
             System.err.println(rb.getString("try"));
             return;
         }
-
-        for (String fname : schemaDir.list((dir, name) -> name.endsWith(".schema.json"))) {
+        propsDir.mkdirs();
+        for (String fname : fnames) {
             String prefix = fname.substring(0, fname.length() - 11);
             json2props1(
                     new File(schemaDir, fname),
@@ -153,8 +157,14 @@ public class Json2Props {
     }
 
     public static void props2json(File srcSchemaDir, File propsDir, File destSchemaDir) throws IOException {
+        String[] fnames = srcSchemaDir.list((dir, name) -> name.endsWith(".schema.json"));
+        if (fnames == null || fnames.length == 0) {
+            System.err.println("No schema files found in " + srcSchemaDir);
+            System.err.println(rb.getString("try"));
+            return;
+        }
         destSchemaDir.mkdirs();
-        for (String fname : srcSchemaDir.list((dir, name) -> name.endsWith(".schema.json"))) {
+        for (String fname : fnames) {
             String prefix = fname.substring(0, fname.length() - 11);
             props2json1(
                     new File(srcSchemaDir, fname),

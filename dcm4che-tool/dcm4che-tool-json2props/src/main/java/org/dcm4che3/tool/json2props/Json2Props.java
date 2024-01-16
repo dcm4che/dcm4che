@@ -118,7 +118,7 @@ public class Json2Props {
             String prefix = fname.substring(0, fname.length() - 11);
             json2props1(
                     new File(schemaDir, fname),
-                    new File(propsDir, prefix + "properties"),
+                    new File(propsDir, prefix + "props"),
                     prefix);
         }
     }
@@ -168,7 +168,7 @@ public class Json2Props {
             String prefix = fname.substring(0, fname.length() - 11);
             props2json1(
                     new File(srcSchemaDir, fname),
-                    new File(propsDir, prefix + "properties"),
+                    new File(propsDir, prefix + "props"),
                     new File(destSchemaDir, fname),
                     prefix);
         }

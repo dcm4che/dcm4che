@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2023e - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2024a - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2023</year>
+      <year>2024</year>
       <holder>NEMA</holder>
     </copyright>
       <legalnotice>
@@ -6574,7 +6574,7 @@
 <para xml:id="para_e0862c63-426e-4d37-b2a4-b16fdf4a268c">No such Attribute (0105H) - the Tag for the specified Attribute was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_d1963d97-d707-4e70-a618-f2a60870f238">Attribute list error (0107H) -one or more specified Attributes were not recognized and not included in the created instance.</para>
+<para xml:id="para_d1963d97-d707-4e70-a618-f2a60870f238">Attribute list error (0107H) - one or more specified Attributes were not recognized and not included in the created instance.</para>
 </listitem>
   <listitem>
 <para xml:id="para_2214f90c-300c-4a89-b3a2-35bba4bf66bb">No such SOP Class (0118H) - the SOP Class was not recognized.</para>

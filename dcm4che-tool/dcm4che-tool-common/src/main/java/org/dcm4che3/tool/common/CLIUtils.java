@@ -196,6 +196,15 @@ public class CLIUtils {
         addSocketOptions(opts);
         addTLSOptions(opts);
     }
+    
+    public static void addAcceptedCallingAETs(Options opts) {
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("title(s)")
+                .desc(rb.getString("accepted-calling-aets"))
+                .longOpt("accepted-calling-aets")
+                .build());
+    }
 
     public static void addRequestTimeoutOption(Options opts) {
         opts.addOption(Option.builder()
@@ -488,7 +497,7 @@ public class CLIUtils {
                         ? Priority.LOW
                         : Priority.NORMAL;
     }
-
+    
     public static int getIntOption(CommandLine cl, String opt, int defVal) {
         String optVal = cl.getOptionValue(opt);
         if (optVal == null)

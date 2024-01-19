@@ -42,24 +42,34 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.net.*;
+import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.Association;
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.Dimse;
+import org.dcm4che3.net.PDVInputStream;
+import org.dcm4che3.net.Status;
+import org.dcm4che3.net.TransferCapability;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.BasicCStoreSCP;
@@ -245,6 +255,7 @@ public class StoreSCP {
         Options opts = new Options();
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addAcceptedCallingAETs(opts);
         CLIUtils.addCommonOptions(opts);
         addStatusOption(opts);
         addDelayOption(opts, "receive-delay");
@@ -322,6 +333,7 @@ public class StoreSCP {
             StoreSCP main = new StoreSCP();
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
+            configureAcceptedCallingAETitles(main.ae, cl);
             main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
             main.setReceiveDelays(CLIUtils.getIntsOption(cl, "receive-delay"));
             main.setResponseDelays(CLIUtils.getIntsOption(cl, "response-delay"));
@@ -346,6 +358,16 @@ public class StoreSCP {
         }
     }
 
+    private static void configureAcceptedCallingAETitles(ApplicationEntity ae, CommandLine cl) {
+        String aets = cl.getOptionValue("accepted-calling-aets");
+        if (aets != null) {
+            Set<String> acceptedCallingAets = Stream.of(aets.split(",")).collect(Collectors.toSet());
+            ae.setAcceptedCallingAETitles(acceptedCallingAets.toArray(new String[0]));
+            
+            LOG.info("Accepted Calling AE titles are {}.", acceptedCallingAets);
+        }
+    }
+    
     private static void configureStorageDirectory(StoreSCP main, CommandLine cl) {
         if (!cl.hasOption("ignore")) {
             main.setStorageDirectory(

@@ -49,9 +49,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
@@ -605,6 +608,7 @@ public class DcmQRSCP {
         CLIUtils.addConnectTimeoutOption(opts);
         CLIUtils.addAcceptTimeoutOption(opts);
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addAcceptedCallingAETs(opts);
         CLIUtils.addCommonOptions(opts);
         CLIUtils.addSendTimeoutOption(opts);
         CLIUtils.addStoreTimeoutOption(opts);
@@ -759,6 +763,7 @@ public class DcmQRSCP {
             CLIUtils.configure(main.fsInfo, cl);
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
+            configureAcceptedCallingAETitles(main.ae, cl);
             configureDicomFileSet(main, cl);
             configureTransferCapability(main, cl);
             configureInstanceAvailability(main, cl);
@@ -790,6 +795,16 @@ public class DcmQRSCP {
         }
     }
 
+    private static void configureAcceptedCallingAETitles(ApplicationEntity ae, CommandLine cl) {
+        String aets = cl.getOptionValue("accepted-calling-aets");
+        if (aets != null) {
+            Set<String> acceptedCallingAets = Stream.of(aets.split(",")).collect(Collectors.toSet());
+            ae.setAcceptedCallingAETitles(acceptedCallingAets.toArray(new String[0]));
+            
+            LOG.info("Accepted Calling AE titles are {}.", acceptedCallingAets);
+        }
+    }
+    
     private static void configureRelationalLenient(DcmQRSCP main, CommandLine cl) {
         main.setRelationalLenient(cl.hasOption("relational-lenient"));
     }

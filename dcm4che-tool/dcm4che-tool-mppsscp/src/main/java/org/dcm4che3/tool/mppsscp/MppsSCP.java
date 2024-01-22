@@ -42,19 +42,21 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.IOD;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.ValidationResult;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
@@ -141,6 +143,7 @@ public class MppsSCP {
            MppsSCP main = new MppsSCP();
            CLIUtils.configureBindServer(main.conn, main.ae, cl);
            CLIUtils.configure(main.conn, cl);
+           configureAcceptedCallingAETitles(main.ae, cl);
            configureTransferCapability(main.ae, cl);
            configureStorageDirectory(main, cl);
            configureIODs(main, cl);
@@ -165,6 +168,7 @@ public class MppsSCP {
         Options opts = new Options();
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addAcceptedCallingAETs(opts);
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
@@ -172,6 +176,16 @@ public class MppsSCP {
         return CLIUtils.parseComandLine(args, opts, rb, MppsSCP.class);
     }
 
+    private static void configureAcceptedCallingAETitles(ApplicationEntity ae, CommandLine cl) {
+        String[] aets = cl.getOptionValues("accept");
+        if (aets != null) {
+            Set<String> acceptedCallingAets = Stream.of(aets).collect(Collectors.toSet());
+            ae.setAcceptedCallingAETitles(acceptedCallingAets.toArray(new String[0]));
+            
+            LOG.info("Accepted Calling AE titles are {}.", acceptedCallingAets);
+        }
+    }
+    
     @SuppressWarnings("static-access")
     private static void addStorageDirectoryOptions(Options opts) {
         opts.addOption(null, "ignore", false,

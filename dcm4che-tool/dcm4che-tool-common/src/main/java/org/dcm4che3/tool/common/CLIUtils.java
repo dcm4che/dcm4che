@@ -199,10 +199,10 @@ public class CLIUtils {
     
     public static void addAcceptedCallingAETs(Options opts) {
         opts.addOption(Option.builder()
-                .hasArg()
-                .argName("title(s)")
+                .hasArgs()
+                .argName("aet")
                 .desc(rb.getString("accepted-calling-aets"))
-                .longOpt("accepted-calling-aets")
+                .longOpt("accept")
                 .build());
     }
 

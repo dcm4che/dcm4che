@@ -796,9 +796,9 @@ public class DcmQRSCP {
     }
 
     private static void configureAcceptedCallingAETitles(ApplicationEntity ae, CommandLine cl) {
-        String aets = cl.getOptionValue("accepted-calling-aets");
+        String[] aets = cl.getOptionValues("accept");
         if (aets != null) {
-            Set<String> acceptedCallingAets = Stream.of(aets.split(",")).collect(Collectors.toSet());
+            Set<String> acceptedCallingAets = Stream.of(aets).collect(Collectors.toSet());
             ae.setAcceptedCallingAETitles(acceptedCallingAets.toArray(new String[0]));
             
             LOG.info("Accepted Calling AE titles are {}.", acceptedCallingAets);

@@ -1271,6 +1271,7 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
 
     public void reconfigure(Device from) throws IOException, GeneralSecurityException {
         setDeviceAttributes(from);
+        reconfigureDefaultAE(from.defaultAE);
         reconfigureConnections(from);
         reconfigureApplicationEntities(from);
         reconfigureDeviceExtensions(from);
@@ -1313,7 +1314,6 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
         setVendorData(from.vendorData);
         setLimitOpenAssociations(from.limitOpenAssociations);
         setInstalled(from.installed);
-        setDefaultAE(from.getDefaultAE());
     }
 
     private void setAuthorizedNodeCertificates(Map<String, X509Certificate[]> from) {
@@ -1340,6 +1340,23 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
         return updated;
     }
 
+    private void reconfigureDefaultAE(ApplicationEntity from) {
+        if (from == null) {
+            if (defaultAE != null) {
+                defaultAE = null;
+            }
+            
+            return;
+        }
+        
+        if (defaultAE == null) {
+            defaultAE = new ApplicationEntity(from.getAETitle());
+            defaultAE.setDevice(this);
+        }
+        
+        defaultAE.reconfigure(from);
+    }
+    
     private void reconfigureConnections(Device from) {
         Iterator<Connection> connIter = connections.iterator();
         while (connIter.hasNext()) {

@@ -69,6 +69,7 @@ public class WebApplication {
         MOVE_MATCHING,
         UPS_MATCHING,
         ELASTICSEARCH,
+        PROMETHEUS,
         XDS_RS,
         AGFA_BLOB,
         J4C_ROUTER,

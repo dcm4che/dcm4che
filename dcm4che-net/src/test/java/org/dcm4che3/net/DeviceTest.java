@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.net;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -191,6 +192,83 @@ public class DeviceTest {
 
         assertThat("Olock Hash", d1.getOlockHash(), equalTo("I.hash.you.not"));
         assertThat("Storage version", d1.getStorageVersion(), equalTo(35L));
+    }
+    
+    @Test
+    public void reconfigure_DoesNotUpdateDefaultAe_WhenBothDevicesHaveNullDefaultAe() throws Exception {
+        
+        Device firstDevice = new Device("test");
+        Device secondDevice = new Device("test");
+        
+        firstDevice.reconfigure(secondDevice);
+
+        assertThat(firstDevice.getDefaultAE()).isNull();
+    }
+    
+    @Test
+    public void reconfigure_UpdatesDefaultAeToNull_WhenDeviceBeingUpdateHasNonNullDefaultAeButFromDeviceHasNull() throws Exception {
+        
+        Device firstDevice = new Device("test");
+        firstDevice.setDefaultAE(applicationEntity);
+        
+        Device secondDevice = new Device("test");
+        
+        firstDevice.reconfigure(secondDevice);
+
+        assertThat(firstDevice.getDefaultAE()).isNull();
+    }
+    
+    @Test
+    public void reconfigure_CreatesNewDefaultAeAndReconfiguresIt_WhenDeviceBeingUpdateHasNullDefaultAeButFromDeviceDoesNot() throws Exception {
+        
+        applicationEntity.setDescription("desc");
+        applicationEntity.setUuid("uuid");
+        applicationEntity.setOlockHash("olock");
+        applicationEntity.setAssociationAcceptor(false);
+        applicationEntity.setAssociationInitiator(false);
+        
+        Device firstDevice = new Device("test");
+        
+        Device secondDevice = new Device("test");
+        secondDevice.setDefaultAE(applicationEntity);
+        
+        firstDevice.reconfigure(secondDevice);
+
+        // n.b. we need to set Device before comparison.
+        applicationEntity.setDevice(secondDevice);
+        
+        assertThat(firstDevice.getDefaultAE())
+                .isNotSameAs(applicationEntity)
+                .isEqualToComparingFieldByFieldRecursively(applicationEntity);
+    }
+    
+    @Test
+    public void reconfigure_ReconfiguresDefaultAe_WhenBothDevicesHaveNonNullDefaultAe() throws Exception {
+        
+        applicationEntity.setAETitle("not updated");
+        applicationEntity.setDescription("desc2");
+        applicationEntity.setUuid("uuid2");
+        applicationEntity.setOlockHash("olock2");
+        applicationEntity.setAssociationAcceptor(false);
+        applicationEntity.setAeTitleAliases(Arrays.asList("A", "B"));
+        
+        Device firstDevice = new Device("test");
+        ApplicationEntity defaultAE = new ApplicationEntity(AE_TITLE);
+        defaultAE.setDevice(firstDevice);
+        firstDevice.setDefaultAE(defaultAE);
+        
+        Device secondDevice = new Device("test");
+        secondDevice.setDefaultAE(applicationEntity);
+        
+        firstDevice.reconfigure(secondDevice);
+
+        // n.b. we need update AE title back and set Device before comparison.
+        applicationEntity.setAETitle(AE_TITLE);
+        applicationEntity.setDevice(secondDevice);
+        
+        assertThat(firstDevice.getDefaultAE())
+                .isNotSameAs(applicationEntity)
+                .isEqualToComparingFieldByFieldRecursively(applicationEntity);
     }
 
     private Device createDevice(String name, String aet) {

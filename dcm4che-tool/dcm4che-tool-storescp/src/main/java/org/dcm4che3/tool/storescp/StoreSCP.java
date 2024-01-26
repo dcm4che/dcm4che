@@ -44,12 +44,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -332,7 +329,7 @@ public class StoreSCP {
             StoreSCP main = new StoreSCP();
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
-            configureAcceptedCallingAETitles(main.ae, cl);
+            CLIUtils.configureAcceptedCallingAETitles(main.ae, cl, LOG);
             main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
             main.setReceiveDelays(CLIUtils.getIntsOption(cl, "receive-delay"));
             main.setResponseDelays(CLIUtils.getIntsOption(cl, "response-delay"));
@@ -354,16 +351,6 @@ public class StoreSCP {
             System.err.println("storescp: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
-        }
-    }
-
-    private static void configureAcceptedCallingAETitles(ApplicationEntity ae, CommandLine cl) {
-        String[] aets = cl.getOptionValues("accept");
-        if (aets != null) {
-            Set<String> acceptedCallingAets = Stream.of(aets).collect(Collectors.toSet());
-            ae.setAcceptedCallingAETitles(acceptedCallingAets.toArray(new String[0]));
-            
-            LOG.info("Accepted Calling AE titles are {}.", acceptedCallingAets);
         }
     }
     

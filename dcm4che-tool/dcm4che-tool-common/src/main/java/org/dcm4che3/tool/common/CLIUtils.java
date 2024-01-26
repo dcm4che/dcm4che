@@ -48,12 +48,14 @@ import org.dcm4che3.net.pdu.UserIdentityRQ;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -559,6 +561,14 @@ public class CLIUtils {
         conn.setReceiveBufferSize(getIntOption(cl, "sorcv-buffer", 0));
         conn.setTcpNoDelay(!cl.hasOption("tcp-delay"));
         configureTLS(conn, cl);
+    }
+    
+    public static void configureAcceptedCallingAETitles(ApplicationEntity ae, CommandLine cl, Logger log) {
+        String[] aets = cl.getOptionValues("accept");
+        if (aets != null) {
+            ae.setAcceptedCallingAETitles(aets);
+            log.info("Accepted Calling AE titles are {}.", Arrays.toString(aets));
+        }
     }
 
     public static boolean configureTLSCipher(Connection conn, CommandLine cl) throws ParseException {

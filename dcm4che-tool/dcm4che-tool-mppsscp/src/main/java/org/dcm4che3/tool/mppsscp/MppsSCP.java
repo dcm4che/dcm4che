@@ -42,12 +42,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -143,7 +140,7 @@ public class MppsSCP {
            MppsSCP main = new MppsSCP();
            CLIUtils.configureBindServer(main.conn, main.ae, cl);
            CLIUtils.configure(main.conn, cl);
-           configureAcceptedCallingAETitles(main.ae, cl);
+           CLIUtils.configureAcceptedCallingAETitles(main.ae, cl, LOG);
            configureTransferCapability(main.ae, cl);
            configureStorageDirectory(main, cl);
            configureIODs(main, cl);
@@ -174,16 +171,6 @@ public class MppsSCP {
         addTransferCapabilityOptions(opts);
         addIODOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, MppsSCP.class);
-    }
-
-    private static void configureAcceptedCallingAETitles(ApplicationEntity ae, CommandLine cl) {
-        String[] aets = cl.getOptionValues("accept");
-        if (aets != null) {
-            Set<String> acceptedCallingAets = Stream.of(aets).collect(Collectors.toSet());
-            ae.setAcceptedCallingAETitles(acceptedCallingAets.toArray(new String[0]));
-            
-            LOG.info("Accepted Calling AE titles are {}.", acceptedCallingAets);
-        }
     }
     
     @SuppressWarnings("static-access")

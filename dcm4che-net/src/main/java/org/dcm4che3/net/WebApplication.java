@@ -70,6 +70,7 @@ public class WebApplication {
         UPS_MATCHING,
         ELASTICSEARCH,
         PROMETHEUS,
+        GRAFANA,
         XDS_RS,
         AGFA_BLOB,
         J4C_ROUTER,

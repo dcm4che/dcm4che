@@ -433,37 +433,27 @@ public class MediaTypes {
             case UID.ExplicitVRLittleEndian:
             case UID.ImplicitVRLittleEndian:
                 return MediaType.APPLICATION_OCTET_STREAM_TYPE;
-            case UID.JPEGLosslessSV1:
-                type = IMAGE_JPEG_TYPE;
-                break;
-            case UID.JPEGLSLossless:
-                type = IMAGE_JLS_TYPE;
-                break;
-            case UID.JPEG2000Lossless:
-                type = IMAGE_JP2_TYPE;
-                break;
-            case UID.JPEG2000MCLossless:
-                type = IMAGE_JPX_TYPE;
-                break;
-            case UID.HTJ2KLossless:
-                type = IMAGE_JPHC_TYPE;
-                break;
             case UID.RLELossless:
                 return IMAGE_DICOM_RLE_TYPE;
             case UID.JPEGBaseline8Bit:
             case UID.JPEGExtended12Bit:
             case UID.JPEGLossless:
+            case UID.JPEGLosslessSV1:
                 type = IMAGE_JPEG_TYPE;
                 break;
+            case UID.JPEGLSLossless:
             case UID.JPEGLSNearLossless:
                 type = IMAGE_JLS_TYPE;
                 break;
+            case UID.JPEG2000Lossless:
             case UID.JPEG2000:
                 type = IMAGE_JP2_TYPE;
                 break;
+            case UID.JPEG2000MCLossless:
             case UID.JPEG2000MC:
                 type = IMAGE_JPX_TYPE;
                 break;
+            case UID.HTJ2KLossless:
             case UID.HTJ2KLosslessRPCL:
             case UID.HTJ2K:
                 type = IMAGE_JPHC_TYPE;

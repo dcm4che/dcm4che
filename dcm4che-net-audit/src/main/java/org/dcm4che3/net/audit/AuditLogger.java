@@ -1313,7 +1313,7 @@ public class AuditLogger extends DeviceExtension {
             else
                 write('-');
             write(' ');
-            write(applicationName().getBytes(encoding));
+            write(applicationName().replaceAll("\\s", "").getBytes(encoding));
             write(' ');
             write(processID.getBytes(encoding));
             write(' ');

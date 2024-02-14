@@ -984,7 +984,7 @@ public class AuditLogger {
             else
                 write('-');
             write(' ');
-            write(applicationName().getBytes(encoding));
+            write(applicationName().replaceAll("\\s", "").getBytes(encoding));
             write(' ');
             write(processID.getBytes(encoding));
             write(' ');

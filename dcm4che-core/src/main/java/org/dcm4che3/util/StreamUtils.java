@@ -218,4 +218,22 @@ public class StreamUtils {
             }
         };
     }
+
+    public static InputStream readSkippedInputStream(InputStream in) {
+        return readSkippedInputStream(in, new byte[COPY_BUFFER_SIZE]);
+    }
+
+    public static InputStream readSkippedInputStream(InputStream in, byte buf[]) {
+        return new FilterInputStream(in) {
+            @Override
+            public long skip(long n) throws IOException {
+                long remaining = n;
+                int read;
+                while (remaining > 0 && (read = read(buf, 0, (int) Math.min(remaining, buf.length))) > 0) {
+                    remaining -= read;
+                }
+                return n - remaining;
+            }
+        };
+    }
 }

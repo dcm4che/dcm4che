@@ -605,6 +605,7 @@ public class DcmQRSCP {
         CLIUtils.addConnectTimeoutOption(opts);
         CLIUtils.addAcceptTimeoutOption(opts);
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addAcceptedCallingAETs(opts);
         CLIUtils.addCommonOptions(opts);
         CLIUtils.addSendTimeoutOption(opts);
         CLIUtils.addStoreTimeoutOption(opts);
@@ -759,6 +760,7 @@ public class DcmQRSCP {
             CLIUtils.configure(main.fsInfo, cl);
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
+            CLIUtils.configureAcceptedCallingAETitles(main.ae, cl, LOG);
             configureDicomFileSet(main, cl);
             configureTransferCapability(main, cl);
             configureInstanceAvailability(main, cl);
@@ -789,7 +791,7 @@ public class DcmQRSCP {
             System.exit(2);
         }
     }
-
+    
     private static void configureRelationalLenient(DcmQRSCP main, CommandLine cl) {
         main.setRelationalLenient(cl.hasOption("relational-lenient"));
     }

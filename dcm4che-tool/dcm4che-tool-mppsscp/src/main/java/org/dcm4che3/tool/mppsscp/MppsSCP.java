@@ -47,14 +47,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.IOD;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.ValidationResult;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
@@ -141,6 +140,7 @@ public class MppsSCP {
            MppsSCP main = new MppsSCP();
            CLIUtils.configureBindServer(main.conn, main.ae, cl);
            CLIUtils.configure(main.conn, cl);
+           CLIUtils.configureAcceptedCallingAETitles(main.ae, cl, LOG);
            configureTransferCapability(main.ae, cl);
            configureStorageDirectory(main, cl);
            configureIODs(main, cl);
@@ -165,13 +165,14 @@ public class MppsSCP {
         Options opts = new Options();
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addAcceptedCallingAETs(opts);
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
         addIODOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, MppsSCP.class);
     }
-
+    
     @SuppressWarnings("static-access")
     private static void addStorageDirectoryOptions(Options opts) {
         opts.addOption(null, "ignore", false,

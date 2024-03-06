@@ -8,6 +8,9 @@ receive DICOM images and other DICOM Composite Objects. The storescp
 application also supports the Verification Service Class as a SCP.
 -
 Options:
+    --accept <aet>                   One ore more AE Title(s) that SCP
+                                     should accept. By default SCP accepts
+                                     any calling AE title.
     --accept-unknown                 accept unknown SOP Class; otherwise
                                      only Storage SOP Classes specified by
                                      resource:sop-classes.properties or

@@ -5,6 +5,9 @@ usage: dcmqrscp [options] -b [<aet>[@<ip>]:]<port> --dicomdir
 The dcmqrscp application implements a simple image archive.
 -
 Options:
+    --accept <aet>                      One ore more AE Title(s) that SCP
+                                        should accept. By default SCP
+                                        accepts any calling AE title.
     --accept-timeout <ms>               timeout in ms for receiving
                                         A-ASSOCIATE-AC, no timeout by
                                         default

@@ -291,12 +291,12 @@ public class StringUtils {
     }
 
     /**
-     * Returns a {@code String} resulting from replacing all none-ASCII and none-printable characters
+     * Returns a {@code String} resulting from replacing all non-ASCII and non-printable characters
      * in the specified {@code String} with {@code replacement} character.
      *
      * @param s           - the specified string
      * @param replacement - the replacement character
-     * @return a string derived from {@code s) by replacing all none-ASCII and none-printable characters
+     * @return a string derived from {@code s) by replacing all non-ASCII and non-printable characters
      * with {@code replacement}.
      */
     public static String replaceNonPrintASCII(String s, char replacement) {

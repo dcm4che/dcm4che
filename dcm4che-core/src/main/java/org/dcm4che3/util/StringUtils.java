@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -288,6 +289,17 @@ public class StringUtils {
 
     public static String truncate(String s, int maxlen) {
         return s.length() > maxlen ? s.substring(0, maxlen) : s;
+    }
+
+    public static String replaceNonPrintASCII(String s, char newChar) {
+        char[] cs = s.toCharArray();
+        int count = 0;
+        for (int i = 0; i < cs.length; i++) {
+            if (cs[i] > 0x20 && cs[i] < 0x7F) continue;
+            cs[i] = newChar;
+            count++;
+        }
+        return count > 0 ? new String(cs) : s;
     }
 
     public static <T> boolean equals(T o1, T o2) {

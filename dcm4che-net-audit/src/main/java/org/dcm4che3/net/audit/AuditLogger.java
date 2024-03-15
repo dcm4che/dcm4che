@@ -984,7 +984,10 @@ public class AuditLogger {
             else
                 write('-');
             write(' ');
-            write(applicationName().getBytes(encoding));
+            write(StringUtils.replaceNonPrintASCII(
+                    StringUtils.truncate(applicationName().trim(), 48),
+                    '_')
+                    .getBytes(encoding));
             write(' ');
             write(processID.getBytes(encoding));
             write(' ');

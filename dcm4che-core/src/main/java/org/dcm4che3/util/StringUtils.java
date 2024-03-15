@@ -291,12 +291,21 @@ public class StringUtils {
         return s.length() > maxlen ? s.substring(0, maxlen) : s;
     }
 
-    public static String replaceNonPrintASCII(String s, char newChar) {
+    /**
+     * Returns a {@code String} resulting from replacing all none-ASCII and none-printable characters
+     * in the specified {@code String} with {@code replacement} character.
+     *
+     * @param s           - the specified string
+     * @param replacement - the replacement character
+     * @return a string derived from {@code s) by replacing all none-ASCII and none-printable characters
+     * with {@code replacement}.
+     */
+    public static String replaceNonPrintASCII(String s, char replacement) {
         char[] cs = s.toCharArray();
         int count = 0;
         for (int i = 0; i < cs.length; i++) {
             if (cs[i] > 0x20 && cs[i] < 0x7F) continue;
-            cs[i] = newChar;
+            cs[i] = replacement;
             count++;
         }
         return count > 0 ? new String(cs) : s;

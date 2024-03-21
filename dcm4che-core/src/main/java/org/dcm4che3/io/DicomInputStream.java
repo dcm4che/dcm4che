@@ -352,6 +352,42 @@ public class DicomInputStream extends FilterInputStream
         this.handler = handler;
     }
 
+    /**
+     * Set {@code DicomInputHandler} to parse Datasets without accumulating read attributes in {@code Attributes}.
+     */
+    public final void setSkipAllDicomInputHandler() {
+        this.handler = new DicomInputHandler() {
+            @Override
+            public void readValue(DicomInputStream dis, Attributes attrs) throws IOException {
+                if (dis.length() == -1) {
+                    dis.skipSequence();
+                } else {
+                    long n = dis.unsignedLength();
+                    StreamUtils.skipFully(dis, n);
+                }
+            }
+
+            @Override
+            public void readValue(DicomInputStream dis, Sequence seq) throws IOException {
+                dis.readValue(dis, seq);
+            }
+
+            @Override
+            public void readValue(DicomInputStream dis, Fragments frags) throws IOException {
+                long n = dis.unsignedLength();
+                StreamUtils.skipFully(dis, n);
+            }
+
+            @Override
+            public void startDataset(DicomInputStream dis) throws IOException {
+            }
+
+            @Override
+            public void endDataset(DicomInputStream dis) throws IOException {
+            }
+        };
+    }
+
     public void setBulkDataCreator(BulkDataCreator bulkDataCreator) {
         if (bulkDataCreator == null)
             throw new NullPointerException("bulkDataCreator");
@@ -783,11 +819,11 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-    private void skipSequence() throws IOException {
+    public void skipSequence() throws IOException {
         while (readItemHeader()) skipItem();
     }
 
-    private void skipItem() throws IOException {
+    public void skipItem() throws IOException {
         if (length == UNDEFINED_LENGTH) {
             for (;;) {
                 readHeader();

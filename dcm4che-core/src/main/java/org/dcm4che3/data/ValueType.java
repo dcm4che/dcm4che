@@ -38,6 +38,9 @@
 
 package org.dcm4che3.data;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -80,6 +83,8 @@ interface ValueType {
             double defVal);
 
     double[] toDoubles(Object val, boolean bigEndian);
+
+    Temporal toTemporal(Object val, int valueIndex, Temporal defVal, DatePrecision precision);
 
     Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
             Date defVal, DatePrecision precision);

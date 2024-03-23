@@ -86,6 +86,7 @@ class TCPListener implements Listener {
         ss.setEnabledProtocols(conn.getTlsProtocols());
         ss.setEnabledCipherSuites(conn.getTlsCipherSuites());
         ss.setNeedClientAuth(conn.isTlsNeedClientAuth());
+        ss.getSSLParameters().setUseCipherSuitesOrder(conn.getHonorCipherSuitesOrder());
         return ss;
     }
 

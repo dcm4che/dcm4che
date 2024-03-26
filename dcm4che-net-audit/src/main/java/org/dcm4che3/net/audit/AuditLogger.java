@@ -52,6 +52,7 @@ import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
+import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

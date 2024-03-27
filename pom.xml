@@ -86,7 +86,7 @@
     <jbossws-cxf-client.version>7.0.0.Final</jbossws-cxf-client.version>
     <apache-cxf.version>4.0.0</apache-cxf.version>
     <apache-commons-csv.version>1.10.0</apache-commons-csv.version>
-    <apache-commons-compress.version>1.25.0</apache-commons-compress.version>
+    <apache-commons-compress.version>1.26.1</apache-commons-compress.version>
     <jakarta.activation.version>2.1.2</jakarta.activation.version>
     <eclipse.angus.activation.version>2.0.1</eclipse.angus.activation.version>
     <jakarta.xml.bind.version>4.0.0</jakarta.xml.bind.version>

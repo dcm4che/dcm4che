@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2024a - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2024b - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -12534,7 +12534,7 @@
   </note>
   <para xml:id="para_72ae98b9-8a75-434c-a0b4-5f8eece54cad">
 <figure label="D.3-7" pgwide="1" xml:id="figure_D.3-7">
-<title>SCU/SCP Role Negotiation</title>
+    <title>SCU/SCP Role Selection Negotiation</title>
 <mediaobject>
 <imageobject>
 <imagedata fileref="figures/PS3.7_D.3-7.svg"/>

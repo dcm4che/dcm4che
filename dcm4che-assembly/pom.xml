@@ -163,7 +163,7 @@
               <name>weasis.opencv.native.version</name>
               <!--suppress UnresolvedMavenProperty -->
               <value>${org.weasis.thirdparty.org.opencv:libopencv_java:so:linux-x86-64}</value>
-              <regex>.*libopencv_java\/(.*)\/libopencv_java.*</regex>
+              <regex>.*libopencv_java[\/\\](.*)[\/\\]libopencv_java.*</regex>
               <replacement>$1</replacement>
               <failIfNoMatch>true</failIfNoMatch>
             </configuration>

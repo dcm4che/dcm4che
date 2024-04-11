@@ -456,6 +456,13 @@ attributetype ( 1.2.40.0.13.1.15.0.3.86 NAME 'dcmTLSEndpointIdentificationAlgori
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
   SINGLE-VALUE )
 
+attributetype ( 1.2.40.0.13.1.15.0.3.87 NAME 'dcmShareTransferCapabilitiesFromAETitle'
+  DESC 'Indicates that this Network AE supports the Transfer Capabilities specified for another Network AE of the same Device.'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+  SINGLE-VALUE )
+
+
 attributetype ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'DICOM PS 3.15 A.5 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -732,6 +739,7 @@ objectclass ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
     dcmNoAsyncModeCalledAETitle $
     dcmMasqueradeCallingAETitle $
     dcmPreferredTransferSyntax $
+    dcmShareTransferCapabilitiesFromAETitle $
     hl7ApplicationName ) )
 
 objectclass ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'

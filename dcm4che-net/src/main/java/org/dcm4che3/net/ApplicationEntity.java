@@ -45,7 +45,6 @@ import java.security.GeneralSecurityException;
 import java.util.*;
 
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Implementation;
 import org.dcm4che3.net.pdu.AAbort;
 import org.dcm4che3.net.pdu.AAssociateAC;
 import org.dcm4che3.net.pdu.AAssociateRQ;
@@ -91,6 +90,7 @@ public class ApplicationEntity implements Serializable {
     private boolean initiator = true;
     private Boolean installed;
     private Boolean roleSelectionNegotiationLenient;
+    private String shareTransferCapabilitiesFromAETitle;
     private String hl7ApplicationName;
     private final LinkedHashSet<String> acceptedCallingAETs = new LinkedHashSet<>();
     private final LinkedHashSet<String> otherAETs = new LinkedHashSet<>();
@@ -448,6 +448,20 @@ public class ApplicationEntity implements Serializable {
         this.roleSelectionNegotiationLenient = roleSelectionNegotiationLenient;
     }
 
+    public String getShareTransferCapabilitiesFromAETitle() {
+        return shareTransferCapabilitiesFromAETitle;
+    }
+
+    public void setShareTransferCapabilitiesFromAETitle(String shareTransferCapabilitiesFromAETitle) {
+        this.shareTransferCapabilitiesFromAETitle = shareTransferCapabilitiesFromAETitle;
+    }
+
+    ApplicationEntity transferCapabilitiesAE() {
+        return shareTransferCapabilitiesFromAETitle != null
+                ? device.getApplicationEntity(shareTransferCapabilitiesFromAETitle)
+                : this;
+    }
+
     public String getHl7ApplicationName() {
         return hl7ApplicationName;
     }
@@ -765,6 +779,7 @@ public class ApplicationEntity implements Serializable {
         masqueradeCallingAETs.putAll(from.masqueradeCallingAETs);
         supportedCharacterSets = from.supportedCharacterSets;
         prefTransferSyntaxes = from.prefTransferSyntaxes;
+        shareTransferCapabilitiesFromAETitle = from.shareTransferCapabilitiesFromAETitle;
         hl7ApplicationName = from.hl7ApplicationName;
         acceptor = from.acceptor;
         initiator = from.initiator;

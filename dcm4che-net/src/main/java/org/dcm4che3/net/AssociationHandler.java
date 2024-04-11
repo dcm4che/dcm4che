@@ -48,7 +48,6 @@ import org.dcm4che3.net.pdu.AAssociateRJ;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.pdu.UserIdentityAC;
-import org.dcm4che3.util.ByteUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -108,9 +107,13 @@ public class AssociationHandler {
         ac.setMaxOpsPerformed(Association.minZeroAsMax(rq.getMaxOpsPerformed(),
                 conn.getMaxOpsInvoked()));
         ac.setUserIdentityAC(userIdentity);
-        ApplicationEntity ae = as.getApplicationEntity();
+        ApplicationEntity ae = as.getApplicationEntity().transferCapabilitiesAE();
         for (PresentationContext rqpc : rq.getPresentationContexts())
-            ac.addPresentationContext(ae.negotiate(rq, ac, rqpc));
+            ac.addPresentationContext(ae != null
+                    ? ae.negotiate(rq, ac, rqpc)
+                    : new PresentationContext(rqpc.getPCID(),
+                        PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED,
+                        rqpc.getTransferSyntax()));
         return ac;
     }
 

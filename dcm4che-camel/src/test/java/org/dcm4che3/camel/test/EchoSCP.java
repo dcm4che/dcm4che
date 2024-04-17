@@ -62,13 +62,20 @@ public class EchoSCP implements Processor {
         Device device = dicomConf.findDevice(args[0]);
         Main main = new Main();
         main.bind("dicomDevice", new DicomDeviceComponent(device));
-        main.addRouteBuilder(new RouteBuilder(){
+        main.getCamelContext().addRoutes(new RouteBuilder(){
 
             @Override
             public void configure() throws Exception {
                 from("dicomDevice:dicom?sopClasses=1.2.840.10008.1.1").bean(EchoSCP.class);
             }});
-        main.enableHangupSupport();
+//        main.addRouteBuilder(new RouteBuilder(){
+//
+//            @Override
+//            public void configure() throws Exception {
+//                from("dicomDevice:dicom?sopClasses=1.2.840.10008.1.1").bean(EchoSCP.class);
+//            }});
+        main.enableTraceStandby();
+//        main.enableHangupSupport();
         System.out.println("Starting Camel. Use ctrl + c to terminate the JVM.\n");
         main.run();
     }

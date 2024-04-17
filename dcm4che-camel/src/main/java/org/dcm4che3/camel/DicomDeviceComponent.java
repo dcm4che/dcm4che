@@ -38,17 +38,17 @@
 
 package org.dcm4che3.camel;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.Endpoint;
+import org.apache.camel.support.DefaultComponent;
+import org.apache.camel.util.ObjectHelper;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.service.DicomServiceRegistry;
+
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-
-import org.apache.camel.CamelContext;
-import org.apache.camel.Endpoint;
-import org.apache.camel.impl.DefaultComponent;
-import org.apache.camel.util.ObjectHelper;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.service.DicomServiceRegistry;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

@@ -38,20 +38,15 @@
 
 package org.dcm4che3.camel;
 
-import java.io.IOException;
-
 import org.apache.camel.AsyncCallback;
+import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.impl.DefaultConsumer;
-import org.apache.camel.util.AsyncProcessorHelper;
-import org.dcm4che3.data.Tag;
+import org.apache.camel.support.AsyncProcessorHelper;
+import org.apache.camel.support.DefaultConsumer;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Dimse;
-import org.dcm4che3.net.DimseRQHandler;
-import org.dcm4che3.net.PDVInputStream;
-import org.dcm4che3.net.Status;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.DicomServiceException;
 
@@ -62,7 +57,7 @@ import org.dcm4che3.net.service.DicomServiceException;
 public class DicomConsumer extends DefaultConsumer implements DimseRQHandler{
 
     public DicomConsumer(DicomEndpoint endpoint, Processor processor) {
-        super(endpoint, processor);
+        super((Endpoint) endpoint, processor);
     }
 
     @Override
@@ -94,12 +89,16 @@ public class DicomConsumer extends DefaultConsumer implements DimseRQHandler{
 
     @Override
     public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
-            Attributes cmd, PDVInputStream data) throws IOException {
+            Attributes cmd, PDVInputStream data) {
         final int msgid = cmd.getInt(Tag.MessageID, 0);
         Exchange exchange = getEndpoint().createExchange(dimse, cmd, data, pc.getTransferSyntax());
         AsyncCallback callback = new EndpointDimseRQHandlerAsyncCallback(
                 as, pc, dimse, msgid, exchange);
-        AsyncProcessorHelper.process(getAsyncProcessor(), exchange, callback);
+        try {
+            AsyncProcessorHelper.process(getAsyncProcessor(), exchange);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private final class EndpointDimseRQHandlerAsyncCallback

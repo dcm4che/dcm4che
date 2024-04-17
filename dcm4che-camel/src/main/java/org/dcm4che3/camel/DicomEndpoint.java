@@ -38,17 +38,11 @@
 
 package org.dcm4che3.camel;
 
-import org.apache.camel.Consumer;
-import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
-import org.apache.camel.Processor;
-import org.apache.camel.Producer;
-import org.apache.camel.impl.DefaultEndpoint;
+import org.apache.camel.*;
+import org.apache.camel.support.DefaultEndpoint;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.PDVInputStream;
-import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.util.StringUtils;
 
 /**
@@ -60,7 +54,7 @@ public class DicomEndpoint extends DefaultEndpoint {
     private String[] sopClasses;
 
     public DicomEndpoint(String endpointUri, DicomDeviceComponent component) {
-        super(endpointUri, component);
+        super(endpointUri, (Component) component);
         setExchangePattern(ExchangePattern.InOut);
     }
 

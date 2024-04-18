@@ -38,7 +38,7 @@
 
 package org.dcm4che3.camel;
 
-import org.apache.camel.Exchange;
+import org.apache.camel.main.Main;
 import org.apache.camel.support.DefaultMessage;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
@@ -68,7 +68,7 @@ public class DicomMessage extends DefaultMessage {
     }
 
     private DicomMessage(Dimse dimse, Attributes cmd, Object data, String ts) {
-        super((Exchange) null);
+        super(new Main().getCamelContext());
         this.cmd = cmd;
         setMessageId(cmd.getString(Tag.MessageID));
         setHeader("dimse", dimse);

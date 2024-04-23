@@ -69,6 +69,7 @@
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
       <artifactId>rt</artifactId>
+      <version>4.0.2</version>
     </dependency>
   </dependencies>
 

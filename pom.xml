@@ -82,9 +82,9 @@
     <slf4j.version>2.0.9</slf4j.version>
     <logback.version>1.4.14</logback.version>
     <weasis.core.img.version>4.9.0.1</weasis.core.img.version>
-    <keycloak.version>24.0.2</keycloak.version>
+    <keycloak.version>24.0.3</keycloak.version>
     <jbossws-cxf-client.version>7.0.0.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>4.0.0</apache-cxf.version>
+    <apache-cxf.version>4.0.4</apache-cxf.version>
     <apache-commons-csv.version>1.10.0</apache-commons-csv.version>
     <apache-commons-compress.version>1.26.1</apache-commons-compress.version>
     <jakarta.activation.version>2.1.2</jakarta.activation.version>
@@ -187,6 +187,19 @@
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.8.12</version>
+        </plugin>
+        <plugin>
+          <groupId>org.cyclonedx</groupId>
+          <artifactId>cyclonedx-maven-plugin</artifactId>
+          <inherited>true</inherited>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>makeAggregateBom</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>

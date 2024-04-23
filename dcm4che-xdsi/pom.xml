@@ -67,6 +67,7 @@
     <dependency>
       <groupId>org.jboss.ws.cxf</groupId>
       <artifactId>jbossws-cxf-client</artifactId>
+        <version>7.1.0.Final</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

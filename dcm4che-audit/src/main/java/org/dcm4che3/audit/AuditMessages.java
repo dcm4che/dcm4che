@@ -618,8 +618,8 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("ITI-21", "IHE Transactions", "Patient Demographics Query");
         public static final ParticipantObjectIDTypeCode ITI_MobilePatientDemographicsQuery =
                 new ParticipantObjectIDTypeCode("ITI-78", "IHE Transactions", "Mobile Patient Demographics Query");
-        public static final ParticipantObjectIDTypeCode QIDO_QUERY =
-                new ParticipantObjectIDTypeCode("QIDO","99DCM4CHEE","QIDO_Query");
+        public static final ParticipantObjectIDTypeCode REST =
+                new ParticipantObjectIDTypeCode("REST","99DCM4CHEE","RESTful Web Service");
         public static final ParticipantObjectIDTypeCode TASK =
                 new ParticipantObjectIDTypeCode("TASK","99DCM4CHEE","Archive Task");
         public static final ParticipantObjectIDTypeCode TASKS =

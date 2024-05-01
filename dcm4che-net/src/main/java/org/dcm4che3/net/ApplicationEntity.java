@@ -456,7 +456,7 @@ public class ApplicationEntity implements Serializable {
         this.shareTransferCapabilitiesFromAETitle = shareTransferCapabilitiesFromAETitle;
     }
 
-    ApplicationEntity transferCapabilitiesAE() {
+    public ApplicationEntity transferCapabilitiesAE() {
         return shareTransferCapabilitiesFromAETitle != null
                 ? device.getApplicationEntity(shareTransferCapabilitiesFromAETitle)
                 : this;

@@ -43,7 +43,7 @@
   <artifactId>dcm4che-parent</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>5.32.0</version>
+  <version>5.32.1</version>
   <description>dcm4che DICOM toolkit and utilities</description>
   <licenses>
     <license>
@@ -229,7 +229,7 @@
     <repository>
       <id>www.dcm4che.org</id>
       <name>dcm4che Repository</name>
-      <url>scp://www.dcm4che.org/home/maven2</url>
+      <url>scp://maven.dcm4che.org:52771/data/dcm4che-maven-nginx/maven2</url>
     </repository>
   </distributionManagement>
   <repositories>

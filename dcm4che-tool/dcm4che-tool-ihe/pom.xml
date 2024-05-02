@@ -43,7 +43,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>5.32.0</version>
+    <version>5.32.1</version>
   </parent>
   <groupId>org.dcm4che.tool.ihe</groupId>
   <artifactId>dcm4che-tool-ihe</artifactId>

@@ -134,7 +134,7 @@ public class Jpg2Dcm {
                         MessageFormat.format(rb.getString("nodestdir"), dest));
             main.setNoAPPn(cl.hasOption("no-app"));
             main.setPhoto(cl.hasOption("xc"));
-            main.setTSUID(cl.getOptionValue("tsuid", null));
+            main.setTSUID(cl.getOptionValue("tsuid"));
             if (cl.hasOption("content-type"))
                 main.setContentType(cl.getOptionValue("content-type"));
             if (cl.hasOption("F"))

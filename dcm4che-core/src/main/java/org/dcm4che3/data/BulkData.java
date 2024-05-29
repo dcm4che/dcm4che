@@ -54,8 +54,6 @@ import org.dcm4che3.io.stream.ServiceImageInputStreamLoader;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
 
@@ -66,9 +64,7 @@ import javax.imageio.stream.ImageInputStream;
  * @author Bill Wallace <wayfarer3130@gmail.com>
  */
 public class BulkData implements Value {
-    private static final Logger LOG = LoggerFactory.getLogger(BulkData.class);
-
-    private static final ImageInputStreamLoader LOADER = new ServiceImageInputStreamLoader<>();
+    private static final ImageInputStreamLoader<URI> LOADER = new ServiceImageInputStreamLoader<>();
 
     public static final int MAGIC_LEN = 0xfbfb;
 
@@ -79,7 +75,7 @@ public class BulkData implements Value {
     // derived fields, not considered for equals/hashCode:
     private int uriPathEnd;
     private long offset;
-    private int length = -1;
+    private long length = -1;
     private long[] offsets;
     private int[] lengths;
 
@@ -96,6 +92,7 @@ public class BulkData implements Value {
         this.bigEndian = bigEndian;
     }
 
+    // Required for shared client/server code while client code still uses this constructor. 
     public BulkData(String uri, long offset, int length, boolean bigEndian) {
         this.uuid = null;
         this.uriPathEnd = uri.length();
@@ -108,9 +105,8 @@ public class BulkData implements Value {
     public BulkData(String uri, long offset, long length, boolean bigEndian) {
         this.uuid = null;
         this.uriPathEnd = uri.length();
-        this.uri = uri + "?offset=" + offset + "&length=" + length;
+        this.uri = uri;
         this.offset = offset;
-        this.length = (int) length;
         this.bigEndian = bigEndian;
         setLength(length);
     }
@@ -162,17 +158,20 @@ public class BulkData implements Value {
         int[] lengths = new int[size];
         for (int i = 0; i < size; i++) {
             Object value = bulkDataFragments.get(i);
-            if (value == Value.NULL)
+            if (value == Value.NULL) {
                 continue;
+            }
 
             BulkData bulkdata = (BulkData) value;
             String uriWithoutQuery = bulkdata.uriWithoutQuery();
-            if (uri == null)
+            if (uri == null) {
                 uri = uriWithoutQuery;
-            else if (!uri.equals(uriWithoutQuery))
+            } else if (!uri.equals(uriWithoutQuery)) {
                 throw new IllegalArgumentException("BulkData URIs references different Resources");
-            if (bulkdata.length() == -1)
+            }
+            if (bulkdata.length() == -1) {
                 throw new IllegalArgumentException("BulkData Reference with unspecified length");
+            }
             offsets[i] = bulkdata.offset();
             lengths[i] = bulkdata.length();
         }
@@ -241,7 +240,7 @@ public class BulkData implements Value {
 
         try {
             offset = Long.parseLong(uri.substring(from, index));
-            length = Integer.parseInt(uri.substring(index + 8));
+            length = Long.parseLong(uri.substring(index + 8));
         } catch (NumberFormatException e) {}
     }
 
@@ -291,16 +290,13 @@ public class BulkData implements Value {
     }
     
     public void setLength(long newLength) {
-        if( newLength!=-1 && (newLength & 1)==1 ) {
-            throw new IllegalArgumentException("Length of bulk data must be even, but was: "+newLength);
-        }
         if( newLength > 0xFFFFFFFEL || newLength<-1 ) {
             throw new IllegalArgumentException("Length of bulk data must not be negative or larger than an unsigned int, but was:"+newLength);
         }
-        length = (int) newLength;
+        length = newLength;
         uri = uri.substring(0, uriPathEnd) + "?offset=" + offset + "&length=" + length;
     }
-    
+
     public void setOffset(long newOffset) {
         if( newOffset<8 || (newOffset & 0x1)==1 ) {
             throw new IllegalArgumentException("Offset must be at least 8 and even, but was "+newOffset);
@@ -310,7 +306,7 @@ public class BulkData implements Value {
     }
 
     public int length() {
-        return length;
+        return (int) length;
     }
 
     public long[] offsets() {
@@ -369,24 +365,25 @@ public class BulkData implements Value {
         if (length == -1)
             throw new UnsupportedOperationException();
  
-        return (length + 1) & ~1;
+        return (int) (length + 1) & ~1;
     }
 
     @Override
     public int getEncodedLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
-        return (length == -1) ? -1 : ((length + 1) & ~1);
+        return (int) ((length == -1) ? -1 : ((length + 1) & ~1));
     }
 
     @Override
     public byte[] toBytes(VR vr, boolean bigEndian) throws IOException {
-        if (length == -1)
+        int intLength = (int) length;
+        if (intLength < 0)
             throw new UnsupportedOperationException();
 
-        if (length == 0)
+        if (intLength == 0)
             return ByteUtils.EMPTY_BYTES;
 
         try (ImageInputStream iis = openImageInputStream()){
-            byte[] b = new byte[length];
+            byte[] b = new byte[intLength];
             iis.readFully(b);
             if (this.bigEndian != bigEndian) {
                 vr.toggleEndian(b, false);
@@ -463,12 +460,12 @@ public class BulkData implements Value {
 
     /** Returns the index after the segment ends */
     public long getSegmentEnd() {
-        return offset() + longLength();
+    	if( length==-1 ) return -1;
+        return offset() + (length & 0xFFFFFFFFl);
     }
 
     /** Gets the actual length as a long so it can represent the 2 gb to 4 gb range of lengths */
     public long longLength() {
-        return length & 0xFFFFFFFFl;
+        return length;
     }
-
 }

@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
@@ -97,7 +98,9 @@ public class DicomInputStream extends FilterInputStream
         "Implicit VR Big Endian encoded DICOM Stream";
     private static final String DEFLATED_WITH_ZLIB_HEADER =
         "Deflated DICOM Stream with ZLIB Header";
-
+    /* VisibleForTesting */ static final String VALUE_TOO_LARGE =
+        "tag value too large, must be less than 2Gib";
+    
     private static final int ZLIB_HEADER = 0x789c;
     private static final int DEF_ALLOCATE_LIMIT = 0x4000000; // 64MiB
 
@@ -125,7 +128,7 @@ public class DicomInputStream extends FilterInputStream
     private long markPos;
     private int tag;
     private VR vr;
-    private int length;
+    private long length;
     private DicomInputHandler handler = this;
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
@@ -412,7 +415,21 @@ public class DicomInputStream extends FilterInputStream
         return vr;
     }
 
+    /**
+     * Returns value length of last parsed data element header. May be negative for value length >= 2^31.
+     * -1 indicates an Undefined Length.
+     * @return value length of last parsed data element header.
+     */
     public final int length() {
+        return (int) length;
+    }
+
+    /**
+     * Returns value length of last parsed data element header.
+     * -1 indicates an Undefined Length.
+     * @return value length of last parsed data element header.
+     */
+    public long unsignedLength() {
         return length;
     }
 
@@ -515,6 +532,11 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
+    private DicomStreamException tagValueTooLargeException()  {
+        return new DicomStreamException(
+            String.format("0x%s %s", TagUtils.toHexString(tag), VALUE_TOO_LARGE));
+    }
+
     public int readHeader() throws IOException {
         byte[] buf = buffer;
         tagPos = pos; 
@@ -537,8 +559,12 @@ public class DicomInputStream extends FilterInputStream
                 vr = VR.UN;
             }
         }
-        length = ByteUtils.bytesToInt(buf, 4, bigEndian);
+        length = toLongOrUndefined(ByteUtils.bytesToInt(buf, 4, bigEndian));
         return tag;
+    }
+
+    static long toLongOrUndefined(int length) {
+        return length == UNDEFINED_LENGTH ? length : length & 0xffffffffL ;
     }
 
     public boolean readItemHeader() throws IOException {
@@ -556,14 +582,17 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-
     public Attributes readCommand() throws IOException {
         if (bigEndian || explicitVR)
             throw new IllegalStateException(
                     "bigEndian=" + bigEndian + ", explicitVR=" + explicitVR );
         Attributes attrs = new Attributes(9);
-        readAttributes(attrs, -1, -1);
+        readAllAttributes(attrs);
         return attrs;
+    }
+
+    public void readAllAttributes(Attributes attrs) throws IOException {
+        readAttributes(attrs, UNDEFINED_LENGTH, o -> false);
     }
 
     /**
@@ -584,11 +613,43 @@ public class DicomInputStream extends FilterInputStream
         return new DatasetWithFMI(getFileMetaInformation(), dataset);
     }
 
+    public Attributes readDataset() throws IOException {
+        return readDataset(o -> false);
+    }
+
+    public Attributes readDatasetUntilPixelData() throws IOException {
+        return readDataset(o -> o.tag == Tag.PixelData);
+    }
+
+    /**
+     * @deprecated Use one of the other {@link #readDataset()} methods instead. If you want to
+     * specify a length limit, you may supply a {@link LimitedInputStream} or use
+     * {@link #createWithLimit} or {@link #createWithLimitFromFileLength}.
+     */
+    @Deprecated
     public Attributes readDataset(int len, int stopTag) throws IOException {
+        return readDataset(len, tagEqualOrGreater(stopTag));
+    }
+
+    public Attributes readDataset(int stopTag) throws IOException {
+        return readDataset(tagEqualOrGreater(stopTag));
+    }
+
+    public Attributes readDataset(Predicate<DicomInputStream> stopPredicate) throws IOException {
+        return readDataset(UNDEFINED_LENGTH, stopPredicate);
+    }
+
+    /**
+     * @deprecated Use one of the other {@link #readDataset()} methods instead. If you want to
+     * specify a length limit, you may supply a {@link LimitedInputStream} or use
+     * {@link #createWithLimit} or {@link #createWithLimitFromFileLength}.
+     */
+    @Deprecated
+    public Attributes readDataset(long len, Predicate<DicomInputStream> stopPredicate) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian, 64);
-        readAttributes(attrs, len, stopTag);
+        readAttributes(attrs, len, stopPredicate);
         attrs.trimToSize();
         handler.endDataset(this);
         return attrs;
@@ -628,11 +689,17 @@ public class DicomInputStream extends FilterInputStream
         return attrs;
     }
 
+    public void readAttributes(Attributes attrs, long len, int stopTag) throws IOException {
+        readAttributes(attrs, len, tagEqualOrGreater(stopTag));
+    }
 
-    public void readAttributes(Attributes attrs, int len, int stopTag)
+    private static Predicate<DicomInputStream> tagEqualOrGreater(int stopTag) {
+        return stopTag != -1 ? o -> Integer.compareUnsigned(o.tag, stopTag) >= 0 : o -> false;
+    }
+
+    public void readAttributes(Attributes attrs, long len, Predicate<DicomInputStream> stopPredicate)
             throws IOException {
         boolean undeflen = len == UNDEFINED_LENGTH;
-        boolean hasStopTag = stopTag != -1;
         long endPos =  pos + (len & 0xffffffffL);
         while (undeflen || this.pos < endPos) {
             try {
@@ -642,7 +709,7 @@ public class DicomInputStream extends FilterInputStream
                     break;
                 throw e;
             }
-            if (hasStopTag && tag == stopTag)
+            if (stopPredicate.test(this))
                 break;
             if (vr != null) {
                 boolean prevBigEndian = bigEndian;
@@ -744,7 +811,7 @@ public class DicomInputStream extends FilterInputStream
 
     public boolean isBulkData(Attributes attrs) {
         return bulkDataDescriptor.isBulkData(itemPointers,
-                attrs.getPrivateCreator(tag), tag, vr, length);
+                attrs.getPrivateCreator(tag), tag, vr, (int) length);
     }
 
     @Override
@@ -757,7 +824,7 @@ public class DicomInputStream extends FilterInputStream
         }
         Attributes attrs = new Attributes(seq.getParent().bigEndian());
         seq.add(attrs);
-        readAttributes(attrs, length, Tag.ItemDelimitationItem);
+        readItemValue(attrs, length);
         attrs.trimToSize();
     }
 
@@ -806,7 +873,7 @@ public class DicomInputStream extends FilterInputStream
         skipFully(length);
     }
 
-    private void readSequence(int len, Attributes attrs, int sqtag)
+    private void readSequence(long len, Attributes attrs, int sqtag)
             throws IOException {
         if (len == 0) {
             attrs.setNull(sqtag, VR.SQ);
@@ -842,9 +909,13 @@ public class DicomInputStream extends FilterInputStream
                     + TagUtils.toString(tag) + " #" + length + " @ " + pos);
         Attributes attrs = new Attributes(bigEndian);
         attrs.setItemPosition(tagPos);
-        readAttributes(attrs, length, Tag.ItemDelimitationItem);
+        readItemValue(attrs, length);
         attrs.trimToSize();
         return attrs;
+    }
+
+    public void readItemValue(Attributes attrs, long length) throws IOException {
+        readAttributes(attrs, length, dis -> dis.tag == Tag.ItemDelimitationItem);
     }
 
     private void readFragments(Attributes attrs, int fragsTag, VR vr)
@@ -877,12 +948,11 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public byte[] readValue() throws IOException {
-        int valLen = length;
+        int valLen = (int) length;
+        if (valLen < 0) {
+            throw tagValueTooLargeException();
+        }
         try {
-            if (valLen < 0) {
-                throw new IOException(
-                        "internal error: length should have been validated in readHeader");
-            }
             boolean limitedStream = in instanceof LimitedInputStream;
             if(limitedStream && valLen > ((LimitedInputStream)in).getRemaining()) {
                 throw new EOFException(

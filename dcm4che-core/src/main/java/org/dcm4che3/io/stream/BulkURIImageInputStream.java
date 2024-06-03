@@ -52,11 +52,11 @@ public class BulkURIImageInputStream extends ImageInputStreamImpl {
 
     private final ImageInputStream iis;
     private final long offset;
-    private final int length;
+    private final long length;
 
 
 
-    public BulkURIImageInputStream(ImageInputStream iis, long offset, int length) throws IOException {
+    public BulkURIImageInputStream(ImageInputStream iis, long offset, long length) throws IOException {
         this.iis = iis;
         this.offset = offset;
         this.length = length;

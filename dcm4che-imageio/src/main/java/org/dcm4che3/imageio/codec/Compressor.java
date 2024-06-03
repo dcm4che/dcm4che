@@ -362,12 +362,12 @@ public class Compressor implements Closeable {
             iis.setByteOrder(((BulkData)pixels).bigEndian
                     ? ByteOrder.BIG_ENDIAN
                     : ByteOrder.LITTLE_ENDIAN);
-            iis.seek(((BulkData)pixels).offset() + imageParams.getFrameLength() * frameIndex);
+            iis.seek(((BulkData)pixels).offset() + (long) imageParams.getFrameLength() * frameIndex);
         } else {
             iis.setByteOrder(dataset.bigEndian()
                     ? ByteOrder.BIG_ENDIAN
                     : ByteOrder.LITTLE_ENDIAN);
-            iis.seek(imageParams.getFrameLength() * frameIndex);
+            iis.seek((long) imageParams.getFrameLength() * frameIndex);
         }
         DataBuffer db = uncompressedImage.getRaster().getDataBuffer();
         switch (db.getDataType()) {

@@ -1,13 +1,21 @@
 package org.dcm4che3.data;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.TimeZone;
 
 import org.dcm4che3.util.DateUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the Date and Time handling of {@link Attributes}.
@@ -16,6 +24,104 @@ import static org.junit.Assert.assertEquals;
  * @author Hermann Czedik-Eysenberg (hermann-agfa@czedik.net)
  */
 public class AttributesTemporalTest {
+
+    @Test
+    public void testGetLocalDateTimeDA() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        a.setString(Tag.StudyTime, VR.TM, "15");
+
+        Temporal t = a.getTemporal(Tag.StudyDate);
+        assertTrue(t instanceof LocalDateTime);
+        assertEquals(LocalDateTime.of(2011, 04, 04, 15, 00), t);
+    }
+
+    @Test
+    public void testGetLocalDateTimeTM() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        a.setString(Tag.StudyTime, VR.TM, "15");
+
+        Temporal t = a.getTemporal(Tag.StudyTime);
+        assertTrue(t instanceof LocalDateTime);
+        assertEquals(LocalDateTime.of(2011, 04, 04, 15, 00), t);
+    }
+
+    @Test
+    public void testGetZonedDateZimeDA() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        a.setString(Tag.StudyTime, VR.TM, "15");
+        a.setString(Tag.TimezoneOffsetFromUTC, VR.SH, "-0300");
+
+        Temporal t = a.getTemporal(Tag.StudyDate);
+        assertTrue(t instanceof ZonedDateTime);
+        assertEquals(LocalDateTime.of(2011, 04, 04, 15, 00)
+                .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime)t).toInstant());
+    }
+
+    @Test
+    public void testGetZonedDateZimeTM() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        a.setString(Tag.StudyTime, VR.TM, "15");
+        a.setString(Tag.TimezoneOffsetFromUTC, VR.SH, "-0300");
+
+        Temporal t = a.getTemporal(Tag.StudyTime);
+        assertTrue(t instanceof ZonedDateTime);
+        assertEquals(LocalDateTime.of(2011, 04, 04, 15, 00)
+                .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime)t).toInstant());
+    }
+
+    @Test
+    public void testGetLocalDateIfNoTimeAvailable() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+
+        Temporal t = a.getTemporal(Tag.StudyDate);
+        assertTrue(t instanceof LocalDate);
+        assertEquals(LocalDate.of(2011, 04, 04), t);
+    }
+
+    @Test
+    public void testGetLocalTimeIfNoDateAvailable() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyTime, VR.TM, "15");
+
+        Temporal t = a.getTemporal(Tag.StudyTime);
+        assertTrue(t instanceof LocalTime);
+        assertEquals(LocalTime.of(15,0,0), t);
+    }
+
+    @Test
+    public void testGetTemporalDT() {
+        Attributes a = new Attributes();
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654");
+
+        Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
+        assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1, 27, 987_654_000), t);
+    }
+
+    @Test
+    public void testGetTemporalDTWithTZ() {
+        Attributes a = new Attributes();
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654+0200");
+
+        Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
+        assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1, 27, 987_654_000)
+                .atOffset(ZoneOffset.ofHours(2)).toZonedDateTime(), t);
+    }
+
+    @Test
+    public void testGetTemporalDTWithTimezoneOffsetFromUTC() {
+        Attributes a = new Attributes();
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654");
+        a.setString(Tag.TimezoneOffsetFromUTC, VR.SH, "-0300");
+
+        Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
+        assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1, 27, 987_654_000)
+                .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime)t).toInstant());
+    }
 
     /**
      * Test method for {@link org.dcm4che3.data.Attributes#getDate(long, java.util.Date)}.

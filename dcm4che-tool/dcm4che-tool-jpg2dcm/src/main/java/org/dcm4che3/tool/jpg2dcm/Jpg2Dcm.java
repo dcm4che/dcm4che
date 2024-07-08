@@ -53,6 +53,7 @@ import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.xml.sax.SAXException;
 
+import javax.swing.text.html.HTML.Tag;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -60,6 +61,7 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.rmi.server.UID;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -275,6 +277,7 @@ public class Jpg2Dcm {
         }
         Attributes fileMetadata = SAXReader.parse(StreamUtils.openFileOrURL(contentType.getSampleMetadataFile(photo)));
         fileMetadata.addAll(staticMetadata);
+        fileMetadata.setString(Tag.PatientName, VR.PN, "John^Doe");
         supplementMissingValue(fileMetadata, Tag.SOPClassUID, contentType.getSOPClassUID(photo));
         try (SeekableByteChannel channel = Files.newByteChannel(srcFilePath);
                 DicomOutputStream dos = new DicomOutputStream(destFilePath.toFile())) {

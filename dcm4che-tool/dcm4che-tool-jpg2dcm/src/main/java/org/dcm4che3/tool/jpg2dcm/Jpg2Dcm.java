@@ -53,6 +53,7 @@ import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.xml.sax.SAXException;
 
+import javax.swing.text.html.HTML.Tag;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -60,6 +61,7 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.rmi.server.UID;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -275,6 +277,26 @@ public class Jpg2Dcm {
         }
         Attributes fileMetadata = SAXReader.parse(StreamUtils.openFileOrURL(contentType.getSampleMetadataFile(photo)));
         fileMetadata.addAll(staticMetadata);
+        fileMetadata.setString(Tag.PatientName, VR.PN, "John^Doe");
+        fileMetadata.setString(Tag.PatientID, VR.LO, "12345");
+        fileMetadata.setString(Tag.PatientBirthDate, VR.DA, "19700101");
+        fileMetadata.setString(Tag.PatientSex, VR.CS, "M");
+        fileMetadata.setString(Tag.StudyInstanceUID, VR.UI, UIDUtils.createUID());
+        fileMetadata.setString(Tag.StudyDate, VR.DA, "20240101");
+        fileMetadata.setString(Tag.StudyTime, VR.TM, "123456");
+        fileMetadata.setString(Tag.AccessionNumber, VR.SH, "67890");
+        fileMetadata.setString(Tag.ReferringPhysicianName, VR.PN, "Dr. Smith");
+        fileMetadata.setString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
+        fileMetadata.setString(Tag.SeriesNumber, VR.IS, "1");
+        fileMetadata.setString(Tag.Modality, VR.CS, "OT");
+        fileMetadata.setString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
+        fileMetadata.setString(Tag.InstanceNumber, VR.IS, "1");
+        fileMetadata.setString(Tag.ImageType, VR.CS, "ORIGINAL\\PRIMARY");
+        fileMetadata.setString(Tag.ContentDate, VR.DA, "20240101");
+        fileMetadata.setString(Tag.ContentTime, VR.TM, "123456");
+        fileMetadata.setString(Tag.Manufacturer, VR.LO, "ManufacturerName");
+        fileMetadata.setString(Tag.ManufacturerModelName, VR.LO, "ModelName");
+        fileMetadata.setString(Tag.SoftwareVersions, VR.LO, "1.0");
         supplementMissingValue(fileMetadata, Tag.SOPClassUID, contentType.getSOPClassUID(photo));
         try (SeekableByteChannel channel = Files.newByteChannel(srcFilePath);
                 DicomOutputStream dos = new DicomOutputStream(destFilePath.toFile())) {

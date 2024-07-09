@@ -65,15 +65,28 @@ public class SyslogProtocolHandlerTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         // thread pool core size equals number of processors, or at least 4 if less
-        int threadPoolCoreSize = Math.max( Runtime.getRuntime().availableProcessors(), MINIMUM_NUMBER_OF_THREADS );
+        int threadPoolCoreSize = Math.max( Runtime.getRuntime().availableProcessors(), getThreadPoolCoreSize());
         executor = new ThreadPoolExecutor(threadPoolCoreSize,
                        threadPoolCoreSize * 2,
                            THREAD_KEEP_ALIVE_TIME_SEC,
                            TimeUnit.SECONDS,
                            new LinkedBlockingQueue<>(EXECUTOR_QUEUE_SIZE),
                            new NamedThreadFactory(AUDIT_SYSLOG_THREAD_NAME_PREFIX));
-
         SyslogProtocolHandler.setExecutor(executor);
+    }
+
+    /**
+     * Get audit thread pool size from system property if present or number of processors,
+     * minimum {@value MINIMUM_NUMBER_OF_THREADS}
+     * @return audit thread pool size
+     */
+    private static int getThreadPoolCoreSize() {
+        int threadPoolSize = Integer.parseInt(
+                System.getProperty("org.dcm4che.net.audit.auditThreadPoolCoreSize",
+                        String.valueOf(MINIMUM_NUMBER_OF_THREADS)));
+        threadPoolSize =  Math.max(Runtime.getRuntime()
+                .availableProcessors(), threadPoolSize);
+        return threadPoolSize;
     }
 
     @Test

@@ -106,7 +106,13 @@ public class AuditLogger extends DeviceExtension {
 
     private static final int MSG_PROMPT_LEN = 8192;
 
+    private static final int DEFAULT_RING_BUFFER_SIZE = 1024;
+
+    private static final int MINIMUM_RING_BUFFER_SIZE = 2;
+
     private static Logger LOG = LoggerFactory.getLogger(AuditLogger.class);
+
+    private static AuditMessageExceptionHandler messageExceptionHandler;
 
     public enum Facility {
         kern,            // (0) -- kernel messages
@@ -263,6 +269,11 @@ public class AuditLogger extends DeviceExtension {
 
     private static volatile AuditLogger defaultLogger;
 
+    private static final String RING_BUFFER_SIZE = "org.dcm4che.net.audit.ringBufferSize";
+    private static final String EXCEPTION_LOG_ONLY = "org.dcm4che.net.audit.logExceptionOnly";
+
+    private static int ringBufferSize = setRingBufferSize();
+
     @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference",
             label = "ARR Device",
             description = "Devices that correspond to Audit Record Repositories to which audit messages are sent",
@@ -381,6 +392,8 @@ public class AuditLogger extends DeviceExtension {
         }
     };
 
+    private static boolean exceptionLogOnly =
+            (System.getProperty(EXCEPTION_LOG_ONLY, "false").toLowerCase().equals("true"));
 
     public List<AuditSuppressCriteria> getSuppressAuditMessageFilters() {
         return suppressAuditMessageFilters;
@@ -743,6 +756,61 @@ public class AuditLogger extends DeviceExtension {
         this.retryInterval = interval;
     }
 
+    /**
+     * Get size of ring buffer (in bytes) used to write audit messages
+     * @return ring buffer size in bytes
+     */
+    public int getRingBufferSize() {
+        return ringBufferSize;
+    }
+
+    /**
+     * Set size of ring buffer used to write audit messages, based on system property
+     * {@value RING_BUFFER_SIZE}
+     * Enforce minimum size {@value MINIMUM_RING_BUFFER_SIZE} and size as power of 2
+     */
+    private static int setRingBufferSize() {
+        return setRingBufferSize(Integer.parseInt(System.getProperty(RING_BUFFER_SIZE,
+                String.valueOf(DEFAULT_RING_BUFFER_SIZE))));
+    }
+
+    /**
+     * Set size of ring buffer used to write audit messages.
+     * Enforce minimum size {@value MINIMUM_RING_BUFFER_SIZE} and size as power of 2
+     * @param bufferSize proposed ring buffer size
+     * @return ring buffer size as power of 2
+     */
+    public static int setRingBufferSize(int bufferSize) {
+        int adjustedBufferSize = (bufferSize < MINIMUM_RING_BUFFER_SIZE ?
+                MINIMUM_RING_BUFFER_SIZE : getPowerOfTwo(bufferSize));
+
+        if (adjustedBufferSize != bufferSize) {
+            LOG.warn("Ring buffer size {} adjusted from {} to {} as nearest (higher) power of 2 value", bufferSize,
+                    adjustedBufferSize);
+        }
+
+        ringBufferSize = adjustedBufferSize;
+        return adjustedBufferSize;
+    }
+
+    /** Get the number that's the smallest power of two greater than or equal to number
+     *
+     * @param value value to check as power of two
+     * @return number that's the smallest power of two greater than or equal to number
+     */
+    private static int getPowerOfTwo(int value) {
+        if (value <= 1) {
+            return 2;
+        };
+
+        int next = Integer.highestOneBit(value);
+        if (value == next) {
+            return next;
+        } else {
+            return value > next ? next << 1 : next;
+        }
+    }
+
     public void addConnection(Connection conn) {
         if (!conn.getProtocol().isSyslog())
             throw new IllegalArgumentException(
@@ -910,26 +978,35 @@ public class AuditLogger extends DeviceExtension {
     public void writeAsync(Calendar timeStamp, AuditMessage msg)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException, InsufficientCapacityException {
 
-        if (isAuditMessageSuppressed(msg))
+            if (isAuditMessageSuppressed(msg))
             return;
 
         RingBuffer<AuditMessageEvent> ringBuffer = getDisruptor(this).getRingBuffer();
 
         long sequence = 0;  // Grab the next sequence
-        boolean skip=false;
+        boolean skip = false;
+
         try {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Sending audit message via writeAsync: ring buffer: {}, log only: {}, audit message: {}", ringBuffer.toString(),
+                        exceptionLogOnly, AuditMessages.toXML(msg));
+            }
             sequence = ringBuffer.tryNext();
         } catch (InsufficientCapacityException e) {
-            LOG.warn("could not send audit",e);
-            skip=true;
+            LOG.warn("Could not send audit message, {}, log only: {}", ringBuffer.toString(), exceptionLogOnly, e);
+            if (!exceptionLogOnly) {
+                handleMsgException(e, sequence, msg);
+            }
+            skip = true;
         }
 
         if (!skip) {
             try
             {
-                AuditMessageEvent msgenrtry = ringBuffer.get(sequence); // Get the entry in the Disruptor
-                // for the sequence
-                msgenrtry.setLogger(this);  // Fill with data
+                // Get the entry in the Disruptor for the sequence
+                AuditMessageEvent msgenrtry = ringBuffer.get(sequence);
+                // Fill with data
+                msgenrtry.setLogger(this);
                 msgenrtry.setMessage(msg);
             }
             finally
@@ -937,7 +1014,18 @@ public class AuditLogger extends DeviceExtension {
                 ringBuffer.publish(sequence);
             }
         }
+    }
 
+    /**
+     * Send audit message that threw an exception (prior to attempt to be published) to the message exception handler
+     * @param sequence last attempted sequence from ring buffer
+     * @param auditMessage audit message associated with exception
+     */
+    private void handleMsgException(Throwable e, long sequence, AuditMessage auditMessage) {
+        AuditMessageEvent event = new AuditMessageEvent();
+        event.setLogger(this);
+        event.setMessage(auditMessage);
+        messageExceptionHandler.handleEventException(e, sequence, event);
     }
 
     public SendStatus write(Calendar timeStamp, Severity severity,
@@ -1638,7 +1726,7 @@ public class AuditLogger extends DeviceExtension {
         AuditMessageEventFactory factory = new AuditMessageEventFactory();
 
         // Specify the size of the ring buffer, must be power of 2.
-        int bufferSize = 1024;
+        int bufferSize = logger.getRingBufferSize();
 
         Disruptor<AuditMessageEvent> disruptorInstance = new Disruptor<AuditMessageEvent>(factory, bufferSize, executor);
 
@@ -1649,7 +1737,8 @@ public class AuditLogger extends DeviceExtension {
                 .then(new ClearingObjectHandler());
 
         // Add an Exception handler so we do not lose any Audit Messages
-        disruptorInstance.setDefaultExceptionHandler(new AuditMessageExceptionHandler());
+        messageExceptionHandler = new AuditMessageExceptionHandler();
+        disruptorInstance.setDefaultExceptionHandler(messageExceptionHandler);
 
         // Start the Disruptor, starts all threads running
         disruptorInstance.start();

@@ -287,8 +287,10 @@ public class AuditMessages {
                 new EventTypeCode("0212", "99DCM4CHEE", "Mistyped Argument");
         public static final EventTypeCode A700 =
                 new EventTypeCode("A700", "99DCM4CHEE", "Out Of Resources");
-        public static final EventTypeCode A900 =
-                new EventTypeCode("A900", "99DCM4CHEE", "Identifier Does Not Match SOP Class");
+        public static final EventTypeCode A701 =
+                new EventTypeCode("A701", "99DCM4CHEE", "Refused: Out Of Resources - Unable to calculate number of matches");
+        public static final EventTypeCode A702 =
+                new EventTypeCode("A702", "99DCM4CHEE", "Refused: Out Of Resources - Unable to perform sub-operations");
         public static final EventTypeCode A770 =
                 new EventTypeCode("A770", "99DCM4CHEE", "Duplicate Rejection Note");
         public static final EventTypeCode A771 =
@@ -309,6 +311,12 @@ public class AuditMessages {
                 new EventTypeCode("A778", "99DCM4CHEE", "Conflicting Patient ID not accepted");
         public static final EventTypeCode A779 =
                 new EventTypeCode("A779", "99DCM4CHEE", "Conflicting Patient Attributes rejected");
+        public static final EventTypeCode A801 =
+                new EventTypeCode("A801", "99DCM4CHEE", "Refused: Move Destination unknown");
+        public static final EventTypeCode A900 =
+                new EventTypeCode("A900", "99DCM4CHEE", "Identifier does not match SOP Class");
+        public static final EventTypeCode B000 =
+                new EventTypeCode("B000", "99DCM4CHEE", "Sub-operations Complete - One or more Failures");
         public static final EventTypeCode C409 =
                 new EventTypeCode("C409", "99DCM4CHEE", "Different Study Instance UID");
 

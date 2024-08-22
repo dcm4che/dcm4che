@@ -553,6 +553,9 @@ enum StringValueType implements ValueType {
         if (ds == null || ds.length == 0)
             return Value.NULL;
 
+        if (ds.length == 1 && ds[0] == null)
+            return Value.NULL;
+
         if (ds.length == 1)
             return temporalType.format(tz, ds[0], precision);
 

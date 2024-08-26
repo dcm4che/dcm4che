@@ -70,7 +70,8 @@ import static org.junit.Assert.fail;
  * @author Marryat Ma
  */
 public class AuditLoggerTest {
-
+    // TODO IEI-206673 - automated tests for checking that failed audit messages are sent to handler,
+    // effects of changing ring buffer size and log-only flag
     private final AuditLogger newLogger = new AuditLogger();
     private final AuditLogger logger = new AuditLogger();
     private final Device mockHubDevice = createMockBuilder(Device.class)
@@ -364,6 +365,25 @@ public class AuditLoggerTest {
         logger.reconfigure(newLogger);
 
         verify(mockHubDevice);
+    }
+
+    @Test
+    public void reconfigure_UpdatesRingBufferSize_WhenCalled() {
+        int newRingBufferSize = 4;
+        // logger.setRingBufferSize(1024);
+        newLogger.setRingBufferSize(newRingBufferSize);
+
+        logger.reconfigure(newLogger);
+
+        assertThat("ringBufferSize", logger.getRingBufferSize(), is(newRingBufferSize));
+    }
+
+    @Test
+    public void setRingBufferSize_UsesPowerOfTwo() {
+        int expectedRingBufferSize = 16;
+        logger.setRingBufferSize(10);
+
+        assertThat("ringBufferSize", logger.getRingBufferSize(), is(expectedRingBufferSize));
     }
 
     @Test
@@ -671,7 +691,6 @@ public class AuditLoggerTest {
                     is("Unable to send audit message to device name(s) " + INTERNAL_DEVICE_NAME));
         }
     }
-
 
     private static Connection createConnection(final String connectionName, final int port, final Connection.Protocol protocol) {
         final Connection connection = new Connection(connectionName, "localhost", port);

@@ -74,14 +74,17 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
     private static final int EXECUTOR_QUEUE_SIZE = 1000;
     private static final String AUDIT_SYSLOG_THREAD_NAME_PREFIX = "Audit-Syslog-";
 
-    private static Logger LOG = LoggerFactory.getLogger(SyslogProtocolHandler.class);
+    private static final String AUDIT_THREAD_POOL_CORE_SIZE = "org.dcm4che.net.audit.auditThreadPoolCoreSize";
+
+    private static Logger LOG = SyslogLogger.LOG;
 
     private static volatile Executor executor;
 
     private SyslogProtocolHandler() {
-        // thread pool core size equals number of processors, or at least 4 if less
+        // thread pool core size equals maximum of system property for AUDIT_THREAD_POOL_CORE_SIZE
+        // or number of processors, with minimum value of 4
         int threadPoolCoreSize = Math.max(Runtime.getRuntime()
-                                                 .availableProcessors(), MINIMUM_NUMBER_OF_THREADS);
+                                                 .availableProcessors(), getThreadPoolCoreSize());
         Executor executor = new ThreadPoolExecutor(threadPoolCoreSize,
                                                    threadPoolCoreSize * 2,
                                                    THREAD_KEEP_ALIVE_TIME_SEC,
@@ -89,6 +92,20 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
                                                    new LinkedBlockingQueue<>(EXECUTOR_QUEUE_SIZE),
                                                    new NamedThreadFactory(AUDIT_SYSLOG_THREAD_NAME_PREFIX));
         setExecutor(executor);
+    }
+
+    /**
+     * Get audit thread pool size from system property if present or number of processors,
+     * minimum {@value MINIMUM_NUMBER_OF_THREADS}
+     * @return audit thread pool size
+     */
+    private static int getThreadPoolCoreSize() {
+        int threadPoolSize = Integer.parseInt(
+                System.getProperty(AUDIT_THREAD_POOL_CORE_SIZE, String.valueOf(MINIMUM_NUMBER_OF_THREADS)));
+        threadPoolSize = Math.max(Runtime.getRuntime()
+                .availableProcessors(), threadPoolSize);
+        SyslogLogger.LOG.debug("Audit core thread pool size: {}", threadPoolSize);
+        return threadPoolSize;
     }
 
     public static void setExecutor(Executor executor) {
@@ -285,5 +302,12 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
                     conn, packet.getAddress());
 
         }
+    }
+
+    /**
+     * Class for logger that can be used within the constructor
+     */
+    private static class SyslogLogger {
+        public static Logger LOG = LoggerFactory.getLogger(SyslogProtocolHandler.class);
     }
 }

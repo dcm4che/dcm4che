@@ -46,6 +46,7 @@ import org.dcm4che3.net.hl7.HL7Application;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  */
 public class HL7ApplicationCache
         extends ConfigurationCache<HL7Configuration,HL7Application> implements IHL7ApplicationCache {
@@ -55,17 +56,17 @@ public class HL7ApplicationCache
     }
 
     @Override
-    protected HL7Application find(HL7Configuration conf, String name)
+    protected HL7Application find(HL7Configuration conf, String key)
             throws ConfigurationException {
-        return conf.findHL7Application(name);
+        return conf.findHL7Application(key);
     }
 
-    public HL7Application findHL7Application(String name)
+    public HL7Application findHL7Application(String hl7AppFacility)
             throws ConfigurationException {
-        HL7Application ae = get(name);
-        if (ae == null)
+        HL7Application hl7App = get(hl7AppFacility);
+        if (hl7App == null)
             throw new ConfigurationNotFoundException(
-                    "Unknown HL7 Application: " + name);
-        return ae;
+                    "Unknown HL7 Application: " + hl7AppFacility);
+        return hl7App;
     }
 }

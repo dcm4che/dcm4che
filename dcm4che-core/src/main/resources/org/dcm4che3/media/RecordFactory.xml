@@ -264,7 +264,10 @@
         <Value number="17">1.2.840.10008.5.1.4.1.1.88.71</Value>
         <Value number="18">1.2.840.10008.5.1.4.1.1.88.72</Value>
         <Value number="19">1.2.840.10008.5.1.4.1.1.88.73</Value>
-        <Value number="20">1.2.840.10008.5.1.4.1.1.90.1</Value>
+        <Value number="20">1.2.840.10008.5.1.4.1.1.88.74</Value>
+        <Value number="21">1.2.840.10008.5.1.4.1.1.88.75</Value>
+        <Value number="22">1.2.840.10008.5.1.4.1.1.88.76</Value>
+        <Value number="23">1.2.840.10008.5.1.4.1.1.88.77</Value>
       </DicomAttribute>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="ContentDate" tag="00080023" vr="DA"/>
@@ -371,13 +374,10 @@
       </DicomAttribute>
       <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
         <Value number="1">1.2.840.10008.5.1.4.1.1.104.1</Value>
-        <Value number="1">1.2.840.10008.5.1.4.1.1.104.2</Value>
-        <Value number="1">1.2.840.10008.5.1.4.1.1.104.3</Value>
-        <Value number="1">1.2.840.10008.5.1.4.1.1.104.4</Value>
-        <Value number="1">1.2.840.10008.5.1.4.1.1.104.5</Value>
-        <Value number="1">1.2.40.0.13.1.5.1.4.1.1.104.1</Value>
-        <Value number="1">1.2.40.0.13.1.5.1.4.1.1.104.2</Value>
-        <Value number="1">1.2.40.0.13.1.5.1.4.1.1.104.3</Value>
+        <Value number="2">1.2.840.10008.5.1.4.1.1.104.2</Value>
+        <Value number="3">1.2.840.10008.5.1.4.1.1.104.3</Value>
+        <Value number="4">1.2.840.10008.5.1.4.1.1.104.4</Value>
+        <Value number="5">1.2.840.10008.5.1.4.1.1.104.5</Value>
       </DicomAttribute>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="ContentDate" tag="00080023" vr="DA"/>

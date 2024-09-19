@@ -773,6 +773,10 @@ public class AuditMessages {
         return inst;
     }
 
+    public static ParticipantObjectContainsStudy createParticipantObjectContainsStudy(String... studyIUIDs) {
+        return createParticipantObjectContainsStudy(createStudyIDs(studyIUIDs));
+    }
+
     private static ParticipantObjectContainsStudy
             createParticipantObjectContainsStudy(org.dcm4che3.audit.StudyIDs... studyIDs) {
         ParticipantObjectContainsStudy study = new ParticipantObjectContainsStudy();
@@ -781,10 +785,16 @@ public class AuditMessages {
         return study;
     }
 
-    private static Accession createAccession(String accessionNumber) {
+    public static Accession createAccession(String accessionNumber) {
         Accession accession = new Accession();
         accession.setNumber(accessionNumber);
         return accession;
+    }
+
+    public static MPPS createMPPS(String mppsUID) {
+        MPPS mpps = new MPPS();
+        mpps.setUID(mppsUID);
+        return mpps;
     }
 
     private static StudyIDs[] createStudyIDs(String... studyUIDs) {
@@ -794,7 +804,7 @@ public class AuditMessages {
             sID.setUID(s);
             set.add(sID);
         }
-        return set.toArray(new StudyIDs[set.size()]);
+        return set.toArray(new StudyIDs[0]);
     }
 
     public static String alternativeUserIDForAETitle(String... aets) {

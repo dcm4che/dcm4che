@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2024c - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2024d - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -5626,7 +5626,7 @@
 <para xml:id="para_6d42bb01-7272-49be-9b47-a6ae3061b34a">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_c32e3ada-bc20-4c26-b16a-145546e5f880">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_c32e3ada-bc20-4c26-b16a-145546e5f880">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_aa33f5b9-a799-4825-9b24-abc0cae92509">Success (0000H) - successful notification.</para>
@@ -5843,7 +5843,7 @@
   <para xml:id="para_0d753bbb-9e15-4e72-8ddb-d8a6ca195807">This parameter contains the error or success notification for the operation. It shall be included by the performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_45dfd1c5-2ad6-4247-b826-40e5c68c4326">Attribute list error (0107H) - one or more Attribute Values were not read because the specified Attribute was not recognized. The Attribute Values that could be read are returned.</para>
+<para xml:id="para_45dfd1c5-2ad6-4247-b826-40e5c68c4326">Attribute List warning (0107H) - one or more Attribute Values were not read because the specified Attribute was not recognized. The Attribute Values that could be read are returned.</para>
 </listitem>
   <listitem>
 <para xml:id="para_dd119344-f551-42d2-a916-68eb919d7073">Class-Instance conflict (0119H) -  the specified SOP Instance is not a member of the specified SOP Class.</para>
@@ -5867,7 +5867,7 @@
 <para xml:id="para_5e4c546a-5394-4a81-9b35-f3e7b37dbdf7">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_af60831d-070f-44a8-bfe2-0cefdcbe25c5">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_af60831d-070f-44a8-bfe2-0cefdcbe25c5">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_a26ba732-aae9-4ed4-ba22-cfb920a35973">Success (0000H) - successful operation.</para>
@@ -6116,7 +6116,7 @@
 <para xml:id="para_2f468e80-65f3-46c9-a0c6-476b313597f1">No such Attribute (0105H) - the Tag for the specified Attribute was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_62ebb814-3b53-4ce4-b6dc-8c839c21465f">Attribute list error (0107H) - one or more Attribute Values were not modified because the specified Attributes were not recognized. The Attribute Values that could be modified were modified.</para>
+<para xml:id="para_62ebb814-3b53-4ce4-b6dc-8c839c21465f">Attribute List warning (0107H) - one or more Attribute Values were not modified because the specified Attributes were not recognized. The Attribute Values that could be modified were modified.</para>
 </listitem>
   <listitem>
 <para xml:id="para_8fe69bf5-5f8f-4f75-8079-f8f621225735">No such SOP Class (0118H) - the SOP Class was not recognized.</para>
@@ -6128,7 +6128,7 @@
 <para xml:id="para_dadf18c4-e7c9-471b-8d49-a2b0d77c530d">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_a4372fbd-d880-48bc-b6c8-4494aebbdcaf">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_a4372fbd-d880-48bc-b6c8-4494aebbdcaf">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_b6023420-18b6-48a9-8bef-d622216f3b86">Success (0000H) - successful operation.</para>
@@ -6412,7 +6412,7 @@
 <para xml:id="para_a25015fa-ef5f-4236-9075-5596df935b83">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_17023b88-a5b2-4b01-8c25-450ad3631bd3">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_17023b88-a5b2-4b01-8c25-450ad3631bd3">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_77175464-c2fe-4872-9f0a-e8d2601a6580">Success (0000H) - successful operation.</para>
@@ -6620,7 +6620,7 @@
 <para xml:id="para_e0862c63-426e-4d37-b2a4-b16fdf4a268c">No such Attribute (0105H) - the Tag for the specified Attribute was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_d1963d97-d707-4e70-a618-f2a60870f238">Attribute list error (0107H) - one or more specified Attributes were not recognized and not included in the created instance.</para>
+<para xml:id="para_d1963d97-d707-4e70-a618-f2a60870f238">Attribute List warning (0107H) - one or more specified Attributes were not recognized and not included in the created instance.</para>
 </listitem>
   <listitem>
 <para xml:id="para_2214f90c-300c-4a89-b3a2-35bba4bf66bb">No such SOP Class (0118H) - the SOP Class was not recognized.</para>
@@ -6629,7 +6629,7 @@
 <para xml:id="para_b9e95c90-5d8f-41cd-a09a-e723d201977c">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_994643c9-8011-4265-af0c-abf4de393180">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_994643c9-8011-4265-af0c-abf4de393180">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_dcdb980a-b108-4d68-9fae-c4eead16ac1c">Success (0000H) - successful operation.</para>
@@ -6847,7 +6847,7 @@
 <para xml:id="para_236dee26-8cce-4ee1-83eb-ccf04bce8b8c">Processing Failure (0110H) - a general failure in processing the operation was encountered</para>
 </listitem>
   <listitem>
-<para xml:id="para_c34a8d3e-71a1-43cd-9ddd-d8a98de9462a">Resource Limitation (0213H) - the operation was not performed due to resource limitation</para>
+<para xml:id="para_c34a8d3e-71a1-43cd-9ddd-d8a98de9462a">Resource limitation (0213H) - the operation was not performed due to resource limitation</para>
 </listitem>
   <listitem>
 <para xml:id="para_fccef240-ce91-4893-9dd1-db69c42e55dd">Success (0000H) - successful operation</para>
@@ -9289,7 +9289,7 @@
 <chapter label="C" status="1" xml:id="chapter_C">
     <title>Status Type Encoding (Normative)</title>
   
-  <para xml:id="para_be9eff79-eeca-42b0-bc00-5a7a46af4cd3">The following sections define the encoding for the Status Types supported by the DIMSE services. The applicability and semantics for each Status Type (i.e., Attribute list error, etc.) are defined in the DIMSE Services. Each Status Type is categorized in a Status Class and represents certain Status Meaning within the Status Class.</para>
+  <para xml:id="para_be9eff79-eeca-42b0-bc00-5a7a46af4cd3">The following sections define the encoding for the Status Types supported by the DIMSE services. The applicability and semantics for each Status Type (i.e., Attribute List warning, etc.) are defined in the DIMSE Services. Each Status Type is categorized in a Status Class and represents certain Status Meaning within the Status Class.</para>
   <note>
     <para xml:id="para_59b902cd-eb56-4872-bf4a-f68b719a4d70">The Status (0000,0900) Command Element is required for all Status Types.</para>
   </note>
@@ -9526,11 +9526,10 @@
 </section>
 <section label="C.4" status="2" xml:id="sect_C.4">
     <title>Warning Status Class</title>
-  
-  <para xml:id="para_6356ac33-b862-492c-b03e-373c7f18514a">Statuses in this Status Class convey that the operation/notification has completed but an error was detected. The semantics and behavior of these Statuses are defined in <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>.</para>
+    <para xml:id="para_6356ac33-b862-492c-b03e-373c7f18514a">Statuses in this Status Class convey that the operation/notification has completed, but a deviation was detected that is reported as a warning.
+      The semantics and behavior of these Statuses are defined in <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>.</para>
   <section label="C.4.1" status="3" xml:id="sect_C.4.1">
     <title>Warning</title>
-  
   <informaltable frame="box" rules="all">
     <thead>
     <tr valign="top">
@@ -9622,8 +9621,7 @@
 
   </section>
 <section label="C.4.2" status="3" xml:id="sect_C.4.2">
-    <title>Attribute list error</title>
-  
+    <title>Attribute List warning</title>
   <informaltable frame="box" rules="all">
     <thead>
     <tr valign="top">
@@ -11582,7 +11580,7 @@
 
   </section>
 <section label="C.5.22" status="3" xml:id="sect_C.5.22">
-    <title>Resource Limitation</title>
+    <title>Resource limitation</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -12013,7 +12011,6 @@
   </section>
 <section label="D.3.3.2" status="4" xml:id="sect_D.3.3.2">
     <title>Implementation Identification Notification</title>
-  
   <para xml:id="para_6250c484-5e61-4f7f-ac0c-64e3689c2df0">The implementation identification notification allows implementations of communicating AEs to identify each other at Association establishment time. It is intended to provide respective (each network node knows the other's implementation identity) and non-ambiguous identification in the event of communication problems encountered between two nodes. This negotiation is required.</para>
   <para xml:id="para_42753b17-f6e9-4a84-bc3d-bb76e03a0fe0">Implementation identification relies on two pieces of information:</para>
 <itemizedlist>
@@ -12024,7 +12021,7 @@
 <para xml:id="para_5596f90e-bc03-4f92-8792-58836dc498ea">Implementation Version Name (optional)</para>
 </listitem>
 </itemizedlist>
-  <para xml:id="para_be0cd668-569d-4abc-91a5-c8633663dd59">The Implementation Class UID identifies in a unique manner a specific class of implementation. Each node claiming conformance to this Standard shall be assigned an Implementation Class UID to distinguish its implementation environment from others. Such Implementation Class UIDs shall be registered by the implementing organization per the policies defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. This Standard does not specify the policies associated with assigning such a UID.</para>
+  <para xml:id="para_be0cd668-569d-4abc-91a5-c8633663dd59">The Implementation Class UID identifies in a unique manner a specific class of implementation. Each node claiming Conformance to this Standard shall be assigned an Implementation Class UID to distinguish its implementation environment from others. Such Implementation Class UIDs shall be registered by the implementing organization per the policies defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. This Standard does not specify the policies associated with assigning such a UID.</para>
   <para xml:id="para_a8cb0898-8d23-45d3-ac79-a3fc688d6fbd">Different equipment of the same type or product line (but having different serial numbers) shall use the same Implementation Class UID if they share the same implementation environment (i.e., software).</para>
   <para xml:id="para_0417dfb7-e39f-4bbe-90c3-3ed56ce7340a">The notification by Association requestors and acceptors of their respective Implementation Class UID is required for all implementations conforming to this Standard. <xref linkend="figure_D.3-3" xrefstyle="select: label"/> illustrates the Implementation Class UID notification.</para>
   <para xml:id="para_967849e6-4745-49d9-81a2-c1bf98d38f4a">
@@ -12038,9 +12035,22 @@
 </mediaobject>
 </figure>
 </para>
-  <para xml:id="para_b06d3960-d108-4e29-8b9b-bfd86fa90211">In addition to the Implementation Class UID, an option is provided to convey an Implementation Version Name of up to 16 characters. <xref linkend="figure_D.3-4" xrefstyle="select: label"/> illustrates the Implementation Version Name notification. This Standard does not specify the structure and policies associated with such an Implementation Version Name. The absence of the Implementation Version Name requires that the use of the same Implementation Class UID by two nodes guarantees that these use the same version of implementation.</para>
+  <para xml:id="para_b06d3960-d108-4e29-8b9b-bfd86fa90211">In addition to the Implementation Class UID, an option is provided to convey an Implementation Version Name of up to 16 characters,
+      which identifies a version of an implementation for an Implementation Class UID.
+      <xref linkend="figure_D.3-4" xrefstyle="select: label"/> illustrates the Implementation Version Name notification.
+      This Standard does not specify the structure and policies associated with such an Implementation Version Name.
+      The absence of the Implementation Version Name requires that the use of the same Implementation Class UID by two nodes guarantees that these use the same version of implementation.</para>
   <note>
-    <para xml:id="para_e71f5d8f-0b7f-4f3a-9c2e-7ed0c9028da8">As the UID shall not be parsed (their structure is not intended to convey any semantic significance beyond uniqueness), this optional Implementation Version Name provides an adequate mechanism to distinguish two versions of the same implementation (same Implementation Class UID).</para>
+      <orderedlist>
+          <listitem>
+              <para xml:id="para_e71f5d8f-0b7f-4f3a-9c2e-7ed0c9028da8">As the UID shall not be parsed (their structure is not intended to convey any semantic significance beyond uniqueness), this optional Implementation Version Name provides an adequate mechanism to distinguish two versions of the same implementation (same Implementation Class UID).</para>
+          </listitem>
+          <listitem>
+              <para xml:id="para_3caa1ef1-d0bd-46a8-b4ea-d35c2deb215c">It is expected that if the Implementation Version Name is present, it will will include version information in addition to the name of the implementation.
+                  The Implementation Version Name is expected to be more specific than the Implementation Class UID, and not less;
+                  i.e., the Implementation Version Name will not have the same value when there are different values of the Implementation Class UID.</para>
+          </listitem>
+      </orderedlist>
   </note>
   <section label="D.3.3.2.1" status="5" xml:id="sect_D.3.3.2.1">
     <title>Implementation Class UID Sub-Item Structure (A-ASSOCIATE-RQ)</title>
@@ -13645,7 +13655,7 @@
         <para xml:id="para_44eca31a-b206-4f3d-87a4-7d7683a2205f">8010H C-GET-RSP</para>
         <para xml:id="para_42938c88-86dd-445f-ae54-0d1f1d81bc23">0020H C-FIND-RQ</para>
         <para xml:id="para_a3053ce3-51cf-40ed-bb53-8ea272f6c893">8020H C-FIND-RSP</para>
-        <para xml:id="para_af78a437-ef60-40cb-a1b2-2a859d8a03d6">0021HC-MOVE-RQ</para>
+        <para xml:id="para_af78a437-ef60-40cb-a1b2-2a859d8a03d6">0021H C-MOVE-RQ</para>
         <para xml:id="para_add6bdd9-8366-40be-b532-f282aa28600c">8021H C-MOVE-RSP</para>
         <para xml:id="para_e64d57df-2e03-437a-b831-3a79b027cdb1">0030H C-ECHO-RQ</para>
         <para xml:id="para_7e31dd3d-b98f-45b3-b4f1-10278760dafe">8030H C-ECHO-RSP</para>

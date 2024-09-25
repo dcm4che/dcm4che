@@ -599,7 +599,7 @@ public class DicomInputStream extends FilterInputStream
      * @return file meta information and complete dataset
      */
     public DatasetWithFMI readDatasetWithFMI() throws IOException {
-        return readDatasetWithFMI(-1, -1);
+        return readDatasetWithFMI(-1);
     }
 
     /**
@@ -608,8 +608,8 @@ public class DicomInputStream extends FilterInputStream
      *
      * @return file meta information and dataset
      */
-    public DatasetWithFMI readDatasetWithFMI(int len, int stopTag) throws IOException {
-        Attributes dataset = readDataset(len, stopTag);
+    public DatasetWithFMI readDatasetWithFMI(int stopTag) throws IOException {
+        Attributes dataset = readDataset(stopTag);
         return new DatasetWithFMI(getFileMetaInformation(), dataset);
     }
 

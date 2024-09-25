@@ -498,7 +498,7 @@ public class WadoRS {
                 DicomInputStream dis = new DicomInputStream(nonCloseableInputStream);
                 try {
                     fmi = dis.readFileMetaInformation();
-                    attrs = dis.readDataset(-1, -1);
+                    attrs = dis.readDataset();
                 } finally {
                     dis.close();
                 }

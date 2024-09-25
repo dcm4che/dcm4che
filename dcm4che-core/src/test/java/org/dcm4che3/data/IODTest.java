@@ -81,7 +81,7 @@ public class IODTest {
         DicomInputStream in = new DicomInputStream(
                 new File(cl.getResource(name).toURI()));
         try {
-            return in.readDataset(-1, -1);
+            return in.readDataset();
         } finally {
             in.close();
         }

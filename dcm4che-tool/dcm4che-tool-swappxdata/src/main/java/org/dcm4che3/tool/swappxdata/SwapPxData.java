@@ -51,7 +51,6 @@ import org.dcm4che3.util.SafeClose;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -102,7 +101,7 @@ public class SwapPxData {
             try {
                 is = new DicomInputStream(file);
                 is.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
-                dataset = is.readDataset(-1, -1);
+                dataset = is.readDataset();
             } finally {
                 SafeClose.close(is);
             }

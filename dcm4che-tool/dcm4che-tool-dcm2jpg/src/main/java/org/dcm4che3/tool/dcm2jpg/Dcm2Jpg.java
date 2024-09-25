@@ -64,7 +64,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PatternOptionBuilder;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.image.BufferedImageUtils;
-import org.dcm4che3.image.PaletteColorModel;
 import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.tool.common.CLIUtils;
@@ -412,7 +411,7 @@ public class Dcm2Jpg {
             return null;
         DicomInputStream dis = new DicomInputStream(f);
         try {
-            return dis.readDataset(-1, -1);
+            return dis.readDataset();
         } finally {
             SafeClose.close(dis);
         }

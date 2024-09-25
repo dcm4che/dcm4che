@@ -41,7 +41,6 @@ package org.dcm4che3.tool.dcmqrscp;
 import java.io.IOException;
 
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.net.DataWriter;
@@ -71,10 +70,10 @@ class CStoreSCUImpl<T extends InstanceLocator>  extends BasicCStoreSCU<T> {
         try {
             if (withoutBulkData) {
                 in.setIncludeBulkData(IncludeBulkData.NO);
-                attrs = in.readDataset(-1, Tag.PixelData);
+                attrs = in.readDatasetUntilPixelData();
             } else {
                 in.setIncludeBulkData(IncludeBulkData.URI);
-                attrs = in.readDataset(-1, -1);
+                attrs = in.readDataset();
             }
         } finally {
             SafeClose.close(in);

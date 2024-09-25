@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.tool.common.test.TestResult;
 
@@ -109,7 +108,7 @@ public class StoreSCPResult implements TestResult {
             try{
                 din = new DicomInputStream(file);
                 
-                attrs.add(din.readDataset(-1, Tag.PixelData));
+                attrs.add(din.readDatasetUntilPixelData());
                 
             }
             catch(Exception e) {

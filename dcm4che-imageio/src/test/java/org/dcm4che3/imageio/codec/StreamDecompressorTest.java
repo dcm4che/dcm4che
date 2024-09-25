@@ -80,7 +80,7 @@ public class StreamDecompressorTest {
         try {
             dis = new DicomInputStream(outFile);
             dis.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
-            ds = dis.readDataset(-1, -1);
+            ds = dis.readDataset();
         } finally {
             SafeClose.close(dis);
         }

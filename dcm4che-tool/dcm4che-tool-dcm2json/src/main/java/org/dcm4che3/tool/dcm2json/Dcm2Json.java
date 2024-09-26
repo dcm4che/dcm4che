@@ -248,7 +248,7 @@ public class Dcm2Json {
         JsonGenerator jsonGen = createGenerator(out);
         JSONWriter jsonWriter = new JSONWriter(jsonGen);
         dis.setDicomInputHandler(jsonWriter);
-        dis.readDataset(-1, -1);
+        dis.readDataset();
         jsonGen.flush();
     }
 

@@ -266,7 +266,7 @@ public class RetrieveTool implements TestTool{
                     //check returned result
                     try{
                     DicomInputStream din = new DicomInputStream(file);
-                    Attributes attrs = din.readDataset(-1, -1);
+                    Attributes attrs = din.readDataset();
                     din.close();
                     onCStoreReq(rq,attrs);
                     }

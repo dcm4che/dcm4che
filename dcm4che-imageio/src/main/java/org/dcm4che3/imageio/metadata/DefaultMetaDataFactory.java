@@ -96,7 +96,7 @@ public class DefaultMetaDataFactory implements DicomMetaDataFactory {
             dis.setBulkDataDescriptor(descriptor);
             dis.setURI(inputURI.toString());
 
-            DatasetWithFMI datasetWithFMI = dis.readDatasetWithFMI(-1, stopTag);
+            DatasetWithFMI datasetWithFMI = dis.readDatasetWithFMI(stopTag);
 
             Object pixelData;
             VR pixelDataVR;

@@ -165,7 +165,7 @@ public class DcmGen{
             try {
                 din = new DicomInputStream(this.seedFile);
                 din.setIncludeBulkData(IncludeBulkData.URI);
-                seedAttrs = din.readDataset(-1, -1);
+                seedAttrs = din.readDataset();
                 fmiOld = din.readFileMetaInformation();
                 if (fmiOld == null || !fmiOld.containsValue(Tag.TransferSyntaxUID)
                         || !fmiOld.containsValue(Tag.MediaStorageSOPClassUID)

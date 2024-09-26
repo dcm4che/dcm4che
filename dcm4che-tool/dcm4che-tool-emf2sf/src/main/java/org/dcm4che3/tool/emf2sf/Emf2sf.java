@@ -152,7 +152,7 @@ public class Emf2sf {
         DicomInputStream dis = new DicomInputStream(file);
         try {
             dis.setIncludeBulkData(IncludeBulkData.URI);
-            src = dis.readDataset(-1, -1);
+            src = dis.readDataset();
         } finally {
             SafeClose.close(dis);
         }

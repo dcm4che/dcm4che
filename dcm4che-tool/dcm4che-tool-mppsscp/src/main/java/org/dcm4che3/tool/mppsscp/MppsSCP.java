@@ -351,7 +351,7 @@ public class MppsSCP {
         DicomInputStream in = null;
         try {
             in = new DicomInputStream(file);
-            data = in.readDataset(-1, -1);
+            data = in.readDataset();
         } catch (IOException e) {
             LOG.warn(as + ": Failed to read MPPS:", e);
             throw new DicomServiceException(Status.ProcessingFailure, e);

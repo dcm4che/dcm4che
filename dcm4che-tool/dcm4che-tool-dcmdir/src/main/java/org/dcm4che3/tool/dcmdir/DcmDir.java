@@ -479,7 +479,7 @@ public class DcmDir {
             din = new DicomInputStream(f);
             din.setIncludeBulkData(IncludeBulkData.NO);
             fmi = din.readFileMetaInformation();
-            dataset = din.readDataset(-1, Tag.PixelData);
+            dataset = din.readDatasetUntilPixelData();
         } catch (IOException e) {
             System.out.println();
             System.out.println(
@@ -590,7 +590,7 @@ public class DcmDir {
             din = new DicomInputStream(f);
             din.setIncludeBulkData(IncludeBulkData.NO);
             Attributes fmi = din.readFileMetaInformation();
-            Attributes dataset = din.readDataset(-1, Tag.StudyID);
+            Attributes dataset = din.readDataset(o -> o.tag() > Tag.SeriesInstanceUID);
             iuid = (fmi != null)
                     ? fmi.getString(Tag.MediaStorageSOPInstanceUID, null)
                     : dataset.getString(Tag.SOPInstanceUID, null);

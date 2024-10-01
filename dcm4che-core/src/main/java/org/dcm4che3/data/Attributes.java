@@ -1271,7 +1271,7 @@ public class Attributes implements Serializable {
      * @return an instance of {@link ZonedDateTime}, {@link LocalDateTime}, {@link LocalDate} or {@link LocalTime}, or null
      */
     public Temporal getTemporal(int tag) {
-        return getTemporal(null, tag, null, 0, new DatePrecision());
+        return getTemporal(null, tag, null, 0, null, new DatePrecision());
     }
 
     // TODO variants of getTemporal missing here
@@ -1283,29 +1283,30 @@ public class Attributes implements Serializable {
      * @param tag tag number
      * @param vr VR
      * @param valueIndex value index
+     * @param defVal default value, if the tag value is not set or empty
      * @param precision used as a return value: contains information about the contained date/time precision and
      *                  whether the tag value itself contained timezone information (only for {@link VR#DT} tags).
-     * @return an instance of {@link ZonedDateTime}, {@link LocalDateTime}, {@link LocalDate} or {@link LocalTime}, or null
+     * @return an instance of {@link ZonedDateTime}, {@link LocalDateTime}, {@link LocalDate} or {@link LocalTime}, or defVal
      */
-    public Temporal getTemporal(String privateCreator, int tag, VR vr, int valueIndex, DatePrecision precision) {
+    public Temporal getTemporal(String privateCreator, int tag, VR vr, int valueIndex, Temporal defVal, DatePrecision precision) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
-            return null;
+            return defVal;
 
         Object value = values[index];
         if (value == Value.NULL)
-            return null;
+            return defVal;
 
         vr = updateVR(index, vr);
 
         if (!vr.isTemporalType()) {
             LOG.info("Attempt to access {} {} as date/time", TagUtils.toString(tag), vr);
-            return null;
+            return defVal;
         }
 
         value = decodeStringValue(index);
         if (value == Value.NULL) {
-            return null;
+            return defVal;
         }
 
         Temporal t;
@@ -1313,10 +1314,12 @@ public class Attributes implements Serializable {
             t = vr.toTemporal(value, valueIndex, precision);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
-            return null;
+            return defVal;
         }
 
-        if (t instanceof OffsetDateTime) {
+        if(t == null) {
+            return defVal;
+        } else if (t instanceof OffsetDateTime) {
             return ((OffsetDateTime) t).toZonedDateTime();
         } else if (t instanceof LocalDateTime) {
             ZoneId zoneId = getZoneId();

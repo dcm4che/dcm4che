@@ -13,9 +13,7 @@ import org.dcm4che3.util.DateUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests the Date and Time handling of {@link Attributes}.
@@ -26,57 +24,10 @@ import static org.junit.Assert.assertTrue;
 public class AttributesTemporalTest {
 
     @Test
-    public void testGetLocalDateTimeDA() {
+    public void testGetTemporalLocalDateDA() {
         Attributes a = new Attributes();
         a.setString(Tag.StudyDate, VR.DA, "20110404");
         a.setString(Tag.StudyTime, VR.TM, "15");
-
-        Temporal t = a.getTemporal(Tag.StudyDate);
-        assertTrue(t instanceof LocalDateTime);
-        assertEquals(LocalDateTime.of(2011, 04, 04, 15, 00), t);
-    }
-
-    @Test
-    public void testGetLocalDateTimeTM() {
-        Attributes a = new Attributes();
-        a.setString(Tag.StudyDate, VR.DA, "20110404");
-        a.setString(Tag.StudyTime, VR.TM, "15");
-
-        Temporal t = a.getTemporal(Tag.StudyTime);
-        assertTrue(t instanceof LocalDateTime);
-        assertEquals(LocalDateTime.of(2011, 04, 04, 15, 00), t);
-    }
-
-    @Test
-    public void testGetZonedDateZimeDA() {
-        Attributes a = new Attributes();
-        a.setString(Tag.StudyDate, VR.DA, "20110404");
-        a.setString(Tag.StudyTime, VR.TM, "15");
-        a.setString(Tag.TimezoneOffsetFromUTC, VR.SH, "-0300");
-
-        Temporal t = a.getTemporal(Tag.StudyDate);
-        assertTrue(t instanceof ZonedDateTime);
-        assertEquals(LocalDateTime.of(2011, 04, 04, 15, 00)
-                .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime)t).toInstant());
-    }
-
-    @Test
-    public void testGetZonedDateZimeTM() {
-        Attributes a = new Attributes();
-        a.setString(Tag.StudyDate, VR.DA, "20110404");
-        a.setString(Tag.StudyTime, VR.TM, "15");
-        a.setString(Tag.TimezoneOffsetFromUTC, VR.SH, "-0300");
-
-        Temporal t = a.getTemporal(Tag.StudyTime);
-        assertTrue(t instanceof ZonedDateTime);
-        assertEquals(LocalDateTime.of(2011, 04, 04, 15, 00)
-                .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime)t).toInstant());
-    }
-
-    @Test
-    public void testGetLocalDateIfNoTimeAvailable() {
-        Attributes a = new Attributes();
-        a.setString(Tag.StudyDate, VR.DA, "20110404");
 
         Temporal t = a.getTemporal(Tag.StudyDate);
         assertTrue(t instanceof LocalDate);
@@ -84,13 +35,14 @@ public class AttributesTemporalTest {
     }
 
     @Test
-    public void testGetLocalTimeIfNoDateAvailable() {
+    public void testGetTemporalLocalTimeTM() {
         Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
         a.setString(Tag.StudyTime, VR.TM, "15");
 
         Temporal t = a.getTemporal(Tag.StudyTime);
         assertTrue(t instanceof LocalTime);
-        assertEquals(LocalTime.of(15,0,0), t);
+        assertEquals(LocalTime.of(15, 00), t);
     }
 
     @Test
@@ -99,6 +51,7 @@ public class AttributesTemporalTest {
         a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654");
 
         Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
+        assertTrue(t instanceof LocalDateTime);
         assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1, 27, 987_654_000), t);
     }
 
@@ -108,6 +61,7 @@ public class AttributesTemporalTest {
         a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654+0200");
 
         Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
+        assertTrue(t instanceof ZonedDateTime);
         assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1, 27, 987_654_000)
                 .atOffset(ZoneOffset.ofHours(2)).toZonedDateTime(), t);
     }
@@ -119,8 +73,73 @@ public class AttributesTemporalTest {
         a.setString(Tag.TimezoneOffsetFromUTC, VR.SH, "-0300");
 
         Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
+        assertTrue(t instanceof ZonedDateTime);
         assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1, 27, 987_654_000)
                 .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime)t).toInstant());
+    }
+
+    @Test
+    public void testGetTemporalDTWithDefaultTimeZone() {
+        Attributes a = new Attributes();
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654");
+        a.setDefaultTimeZone(DateUtils.timeZone("-0300"));
+
+        Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
+        assertTrue(t instanceof ZonedDateTime);
+        assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1, 27, 987_654_000)
+                .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime)t).toInstant());
+    }
+
+    @Test
+    public void testGetTemporalLongWithoutTimezone() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        a.setString(Tag.StudyTime, VR.TM, "15");
+
+        Temporal t = a.getTemporal(Tag.StudyDateAndTime);
+        assertTrue(t instanceof LocalDateTime);
+        assertEquals(LocalDateTime.of(2011, 4, 4, 15, 0, 0), t);
+    }
+
+    @Test
+    public void testGetTemporalLongWithTimeZoneOffsetFromUTC() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        a.setString(Tag.StudyTime, VR.TM, "15");
+        a.setString(Tag.TimezoneOffsetFromUTC, VR.SH, "-0300");
+
+        Temporal t = a.getTemporal(Tag.StudyDateAndTime);
+        assertTrue(t instanceof ZonedDateTime);
+        assertEquals(LocalDateTime.of(2011, 04, 04, 15, 00)
+                .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime)t).toInstant());
+    }
+
+    @Test
+    public void testTemporalLongLocalDateIfNoTimeAvailable() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+
+        Temporal t = a.getTemporal(Tag.StudyDateAndTime);
+        assertTrue(t instanceof LocalDate);
+        assertEquals(LocalDate.of(2011, 04, 04), t);
+    }
+
+    @Test
+    public void testTemporalLongLocalTimeIfNoDateAvailable() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyTime, VR.TM, "15");
+
+        Temporal t = a.getTemporal(Tag.StudyDateAndTime);
+        assertTrue(t instanceof LocalTime);
+        assertEquals(LocalTime.of(15,0,0), t);
+    }
+
+    @Test
+    public void testTemporalLongDefaultValueIfNoTagSet() {
+        Attributes a = new Attributes();
+
+        Temporal t = a.getTemporal(Tag.StudyDateAndTime);
+        assertNull(t);
     }
 
     /**

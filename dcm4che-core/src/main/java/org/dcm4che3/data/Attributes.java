@@ -1331,64 +1331,6 @@ public class Attributes implements Serializable {
         return t;
     }
 
-    private LocalDate getLocalDate(String privateCreator, int tag, VR vr, int valueIndex, DatePrecision precision) {
-        int index = indexOf(privateCreator, tag);
-        if (index < 0)
-            return null;
-
-        Object value = values[index];
-        if (value == Value.NULL)
-            return null;
-
-        vr = updateVR(index, vr);
-
-        if (vr != VR.DA) {
-            LOG.info("Attempt to access {} {} as local date", TagUtils.toString(tag), vr);
-            return null;
-        }
-
-        value = decodeStringValue(index);
-        if (value == Value.NULL) {
-            return null;
-        }
-
-        try {
-            return (LocalDate)vr.toTemporal(value, valueIndex, precision);
-        } catch (IllegalArgumentException e) {
-            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
-            return null;
-        }
-    }
-
-    private LocalTime getLocalTime(String privateCreator, int tag, VR vr, int valueIndex, DatePrecision precision) {
-        int index = indexOf(privateCreator, tag);
-        if (index < 0)
-            return null;
-
-        Object value = values[index];
-        if (value == Value.NULL)
-            return null;
-
-        vr = updateVR(index, vr);
-
-        if (vr != VR.TM) {
-            LOG.info("Attempt to access {} {} as local time", TagUtils.toString(tag), vr);
-            return null;
-        }
-
-        value = decodeStringValue(index);
-        if (value == Value.NULL) {
-            return null;
-        }
-
-        try {
-            return (LocalTime)vr.toTemporal(value, valueIndex, precision);
-        } catch (IllegalArgumentException e) {
-            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
-            return null;
-        }
-    }
-
     public Date getDate(int tag) {
         return getDate(null, tag, null, 0, null, new DatePrecision());
     }
@@ -1568,6 +1510,98 @@ public class Attributes implements Serializable {
             return defVal;
         }
     }
+
+    // TODO add Javadoc
+    public Temporal getTemporal(long tag) {
+        return getTemporal(null, tag, null, new DatePrecision());
+    }
+
+    // TODO other variants of getTemporal(long tag, ...) method
+
+    public Temporal getTemporal(String privateCreator, long tag, Temporal defVal, DatePrecision precision) {
+        int daTag = (int) (tag >>> 32);
+        int tmTag = (int) tag;
+
+        LocalDate date = getLocalDate(privateCreator, daTag, VR.DA, 0, precision);
+        LocalTime time = getLocalTime(privateCreator, tmTag, VR.TM, 0, precision);
+
+        if(date != null && time != null) {
+            LocalDateTime localDateTime = LocalDateTime.of(date, time);
+            ZoneId zoneId = getZoneId();
+            if (zoneId != null) {
+                return localDateTime.atZone(zoneId);
+            } else {
+                return localDateTime;
+            }
+        } else if(date != null) {
+            return date;
+        } else if(time != null) {
+            return time;
+        }
+
+        return defVal;
+    }
+
+
+    private LocalDate getLocalDate(String privateCreator, int tag, VR vr, int valueIndex, DatePrecision precision) {
+        int index = indexOf(privateCreator, tag);
+        if (index < 0)
+            return null;
+
+        Object value = values[index];
+        if (value == Value.NULL)
+            return null;
+
+        vr = updateVR(index, vr);
+
+        if (vr != VR.DA) {
+            LOG.info("Attempt to access {} {} as local date", TagUtils.toString(tag), vr);
+            return null;
+        }
+
+        value = decodeStringValue(index);
+        if (value == Value.NULL) {
+            return null;
+        }
+
+        try {
+            return (LocalDate)vr.toTemporal(value, valueIndex, precision);
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return null;
+        }
+    }
+
+    private LocalTime getLocalTime(String privateCreator, int tag, VR vr, int valueIndex, DatePrecision precision) {
+        int index = indexOf(privateCreator, tag);
+        if (index < 0)
+            return null;
+
+        Object value = values[index];
+        if (value == Value.NULL)
+            return null;
+
+        vr = updateVR(index, vr);
+
+        if (vr != VR.TM) {
+            LOG.info("Attempt to access {} {} as local time", TagUtils.toString(tag), vr);
+            return null;
+        }
+
+        value = decodeStringValue(index);
+        if (value == Value.NULL) {
+            return null;
+        }
+
+        try {
+            return (LocalTime)vr.toTemporal(value, valueIndex, precision);
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return null;
+        }
+    }
+
+    // TODO new Temporal[] getTemporals(...) methods (?)
 
     public Date[] getDates(int tag) {
         return getDates(null, tag, null, new DatePrecisions());

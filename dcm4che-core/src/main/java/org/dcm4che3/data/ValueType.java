@@ -84,7 +84,7 @@ interface ValueType {
 
     double[] toDoubles(Object val, boolean bigEndian);
 
-    Temporal toTemporal(Object val, int valueIndex, Temporal defVal, DatePrecision precision);
+    Temporal toTemporal(Object val, int valueIndex, DatePrecision precision);
 
     Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
             Date defVal, DatePrecision precision);

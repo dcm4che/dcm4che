@@ -340,8 +340,8 @@ public enum VR {
         return valueType.toDoubles(val, bigEndian);
     }
 
-    public Temporal toTemporal(Object val, int valueIndex, Temporal defVal, DatePrecision precision) {
-        return valueType.toTemporal(val, valueIndex, defVal, precision);
+    public Temporal toTemporal(Object val, int valueIndex, DatePrecision precision) {
+        return valueType.toTemporal(val, valueIndex, precision);
     }
 
     public Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,

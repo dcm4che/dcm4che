@@ -614,7 +614,7 @@ enum BinaryValueType implements ValueType {
         return ds;
     }
 
-    @Override public Temporal toTemporal(Object val, int valueIndex, Temporal defVal, DatePrecision precision) {
+    @Override public Temporal toTemporal(Object val, int valueIndex, DatePrecision precision) {
         throw new UnsupportedOperationException();
     }
 

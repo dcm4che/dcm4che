@@ -453,20 +453,20 @@ enum StringValueType implements ValueType {
         throw new UnsupportedOperationException();
     }
 
-    @Override public Temporal toTemporal(Object val, int valueIndex, Temporal defVal, DatePrecision precision) {
+    @Override public Temporal toTemporal(Object val, int valueIndex, DatePrecision precision) {
         if (temporalType == null)
             throw new UnsupportedOperationException();
 
         if (val instanceof String) {
             return valueIndex == 0
                     ? temporalType.parseTemporal((String) val, precision)
-                    : defVal;
+                    : null;
         }
         if (val instanceof String[]) {
             String[] ss = (String[]) val;
             return (valueIndex < ss.length && ss[valueIndex] != null)
                     ? temporalType.parseTemporal(ss[valueIndex], precision)
-                    : defVal;
+                    : null;
         }
         throw new UnsupportedOperationException();
     }

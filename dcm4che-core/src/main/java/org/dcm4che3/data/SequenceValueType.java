@@ -140,7 +140,7 @@ enum SequenceValueType implements ValueType {
         throw new UnsupportedOperationException();
     }
 
-    @Override public Temporal toTemporal(Object val, int valueIndex, Temporal defVal, DatePrecision precision) {
+    @Override public Temporal toTemporal(Object val, int valueIndex, DatePrecision precision) {
         throw new UnsupportedOperationException();
     }
 

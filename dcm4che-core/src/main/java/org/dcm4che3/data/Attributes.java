@@ -1276,7 +1276,7 @@ public class Attributes implements Serializable {
      * @return an instance of {@link ZonedDateTime}, {@link LocalDateTime}, {@link LocalDate} or {@link LocalTime}, or null
      */
     public Temporal getTemporal(int tag) {
-        return getTemporal(null, tag, null, 0, null, new DatePrecision());
+        return getTemporal(null, tag, null, 0, new DatePrecision());
     }
 
     // TODO variants of getTemporal missing here
@@ -1288,39 +1288,37 @@ public class Attributes implements Serializable {
      * @param tag tag number
      * @param vr VR
      * @param valueIndex value index
-     * @param defVal default value, if the tag value is not set or empty
      * @param precision used as a return value: contains information about the contained date/time precision and
      *                  whether the tag value itself contained timezone information (only for {@link VR#DT} tags).
-     * @return
+     * @return an instance of {@link ZonedDateTime}, {@link LocalDateTime}, {@link LocalDate} or {@link LocalTime}, or null
      */
-    public Temporal getTemporal(String privateCreator, int tag, VR vr, int valueIndex, Temporal defVal,
-            DatePrecision precision) {
+    public Temporal getTemporal(String privateCreator, int tag, VR vr, int valueIndex, DatePrecision precision) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
-            return defVal;
+            return null;
 
         Object value = values[index];
         if (value == Value.NULL)
-            return defVal;
+            return null;
 
         vr = updateVR(index, vr);
 
         if (!vr.isTemporalType()) {
             LOG.info("Attempt to access {} {} as date/time", TagUtils.toString(tag), vr);
-            return defVal;
+            return null;
         }
 
         value = decodeStringValue(index);
         if (value == Value.NULL) {
-            return defVal;
+            return null;
         }
 
         Temporal t;
         try {
-            t = vr.toTemporal(value, valueIndex, defVal, precision);
+            t = vr.toTemporal(value, valueIndex, precision);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
-            return defVal;
+            return null;
         }
 
         if (t instanceof OffsetDateTime) {
@@ -1328,7 +1326,7 @@ public class Attributes implements Serializable {
         } else if (t instanceof LocalDate) {
             int tmTag = ElementDictionary.getElementDictionary(privateCreator).tmTagOf(tag);
             if (tmTag != 0) {
-                LocalTime localTime = getLocalTime(privateCreator, tmTag, VR.TM, valueIndex, null, precision);
+                LocalTime localTime = getLocalTime(privateCreator, tmTag, VR.TM, valueIndex, precision);
                 if (localTime != null) {
                     t = ((LocalDate) t).atTime(localTime);
                 }
@@ -1336,7 +1334,7 @@ public class Attributes implements Serializable {
         } else if (t instanceof LocalTime) {
             int daTag = ElementDictionary.getElementDictionary(privateCreator).daTagOf(tag);
             if (daTag != 0) {
-                LocalDate localDate = getLocalDate(privateCreator, daTag, VR.DA, valueIndex, null, new DatePrecision());
+                LocalDate localDate = getLocalDate(privateCreator, daTag, VR.DA, valueIndex, new DatePrecision());
                 if (localDate != null) {
                     t = localDate.atTime((LocalTime) t);
                 }
@@ -1356,63 +1354,61 @@ public class Attributes implements Serializable {
     }
 
 
-    private LocalDate getLocalDate(String privateCreator, int tag, VR vr, int valueIndex, LocalDate defVal,
-            DatePrecision precision) {
+    private LocalDate getLocalDate(String privateCreator, int tag, VR vr, int valueIndex, DatePrecision precision) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
-            return defVal;
+            return null;
 
         Object value = values[index];
         if (value == Value.NULL)
-            return defVal;
+            return null;
 
         vr = updateVR(index, vr);
 
         if (vr != VR.DA) {
             LOG.info("Attempt to access {} {} as local date", TagUtils.toString(tag), vr);
-            return defVal;
+            return null;
         }
 
         value = decodeStringValue(index);
         if (value == Value.NULL) {
-            return defVal;
+            return null;
         }
 
         try {
-            return (LocalDate)vr.toTemporal(value, valueIndex, defVal, precision);
+            return (LocalDate)vr.toTemporal(value, valueIndex, precision);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
-            return defVal;
+            return null;
         }
     }
 
-    private LocalTime getLocalTime(String privateCreator, int tag, VR vr, int valueIndex, LocalTime defVal,
-            DatePrecision precision) {
+    private LocalTime getLocalTime(String privateCreator, int tag, VR vr, int valueIndex, DatePrecision precision) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
-            return defVal;
+            return null;
 
         Object value = values[index];
         if (value == Value.NULL)
-            return defVal;
+            return null;
 
         vr = updateVR(index, vr);
 
         if (vr != VR.TM) {
             LOG.info("Attempt to access {} {} as local time", TagUtils.toString(tag), vr);
-            return defVal;
+            return null;
         }
 
         value = decodeStringValue(index);
         if (value == Value.NULL) {
-            return defVal;
+            return null;
         }
 
         try {
-            return (LocalTime)vr.toTemporal(value, valueIndex, defVal, precision);
+            return (LocalTime)vr.toTemporal(value, valueIndex, precision);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
-            return defVal;
+            return null;
         }
     }
 

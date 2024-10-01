@@ -155,14 +155,6 @@
     </dependencySet>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>/modules/org/dcm4che/imageio/main/lib/linux-i686</outputDirectory>
-      <includes>
-        <include>*:*:so:linux-x86:*</include>
-      </includes>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <outputDirectory>/modules/org/dcm4che/imageio/main/lib/linux-x86_64</outputDirectory>
       <includes>
         <include>*:*:so:linux-x86-64:*</include>

@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -288,6 +289,26 @@ public class StringUtils {
 
     public static String truncate(String s, int maxlen) {
         return s.length() > maxlen ? s.substring(0, maxlen) : s;
+    }
+
+    /**
+     * Returns a {@code String} resulting from replacing all non-ASCII and non-printable characters
+     * in the specified {@code String} with {@code replacement} character.
+     *
+     * @param s           - the specified string
+     * @param replacement - the replacement character
+     * @return a string derived from {@code s) by replacing all non-ASCII and non-printable characters
+     * with {@code replacement}.
+     */
+    public static String replaceNonPrintASCII(String s, char replacement) {
+        char[] cs = s.toCharArray();
+        int count = 0;
+        for (int i = 0; i < cs.length; i++) {
+            if (cs[i] > 0x20 && cs[i] < 0x7F) continue;
+            cs[i] = replacement;
+            count++;
+        }
+        return count > 0 ? new String(cs) : s;
     }
 
     public static <T> boolean equals(T o1, T o2) {

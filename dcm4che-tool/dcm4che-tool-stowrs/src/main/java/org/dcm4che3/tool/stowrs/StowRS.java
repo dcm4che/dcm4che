@@ -431,10 +431,20 @@ public class StowRS {
             case "bz2":
             case "application/x-bzip2":
                 return FileContentType.DOC_BZIP2;
+            case "jhc":
+            case "image/jphc":
+                return FileContentType.JPHC;
+            case "jph":
+            case "image/jph":
+                return FileContentType.JPH;
             case "jpg":
             case "jpeg":
             case "image/jpeg":
                 return FileContentType.JPEG;
+            case "j2c":
+            case "j2k":
+            case "image/j2c":
+                return FileContentType.J2C;
             case "jp2":
             case "image/jp2":
                 return FileContentType.JP2;
@@ -480,6 +490,10 @@ public class StowRS {
                 "encapsulatedVCFBzip2Metadata.xml"),
         DOC_BZIP2(UID.PrivateDcm4cheEncapsulatedBzip2DocumentStorage, Tag.EncapsulatedDocument, MediaTypes.APPLICATION_X_BZIP2,
                 "encapsulatedDocumentBzip2Metadata.xml"),
+        JPHC(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
+                Tag.PixelData,
+                MediaTypes.IMAGE_JPHC,
+                vlPhotographicImage ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
         JPEG(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
                 Tag.PixelData,
                 MediaTypes.IMAGE_JPEG,
@@ -487,6 +501,14 @@ public class StowRS {
         JP2(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
                 Tag.PixelData,
                 MediaTypes.IMAGE_JP2,
+                vlPhotographicImage ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
+        J2C(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
+                Tag.PixelData,
+                MediaTypes.IMAGE_J2C,
+                vlPhotographicImage ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
+        JPH(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
+                Tag.PixelData,
+                MediaTypes.IMAGE_JPH,
                 vlPhotographicImage ? "vlPhotographicImageMetadata.xml" : "secondaryCaptureImageMetadata.xml"),
         PNG(vlPhotographicImage ? UID.VLPhotographicImageStorage : UID.SecondaryCaptureImageStorage,
                 Tag.PixelData,
@@ -588,8 +610,11 @@ public class StowRS {
                 supplementEncapsulatedDocAttrs(metadata, stowRSBulkdata);
                 contentLocBulkdata.put(contentLoc, stowRSBulkdata);
                 break;
+            case JPH:
+            case JPHC:
             case JPEG:
             case JP2:
+            case J2C:
             case PNG:
             case GIF:
             case MPEG:
@@ -701,6 +726,9 @@ public class StowRS {
 
         static CompressedPixelData valueOf() {
             return bulkdataFileContentType == FileContentType.JP2
+                        || bulkdataFileContentType == FileContentType.J2C
+                        || bulkdataFileContentType == FileContentType.JPH
+                        || bulkdataFileContentType == FileContentType.JPHC
                     ? JPEG
                     : bulkdataFileContentType == FileContentType.QUICKTIME
                     ? MP4 : valueOf(bulkdataFileContentType.name());

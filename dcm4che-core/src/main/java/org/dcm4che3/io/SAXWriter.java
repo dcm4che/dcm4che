@@ -256,7 +256,8 @@ public class SAXWriter implements DicomInputHandler {
                 } else {
                     byte[] b = dis.readValue();
                     if (tag == Tag.TransferSyntaxUID
-                            || tag == Tag.SpecificCharacterSet)
+                            || tag == Tag.SpecificCharacterSet
+                            || tag == Tag.PixelRepresentation)
                         attrs.setBytes(tag, vr, b);
                     if (vr.isInlineBinary())
                         writeInlineBinary(dis.bigEndian()

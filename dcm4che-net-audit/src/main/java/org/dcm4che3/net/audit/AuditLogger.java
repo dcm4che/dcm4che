@@ -38,41 +38,6 @@
 
 package org.dcm4che3.net.audit;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.management.ManagementFactory;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.security.AccessController;
-import java.security.GeneralSecurityException;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-import java.util.TimeZone;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-
 import org.dcm4che3.audit.*;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.net.Connection;
@@ -84,6 +49,18 @@ import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.net.*;
+import java.nio.charset.Charset;
+import java.security.AccessController;
+import java.security.GeneralSecurityException;
+import java.security.PrivilegedAction;
+import java.util.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -215,7 +192,7 @@ public class AuditLogger {
     private boolean includeBOM = true;
     private boolean formatXML = false;
     private Boolean installed;
-    private Boolean includeInstanceUID = false;
+    private boolean includeInstanceUID = false;
     private File spoolDirectory;
     private String spoolDirectoryURI;
     private String spoolFileNamePrefix = "audit";
@@ -508,11 +485,11 @@ public class AuditLogger {
         this.installed = installed;
     }
 
-    public Boolean isIncludeInstanceUID() {
+    public boolean isIncludeInstanceUID() {
         return includeInstanceUID;
     }
 
-    public void setIncludeInstanceUID(Boolean includeInstanceUID) {
+    public void setIncludeInstanceUID(boolean includeInstanceUID) {
         this.includeInstanceUID = includeInstanceUID;
     }
 
@@ -671,6 +648,7 @@ public class AuditLogger {
         setTimestampInUTC(from.timestampInUTC);
         setIncludeBOM(from.includeBOM);
         setFormatXML(from.formatXML);
+        setIncludeInstanceUID(from.includeInstanceUID);
         setSpoolDirectoryURI(from.spoolDirectoryURI);
         setSpoolFileNamePrefix(from.spoolFileNamePrefix);
         setSpoolFileNameSuffix(from.spoolFileNameSuffix);
@@ -1006,7 +984,10 @@ public class AuditLogger {
             else
                 write('-');
             write(' ');
-            write(applicationName().getBytes(encoding));
+            write(StringUtils.replaceNonPrintASCII(
+                    StringUtils.truncate(applicationName().trim(), 48),
+                    '_')
+                    .getBytes(encoding));
             write(' ');
             write(processID.getBytes(encoding));
             write(' ');

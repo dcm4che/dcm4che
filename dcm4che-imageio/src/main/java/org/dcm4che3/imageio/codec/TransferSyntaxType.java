@@ -135,9 +135,14 @@ public enum TransferSyntaxType {
             case UID.JPEG2000:
             case UID.JPEG2000MCLossless:
             case UID.JPEG2000MC:
+            case UID.HTJ2KLossless:
+            case UID.HTJ2KLosslessRPCL:
+            case UID.HTJ2K:
                 return JPEG_2000;
             case UID.JPIPReferenced:
             case UID.JPIPReferencedDeflate:
+            case UID.JPIPHTJ2KReferenced:
+            case UID.JPIPHTJ2KReferencedDeflate:
                 return JPIP;
             case UID.MPEG2MPML:
             case UID.MPEG2MPMLF:
@@ -171,6 +176,7 @@ public enum TransferSyntaxType {
             case UID.JPEGLSNearLossless:
             case UID.JPEG2000:
             case UID.JPEG2000MC:
+            case UID.HTJ2K:
             case UID.MPEG2MPML:
             case UID.MPEG2MPMLF:
             case UID.MPEG2MPHL:
@@ -200,6 +206,9 @@ public enum TransferSyntaxType {
             case UID.JPEGFullProgressionNonHierarchical1012:
             case UID.JPEG2000Lossless:
             case UID.JPEG2000:
+            case UID.HTJ2KLossless:
+            case UID.HTJ2KLosslessRPCL:
+            case UID.HTJ2K:
                 return true;
         }
         return false;

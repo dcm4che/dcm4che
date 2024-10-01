@@ -15,13 +15,14 @@ Storing bulkdata files of various Content types in one request is not
 possible i.e for eg. one can send multiple pdfs in one request, but can
 not send combination of files like pdfs and images in one request.
 Supported content types for bulkdata are application/pdf (for PDF files),
-text/xml (for CDA files), image/jpeg, video/mpeg, video/mp4,
-video/quicktime, image/jp2, image/png, image/gif, application/sla or
-model/stl or model/x.stl-binary (for STL files), model/mtl (for MTL
-files), model/obj (for OBJ files) and application/vnd.genozip (for Genozip
-compressed genomic files), application/prs.vcfbzip2 (for Bzip2 compressed
-genomic data VCF files) and application/x-bzip2 (for Bzip2 compressed
-genomic data Document files).
+text/xml (for CDA files), image/jpeg or image/png, image/jp2 or image/j2c
+or image/gif or image/jphc or image/jph (for images), video/mpeg or
+video/mp4 or video/quicktime (for videos), application/sla or model/stl or
+model/x.stl-binary (for STL files), model/mtl (for MTL files), model/obj
+(for OBJ files), application/vnd.genozip (for Genozip compressed genomic
+files), application/prs.vcfbzip2 (for Bzip2 compressed genomic data VCF
+files) and application/x-bzip2 (for Bzip2 compressed genomic data Document
+files).
 For metadata : Send single non bulkdata type of file by specifying a
 metadata file for objects like Structured Reports, Presentation States
 etc.

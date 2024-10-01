@@ -46,7 +46,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>5.31.1</version>
+    <version>5.33.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -241,7 +241,6 @@
                 <artifactItem>
                   <groupId>org.weasis.thirdparty.org.opencv</groupId>
                   <artifactId>${lib-file-name}</artifactId>
-                  <version>${weasis.opencv.native.version}</version>
                   <type>${lib-file-ext}</type>
                   <classifier>${os-name}-${cpu-name}</classifier>
                   <overWrite>false</overWrite>

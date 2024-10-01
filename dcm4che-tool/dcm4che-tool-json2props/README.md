@@ -10,8 +10,7 @@ Options:
  -h,--help      display this help and exit
  -V,--version   output version information and exit
 -
-Example: json2props /work/dcm4chee-arc-lang/src/main/webapp/assets/schema
-/work/dcm4chee-arc-lang/src/props
+Example: json2props src/main/webapp/assets/schema src/props
 => Convert the English version of the JSON Schema files to create / update
 key/value properties files
 -
@@ -29,5 +28,4 @@ Example: json2props src/main/webapp/assets/schema/hi src/props/hi
 language specific key/value properties files. It will add the previous
 missing entries in the key/value properties files, where title and
 description in English separated by | can be replaced by translated terms.
--
 ```

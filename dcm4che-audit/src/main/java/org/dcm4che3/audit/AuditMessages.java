@@ -39,8 +39,10 @@
 package org.dcm4che3.audit;
 
 import jakarta.xml.bind.*;
+
 import java.io.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -285,8 +287,10 @@ public class AuditMessages {
                 new EventTypeCode("0212", "99DCM4CHEE", "Mistyped Argument");
         public static final EventTypeCode A700 =
                 new EventTypeCode("A700", "99DCM4CHEE", "Out Of Resources");
-        public static final EventTypeCode A900 =
-                new EventTypeCode("A900", "99DCM4CHEE", "Identifier Does Not Match SOP Class");
+        public static final EventTypeCode A701 =
+                new EventTypeCode("A701", "99DCM4CHEE", "Refused: Out Of Resources - Unable to calculate number of matches");
+        public static final EventTypeCode A702 =
+                new EventTypeCode("A702", "99DCM4CHEE", "Refused: Out Of Resources - Unable to perform sub-operations");
         public static final EventTypeCode A770 =
                 new EventTypeCode("A770", "99DCM4CHEE", "Duplicate Rejection Note");
         public static final EventTypeCode A771 =
@@ -307,6 +311,12 @@ public class AuditMessages {
                 new EventTypeCode("A778", "99DCM4CHEE", "Conflicting Patient ID not accepted");
         public static final EventTypeCode A779 =
                 new EventTypeCode("A779", "99DCM4CHEE", "Conflicting Patient Attributes rejected");
+        public static final EventTypeCode A801 =
+                new EventTypeCode("A801", "99DCM4CHEE", "Refused: Move Destination unknown");
+        public static final EventTypeCode A900 =
+                new EventTypeCode("A900", "99DCM4CHEE", "Identifier does not match SOP Class");
+        public static final EventTypeCode B000 =
+                new EventTypeCode("B000", "99DCM4CHEE", "Sub-operations Complete - One or more Failures");
         public static final EventTypeCode C409 =
                 new EventTypeCode("C409", "99DCM4CHEE", "Different Study Instance UID");
 
@@ -475,6 +485,8 @@ public class AuditMessages {
                 new MediaType("110010", "DCM", "Film");
         public static final MediaType PaperDocument =
                 new MediaType("110038", "DCM", "Paper Document");
+        public static final MediaType QStar =
+                new MediaType("QSTAR", "99DCM4CHEE", "QSTAR");
 
         public MediaType(String code, String codeSystemName,
                 String originalText) {
@@ -614,8 +626,8 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("ITI-21", "IHE Transactions", "Patient Demographics Query");
         public static final ParticipantObjectIDTypeCode ITI_MobilePatientDemographicsQuery =
                 new ParticipantObjectIDTypeCode("ITI-78", "IHE Transactions", "Mobile Patient Demographics Query");
-        public static final ParticipantObjectIDTypeCode QIDO_QUERY =
-                new ParticipantObjectIDTypeCode("QIDO","99DCM4CHEE","QIDO_Query");
+        public static final ParticipantObjectIDTypeCode REST =
+                new ParticipantObjectIDTypeCode("REST","99DCM4CHEE","RESTful Web Service");
         public static final ParticipantObjectIDTypeCode TASK =
                 new ParticipantObjectIDTypeCode("TASK","99DCM4CHEE","Archive Task");
         public static final ParticipantObjectIDTypeCode TASKS =
@@ -731,14 +743,17 @@ public class AuditMessages {
         return asi;
    }
 
-    public static ParticipantObjectDetail createParticipantObjectDetail(
-            String type, String value) {
+    public static ParticipantObjectDetail createParticipantObjectDetail(String type, String value) {
         if (value == null)
             return null;
 
+        return toParticipantObjectDetail(type, value.getBytes());
+    }
+
+    public static ParticipantObjectDetail toParticipantObjectDetail(String type, byte[] value) {
         ParticipantObjectDetail detail = new ParticipantObjectDetail();
         detail.setType(type);
-        detail.setValue(value.getBytes());
+        detail.setValue(value);
         return detail;
     }
 
@@ -758,6 +773,10 @@ public class AuditMessages {
         return inst;
     }
 
+    public static ParticipantObjectContainsStudy createParticipantObjectContainsStudy(String... studyIUIDs) {
+        return createParticipantObjectContainsStudy(createStudyIDs(studyIUIDs));
+    }
+
     private static ParticipantObjectContainsStudy
             createParticipantObjectContainsStudy(org.dcm4che3.audit.StudyIDs... studyIDs) {
         ParticipantObjectContainsStudy study = new ParticipantObjectContainsStudy();
@@ -766,10 +785,16 @@ public class AuditMessages {
         return study;
     }
 
-    private static Accession createAccession(String accessionNumber) {
+    public static Accession createAccession(String accessionNumber) {
         Accession accession = new Accession();
         accession.setNumber(accessionNumber);
         return accession;
+    }
+
+    public static MPPS createMPPS(String mppsUID) {
+        MPPS mpps = new MPPS();
+        mpps.setUID(mppsUID);
+        return mpps;
     }
 
     private static StudyIDs[] createStudyIDs(String... studyUIDs) {
@@ -779,7 +804,7 @@ public class AuditMessages {
             sID.setUID(s);
             set.add(sID);
         }
-        return set.toArray(new StudyIDs[set.size()]);
+        return set.toArray(new StudyIDs[0]);
     }
 
     public static String alternativeUserIDForAETitle(String... aets) {
@@ -877,6 +902,18 @@ public class AuditMessages {
         for (ActiveParticipant activeParticipant : activeParticipants)
             if (activeParticipant != null)
                 msg.getActiveParticipant().add(activeParticipant);
+        for (ParticipantObjectIdentification participantObjectIdentification : participantObjectIdentifications)
+            msg.getParticipantObjectIdentification().add(participantObjectIdentification);
+        return msg;
+    }
+
+    public static AuditMessage createMessage(
+            EventIdentification eventIdentification, List<ActiveParticipant> activeParticipants,
+            ParticipantObjectIdentification... participantObjectIdentifications) {
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(eventIdentification);
+        for (ActiveParticipant activeParticipant : activeParticipants)
+            msg.getActiveParticipant().add(activeParticipant);
         for (ParticipantObjectIdentification participantObjectIdentification : participantObjectIdentifications)
             msg.getParticipantObjectIdentification().add(participantObjectIdentification);
         return msg;

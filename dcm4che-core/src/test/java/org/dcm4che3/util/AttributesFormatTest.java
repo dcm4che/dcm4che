@@ -45,6 +45,8 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.VR;
 import org.junit.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.regex.Pattern;
 
 /**
@@ -117,5 +119,21 @@ public class AttributesFormatTest {
         Attributes attrs = new Attributes(1);
         attrs.setString(Tag.PatientName, VR.PN, "Simson^Homer");
         assertEquals("SIMSON^HOMER", new AttributesFormat("{00100010,upper}").format(attrs));
+    }
+
+    @Test
+    public void testDateTimeOffset() {
+        Attributes attrs = new Attributes(1);
+        attrs.setString(Tag.StudyDate, VR.DA, "20111012");
+        attrs.setString(Tag.StudyTime, VR.TM, "0930");
+        assertEquals("2011/09/12/10/00",
+                new AttributesFormat("{00080020,date-P1M,yyyy/MM/dd}/{00080030,time+PT30M,HH/mm}")
+                        .format(attrs));
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        cal.add(Calendar.MINUTE, 30);
+        assertEquals(new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(cal.getTime()),
+                new AttributesFormat("{now,date-P1M,yyyy/MM/dd}/{now,time+PT30M,HH/mm}")
+                        .format(attrs));
     }
 }

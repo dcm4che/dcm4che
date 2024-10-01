@@ -9,6 +9,9 @@ N-CREATE requests are stored in DICOM files.ianscp application also
 supports the Verification Service Class as a SCP.
 -
 Options:
+    --accept <aet>                   One ore more AE Title(s) that SCP
+                                     should accept. By default SCP accepts
+                                     any calling AE title.
  -b,--bind <[aet[@ip]:]port>         specify the port on which the
                                      Application Entity shall listening
                                      for incoming association requests. If
@@ -112,6 +115,11 @@ Options:
                                      Cipher Suite. Multiple Cipher Suites
                                      may be enabled by multiple
                                      --tls-cipher options
+    --tls-eia-https                  enable server endpoint identification
+                                     according RFC 2818: HTTP Over TLS
+    --tls-eia-ldaps                  enable server endpoint identification
+                                     according RFC 2830: LDAP Extension
+                                     for TLS
     --tls-noauth                     disable client authentification for
                                      TLS
     --tls-null                       enable TLS connection without

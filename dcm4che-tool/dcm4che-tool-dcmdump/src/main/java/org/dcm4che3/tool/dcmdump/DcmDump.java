@@ -134,6 +134,7 @@ public class DcmDump implements DicomInputHandler {
             dis.setFileMetaInformationGroupLength(b);
         else if (tag == Tag.TransferSyntaxUID
                 || tag == Tag.SpecificCharacterSet
+                || tag == Tag.PixelRepresentation
                 || TagUtils.isPrivateCreator(tag))
             attrs.setBytes(tag, vr, b);
     }

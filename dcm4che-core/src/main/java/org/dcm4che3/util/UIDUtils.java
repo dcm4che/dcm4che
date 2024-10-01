@@ -237,7 +237,7 @@ public class UIDUtils {
             if (modified == null)
                 return;
 
-            if (rootSeqTag == 0) {
+            if (attrs.isRoot()) {
                 modified.setValue(tag, vr, val);
             } else if (!modified.contains(rootSeqTag)) {
                 Sequence src = attrs.getRoot().getSequence(rootSeqTag);

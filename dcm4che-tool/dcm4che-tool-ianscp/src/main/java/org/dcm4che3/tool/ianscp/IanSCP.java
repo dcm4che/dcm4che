@@ -47,13 +47,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option.Builder;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Association;
@@ -137,6 +136,7 @@ public class IanSCP extends Device {
            IanSCP main = new IanSCP();
            CLIUtils.configureBindServer(main.conn, main.ae, cl);
            CLIUtils.configure(main.conn, cl);
+           CLIUtils.configureAcceptedCallingAETitles(main.ae, cl, LOG);
            configureTransferCapability(main.ae, cl);
            main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
            main.setStorageDirectory(getStorageDirectory(cl));
@@ -161,6 +161,7 @@ public class IanSCP extends Device {
         Options opts = new Options();
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addAcceptedCallingAETs(opts);
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);

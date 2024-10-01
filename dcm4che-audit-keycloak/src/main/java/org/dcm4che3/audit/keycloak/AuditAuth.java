@@ -48,9 +48,6 @@ import org.keycloak.events.Event;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 
-import java.util.Collections;
-import java.util.Optional;
-
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
@@ -60,13 +57,12 @@ import java.util.Optional;
 class AuditAuth {
 
     static void audit(Event event, AuditLogger auditLogger, KeycloakSession session, String suRole) {
-        Optional<UserModel> userModel = session.users()
-                .searchForUserStream(session.getContext().getRealm(), Collections.EMPTY_MAP)
-                .findFirst();
-        String username = userModel.isPresent()
-                            ? userModel.get().getUsername()
-                            : event.getDetails() == null
-                                ? event.getUserId()
+        String userId = event.getUserId();
+        UserModel userModel = session.users().getUserById(session.getContext().getRealm(), userId);
+        String username =  event.getDetails() == null
+                            ? userId
+                            : event.getDetails().get("username") == null
+                                ? userModel.getUsername()
                                 : event.getDetails().get("username");
 
         AuditMessage auditMsg = createAuditMsg(event, username, auditLogger);
@@ -74,9 +70,7 @@ class AuditAuth {
 
         if (!oneOfUserAuthEvents(event)
                 || username == null
-                || (userModel.isPresent() && userModel.get()
-                                                        .getRoleMappingsStream()
-                                                        .noneMatch(roleModel -> roleModel.getName().equals(suRole))))
+                || userModel.getRoleMappingsStream().noneMatch(roleModel -> roleModel.getName().equals(suRole)))
             return;
 
         AuditUtils.AuditEventType eventType = AuditUtils.AuditEventType.forSuperUserAuth(event);

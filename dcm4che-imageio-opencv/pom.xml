@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>5.31.1</version>
+    <version>5.33.1</version>
   </parent>
   <artifactId>dcm4che-imageio-opencv</artifactId>
   <name>dcm4che-imageio-opencv</name>
@@ -17,7 +17,6 @@
     <dependency>
       <groupId>org.weasis.core</groupId>
       <artifactId>weasis-core-img</artifactId>
-      <version>${weasis.core.img.version}</version>
     </dependency>
   </dependencies>
 </project>

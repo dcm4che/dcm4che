@@ -152,15 +152,48 @@ public class MediaTypes {
             new MediaType("image", "jp2");
 
     /**
+     * "image/j2c"
+     */
+    public final static String IMAGE_J2C = "image/j2c";
+
+    /**
+     * "image/j2c"
+     */
+    public final static MediaType IMAGE_J2C_TYPE =
+            new MediaType("image", "j2c");
+
+    /**
      * "image/jpx"
      */
     public final static String IMAGE_JPX = "image/jpx";
 
     /**
-     * "image/dicom+jpeg-jpx"
+     * "image/jpx"
      */
     public final static MediaType IMAGE_JPX_TYPE =
             new MediaType("image", "jpx");
+
+    /**
+     * "image/jph"
+     */
+    public final static String IMAGE_JPH = "image/jph";
+
+    /**
+     * "image/jph"
+     */
+    public final static MediaType IMAGE_JPH_TYPE =
+            new MediaType("image", "jph");
+
+    /**
+     * "image/jphc"
+     */
+    public final static String IMAGE_JPHC = "image/jphc";
+
+    /**
+     * "image/jphc"
+     */
+    public final static MediaType IMAGE_JPHC_TYPE =
+            new MediaType("image", "jphc");
 
     /**
      * "image/dicom-rle"
@@ -400,29 +433,30 @@ public class MediaTypes {
             case UID.ExplicitVRLittleEndian:
             case UID.ImplicitVRLittleEndian:
                 return MediaType.APPLICATION_OCTET_STREAM_TYPE;
-            case UID.JPEGLosslessSV1:
-                return IMAGE_JPEG_TYPE;
-            case UID.JPEGLSLossless:
-                return IMAGE_JLS_TYPE;
-            case UID.JPEG2000Lossless:
-                return IMAGE_JP2_TYPE;
-            case UID.JPEG2000MCLossless:
-                return IMAGE_JPX_TYPE;
             case UID.RLELossless:
                 return IMAGE_DICOM_RLE_TYPE;
             case UID.JPEGBaseline8Bit:
             case UID.JPEGExtended12Bit:
             case UID.JPEGLossless:
+            case UID.JPEGLosslessSV1:
                 type = IMAGE_JPEG_TYPE;
                 break;
+            case UID.JPEGLSLossless:
             case UID.JPEGLSNearLossless:
                 type = IMAGE_JLS_TYPE;
                 break;
+            case UID.JPEG2000Lossless:
             case UID.JPEG2000:
                 type = IMAGE_JP2_TYPE;
                 break;
+            case UID.JPEG2000MCLossless:
             case UID.JPEG2000MC:
                 type = IMAGE_JPX_TYPE;
+                break;
+            case UID.HTJ2KLossless:
+            case UID.HTJ2KLosslessRPCL:
+            case UID.HTJ2K:
+                type = IMAGE_JPHC_TYPE;
                 break;
             case UID.MPEG2MPML:
             case UID.MPEG2MPHL:

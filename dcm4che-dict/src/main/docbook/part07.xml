@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2023d - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2024d - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2023</year>
+      <year>2024</year>
       <holder>NEMA</holder>
     </copyright>
       <legalnotice>
@@ -532,12 +532,47 @@
 <olink targetdoc="PS3.5" targetptr="glossentry_DataSet" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
+                <glossentry xml:id="glossentry_DefaultCharacterRepertoire" xreflabel="Default Character Repertoire">
+                    <glossterm>Default Character Repertoire</glossterm>
+                    <glossdef>
+                        <para xml:id="para_00da5aeb-8c31-4dba-be76-b5229c8d908c">
+                            <olink targetdoc="PS3.5" targetptr="glossentry_DefaultCharacterRepertoire" xrefstyle="template:See %t in %o"/>.</para>
+                    </glossdef>
+                </glossentry>
+                <glossentry xml:id="glossentry_ElementNumber" xreflabel="Element Number">
+                    <glossterm>Element Number</glossterm>
+                    <glossdef>
+                        <para xml:id="para_bd8a253f-8f2b-456d-93bb-412a6a97c149">
+                            <olink targetdoc="PS3.5" targetptr="glossentry_ElementNumber" xrefstyle="template:See %t in %o"/>.</para>
+                    </glossdef>
+                </glossentry>
+                <glossentry xml:id="glossentry_GroupNumber" xreflabel="Group Number">
+                    <glossterm>Group Number</glossterm>
+                    <glossdef>
+                        <para xml:id="para_756a0805-3a59-446a-84f0-131d48b316d1">
+                            <olink targetdoc="PS3.5" targetptr="glossentry_GroupNumber" xrefstyle="template:See %t in %o"/>.</para>
+                    </glossdef>
+                </glossentry>
+                <glossentry xml:id="glossentry_ImplicitVR" xreflabel="Implicit VR">
+                    <glossterm>Implicit VR</glossterm>
+                    <glossdef>
+                        <para xml:id="para_16b9d027-45a3-4389-8d5a-b896536e0f5f">
+                            <olink targetdoc="PS3.5" targetptr="glossentry_ImplicitVR" xrefstyle="template:See %t in %o"/>.</para>
+                    </glossdef>
+                </glossentry>
+                <glossentry xml:id="glossentry_LittleEndian" xreflabel="Little Endian">
+                    <glossterm>Little Endian</glossterm>
+                    <glossdef>
+                        <para xml:id="para_9cf1a424-0608-41c7-adf5-b29a44845492">
+                            <olink targetdoc="PS3.5" targetptr="glossentry_LittleEndian" xrefstyle="template:See %t in %o"/>.</para>
+                    </glossdef>
+                </glossentry>
                 <glossentry xml:id="glossentry_UniqueIdentifier" xreflabel="Unique Identifier (UID)">
                     <glossterm>Unique Identifier</glossterm>
                     <acronym>UID</acronym>
                     <glossdef>
                         <para xml:id="para_1093a8dd-2fe3-4fbc-aae7-763f86229b9a">
-<olink targetdoc="PS3.8" targetptr="glossentry_UniqueIdentifier" xrefstyle="template:See %t in %o"/>.</para>
+                            <olink targetdoc="PS3.8" targetptr="glossentry_UniqueIdentifier" xrefstyle="template:See %t in %o"/>.</para>
                     </glossdef>
                 </glossentry>
 
@@ -943,16 +978,27 @@
     </orderedlist>
   </note>
   <para xml:id="para_08cffd03-5993-40a8-bfea-c0aa484ccee2">A Command Element is composed of three fields; a Command Element Tag, a Value Length, and a Value Field.</para>
-  <para xml:id="para_dbb4fb5f-46fe-452d-b2ba-9d02b1493369">Command Element Tag: An ordered pair of 16-bit unsigned integers representing the Group Number followed by Element Number.</para>
+  <para xml:id="para_dbb4fb5f-46fe-452d-b2ba-9d02b1493369">Command Element Tag: An ordered pair of 16-bit unsigned integers representing the Group Number followed by the Element Number.</para>
+  <note>
+      <orderedlist>
+          <listitem>
+              <para xml:id="para_eafd7243-b6cc-45be-8ae6-d1e94a50f8f0">All Command Element Tags have the Group Number 0000.
+                  See <xref linkend="chapter_E" xrefstyle="template:Annex %n"/> for the Registry of Command Elements, which provides a complete list of all Command Elements that can be used for the Command Set.</para>
+          </listitem>
+          <listitem>
+              <para xml:id="para_4d79cd98-a177-4295-8dad-a09f45831688">In particular, the Command Set is not permitted to contain any Data Elements, such as those listed in <olink targetdoc="PS3.6" targetptr="PS3.6" xrefstyle="select: labelnumber"/>.</para>
+          </listitem>
+      </orderedlist>
+  </note>
   <para xml:id="para_9ba310a8-e275-4d71-a838-a3b94af7c635">Value Length: A 32-bit unsigned integer representing the explicit Length as the number of bytes (even) that make up the Value. It does not include the length of the Command Element Tag or Value Length fields.</para>
   <para xml:id="para_39279bc6-132e-440f-be3a-d189e473ac4a">Value Field: An even number of bytes containing the Value(s) of the Command Element.</para>
-  <para xml:id="para_304e987b-fd10-4710-94d9-10a43342f009">The command type of Value(s) stored in this field is specified by the Command Element's Value Representation (VR). The VR for a given Command Element can be determined using the Command Dictionary in <xref linkend="chapter_E" xrefstyle="template:Annex %n"/>. The VR of Command Elements shall agree with those specified in the Command Dictionary. The VR definitions are defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>
+  <para xml:id="para_304e987b-fd10-4710-94d9-10a43342f009">The command type of Value(s) stored in this field is specified by the Command Element's Value Representation (VR). The VR for a given Command Element can be determined using the Command Dictionary in <xref linkend="chapter_E" xrefstyle="template:Annex %n"/>. The VR of Command Elements shall agree with those specified in the Command Dictionary. The VR definitions can be found in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>
 </para>
   <para xml:id="para_0906e49b-8c70-454e-a273-45c35c272798">The Value Multiplicity (VM) specifies how many Values with the VR can be placed in the Value Field. If the VM is greater than one, multiple Values shall be delimited within the Value Field as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. The VM for a given Command Element can be determined using the Command Dictionary in <xref linkend="chapter_E" xrefstyle="template:Annex %n"/>.</para>
   <note>
     <orderedlist numeration="arabic">
       <listitem>
-        <para xml:id="para_88cfe637-0efb-4a8a-b5fd-7e0423a2a714">The Message Length-to-End (0000,0001) Command Element is retired. Implementations may choose to send it for backward compatibility reasons. DICOM V3.0 conformant implementations must not rely on its presence for their operation.</para>
+        <para xml:id="para_88cfe637-0efb-4a8a-b5fd-7e0423a2a714">The Command Length to End (0000,0001) Command Element is retired. Implementations may choose to send it for backward compatibility reasons. DICOM V3.0 conformant implementations must not rely on its presence for their operation.</para>
       </listitem>
       <listitem>
         <para xml:id="para_9d012a83-514c-42e2-a856-035df88f6ff3">The delimitation of the Message length is actually achieved by relying on the fact that the Presentation Data Value (conveying each Message fragment) is delimited as defined by the OSI Upper Layer Service and the associated Message Control Header (see <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>). This results from the fact that the DICOM V3.0 UL protocol or the OSI Presentation protocol explicitly conveys the length of a PDV.</para>
@@ -5580,7 +5626,7 @@
 <para xml:id="para_6d42bb01-7272-49be-9b47-a6ae3061b34a">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_c32e3ada-bc20-4c26-b16a-145546e5f880">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_c32e3ada-bc20-4c26-b16a-145546e5f880">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_aa33f5b9-a799-4825-9b24-abc0cae92509">Success (0000H) - successful notification.</para>
@@ -5797,7 +5843,7 @@
   <para xml:id="para_0d753bbb-9e15-4e72-8ddb-d8a6ca195807">This parameter contains the error or success notification for the operation. It shall be included by the performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
-<para xml:id="para_45dfd1c5-2ad6-4247-b826-40e5c68c4326">Attribute list error (0107H) - one or more Attribute Values were not read because the specified Attribute was not recognized. The Attribute Values that could be read are returned.</para>
+<para xml:id="para_45dfd1c5-2ad6-4247-b826-40e5c68c4326">Attribute List warning (0107H) - one or more Attribute Values were not read because the specified Attribute was not recognized. The Attribute Values that could be read are returned.</para>
 </listitem>
   <listitem>
 <para xml:id="para_dd119344-f551-42d2-a916-68eb919d7073">Class-Instance conflict (0119H) -  the specified SOP Instance is not a member of the specified SOP Class.</para>
@@ -5821,7 +5867,7 @@
 <para xml:id="para_5e4c546a-5394-4a81-9b35-f3e7b37dbdf7">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_af60831d-070f-44a8-bfe2-0cefdcbe25c5">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_af60831d-070f-44a8-bfe2-0cefdcbe25c5">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_a26ba732-aae9-4ed4-ba22-cfb920a35973">Success (0000H) - successful operation.</para>
@@ -6070,7 +6116,7 @@
 <para xml:id="para_2f468e80-65f3-46c9-a0c6-476b313597f1">No such Attribute (0105H) - the Tag for the specified Attribute was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_62ebb814-3b53-4ce4-b6dc-8c839c21465f">Attribute list error (0107H) - one or more Attribute Values were not modified because the specified Attributes were not recognized. The Attribute Values that could be modified were modified.</para>
+<para xml:id="para_62ebb814-3b53-4ce4-b6dc-8c839c21465f">Attribute List warning (0107H) - one or more Attribute Values were not modified because the specified Attributes were not recognized. The Attribute Values that could be modified were modified.</para>
 </listitem>
   <listitem>
 <para xml:id="para_8fe69bf5-5f8f-4f75-8079-f8f621225735">No such SOP Class (0118H) - the SOP Class was not recognized.</para>
@@ -6082,7 +6128,7 @@
 <para xml:id="para_dadf18c4-e7c9-471b-8d49-a2b0d77c530d">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_a4372fbd-d880-48bc-b6c8-4494aebbdcaf">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_a4372fbd-d880-48bc-b6c8-4494aebbdcaf">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_b6023420-18b6-48a9-8bef-d622216f3b86">Success (0000H) - successful operation.</para>
@@ -6366,7 +6412,7 @@
 <para xml:id="para_a25015fa-ef5f-4236-9075-5596df935b83">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_17023b88-a5b2-4b01-8c25-450ad3631bd3">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_17023b88-a5b2-4b01-8c25-450ad3631bd3">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_77175464-c2fe-4872-9f0a-e8d2601a6580">Success (0000H) - successful operation.</para>
@@ -6574,7 +6620,7 @@
 <para xml:id="para_e0862c63-426e-4d37-b2a4-b16fdf4a268c">No such Attribute (0105H) - the Tag for the specified Attribute was not recognized.</para>
 </listitem>
   <listitem>
-<para xml:id="para_d1963d97-d707-4e70-a618-f2a60870f238">Attribute list error (0107H) -one or more specified Attributes were not recognized and not included in the created instance.</para>
+<para xml:id="para_d1963d97-d707-4e70-a618-f2a60870f238">Attribute List warning (0107H) - one or more specified Attributes were not recognized and not included in the created instance.</para>
 </listitem>
   <listitem>
 <para xml:id="para_2214f90c-300c-4a89-b3a2-35bba4bf66bb">No such SOP Class (0118H) - the SOP Class was not recognized.</para>
@@ -6583,7 +6629,7 @@
 <para xml:id="para_b9e95c90-5d8f-41cd-a09a-e723d201977c">Processing Failure (0110H) - a general failure in processing the operation was encountered.</para>
 </listitem>
   <listitem>
-<para xml:id="para_994643c9-8011-4265-af0c-abf4de393180">Resource Limitation (0213H) - the operation was not performed due to resource limitation.</para>
+<para xml:id="para_994643c9-8011-4265-af0c-abf4de393180">Resource limitation (0213H) - the operation was not performed due to resource limitation.</para>
 </listitem>
   <listitem>
 <para xml:id="para_dcdb980a-b108-4d68-9fae-c4eead16ac1c">Success (0000H) - successful operation.</para>
@@ -6801,7 +6847,7 @@
 <para xml:id="para_236dee26-8cce-4ee1-83eb-ccf04bce8b8c">Processing Failure (0110H) - a general failure in processing the operation was encountered</para>
 </listitem>
   <listitem>
-<para xml:id="para_c34a8d3e-71a1-43cd-9ddd-d8a98de9462a">Resource Limitation (0213H) - the operation was not performed due to resource limitation</para>
+<para xml:id="para_c34a8d3e-71a1-43cd-9ddd-d8a98de9462a">Resource limitation (0213H) - the operation was not performed due to resource limitation</para>
 </listitem>
   <listitem>
 <para xml:id="para_fccef240-ce91-4893-9dd1-db69c42e55dd">Success (0000H) - successful operation</para>
@@ -9243,7 +9289,7 @@
 <chapter label="C" status="1" xml:id="chapter_C">
     <title>Status Type Encoding (Normative)</title>
   
-  <para xml:id="para_be9eff79-eeca-42b0-bc00-5a7a46af4cd3">The following sections define the encoding for the Status Types supported by the DIMSE services. The applicability and semantics for each Status Type (i.e., Attribute list error, etc.) are defined in the DIMSE Services. Each Status Type is categorized in a Status Class and represents certain Status Meaning within the Status Class.</para>
+  <para xml:id="para_be9eff79-eeca-42b0-bc00-5a7a46af4cd3">The following sections define the encoding for the Status Types supported by the DIMSE services. The applicability and semantics for each Status Type (i.e., Attribute List warning, etc.) are defined in the DIMSE Services. Each Status Type is categorized in a Status Class and represents certain Status Meaning within the Status Class.</para>
   <note>
     <para xml:id="para_59b902cd-eb56-4872-bf4a-f68b719a4d70">The Status (0000,0900) Command Element is required for all Status Types.</para>
   </note>
@@ -9292,7 +9338,7 @@
     </tr>
    </tbody>
   </informaltable>
-  <para xml:id="para_6b754cb7-48ba-4d68-a37d-9d2634c5daa1">Status Codes with values 01xx and 02xx are reserved for assignment by DICOM Standard. These Status codes have standard status meanings for DIMSE Services that shall not be modified by a Service Class definition or an implementation.</para>
+  <para xml:id="para_6b754cb7-48ba-4d68-a37d-9d2634c5daa1">Status Codes with values 01xx and 02xx are reserved for assignment by DICOM Standard. These Status Codes have standard status meanings for DIMSE Services that shall not be modified by a Service Class definition or an implementation.</para>
   <para xml:id="para_2eaf3870-dde7-49c0-8024-d4b844206ed0">Status Codes with values Axxx, Bxxx, and Cxxx may be assigned by the DICOM Standard or by an implementation according to the definition of a Service Class in <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>.</para>
   <para xml:id="para_55bf46ef-d5c4-49b3-adb1-5b5a4855c75d">Implementations shall not use Status Codes with values not listed in the table above.</para>
   <section label="C.1" status="2" xml:id="sect_C.1">
@@ -9480,11 +9526,10 @@
 </section>
 <section label="C.4" status="2" xml:id="sect_C.4">
     <title>Warning Status Class</title>
-  
-  <para xml:id="para_6356ac33-b862-492c-b03e-373c7f18514a">Statuses in this Status Class convey that the operation/notification has completed but an error was detected. The semantics and behavior of these Statuses are defined in <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>.</para>
+    <para xml:id="para_6356ac33-b862-492c-b03e-373c7f18514a">Statuses in this Status Class convey that the operation/notification has completed, but a deviation was detected that is reported as a warning.
+      The semantics and behavior of these Statuses are defined in <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>.</para>
   <section label="C.4.1" status="3" xml:id="sect_C.4.1">
     <title>Warning</title>
-  
   <informaltable frame="box" rules="all">
     <thead>
     <tr valign="top">
@@ -9565,6 +9610,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_7422e51d-1603-44a5-9b21-3286e9c0a9e3">This optional field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_f88ca781-273a-4732-a8e9-a53328d3b9c1">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
    </tbody>
@@ -9573,8 +9621,7 @@
 
   </section>
 <section label="C.4.2" status="3" xml:id="sect_C.4.2">
-    <title>Attribute list error</title>
-  
+    <title>Attribute List warning</title>
   <informaltable frame="box" rules="all">
     <thead>
     <tr valign="top">
@@ -9840,6 +9887,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_fbef4775-c90d-47cd-b516-69b2846b4d7e">This optional field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_478ad0e5-351d-4c33-b796-eb8128ca76ca">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
    </tbody>
@@ -9930,6 +9980,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_7665822a-f455-4ec8-8320-54a11ce01f07">This optional field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_68e1a14d-33eb-434f-9218-cbcf2a5d966e">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
    </tbody>
@@ -10020,6 +10073,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_537d633e-0e53-48d6-b389-9a991ace83ba">This optional field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_614899f8-9374-4787-a45d-9e93f9c57fba">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
    </tbody>
@@ -10093,6 +10149,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_0f5e3abb-a664-41c1-8922-78a3878d43c5">This optional field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_6224e57e-e015-4fee-90fb-f7ac3e4cbf6d">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
    </tbody>
@@ -10166,6 +10225,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_f3816abd-0f8d-449b-b3fa-ea7ded789d2b">This optional field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_3e988353-cdc1-477c-81c3-42104cd9dd85">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
    </tbody>
@@ -10239,6 +10301,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_744f2e51-5cb1-49d7-868e-a9d72099fa1b">This optional field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_3e524dd5-a6d3-4783-b8e8-b7714988f31b">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
    </tbody>
@@ -11470,6 +11535,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_e179ea8d-4dc0-495e-b32b-45e748abd9fc">This optional field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_9aa9169d-2ed8-41b7-bf53-49ae428c5838">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
     <tr valign="top">
@@ -11512,7 +11580,7 @@
 
   </section>
 <section label="C.5.22" status="3" xml:id="sect_C.5.22">
-    <title>Resource Limitation</title>
+    <title>Resource limitation</title>
   
   <informaltable frame="box" rules="all">
     <thead>
@@ -11779,6 +11847,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_342ee7f1-0f82-4500-b0f4-f2f8c5f821df">This optional field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_ea43a0b8-9a1f-4109-8b6c-eef35130e0f6">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
    </tbody>
@@ -11940,7 +12011,6 @@
   </section>
 <section label="D.3.3.2" status="4" xml:id="sect_D.3.3.2">
     <title>Implementation Identification Notification</title>
-  
   <para xml:id="para_6250c484-5e61-4f7f-ac0c-64e3689c2df0">The implementation identification notification allows implementations of communicating AEs to identify each other at Association establishment time. It is intended to provide respective (each network node knows the other's implementation identity) and non-ambiguous identification in the event of communication problems encountered between two nodes. This negotiation is required.</para>
   <para xml:id="para_42753b17-f6e9-4a84-bc3d-bb76e03a0fe0">Implementation identification relies on two pieces of information:</para>
 <itemizedlist>
@@ -11951,7 +12021,7 @@
 <para xml:id="para_5596f90e-bc03-4f92-8792-58836dc498ea">Implementation Version Name (optional)</para>
 </listitem>
 </itemizedlist>
-  <para xml:id="para_be0cd668-569d-4abc-91a5-c8633663dd59">The Implementation Class UID identifies in a unique manner a specific class of implementation. Each node claiming conformance to this Standard shall be assigned an Implementation Class UID to distinguish its implementation environment from others. Such Implementation Class UIDs shall be registered by the implementing organization per the policies defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. This Standard does not specify the policies associated with assigning such a UID.</para>
+  <para xml:id="para_be0cd668-569d-4abc-91a5-c8633663dd59">The Implementation Class UID identifies in a unique manner a specific class of implementation. Each node claiming Conformance to this Standard shall be assigned an Implementation Class UID to distinguish its implementation environment from others. Such Implementation Class UIDs shall be registered by the implementing organization per the policies defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. This Standard does not specify the policies associated with assigning such a UID.</para>
   <para xml:id="para_a8cb0898-8d23-45d3-ac79-a3fc688d6fbd">Different equipment of the same type or product line (but having different serial numbers) shall use the same Implementation Class UID if they share the same implementation environment (i.e., software).</para>
   <para xml:id="para_0417dfb7-e39f-4bbe-90c3-3ed56ce7340a">The notification by Association requestors and acceptors of their respective Implementation Class UID is required for all implementations conforming to this Standard. <xref linkend="figure_D.3-3" xrefstyle="select: label"/> illustrates the Implementation Class UID notification.</para>
   <para xml:id="para_967849e6-4745-49d9-81a2-c1bf98d38f4a">
@@ -11965,9 +12035,22 @@
 </mediaobject>
 </figure>
 </para>
-  <para xml:id="para_b06d3960-d108-4e29-8b9b-bfd86fa90211">In addition to the Implementation Class UID, an option is provided to convey an Implementation Version Name of up to 16 characters. <xref linkend="figure_D.3-4" xrefstyle="select: label"/> illustrates the Implementation Version Name notification. This Standard does not specify the structure and policies associated with such an Implementation Version Name. The absence of the Implementation Version Name requires that the use of the same Implementation Class UID by two nodes guarantees that these use the same version of implementation.</para>
+  <para xml:id="para_b06d3960-d108-4e29-8b9b-bfd86fa90211">In addition to the Implementation Class UID, an option is provided to convey an Implementation Version Name of up to 16 characters,
+      which identifies a version of an implementation for an Implementation Class UID.
+      <xref linkend="figure_D.3-4" xrefstyle="select: label"/> illustrates the Implementation Version Name notification.
+      This Standard does not specify the structure and policies associated with such an Implementation Version Name.
+      The absence of the Implementation Version Name requires that the use of the same Implementation Class UID by two nodes guarantees that these use the same version of implementation.</para>
   <note>
-    <para xml:id="para_e71f5d8f-0b7f-4f3a-9c2e-7ed0c9028da8">As the UID shall not be parsed (their structure is not intended to convey any semantic significance beyond uniqueness), this optional Implementation Version Name provides an adequate mechanism to distinguish two versions of the same implementation (same Implementation Class UID).</para>
+      <orderedlist>
+          <listitem>
+              <para xml:id="para_e71f5d8f-0b7f-4f3a-9c2e-7ed0c9028da8">As the UID shall not be parsed (their structure is not intended to convey any semantic significance beyond uniqueness), this optional Implementation Version Name provides an adequate mechanism to distinguish two versions of the same implementation (same Implementation Class UID).</para>
+          </listitem>
+          <listitem>
+              <para xml:id="para_3caa1ef1-d0bd-46a8-b4ea-d35c2deb215c">It is expected that if the Implementation Version Name is present, it will will include version information in addition to the name of the implementation.
+                  The Implementation Version Name is expected to be more specific than the Implementation Class UID, and not less;
+                  i.e., the Implementation Version Name will not have the same value when there are different values of the Implementation Class UID.</para>
+          </listitem>
+      </orderedlist>
   </note>
   <section label="D.3.3.2.1" status="5" xml:id="sect_D.3.3.2.1">
     <title>Implementation Class UID Sub-Item Structure (A-ASSOCIATE-RQ)</title>
@@ -12534,7 +12617,7 @@
   </note>
   <para xml:id="para_72ae98b9-8a75-434c-a0b4-5f8eece54cad">
 <figure label="D.3-7" pgwide="1" xml:id="figure_D.3-7">
-<title>SCU/SCP Role Negotiation</title>
+    <title>SCU/SCP Role Selection Negotiation</title>
 <mediaobject>
 <imageobject>
 <imagedata fileref="figures/PS3.7_D.3-7.svg"/>
@@ -13572,7 +13655,7 @@
         <para xml:id="para_44eca31a-b206-4f3d-87a4-7d7683a2205f">8010H C-GET-RSP</para>
         <para xml:id="para_42938c88-86dd-445f-ae54-0d1f1d81bc23">0020H C-FIND-RQ</para>
         <para xml:id="para_a3053ce3-51cf-40ed-bb53-8ea272f6c893">8020H C-FIND-RSP</para>
-        <para xml:id="para_af78a437-ef60-40cb-a1b2-2a859d8a03d6">0021HC-MOVE-RQ</para>
+        <para xml:id="para_af78a437-ef60-40cb-a1b2-2a859d8a03d6">0021H C-MOVE-RQ</para>
         <para xml:id="para_add6bdd9-8366-40be-b532-f282aa28600c">8021H C-MOVE-RSP</para>
         <para xml:id="para_e64d57df-2e03-437a-b831-3a79b027cdb1">0030H C-ECHO-RQ</para>
         <para xml:id="para_7e31dd3d-b98f-45b3-b4f1-10278760dafe">8030H C-ECHO-RSP</para>
@@ -13752,6 +13835,9 @@
       </td>
       <td align="left" colspan="1" rowspan="1">
         <para xml:id="para_9162584b-219c-44f7-946e-237f41ca2624">This field contains an application-specific text description of the error detected.</para>
+          <note>
+              <para xml:id="para_ede63766-e4b5-4ab3-acbd-e47e388a2325">Only characters from the Default Character Repertoire may be used.</para>
+          </note>
       </td>
     </tr>
     <tr valign="top">

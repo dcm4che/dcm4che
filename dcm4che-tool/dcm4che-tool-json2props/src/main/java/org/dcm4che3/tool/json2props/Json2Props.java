@@ -51,6 +51,7 @@ import org.dcm4che3.tool.common.CLIUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -82,6 +83,9 @@ public class Json2Props {
             CommandLine cl = parseCommandLine(args);
             List<String> argsList = cl.getArgList();
             switch (argsList.size()) {
+                case 0:
+                case 1:
+                    throw new ParseException(rb.getString("missing-args"));
                 case 2:
                     json2props(new File(argsList.get(0)), new File(argsList.get(1)));
                     break;
@@ -89,6 +93,7 @@ public class Json2Props {
                     props2json(new File(argsList.get(0)), new File(argsList.get(1)), new File(argsList.get(2)));
                     break;
                 default:
+                    throw new ParseException(rb.getString("to-many-args"));
             }
         } catch (ParseException e) {
             System.err.println("json2props: " + e.getMessage());
@@ -102,18 +107,18 @@ public class Json2Props {
     }
 
     public static void json2props(File schemaDir, File propsDir) throws IOException {
-        propsDir.mkdirs();
-        if (schemaDir.isFile()) {
-            System.err.println("Schema directory not specified");
+        String[] fnames = schemaDir.list((dir, name) -> name.endsWith(".schema.json"));
+        if (fnames == null || fnames.length == 0) {
+            System.err.println("No schema files found in " + schemaDir);
             System.err.println(rb.getString("try"));
             return;
         }
-
-        for (String fname : schemaDir.list((dir, name) -> name.endsWith(".schema.json"))) {
+        propsDir.mkdirs();
+        for (String fname : fnames) {
             String prefix = fname.substring(0, fname.length() - 11);
             json2props1(
                     new File(schemaDir, fname),
-                    new File(propsDir, prefix + "properties"),
+                    new File(propsDir, prefix + "props"),
                     prefix);
         }
     }
@@ -152,12 +157,18 @@ public class Json2Props {
     }
 
     public static void props2json(File srcSchemaDir, File propsDir, File destSchemaDir) throws IOException {
+        String[] fnames = srcSchemaDir.list((dir, name) -> name.endsWith(".schema.json"));
+        if (fnames == null || fnames.length == 0) {
+            System.err.println("No schema files found in " + srcSchemaDir);
+            System.err.println(rb.getString("try"));
+            return;
+        }
         destSchemaDir.mkdirs();
-        for (String fname : srcSchemaDir.list((dir, name) -> name.endsWith(".schema.json"))) {
+        for (String fname : fnames) {
             String prefix = fname.substring(0, fname.length() - 11);
             props2json1(
                     new File(srcSchemaDir, fname),
-                    new File(propsDir, prefix + "properties"),
+                    new File(propsDir, prefix + "props"),
                     new File(destSchemaDir, fname),
                     prefix);
         }
@@ -172,6 +183,7 @@ public class Json2Props {
                 StandardCharsets.UTF_8))) {
             props.load(reader1);
         } catch (FileNotFoundException e) {}
+        List<String> invalidProperties = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
                     new FileInputStream(schemaFile),
@@ -182,22 +194,30 @@ public class Json2Props {
                         StandardCharsets.UTF_8))) {
                 String line;
                 String indent = "  ";
-                String value = props.getProperty(prefix.substring(0, prefix.length() - 1));
                 int endTitle = -1;
-                int field = value != null ? 0 : 3;
+                int field = 3;
                 int fieldAfterDescription = 3;
+                String key = prefix.substring(0, prefix.length() - 1);
+                String value = props.getProperty(key);
+                if (value != null) {
+                    endTitle = value.indexOf('|');
+                    if (endTitle > 0) {
+                        field = 0;
+                    } else {
+                        invalidProperties.add(key);
+                    }
+                }
                 while ((line = reader.readLine()) != null) {
                     switch (field) {
                         case 0:
                             field = 1;
                             break;
                         case 1:
-                            endTitle = value.indexOf('|');
-                            line = indent + "\"title\": \"" + value.substring(0, endTitle) + "\",";
+                            line = indent + "\"title\": \"" + value.substring(0, endTitle).trim() + "\",";
                             field = 2;
                             break;
                         case 2:
-                            line = indent + "\"description\": \"" + value.substring(endTitle + 1)
+                            line = indent + "\"description\": \"" + value.substring(endTitle + 1).trim()
                                     .replace("\\", "\\\\")
                                     .replace("\"", "\\\"")
                                     + "\",";
@@ -212,9 +232,15 @@ public class Json2Props {
                             break;
                         case 4:
                             if (line.startsWith("    \"")) {
-                                value = props.getProperty(prefix + line.substring(5, line.length() - 4));
+                                key = prefix + line.substring(5, line.length() - 4);
+                                value = props.getProperty(key);
                                 if (value != null) {
-                                    field = 1;
+                                    endTitle = value.indexOf('|');
+                                    if (endTitle > 0) {
+                                        field = 1;
+                                    } else {
+                                        invalidProperties.add(key);
+                                    }
                                 }
                             }
                     }
@@ -222,6 +248,10 @@ public class Json2Props {
                     writer.write('\n');
                 }
             }
+        }
+        if (!invalidProperties.isEmpty()) {
+            System.out.printf("IGNORED %d PROPERTIES WITH MISSING |:%n", invalidProperties.size());
+            invalidProperties.forEach(key -> System.out.printf("%s:%s%n", key, props.get(key)));
         }
     }
 

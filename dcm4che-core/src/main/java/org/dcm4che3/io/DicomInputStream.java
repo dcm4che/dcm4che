@@ -81,6 +81,12 @@ public class DicomInputStream extends FilterInputStream
         "Implicit VR Big Endian encoded DICOM Stream";
     private static final String DEFLATED_WITH_ZLIB_HEADER =
         "Deflated DICOM Stream with ZLIB Header";
+    private static final String SEQUENCE_EXCEED_ENCODED_LENGTH =
+        "Actual length of Sequence %s exceeds encoded length: %d";
+    private static final String TREAT_SQ_AS_UN =
+        "Actual length of Sequence {} exceeds encoded length: {} - treat as UN";
+    private static final int TREAT_SQ_AS_UN_MAX_EXCEED_LENGTH = 1024;
+
     /* VisibleForTesting */ static final String VALUE_TOO_LARGE =
       "tag value too large, must be less than 2Gib";
 
@@ -344,6 +350,42 @@ public class DicomInputStream extends FilterInputStream
         if (handler == null)
             throw new NullPointerException("handler");
         this.handler = handler;
+    }
+
+    /**
+     * Set {@code DicomInputHandler} to parse Datasets without accumulating read attributes in {@code Attributes}.
+     */
+    public final void setSkipAllDicomInputHandler() {
+        this.handler = new DicomInputHandler() {
+            @Override
+            public void readValue(DicomInputStream dis, Attributes attrs) throws IOException {
+                if (dis.length() == -1) {
+                    dis.skipSequence();
+                } else {
+                    long n = dis.unsignedLength();
+                    StreamUtils.skipFully(dis, n);
+                }
+            }
+
+            @Override
+            public void readValue(DicomInputStream dis, Sequence seq) throws IOException {
+                dis.readValue(dis, seq);
+            }
+
+            @Override
+            public void readValue(DicomInputStream dis, Fragments frags) throws IOException {
+                long n = dis.unsignedLength();
+                StreamUtils.skipFully(dis, n);
+            }
+
+            @Override
+            public void startDataset(DicomInputStream dis) throws IOException {
+            }
+
+            @Override
+            public void endDataset(DicomInputStream dis) throws IOException {
+            }
+        };
     }
 
     public void setBulkDataCreator(BulkDataCreator bulkDataCreator) {
@@ -690,12 +732,39 @@ public class DicomInputStream extends FilterInputStream
                 break;
             if (vr != null) {
                 if (vr == VR.UN) {
-                    vr = tag == Tag.PurposeOfReferenceCodeSequence
-                            ? probeObservationClass() ? VR.CS : VR.SQ
-                            : ElementDictionary.vrOf(tag, attrs.getPrivateCreator(tag));
-                    if (vr == VR.UN && length == UNDEFINED_LENGTH)
-                        vr = VR.SQ; // assumes UN with undefined length are SQ,
-                                    // will fail on UN fragments!
+                    switch (tag) {
+                        case Tag.SmallestValidPixelValue:
+                        case Tag.LargestValidPixelValue:
+                        case Tag.SmallestImagePixelValue:
+                        case Tag.LargestImagePixelValue:
+                        case Tag.SmallestPixelValueInSeries:
+                        case Tag.LargestPixelValueInSeries:
+                        case Tag.SmallestImagePixelValueInPlane:
+                        case Tag.LargestImagePixelValueInPlane:
+                        case Tag.PixelPaddingValue:
+                        case Tag.PixelPaddingRangeLimit:
+                        case Tag.GrayLookupTableDescriptor:
+                        case Tag.RedPaletteColorLookupTableDescriptor:
+                        case Tag.GreenPaletteColorLookupTableDescriptor:
+                        case Tag.BluePaletteColorLookupTableDescriptor:
+                        case Tag.LargeRedPaletteColorLookupTableDescriptor:
+                        case Tag.LargeGreenPaletteColorLookupTableDescriptor:
+                        case Tag.LargeBluePaletteColorLookupTableDescriptor:
+                        case Tag.RealWorldValueLastValueMapped:
+                        case Tag.RealWorldValueFirstValueMapped:
+                        case Tag.HistogramFirstBinValue:
+                        case Tag.HistogramLastBinValue:
+                            vr = attrs.getRoot().getInt(Tag.PixelRepresentation, 0) == 0 ? VR.US : VR.SS;
+                            break;
+                        case Tag.PurposeOfReferenceCodeSequence:
+                            vr = probeObservationClass() ? VR.CS : VR.SQ;
+                            break;
+                        default:
+                            vr = ElementDictionary.vrOf(tag, attrs.getPrivateCreator(tag));
+                            if (vr == VR.UN && length == UNDEFINED_LENGTH)
+                                vr = VR.SQ; // assumes UN with undefined length are SQ,
+                            // will fail on UN fragments!
+                    }
                 }
                 excludeBulkData = includeBulkData == IncludeBulkData.NO && isBulkData(attrs);
                 includeBulkDataURI = length != 0 && vr != VR.SQ
@@ -750,11 +819,11 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-    private void skipSequence() throws IOException {
+    public void skipSequence() throws IOException {
         while (readItemHeader()) skipItem();
     }
 
-    private void skipItem() throws IOException {
+    public void skipItem() throws IOException {
         if (length == UNDEFINED_LENGTH) {
             for (;;) {
                 readHeader();
@@ -882,6 +951,9 @@ public class DicomInputStream extends FilterInputStream
             explicitVR = false;
             bigEndian = false;
         }
+        boolean recoverSequenceExceedsEncodedLength = !undefLen && markSupported() && len < allocateLimit;
+        if (recoverSequenceExceedsEncodedLength)
+            mark((int) len + TREAT_SQ_AS_UN_MAX_EXCEED_LENGTH);
         for (int i = 0; (undefLen || pos < endPos) && readItemHeader(); ++i) {
             addItemPointer(sqtag, privateCreator, i);
             handler.readValue(this, seq);
@@ -891,7 +963,16 @@ public class DicomInputStream extends FilterInputStream
         bigEndian = bigEndian0;
         if (seq.isEmpty())
             attrs.setNull(sqtag, VR.SQ);
-        else
+        else if (!undefLen && pos != endPos) {
+            if (!recoverSequenceExceedsEncodedLength || (pos - endPos) > TREAT_SQ_AS_UN_MAX_EXCEED_LENGTH)
+                throw new DicomStreamException(String.format(SEQUENCE_EXCEED_ENCODED_LENGTH, TagUtils.toString(sqtag), len));
+            LOG.info(TREAT_SQ_AS_UN, TagUtils.toString(sqtag), len);
+            reset();
+            tag = sqtag;
+            vr = VR.UN;
+            length = len;
+            handler.readValue(this, attrs);
+        } else
             seq.trimToSize();
     }
 
@@ -991,7 +1072,8 @@ public class DicomInputStream extends FilterInputStream
         bigEndian = tsuid.equals(UID.ExplicitVRBigEndian);
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
-                        || tsuid.equals(UID.JPIPReferencedDeflate)) {
+                        || tsuid.equals(UID.JPIPReferencedDeflate)
+                        || tsuid.equals(UID.JPIPHTJ2KReferencedDeflate)) {
             if (hasZLIBHeader()) {
                 LOG.warn(DEFLATED_WITH_ZLIB_HEADER);
                 super.in = new InflaterInputStream(super.in);

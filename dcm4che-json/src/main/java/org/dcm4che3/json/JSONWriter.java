@@ -239,6 +239,7 @@ public class JSONWriter implements DicomInputHandler {
                     byte[] b = dis.readValue();
                     if (tag == Tag.TransferSyntaxUID
                             || tag == Tag.SpecificCharacterSet
+                            || tag == Tag.PixelRepresentation
                             || TagUtils.isPrivateCreator(tag))
                         attrs.setBytes(tag, vr, b);
                     writeValue(vr, b, dis.bigEndian(),

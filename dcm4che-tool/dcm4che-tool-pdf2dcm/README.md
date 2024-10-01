@@ -35,7 +35,7 @@
      -f <xml-file>                    specify included DICOM attributes by XML
                                       presentation in <xml-file>
      -h,--help                        display this help and exit
-     -m <[seq.]attr=value>            specify included DICOM Attribute. attr
+     -s <[seq.]attr=value>            specify included DICOM Attribute. attr
                                       can be specified by keyword or tag value
                                       (in hex), e.g. PatientName or 00100010.
                                       Attributes in nested Datasets can be

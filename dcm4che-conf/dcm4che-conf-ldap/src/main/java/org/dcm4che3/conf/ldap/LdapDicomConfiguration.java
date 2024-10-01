@@ -1125,6 +1125,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 ae.getRoleSelectionNegotiationLenient(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmPreferredTransferSyntax",
                 LdapUtils.addOrdinalPrefix(ae.getPreferredTransferSyntaxes()));
+        LdapUtils.storeNotNullOrDef(ldapObj, attrs, "dcmShareTransferCapabilitiesFromAETitle",
+                ae.getShareTransferCapabilitiesFromAETitle(), null);
         LdapUtils.storeNotNullOrDef(ldapObj, attrs, "hl7ApplicationName", ae.getHl7ApplicationName(), null);
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmOtherAETitle", ae.getOtherAETitles());
@@ -1630,6 +1632,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ae.setOtherAETitles(LdapUtils.stringArray(attrs.get("dcmOtherAETitle")));
         ae.setNoAsyncModeCalledAETitles(LdapUtils.stringArray(attrs.get("dcmNoAsyncModeCalledAETitle")));
         ae.setMasqueradeCallingAETitles(LdapUtils.stringArray(attrs.get("dcmMasqueradeCallingAETitle")));
+        ae.setShareTransferCapabilitiesFromAETitle(LdapUtils.stringValue(
+                attrs.get("dcmShareTransferCapabilitiesFromAETitle"), null));
         ae.setHl7ApplicationName(LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.loadFrom(ae, attrs);
@@ -2039,6 +2043,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(ldapObj, mods, "dcmMasqueradeCallingAETitle",
                 a.getMasqueradeCallingAETitles(),
                 b.getMasqueradeCallingAETitles());
+        LdapUtils.storeDiffObject(ldapObj, mods, "dcmShareTransferCapabilitiesFromAETitle",
+                a.getShareTransferCapabilitiesFromAETitle(),
+                b.getShareTransferCapabilitiesFromAETitle(), null);
         LdapUtils.storeDiffObject(ldapObj, mods, "hl7ApplicationName",
                 a.getHl7ApplicationName(),
                 b.getHl7ApplicationName(), null);

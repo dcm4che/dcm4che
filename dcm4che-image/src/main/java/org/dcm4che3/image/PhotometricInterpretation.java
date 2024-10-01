@@ -92,9 +92,12 @@ public enum PhotometricInterpretation {
                     return YBR_FULL;
                 case UID.JPEG2000Lossless:
                 case UID.JPEG2000MCLossless:
+                case UID.HTJ2KLossless:
+                case UID.HTJ2KLosslessRPCL:
                     return YBR_RCT;
                 case UID.JPEG2000:
                 case UID.JPEG2000MC:
+                case UID.HTJ2K:
                     return YBR_ICT;
             }
             return this;

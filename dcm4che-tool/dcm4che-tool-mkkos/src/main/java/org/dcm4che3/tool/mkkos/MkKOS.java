@@ -290,9 +290,9 @@ public class MkKOS {
             main.setDocumentTitleModifier(
                     main.toCodeItem(cl.getOptionValue("modifier")));
         main.setKeyObjectDescription(cl.getOptionValue("desc"));
-        main.setRetrieveAET(cl.getOptionValue("retrieve-aet", null));
-        main.setRetrieveURL(cl.getOptionValue("retrieve-url", null));
-        main.setLocationUID(cl.getOptionValue("location-uid", null));
+        main.setRetrieveAET(cl.getOptionValue("retrieve-aet"));
+        main.setRetrieveURL(cl.getOptionValue("retrieve-url"));
+        main.setLocationUID(cl.getOptionValue("location-uid"));
         main.setSeriesNumber(cl.getOptionValue("series-no", "999"));
         main.setInstanceNumber(cl.getOptionValue("inst-no", "1"));
         main.setOutputFile(outputFileOf(cl));

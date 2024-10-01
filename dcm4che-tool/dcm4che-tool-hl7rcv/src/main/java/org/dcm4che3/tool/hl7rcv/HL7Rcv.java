@@ -88,6 +88,7 @@ public class HL7Rcv {
     private Templates tpls;
     private String[] xsltParams;
     private boolean useUUIDForFilename;
+    private int responseDelay;
 
     private final HL7MessageListener handler = new HL7MessageListener() {
 
@@ -187,6 +188,12 @@ public class HL7Rcv {
                 .desc(rb.getString("idle-timeout"))
                 .longOpt("idle-timeout")
                 .build());
+        opts.addOption(Option.builder()
+                .hasArg()
+                .argName("ms")
+                .desc(rb.getString("response-delay"))
+                .longOpt("response-delay")
+                .build());
     }
 
     public static void main(String[] args) {
@@ -223,6 +230,7 @@ public class HL7Rcv {
             main.setXSLTParameters(cl.getOptionValues("xsl-param"));
         }
         main.setCharacterSet(cl.getOptionValue("charset"));
+        main.responseDelay = CLIUtils.getIntOption(cl, "response-delay", 0);
         main.conn.setProtocol(CLIUtils.isMLLP2(cl) ? Protocol.HL7_MLLP2 : Protocol.HL7);
         configureBindServer(main.conn, cl);
         CLIUtils.configure(main.conn, cl);
@@ -249,7 +257,13 @@ public class HL7Rcv {
                                     useUUIDForFilename
                                             ? UUID.randomUUID().toString()
                                             : msg.msh().getField(9, "_NULL_")));
-            return new UnparsedHL7Message(tpls == null
+            if (responseDelay > 0)
+                try {
+                    Thread.sleep(responseDelay);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+        return new UnparsedHL7Message(tpls == null
                 ? HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null)
                 : xslt(msg));
     }

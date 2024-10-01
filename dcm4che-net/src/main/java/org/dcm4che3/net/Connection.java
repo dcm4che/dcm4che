@@ -686,19 +686,18 @@ public class Connection implements Serializable {
     }
 
     /**
-     * Get the SO_RCVBUF socket value in KB.
+     * Get the SO_RCVBUF socket value.
      * 
-     * @return An int value containing the buffer size in KB.
+     * @return An int value containing the buffer size.
      */
     public final int getReceiveBufferSize() {
         return receiveBufferSize;
     }
 
     /**
-     * Set the SO_RCVBUF socket option to specified value in KB.
-     * 
-     * @param bufferSize
-     *            An int value containing the buffer size in KB.
+     * Set the SO_RCVBUF socket option to specified value.
+     *
+     * @param size the size to which to set the receive buffer size. Zero to use the default receive buffer size.
      */
     public final void setReceiveBufferSize(int size) {
         if (size < 0)
@@ -707,19 +706,18 @@ public class Connection implements Serializable {
     }
 
     /**
-     * Get the SO_SNDBUF socket option value in KB,
+     * Get the SO_SNDBUF socket option value.
      * 
-     * @return An int value containing the buffer size in KB.
+     * @return An int value containing the buffer size.
      */
     public final int getSendBufferSize() {
         return sendBufferSize;
     }
 
     /**
-     * Set the SO_SNDBUF socket option to specified value in KB,
-     * 
-     * @param bufferSize
-     *            An int value containing the buffer size in KB.
+     * Set the SO_SNDBUF socket option to specified value.
+     *
+     * @param size the size to which to set the send buffer size. Zero to use the default send buffer size.
      */
     public final void setSendBufferSize(int size) {
         if (size < 0)

@@ -1257,17 +1257,12 @@ public class Attributes implements Serializable {
      *     <li>A tag with {@link VR#DT} without a timezone offset within its value,
      *     but a {@link Tag#TimezoneOffsetFromUTC} is defined within this or any parent Attributes,
      *     or a default TimeZone (see {@link #setDefaultTimeZone(TimeZone)}) has been set for this or any parent.</li>
-     *     <li>A tag with {@link VR#DA} or {@link VR#TM}, in case the corresponding {@link VR#TM} or {@link VR#DA} tag
-     *     value is also available (e.g. given {@link Tag#StudyDate}, also {@link Tag#StudyTime} is available), and
-     *     {@link Tag#TimezoneOffsetFromUTC} or a default TimeZone is available.</li>
      * </ul>
      *
      * If no timezone information is available, then an instance of {@link LocalDateTime} will be returned for
-     * {@link VR#DT} tags, and for {@link VR#DA} or {@link VR#TM} tags if the corresponding {@link VR#TM} or
-     * {@link VR#DA} tag value is also available.
+     * {@link VR#DT} tags.
      *
-     * If the corresponding {@link VR#TM} or {@link VR#DA} tag value is not available then an instance of
-     * {@link LocalDate} (for VR#DA tags) or {@link LocalTime} (for VR#TM tags) will be returned.
+     * For {@link VR#DA} or {@link VR#TM} tags an instance of {@link LocalDate} or {@link LocalTime} will be returned.
      *
      * In case the value for the given tag itself is not set (or empty), then <code>null</code> (or the supplied
      * <code>defVal</code> for other variants of this method) will be returned.
@@ -1323,36 +1318,15 @@ public class Attributes implements Serializable {
 
         if (t instanceof OffsetDateTime) {
             return ((OffsetDateTime) t).toZonedDateTime();
-        } else if (t instanceof LocalDate) {
-            int tmTag = ElementDictionary.getElementDictionary(privateCreator).tmTagOf(tag);
-            if (tmTag != 0) {
-                LocalTime localTime = getLocalTime(privateCreator, tmTag, VR.TM, valueIndex, precision);
-                if (localTime != null) {
-                    t = ((LocalDate) t).atTime(localTime);
-                }
-            }
-        } else if (t instanceof LocalTime) {
-            int daTag = ElementDictionary.getElementDictionary(privateCreator).daTagOf(tag);
-            if (daTag != 0) {
-                LocalDate localDate = getLocalDate(privateCreator, daTag, VR.DA, valueIndex, new DatePrecision());
-                if (localDate != null) {
-                    t = localDate.atTime((LocalTime) t);
-                }
-            }
-        }
-
-        if (t instanceof LocalDateTime) {
+        } else if (t instanceof LocalDateTime) {
             ZoneId zoneId = getZoneId();
             if (zoneId != null) {
                 return ((LocalDateTime) t).atZone(zoneId);
-            } else {
-                return t;
             }
         }
 
         return t;
     }
-
 
     private LocalDate getLocalDate(String privateCreator, int tag, VR vr, int valueIndex, DatePrecision precision) {
         int index = indexOf(privateCreator, tag);

@@ -2,6 +2,7 @@ package org.dcm4che3.util;
 
 import static org.junit.Assert.*;
 
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -66,6 +67,21 @@ public class DateUtilsTest {
     public void testParseDAceil() {
         assertEquals(DAY - 2 * HOUR - 1,
                 DateUtils.parseDA(tz, "19700101", true).getTime());
+    }
+
+    @Test
+    public void testParseLocalTM() {
+        DatePrecision precision = new DatePrecision();
+        assertEquals(LocalTime.of(2,0,0,0), DateUtils.parseLocalTM( "020000.000", precision));
+        assertEquals(Calendar.MILLISECOND, precision.lastField);
+    }
+
+    @Test
+    public void testParseLocalTMnanos() {
+        DatePrecision precision = new DatePrecision();
+        assertEquals(LocalTime.of(2,0,0,1000), DateUtils.parseLocalTM( "020000.000001", precision));
+        assertEquals(LocalTime.of(2,0,0,123_000_000), DateUtils.parseLocalTM( "020000.123", precision));
+        assertEquals(LocalTime.of(23,59,59,999_999_000), DateUtils.parseLocalTM( "235959.999999", precision));
     }
 
     @Test

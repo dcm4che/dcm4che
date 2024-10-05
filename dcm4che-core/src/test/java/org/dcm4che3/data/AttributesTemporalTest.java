@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Tests the Date and Time handling of {@link Attributes}.
@@ -68,6 +69,20 @@ public class AttributesTemporalTest {
                 DateUtils.parseDT(null, "20110404150000.000", new DatePrecision()));
         assertEquals("20110404", a.getString(Tag.StudyDate, null));
         assertEquals("150000.000", a.getString(Tag.StudyTime, null));
+    }
+
+    /**
+     * Test method for {@link org.dcm4che3.data.Attributes#setDate(int, VR, Date...)}.
+     */
+    @Test
+    public void testSetDateNullValue() {
+        Attributes a = new Attributes();
+        a.setDate(Tag.StudyDate, VR.DA, (Date) null);
+        assertNull(a.getDate(Tag.StudyDate));
+
+        Date nullValue = null;
+        a.setDate(Tag.StudyDate, nullValue);
+        assertNull(a.getDate(Tag.StudyDate));
     }
 
     /**

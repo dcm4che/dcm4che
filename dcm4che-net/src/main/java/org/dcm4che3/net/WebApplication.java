@@ -71,6 +71,7 @@ public class WebApplication {
         ELASTICSEARCH,
         PROMETHEUS,
         GRAFANA,
+        DOCUMENTATION,
         XDS_RS,
         AGFA_BLOB,
         J4C_ROUTER,

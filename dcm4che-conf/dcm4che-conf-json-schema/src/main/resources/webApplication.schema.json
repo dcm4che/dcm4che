@@ -39,6 +39,7 @@
         "type": "string",
         "enum": [
           "QIDO_RS",
+          "DOCUMENTATION",
           "STOW_RS",
           "WADO_RS",
           "WADO_URI",

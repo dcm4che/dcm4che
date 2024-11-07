@@ -337,7 +337,7 @@ public class ApplicationEntity implements Serializable {
         for (String aet : aets) {
             int index = aet.indexOf(':');
             if (index > 0)
-                masqueradeCalledAETs.put(aet.substring(1,index), aet.substring(index + 1));
+                masqueradeCalledAETs.put(aet.substring(0,index), aet.substring(index + 1));
         }
     }
 

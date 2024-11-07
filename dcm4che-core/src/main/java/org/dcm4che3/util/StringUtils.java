@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

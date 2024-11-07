@@ -625,6 +625,7 @@ public class JsonConfiguration {
             writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
             writer.writeNotEmpty("dcmNoAsyncModeCalledAETitle", ae.getNoAsyncModeCalledAETitles());
             writer.writeNotEmpty("dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
+            writer.writeNotEmpty("dcmMasqueradeCalledAETitle", ae.getMasqueradeCalledAETitles());
             writer.writeNotNullOrDef("dcmShareTransferCapabilitiesFromAETitle",
                     ae.getShareTransferCapabilitiesFromAETitle(), null);
             writer.writeNotNullOrDef("hl7ApplicationName", ae.getHl7ApplicationName(), null);
@@ -705,6 +706,9 @@ public class JsonConfiguration {
                                 break;
                             case "dcmMasqueradeCallingAETitle":
                                 ae.setMasqueradeCallingAETitles(reader.stringArray());
+                                break;
+                            case "dcmMasqueradeCalledAETitle":
+                                ae.setMasqueradeCalledAETitles(reader.stringArray());
                                 break;
                             case "dcmShareTransferCapabilitiesFromAETitle":
                                 ae.setShareTransferCapabilitiesFromAETitle(reader.stringValue());

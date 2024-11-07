@@ -1132,6 +1132,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmOtherAETitle", ae.getOtherAETitles());
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmNoAsyncModeCalledAETitle", ae.getNoAsyncModeCalledAETitles());
         LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
+        LdapUtils.storeNotEmpty(ldapObj, attrs, "dcmMasqueradeCalledAETitle", ae.getMasqueradeCalledAETitles());
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeTo(ldapObj, ae, attrs);
         return attrs;
@@ -1632,6 +1633,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ae.setOtherAETitles(LdapUtils.stringArray(attrs.get("dcmOtherAETitle")));
         ae.setNoAsyncModeCalledAETitles(LdapUtils.stringArray(attrs.get("dcmNoAsyncModeCalledAETitle")));
         ae.setMasqueradeCallingAETitles(LdapUtils.stringArray(attrs.get("dcmMasqueradeCallingAETitle")));
+        ae.setMasqueradeCalledAETitles(LdapUtils.stringArray(attrs.get("dcmMasqueradeCalledAETitle")));
         ae.setShareTransferCapabilitiesFromAETitle(LdapUtils.stringValue(
                 attrs.get("dcmShareTransferCapabilitiesFromAETitle"), null));
         ae.setHl7ApplicationName(LdapUtils.stringValue(attrs.get("hl7ApplicationName"), null));
@@ -2043,6 +2045,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(ldapObj, mods, "dcmMasqueradeCallingAETitle",
                 a.getMasqueradeCallingAETitles(),
                 b.getMasqueradeCallingAETitles());
+        LdapUtils.storeDiff(ldapObj, mods, "dcmMasqueradeCalledAETitle",
+                a.getMasqueradeCalledAETitles(),
+                b.getMasqueradeCalledAETitles());
         LdapUtils.storeDiffObject(ldapObj, mods, "dcmShareTransferCapabilitiesFromAETitle",
                 a.getShareTransferCapabilitiesFromAETitle(),
                 b.getShareTransferCapabilitiesFromAETitle(), null);

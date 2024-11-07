@@ -96,6 +96,7 @@ public class ApplicationEntity implements Serializable {
     private final LinkedHashSet<String> otherAETs = new LinkedHashSet<>();
     private final LinkedHashSet<String> noAsyncModeCalledAETs = new LinkedHashSet<>();
     private final LinkedHashMap<String, String> masqueradeCallingAETs = new LinkedHashMap<>();
+    private final LinkedHashMap<String, String> masqueradeCalledAETs = new LinkedHashMap<>();
     private final List<Connection> conns = new ArrayList<>(1);
     private final LinkedHashMap<String, TransferCapability> scuTCs = new LinkedHashMap<>();
     private final LinkedHashMap<String, TransferCapability> scpTCs = new LinkedHashMap<>();
@@ -302,10 +303,9 @@ public class ApplicationEntity implements Serializable {
         String[] aets = new String[masqueradeCallingAETs.size()];
         int i = 0;
         for (Map.Entry<String, String> entry : masqueradeCallingAETs.entrySet()) {
-            aets[i] = entry.getKey().equals("*")
+            aets[i++] = entry.getKey().equals("*")
                     ? entry.getValue()
                     : '[' + entry.getKey() + ']' + entry.getValue();
-            i++;
         }
         return aets;
     }
@@ -323,6 +323,24 @@ public class ApplicationEntity implements Serializable {
         }
     }
 
+    public String[] getMasqueradeCalledAETitles() {
+        String[] aets = new String[masqueradeCalledAETs.size()];
+        int i = 0;
+        for (Map.Entry<String, String> entry : masqueradeCalledAETs.entrySet()) {
+            aets[i++] = entry.getKey() + ':' + entry.getValue();
+        }
+        return aets;
+    }
+
+    public void setMasqueradeCalledAETitles(String... aets) {
+        masqueradeCalledAETs.clear();
+        for (String aet : aets) {
+            int index = aet.indexOf(':');
+            if (index > 0)
+                masqueradeCalledAETs.put(aet.substring(1,index), aet.substring(index + 1));
+        }
+    }
+
     public String getCallingAETitle(String calledAET) {
         String callingAET = masqueradeCallingAETs.get(calledAET);
         if (callingAET == null) {
@@ -335,6 +353,10 @@ public class ApplicationEntity implements Serializable {
 
     public boolean isMasqueradeCallingAETitle(String calledAET) {
         return masqueradeCallingAETs.containsKey(calledAET) || masqueradeCallingAETs.containsKey("*");
+    }
+
+    public String masqueradeCalledAETitle(String calledAET) {
+        return masqueradeCalledAETs.getOrDefault(calledAET, calledAET);
     }
 
     /**
@@ -706,7 +728,7 @@ public class ApplicationEntity implements Serializable {
         throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         CompatibleConnection cc = findCompatibleConnection(remote);
         if (rq.getCalledAET() == null)
-            rq.setCalledAET(remote.getAETitle());
+            rq.setCalledAET(masqueradeCalledAETitle(remote.getAETitle()));
         return connect(cc.getLocalConnection(), cc.getRemoteConnection(), rq);
     }
 

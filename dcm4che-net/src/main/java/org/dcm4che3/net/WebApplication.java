@@ -76,6 +76,7 @@ public class WebApplication {
         AGFA_BLOB,
         J4C_ROUTER,
         FHIR,
+        AI_CHAT,
         WORKFLOW_MANAGER
     }
 

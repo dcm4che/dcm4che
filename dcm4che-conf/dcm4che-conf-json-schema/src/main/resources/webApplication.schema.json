@@ -39,6 +39,7 @@
         "type": "string",
         "enum": [
           "QIDO_RS",
+          "AI_CHAT",
           "DOCUMENTATION",
           "STOW_RS",
           "WADO_RS",
@@ -56,10 +57,13 @@
           "MOVE_MATCHING",
           "UPS_MATCHING",
           "ELASTICSEARCH",
+          "PROMETHEUS",
+          "GRAFANA",
           "XDS_RS",
           "AGFA_BLOB",
           "J4C_ROUTER",
-          "FHIR"
+          "FHIR",
+          "WORKFLOW_MANAGER"
         ]
       }
     },

@@ -836,7 +836,13 @@ public class Transcoder implements Closeable {
                 write(sm, ((DataBufferByte) db).getBankData());
                 break;
             case DataBuffer.TYPE_USHORT:
-                write(sm, ((DataBufferUShort) db).getData());
+                if (imageDescriptor.is16BitsAllocated8BitsStored() && TransferSyntaxType.JPEG_2000.equals(srcTransferSyntaxType)) {
+                    LOG.debug("Converting {} 16-bits allocated and 8-bits stored image to 8-bits allocated.",
+                    srcTransferSyntaxType);
+                    writeShortToByte(((DataBufferUShort) db).getData());
+                } else {
+                    write(sm, ((DataBufferUShort) db).getData());
+                    }
                 break;
             case DataBuffer.TYPE_SHORT:
                 write(sm, ((DataBufferShort) db).getData());
@@ -915,6 +921,27 @@ public class Transcoder implements Closeable {
             }
             dos.write(b);
         }
+    }
+
+    /**
+     * This converts a 16-bit image to an 8-bit image by removing the leading
+     * 8-bits.
+     * It should only be used for images that are 16-bits allocated and 8-bits
+     * stored
+     * and decompressed to little-endian since this would result in data loss
+     * otherwise.
+     *
+     * For example, this function would convert 001E0030 0048001E to 1E30 481E and
+     * remove the 00s where each two digit hex (for example, 1E) represents a single
+     * byte.
+     */
+    private void writeShortToByte(short[] data) throws IOException {
+        byte[] outputBuffer = new byte[data.length];
+        for (int i = 0; i < data.length; i++) {
+            outputBuffer[i] = (byte) (data[i] & 0xFF); // second byte of 16
+        }
+        bgr2rgb(outputBuffer);
+        dos.write(outputBuffer);
     }
 
     private void initDicomOutputStream() throws IOException {

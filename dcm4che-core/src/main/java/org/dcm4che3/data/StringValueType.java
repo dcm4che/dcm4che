@@ -38,6 +38,9 @@
 
 package org.dcm4che3.data;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -448,8 +451,25 @@ enum StringValueType implements ValueType {
     @Override
     public double[] toDoubles(Object val, boolean bigEndian) {
         throw new UnsupportedOperationException();
-    } 
+    }
 
+    @Override public Temporal toTemporal(Object val, int valueIndex, DatePrecision precision) {
+        if (temporalType == null)
+            throw new UnsupportedOperationException();
+
+        if (val instanceof String) {
+            return valueIndex == 0
+                    ? temporalType.parseTemporal((String) val, precision)
+                    : null;
+        }
+        if (val instanceof String[]) {
+            String[] ss = (String[]) val;
+            return (valueIndex < ss.length && ss[valueIndex] != null)
+                    ? temporalType.parseTemporal(ss[valueIndex], precision)
+                    : null;
+        }
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,

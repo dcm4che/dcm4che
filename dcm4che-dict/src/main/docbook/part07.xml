@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2024d - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2024e - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -220,6 +220,17 @@
           <title>JSON Web Token (JWT)</title>
           <bibliosource>
               <link xl:href="http://tools.ietf.org/html/rfc7519"/>
+          </bibliosource>
+      </biblioentry>
+      <biblioentry xml:id="biblio_RFC_7662">
+          <abbrev>RFC7662</abbrev>
+          <author>
+              <orgname>IETF</orgname>
+          </author>
+          <date>October 2015</date>
+          <title>OAuth 2.0 Token Introspection</title>
+          <bibliosource>
+              <link xl:href="http://tools.ietf.org/html/rfc7662"/>
           </bibliosource>
       </biblioentry>
       <biblioentry xml:id="biblio_OASIS_SAML_V2">
@@ -13251,18 +13262,27 @@
   <note>
     <orderedlist>
       <listitem>
-        <para xml:id="para_3d58d59a-44a3-4507-a671-ca2ede3f6f84">User identity authorization controls may be simple "allow/disallow" rules, or they can be more complex scoping rules. For example, a query could be constrained to apply only to return information about patients that are associated with the identified user. The issues surrounding authorization controls can become very complex. The User Identity SOP conveys user identity to support uses such as authorization controls and audit controls. It does not specify their behavior.</para>
+        <para xml:id="para_3d58d59a-44a3-4507-a671-ca2ede3f6f84">User identity authorization controls may be simple "allow/disallow" rules, or they can be more complex scoping rules.
+            For example, a query could be constrained to apply only to return information about patients that are associated with the identified user.
+            The issues surrounding authorization controls can become very complex.
+            The User Identity Negotiation conveys user identity to support uses such as authorization controls and audit controls.
+            It does not specify their behavior.</para>
       </listitem>
       <listitem>
-        <para xml:id="para_25be324b-a5b9-4a62-8a61-9cfa8186b8e2">The option to include a passcode along with the user identity enables a variety of non-Kerberos secure interfaces. Sending passwords in the clear is insecure, but there are single use password systems such as RFC-2289 and the various smart tokens that do not require protection. The password might also be protected by TLS or other mechanisms.</para>
+          <para xml:id="para_25be324b-a5b9-4a62-8a61-9cfa8186b8e2">The option to include a passcode along with the user identity enables a variety of non-Kerberos secure interfaces. Sending passwords in the clear is insecure, but there are single use password systems such as <xref linkend="biblio_RFC_2289"/> and the various smart tokens that do not require protection. The password might also be protected by TLS or other mechanisms.</para>
       </listitem>
       <listitem>
-        <para xml:id="para_e0a4881e-8cfa-43cb-81d8-c7ae30de7853">For JSON Web Tokens (JWTs), RFC 7519 specifies minimal requirements for encryption, MAC and signature algorithms;
+          <para xml:id="para_e0a4881e-8cfa-43cb-81d8-c7ae30de7853">For JSON Web Tokens (JWTs), <xref linkend="biblio_RFC_7519"/> specifies minimal requirements for encryption, MAC and signature algorithms;
           others may be supported as described in the DICOM Conformance Statement.
           The encoded format in the Primary-field of the A-ASSOCIATE-RQ is the same as what might be included in an HTTP Authorization: Bearer header field
-          per RFC 6750 when accessing a Protected Resource on a Resource Server,
-          to facilitate bridging between <olink targetdoc="PS3.18" targetptr="PS3.18" xrefstyle="select: labelnumber quotedtitle"/> and <olink targetdoc="PS3.7" targetptr="PS3.7" xrefstyle="select: labelnumber quotedtitle"/> implementations.</para>
+          per <xref linkend="biblio_RFC_6750"/> when accessing a Protected Resource on a Resource Server.
+          If the same trust mechanisms are used by both the DIMSE SCP and the Resource Server, the contents of the Primary-field can be the same as the value of the HTTP Authorization: Bearer field, avoiding the need to perform a conversion of the contents.</para>
       </listitem>
+        <listitem>
+            <para>Care should be taken to not include unnecessary protected content from the User Identity Negotiation into audit log messages.
+                For example, the password, SAML Assertion, and JSON Web Token (JWT) could be disclosed if included in a log message.
+                A service such as the OAuth Introspection Service (<xref linkend="biblio_RFC_7662"/>) might be needed to obtain unprotected user identity information from a SAML Assertion or JWT.</para>
+        </listitem>
     </orderedlist>
   </note>
       <para xml:id="para_a34023c6-fe58-40d1-841e-6aabb30b3c74">
@@ -13396,8 +13416,8 @@
         <para xml:id="para_357a710b-ee5f-444d-90dd-c228ec8fb24b">Primary-field</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_c9e1766b-5a4c-4c9c-aa6a-da3d65f7a7c9">This field shall convey the user identity, either the username as a series of characters, or the Kerberos Service ticket encoded in accordance with RFC-1510,
-          or the JWT encoded in accordance with RFC 7519 using base64url encoded parts.</para>
+          <para xml:id="para_c9e1766b-5a4c-4c9c-aa6a-da3d65f7a7c9">This field shall convey the user identity, either the username as a series of characters, or the Kerberos Service ticket encoded in accordance with <xref linkend="biblio_RFC_1510"/>,
+              or the JWT encoded in accordance with <xref linkend="biblio_RFC_7519"/> using base64url encoded parts.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -13506,7 +13526,7 @@
         <para xml:id="para_612107a4-e4b1-4054-b7f8-d364252c4021">Server-response</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_85393e83-e311-47f8-94f2-a0971f58a549">This field shall contain the Kerberos Server ticket, encoded in accordance with RFC-1510, if the User-Identity-Type value in the A-ASSOCIATE-RQ was 3. This field shall contain the SAML response if the User-Identity-Type value in the A-ASSOCIATE-RQ was 4. This field shall be zero length if the value of the User-Identity-Type in the A-ASSOCIATE-RQ was 1 or 2.</para>
+          <para xml:id="para_85393e83-e311-47f8-94f2-a0971f58a549">This field shall contain the Kerberos Server ticket, encoded in accordance with <xref linkend="biblio_RFC_1510"/>, if the User-Identity-Type value in the A-ASSOCIATE-RQ was 3. This field shall contain the SAML response if the User-Identity-Type value in the A-ASSOCIATE-RQ was 4. This field shall be zero length if the value of the User-Identity-Type in the A-ASSOCIATE-RQ was 1 or 2.</para>
       </td>
     </tr>
    </tbody>

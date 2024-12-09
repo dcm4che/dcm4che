@@ -5,5 +5,8 @@
     </resources>
 
     <dependencies>
+        <module name="org.apache.commons.codec"/>
+        <module name="org.apache.commons.io"/>
+        <module name="org.apache.commons.lang3"/>
     </dependencies>
 </module>

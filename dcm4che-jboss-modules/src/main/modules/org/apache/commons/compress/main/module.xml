@@ -3,4 +3,8 @@
     <resources>
         <resource-root path="commons-compress-${apache-commons-compress.version}.jar"/>
     </resources>
+    <dependencies>
+        <module name="org.apache.commons.codec"/>
+        <module name="org.apache.commons.io"/>
+    </dependencies>
 </module>

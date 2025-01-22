@@ -85,7 +85,7 @@
     <keycloak.version>25.0.6</keycloak.version>
     <jbossws-cxf-client.version>7.2.0.Final</jbossws-cxf-client.version>
     <apache-cxf.version>4.0.5</apache-cxf.version>
-    <apache-commons-csv.version>1.12.0</apache-commons-csv.version>
+    <apache-commons-csv.version>1.11.0</apache-commons-csv.version>
     <apache-commons-compress.version>1.27.1</apache-commons-compress.version>
     <jakarta.activation.version>2.1.3</jakarta.activation.version>
     <eclipse.angus.activation.version>2.0.2</eclipse.angus.activation.version>

@@ -42,6 +42,7 @@ import org.apache.commons.cli.*;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.image.ICCProfile;
 import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
+import org.dcm4che3.imageio.stream.RAFFileImageInputStream;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
@@ -426,7 +427,7 @@ public class Dcm2Jpg {
     }
 
     public BufferedImage readImageFromImageInputStream(File file) throws IOException {
-        try (ImageInputStream iis = new FileImageInputStream(file)) {
+        try (ImageInputStream iis = new RAFFileImageInputStream(file)) {
             imageReader.setInput(iis);
             return imageReader.read(frame - 1, readParam());
         }

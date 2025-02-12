@@ -373,7 +373,7 @@ public class Modality {
                 public boolean dicomFile(File f, Attributes fmi, long dsPos,
                         Attributes ds) throws Exception {
                     return mppsscu.addInstance(ds)
-                        && storescu.addFile(fileInfos, f, dsPos, fmi, ds)
+                        && storescu.addFile(fileInfos, f, dsPos, fmi)
                         && stgcmtscu.addInstance(ds);
                 }
             });

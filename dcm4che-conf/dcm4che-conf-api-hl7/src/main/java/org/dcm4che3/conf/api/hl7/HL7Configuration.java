@@ -40,20 +40,11 @@ package org.dcm4che3.conf.api.hl7;
 
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.hl7.HL7Application;
-import org.dcm4che3.net.hl7.HL7ApplicationExtension;
-
-import java.util.Collection;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
  */
 public interface HL7Configuration {
-
-    @Deprecated
-    boolean registerHL7Application(String name) throws ConfigurationException;
-    @Deprecated
-    void unregisterHL7Application(String name) throws ConfigurationException;
 
     /**
      * Looks-up the HL7-Application with the specified name from the configuration.
@@ -64,5 +55,4 @@ public interface HL7Configuration {
     HL7Application findHL7Application(String name) throws ConfigurationException;
 
     String[] listRegisteredHL7ApplicationNames() throws ConfigurationException;
-
 }

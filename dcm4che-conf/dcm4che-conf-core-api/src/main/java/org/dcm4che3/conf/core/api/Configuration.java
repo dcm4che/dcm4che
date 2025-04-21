@@ -113,7 +113,7 @@ public interface Configuration extends BatchRunner {
      * @return configuration node or null, if not found
      * @throws ConfigurationException
      */
-    Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException;
+    Object getConfigurationNode(Path path, Class<?> configurableClass) throws ConfigurationException;
 
     /**
      * Loads configuration nodes for each specified path.
@@ -123,7 +123,7 @@ public interface Configuration extends BatchRunner {
      * @return configuration nodes or an empty {@link List}, if not found
      * @throws ConfigurationException
      */
-    List<Object> getConfigurationNodes(Class configurableClass, Path[] paths) throws ConfigurationException;
+    List<Object> getConfigurationNodes(Class<?> configurableClass, Path[] paths) throws ConfigurationException;
 
     /**
      * Tests if a node under the specified path exists.
@@ -142,7 +142,7 @@ public interface Configuration extends BatchRunner {
      * @param configNode        configuration node to persist
      * @param configurableClass class annotated with ConfigurableClass, ConfigurableProperty annotations that corresponds to this node.
      */
-    void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException;
+    void persistNode(Path path, Map<String, Object> configNode, Class<?> configurableClass) throws ConfigurationException;
 
     /**
      * Invalidates any present cached state for the node
@@ -160,28 +160,23 @@ public interface Configuration extends BatchRunner {
      */
     void removeNode(Path path) throws ConfigurationException;
 
-
     Path getPathByUUID(String uuid);
-
 
     /**
      * Performs a search on the configuration tree and returns an iterator to configuration nodes that satisfy the search criteria.
      *
      * @param liteXPathExpression Must be absolute path, no double slashes, no @attributes (only [attr=val] or [attr<>val])
      */
-    Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException;
-
-    /**
-     * Aquire a global pessimistic lock (cluster-aware implementations should ensure that only a single node can aquire the lock at a time)
-     * Subsequent calls from the same transaction should not block.
-     * Should be auto-released on transaction commit/rollback.
-     */
-    void lock();
-
+    Iterator<?> search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException;
 
     class NodeFactory {
+    	
+    	private NodeFactory() {
+    		// Prevent instantiation
+    	}
+    	
         public static Map<String,Object> emptyNode() {
-            return new TreeMap<String, Object>();
+            return new TreeMap<>();
         }
     }
 }

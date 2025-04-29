@@ -285,34 +285,34 @@ public class AuditLogger extends DeviceExtension {
     @ConfigurableProperty(
             name = "dcmAuditFacility",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "10")
+            required = true, defaultValue = "10")
     private Facility facility = Facility.authpriv;
 
     @ConfigurableProperty(
             name = "dcmAuditSuccessSeverity",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "5"
+    		required = true, defaultValue = "5"
     )
     private Severity successSeverity = Severity.notice;
 
     @ConfigurableProperty(
             name = "dcmAuditMinorFailureSeverity",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "4"
+    		required = true, defaultValue = "4"
     )
     private Severity minorFailureSeverity = Severity.warning;
 
     @ConfigurableProperty(
             name = "dcmAuditSeriousFailureSeverity",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "3"
+            required = true, defaultValue = "3"
     )
     private Severity seriousFailureSeverity = Severity.err;
 
     @ConfigurableProperty(
             name = "dcmAuditMajorFailureSeverity",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "2"
+    		required = true, defaultValue = "2"
     )
     private Severity majorFailureSeverity = Severity.crit;
 

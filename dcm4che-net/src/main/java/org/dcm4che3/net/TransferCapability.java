@@ -74,13 +74,13 @@ public class TransferCapability implements Serializable {
     @ConfigurableProperty(name="cn")
     private String commonName;
 
-    @ConfigurableProperty(name="dicomSOPClass")
+    @ConfigurableProperty(name="dicomSOPClass", required = true)
     private String sopClass;
 
-    @ConfigurableProperty(name="dicomTransferRole")
+    @ConfigurableProperty(name="dicomTransferRole", required = true)
     private Role role;
 
-    @ConfigurableProperty(name="dicomTransferSyntax")
+    @ConfigurableProperty(name="dicomTransferSyntax", required = true)
     private String[] transferSyntaxes;
 
     @ConfigurableProperty(name="dcmPreferredTransferSyntax")

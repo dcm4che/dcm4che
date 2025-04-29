@@ -415,30 +415,32 @@ public class DefaultConfigTypeAdapters {
         @Override
         public Map<String, Object> getSchema(ConfigProperty property, ProcessingContext ctx) throws ConfigurationException {
             try {
-                Map<String, Object> metadata = new HashMap<String, Object>();
+                Map<String, Object> metadata = new HashMap<>();
 
-                // if there is no default, then this enum supports null
-                if (property.getDefaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
-                    ArrayList<String> types = new ArrayList<String>();
+                // if there property is required, then this enum does not supports null
+                if (property.isRequired()) {
+                	metadata.put("type", "enum");
+                } else {
+                    ArrayList<String> types = new ArrayList<>();
                     types.add("enum");
                     types.add("null");
                     metadata.put("type", types);
-                } else
-                    metadata.put("type", "enum");
-
+                }
 
                 metadata.put("class", property.getRawClass().getSimpleName());
 
                 ConfigurableProperty.EnumRepresentation howToRepresent = property.getEnumRepresentation();
-                List<String> enumStringValues = new ArrayList<String>();
+                List<String> enumStringValues = new ArrayList<>();
 
-                for (Enum anEnum : property.getEnumValues()) enumStringValues.add(anEnum.toString());
+                for (Enum<?> anEnum : property.getEnumValues()) {
+                	enumStringValues.add(anEnum.toString());
+                }
 
                 if (howToRepresent.equals(ConfigurableProperty.EnumRepresentation.STRING)) {
                     metadata.put("enum", enumStringValues);
                 } else if (howToRepresent.equals(ConfigurableProperty.EnumRepresentation.ORDINAL)) {
                     // for ordinal representation - create array of ints with appropriate length, and add a clarifying array with names
-                    List<Integer> vals = new ArrayList<Integer>();
+                    List<Integer> vals = new ArrayList<>();
 
                     for (int i = 0; i < property.getEnumValues().length; i++) vals.add(i);
                     metadata.put("enum", vals);
@@ -448,8 +450,10 @@ public class DefaultConfigTypeAdapters {
                 metadata.put("enumRepresentation", howToRepresent.toString());
 
                 return metadata;
-            } catch (Exception e) {
-                throw new ConfigurationException("Schema export for enum property " + property.getAnnotatedName() + " failed");
+            } catch (RuntimeException exception) {
+                throw new ConfigurationException(
+                		"Schema export for enum property '" + property.getAnnotatedName() + "' failed.",
+                		exception);
             }
         }
 

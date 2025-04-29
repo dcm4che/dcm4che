@@ -121,6 +121,7 @@ public class ConfigProperty
     private final String label;
     private int order;
     private Object group;
+    private boolean required;
 
     public ConfigProperty( Map<Type, Annotation> annotations, String name, Type type )
     {
@@ -242,10 +243,9 @@ public class ConfigProperty
                 annotatedName;
 
         description = configurablePropertyAnnotation.description();
-
         order = configurablePropertyAnnotation.order();
-
         group = configurablePropertyAnnotation.group();
+        required = configurablePropertyAnnotation.required();
 
     }
 
@@ -507,5 +507,10 @@ public class ConfigProperty
     public Object getGroup()
     {
         return group;
+    }
+    
+    public boolean isRequired()
+    {
+        return required;
     }
 }

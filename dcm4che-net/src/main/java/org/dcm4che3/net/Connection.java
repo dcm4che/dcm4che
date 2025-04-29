@@ -241,11 +241,8 @@ public class Connection implements Serializable {
     private Map<Class<? extends ConnectionExtension>, ConnectionExtension> extensions =
             new HashMap<Class<? extends ConnectionExtension>, ConnectionExtension>();
 
-    @ConfigurableProperty(
-            name = "dcmProtocol",
-            defaultValue = "DICOM",
-            label = "Protocol",
-            tags = Tag.PRIMARY
+    @ConfigurableProperty(name = "dcmProtocol",
+    		required = true, defaultValue = "DICOM", label = "Protocol", tags = Tag.PRIMARY
     )
     private Protocol protocol = Protocol.DICOM;
 

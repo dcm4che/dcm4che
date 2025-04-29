@@ -118,11 +118,27 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+	  <groupId>org.junit.jupiter</groupId>
+	  <artifactId>junit-jupiter</artifactId>
+	  <scope>test</scope>
+	</dependency>
+	<dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+	</dependency>
+    <dependency>
       <groupId>org.easymock</groupId>
       <artifactId>easymock</artifactId>
       <version>4.3</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+	  <groupId>org.assertj</groupId>
+	  <artifactId>assertj-core</artifactId>
+	  <version>3.27.3</version>
+	  <scope>test</scope>
+	</dependency>
 
     <dependency>
       <groupId>de.danielbechler</groupId>

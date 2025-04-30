@@ -344,7 +344,9 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
             
             // Make optimistic lock hashes read-only so people don't mess with them.
             if (prop.isOlockHash()) {
-                childPropertyMetadata.put(PropertySchema.READONLY_KEY, true);    
+                childPropertyMetadata.put(PropertySchema.READONLY_KEY, true);
+            } else {
+                childPropertyMetadata.put(PropertySchema.REQUIRED_KEY, prop.isRequired());
             }
 
             // also merge in the metadata from this child itself
@@ -399,5 +401,6 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
         public static final String UI_ORDER_KEY = "uiOrder";
         public static final String UI_GROUP_KEY = "uiGroup";
         public static final String READONLY_KEY = "readonly";
+        public static final String REQUIRED_KEY = "required";
     }
 }

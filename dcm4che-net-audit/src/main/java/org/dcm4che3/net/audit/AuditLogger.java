@@ -285,34 +285,34 @@ public class AuditLogger extends DeviceExtension {
     @ConfigurableProperty(
             name = "dcmAuditFacility",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "10")
+            required = true, defaultValue = "10")
     private Facility facility = Facility.authpriv;
 
     @ConfigurableProperty(
             name = "dcmAuditSuccessSeverity",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "5"
+            required = true, defaultValue = "5"
     )
     private Severity successSeverity = Severity.notice;
 
     @ConfigurableProperty(
             name = "dcmAuditMinorFailureSeverity",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "4"
+            required = true, defaultValue = "4"
     )
     private Severity minorFailureSeverity = Severity.warning;
 
     @ConfigurableProperty(
             name = "dcmAuditSeriousFailureSeverity",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "3"
+            required = true, defaultValue = "3"
     )
     private Severity seriousFailureSeverity = Severity.err;
 
     @ConfigurableProperty(
             name = "dcmAuditMajorFailureSeverity",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            defaultValue = "2"
+            required = true, defaultValue = "2"
     )
     private Severity majorFailureSeverity = Severity.crit;
 
@@ -414,13 +414,13 @@ public class AuditLogger extends DeviceExtension {
             throw new IllegalStateException("AuditRecordRepositoryDevice not initalized");
         List<String> names = new ArrayList<String>(auditRecordRepositoryDevices.size());
         for (Device d : auditRecordRepositoryDevices) {
-        	names.add(d.getDeviceName());
+            names.add(d.getDeviceName());
         }
         return names;
     }
 
     public void setAuditRecordRepositoryDevices(List<Device> arrDevices) {
-    	closeActiveConnection();
+        closeActiveConnection();
 
         if(arrDevices==null){
             this.auditRecordRepositoryDevices.clear();
@@ -430,11 +430,11 @@ public class AuditLogger extends DeviceExtension {
     }
     
     public void addAuditRecordRepositoryDevice(Device device) {
-    	auditRecordRepositoryDevices.add(device);
+        auditRecordRepositoryDevices.add(device);
     }
 
     public boolean removeAuditRecordRepositoryDevice(Device device) {
-    	return auditRecordRepositoryDevices.remove(device);
+        return auditRecordRepositoryDevices.remove(device);
     }
 
     public final Facility getFacility() {
@@ -1120,60 +1120,60 @@ public class AuditLogger extends DeviceExtension {
             return;
         boolean failed = false;
         for (final Device arrDev : this.auditRecordRepositoryDevices) {
-	        try {
-	        	FilenameFilter fnFilter = new FilenameFilter() {
-	        		String prefix = spoolFileNamePrefix+DEVICE_NAME_IN_FILENAME_SEPARATOR+arrDev.getDeviceName()+DEVICE_NAME_IN_FILENAME_SEPARATOR;
-	                @Override
-	                public boolean accept(File dir, String name) {
-	                    return name.startsWith(prefix) 
-	                    		&& name.endsWith(spoolFileNameSuffix);
-	                }
-	            };
-	            File[] queuedMessages = dir.listFiles(fnFilter);
-	            byte[] b = null;
-	            while (queuedMessages != null && queuedMessages.length > 0) {
-	                Arrays.sort(queuedMessages, FILE_COMPARATOR);
-	                for (File file : queuedMessages) {
-	                    LOG.debug("Read audit message from {}", file);
-	                    int len = (int) file.length();
-	                    if (b == null || b.length < len)
-	                        b = new byte[len];
-	                    try {
-	                        FileInputStream in = new FileInputStream(file);
-	                        try {
-	                            StreamUtils.readFully(in, b, 0, len);
-	                        } finally {
-	                            SafeClose.close(in);
-	                        }
-	                    } catch (IOException e) {
-	                        LOG.warn("Failed to read audit message from {}", file, e);
-	                        File dest = new File(file.getParent(), file.getName() + ".err");
-	                        file.renameTo(dest);
-	                        continue;
-	                    }
-                    	activeConnection(PARALLEL_LOGGERS[0], arrDev).sendMessage(new DatagramPacket(b, 0, len));
-	                    lastSentTimeInMillis = System.currentTimeMillis();
-	                    if (file.delete())
-	                        LOG.debug("Delete spool file {}", file);
-	                    else
-	                        LOG.warn("Failed to delete spool file {}", file);
-	                }
-	                queuedMessages = dir.listFiles(FILENAME_FILTER);
-	            }
-	        } catch (Exception e) {
-	            lastException = e;
-	            LOG.info("Failed to send audit message:", e);
-	            failed = true;
-	        }
+            try {
+                FilenameFilter fnFilter = new FilenameFilter() {
+                    String prefix = spoolFileNamePrefix+DEVICE_NAME_IN_FILENAME_SEPARATOR+arrDev.getDeviceName()+DEVICE_NAME_IN_FILENAME_SEPARATOR;
+                    @Override
+                    public boolean accept(File dir, String name) {
+                        return name.startsWith(prefix) 
+                                && name.endsWith(spoolFileNameSuffix);
+                    }
+                };
+                File[] queuedMessages = dir.listFiles(fnFilter);
+                byte[] b = null;
+                while (queuedMessages != null && queuedMessages.length > 0) {
+                    Arrays.sort(queuedMessages, FILE_COMPARATOR);
+                    for (File file : queuedMessages) {
+                        LOG.debug("Read audit message from {}", file);
+                        int len = (int) file.length();
+                        if (b == null || b.length < len)
+                            b = new byte[len];
+                        try {
+                            FileInputStream in = new FileInputStream(file);
+                            try {
+                                StreamUtils.readFully(in, b, 0, len);
+                            } finally {
+                                SafeClose.close(in);
+                            }
+                        } catch (IOException e) {
+                            LOG.warn("Failed to read audit message from {}", file, e);
+                            File dest = new File(file.getParent(), file.getName() + ".err");
+                            file.renameTo(dest);
+                            continue;
+                        }
+                        activeConnection(PARALLEL_LOGGERS[0], arrDev).sendMessage(new DatagramPacket(b, 0, len));
+                        lastSentTimeInMillis = System.currentTimeMillis();
+                        if (file.delete())
+                            LOG.debug("Delete spool file {}", file);
+                        else
+                            LOG.warn("Failed to delete spool file {}", file);
+                    }
+                    queuedMessages = dir.listFiles(FILENAME_FILTER);
+                }
+            } catch (Exception e) {
+                lastException = e;
+                LOG.info("Failed to send audit message:", e);
+                failed = true;
+            }
         }
         if (failed)
-        	scheduleRetry();
+            scheduleRetry();
         synchronized (this) {
             notify();
         }
     }
 
-	public Exception getLastException() {
+    public Exception getLastException() {
         return lastException;
     }
 
@@ -1182,20 +1182,20 @@ public class AuditLogger extends DeviceExtension {
     }
 
     public int getNumberOfQueuedMessages() {
-    	int tot = 0;
-    	for (Device d : this.auditRecordRepositoryDevices)
-    		tot += getNumberOfQueuedMessages(d.getDeviceName());
-    	return tot;
+        int tot = 0;
+        for (Device d : this.auditRecordRepositoryDevices)
+            tot += getNumberOfQueuedMessages(d.getDeviceName());
+        return tot;
     }
     
     public int getNumberOfQueuedMessages(final String deviceName) {
         try {
-        	FilenameFilter fnFilter = new FilenameFilter() {
-        		String prefix = spoolFileNamePrefix+DEVICE_NAME_IN_FILENAME_SEPARATOR+deviceName+DEVICE_NAME_IN_FILENAME_SEPARATOR;
+            FilenameFilter fnFilter = new FilenameFilter() {
+                String prefix = spoolFileNamePrefix+DEVICE_NAME_IN_FILENAME_SEPARATOR+deviceName+DEVICE_NAME_IN_FILENAME_SEPARATOR;
                 @Override
                 public boolean accept(File dir, String name) {
                     return name.startsWith(prefix) 
-                    		&& name.endsWith(spoolFileNameSuffix);
+                            && name.endsWith(spoolFileNameSuffix);
                 }
             };
 
@@ -1215,13 +1215,13 @@ public class AuditLogger extends DeviceExtension {
 
     public synchronized void waitForNoQueuedMessages(long timeout)
             throws InterruptedException {
-    	int count;
-    	for (Device arrDev : this.auditRecordRepositoryDevices) {
-    		while ( (count = getNumberOfQueuedMessages(arrDev.getDeviceName())) > 0) {
-    			LOG.debug("Wait for {} queued Audit Messages for AuditRepository {}!", count, arrDev.getDeviceName());
-    			wait(timeout);
-    		}
-    	}
+        int count;
+        for (Device arrDev : this.auditRecordRepositoryDevices) {
+            while ( (count = getNumberOfQueuedMessages(arrDev.getDeviceName())) > 0) {
+                LOG.debug("Wait for {} queued Audit Messages for AuditRepository {}!", count, arrDev.getDeviceName());
+                wait(timeout);
+            }
+        }
     }
 
     public synchronized void closeActiveConnection() {
@@ -1229,7 +1229,7 @@ public class AuditLogger extends DeviceExtension {
             try {
                 activeConnectionEntry.getValue().close();
             } catch (Exception e) {
-            	LOG.error("Failed to close active connection to {}", activeConnectionEntry.getKey(), e);
+                LOG.error("Failed to close active connection to {}", activeConnectionEntry.getKey(), e);
             }
         }
         this.activeConnection.clear();
@@ -1309,7 +1309,7 @@ public class AuditLogger extends DeviceExtension {
                         + " available on AuditLogger @ Device " + getDevice().getDeviceName());
     }
 
-	public static String processID() {
+    public static String processID() {
         String s = ManagementFactory.getRuntimeMXBean().getName();
         int atPos = s.indexOf('@');
         return atPos > 0 ? s.substring(0, atPos)

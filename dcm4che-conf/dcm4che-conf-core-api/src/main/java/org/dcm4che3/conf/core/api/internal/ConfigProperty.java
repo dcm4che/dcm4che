@@ -119,6 +119,7 @@ public class ConfigProperty
     private final String defaultValue;
 
     private final String label;
+    private final boolean required;
     private int order;
     private Object group;
 
@@ -241,12 +242,10 @@ public class ConfigProperty
                 configurablePropertyAnnotation.label() :
                 annotatedName;
 
+        required = configurablePropertyAnnotation.required();
         description = configurablePropertyAnnotation.description();
-
         order = configurablePropertyAnnotation.order();
-
         group = configurablePropertyAnnotation.group();
-
     }
 
     public String getLabel()
@@ -494,6 +493,11 @@ public class ConfigProperty
         return enumRepresentation;
     }
 
+    public boolean isRequired()
+    {
+        return required;
+    }
+    
     public String getDescription()
     {
         return description;

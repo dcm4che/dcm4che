@@ -113,7 +113,7 @@ public class Connection implements Serializable {
 
     public static final String DEF_BUFFERSIZE_STR = "0";
     public static final int DEF_BUFFERSIZE = 0;
-	
+    
     public static final int DEF_ABORT_TIMEOUT = 1000;
 
     public static final String DEF_UDP_RECEIVE_BUFFERSIZE_STR = "1048576"; // 1 MB default
@@ -186,7 +186,7 @@ public class Connection implements Serializable {
 
     @ConfigurableProperty(name = "dcmTCPCloseDelay", defaultValue = "50")
     private int socketCloseDelay = DEF_SOCKETDELAY;
-	
+    
     private int abortTimeout = DEF_ABORT_TIMEOUT;
 
     @ConfigurableProperty(name = "dcmTCPSendBufferSize", defaultValue = DEF_BUFFERSIZE_STR)
@@ -241,11 +241,8 @@ public class Connection implements Serializable {
     private Map<Class<? extends ConnectionExtension>, ConnectionExtension> extensions =
             new HashMap<Class<? extends ConnectionExtension>, ConnectionExtension>();
 
-    @ConfigurableProperty(
-            name = "dcmProtocol",
-            defaultValue = "DICOM",
-            label = "Protocol",
-            tags = Tag.PRIMARY
+    @ConfigurableProperty(name = "dcmProtocol",
+            required = true, defaultValue = "DICOM", label = "Protocol", tags = Tag.PRIMARY
     )
     private Protocol protocol = Protocol.DICOM;
 

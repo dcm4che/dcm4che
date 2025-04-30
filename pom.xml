@@ -135,11 +135,10 @@
             <failOnError>false</failOnError>
           </configuration>
         </plugin>
-        <!-- Set the plugin version to work around plugin dependency problems in Maven 3.0.5 -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.19.1</version>
+          <version>3.5.3</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -221,8 +220,15 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <version>4.13.2</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.junit</groupId>
+          <artifactId>junit-bom</artifactId>
+          <version>5.12.2</version>
+          <type>pom</type>
+          <scope>import</scope>
       </dependency>
       <dependency>
           <groupId>commons-beanutils</groupId>

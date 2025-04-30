@@ -346,7 +346,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
             if (prop.isOlockHash()) {
                 childPropertyMetadata.put(PropertySchema.READONLY_KEY, true);
             } else {
-            	childPropertyMetadata.put(PropertySchema.REQUIRED_KEY, prop.isRequired());
+                childPropertyMetadata.put(PropertySchema.REQUIRED_KEY, prop.isRequired());
             }
 
             // also merge in the metadata from this child itself

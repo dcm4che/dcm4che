@@ -166,12 +166,12 @@ class ReflectiveAdapterTest {
         objectToSerialize.setStorageVersion(expectedStorageVersion);
         
         Map<String, Object> actualConfigNode = reflectiveAdapter
-        		.toConfigNode(objectToSerialize, property, savingContext);
+                .toConfigNode(objectToSerialize, property, savingContext);
         
         assertThat(actualConfigNode).isEqualTo(expectedConfigNode);
     }
 
-	@Test
+    @Test
     void getSchema_ReturnsCorrectlyPopulatedMap_GivenPropertyForConfigurableClass() {
           
         ConfigProperty property = ConfigReflection.getDummyPropertyForClass(TestConfigurableClass.class);
@@ -207,9 +207,9 @@ class ReflectiveAdapterTest {
         stringsItems.put(PropertySchema.TYPE_KEY, "string");
         
         addPropertySchema(expectedProperties, schemaBuilder(
-        		RequiredPropertiesConfigurableClass.STRINGS_PROPERTY_NAME, "array")
-					.withRequired(true)
-					.with("items", stringsItems));
+                RequiredPropertiesConfigurableClass.STRINGS_PROPERTY_NAME, "array")
+                    .withRequired(true)
+                    .with("items", stringsItems));
         
         Map<String, Object> expectedSchema = new HashMap<>();
         expectedSchema.put(PropertySchema.TYPE_KEY, "object");
@@ -228,9 +228,9 @@ class ReflectiveAdapterTest {
         
         Map<String, Object> expectedProperties = new HashMap<>();
         addPropertySchema(expectedProperties, schemaBuilder(Configuration.OLOCK_HASH_KEY, "string")
-    			.withoutTitle()
-    			.withoutRequired()
-        		.withReadOnly(true));
+                .withoutTitle()
+                .withoutRequired()
+                .withReadOnly(true));
         
         Map<String, Object> expectedSchema = new HashMap<>();
         expectedSchema.put(PropertySchema.TYPE_KEY, "object");
@@ -272,11 +272,11 @@ class ReflectiveAdapterTest {
         
         Map<String, Object> expectedProperties = new HashMap<>();
         addPropertySchema(expectedProperties, schemaBuilder(
-        		AStorageVersionedConfigurableClass.PROPERTY_NAME, "string"));
+                AStorageVersionedConfigurableClass.PROPERTY_NAME, "string"));
         addPropertySchema(expectedProperties, schemaBuilder(Configuration.VERSION_KEY, "integer")
-        		.withoutTitle()
-        		.withoutRequired()
-        		.withReadOnly(true));
+                .withoutTitle()
+                .withoutRequired()
+                .withReadOnly(true));
         
         Map<String, Object> expectedSchema = new HashMap<>();
         expectedSchema.put(PropertySchema.TYPE_KEY, "object");
@@ -294,9 +294,9 @@ class ReflectiveAdapterTest {
     }
     
     private static PropertySchemaBuilder schemaBuilder(String propertyName, String type) {
-		
-		return new PropertySchemaBuilder(propertyName, type);
-	}
+        
+        return new PropertySchemaBuilder(propertyName, type);
+    }
 
     @ConfigurableClass
     public static final class TestConfigurableClass {
@@ -347,7 +347,7 @@ class ReflectiveAdapterTest {
         
         private static final long serialVersionUID = 1L;
 
-		public static final String PROPERTY_NAME = "someConfig";
+        public static final String PROPERTY_NAME = "someConfig";
         
         @ConfigurableProperty
         private String someConfig;
@@ -366,8 +366,8 @@ class ReflectiveAdapterTest {
     @ConfigurableClass
     public static final class RequiredPropertiesConfigurableClass {
         
-    	public static final String STRINGS_PROPERTY_NAME = "stringsSetting";
-    	
+        public static final String STRINGS_PROPERTY_NAME = "stringsSetting";
+        
         @ConfigurableProperty(required = true)
         private String stringSetting;
 

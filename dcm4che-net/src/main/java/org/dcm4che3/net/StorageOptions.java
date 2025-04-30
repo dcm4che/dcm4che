@@ -103,19 +103,19 @@ public class StorageOptions implements Serializable {
 
     @ConfigurableProperty(name="dcmStorageConformance",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-            		required = true, defaultValue = "3"
+                    required = true, defaultValue = "3"
     )
     private LevelOfSupport levelOfSupport = LevelOfSupport.UNSPECIFIED;
 
     @ConfigurableProperty(name="dcmDigitalSignatureSupport",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-    		required = true, defaultValue = "0"
+            required = true, defaultValue = "0"
     )
     private DigitalSignatureSupport digitalSignatureSupport = DigitalSignatureSupport.UNSPECIFIED;
 
     @ConfigurableProperty(name="dcmDataElementCoercion",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
-    		required = true, defaultValue = "2"
+            required = true, defaultValue = "2"
     )
     private ElementCoercion elementCoercion = ElementCoercion.UNSPECIFIED;
 

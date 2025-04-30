@@ -419,7 +419,7 @@ public class DefaultConfigTypeAdapters {
 
                 // if there property is required, then this enum does not supports null
                 if (property.isRequired()) {
-                	metadata.put("type", "enum");
+                    metadata.put("type", "enum");
                 } else {
                     ArrayList<String> types = new ArrayList<>();
                     types.add("enum");
@@ -433,7 +433,7 @@ public class DefaultConfigTypeAdapters {
                 List<String> enumStringValues = new ArrayList<>();
 
                 for (Enum<?> anEnum : property.getEnumValues()) {
-                	enumStringValues.add(anEnum.toString());
+                    enumStringValues.add(anEnum.toString());
                 }
 
                 if (howToRepresent.equals(ConfigurableProperty.EnumRepresentation.STRING)) {
@@ -452,8 +452,8 @@ public class DefaultConfigTypeAdapters {
                 return metadata;
             } catch (RuntimeException exception) {
                 throw new ConfigurationException(
-                		"Schema export for enum property '" + property.getAnnotatedName() + "' failed.",
-                		exception);
+                        "Schema export for enum property '" + property.getAnnotatedName() + "' failed.",
+                        exception);
             }
         }
 

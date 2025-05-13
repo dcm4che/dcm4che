@@ -14,15 +14,15 @@ specified in [DICOM PS 3.15](http://dicom.nema.org/medical/dicom/current/output/
 
 dcm4che uses a native library for the compression and decompression of images. Here is the list of supported systems and architectures:
 
-| System  | Architecture | Package        | Requirement            |
-|:--------|:-------------|:---------------|:-----------------------|
-| Linux   | x86 64-bit   | linux-x86-64   | GLIBC_2.17             |
-| Linux   | ARM 64-bit   | linux-aarch64  | GLIBC_2.27             |
-| Linux   | ARM 32-bit   | linux-armv7a   | GLIBC_2.28             |
-| Windows | x86 64-bit   | windows-x86-64 | Windows 7 or higher    |
-| Windows | x86 32-bit   | windows-x86    | Windows 7 or higher    |
-| Mac OS  | x86 64-bit   | macosx-x86-64  | Mac OS 10.13 or higher |
-| Mac OS  | ARM 64-bit   | macosx-aarch64 | Mac OS 11 or higher    |
+| System  | Architecture | Package        | Requirement          |
+|:--------|:-------------|:---------------|:---------------------|
+| Linux   | x86 64-bit   | linux-x86-64   | GLIBC_2.17           |
+| Linux   | ARM 64-bit   | linux-aarch64  | GLIBC_2.27           |
+| Linux   | ARM 32-bit   | linux-armv7a   | GLIBC_2.17           |
+| Windows | x86 64-bit   | windows-x86-64 | Windows 10 or higher |
+| Windows | x86 32-bit   | windows-x86    | Windows 10 or higher |
+| Mac OS  | x86 64-bit   | macosx-x86-64  | Mac OS 11 or higher  |
+| Mac OS  | ARM 64-bit   | macosx-aarch64 | Mac OS 12 or higher  |
 
 Build
 -----

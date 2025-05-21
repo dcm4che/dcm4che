@@ -1,0 +1,39 @@
+name: SonarQube Scan - dcm4che-core
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  sonar:
+    name: Run SonarQube on dcm4che-core
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Build only dcm4che-core module
+        run: mvn clean install --projects dcm4che-core --also-make -DskipTests
+
+      - name: Run Sonar Scanner on dcm4che-core
+        working-directory: dcm4che-core
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=dcm4che-core \
+            -Dsonar.sources=src/main/java \
+            -Dsonar.tests=src/test/java \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.projectBaseDir=. \
+            -Dsonar.host.url=https://your-sonarqube-url \
+            -Dsonar.login=$SONAR_TOKEN

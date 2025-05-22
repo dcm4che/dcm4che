@@ -166,7 +166,7 @@ public class MP4Parser implements XPEGParser {
                 }
                 throw profileLevelNotSupported("MPEG-4 AVC profile_idc/level_idc: %d/%d not supported");
             case VisualSampleEntryTypeHVC1:
-                if (level_idc <= 51) {
+                if (level_idc <= 153) {
                     switch (profile_idc) {
                         case 1: // Main Profile
                             return UID.HEVCMP51;

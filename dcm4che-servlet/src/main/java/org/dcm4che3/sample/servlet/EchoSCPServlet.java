@@ -92,8 +92,6 @@ public class EchoSCPServlet extends HttpServlet {
             }
         if (echoSCP != null)
             echoSCP.stop();
-        if (dicomConfig != null)
-            dicomConfig.close();
     }
 
 }

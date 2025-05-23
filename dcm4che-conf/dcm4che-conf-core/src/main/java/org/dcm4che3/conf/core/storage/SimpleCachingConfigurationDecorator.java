@@ -37,17 +37,21 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
+
 package org.dcm4che3.conf.core.storage;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.dcm4che3.conf.core.DelegatingConfiguration;
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 /**
  * Simple caching, no full transaction support, e.g. for rollbacks
@@ -57,10 +61,13 @@ import java.util.*;
  */
 public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration {
 
+    private static final Logger log = LoggerFactory.getLogger(SimpleCachingConfigurationDecorator.class);
+    
+    long staleTimeout;
+    long fetchTime;
 
-    public static final Logger log = LoggerFactory.getLogger(SimpleCachingConfigurationDecorator.class);
+    
     private boolean readOnly = false;
-
     private Map<String, Object> cachedConfigurationRoot = null;
 
     public SimpleCachingConfigurationDecorator(Configuration delegate) {
@@ -77,15 +84,11 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
         this.readOnly = readOnly;
     }
 
-    public SimpleCachingConfigurationDecorator(Configuration delegate, Hashtable<?, ?> properties) {
+    public SimpleCachingConfigurationDecorator(Configuration delegate, Map<?, ?> properties) {
         super(delegate);
         String s = (String) properties.get("org.dcm4che.conf.staleTimeout");
         staleTimeout = Integer.valueOf(s == null ? "0" : s) * 1000L;
     }
-
-    long staleTimeout;
-    long fetchTime;
-
 
     @Override
     public synchronized Map<String, Object> getConfigurationRoot() throws ConfigurationException {
@@ -114,7 +117,7 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
      * @throws ConfigurationException
      */
     @Override
-    public synchronized Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
+    public synchronized Object getConfigurationNode(Path path, Class<?> configurableClass) throws ConfigurationException {
         Object node = Nodes.getNode(getConfigurationRoot(), path.getPathItems());
 
         if (node == null) return null;
@@ -128,7 +131,7 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
     }
 
     @Override
-    public synchronized void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public synchronized void persistNode(Path path, Map<String, Object> configNode, Class<?> configurableClass) throws ConfigurationException {
         if (!readOnly) delegate.persistNode(path, configNode, configurableClass);
         if (!Path.ROOT.equals(path))
             Nodes.replaceNode(getConfigurationRoot(), configNode, path.getPathItems());
@@ -156,11 +159,11 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
     }
 
     @Override
-    public synchronized Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+    public synchronized Iterator<?> search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
 
         // fully iterate and make copies of all returned results to ensure the consistency and isolation
-        List l = new ArrayList();
-        final Iterator origIterator = Nodes.search(getConfigurationRoot(), liteXPathExpression);
+        List<Object> l = new ArrayList<>();
+        final Iterator<?> origIterator = Nodes.search(getConfigurationRoot(), liteXPathExpression);
 
         while (origIterator.hasNext()) l.add(Nodes.deepCloneNode(origIterator.next()));
 

@@ -40,11 +40,13 @@
 
 package org.dcm4che3.conf.core.storage;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Path;
-
-import java.util.*;
 
 /**
  * @author Roman K
@@ -63,12 +65,12 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
     }
 
     @Override
-    public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
+    public Object getConfigurationNode(Path path, Class<?> configurableClass) throws ConfigurationException {
         return delegate.getConfigurationNode(path, configurableClass);
     }
 
     @Override
-    public List<Object> getConfigurationNodes(Class configurableClass, Path... paths) throws ConfigurationException {
+    public List<Object> getConfigurationNodes(Class<?> configurableClass, Path... paths) throws ConfigurationException {
         return delegate.getConfigurationNodes(configurableClass, paths);
     }
 
@@ -83,13 +85,13 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
     }
 
     @Override
-    public void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
-        throw new RuntimeException("Configuration is read-only");
+    public void persistNode(Path path, Map<String, Object> configNode, Class<?> configurableClass) throws ConfigurationException {
+        throw new UnsupportedOperationException("Configuration is read-only");
     }
 
     @Override
     public void removeNode(Path path) throws ConfigurationException {
-        throw new RuntimeException("Configuration is read-only");
+        throw new UnsupportedOperationException("Configuration is read-only");
     }
 
     @Override
@@ -98,12 +100,8 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
     }
 
     @Override
-    public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+    public Iterator<?> search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
         return delegate.search(liteXPathExpression);
-    }
-
-    @Override
-    public void lock() {
     }
 
     @Override

@@ -316,7 +316,7 @@ public class Transcoder implements Closeable {
     private String adaptSuitableSyntax(String dstTsuid) {
         int bitsStored = imageDescriptor.getBitsStored();
         if(bitsStored == 1 && imageDescriptor.getBitsAllocated() == 1) {
-            return srcTransferSyntax;
+            return UID.ImplicitVRLittleEndian.equals(dstTsuid) ? dstTsuid :srcTransferSyntax;
         }
         switch (dstTsuid) {
             case UID.JPEGBaseline8Bit:

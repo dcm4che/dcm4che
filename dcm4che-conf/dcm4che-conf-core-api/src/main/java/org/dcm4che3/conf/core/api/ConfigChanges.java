@@ -53,6 +53,15 @@ public class ConfigChanges extends HashMap<ConfigChanges.Changed, Set<Object>> {
     private static final long serialVersionUID = 1L;
 
     /**
+     * Default constructor creates an empty map with initial capacity of 1 and
+     * load factor of 1.0f (100%) since there is currently only one enum value.
+     */
+    public ConfigChanges() {
+        
+        super(1, 1.0f);
+    }
+    
+    /**
      * Enumeration indicating which part of the configuration has changed.
      */
     public enum Changed {

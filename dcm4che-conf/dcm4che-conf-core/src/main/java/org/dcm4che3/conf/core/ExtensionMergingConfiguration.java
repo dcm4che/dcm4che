@@ -59,12 +59,12 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("rawtypes")
 public class ExtensionMergingConfiguration extends DelegatingConfiguration {
 
-	private static final Logger log = LoggerFactory.getLogger(ExtensionMergingConfiguration.class);
+    private static final Logger log = LoggerFactory.getLogger(ExtensionMergingConfiguration.class);
 
     protected List<Class> allExtensionClasses;
 
-	public ExtensionMergingConfiguration(Configuration delegate, List<Class> allExtensionClasses) {
-		
+    public ExtensionMergingConfiguration(Configuration delegate, List<Class> allExtensionClasses) {
+        
         super(delegate);
         
         this.allExtensionClasses = allExtensionClasses;
@@ -92,43 +92,43 @@ public class ExtensionMergingConfiguration extends DelegatingConfiguration {
     }
     
     private final class ExtensionMergingTypesafeFilter implements ConfigNodeTraverser.ConfigNodesTypesafeFilter {
-    	
-		@SuppressWarnings("unchecked")
-		@Override
-		public void beforeNodes(
-				Map<String, Object> containerNode1,
-				Map<String, Object> containerNode2,
-				Class containerNodeClass,
-				ConfigProperty property) throws ConfigurationException {
+        
+        @SuppressWarnings("unchecked")
+        @Override
+        public void beforeNodes(
+                Map<String, Object> containerNode1,
+                Map<String, Object> containerNode2,
+                Class containerNodeClass,
+                ConfigProperty property) throws ConfigurationException {
 
-		    if (property.isExtensionsProperty()) {
-		        //Preserve each key of the current configuration that do not belong to the new configuration
-		        Map<String, Object> extensionsMap1 = (Map<String, Object>) containerNode1.get(property.getAnnotatedName());
-		        Map<String, Object> extensionsMap2 = (Map<String, Object>) containerNode2.get(property.getAnnotatedName());
+            if (property.isExtensionsProperty()) {
+                //Preserve each key of the current configuration that do not belong to the new configuration
+                Map<String, Object> extensionsMap1 = (Map<String, Object>) containerNode1.get(property.getAnnotatedName());
+                Map<String, Object> extensionsMap2 = (Map<String, Object>) containerNode2.get(property.getAnnotatedName());
 
-		        if (extensionsMap1 == null && extensionsMap2 == null) {
-					log.debug("Both extension maps are null, nothing to do.");
-					return;
-		        }
+                if (extensionsMap1 == null && extensionsMap2 == null) {
+                    log.debug("Both extension maps are null, nothing to do.");
+                    return;
+                }
 
-				if (extensionsMap1 == null) {
-					log.debug("Adding existing extension map {} to the (new) config node.", extensionsMap2);
-					
-		            containerNode1.put(property.getAnnotatedName(), extensionsMap2);
-		            return;
-		        }
+                if (extensionsMap1 == null) {
+                    log.debug("Adding existing extension map {} to the (new) config node.", extensionsMap2);
+                    
+                    containerNode1.put(property.getAnnotatedName(), extensionsMap2);
+                    return;
+                }
 
-		        if (extensionsMap2 == null) {
-		        	log.debug("Existing config node has no extensions, nothing to do.");
-		        	return;
-		        }
-		        
-		        log.debug("Merging extension maps {} and {}.", extensionsMap1, extensionsMap2);
+                if (extensionsMap2 == null) {
+                    log.debug("Existing config node has no extensions, nothing to do.");
+                    return;
+                }
+                
+                log.debug("Merging extension map {} into {}.", extensionsMap2, extensionsMap1);
 
-		        for (Entry<String, Object> entry : extensionsMap2.entrySet()) {
-		        	extensionsMap1.putIfAbsent(entry.getKey(), entry.getValue());
-		        }
-		    }
-		}
-	}
+                for (Entry<String, Object> entry : extensionsMap2.entrySet()) {
+                    extensionsMap1.putIfAbsent(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+    }
 }

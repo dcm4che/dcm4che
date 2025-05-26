@@ -144,7 +144,7 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
                 public boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, ConfigProperty property) throws ConfigurationException {
                     if (property.isUuid() && (containerNode.get(Configuration.UUID_KEY) == null || "".equals(containerNode.get(Configuration.UUID_KEY)))) {
                         String newUUID = UUID.randomUUID().toString();
-                        log.warn("Adding a missing UUID [{}] to a {}", newUUID,containerNodeClass.getSimpleName());
+                        log.warn("Adding a missing UUID [{}] to a {}", newUUID, containerNodeClass.getSimpleName());
                         containerNode.put(Configuration.UUID_KEY, newUUID);
                     }
                     return false;

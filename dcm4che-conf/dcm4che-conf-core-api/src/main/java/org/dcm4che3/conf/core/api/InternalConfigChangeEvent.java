@@ -107,7 +107,8 @@ public class InternalConfigChangeEvent implements Serializable {
      * 
      * @return List of changed paths.
      * 
-     * @apiNote Use this avoid the <b>performance penalty</b> of converting the set to a list for each event handler.
+     * @apiNote Use this to avoid the <b>performance penalty</b> of converting the set to a list
+     * for each event handler.
      */
     public List<String> getChangedPaths() {
         

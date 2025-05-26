@@ -70,8 +70,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
-	private static final Logger log = LoggerFactory.getLogger(ReferenceIndexingDecorator.class);
-	
+    private static final Logger log = LoggerFactory.getLogger(ReferenceIndexingDecorator.class);
+    
     static PathPattern referencePattern = new PathPattern(Configuration.REFERENCE_BY_UUID_PATTERN);
 
     protected Map<String, Path> uuidToReferableIndex;
@@ -80,7 +80,7 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     }
     
     public ReferenceIndexingDecorator(Configuration delegate, Map<String, Path> uuidToSimplePathCache) {
-    	
+        
         super(delegate);
         
         uuidToReferableIndex = uuidToSimplePathCache;

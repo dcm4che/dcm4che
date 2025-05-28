@@ -37,7 +37,19 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
+
 package org.dcm4che3.conf.core.storage;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
@@ -49,12 +61,6 @@ import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-
 /**
  * @author Roman K
  */
@@ -64,15 +70,9 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 
     public static final String CONF_FILENAME_SYSPROP = "org.dcm4che.conf.filename";
 
-    /**
-     * Experimental
-     */
-    public static final String USE_GIT_SYSPROP = "org.dcm4che.conf.experimental.useGit";
-
     private String fileName;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public static String resolveConfigFileNameSetting(Hashtable<?, ?> props) {
         return StringUtils.replaceSystemProperties(
@@ -98,10 +98,6 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
                 "${jboss.server.config.dir}/dcm4chee-arc/sample-config.json");
 
         this.fileName = StringUtils.replaceSystemProperties(fileName);
-
-        if (props.containsKey(USE_GIT_SYSPROP))
-            ;
-
     }
 
     @Override
@@ -114,20 +110,19 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
         try {
             return objectMapper.readValue(new File(fileName), Map.class);
         } catch (FileNotFoundException e) {
-            return new HashMap<String, Object>();
+            return new HashMap<>();
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }
     }
 
     @Override
-    public synchronized Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
-        Object node = Nodes.getNode(getConfigurationRoot(), path.getPathItems());
-        return node;
+    public synchronized Object getConfigurationNode(Path path, Class<?> configurableClass) throws ConfigurationException {
+        return Nodes.getNode(getConfigurationRoot(), path.getPathItems());
     }
 
     @Override
-    public synchronized List<Object> getConfigurationNodes(Class configurableClass, Path... paths) throws ConfigurationException {
+    public synchronized List<Object> getConfigurationNodes(Class<?> configurableClass, Path... paths) throws ConfigurationException {
         Object configurationRoot = getConfigurationRoot();
 
         return Arrays.stream(paths)
@@ -137,11 +132,8 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 
 
     @Override
-    public synchronized void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public synchronized void persistNode(Path path, Map<String, Object> configNode, Class<?> configurableClass) throws ConfigurationException {
         Map<String, Object> configurationRoot = getConfigurationRoot();
-
-//        if (configurableClass != null)
-//            configNode.put("#class", configurableClass.getName());
 
         if (!Path.ROOT.equals(path)) {
             Nodes.replaceNode(configurationRoot, configNode, path.getPathItems());
@@ -155,14 +147,13 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
             throw new ConfigurationException(e);
         }
 
-
-        log.info("Configuration updated at path " + path);
+        log.info("Configuration updated at path {}", path);
 
     }
 
     @Override
     public void refreshNode(Path path) {
-
+    	// Nothing to refresh since operations are done directly on the file.
     }
 
     @Override
@@ -185,13 +176,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     @Override
-    public void lock() {
-        // ostrich
-    }
-
-    @Override
     public void runBatch(Batch batch) {
         batch.run();
     }
-
 }

@@ -38,22 +38,25 @@
 
 package org.dcm4che3.conf.core.api.tests;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
+import org.assertj.core.util.Sets;
+import org.dcm4che3.conf.core.api.ChangeEventSource;
+import org.dcm4che3.conf.core.api.ConfigChanges;
+import org.dcm4che3.conf.core.api.ConfigChanges.Changed;
 import org.dcm4che3.conf.core.api.InternalConfigChangeEvent;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
-/**
- * @author Stephen Frederick <stephen.frederick@agfa.com>
- * @author Maciek Siemczyk (maciek.siemczyk@agfa.com)
- */
-public class InternalConfigChangeEventTest {
+class InternalConfigChangeEventTest {
 
     /**
      * System Under Test (SUT).
@@ -61,30 +64,67 @@ public class InternalConfigChangeEventTest {
     private InternalConfigChangeEvent event;
     
     @Test
-    public void testDefaultConstructor() {
+    void contructor_SetsMembersCorrectly_GivenValidSourceAndChangesByPath() {
         
-        event = new InternalConfigChangeEvent();
+        Map<String, ConfigChanges> changesByPath = new HashMap<>();
+        changesByPath.put("path1", new ConfigChanges());
+        changesByPath.put("path2", new ConfigChanges());
+        changesByPath.put("path3", new ConfigChanges());
         
-        assertThat("Changed paths", event.getChangedPaths(), empty());
-    }
-
-    @Test
-    public void testConstructorWithExpectedPaths() {
+        event = new InternalConfigChangeEvent(ChangeEventSource.INTERNAL, changesByPath);
         
-        final List<String> changedPaths = Arrays.asList("path1", "path2");
+        assertThat(event.getSource()).as("Source").isEqualTo(ChangeEventSource.INTERNAL);
+        assertThat(event.getChangesByPath()).as("Changes by path").isSameAs(changesByPath);
         
-        event = new InternalConfigChangeEvent(changedPaths);
+        assertThat(event.getChangedPaths()).as("Changed paths")
+                .containsExactlyInAnyOrder("path1", "path2", "path3")
+                .isNotSameAs(changesByPath.keySet());
         
-        assertThat("Changed paths", event.getChangedPaths(), sameInstance(changedPaths));
+        assertThat(event.getTransactionId()).as("Transaction ID").isEmpty();
     }
     
     @Test
-    public void toString_ReturnsCorrectString_WhenCalled() {
+    void contructor_ThrowsIllegalArgumentException_GivenNullSource() {
         
-        final String expectedToString = "InternalConfigChangeEvent [changedPaths=[1, 2, 3]]";
+        Map<String, ConfigChanges> changesByPath = new HashMap<>();
+        
+        assertThatThrownBy(() -> new InternalConfigChangeEvent(null, changesByPath))
+                .isExactlyInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Given source is null.");
+    }
 
-        event = new InternalConfigChangeEvent(Arrays.asList("1", "2", "3"));
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(ints = { 666 })
+    void setTransactionId_SetsTransactionId_GivenValidTransactionId(Integer transactionId) {
+
+        event = new InternalConfigChangeEvent(ChangeEventSource.INTERNAL, new HashMap<>());
+        event.setTransactionId(transactionId);
+
+        assertThat(event.getTransactionId()).as("Transaction ID").isEqualTo(Optional.ofNullable(transactionId));
+    }   
+    
+    @Test
+    void toString_ReturnsCorrectString_WhenCalled() {
         
-        assertThat("To String", event.toString(), equalTo(expectedToString));
+        final String expectedToString = "InternalConfigChangeEvent [source=EXTERNAL, transactionId=12345, "
+                + "changesByPath={a={AE_TITLES=[AE1, AE2]}, b={AE_TITLES=[AE3]}}]";
+        
+        Map<String, ConfigChanges> changesByPath = new HashMap<>();
+        changesByPath.put("a", createConfigChangesWithValue(Sets.set("AE1", "AE2")));
+        changesByPath.put("b", createConfigChangesWithValue(Sets.set("AE3")));
+
+        event = new InternalConfigChangeEvent(ChangeEventSource.EXTERNAL, changesByPath);
+        event.setTransactionId(12345);
+        
+        assertThat(event).hasToString(expectedToString);
+    }
+    
+    private ConfigChanges createConfigChangesWithValue(Set<Object> aeTitles) {
+        
+        ConfigChanges configChanges = new ConfigChanges();
+        configChanges.put(Changed.AE_TITLES, aeTitles);
+        
+        return configChanges;
     }
 }

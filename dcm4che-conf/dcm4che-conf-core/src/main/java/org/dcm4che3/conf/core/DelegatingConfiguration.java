@@ -37,6 +37,7 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
+
 package org.dcm4che3.conf.core;
 
 import org.dcm4che3.conf.core.api.Configuration;
@@ -56,7 +57,7 @@ public class DelegatingConfiguration implements Configuration {
 
     public DelegatingConfiguration() {
     }
-
+    
     public DelegatingConfiguration(Configuration delegate) {
         this.delegate = delegate;
     }
@@ -67,12 +68,12 @@ public class DelegatingConfiguration implements Configuration {
     }
 
     @Override
-    public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
+    public Object getConfigurationNode(Path path, Class<?> configurableClass) throws ConfigurationException {
         return delegate.getConfigurationNode(path, configurableClass);
     }
 
     @Override
-    public List<Object> getConfigurationNodes(Class configurableClass, Path[] paths) throws ConfigurationException {
+    public List<Object> getConfigurationNodes(Class<?> configurableClass, Path[] paths) throws ConfigurationException {
         return delegate.getConfigurationNodes(configurableClass, paths);
     }
 
@@ -82,7 +83,7 @@ public class DelegatingConfiguration implements Configuration {
     }
 
     @Override
-    public void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public void persistNode(Path path, Map<String, Object> configNode, Class<?> configurableClass) throws ConfigurationException {
         delegate.persistNode(path, configNode, configurableClass);
     }
 
@@ -102,18 +103,12 @@ public class DelegatingConfiguration implements Configuration {
     }
 
     @Override
-    public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+    public Iterator<?> search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
         return delegate.search(liteXPathExpression);
-    }
-
-    @Override
-    public void lock() {
-        delegate.lock();
     }
 
     @Override
     public void runBatch(Batch batch) {
         delegate.runBatch(batch);
     }
-
 }

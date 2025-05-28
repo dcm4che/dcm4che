@@ -42,6 +42,8 @@ package org.dcm4che3.conf.core.api;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Event to inform about configuration changes.
@@ -51,26 +53,82 @@ import java.util.List;
  * listens for the "normal" ConfigChangeEvent will always already see the reconfigured Device.
  *
  * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
+ * @author Maciek Siemczyk (maciek.siemczyk@agfa.com)
  */
 public class InternalConfigChangeEvent implements Serializable {
-    private static final long serialVersionUID = -7690181293743297960L;
+    
+    private static final long serialVersionUID = 1L;
 
+    private final ChangeEventSource source;
+    private final Map<String, ConfigChanges> changesByPath;
+
+    /**
+     * Store the paths as list on construction to avoid performance penalty for each
+     * event handler trying to get paths and converting set to list.
+     */
     private final List<String> changedPaths;
+    
+    private Integer transactionId;
   
-    public InternalConfigChangeEvent() {
-        changedPaths = new ArrayList<>();
+    /**
+     * Parameterized constructor.
+     * 
+     * @param source The source of the event.
+     * @param changesByPath Map representing configuration changes by path.
+     * 
+     * @throws IllegalArgumentException if given source is null.
+     */
+    public InternalConfigChangeEvent(
+            ChangeEventSource source,
+            Map<String, ConfigChanges> changesByPath) {
+        
+        if (source == null) {
+            throw new IllegalArgumentException("Given source is null.");
+        }
+        
+        this.source = source;
+        this.changesByPath = changesByPath;
+        
+        this.changedPaths = new ArrayList<>(changesByPath.keySet());
+    }
+
+    public ChangeEventSource getSource() {
+        
+        return this.source;
     }
     
-    public InternalConfigChangeEvent(List<String> changedPaths) {
-        this.changedPaths = changedPaths;
+    public Map<String, ConfigChanges> getChangesByPath() {
+
+        return changesByPath;
     }
 
+    /**
+     * Gets the list of changed paths.
+     * 
+     * @return List of changed paths.
+     * 
+     * @apiNote Use this to avoid the <b>performance penalty</b> of converting the set to a list
+     * for each event handler.
+     */
     public List<String> getChangedPaths() {
+        
         return changedPaths;
+    }
+
+    public void setTransactionId(Integer transactionId) {
+        
+        this.transactionId = transactionId;
+    }
+    
+    public Optional<Integer> getTransactionId() {
+        
+        return Optional.ofNullable(transactionId);
     }
 
     @Override
     public String toString() {
-        return "InternalConfigChangeEvent [changedPaths=" + changedPaths + "]";
+        
+        return "InternalConfigChangeEvent [source=" + source + ", transactionId=" + transactionId + ", changesByPath="
+                + changesByPath + "]";
     }
 }

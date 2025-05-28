@@ -46,15 +46,13 @@ import org.dcm4che3.conf.dicom.DicomConfigurationRoot;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceInfo;
 
-import java.io.Closeable;
-
 /**
  * This interface is for internal use. For any vendor/external integration purposes, please use DicomConfiguration.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeable {
+public interface ExtendedDicomConfiguration extends DicomConfiguration {
 
     TypeSafeConfiguration<DicomConfigurationRoot> getTypeSafeConfiguration();
 
@@ -70,11 +68,6 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
      */
     boolean configurationExists() throws ConfigurationException;
 
-    @Deprecated
-    boolean registerAETitle(String aet) throws ConfigurationException;
-    @Deprecated
-    void unregisterAETitle(String aet) throws ConfigurationException;
-
     /**
      * Query for Devices with specified attributes.
      * 
@@ -86,8 +79,4 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
      * @throws ConfigurationException
      */
     DeviceInfo[] listDeviceInfos(DeviceInfo keys) throws ConfigurationException;
-
-    void close();
-
-    boolean purgeConfiguration() throws ConfigurationException;
 }

@@ -40,13 +40,17 @@
 
 package org.dcm4che3.conf.core.storage;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Path;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Roman K
@@ -69,12 +73,12 @@ public class InMemoryConfiguration implements Configuration {
     }
 
     @Override
-    public Object getConfigurationNode(Path path, Class configurableClass) throws ConfigurationException {
+    public Object getConfigurationNode(Path path, Class<?> configurableClass) throws ConfigurationException {
         return Nodes.deepCloneNode(Nodes.getNode(root, path.getPathItems()));
     }
 
     @Override
-    public List<Object> getConfigurationNodes(Class configurableClass, Path... paths) throws ConfigurationException {
+    public List<Object> getConfigurationNodes(Class<?> configurableClass, Path... paths) throws ConfigurationException {
         return Arrays.stream(paths)
                 .map(path -> getConfigurationNode(path, configurableClass))
                 .collect(Collectors.toList());
@@ -87,10 +91,11 @@ public class InMemoryConfiguration implements Configuration {
 
     @Override
     public void refreshNode(Path path) throws ConfigurationException {
+    	// Nothing to refresh since we are in memory.
     }
 
     @Override
-    public void persistNode(Path path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public void persistNode(Path path, Map<String, Object> configNode, Class<?> configurableClass) throws ConfigurationException {
         if (!Path.ROOT.equals(path))
             Nodes.replaceNode(getConfigurationRoot(), (Map<String, Object>) Nodes.deepCloneNode(configNode), path.getPathItems());
         else {
@@ -110,8 +115,8 @@ public class InMemoryConfiguration implements Configuration {
     }
 
     @Override
-    public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
-        final Iterator search = Nodes.search(root, liteXPathExpression);
+    public Iterator<?> search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+        final Iterator<?> search = Nodes.search(root, liteXPathExpression);
         return new Iterator() {
             @Override
             public boolean hasNext() {
@@ -128,10 +133,6 @@ public class InMemoryConfiguration implements Configuration {
                 // noop
             }
         };
-    }
-
-    @Override
-    public void lock() {
     }
 
     @Override

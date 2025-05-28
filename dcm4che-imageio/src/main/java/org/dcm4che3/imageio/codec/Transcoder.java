@@ -315,7 +315,8 @@ public class Transcoder implements Closeable {
 
     private String adaptSuitableSyntax(String dstTsuid) {
         int bitsStored = imageDescriptor.getBitsStored();
-        if(bitsStored == 1 && imageDescriptor.getBitsAllocated() == 1) {
+        if (imageDescriptor.getBitsAllocated() == 1
+                && TransferSyntaxType.forUID(dstTsuid) != TransferSyntaxType.NATIVE) {
             return srcTransferSyntax;
         }
         switch (dstTsuid) {

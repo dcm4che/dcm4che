@@ -149,6 +149,9 @@ public class MultiframeExtractor {
         EnhancedXRFImageExtractor(UID.XRayRadiofluoroscopicImageStorage, true),
         EnhancedPETImageExtractor(UID.PositronEmissionTomographyImageStorage, true),
         XRay3DAngiographicImageExtractor(UID.XRay3DAngiographicImageStorage, true),
+        XRay3DCraniofacialImageStorage(UID.XRay3DCraniofacialImageStorage, true),
+        BreastTomosynthesisImageStorage(UID.BreastTomosynthesisImageStorage, true),
+        OphthalmicTomographyImageStorage(UID.OphthalmicTomographyImageStorage, true),
         NuclearMedicineImageExtractor(UID.NuclearMedicineImageStorage, false),
         UltrasoundMultiFrameImageExtractor(UID.UltrasoundImageStorage, false),
         MultiFrameGrayscaleByteSecondaryCaptureImageExtractor(UID.SecondaryCaptureImageStorage, false),
@@ -179,6 +182,9 @@ public class MultiframeExtractor {
         impls.put(UID.EnhancedXRFImageStorage, Impl.EnhancedXRFImageExtractor);
         impls.put(UID.EnhancedPETImageStorage, Impl.EnhancedPETImageExtractor);
         impls.put(UID.XRay3DAngiographicImageStorage, Impl.XRay3DAngiographicImageExtractor);
+        impls.put(UID.XRay3DCraniofacialImageStorage, Impl.XRay3DCraniofacialImageStorage);
+        impls.put(UID.BreastTomosynthesisImageStorage, Impl.BreastTomosynthesisImageStorage);
+        impls.put(UID.OphthalmicTomographyImageStorage, Impl.OphthalmicTomographyImageStorage);
         impls.put(UID.NuclearMedicineImageStorage, Impl.NuclearMedicineImageExtractor);
         impls.put(UID.UltrasoundMultiFrameImageStorage, Impl.UltrasoundMultiFrameImageExtractor);
         impls.put(UID.MultiFrameGrayscaleByteSecondaryCaptureImageStorage, Impl.MultiFrameGrayscaleByteSecondaryCaptureImageExtractor);

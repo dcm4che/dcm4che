@@ -266,16 +266,31 @@ public class LookupTableFactory {
             StoredValue inBits = modalityLUT != null
                     ? new StoredValue.Unsigned(modalityLUT.outBits)
                     : storedValue;
+            int minOut = 0;
+            int maxOut = (1<<outBits)-1;
             if (w != 0) {
                 size = Math.max(2,Math.abs(Math.round(w/m)));
                 offset = Math.round((c-b)/m) - size/2;
+                int minIndex = inBits.minValue() - offset;
+                int maxIndex = inBits.maxValue() - offset;
+                int size_1 = size - 1;
+                int midIndex = size / 2;
+                if (minIndex > 0) {
+                    offset += minIndex;
+                    size -= minIndex;
+                    minOut = (minIndex * maxOut + midIndex) / size_1;
+                }
+                if (maxIndex < size_1) {
+                    size -= size_1 - maxIndex;
+                    maxOut = (maxIndex * maxOut + midIndex) / size_1;
+                }
             } else {
                 offset = inBits.minValue();
                 size = inBits.maxValue() - inBits.minValue() + 1;
             }
             lut = outBits > 8
-                    ? new ShortLookupTable(inBits, outBits, offset, size, m < 0)
-                    : new ByteLookupTable(inBits, outBits, offset, size, m < 0);
+                    ? new ShortLookupTable(inBits, outBits, minOut, maxOut, offset, size, m < 0)
+                    : new ByteLookupTable(inBits, outBits, minOut, maxOut, offset, size, m < 0);
         } else {
             //TODO consider m+b
             lut = lut.adjustOutBits(outBits);

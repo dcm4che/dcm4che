@@ -9,17 +9,21 @@ public class ShortLookupTable extends LookupTable {
         this.lut = lut;
     }
 
-    ShortLookupTable(StoredValue inBits, int outBits, int offset, int size, boolean flip) {
-       this(inBits, outBits, offset, new short[size]);
-       int maxOut = (1<<outBits)-1;
-       int maxIndex = size - 1;
-       int midIndex = size / 2;
-       if (flip)
-           for (int i = 0; i < size; i++)
-               lut[maxIndex-i] = (short) ((i * maxOut + midIndex) / maxIndex);
-       else
-           for (int i = 0; i < size; i++)
-               lut[i] = (short) ((i * maxOut + midIndex) / maxIndex);
+    ShortLookupTable(StoredValue inBits, int outBits, int minOut, int maxOut, int offset, int size, boolean flip) {
+        this(inBits, outBits, offset, new short[minOut == maxOut ? 1 : size]);
+        if (lut.length == 1) {
+            lut[0] = (short) minOut;
+        } else {
+            int outRange = maxOut - minOut;
+            int maxIndex = size - 1;
+            int midIndex = size / 2;
+            if (flip)
+                for (int i = 0; i < size; i++)
+                    lut[maxIndex - i] = (short) ((i * outRange + midIndex) / maxIndex + minOut);
+            else
+                for (int i = 0; i < size; i++)
+                    lut[i] = (short) ((i * outRange + midIndex) / maxIndex + minOut);
+        }
     }
 
     @Override

@@ -91,99 +91,20 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
         Path pathFromIndex = uuidToReferableIndex.get(uuid);
 
-        if ((pathFromIndex == null || pathFromIndex.getPathItems().isEmpty())) {
+        if (pathFromIndex == null || pathFromIndex.getPathItems().isEmpty()) {
             return null;
         }
 
         return pathFromIndex;
     }
 
-    protected void removeOldReferablesFromIndex(Object oldConfigurationNode) {
-        if (oldConfigurationNode instanceof Map) {
-            ConfigNodeTraverser.traverseMapNode(oldConfigurationNode, new ConfigNodeTraverser.AConfigNodeFilter() {
-                @Override
-                public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
-                    if (Configuration.UUID_KEY.equals(key)) {
-                        String uuid = (String) value;
-
-                        removeFromCache(uuid);
-                    }
-                }
-            });
-        } else if (oldConfigurationNode instanceof List) {
-            for (Object item : ((List<?>) oldConfigurationNode)) {
-                removeOldReferablesFromIndex(item);
-            }
-        } else if (!Nodes.isPrimitive(oldConfigurationNode))
-            throw new RuntimeException("Unexpected node type:" + oldConfigurationNode);
-
-    }
-
-    /**
-     * @return list of duplicate uuid exceptions, list is empty if no duplicates detected
-     */
-    protected List<DuplicateUUIDException> addReferablesToIndex(List<Object> pathItems, Object configNode) {
-
-        final ArrayList<DuplicateUUIDException> uuidDuplicateErrors = new ArrayList<>();
-
-        if (configNode instanceof Map) {
-            ConfigNodeTraverser.traverseMapNode(configNode, new PathTrackingConfigNodeFilter(pathItems) {
-                @Override
-                public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
-                    if (Configuration.UUID_KEY.equals(key)) {
-                        Object last = path.pop();
-                        String uuid;
-                        try {
-                            uuid = (String) value;
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException("UUID must be a string, got " + value);
-                        }
-
-                        Path newPath = new Path(this.path.descendingIterator());
-
-                        // using return value of put does not seem to work as expected with infinispan (maybe some issues with isolation...)
-                        Path oldPath = uuidToReferableIndex.get(uuid);
-                        uuidToReferableIndex.put(uuid, newPath);
-
-                        // see the comment on top
-                        if (!(oldPath == null || oldPath.getPathItems().isEmpty())) {
-
-                            DuplicateUUIDException duplicateUUIDException = new DuplicateUUIDException(uuid, oldPath, newPath);
-
-                            log.warn("Duplicate UUID found while adding references to index", duplicateUUIDException);
-                            uuidDuplicateErrors.add(duplicateUUIDException);
-                        }
-
-                        this.path.push(last);
-                    }
-                }
-            });
-        } else
-            throw new ConfigurationException("Unexpected node type:" + configNode);
-
-        return uuidDuplicateErrors;
-
-        // TODO add proper handling for lists
-    }
-
-
-    protected Object getNodeByUUID(Class<?> configurableClass, String uuid) throws ConfIndexOutOfSyncException {
-        Path pathFromIndex = uuidToReferableIndex.get(uuid);
-
-        // see the comment on top
-        if ((pathFromIndex == null || pathFromIndex.getPathItems().isEmpty())) {
-            return null;
-        }
-
-        return super.getConfigurationNode(pathFromIndex, configurableClass);
-    }
-
     @Override
     public void persistNode(Path path, final Map<String, Object> configNode, Class<?> configurableClass) throws ConfigurationException {
 
+        log.trace("Persisting node at path '{}'.", path);
+        
         // remove the overwritten referables from index
         removeOldReferablesFromIndex(super.getConfigurationNode(path, null));
-
         addReferablesToIndex(path.getPathItems(), configNode);
 
         super.persistNode(path, configNode, configurableClass);
@@ -191,8 +112,12 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
     @Override
     public void refreshNode(Path path) throws ConfigurationException {
+        
+        log.trace("Refreshing node with path '{}'.", path);
+        
         removeOldReferablesFromIndex(super.getConfigurationNode(path, null));
         super.refreshNode(path);
+        
         Object node = super.getConfigurationNode(path, null);
         if (node != null) {
             addReferablesToIndex(path.getPathItems(), node);
@@ -201,12 +126,16 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
     @Override
     public void removeNode(Path path) throws ConfigurationException {
+        
+        log.trace("Removing node with path '{}'.", path);
+        
         removeOldReferablesFromIndex(super.getConfigurationNode(path, null));
         super.removeNode(path);
     }
 
     @Override
     public Iterator<?> search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+        
         PathPattern.PathParser pathParser = referencePattern.parseIfMatches(liteXPathExpression);
         if (pathParser != null) {
 
@@ -228,8 +157,104 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
         return super.search(liteXPathExpression);
     }
+    
+    protected void removeOldReferablesFromIndex(Object oldConfigurationNode) {
+        
+        log.debug("Removing old referables from index based on current node {}; current index is {}.",
+                oldConfigurationNode, uuidToReferableIndex);
+        
+        if (oldConfigurationNode instanceof Map) {
+            ConfigNodeTraverser.traverseMapNode(oldConfigurationNode, new ConfigNodeTraverser.AConfigNodeFilter() {
+                @Override
+                public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
+                    if (Configuration.UUID_KEY.equals(key)) {
+                        String uuid = (String) value;
+
+                        removeFromCache(uuid);
+                    }
+                }
+            });
+        } else if (oldConfigurationNode instanceof List) {
+            for (Object item : ((List<?>) oldConfigurationNode)) {
+                removeOldReferablesFromIndex(item);
+            }
+        } else if (!Nodes.isPrimitive(oldConfigurationNode)) {
+            throw new RuntimeException("Unexpected node type:" + oldConfigurationNode);
+        }
+
+        log.debug("Removed old referables from index, current index is {}.", uuidToReferableIndex);
+    }
+
+    /**
+     * @return list of duplicate uuid exceptions, list is empty if no duplicates detected
+     */
+    protected List<DuplicateUUIDException> addReferablesToIndex(List<Object> pathItems, Object configNode) {
+
+        log.debug("Adding referables to index based on the path items '{}' and node {}; current index is {}.",
+                pathItems, configNode, uuidToReferableIndex);
+        
+        final ArrayList<DuplicateUUIDException> uuidDuplicateErrors = new ArrayList<>();
+
+        if (configNode instanceof Map) {
+            ConfigNodeTraverser.traverseMapNode(configNode, new PathTrackingConfigNodeFilter(pathItems) {
+                @Override
+                public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
+                    if (Configuration.UUID_KEY.equals(key)) {
+                        Object last = path.pop();
+                        String uuid;
+                        try {
+                            uuid = (String) value;
+                        } catch (ClassCastException e) {
+                            throw new IllegalArgumentException("UUID must be a string, got " + value);
+                        }
+
+                        Path newPath = new Path(this.path.descendingIterator());
+
+                        log.debug("Adding referable with UUID '{}' and path '{}' to index.", uuid, newPath);
+                        
+                        // using return value of put does not seem to work as expected with infinispan (maybe some issues with isolation...)
+                        Path oldPath = uuidToReferableIndex.get(uuid);
+                        uuidToReferableIndex.put(uuid, newPath);
+
+                        // see the comment on top
+                        if (oldPath != null && !oldPath.equals(newPath)) {
+                            DuplicateUUIDException duplicateUUIDException = new DuplicateUUIDException(uuid, oldPath, newPath);
+
+                            log.warn("Duplicate UUID found while adding references to index", duplicateUUIDException);
+                            uuidDuplicateErrors.add(duplicateUUIDException);
+                        }
+
+                        this.path.push(last);
+                    }
+                }
+            });
+        } else {
+            throw new ConfigurationException("Unexpected node type:" + configNode);
+        }
+        
+        log.debug("Added referables to index, current index is {}.", uuidToReferableIndex);
+
+        return uuidDuplicateErrors;
+
+        // TODO add proper handling for lists
+    }
+
+    protected Object getNodeByUUID(Class<?> configurableClass, String uuid) throws ConfIndexOutOfSyncException {
+        
+        Path pathFromIndex = uuidToReferableIndex.get(uuid);
+
+        // see the comment on top
+        if ((pathFromIndex == null || pathFromIndex.getPathItems().isEmpty())) {
+            return null;
+        }
+
+        return super.getConfigurationNode(pathFromIndex, configurableClass);
+    }
 
     protected void removeFromCache(String uuid) {
+        
+        log.debug("Removing referable with UUID '{}' from index.", uuid);
+        
         uuidToReferableIndex.remove(uuid);
     }
 }

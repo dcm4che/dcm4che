@@ -406,7 +406,7 @@ public class SpecificCharacterSet {
         }
 
         @Override
-        public String decode(byte[] b) {
+        public String decode(byte[] b, String delimiters) {
             Codec[] codec = { codecs[0], codecs[0] };
             int g = 0;
             int off = 0;
@@ -496,6 +496,8 @@ public class SpecificCharacterSet {
                         off = cur;
                         g = 1 - g;
                     }
+                    if (g == 0 && codec[g].containsASCII & delimiters.indexOf(b[cur]) >= 0)
+                        codec[0] = codec[1] = codecs[0];
                     int bytesPerChar = codec[g].getBytesPerChar();
                     cur += bytesPerChar > 0 ? bytesPerChar : b[cur] < 0 ? 2 : 1;
                 }
@@ -769,7 +771,7 @@ public class SpecificCharacterSet {
         return codecs[0].encode(val);
     }
 
-    public String decode(byte[] val) {
+    public String decode(byte[] val, String delimiters) {
         return codecs[0].decode(val, 0, val.length);
     }
 

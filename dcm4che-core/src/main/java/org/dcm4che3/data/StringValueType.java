@@ -396,7 +396,7 @@ enum StringValueType implements ValueType {
             SpecificCharacterSet cs) {
 
         if (val instanceof byte[]) {
-            return splitAndTrim(cs(cs).decode((byte[]) val), cs);
+            return splitAndTrim(cs(cs).decode((byte[]) val, delimiters), cs);
         }
 
         if (val instanceof String
@@ -587,7 +587,7 @@ enum StringValueType implements ValueType {
     public boolean prompt(Object val, boolean bigEndian,
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
         if (val instanceof byte[])
-            return prompt(cs(cs).decode((byte[]) val), maxChars, sb);
+            return prompt(cs(cs).decode((byte[]) val, delimiters), maxChars, sb);
 
         if (val instanceof String)
             return prompt((String) val, maxChars, sb);

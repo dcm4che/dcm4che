@@ -41,7 +41,6 @@ package org.dcm4che3.data;
 
 import static org.junit.Assert.*;
 
-import org.dcm4che3.data.PersonName;
 import org.junit.Test;
 
 /**

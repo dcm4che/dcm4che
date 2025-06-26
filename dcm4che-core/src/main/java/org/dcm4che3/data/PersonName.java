@@ -55,11 +55,11 @@ public class PersonName {
 
     public enum Component {
         FamilyName, GivenName, MiddleName, NamePrefix, NameSuffix
-    };
+    }
 
     public enum Group {
         Alphabetic, Ideographic, Phonetic
-    };
+    }
 
     private final String[] fields = new String[15];
     
@@ -74,40 +74,6 @@ public class PersonName {
             parse(s, lenient);
     }
 
-    private void parse(String s, boolean lenient) {
-        int gindex = 0;
-        int cindex = 0;
-        StringTokenizer stk = new StringTokenizer(s, "^=", true);
-        while (stk.hasMoreTokens()) {
-            String tk = stk.nextToken();
-            switch (tk.charAt(0)) {
-                case '=':
-                    if (++gindex > 2)
-                        if (lenient) {
-                            LOG.info(
-                                    "illegal PN: {} - truncate illegal component group(s)", s);
-                            return;
-                        } else
-                            throw new IllegalArgumentException(s);
-                    cindex = 0;
-                    break;
-                case '^':
-                    ++cindex;
-                    break;
-                default:
-                    if (cindex <= 4)
-                        set(gindex, cindex, tk);
-                    else if (lenient) {
-                        if ((tk = trim(tk)) != null) {
-                            LOG.info("illegal PN: {} - subsumes {}th component in suffix", s, cindex + 1);
-                            set(gindex, 4, StringUtils.maskNull(get(gindex, 4), "") + ' ' + tk);
-                        }
-                    } else
-                        throw new IllegalArgumentException(s);
-            }
-        }
-    }
-
     /**
      * Set all components of a component group from encoded component group value.
      *
@@ -115,16 +81,68 @@ public class PersonName {
      * @param s encoded component group value
      */
     public void set(Group g, String s) {
-        int gindex = g.ordinal();
+        set(g, s, false);
+    }
+
+    /**
+     * Sets all components of a specified component group based on an encoded component group value.
+     *
+     * @param g the component group to be set
+     * @param s the encoded component group value, must not contain '=' and must have at most 5 components when split by '^'
+     * @param lenient whether the operation should be lenient in handling the input value
+     * @throws IllegalArgumentException if the input string contains '=' or has more than 5 components when split by '^'
+     */
+    public void set(Group g, String s, boolean lenient) {
         if (s.indexOf('=') >= 0)
             throw new IllegalArgumentException(s);
 
-        String[] ss = StringUtils.split(s, '^');
-        if (ss.length > 5)
-            throw new IllegalArgumentException(s);
+        parse(g, s, lenient);
+    }
 
-        for (int cindex = 0; cindex < 5; cindex++) {
-            fields[gindex * 5 + cindex] = cindex < ss.length ? trim(ss[cindex]) : null;
+    private void parse(String s, boolean lenient) {
+        parseInternal(null, s, lenient);
+    }
+
+    private void parse(Group g, String s, boolean lenient) {
+        parseInternal(g, s, lenient);
+    }
+
+    private void parseInternal(Group g, String s, boolean lenient) {
+        int gindex = (g == null) ? 0 : g.ordinal();
+        int cindex = 0;
+        StringTokenizer stk = new StringTokenizer(s, (g == null) ? "^=" : "^", true);
+        while (stk.hasMoreTokens()) {
+            String tk = stk.nextToken();
+            switch (tk.charAt(0)) {
+                case '=':
+                    if (g != null) {
+                        throw new IllegalArgumentException("Invalid '=' token in group parsing: " + s);
+                    }
+                    if (++gindex > 2) {
+                        if (lenient) {
+                            LOG.info("illegal PN: {} - truncate illegal component group(s)", s);
+                            return;
+                        } else {
+                            throw new IllegalArgumentException(s);
+                        }
+                    }
+                    cindex = 0;
+                    break;
+                case '^':
+                    ++cindex;
+                    break;
+                default:
+                    if (cindex <= 4) {
+                        set(gindex, cindex, tk);
+                    } else if (lenient) {
+                        if ((tk = trim(tk)) != null) {
+                            LOG.info("illegal PN: {} - subsumes {}th component in suffix", s, cindex + 1);
+                            set(gindex, 4, StringUtils.maskNull(get(gindex, 4), "") + ' ' + tk);
+                        }
+                    } else {
+                        throw new IllegalArgumentException(s);
+                    }
+            }
         }
     }
 

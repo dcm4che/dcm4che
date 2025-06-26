@@ -118,4 +118,56 @@ public class PersonNameTest {
         assertEquals("^^^^", pn.toString(PersonName.Group.Phonetic, false));
     }
 
+    @Test
+    public void testLenientDisabled() {
+        String aName = "Fry^Phillip^J^p^s^extra";
+        String iName = "フライ^フィリップ^ジェイ^ピー^エス^エクストラ";
+        String pName = "Furai^Firippu^Jei^Pi^Esu^Ekusutora";
+
+        String fullName = aName+ "=" + iName + "=" + pName;
+
+        assertThrows(IllegalArgumentException.class, () -> new PersonName(fullName));
+        assertThrows(IllegalArgumentException.class, () -> {
+            PersonName set_pn = new PersonName();
+            set_pn.set(PersonName.Group.Alphabetic, aName);
+            set_pn.set(PersonName.Group.Ideographic, iName);
+            set_pn.set(PersonName.Group.Phonetic, pName);
+        });
+    }
+
+    @Test
+    public void testLenientEnabled() {
+        String aName = "Fry^Phillip^J^p^s^extra";
+        String iName = "フライ^フィリップ^ジェイ^ピー^エス^エクストラ";
+        String pName = "Furai^Firippu^Jei^Pi^Esu^Ekusutora";
+
+        String fullName = aName+ "=" + iName + "=" + pName;
+
+        PersonName cons_pn = new PersonName(fullName, true);
+        PersonName set_pn = new PersonName();
+        set_pn.set(PersonName.Group.Alphabetic, aName, true);
+        set_pn.set(PersonName.Group.Ideographic, iName, true);
+        set_pn.set(PersonName.Group.Phonetic, pName, true);
+
+        assertEquals(cons_pn, set_pn);
+
+        assertEquals("Fry", cons_pn.get(PersonName.Group.Alphabetic, PersonName.Component.FamilyName));
+        assertEquals("Phillip", cons_pn.get(PersonName.Group.Alphabetic, PersonName.Component.GivenName));
+        assertEquals("J", cons_pn.get(PersonName.Group.Alphabetic, PersonName.Component.MiddleName));
+        assertEquals("p", cons_pn.get(PersonName.Group.Alphabetic, PersonName.Component.NamePrefix));
+        assertEquals("s extra", cons_pn.get(PersonName.Group.Alphabetic, PersonName.Component.NameSuffix));
+
+        assertEquals("フライ", cons_pn.get(PersonName.Group.Ideographic, PersonName.Component.FamilyName));
+        assertEquals("フィリップ", cons_pn.get(PersonName.Group.Ideographic, PersonName.Component.GivenName));
+        assertEquals("ジェイ", cons_pn.get(PersonName.Group.Ideographic, PersonName.Component.MiddleName));
+        assertEquals("ピー", cons_pn.get(PersonName.Group.Ideographic, PersonName.Component.NamePrefix));
+        assertEquals("エス エクストラ", cons_pn.get(PersonName.Group.Ideographic, PersonName.Component.NameSuffix));
+
+        assertEquals("Furai", cons_pn.get(PersonName.Group.Phonetic, PersonName.Component.FamilyName));
+        assertEquals("Firippu", cons_pn.get(PersonName.Group.Phonetic, PersonName.Component.GivenName));
+        assertEquals("Jei", cons_pn.get(PersonName.Group.Phonetic, PersonName.Component.MiddleName));
+        assertEquals("Pi", cons_pn.get(PersonName.Group.Phonetic, PersonName.Component.NamePrefix));
+        assertEquals("Esu Ekusutora", cons_pn.get(PersonName.Group.Phonetic, PersonName.Component.NameSuffix));
+    }
+
 }

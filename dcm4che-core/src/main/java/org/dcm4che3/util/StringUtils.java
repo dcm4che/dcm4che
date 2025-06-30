@@ -39,26 +39,17 @@
 package org.dcm4che3.util;
 
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class StringUtils {
 
-    public static String LINE_SEPARATOR = AccessController.doPrivileged(
-            new PrivilegedAction<String>() {
-                public String run() {
-                    return System.getProperty("line.separator");
-                }
-            }
-         );
+    public static String LINE_SEPARATOR = System.lineSeparator();
 
     public static String[] EMPTY_STRING = {};
 

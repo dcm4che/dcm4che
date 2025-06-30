@@ -91,7 +91,7 @@ public class ExtensionMergingConfiguration extends DelegatingConfiguration {
         super.persistNode(path, configNode, configurableClass);
     }
     
-    private final class ExtensionMergingTypesafeFilter implements ConfigNodeTraverser.ConfigNodesTypesafeFilter {
+    private static final class ExtensionMergingTypesafeFilter implements ConfigNodeTraverser.ConfigNodesTypesafeFilter {
         
         @SuppressWarnings("unchecked")
         @Override

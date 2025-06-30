@@ -102,7 +102,7 @@ public class DicomConsumer extends DefaultConsumer implements DimseRQHandler{
         AsyncProcessorHelper.process(getAsyncProcessor(), exchange, callback);
     }
 
-    private final class EndpointDimseRQHandlerAsyncCallback
+    private static final class EndpointDimseRQHandlerAsyncCallback
         implements AsyncCallback {
     
         private final Association as;

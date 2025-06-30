@@ -1489,7 +1489,7 @@ public class AuditLogger extends DeviceExtension {
         }
     }
 
-    private abstract class ActiveConnection implements Closeable {
+    private abstract static class ActiveConnection implements Closeable {
         final Connection conn;
         final Connection remoteConn;
 

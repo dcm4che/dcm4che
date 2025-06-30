@@ -61,7 +61,7 @@ public class ValidationResult {
         Code
     }
 
-    public class InvalidAttributeValue {
+    public static class InvalidAttributeValue {
         public final IOD.DataElement dataElement;
         public final Invalid reason;
         public final ValidationResult[] itemValidationResults;
@@ -124,7 +124,7 @@ public class ValidationResult {
         if (invalidAttributeValues == null)
             invalidAttributeValues = new ArrayList<InvalidAttributeValue>();
         invalidAttributeValues.add(
-                new InvalidAttributeValue(dataElement, reason, 
+                new InvalidAttributeValue(dataElement, reason,
                         itemValidationResult, missingItems));
     }
 

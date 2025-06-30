@@ -73,7 +73,7 @@ public class PathPattern {
         String p = pattern;
         String res = "";
         try {
-            while (p.indexOf("{") > -1) {
+            while (p.contains("{")) {
 
                 // quote before
                 String piece = p.substring(0, p.indexOf("{"));

@@ -402,7 +402,7 @@ public class AuditLogger extends DeviceExtension {
 
     public void setSuppressAuditMessageFilters(List<AuditSuppressCriteria> suppressAuditMessageFilters) {
         this.suppressAuditMessageFilters.clear();
-        for (AuditSuppressCriteria filter : suppressAuditMessageFilters) this.suppressAuditMessageFilters.add(filter);
+        this.suppressAuditMessageFilters.addAll(suppressAuditMessageFilters);
     }
 
     public final List<Device> getAuditRecordRepositoryDevices() {

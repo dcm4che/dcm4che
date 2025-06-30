@@ -800,7 +800,7 @@ public class AuditLogger extends DeviceExtension {
     private static int getPowerOfTwo(int value) {
         if (value <= 1) {
             return 2;
-        };
+        }
 
         int next = Integer.highestOneBit(value);
         return value > next ? next << 1 : next;

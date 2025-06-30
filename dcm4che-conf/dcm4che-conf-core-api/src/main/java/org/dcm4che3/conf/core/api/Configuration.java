@@ -93,7 +93,7 @@ public interface Configuration extends BatchRunner {
 
     enum ConfigStorageType {
         JSON_FILE,
-        DB_BLOBS;
+        DB_BLOBS
     }
 
     /**

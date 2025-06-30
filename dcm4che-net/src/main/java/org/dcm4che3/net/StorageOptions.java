@@ -66,7 +66,7 @@ public class StorageOptions implements Serializable {
                 default -> UNSPECIFIED;
             };
         }
-    };
+    }
 
     public enum DigitalSignatureSupport {
         UNSPECIFIED, LEVEL_1, LEVEL_2, LEVEL_3;
@@ -79,7 +79,7 @@ public class StorageOptions implements Serializable {
                 default -> UNSPECIFIED;
             };
         }
-    };
+    }
 
     public enum ElementCoercion {
         NO, YES, UNSPECIFIED;
@@ -91,7 +91,7 @@ public class StorageOptions implements Serializable {
                 default -> UNSPECIFIED;
             };
         }
-    };
+    }
 
     @ConfigurableProperty(name="dcmStorageConformance",
             enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,

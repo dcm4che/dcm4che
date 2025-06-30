@@ -244,7 +244,7 @@ enum BinaryValueType implements ValueType {
     final int numBytes;
     final int numEndianBytes;
 
-    private BinaryValueType(int numBytes, int numEndianBytes) {
+    BinaryValueType(int numBytes, int numEndianBytes) {
         this.numBytes = numBytes;
         this.numEndianBytes = numEndianBytes;
     }

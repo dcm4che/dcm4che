@@ -415,7 +415,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private String[] getStrings() {
         try {
             return values.toArray(new String[values.size()]);
-        } finally {;
+        } finally {
             values.clear();
         }
     }

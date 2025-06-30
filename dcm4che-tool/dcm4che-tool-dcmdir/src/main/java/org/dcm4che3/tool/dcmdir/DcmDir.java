@@ -445,7 +445,7 @@ public class DcmDir {
                     ? in.findNextDirectoryRecordInUse(rec, false)
                     : in.readNextDirectoryRecord(rec);
             index.setLength(indexLen);
-        };
+        }
     }
 
     private String heading(Attributes rec, StringBuilder index) {

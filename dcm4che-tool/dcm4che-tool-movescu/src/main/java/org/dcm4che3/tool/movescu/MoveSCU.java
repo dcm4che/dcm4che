@@ -82,7 +82,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MoveSCU {
 
-    public static enum InformationModel {
+    public enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelMOVE, "STUDY"),
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelMOVE, "STUDY"),
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired, "STUDY"),

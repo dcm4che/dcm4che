@@ -94,7 +94,7 @@ import org.dcm4che3.util.StringUtils;
  */
 public class FindSCU {
 
-    public static enum InformationModel {
+    public enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY"),
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, "STUDY"),
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, "STUDY"),

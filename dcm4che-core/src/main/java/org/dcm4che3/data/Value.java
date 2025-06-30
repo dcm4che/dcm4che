@@ -46,7 +46,7 @@ import org.dcm4che3.util.ByteUtils;
 
 public interface Value {
     
-    final Value NULL = new Value() {
+    Value NULL = new Value() {
 
         @Override
         public boolean isEmpty() {

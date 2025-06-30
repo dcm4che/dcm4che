@@ -771,8 +771,6 @@ public class AuditMessages {
             if (jbe.getLinkedException() instanceof IOException)
                 throw (IOException) jbe.getLinkedException();
             throw new IllegalStateException(jbe);
-        } catch (TransformerConfigurationException e) {
-            throw new IOException(e.getMessageAndLocation(), e);
         } catch (TransformerException e) {
             throw new IOException(e.getMessageAndLocation(), e);
         }

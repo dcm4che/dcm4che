@@ -158,9 +158,7 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
 
             return clazz.newInstance();
 
-        } catch (InstantiationException e) {
-            throw new ConfigurationException(e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new ConfigurationException(e);
         }
     }

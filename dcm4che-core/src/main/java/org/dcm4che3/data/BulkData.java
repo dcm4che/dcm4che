@@ -334,9 +334,7 @@ public class BulkData implements Value {
     public File getFile() {
         try {
             return new File(new URI(uriWithoutQuery()));
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException("uri: " + uri);
-        } catch (IllegalArgumentException e) {
+        } catch (URISyntaxException | IllegalArgumentException e) {
             throw new IllegalStateException("uri: " + uri);
         }
     }

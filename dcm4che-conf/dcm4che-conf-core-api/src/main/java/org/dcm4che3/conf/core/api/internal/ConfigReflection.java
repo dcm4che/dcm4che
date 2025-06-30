@@ -226,11 +226,7 @@ public class ConfigReflection {
     public static void setProperty(Object object, String propertyName, Object value) throws ReflectionAccessException {
         try {
             PropertyUtils.setSimpleProperty(object, propertyName, value);
-        } catch (IllegalAccessException e) {
-            throw new ReflectionAccessException("Could not set property " + propertyName + " in class " + object.getClass().toString(), e);
-        } catch (InvocationTargetException e) {
-            throw new ReflectionAccessException("Could not set property " + propertyName + " in class " + object.getClass().toString(), e);
-        } catch (NoSuchMethodException e) {
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new ReflectionAccessException("Could not set property " + propertyName + " in class " + object.getClass().toString(), e);
         }
     }
@@ -238,11 +234,7 @@ public class ConfigReflection {
     public static Object getProperty(Object object, ConfigProperty property) throws ReflectionAccessException {
         try {
             return PropertyUtils.getSimpleProperty(object, property.getName());
-        } catch (IllegalAccessException e) {
-            throw new ReflectionAccessException("Could not get property " + property + " in class " + object.getClass().toString(), e);
-        } catch (InvocationTargetException e) {
-            throw new ReflectionAccessException("Could not get property " + property + " in class " + object.getClass().toString(), e);
-        } catch (NoSuchMethodException e) {
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new ReflectionAccessException("Could not get property " + property + " in class " + object.getClass().toString(), e);
         }
     }

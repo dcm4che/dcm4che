@@ -144,11 +144,7 @@ public class Property implements Serializable {
                    }
                 }
             }
-        } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException(e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(e.getMessage());
-        } catch (InvocationTargetException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new IllegalArgumentException(e.getMessage());
         }
     }

@@ -65,11 +65,7 @@ public abstract class SSLManagerFactory {
         KeyStore ks = KeyStore.getInstance("JKS");
         try {
             ks.load(null);
-        } catch (IOException e) {
-            throw new AssertionError(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError(e);
-        } catch (CertificateException e) {
+        } catch (IOException | CertificateException | NoSuchAlgorithmException e) {
             throw new AssertionError(e);
         }
         for (X509Certificate cert : certs)

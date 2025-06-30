@@ -205,7 +205,7 @@ public class AttributesFormat extends Format {
         return pattern;
     }
 
-    private static enum Type {
+    private enum Type {
         none {
             @Override
             Object toArg(Attributes attrs, int tag, int index) {

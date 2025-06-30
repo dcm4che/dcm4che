@@ -44,7 +44,7 @@ package org.dcm4che3.tool.common.test;
 
 public interface TestTool {
 
-    public void init(TestResult result);
-    public TestResult getResult();
+    void init(TestResult result);
+    TestResult getResult();
     
 }

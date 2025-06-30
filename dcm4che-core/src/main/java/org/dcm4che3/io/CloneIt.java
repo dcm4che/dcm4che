@@ -42,5 +42,5 @@ package org.dcm4che3.io;
  */
 public interface CloneIt<T,E extends Exception> {
 
-    public T cloneIt() throws E;
+    T cloneIt() throws E;
 }

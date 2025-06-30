@@ -81,7 +81,7 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
     private static volatile Executor executor;
 
-    private SyslogProtocolHandler() {
+    SyslogProtocolHandler() {
         // thread pool core size equals maximum of system property for AUDIT_THREAD_POOL_CORE_SIZE
         // or number of processors, with minimum value of 4
         int threadPoolCoreSize = Math.max(Runtime.getRuntime()

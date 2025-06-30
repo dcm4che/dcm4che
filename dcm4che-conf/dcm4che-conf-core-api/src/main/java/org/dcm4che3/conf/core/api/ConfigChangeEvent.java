@@ -49,7 +49,7 @@ import java.util.List;
  */
 public interface ConfigChangeEvent extends Serializable {
 
-    static enum CONTEXT {
+    enum CONTEXT {
         CONFIG_INIT, CONFIG_CHANGE
     }
 

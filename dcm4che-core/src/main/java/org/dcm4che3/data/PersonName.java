@@ -52,11 +52,11 @@ public class PersonName {
 
     private static final Logger LOG = LoggerFactory.getLogger(PersonName.class);
 
-    public static enum Component {
+    public enum Component {
         FamilyName, GivenName, MiddleName, NamePrefix, NameSuffix
     };
 
-    public static enum Group {
+    public enum Group {
         Alphabetic, Ideographic, Phonetic
     };
 

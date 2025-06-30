@@ -409,9 +409,7 @@ public class JSONReader {
         }
 
         void toFragments(Fragments fragments) {
-            for (Object value : values) {
-                fragments.add(value);
-            }
+            fragments.addAll(values);
         }
 
     }

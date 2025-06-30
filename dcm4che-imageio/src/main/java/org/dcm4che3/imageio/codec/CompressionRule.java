@@ -303,7 +303,7 @@ public class CompressionRule
         }
 
         PhotometricInterpretation[] getPhotometricInterpretations() {
-            return pmis.toArray(new PhotometricInterpretation[pmis.size()]);
+            return pmis.toArray(new PhotometricInterpretation[0]);
         }
 
         int[] getBitsStored() {

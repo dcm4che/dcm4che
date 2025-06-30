@@ -106,7 +106,7 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
                 // if that is an empty extension map or map
                 else if ((property.isExtensionsProperty()
                         || property.isMap())
-                        && ((Map<?, ?>) value).size() == 0) {
+                        && ((Map<?, ?>) value).isEmpty()) {
                     doDelete = true;
                 }
                 // if that is an empty collection

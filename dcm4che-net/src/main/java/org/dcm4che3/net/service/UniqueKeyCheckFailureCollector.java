@@ -68,7 +68,7 @@ public class UniqueKeyCheckFailureCollector {
         StringBuilder sb = new StringBuilder();
 
         for (Map.Entry<UniqueKeyCheckFailure.FailureType, List<UniqueKeyCheckFailure>> entry: failures.entrySet()) {
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append("; ");
             }
             sb.append(entry.getKey().description);

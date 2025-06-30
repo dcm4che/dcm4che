@@ -194,7 +194,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     private void setFinalStatus() {
         
         if (status!=Status.Cancel) {
-            if (failed.size() > 0) {
+            if (!failed.isEmpty()) {
                 if (failed.size() == nr_instances)
                     status = Status.UnableToPerformSubOperations;
                 else

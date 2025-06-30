@@ -186,19 +186,19 @@ public class StringUtils {
     }
 
     public static long parseIS(String s) {
-        return s != null && s.length() != 0
+        return s != null && !s.isEmpty()
                 ? Long.parseLong(s)
                 : 0L;
     }
 
     public static long parseUV(String s) {
-        return s != null && s.length() != 0
+        return s != null && !s.isEmpty()
                 ? Long.parseUnsignedLong(s)
                 : 0L;
     }
 
     public static double parseDS(String s) {
-        return s != null && s.length() != 0
+        return s != null && !s.isEmpty()
                 ? Double.parseDouble(s.replace(',', '.'))
                 : 0;
     }

@@ -105,22 +105,12 @@ public class KPhonetik implements FuzzyStr {
                 curout = '4';
                 break;
             case 'C':
-                switch (next) {
-                case 'A':
-                case 'H':
-                case 'K':
-                case 'O':
-                case 'Q':
-                case 'U':
-                case 'X':
-                    curout = i == 0 || (prev != 'S' && prev != 'Z')
+                curout = switch (next) {
+                    case 'A', 'H', 'K', 'O', 'Q', 'U', 'X' -> i == 0 || (prev != 'S' && prev != 'Z')
                             ? '4' : '8';
-                    break;
-                case 'L':
-                case 'R':
-                    curout = i == 0 ? '4' : '8';
-                    break;
-                }
+                    case 'L', 'R' -> i == 0 ? '4' : '8';
+                    default -> curout;
+                };
                 break;
             case 'X':
                 if (prev != 'C' && prev != 'K' && prev != 'Q'

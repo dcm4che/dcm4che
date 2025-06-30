@@ -208,18 +208,11 @@ public enum PhotometricInterpretation {
     };
 
     public static PhotometricInterpretation fromString(String pmiStr) {
-        PhotometricInterpretation pmi;
-        switch(pmiStr) {
-            case "MONOCHROME":
-                pmi = MONOCHROME2;
-                break;
-            case "PALETTE COLOR":
-                pmi = PALETTE_COLOR;
-                break;
-            default:
-                pmi = valueOf(pmiStr);
-                break;
-        }
+        PhotometricInterpretation pmi = switch (pmiStr) {
+            case "MONOCHROME" -> MONOCHROME2;
+            case "PALETTE COLOR" -> PALETTE_COLOR;
+            default -> valueOf(pmiStr);
+        };
 
         return pmi;
     }

@@ -105,8 +105,8 @@ public enum Dimse {
     private final int tagOfMessageID;
     private final String prompt;
 
-    private Dimse(int cmdField, int tagOfSOPClassUID, int tagOfSOPInstanceUID,
-            int tagOfMessageID, String prompt) {
+    Dimse(int cmdField, int tagOfSOPClassUID, int tagOfSOPInstanceUID,
+          int tagOfMessageID, String prompt) {
         this.commandField = cmdField;
         this.tagOfSOPClassUID = tagOfSOPClassUID;
         this.tagOfSOPInstanceUID = tagOfSOPInstanceUID;

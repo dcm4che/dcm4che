@@ -49,22 +49,22 @@ import org.dcm4che3.net.Association;
  */
 public interface CStoreSCU<T extends InstanceLocator> {
 
-    public abstract int getStatus();
+    int getStatus();
 
-    public abstract int getPriority();
+    int getPriority();
 
-    public abstract int getRemaining();
+    int getRemaining();
     
-    public abstract List<T> getCompleted();
+    List<T> getCompleted();
 
-    public abstract List<T> getWarning();
+    List<T> getWarning();
 
-    public abstract List<T> getFailed();
+    List<T> getFailed();
     
-    public abstract Throwable getLastError();
+    Throwable getLastError();
 
-    public abstract BasicCStoreSCUResp cstore(List<T> instances, Association storeas, int priority);
+    BasicCStoreSCUResp cstore(List<T> instances, Association storeas, int priority);
     
-    public abstract boolean cancel();    
+    boolean cancel();
 
 }

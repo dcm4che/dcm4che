@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE,ElementType.FIELD})
 public @interface LDAP {
 
-    public static final String DEFAULT_DISTINGUISHING_FIELD = "cn";
+    String DEFAULT_DISTINGUISHING_FIELD = "cn";
 
     String distinguishingField() default DEFAULT_DISTINGUISHING_FIELD;
 

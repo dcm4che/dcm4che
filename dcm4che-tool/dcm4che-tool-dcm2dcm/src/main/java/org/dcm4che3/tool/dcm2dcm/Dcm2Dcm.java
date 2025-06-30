@@ -312,7 +312,7 @@ public class Dcm2Dcm {
                     tsuid = adjustTransferSyntax(tsuid,
                             dataset.getInt(Tag.BitsStored, 8));
                     compressor = new Compressor(dataset, dis.getTransferSyntax(),
-                            tsuid, params.toArray(new Property[params.size()]));
+                            tsuid, params.toArray(new Property[0]));
                     compressor.compress();
                 } else if (pixeldata instanceof Fragments)
                     Decompressor.decompress(dataset, dis.getTransferSyntax());

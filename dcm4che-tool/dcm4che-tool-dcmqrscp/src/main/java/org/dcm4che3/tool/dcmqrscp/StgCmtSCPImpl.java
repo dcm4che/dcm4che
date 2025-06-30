@@ -151,7 +151,7 @@ public class StgCmtSCPImpl extends AbstractDicomService {
         Map<String, String> requestMapCopy = new HashMap<String, String>(requestMap);
         Map<String, Integer> instanceStatusMap = new HashMap<String, Integer>();
         
-        String[] sopIUIDs = requestMap.keySet().toArray(new String[requestMap.keySet().size()]);
+        String[] sopIUIDs = requestMap.keySet().toArray(new String[0]);
         
         DicomDirReader ddr = dicomDirReader;
         try {

@@ -89,7 +89,7 @@ public class MultiframeExtractor {
                 if ("YES".equals(sf.getString(Tag.EchoPlanarPulseSequence)))
                     list.add("EP");
                 sf.setString(Tag.ScanningSequence, VR.CS,
-                        list.toArray(new String[list.size()]));
+                        list.toArray(new String[0]));
             }
 
             void setSequenceVariant(Attributes sf) {
@@ -111,7 +111,7 @@ public class MultiframeExtractor {
                 if (list.isEmpty())
                     list.add("NONE");
                 sf.setString(Tag.SequenceVariant, VR.CS,
-                        list.toArray(new String[list.size()]));
+                        list.toArray(new String[0]));
             }
 
             void setScanOptions(Attributes sf) {
@@ -141,7 +141,7 @@ public class MultiframeExtractor {
                 if (fc != null && !"NONE".equals(fc))
                     list.add("FC");
                 sf.setString(Tag.ScanOptions, VR.CS,
-                        list.toArray(new String[list.size()]));
+                        list.toArray(new String[0]));
             }
 
         },

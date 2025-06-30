@@ -379,7 +379,7 @@ public class ApplicationEntity implements Serializable {
 
     public String[] getAcceptedCallingAETitles() {
         return acceptedCallingAETitlesSet.toArray(
-                new String[acceptedCallingAETitlesSet.size()]);
+                new String[0]);
     }
 
     public void setAcceptedCallingAETitles(String... aets) {

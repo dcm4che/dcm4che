@@ -1393,11 +1393,7 @@ public class Device extends StorageVersionedConfigurableClass implements Seriali
     }
 
     private void reconfigureDeviceExtensions(Device from) {
-        for (Iterator<Class<? extends DeviceExtension>> it =
-             extensions.keySet().iterator(); it.hasNext(); ) {
-            if (!from.extensions.containsKey(it.next()))
-                it.remove();
-        }
+        extensions.keySet().removeIf(aClass -> !from.extensions.containsKey(aClass));
         for (DeviceExtension src : from.extensions.values()) {
             Class<? extends DeviceExtension> clazz = src.getClass();
             DeviceExtension ext = extensions.get(clazz);

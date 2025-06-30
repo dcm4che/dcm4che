@@ -46,6 +46,7 @@ import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -372,7 +373,7 @@ public class StowRS {
 
     private static String readFullyAsString(HttpURLConnection connection)
             throws IOException {
-        return readFully(connection).toString("UTF-8");
+        return readFully(connection).toString(StandardCharsets.UTF_8);
     }
 
     private static ByteArrayOutputStream readFully(HttpURLConnection connection) throws IOException {

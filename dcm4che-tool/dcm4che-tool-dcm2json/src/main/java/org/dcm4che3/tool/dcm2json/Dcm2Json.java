@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -220,7 +221,7 @@ public class Dcm2Json {
         InputStream in = new FileInputStream(fname);
         try {
             JSONReader reader = new JSONReader(
-                    Json.createParser(new InputStreamReader(in, "UTF-8")));
+                    Json.createParser(new InputStreamReader(in, StandardCharsets.UTF_8)));
              return reader.readDataset(null);
         } finally {
             SafeClose.close(in);

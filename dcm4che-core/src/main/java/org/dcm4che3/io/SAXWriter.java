@@ -87,7 +87,7 @@ public class SAXWriter implements DicomInputHandler {
     }
 
     public final boolean isIncludeNamespaceDeclaration() {
-        return namespace == NAMESPACE;
+        return namespace.equals(NAMESPACE);
     }
 
     public final void setIncludeNamespaceDeclaration(boolean includeNameSpaceDeclaration) {

@@ -2124,12 +2124,12 @@ public class Attributes implements Serializable {
                 } else {
                     Sequence original = (Sequence) values[indexOfOriginal];
 
-                    if (original.size() == 0) {
+                    if (original.isEmpty()) {
                         //as above, fallback to whole copy
                         set(privateCreator, tag, updated, null);
                     } else {
 
-                        if (updated.size() == 0) {
+                        if (updated.isEmpty()) {
                             continue;
                         }
 

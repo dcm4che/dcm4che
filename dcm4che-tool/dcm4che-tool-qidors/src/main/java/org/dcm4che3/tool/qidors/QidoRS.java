@@ -48,6 +48,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -456,9 +457,9 @@ public class QidoRS {
 
     private static String addParam(String url, String key, String field) throws UnsupportedEncodingException {
         if (url.contains("?"))
-            return url += "&" + key + "=" + URLEncoder.encode(field, "UTF-8");
+            return url += "&" + key + "=" + URLEncoder.encode(field, StandardCharsets.UTF_8);
         else
-            return url += "?" + key + "=" + URLEncoder.encode(field, "UTF-8");
+            return url += "?" + key + "=" + URLEncoder.encode(field, StandardCharsets.UTF_8);
     }
 
     private enum ParserType {
@@ -468,7 +469,7 @@ public class QidoRS {
                 
                 String full="";
                 String str;
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
                 String boundary = reader.readLine();
                 while((str = reader.readLine())!=null) {
                     full+=str;
@@ -480,7 +481,7 @@ public class QidoRS {
                     if(qidors.isRunningModeTest()) {
                         if(qidors.getTimeFirst() == 0)
                             qidors.setTimeFirst(System.currentTimeMillis());
-                        qidors.responseAttrs.add(SAXReader.parse(new ByteArrayInputStream(removeHeader(parts[i]).getBytes("UTF-8"))));
+                        qidors.responseAttrs.add(SAXReader.parse(new ByteArrayInputStream(removeHeader(parts[i]).getBytes(StandardCharsets.UTF_8))));
                         qidors.numMatches++;
                     }
                     else {
@@ -541,7 +542,7 @@ public class QidoRS {
                 if(qidors.isRunningModeTest()) {
                     try {
                         JSONReader reader = new JSONReader(
-                                Json.createParser(new InputStreamReader(in, "UTF-8")));
+                                Json.createParser(new InputStreamReader(in, StandardCharsets.UTF_8)));
                         reader.readDatasets(new Callback() {
                             @Override
                             public void onDataset(Attributes fmi, Attributes dataset) {

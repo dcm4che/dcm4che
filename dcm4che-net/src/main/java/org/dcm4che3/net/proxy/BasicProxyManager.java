@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import org.dcm4che3.util.Base64;
 
@@ -38,14 +39,14 @@ public class BasicProxyManager implements ProxyManager {
         request.append("CONNECT ").append(hostname).append(':').append(port).append(" HTTP/1.1\r\nHost: ")
                 .append(hostname).append(':').append(port);
         if (userauth != null) {
-            byte[] b = userauth.getBytes("UTF-8");
+            byte[] b = userauth.getBytes(StandardCharsets.UTF_8);
             char[] base64 = new char[(b.length + 2) / 3 * 4];
             Base64.encode(b, 0, b.length, base64, 0);
             request.append("\r\nProxy-Authorization: basic ").append(base64);
         }
         request.append("\r\n\r\n");
         OutputStream out = s.getOutputStream();
-        out.write(request.toString().getBytes("US-ASCII"));
+        out.write(request.toString().getBytes(StandardCharsets.US_ASCII));
         out.flush();
 
         s.setSoTimeout(connectTimeout);
@@ -70,7 +71,7 @@ public class BasicProxyManager implements ProxyManager {
                 write(b);
                 if (b == '\n') {
                     if (eol) {
-                        rsp = new String(super.buf, 0, super.count, "US-ASCII");
+                        rsp = new String(super.buf, 0, super.count, StandardCharsets.US_ASCII);
                         return;
                     }
                     eol = true;

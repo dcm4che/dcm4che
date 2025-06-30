@@ -53,7 +53,7 @@ import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.UIDUtils;
 
-import javax.activation.FileTypeMap;
+import jakarta.activation.FileTypeMap;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.Arrays;

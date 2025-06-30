@@ -5,6 +5,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.ws.rs.api"/>
+        <module name="jakarta.ws.rs.api"/>
     </dependencies>
 </module>

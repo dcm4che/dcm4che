@@ -44,8 +44,8 @@ import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonGenerator;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;

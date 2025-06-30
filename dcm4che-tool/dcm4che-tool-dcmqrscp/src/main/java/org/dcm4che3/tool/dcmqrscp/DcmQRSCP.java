@@ -93,9 +93,6 @@ import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

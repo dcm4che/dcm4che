@@ -37,13 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.api;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.net.TransferCapability;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * An optional configuration extension that contains the information of which TCs are supported for each TC group.

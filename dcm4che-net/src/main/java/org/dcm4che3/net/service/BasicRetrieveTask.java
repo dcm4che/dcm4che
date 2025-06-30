@@ -39,25 +39,17 @@
 package org.dcm4che3.net.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
-import java.util.Observer;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
-import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Commands;
-import org.dcm4che3.net.DataWriter;
 import org.dcm4che3.net.Dimse;
-import org.dcm4che3.net.DimseRSPHandler;
-import org.dcm4che3.net.InputStreamDataWriter;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.slf4j.Logger;

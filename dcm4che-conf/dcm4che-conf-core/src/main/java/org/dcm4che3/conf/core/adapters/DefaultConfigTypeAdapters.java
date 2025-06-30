@@ -271,7 +271,7 @@ public class DefaultConfigTypeAdapters {
         @Override
         protected T normalizeInt(Object configNode, ConfigProperty property) throws ConfigurationException {
             // Java default value for int: 0
-            Object checkedConfigNode = checkIfNoValueAndSetDefaultOrFallback(configNode, property, new Integer(0));
+            Object checkedConfigNode = checkIfNoValueAndSetDefaultOrFallback(configNode, property, Integer.valueOf(0));
             return super.normalizeInt(checkedConfigNode, property);
         }
 
@@ -285,7 +285,7 @@ public class DefaultConfigTypeAdapters {
         @Override
         protected T normalizeNumber(Object configNode, ConfigProperty property) throws ConfigurationException {
             // use 0.0 as default for other number types
-            Object checkedConfigNode = checkIfNoValueAndSetDefaultOrFallback(configNode, property, new Double(0.0));
+            Object checkedConfigNode = checkIfNoValueAndSetDefaultOrFallback(configNode, property, Double.valueOf(0.0));
             return super.normalizeNumber(checkedConfigNode, property);
         }
 

@@ -787,11 +787,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     private void reconfigureAEExtensions(ApplicationEntity from) {
-        for (Iterator<Class<? extends AEExtension>> it =
-             extensions.keySet().iterator(); it.hasNext(); ) {
-            if (!from.extensions.containsKey(it.next()))
-                it.remove();
-        }
+        extensions.keySet().removeIf(aClass -> !from.extensions.containsKey(aClass));
         for (AEExtension src : from.extensions.values()) {
             Class<? extends AEExtension> clazz = src.getClass();
             AEExtension ext = extensions.get(clazz);

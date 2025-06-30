@@ -323,11 +323,7 @@ public class HL7Application implements Serializable {
     }
 
     private void reconfigureHL7ApplicationExtensions(HL7Application from) {
-        for (Iterator<Class<? extends HL7ApplicationExtension>> it =
-                     extensions.keySet().iterator(); it.hasNext(); ) {
-            if (!from.extensions.containsKey(it.next()))
-                it.remove();
-        }
+        extensions.keySet().removeIf(aClass -> !from.extensions.containsKey(aClass));
         for (HL7ApplicationExtension src : from.extensions.values()) {
             Class<? extends HL7ApplicationExtension> clazz = src.getClass();
             HL7ApplicationExtension ext = extensions.get(clazz);

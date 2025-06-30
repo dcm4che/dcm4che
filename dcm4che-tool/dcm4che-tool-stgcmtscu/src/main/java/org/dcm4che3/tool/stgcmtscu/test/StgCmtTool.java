@@ -195,11 +195,7 @@ public class StgCmtTool implements TestTool {
         device.addApplicationEntity(ae);
         ae.addConnection(bound);
 
-        for(Iterator<Connection> iterator=device.getConnections().iterator(); iterator.hasNext();) {
-            Connection next = iterator.next();
-            if(!next.getCommonName().equalsIgnoreCase(bound.getCommonName()))
-                iterator.remove();
-        }
+        device.getConnections().removeIf(next -> !next.getCommonName().equalsIgnoreCase(bound.getCommonName()));
         
         this.stgCmtSCU = new StgCmtSCU(ae, stgcmtResultHandler);
 

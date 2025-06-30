@@ -542,11 +542,7 @@ public class Connection implements Serializable {
     }
 
     private void reconfigureExtensions(Connection from) {
-        for (Iterator<Class<? extends ConnectionExtension>> it =
-             extensions.keySet().iterator(); it.hasNext(); ) {
-            if (!from.extensions.containsKey(it.next()))
-                it.remove();
-        }
+        extensions.keySet().removeIf(aClass -> !from.extensions.containsKey(aClass));
         for (ConnectionExtension src : from.extensions.values()) {
             Class<? extends ConnectionExtension> clazz = src.getClass();
             ConnectionExtension ext = extensions.get(clazz);

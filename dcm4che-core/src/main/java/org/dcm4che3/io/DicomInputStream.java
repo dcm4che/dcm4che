@@ -1127,7 +1127,7 @@ public class DicomInputStream extends FilterInputStream
 
         catBlkFiles = true;
         blkFilePrefix = src.blkFilePrefix;
-        blkFileSuffix = src.blkFileSuffix;;
+        blkFileSuffix = src.blkFileSuffix;
         blkDirectory = src.blkDirectory;
         blkFiles = (src.blkFiles!=null ? new ArrayList<>(src.blkFiles) : null);
         blkURI = src.blkURI;

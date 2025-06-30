@@ -1312,7 +1312,6 @@ public class Connection implements Serializable {
                     ss[len++] = s1;
                     break;
                 }
-        ;
         if (len == ss.length)
             return ss;
 

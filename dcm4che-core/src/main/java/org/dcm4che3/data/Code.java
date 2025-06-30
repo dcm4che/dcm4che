@@ -52,7 +52,7 @@ public class Code implements Serializable {
 
     private static final long serialVersionUID = 8807594793107889446L;
     
-    public enum CodeValueType { SHORT, LONG, URN }; 
+    public enum CodeValueType { SHORT, LONG, URN }
 
     private String codeValue;
     private String codingSchemeDesignator;

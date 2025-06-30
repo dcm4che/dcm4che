@@ -59,7 +59,7 @@ public class QidoRSTool implements TestTool {
 
 
     public enum QidoMetaDataType {
-        JSON, XML;
+        JSON, XML
     }
     private TestResult result;
     private final String url;

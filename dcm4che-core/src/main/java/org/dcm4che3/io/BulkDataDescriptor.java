@@ -38,7 +38,6 @@
 
 package org.dcm4che3.io;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.dcm4che3.data.Attributes;

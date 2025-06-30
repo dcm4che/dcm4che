@@ -217,9 +217,8 @@ public class Issuer implements Serializable {
     public boolean equals(Object o) {
         if (o == this)
             return true;
-        if (!(o instanceof Issuer))
+        if (!(o instanceof Issuer other))
             return false;
-        Issuer other = (Issuer) o;
 
         return equals(localNamespaceEntityID, other.getLocalNamespaceEntityID())
                 && equals(universalEntityID, other.getUniversalEntityID())

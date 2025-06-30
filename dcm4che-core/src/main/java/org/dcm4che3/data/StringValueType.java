@@ -123,8 +123,7 @@ enum StringValueType implements ValueType {
         public String toString(Object val, boolean bigEndian, int valueIndex,
                 String defVal) {
 
-            if (val instanceof double[]) {
-                double[] ds = (double[]) val;
+            if (val instanceof double[] ds) {
                 return (valueIndex < ds.length
                         && !Double.isNaN(ds[valueIndex]))
                                 ? StringUtils.formatDS(ds[valueIndex])
@@ -234,8 +233,7 @@ enum StringValueType implements ValueType {
         public String toString(Object val, boolean bigEndian, int valueIndex,
                 String defVal) {
 
-            if (val instanceof int[]) {
-                int[] is = (int[]) val;
+            if (val instanceof int[] is) {
                 return (valueIndex < is.length
                         && is[valueIndex] != Integer.MIN_VALUE)
                                 ? Integer.toString(is[valueIndex])
@@ -360,8 +358,7 @@ enum StringValueType implements ValueType {
         if (val instanceof String)
             return (String) (valueIndex == 0 ? val : defVal);
 
-        if (val instanceof String[]) {
-            String[] ss = (String[]) val;
+        if (val instanceof String[] ss) {
             return (valueIndex < ss.length && ss[valueIndex] != null && !ss[valueIndex].isEmpty())
                     ? ss[valueIndex]
                     : defVal;
@@ -434,8 +431,7 @@ enum StringValueType implements ValueType {
                 ? temporalType.parse(tz, (String) val, ceil, precision)
                 : defVal;
         }
-        if (val instanceof String[]) {
-            String[] ss = (String[]) val;
+        if (val instanceof String[] ss) {
             return (valueIndex < ss.length && ss[valueIndex] != null)
                 ? temporalType.parse(tz, ss[valueIndex], ceil, precision)
                 : defVal;
@@ -454,8 +450,7 @@ enum StringValueType implements ValueType {
             return new Date[] { temporalType.parse(tz, (String) val, ceil,
                     precisions.precisions[0] = new DatePrecision()) };
         }
-        if (val instanceof String[]) {
-            String[] ss = (String[]) val;
+        if (val instanceof String[] ss) {
             Date[] is = new Date[ss.length];
             precisions.precisions = new DatePrecision[ss.length];
             for (int i = 0; i < is.length; i++) {
@@ -576,8 +571,7 @@ enum StringValueType implements ValueType {
         if (val instanceof String)
             return 1;
 
-        if (val instanceof String[]) {
-            String[] ss = (String[]) val;
+        if (val instanceof String[] ss) {
             return ss.length;
         }
 

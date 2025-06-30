@@ -228,8 +228,7 @@ public class Decompressor {
 
     public ImageInputStream createImageInputStream(int frameIndex) throws IOException {
 
-        if (pixels instanceof Fragments) {
-            Fragments pixelFragments = (Fragments) pixels;
+        if (pixels instanceof Fragments pixelFragments) {
             if (pixelFragments.get(frameIndex + 1) instanceof BulkData)
                 return new FileImageInputStream(((BulkData) pixelFragments.get(frameIndex + 1)).getFile());
             else if (pixelFragments.get(frameIndex + 1) instanceof byte[])

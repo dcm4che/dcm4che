@@ -288,8 +288,7 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
         long[] ret = new long[2*(lastSegment-firstSegment)];
         for(int seg=firstSegment; seg<lastSegment; seg++) {
             Object fragment = fragments.get(seg);
-            if( !(fragment instanceof BulkData) ) return null;
-            BulkData bulk = (BulkData) fragment;
+            if( !(fragment instanceof BulkData bulk) ) return null;
             ret[seg*2] = bulk.offset();
             ret[seg*2+1] = bulk.longLength();
         }

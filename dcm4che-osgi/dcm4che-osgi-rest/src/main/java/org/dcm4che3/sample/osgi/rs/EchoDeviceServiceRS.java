@@ -38,9 +38,9 @@
 
 package org.dcm4che3.sample.osgi.rs;
 
-import javax.annotation.Resource;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
+import jakarta.annotation.Resource;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 
 import org.dcm4che3.net.DeviceService;
 import org.dcm4che3.sample.osgi.device.EchoDeviceService;

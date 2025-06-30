@@ -52,8 +52,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonGenerator;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 

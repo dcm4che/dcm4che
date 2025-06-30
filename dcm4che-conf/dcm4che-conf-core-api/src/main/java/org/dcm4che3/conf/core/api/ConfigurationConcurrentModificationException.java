@@ -1,6 +1,6 @@
 package org.dcm4che3.conf.core.api;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 /**
  * This exception is thrown to indicate that configuration framework has detected concurrent

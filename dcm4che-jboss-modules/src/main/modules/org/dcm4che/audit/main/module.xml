@@ -6,8 +6,11 @@
 
     <dependencies>
         <module name="org.dcm4che.conf.core-api"/>
-        <module name="javax.api"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="java.se"/>
+        <module name="java.xml"/>
+        <module name="java.xml.crypto"/>
+        <module name="jdk.xml.dom"/>
+        <module name="jakarta.xml.bind.api"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>

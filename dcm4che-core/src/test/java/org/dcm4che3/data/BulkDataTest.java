@@ -46,7 +46,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import jakarta.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -147,6 +147,7 @@ public class BulkDataTest {
             VR pixelVR = datasetWithFMI.getDataset().getVR(Tag.PixelData);
             BulkData bulkData = (BulkData) datasetWithFMI.getDataset().getValue(Tag.PixelData);
             assertEquals(fileURI, bulkData.toFileURI());
+
             assertThat(bulkData.getURI(), CoreMatchers.endsWith("OT-PAL-8-face?offset=1654&length=307200"));
             byte[] pixelData = bulkData.toBytes(pixelVR, false);
             assertEquals("17AA58445D74CB965A7634EBAEFE66710372511B", toHexDigest(pixelData));

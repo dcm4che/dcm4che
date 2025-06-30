@@ -2,7 +2,7 @@ package org.dcm4che3.conf.core.api.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 import org.assertj.core.api.Condition;
 import org.dcm4che3.conf.core.api.ConfigurationConcurrentModificationException;

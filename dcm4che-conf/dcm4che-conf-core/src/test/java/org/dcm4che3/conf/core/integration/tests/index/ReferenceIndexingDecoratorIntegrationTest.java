@@ -53,7 +53,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.assertj.core.api.Assertions;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.DuplicateUUIDException;
@@ -106,9 +109,9 @@ class ReferenceIndexingDecoratorIntegrationTest {
 
         decorator.removeNode(new Path(ROOT_PATH, "childList"));
 
-        assertThat("UUIDs of removed nodes should not be in cache", uuidToSimplePathCache.keySet(),
-                not(anyOf(hasItem("UUID2"), hasItem("UUID3")))
-        );
+        Assertions.assertThat(uuidToSimplePathCache.keySet())
+                .withFailMessage(() -> "UUIDs of removed nodes should not be in cache")
+                .doesNotContainAnyElementsOf(Stream.of("UUID2", "UUID3").collect(Collectors.toSet()));
     }
 
     @Test

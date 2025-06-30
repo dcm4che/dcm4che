@@ -38,8 +38,8 @@
 
 package org.dcm4che3.sample.cdi.echo.impl;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Typed;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Typed;
 
 import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.DicomService;

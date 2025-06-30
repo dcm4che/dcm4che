@@ -11,25 +11,18 @@
   <description>Sample C-ECHO SCP deployable in CDI container</description>
   <dependencyManagement>
     <dependencies>
-      <!-- Define the version of JBoss' Java EE 6 APIs we want to use -->
-      <!-- JBoss distributes a complete set of Java EE 6 APIs including a 
-        Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or a 
-        collection) of artifacts. We use this here so that we always get the correct 
-        versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can read 
-        this as the JBoss stack of the Java EE 6 APIs). You can actually use this 
-        stack with any version of JBoss AS that implements Java EE 6, not just JBoss 
-        AS 7! -->
+      <!-- Jakarta-->
       <dependency>
-        <groupId>org.jboss.spec</groupId>
-        <artifactId>jboss-javaee-6.0</artifactId>
-        <version>3.0.1.Final</version>
+        <groupId>jakarta.platform</groupId>
+        <artifactId>jakarta.jakartaee-bom</artifactId>
+        <version>10.0.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>javax.enterprise</groupId>
-        <artifactId>cdi-api</artifactId>
-        <version>1.1</version>
+        <groupId>jakarta.enterprise</groupId>
+        <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        <version>4.1.0</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>

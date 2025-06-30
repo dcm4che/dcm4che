@@ -430,8 +430,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
             int frameIndex, ImageReadParam param, int outBits, byte[] ovlyData) {
         Attributes ovlyAttrs = metadata.getAttributes();
         int grayscaleValue = 0xffff;
-        if (param instanceof DicomImageReadParam) {
-            DicomImageReadParam dParam = (DicomImageReadParam) param;
+        if (param instanceof DicomImageReadParam dParam) {
             Attributes psAttrs = dParam.getPresentationState();
             if (psAttrs != null) {
                 if (psAttrs.containsValue(Tag.OverlayData | gg0000))
@@ -446,8 +445,7 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
     }
 
     private int[] getActiveOverlayGroupOffsets(ImageReadParam param) {
-        if (param instanceof DicomImageReadParam) {
-            DicomImageReadParam dParam = (DicomImageReadParam) param;
+        if (param instanceof DicomImageReadParam dParam) {
             Attributes psAttrs = dParam.getPresentationState();
             if (psAttrs != null)
                 return Overlays.getActiveOverlayGroupOffsets(psAttrs);

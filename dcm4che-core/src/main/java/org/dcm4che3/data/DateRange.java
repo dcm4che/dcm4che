@@ -79,11 +79,10 @@ public class DateRange implements Serializable {
         if (obj == this)
             return true;
 
-        if (!(obj instanceof DateRange))
+        if (!(obj instanceof DateRange other))
             return false;
 
-        DateRange other = (DateRange) obj;
-        return (start == null 
+        return (start == null
                 ? other.start == null
                 : start.equals(other.start)) 
             && (end == null

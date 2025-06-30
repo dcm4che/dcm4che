@@ -317,10 +317,9 @@ enum BinaryValueType implements ValueType {
     @Override
     public String toString(Object val, boolean bigEndian, int valueIndex,
             String defVal) {
-        if (!(val instanceof byte[]))
+        if (!(val instanceof byte[] b))
             throw new UnsupportedOperationException();
 
-        byte[] b = (byte[]) val;
         int len = b.length;
         int off = valueIndex * numBytes;
         return off + numBytes <= len
@@ -336,10 +335,9 @@ enum BinaryValueType implements ValueType {
     @Override
     public Object toStrings(Object val, boolean bigEndian,
             SpecificCharacterSet cs) {
-        if (!(val instanceof byte[]))
+        if (!(val instanceof byte[] b))
             throw new UnsupportedOperationException();
 
-        byte[] b = (byte[]) val;
         int len = b.length;
         checkLength(len);
         if (len == numBytes)
@@ -354,10 +352,9 @@ enum BinaryValueType implements ValueType {
     @Override
     public int toInt(Object val, boolean bigEndian, int valueIndex,
             int defVal) {
-        if (!(val instanceof byte[]))
+        if (!(val instanceof byte[] b))
             throw new UnsupportedOperationException();
 
-        byte[] b = (byte[]) val;
         int len = b.length;
         int off = valueIndex * numBytes;
         return off + numBytes <= len
@@ -367,10 +364,9 @@ enum BinaryValueType implements ValueType {
 
     @Override
     public int[] toInts(Object val, boolean bigEndian) {
-        if (!(val instanceof byte[]))
+        if (!(val instanceof byte[] b))
             throw new UnsupportedOperationException();
 
-        byte[] b = (byte[]) val;
         int len = b.length;
         checkLength(len);
         int[] is = new int[len / numBytes];
@@ -382,10 +378,9 @@ enum BinaryValueType implements ValueType {
     @Override
     public float toFloat(Object val, boolean bigEndian, int valueIndex,
             float defVal) {
-        if (!(val instanceof byte[]))
+        if (!(val instanceof byte[] b))
             throw new UnsupportedOperationException();
 
-        byte[] b = (byte[]) val;
         int len = b.length;
         int off = valueIndex * numBytes;
         return off + numBytes <= len
@@ -395,10 +390,9 @@ enum BinaryValueType implements ValueType {
 
     @Override
     public float[] toFloats(Object val, boolean bigEndian) {
-        if (!(val instanceof byte[]))
+        if (!(val instanceof byte[] b))
             throw new UnsupportedOperationException();
 
-        byte[] b = (byte[]) val;
         int len = b.length;
         checkLength(len);
         float[] fs = new float[len / numBytes];
@@ -410,10 +404,9 @@ enum BinaryValueType implements ValueType {
     @Override
     public double toDouble(Object val, boolean bigEndian, int valueIndex,
             double defVal) {
-        if (!(val instanceof byte[]))
+        if (!(val instanceof byte[] b))
             throw new UnsupportedOperationException();
 
-        byte[] b = (byte[]) val;
         int len = b.length;
         int off = valueIndex * numBytes;
         return off + numBytes <= len
@@ -423,10 +416,9 @@ enum BinaryValueType implements ValueType {
 
     @Override
     public double[] toDoubles(Object val, boolean bigEndian) {
-        if (!(val instanceof byte[]))
+        if (!(val instanceof byte[] b))
             throw new UnsupportedOperationException();
 
-        byte[] b = (byte[]) val;
         int len = b.length;
         checkLength(len);
         double[] ds = new double[len / numBytes];

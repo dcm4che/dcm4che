@@ -201,9 +201,7 @@ public class StoreSCPTool implements TestTool {
         device.setExecutor(executorService);
         try {
             device.bindConnections();
-        } catch (IOException e) {
-            LOG.error("Error binding connection for storescp , {}", e);
-        } catch (GeneralSecurityException e) {
+        } catch (IOException | GeneralSecurityException e) {
             LOG.error("Error binding connection for storescp , {}", e);
         }
     }

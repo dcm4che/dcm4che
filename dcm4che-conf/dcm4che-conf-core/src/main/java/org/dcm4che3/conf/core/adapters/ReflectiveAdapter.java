@@ -155,10 +155,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
             populate(configNode, ctx, clazz, confObj, parent, uuid);
             confObjFuture.set(confObj);
             return confObj;
-        } catch (RuntimeException e) {
-            confObjFuture.setException(e);
-            throw e;
-        } catch (Error e) {
+        } catch (RuntimeException | Error e) {
             confObjFuture.setException(e);
             throw e;
         }

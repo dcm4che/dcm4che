@@ -164,7 +164,7 @@ public class ColorModelFactory {
             }
         } else if (samples == 3) {
             pmi = attr.getString(Tag.PhotometricInterpretation, RGB);
-            YBR ybr = pmi.indexOf("FULL")>=0 ? YBR.FULL : YBR.PARTIAL;
+            YBR ybr = pmi.contains("FULL") ? YBR.FULL : YBR.PARTIAL;
             if(isDecodingRGB(tsuid) ) {
                 return new DirectColorModel(32, 0xff0000, 0xff00, 0xff, 0xff000000);
             }

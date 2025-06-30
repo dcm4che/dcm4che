@@ -1,9 +1,9 @@
-<bindings xmlns="http://java.sun.com/xml/ns/jaxb" version="2.0"
+<bindings xmlns="https://jakarta.ee/xml/ns/jaxb" version="3.0"
   xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <globalBindings>
     <javaType name="java.util.Calendar" xmlType="xs:dateTime"
-      parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
-      printMethod="javax.xml.bind.DatatypeConverter.printDateTime" />
+      parseMethod="jakarta.xml.bind.DatatypeConverter.parseDateTime"
+      printMethod="jakarta.xml.bind.DatatypeConverter.printDateTime" />
   </globalBindings>
   <bindings schemaLocation="../xsd/audit-message.xsd" node="/xs:schema">
     <bindings node="//xs:complexType[@name='AuditMessageType']">

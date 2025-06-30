@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import javax.json.stream.JsonGenerator;
+import jakarta.json.stream.JsonGenerator;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;

@@ -39,10 +39,8 @@
  */
 package org.dcm4che3.conf.core;
 
-import org.apache.commons.jxpath.AbstractFactory;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathNotFoundException;
-import org.apache.commons.jxpath.Pointer;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.util.XNodeUtil;
 

@@ -38,7 +38,6 @@
 package org.dcm4che3.io.stream;
 
 import javax.imageio.stream.ImageInputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 

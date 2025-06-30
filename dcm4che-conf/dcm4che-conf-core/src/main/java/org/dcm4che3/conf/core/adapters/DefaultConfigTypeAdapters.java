@@ -49,7 +49,6 @@ import org.dcm4che3.conf.core.context.SavingContext;
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.validation.ValidationException;
 
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;

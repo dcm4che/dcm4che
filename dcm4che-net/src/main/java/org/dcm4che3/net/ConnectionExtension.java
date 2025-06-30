@@ -2,7 +2,6 @@ package org.dcm4che3.net;
 
 import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
 import org.dcm4che3.conf.core.api.Parent;
-import org.dcm4che3.conf.core.api.SetParentIntoField;
 
 /**
  * @author Roman K

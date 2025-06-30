@@ -42,7 +42,6 @@ package org.dcm4che3.conf.core.api.internal;
 import org.dcm4che3.conf.core.api.Configuration;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * This API shall NOT be considered stable, it will be refactored without notice.

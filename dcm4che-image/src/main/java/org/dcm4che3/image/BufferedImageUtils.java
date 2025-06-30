@@ -41,7 +41,6 @@
 package org.dcm4che3.image;
 
 import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.image.*;
 
 /**

@@ -39,7 +39,6 @@
 package org.dcm4che3.util;
 
 import org.dcm4che3.io.stream.BufferedImageInputStreamAdapter;
-import org.dcm4che3.io.stream.CloseableImageInputStreamAdapter;
 
 import javax.imageio.stream.ImageInputStream;
 import java.io.EOFException;

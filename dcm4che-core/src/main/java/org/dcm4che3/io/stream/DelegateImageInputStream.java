@@ -42,7 +42,6 @@ import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
-import java.nio.channels.ClosedChannelException;
 
 /**
  * ImageInputSteam which delegates to another IIS.  The close() method is purposely not delegated

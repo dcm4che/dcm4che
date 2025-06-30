@@ -38,8 +38,6 @@
 
 package org.dcm4che3.tool.stgcmtscu.test;
 
-import java.util.ArrayList;
-
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.tool.common.test.TestResult;
 

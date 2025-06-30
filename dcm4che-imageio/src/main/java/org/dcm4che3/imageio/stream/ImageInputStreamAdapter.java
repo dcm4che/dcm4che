@@ -41,7 +41,6 @@ package org.dcm4che3.imageio.stream;
 import org.dcm4che3.io.stream.CloseableImageInputStreamAdapter;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.imageio.stream.ImageInputStream;
 

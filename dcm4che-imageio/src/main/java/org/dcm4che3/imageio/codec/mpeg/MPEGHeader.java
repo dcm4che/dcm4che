@@ -42,8 +42,6 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 
-import java.io.IOException;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Apr 2017

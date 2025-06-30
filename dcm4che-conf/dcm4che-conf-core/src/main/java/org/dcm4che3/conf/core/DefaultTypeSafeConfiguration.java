@@ -40,7 +40,6 @@
 
 package org.dcm4che3.conf.core;
 
-import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.api.TypeSafeConfiguration;
@@ -54,7 +53,6 @@ import org.dcm4che3.conf.core.util.PathPattern;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 
 /**
  * @author Roman K

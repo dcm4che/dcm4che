@@ -1,13 +1,10 @@
 package org.dcm4che3.net.audit;
 
-import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.WorkHandler;
-import org.dcm4che3.net.IncompatibleConnectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 
 /**
  * Created by Umberto Cappellini on 4/12/16.

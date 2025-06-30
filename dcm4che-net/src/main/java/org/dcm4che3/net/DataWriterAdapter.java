@@ -41,7 +41,6 @@ package org.dcm4che3.net;
 import java.io.IOException;
 
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.io.DicomOutputStream;
 
 /**

@@ -4,7 +4,6 @@ import org.dcm4che3.conf.api.TCConfiguration;
 import org.dcm4che3.conf.api.upgrade.ConfigurationMetadata;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.Device;
 
 import java.util.Map;

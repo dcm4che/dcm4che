@@ -50,7 +50,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.json.Json;
+import jakarta.json.Json;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;

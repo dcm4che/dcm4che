@@ -43,9 +43,9 @@ import org.dcm4che3.data.PersonName.Group;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.TagUtils;
 
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
-import javax.json.stream.JsonParsingException;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
+import jakarta.json.stream.JsonParsingException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -51,8 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonGenerator;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.cli.CommandLine;

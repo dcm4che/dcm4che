@@ -5,7 +5,10 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.se"/>
+        <module name="java.xml"/>
+        <module name="java.xml.crypto"/>
+        <module name="jdk.xml.dom"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>

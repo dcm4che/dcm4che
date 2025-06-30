@@ -203,9 +203,8 @@ public class IDWithIssuer {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!(obj instanceof IDWithIssuer))
+        if (!(obj instanceof IDWithIssuer other))
             return false;
-        IDWithIssuer other = (IDWithIssuer) obj;
         return id.equals(other.id) &&
                 (identifierTypeCode == null
                     ? other.identifierTypeCode == null

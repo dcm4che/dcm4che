@@ -229,10 +229,9 @@ public class PersonName {
         if (obj == this)
             return true;
         
-        if (!(obj instanceof PersonName))
+        if (!(obj instanceof PersonName other))
             return false;
 
-        PersonName other = (PersonName) obj;
         return Arrays.equals(fields, other.fields);
     }
 

@@ -95,15 +95,13 @@ public class Nodes {
 
         if (isPrimitive(node)) return node;
 
-        if (node instanceof Collection) {
-            Collection givenCollection = (Collection) node;
+        if (node instanceof Collection givenCollection) {
             ArrayList<Object> newCollection = new ArrayList<Object>(givenCollection.size());
             for (Object o : givenCollection) newCollection.add(deepCloneNode(o));
             return newCollection;
         }
 
-        if (node instanceof Map) {
-            Map givenMapNode = (Map) node;
+        if (node instanceof Map givenMapNode) {
             Map newMapNode = new HashMap(givenMapNode.size());
             for (Entry e : (Set<Entry>) givenMapNode.entrySet()) {
                 newMapNode.put(e.getKey(), deepCloneNode(e.getValue()));

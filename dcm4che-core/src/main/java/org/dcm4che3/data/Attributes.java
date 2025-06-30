@@ -326,8 +326,7 @@ public class Attributes implements Serializable {
                 }
                 if (value instanceof String)
                     values[i] = ((String) value).intern();
-                else if (value instanceof String[]) {
-                    String[] ss = (String[]) value;
+                else if (value instanceof String[] ss) {
                     for (int j = 0; j < ss.length; j++)
                         ss[j] = ss[j].intern();
                 }
@@ -377,10 +376,9 @@ public class Attributes implements Serializable {
 
     public Attributes getNestedDataset(String privateCreator, int sequenceTag, int itemIndex) {
         Object value = getValue(privateCreator, sequenceTag);
-        if (!(value instanceof Sequence))
+        if (!(value instanceof Sequence sq))
             return null;
 
-        Sequence sq = (Sequence) value;
         if (itemIndex >= sq.size())
             return null;
 
@@ -394,10 +392,9 @@ public class Attributes implements Serializable {
         Attributes item = this;
         for (ItemPointer ip : itemPointers) {
             Object value = item.getValue(ip.privateCreator, ip.sequenceTag);
-            if (!(value instanceof Sequence))
+            if (!(value instanceof Sequence sq))
                 return null;
 
-            Sequence sq = (Sequence) value;
             if (ip.itemIndex >= sq.size())
                 return null;
 
@@ -501,8 +498,7 @@ public class Attributes implements Serializable {
         if (value instanceof byte[])
             value = vrs[index].toStrings((byte[]) value, bigEndian,
                     SpecificCharacterSet.ASCII);
-        if (value instanceof String) {
-            String s = (String) value;
+        if (value instanceof String s) {
             if (s.isEmpty()) {
                 values[index] = Value.NULL;
                 return ByteUtils.EMPTY_DOUBLES;
@@ -534,8 +530,7 @@ public class Attributes implements Serializable {
         if (value instanceof byte[])
             value = vrs[index].toStrings((byte[]) value, bigEndian,
                     SpecificCharacterSet.ASCII);
-        if (value instanceof String) {
-            String s = (String) value;
+        if (value instanceof String s) {
             if (s.isEmpty()) {
                 values[index] = Value.NULL;
                 return ByteUtils.EMPTY_LONGS;
@@ -1670,8 +1665,7 @@ public class Attributes implements Serializable {
 
         for (int i = 0; i < size; i++) {
             Object val = values[i];
-            if (val instanceof Sequence) {
-                Sequence new_name = (Sequence) val;
+            if (val instanceof Sequence new_name) {
                 for (Attributes item : new_name) {
                     item.updateTimezone(item.getTimeZone(), to);
                     item.remove(Tag.TimezoneOffsetFromUTC);
@@ -1690,8 +1684,7 @@ public class Attributes implements Serializable {
 
         int tmTag = tags[tmIndex];
         if (vrs[tmIndex] == VR.DT) {
-            if (tm instanceof String[]) {
-                String[] tms = (String[]) tm;
+            if (tm instanceof String[] tms) {
                 for (int i = 0; i < tms.length; i++) {
                     tms[i] = updateTimeZoneDT(from, to, tms[i]);
                 }
@@ -1702,10 +1695,8 @@ public class Attributes implements Serializable {
             int daIndex = daTag != 0 ? indexOf(daTag) : -1;
             Object da = daIndex >= 0 ? decodeStringValue(daIndex) : Value.NULL;
 
-            if (tm instanceof String[]) {
-                String[] tms = (String[]) tm;
-                if (da instanceof String[]) {
-                    String[] das = (String[]) da;
+            if (tm instanceof String[] tms) {
+                if (da instanceof String[] das) {
                     for (int i = 0; i < tms.length; i++) {
                         if (i < das.length) {
                             String dt = updateTimeZoneDT(
@@ -1730,8 +1721,7 @@ public class Attributes implements Serializable {
                     }
                 }
             } else {
-                if (da instanceof String[]) {
-                    String[] das = (String[]) da;
+                if (da instanceof String[] das) {
                     String dt = updateTimeZoneDT(
                            from, to, das[0] + (String) tm);
                     das[0] = dt.substring(0,8);
@@ -2164,10 +2154,10 @@ public class Attributes implements Serializable {
     public boolean updateRecursive(Attributes other) {
     	return updateRecursive(other, null);
     }
-    
+
     /**
      * Updates this Attributes with all the attributes of the "other" object
-     * 
+     *
      * @param other The other Attributes object
      * @param modified The original attribute values of attributes that were
      *                 modified in this object.
@@ -2200,35 +2190,32 @@ public class Attributes implements Serializable {
                 creatorTag = 0;
                 privateCreator = null;
             }
-            
+
             int indexOfOriginal = indexOf(tag);
             boolean updateModified = false;
             Object origValue = null;
-            
+
             if (indexOfOriginal >= 0) {
                 if (equalValues(other, indexOfOriginal, i)) {
                     continue;
                 }
                 origValue = vrs[indexOfOriginal].isStringType() ?
                         decodeStringValue(indexOfOriginal) : values[indexOfOriginal];
-            
+
                 if (!isEmpty(origValue) && modified != null) {
                     updateModified = true;
                 }
             }
 
-            if (value instanceof Sequence) {
-                Sequence updated = (Sequence) value;
+            if (value instanceof Sequence updated) {
 
-                if (indexOfOriginal < 0 || !(origValue instanceof Sequence) || ((Sequence) origValue).isEmpty()) {
+                if (indexOfOriginal < 0 || !(origValue instanceof Sequence original) || original.isEmpty()) {
                     //Trying to recursively update an empty sequence, fallback to whole copy
                     set(privateCreator, tag, updated, null);
                 } else {
                     if (updated.isEmpty()) {
                         continue;
                     }
-
-                    Sequence original = (Sequence) origValue;
 
                     if (original.size() > 1 || updated.size() > 1) {
                         if (modified != null) {
@@ -2238,7 +2225,7 @@ public class Attributes implements Serializable {
                         set(privateCreator, tag, updated, null);
                     } else {
                         Attributes modifiedSequenceAttributes = null;
-                    
+
                         if (modified != null) {
                             Sequence sequence = modified.ensureSequence(privateCreator, tag, 1);
                             modifiedSequenceAttributes = new Attributes();
@@ -2249,10 +2236,10 @@ public class Attributes implements Serializable {
                     }
                 }
             } else if (value instanceof Fragments) {
-                if (updateModified && origValue instanceof Fragments) {
-                    modified.set(privateCreator, tag, (Fragments) origValue);
+                if (updateModified && origValue instanceof Fragments f) {
+                    modified.set(privateCreator, tag, f);
                 }
-                set(privateCreator, tag, (Fragments) value);
+                set(privateCreator, tag, f);
             } else {
                 if (updateModified) {
                     modified.set(privateCreator, tag, vr, origValue);
@@ -2570,10 +2557,9 @@ public class Attributes implements Serializable {
         if (o == this)
             return true;
 
-        if (!(o instanceof Attributes))
+        if (!(o instanceof Attributes other))
             return false;
 
-        final Attributes other = (Attributes) o;
         if (size != other.size)
             return false;
 
@@ -3112,8 +3098,7 @@ public class Attributes implements Serializable {
         if (value == null || isEmpty(value))
             return matchNoValue;
 
-        if (value instanceof Sequence) {
-            Sequence sq = (Sequence) value;
+        if (value instanceof Sequence sq) {
             for (Attributes item : sq)
                 if (item.matches(keys, ignorePNCase, matchNoValue))
                     return true;
@@ -3198,11 +3183,10 @@ public class Attributes implements Serializable {
 
         Object validVals = el.getValues();
         if (el.vr == VR.SQ) {
-            if (!(value instanceof Sequence)) {
+            if (!(value instanceof Sequence seq)) {
                 result.addInvalidAttributeValue(el, ValidationResult.Invalid.VR);
                 return;
             }
-            Sequence seq = (Sequence) value;
             int seqSize = seq.size();
             if (el.maxVM > 0 && seqSize > el.maxVM) {
                 result.addInvalidAttributeValue(el, 
@@ -3222,8 +3206,7 @@ public class Attributes implements Serializable {
                     result.addInvalidAttributeValue(el, 
                             ValidationResult.Invalid.Code, itemValidationResults, null);
                 }
-            } else if (validVals instanceof IOD[]) {
-                IOD[] itemIODs = (IOD[]) validVals;
+            } else if (validVals instanceof IOD[] itemIODs) {
                 int[] matchingItems = new int[itemIODs.length];
                 boolean invalidItem = false;
                 ValidationResult[] itemValidationResults = new ValidationResult[seqSize];

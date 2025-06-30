@@ -179,9 +179,8 @@ public class Code implements Serializable {
     private boolean equals(Object o, boolean ignoreMeaning) {
         if (o == this)
             return true;
-        if (!(o instanceof Code))
+        if (!(o instanceof Code other))
             return false;
-        Code other = (Code) o;
         return codeValue.equals(other.codeValue)
                 && codingSchemeDesignator.equals(other.getCodingSchemeDesignator())
                 && equals(codingSchemeVersion, other.getCodingSchemeVersion())

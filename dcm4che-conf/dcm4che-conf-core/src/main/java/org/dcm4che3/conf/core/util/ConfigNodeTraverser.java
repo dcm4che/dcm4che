@@ -458,9 +458,8 @@ public class ConfigNodeTraverser {
                     filter.onPrimitiveNodeElement(map, key, value);
                 } else if (value instanceof Map) {
                     traverseMapNode(value, filter);
-                } else if (value instanceof List) {
+                } else if (value instanceof List list) {
 
-                    List list = (List) value;
                     filter.beforeList(list);
                     for (int i = 0; i < list.size(); i++) {
 
@@ -556,12 +555,9 @@ public class ConfigNodeTraverser {
     private static void dualTraverseProperty(Object node1El, Object node2El, ADualNodeFilter filter) {
         if (node2El == null && node1El == null) return;
 
-        if (node1El instanceof List) {
+        if (node1El instanceof List list1) {
 
-            if (!(node2El instanceof List)) return;
-
-            List list1 = (List) node1El;
-            List list2 = (List) node2El;
+            if (!(node2El instanceof List list2)) return;
 
             // if any of elements don't have #uuid defined, don't go deeper into the collection
             // because there is no guarantee that elements will match

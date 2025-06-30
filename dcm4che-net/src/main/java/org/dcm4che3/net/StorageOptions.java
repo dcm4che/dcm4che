@@ -176,10 +176,9 @@ public class StorageOptions implements Serializable {
         if (o == this)
             return true;
 
-        if (!(o instanceof StorageOptions))
+        if (!(o instanceof StorageOptions other))
             return false;
 
-        StorageOptions other = (StorageOptions) o; 
         return levelOfSupport == other.levelOfSupport
             && digitalSignatureSupport == other.digitalSignatureSupport
             &&  elementCoercion == other.elementCoercion;

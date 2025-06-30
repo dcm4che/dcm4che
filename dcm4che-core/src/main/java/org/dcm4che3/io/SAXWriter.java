@@ -200,16 +200,14 @@ public class SAXWriter implements DicomInputHandler {
         if (value.isEmpty())
             return;
 
-        if (value instanceof Sequence) {
-            Sequence seq = (Sequence) value;
+        if (value instanceof Sequence seq) {
             int number = 0;
             for (Attributes item : seq) {
                 startElement("Item", "number", ++number);
                 writeItem(item);
                 endElement("Item");
             }
-        } else if (value instanceof Fragments) {
-            Fragments frags = (Fragments) value;
+        } else if (value instanceof Fragments frags) {
             if (frags.size() > 1 && frags.get(1) instanceof BulkData)
                 writeBulkData(BulkData.fromFragments(frags));
             else {

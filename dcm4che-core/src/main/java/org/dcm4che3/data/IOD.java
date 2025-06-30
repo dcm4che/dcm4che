@@ -693,7 +693,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
                     if (el.vr.isIntType())
                         el.setValues(parseInts(values));
                     else
-                        el.setValues(values.toArray(new String[values.size()]));
+                        el.setValues(values.toArray(new String[0]));
                 } catch (IllegalStateException e) {
                     throw new SAXException("unexpected <Value>");
                 }
@@ -701,7 +701,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
             }
             if (!codes.isEmpty()) {
                 try {
-                    el.setValues(codes.toArray(new Code[codes.size()]));
+                    el.setValues(codes.toArray(new Code[0]));
                 } catch (IllegalStateException e) {
                     throw new SAXException("unexpected <Code>");
                 }
@@ -796,7 +796,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
                     if (memberOf.vr.isIntType())
                         memberOf.setValues(parseInts(values));
                     else
-                        memberOf.setValues(values.toArray(new String[values.size()]));
+                        memberOf.setValues(values.toArray(new String[0]));
                 } catch (Exception e) {
                     throw new SAXException("unexpected <Value> contained by <"
                             + name + ">");
@@ -806,7 +806,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
 
             if (!codes.isEmpty()) {
                 try {
-                    ((MemberOf) cond).setValues(codes.toArray(new Code[codes.size()]));
+                    ((MemberOf) cond).setValues(codes.toArray(new Code[0]));
                 } catch (Exception e) {
                     throw new SAXException("unexpected <Code> contained by <"
                             + name + ">");

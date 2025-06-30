@@ -539,7 +539,7 @@ public class AuditLogger extends DeviceExtension {
         return createActiveParticipant(requestor,
                 processID,
                 AuditMessages.alternativeUserIDForAETitle(
-                        aets.toArray(new String[aets.size()])),
+                        aets.toArray(new String[0])),
                 applicationName(),
                 localHostAccess.getLocalHostName(),
                 roleIDs);

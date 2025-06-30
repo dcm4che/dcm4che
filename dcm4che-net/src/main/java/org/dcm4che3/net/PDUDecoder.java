@@ -317,7 +317,7 @@ class PDUDecoder extends PDVInputStream {
             }
         }
         return new PresentationContext(pcid, result, as,
-                tss.toArray(new String[tss.size()]));
+                tss.toArray(new String[0]));
     }
 
     private void decodeUserInfo(int itemLength, AAssociateRQAC rqac) throws AAbort
@@ -396,7 +396,7 @@ class PDUDecoder extends PDVInputStream {
                     INVALID_COMMON_EXTENDED_NEGOTIATION);
         skip(endPos - pos);
         return new CommonExtendedNegotiation(sopCUID, serviceCUID,
-                relSopCUIDs.toArray(new String[relSopCUIDs.size()]));
+                relSopCUIDs.toArray(new String[0]));
     }
 
     private UserIdentityRQ decodeUserIdentityRQ(int itemLen) throws AAbort {

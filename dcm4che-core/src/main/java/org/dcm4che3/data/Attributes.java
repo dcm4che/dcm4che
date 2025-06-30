@@ -3322,8 +3322,8 @@ public class Attributes implements Serializable {
         if (valueNumber != 0)
             return val.length < valueNumber || isOneOf(val[valueNumber-1], validVals);
 
-        for (int i = 0; i < val.length; i++)
-            if (!isOneOf(val[i], validVals))
+        for (String s : val)
+            if (!isOneOf(s, validVals))
                 return false;
         return true;
     }
@@ -3341,8 +3341,8 @@ public class Attributes implements Serializable {
         if (valueNumber != 0)
             return val.length < valueNumber || isOneOf(val[valueNumber-1], validVals);
 
-        for (int i = 0; i < val.length; i++)
-            if (!isOneOf(val[i], validVals))
+        for (int j : val)
+            if (!isOneOf(j, validVals))
                 return false;
         return true;
     }

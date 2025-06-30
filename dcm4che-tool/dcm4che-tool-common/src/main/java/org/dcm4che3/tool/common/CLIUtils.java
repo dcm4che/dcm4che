@@ -720,9 +720,9 @@ public class CLIUtils {
 
     public static void addEmptyAttributes(Attributes attrs, String[] optVals) {
         if (optVals != null)
-            for (int i = 0; i < optVals.length; i++)
+            for (String optVal : optVals)
                 addAttributes(attrs,
-                        toTags(StringUtils.split(optVals[i], '/')));
+                        toTags(StringUtils.split(optVal, '/')));
     }
 
     public static boolean updateAttributes(Attributes data, Attributes attrs,

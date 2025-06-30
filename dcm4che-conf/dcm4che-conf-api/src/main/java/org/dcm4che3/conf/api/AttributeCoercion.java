@@ -297,8 +297,8 @@ public class AttributeCoercion
             if (o == null || a.length == 0)
                 return true;
 
-            for (int i = 0; i < a.length; i++)
-                if (o.equals(a[i]))
+            for (Object object : a)
+                if (o.equals(object))
                     return true;
 
             return false;

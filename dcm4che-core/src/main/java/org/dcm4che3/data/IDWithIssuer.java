@@ -206,9 +206,7 @@ public class IDWithIssuer {
         if (!(obj instanceof IDWithIssuer other))
             return false;
         return id.equals(other.id) &&
-                (identifierTypeCode == null
-                    ? other.identifierTypeCode == null
-                    : identifierTypeCode.equals(identifierTypeCode)) &&
+                (Objects.equals(identifierTypeCode, other.identifierTypeCode)) &&
                 (Objects.equals(issuer, other.issuer));
     }
 

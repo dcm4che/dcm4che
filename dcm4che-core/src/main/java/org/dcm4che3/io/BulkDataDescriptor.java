@@ -58,22 +58,14 @@ public abstract class BulkDataDescriptor {
 
         @Override
         public boolean isBulkData(List<ItemPointer> itemPointer, String privateCreator, int tag, VR vr, int length) {
-            switch (TagUtils.normalizeRepeatingGroup(tag)) {
-            case Tag.PixelDataProviderURL:
-            case Tag.AudioSampleData:
-            case Tag.CurveData:
-            case Tag.SpectroscopyData:
-            case Tag.OverlayData:
-            case Tag.EncapsulatedDocument:
-            case Tag.FloatPixelData:
-            case Tag.DoubleFloatPixelData:
-            case Tag.PixelData:
-                return itemPointer.isEmpty();
-            case Tag.WaveformData:
-                return itemPointer.size() == 1
-                && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
-            }
-            return false;
+            return switch (TagUtils.normalizeRepeatingGroup(tag)) {
+                case Tag.PixelDataProviderURL, Tag.AudioSampleData, Tag.CurveData, Tag.SpectroscopyData,
+                     Tag.OverlayData, Tag.EncapsulatedDocument, Tag.FloatPixelData, Tag.DoubleFloatPixelData,
+                     Tag.PixelData -> itemPointer.isEmpty();
+                case Tag.WaveformData -> itemPointer.size() == 1
+                        && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
+                default -> false;
+            };
         }
 
         @Override

@@ -163,17 +163,13 @@ public class JPEGHeader {
         if (sofOffset == -1)
             return null;
 
-        switch(data[sofOffset] & 255) {
-            case JPEG.SOF0:
-                return UID.JPEGBaseline1;
-            case JPEG.SOF1:
-                return UID.JPEGExtended24;
-            case JPEG.SOF3:
-                return ss() == 1 ? UID.JPEGLossless : UID.JPEGLosslessNonHierarchical14;
-            case JPEG.SOF55:
-                return ss() == 0 ? UID.JPEGLSLossless : UID.JPEGLSLossyNearLossless;
-        }
-        return null;
+        return switch (data[sofOffset] & 255) {
+            case JPEG.SOF0 -> UID.JPEGBaseline1;
+            case JPEG.SOF1 -> UID.JPEGExtended24;
+            case JPEG.SOF3 -> ss() == 1 ? UID.JPEGLossless : UID.JPEGLosslessNonHierarchical14;
+            case JPEG.SOF55 -> ss() == 0 ? UID.JPEGLSLossless : UID.JPEGLSLossyNearLossless;
+            default -> null;
+        };
     }
 
     private int ss() {

@@ -254,11 +254,7 @@ public class AttributesFormat extends Format {
             @Override
             Object toArg(Attributes attrs, int tag, int index) {
                 String s = attrs.getString(tag, index);
-                try {
-                    return s != null ? URLEncoder.encode(s, "UTF-8") : null;
-                } catch (UnsupportedEncodingException e) {
-                    throw new AssertionError(e);
-                }
+                return s != null ? URLEncoder.encode(s, StandardCharsets.UTF_8) : null;
             }
         };
 

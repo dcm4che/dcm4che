@@ -41,6 +41,7 @@ package org.dcm4che3.filecache;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -65,7 +66,7 @@ import org.slf4j.LoggerFactory;
 public class FileCache {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileCache.class);
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
+    private static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     private Path fileCacheRootDirectory;
     private Path journalRootDirectory;

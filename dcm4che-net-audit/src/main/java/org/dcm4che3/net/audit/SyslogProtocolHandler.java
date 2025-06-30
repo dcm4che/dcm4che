@@ -45,6 +45,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -223,13 +224,9 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
     }
 
     private static String prompt(byte[] data, int maxLen) {
-        try {
-            return data.length > maxLen
-                    ? (new String(data, 0, maxLen, "UTF-8") + "...") 
-                    : new String(data, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return data.length > maxLen
+                ? (new String(data, 0, maxLen, StandardCharsets.UTF_8) + "...")
+                : new String(data, StandardCharsets.UTF_8);
     }
 
     private static class SyslogReceiverTLS implements Runnable {

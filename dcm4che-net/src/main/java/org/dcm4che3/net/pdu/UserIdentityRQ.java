@@ -39,6 +39,7 @@
 package org.dcm4che3.net.pdu;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.dcm4che3.util.StringUtils;
 
@@ -122,19 +123,11 @@ public class UserIdentityRQ {
     }
 
     private static byte[] toBytes(String s) {
-        try {
-            return s.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
-        }
+        return s.getBytes(StandardCharsets.UTF_8);
     }
 
     private static String toString(byte[] b) {
-        try {
-            return new String(b, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
-        }
+        return new String(b, StandardCharsets.UTF_8);
     }
 
     public int length() {

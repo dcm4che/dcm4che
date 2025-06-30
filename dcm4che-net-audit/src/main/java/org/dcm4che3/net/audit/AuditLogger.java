@@ -68,6 +68,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -1476,17 +1477,13 @@ public class AuditLogger extends DeviceExtension {
     }
 
     private static String toString(DatagramPacket packet) {
-        try {
-            int len = packet.getLength();
-            boolean truncate = len > MSG_PROMPT_LEN;
-            String s = new String(packet.getData(), 0,
-                    truncate ? MSG_PROMPT_LEN : len, "UTF-8");
-            if (truncate)
-                s += "...";
-            return s;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        int len = packet.getLength();
+        boolean truncate = len > MSG_PROMPT_LEN;
+        String s = new String(packet.getData(), 0,
+                truncate ? MSG_PROMPT_LEN : len, StandardCharsets.UTF_8);
+        if (truncate)
+            s += "...";
+        return s;
     }
 
     private abstract static class ActiveConnection implements Closeable {

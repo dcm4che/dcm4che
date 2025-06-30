@@ -172,7 +172,7 @@ public class HL7Application implements Serializable {
 
     public String[] getAcceptedSendingApplications() {
         return acceptedSendingApplicationsSet.toArray(
-                new String[acceptedSendingApplicationsSet.size()]);
+                new String[0]);
     }
 
     public void setAcceptedSendingApplications(String... names) {
@@ -182,7 +182,7 @@ public class HL7Application implements Serializable {
 
     public String[] getAcceptedMessageTypes() {
         return acceptedMessageTypesSet.toArray(
-                new String[acceptedMessageTypesSet.size()]);
+                new String[0]);
     }
 
     public void setAcceptedMessageTypes(String... types) {

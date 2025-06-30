@@ -66,7 +66,7 @@ public class WadoRSTool implements TestTool {
         long t1, t2;
         WadoRS wadors = new WadoRS(getUrl(),getRetrieveDir());
         t1 = System.currentTimeMillis();
-        wadors.setAcceptType(getMediaTypesWithTS().toArray(new String[getMediaTypesWithTS().size()]));
+        wadors.setAcceptType(getMediaTypesWithTS().toArray(new String[0]));
         wadors.setDumpHeaders(dumpHeader);
         wadors.wadors();
         t2 = System.currentTimeMillis();

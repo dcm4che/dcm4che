@@ -141,7 +141,7 @@ public class ValueSelector implements Serializable {
             fromIndex = s.indexOf("DicomAttribute",
                     fromIndex + MIN_ITEM_POINTER_STR_LEN);
         }
-        return list.toArray(new ItemPointer[list.size()]);
+        return list.toArray(new ItemPointer[0]);
     }
 
     private static String select(String key, String s, int fromIndex) {

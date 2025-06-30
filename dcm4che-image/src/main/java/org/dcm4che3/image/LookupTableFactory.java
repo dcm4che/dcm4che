@@ -258,23 +258,16 @@ public class LookupTableFactory {
             int[] min_max;
             ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
             DataBuffer dataBuffer = raster.getDataBuffer();
-            switch (dataBuffer.getDataType()) {
-            case DataBuffer.TYPE_BYTE:
-                min_max = calcMinMax(storedValue, sm,
+            min_max = switch (dataBuffer.getDataType()) {
+                case DataBuffer.TYPE_BYTE -> calcMinMax(storedValue, sm,
                         ((DataBufferByte) dataBuffer).getData());
-                break;
-            case DataBuffer.TYPE_USHORT:
-                min_max = calcMinMax(storedValue, sm,
+                case DataBuffer.TYPE_USHORT -> calcMinMax(storedValue, sm,
                         ((DataBufferUShort) dataBuffer).getData());
-                break;
-            case DataBuffer.TYPE_SHORT:
-                min_max = calcMinMax(storedValue, sm,
+                case DataBuffer.TYPE_SHORT -> calcMinMax(storedValue, sm,
                         ((DataBufferShort) dataBuffer).getData());
-                break;
-            default:
-                throw new UnsupportedOperationException(
-                        "DataBuffer: "+ dataBuffer.getClass() + " not supported");
-            }
+                default -> throw new UnsupportedOperationException(
+                        "DataBuffer: " + dataBuffer.getClass() + " not supported");
+            };
             min = min_max[0];
             max = min_max[1];
         }

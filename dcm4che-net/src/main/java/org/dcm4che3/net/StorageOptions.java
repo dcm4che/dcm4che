@@ -59,15 +59,12 @@ public class StorageOptions implements Serializable {
         LEVEL_0, LEVEL_1, LEVEL_2, UNSPECIFIED;
 
         public static LevelOfSupport valueOf(int level) {
-            switch(level) {
-            case 0:
-                return LEVEL_0;
-            case 1:
-                return LEVEL_1;
-            case 2:
-                return LEVEL_2;
-            }
-            return UNSPECIFIED;
+            return switch (level) {
+                case 0 -> LEVEL_0;
+                case 1 -> LEVEL_1;
+                case 2 -> LEVEL_2;
+                default -> UNSPECIFIED;
+            };
         }
     };
 
@@ -75,15 +72,12 @@ public class StorageOptions implements Serializable {
         UNSPECIFIED, LEVEL_1, LEVEL_2, LEVEL_3;
 
         public static DigitalSignatureSupport valueOf(int level) {
-            switch(level) {
-            case 1:
-                return LEVEL_1;
-            case 2:
-                return LEVEL_2;
-            case 3:
-                return LEVEL_3;
-            }
-            return UNSPECIFIED;
+            return switch (level) {
+                case 1 -> LEVEL_1;
+                case 2 -> LEVEL_2;
+                case 3 -> LEVEL_3;
+                default -> UNSPECIFIED;
+            };
         }
     };
 
@@ -91,13 +85,11 @@ public class StorageOptions implements Serializable {
         NO, YES, UNSPECIFIED;
 
         public static ElementCoercion valueOf(int i) {
-            switch(i) {
-            case 0:
-                return NO;
-            case 1:
-                return YES;
-            }
-            return UNSPECIFIED;
+            return switch (i) {
+                case 0 -> NO;
+                case 1 -> YES;
+                default -> UNSPECIFIED;
+            };
         }
     };
 

@@ -156,42 +156,17 @@ public class JPEG {
     public static final int COM = 0xFE;
 
     public static boolean isStandalone(int marker) {
-        switch(marker) {
-        case TEM:
-        case RST0:
-        case RST1:
-        case RST2:
-        case RST3:
-        case RST4:
-        case RST5:
-        case RST6:
-        case RST7:
-        case SOI:
-        case EOI:
-            return true;
-        }
-        return false;
+        return switch (marker) {
+            case TEM, RST0, RST1, RST2, RST3, RST4, RST5, RST6, RST7, SOI, EOI -> true;
+            default -> false;
+        };
     }
 
     public static boolean isSOF(int marker) {
-        switch(marker) {
-            case SOF0:
-            case SOF1:
-            case SOF2:
-            case SOF3:
-            case SOF5:
-            case SOF6:
-            case SOF7:
-            case SOF9:
-            case SOF10:
-            case SOF11:
-            case SOF13:
-            case SOF14:
-            case SOF15:
-            case SOF55:
-                return true;
-        }
-        return false;
+        return switch (marker) {
+            case SOF0, SOF1, SOF2, SOF3, SOF5, SOF6, SOF7, SOF9, SOF10, SOF11, SOF13, SOF14, SOF15, SOF55 -> true;
+            default -> false;
+        };
     }
 
     public static boolean isAPP(int marker) {

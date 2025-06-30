@@ -360,8 +360,8 @@ public class CompressionRule
             if (o == null || a.length == 0)
                 return true;
 
-            for (int i = 0; i < a.length; i++)
-                if (o.equals(a[i]))
+            for (Object object : a)
+                if (o.equals(object))
                     return true;
 
             return false;
@@ -371,8 +371,8 @@ public class CompressionRule
             if (a1 == null || a1.length == 0 || a2 == null || a2.length == 0)
                 return true;
 
-            for (int i = 0; i < a2.length; i++)
-                if (isEmptyOrContains(a1, a2[i]))
+            for (Object o : a2)
+                if (isEmptyOrContains(a1, o))
                     return true;
 
             return false;

@@ -145,12 +145,12 @@ public class UIDUtils {
         Field[] fields = UID.class.getFields();
         String[] uids = new String[fields.length];
         int j = 0;
-        for (int i = 0; i < fields.length; i++) {
-            Field field = fields[i];
+        for (Field field : fields) {
             if (p.matcher(field.getName()).matches())
                 try {
                     uids[j++] = (String) field.get(null);
-                } catch (Exception ignore) { }
+                } catch (Exception ignore) {
+                }
         }
         return Arrays.copyOf(uids, j);
     }

@@ -31,9 +31,7 @@ public class ProxyService {
         this.managersModel = new HashMap<String, Map<String, ProxyManager>>();
         final ServiceLoader<ProxyManager> loader = ServiceLoader.load(ProxyManager.class);
         // Load managers in internal model
-        final Iterator<ProxyManager> managers = loader.iterator();
-        while (managers.hasNext()) {
-            final ProxyManager proxyManager = managers.next();
+        for (ProxyManager proxyManager : loader) {
             // Manager provider map
             final String providerName = proxyManager.getProviderName();
             if (!this.managersModel.containsKey(providerName)) {

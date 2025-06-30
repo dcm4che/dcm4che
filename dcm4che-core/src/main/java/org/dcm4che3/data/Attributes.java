@@ -2235,11 +2235,11 @@ public class Attributes implements Serializable {
                         original.get(0).updateRecursive(updated.get(0), modifiedSequenceAttributes);
                     }
                 }
-            } else if (value instanceof Fragments) {
+            } else if (value instanceof Fragments fv) {
                 if (updateModified && origValue instanceof Fragments f) {
                     modified.set(privateCreator, tag, f);
                 }
-                set(privateCreator, tag, f);
+                set(privateCreator, tag, fv);
             } else {
                 if (updateModified) {
                     modified.set(privateCreator, tag, vr, origValue);

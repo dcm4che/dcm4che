@@ -576,7 +576,7 @@ public class FindSCU {
         String cuid = model.cuid;
         if (modelUIDandTS != null) {
             Set<String> ts = as.getTransferSyntaxesFor(modelUIDandTS[0]);
-            if (ts.size() > 0) {
+            if (!ts.isEmpty()) {
                 cuid = modelUIDandTS[0];
             }
         }

@@ -2097,13 +2097,13 @@ public class Attributes implements Serializable {
                 } else {
                     Sequence original = (Sequence) values[indexOfOriginalSequence];
 
-                    if (original.size() == 0) {
+                    if (original.isEmpty()) {
                         //as above, fallback to whole copy
                         set(privateCreator, tag, (Sequence) value, null);
                     }
                     else {
 
-                        if (updated==null || updated.size() == 0)
+                        if (updated==null || updated.isEmpty())
                             continue;
 
                         if (original.size() > 1 || updated.size()>1)

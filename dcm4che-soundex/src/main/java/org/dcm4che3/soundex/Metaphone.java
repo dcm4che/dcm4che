@@ -45,7 +45,7 @@ public class Metaphone implements FuzzyStr {
 
     @Override
     public String toFuzzy(String s) {
-        if (s == null || s.length() == 0)
+        if (s == null || s.isEmpty())
             return "";
 
         char[] in = s.toUpperCase().toCharArray();

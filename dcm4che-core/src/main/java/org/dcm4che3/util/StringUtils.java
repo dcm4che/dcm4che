@@ -186,13 +186,13 @@ public class StringUtils {
     }
 
     public static int parseIS(String s) {
-        return s != null && s.length() != 0
+        return s != null && !s.isEmpty()
                 ? Integer.parseInt(s.charAt(0) == '+' ? s.substring(1) : s)
                 : 0;
     }
 
     public static double parseDS(String s) {
-        return s != null && s.length() != 0
+        return s != null && !s.isEmpty()
                 ? Double.parseDouble(s.replace(',', '.'))
                 : 0;
     }

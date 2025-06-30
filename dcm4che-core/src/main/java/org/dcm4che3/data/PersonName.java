@@ -54,11 +54,11 @@ public class PersonName {
 
     public enum Component {
         FamilyName, GivenName, MiddleName, NamePrefix, NameSuffix
-    };
+    }
 
     public enum Group {
         Alphabetic, Ideographic, Phonetic
-    };
+    }
 
     private final String[] fields = new String[15];
     

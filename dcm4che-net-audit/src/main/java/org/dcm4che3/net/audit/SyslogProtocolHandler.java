@@ -40,7 +40,6 @@ package org.dcm4che3.net.audit;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;

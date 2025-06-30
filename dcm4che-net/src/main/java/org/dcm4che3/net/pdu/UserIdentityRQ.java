@@ -38,7 +38,6 @@
 
 package org.dcm4che3.net.pdu;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.dcm4che3.util.StringUtils;

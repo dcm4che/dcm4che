@@ -71,7 +71,7 @@ public class MPPSSCPTool implements TestTool {
 
     private List<ReceivedMPPS> received = Collections.synchronizedList(new ArrayList<ReceivedMPPS>());
 
-    public class ReceivedMPPS {
+    public static class ReceivedMPPS {
         public String iuid;
         public Dimse dimse;
         public Attributes attributes;

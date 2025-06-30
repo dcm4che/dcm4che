@@ -301,8 +301,7 @@ public class MultiframeExtractor {
                 newRefs.add(newRef);
             }
         }
-        for (Attributes ref : newRefs)
-            sq.add(ref);
+        sq.addAll(newRefs);
     }
 
     private void addFunctionGroups(Attributes dest, Attributes fgs) {

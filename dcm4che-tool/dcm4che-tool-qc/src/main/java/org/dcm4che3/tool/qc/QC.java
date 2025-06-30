@@ -54,6 +54,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 /**
@@ -393,11 +394,7 @@ public class QC {
     }
 
     private static ArrayList<String> toUIDS(String optionValue) {
-        ArrayList<String> uids = new ArrayList<String>();
-        for (String str : optionValue.split(",")) {
-            uids.add(str);
-        }
-        return uids;
+        return new ArrayList<>(Arrays.asList(optionValue.split(",")));
     }
 
     public static IDWithIssuer toIDWithIssuer(String optionValue)

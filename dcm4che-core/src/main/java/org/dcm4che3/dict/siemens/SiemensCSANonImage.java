@@ -63,28 +63,22 @@ public class SiemensCSANonImage extends ElementDictionary {
 
     @Override
     public String keywordOf(int tag) {
-        switch (tag & 0xFFFF00FF) {
-        case CSADataType:
-            return "CSADataType";
-        case CSADataVersion:
-            return "CSADataVersion";
-        case CSADataInfo:
-            return "CSADataInfo";
-        }
-        return null;
+        return switch (tag & 0xFFFF00FF) {
+            case CSADataType -> "CSADataType";
+            case CSADataVersion -> "CSADataVersion";
+            case CSADataInfo -> "CSADataInfo";
+            default -> null;
+        };
     }
 
     @Override
     public VR vrOf(int tag) {
-        switch (tag & 0xFFFF00FF) {
-        case CSADataType:
-            return VR.CS;
-        case CSADataVersion:
-            return VR.LO;
-        case CSADataInfo:
-            return VR.OB;
-        }
-        return VR.UN;
+        return switch (tag & 0xFFFF00FF) {
+            case CSADataType -> VR.CS;
+            case CSADataVersion -> VR.LO;
+            case CSADataInfo -> VR.OB;
+            default -> VR.UN;
+        };
     }
 
 }

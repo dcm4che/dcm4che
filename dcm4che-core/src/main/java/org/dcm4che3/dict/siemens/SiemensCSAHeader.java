@@ -72,37 +72,25 @@ public class SiemensCSAHeader extends ElementDictionary {
 
     @Override
     public String keywordOf(int tag) {
-        switch (tag & 0xFFFF00FF) {
-        case CSAImageHeaderType:
-            return "CSAImageHeaderType";
-        case CSAImageHeaderVersion:
-            return "CSAImageHeaderVersion";
-        case CSAImageHeaderInfo:
-            return "CSAImageHeaderInfo";
-        case CSASeriesHeaderVersion:
-            return "CSASeriesHeaderVersion";
-        case CSASeriesHeaderType:
-            return "CSASeriesHeaderType";
-        case CSASeriesHeaderInfo:
-            return "CSASeriesHeaderInfo";
-        }
-        return null;
+        return switch (tag & 0xFFFF00FF) {
+            case CSAImageHeaderType -> "CSAImageHeaderType";
+            case CSAImageHeaderVersion -> "CSAImageHeaderVersion";
+            case CSAImageHeaderInfo -> "CSAImageHeaderInfo";
+            case CSASeriesHeaderVersion -> "CSASeriesHeaderVersion";
+            case CSASeriesHeaderType -> "CSASeriesHeaderType";
+            case CSASeriesHeaderInfo -> "CSASeriesHeaderInfo";
+            default -> null;
+        };
     }
 
     @Override
     public VR vrOf(int tag) {
-        switch (tag & 0xFFFF00FF) {
-        case CSAImageHeaderType:
-        case CSASeriesHeaderType:
-            return VR.CS;
-        case CSAImageHeaderVersion:
-        case CSASeriesHeaderVersion:
-            return VR.LO;
-        case CSAImageHeaderInfo:
-        case CSASeriesHeaderInfo:
-            return VR.OB;
-        }
-        return VR.UN;
+        return switch (tag & 0xFFFF00FF) {
+            case CSAImageHeaderType, CSASeriesHeaderType -> VR.CS;
+            case CSAImageHeaderVersion, CSASeriesHeaderVersion -> VR.LO;
+            case CSAImageHeaderInfo, CSASeriesHeaderInfo -> VR.OB;
+            default -> VR.UN;
+        };
     }
 
 }

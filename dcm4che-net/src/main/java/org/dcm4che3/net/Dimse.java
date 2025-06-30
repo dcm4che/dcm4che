@@ -147,56 +147,32 @@ public enum Dimse {
     }
 
     public static Dimse valueOf(int commandField) {
-        switch(commandField) {
-        case 0x0001:
-            return C_STORE_RQ;
-        case 0x8001:
-            return C_STORE_RSP;
-        case 0x0010:
-            return C_GET_RQ;
-        case 0x8010:
-            return C_GET_RSP;
-        case 0x0020:
-            return C_FIND_RQ;
-        case 0x8020:
-            return C_FIND_RSP;
-        case 0x0021:
-            return C_MOVE_RQ;
-        case 0x8021:
-            return C_MOVE_RSP;
-        case 0x0030:
-            return C_ECHO_RQ;
-        case 0x8030:
-            return C_ECHO_RSP;
-        case 0x0100:
-            return N_EVENT_REPORT_RQ;
-        case 0x8100:
-            return N_EVENT_REPORT_RSP;
-        case 0x0110:
-            return N_GET_RQ;
-        case 0x8110:
-            return N_GET_RSP;
-        case 0x0120:
-            return N_SET_RQ;
-        case 0x8120:
-            return N_SET_RSP;
-        case 0x0130:
-            return N_ACTION_RQ;
-        case 0x8130:
-            return N_ACTION_RSP;
-        case 0x0140:
-            return N_CREATE_RQ;
-        case 0x8140:
-            return N_CREATE_RSP;
-        case 0x0150:
-            return N_DELETE_RQ;
-        case 0x8150:
-            return N_DELETE_RSP;
-        case 0x0FFF:
-            return C_CANCEL_RQ;
-        default:
-            throw new IllegalArgumentException("commandField: " + commandField);
-        }
+        return switch (commandField) {
+            case 0x0001 -> C_STORE_RQ;
+            case 0x8001 -> C_STORE_RSP;
+            case 0x0010 -> C_GET_RQ;
+            case 0x8010 -> C_GET_RSP;
+            case 0x0020 -> C_FIND_RQ;
+            case 0x8020 -> C_FIND_RSP;
+            case 0x0021 -> C_MOVE_RQ;
+            case 0x8021 -> C_MOVE_RSP;
+            case 0x0030 -> C_ECHO_RQ;
+            case 0x8030 -> C_ECHO_RSP;
+            case 0x0100 -> N_EVENT_REPORT_RQ;
+            case 0x8100 -> N_EVENT_REPORT_RSP;
+            case 0x0110 -> N_GET_RQ;
+            case 0x8110 -> N_GET_RSP;
+            case 0x0120 -> N_SET_RQ;
+            case 0x8120 -> N_SET_RSP;
+            case 0x0130 -> N_ACTION_RQ;
+            case 0x8130 -> N_ACTION_RSP;
+            case 0x0140 -> N_CREATE_RQ;
+            case 0x8140 -> N_CREATE_RSP;
+            case 0x0150 -> N_DELETE_RQ;
+            case 0x8150 -> N_DELETE_RSP;
+            case 0x0FFF -> C_CANCEL_RQ;
+            default -> throw new IllegalArgumentException("commandField: " + commandField);
+        };
     }
 
     public String toString(Attributes cmdAttrs, int pcid, String tsuid) {

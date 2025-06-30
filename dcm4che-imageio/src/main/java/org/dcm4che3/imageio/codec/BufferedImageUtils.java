@@ -183,17 +183,11 @@ class BufferedImageUtils {
         if (bitsStored >= 16)
             return;
 
-        short[] data;
-        switch (db.getDataType()) {
-        case DataBuffer.TYPE_USHORT:
-            data = ((DataBufferUShort) db).getData();
-            break;
-        case DataBuffer.TYPE_SHORT:
-            data = ((DataBufferShort) db).getData();
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported Datatype: " + db.getDataType());
-        }
+        short[] data = switch (db.getDataType()) {
+            case DataBuffer.TYPE_USHORT -> ((DataBufferUShort) db).getData();
+            case DataBuffer.TYPE_SHORT -> ((DataBufferShort) db).getData();
+            default -> throw new IllegalArgumentException("Unsupported Datatype: " + db.getDataType());
+        };
         int mask = (1 << bitsStored) - 1;
         for (int i = 0; i < data.length; i++)
             data[i] &= mask;
@@ -206,17 +200,14 @@ class BufferedImageUtils {
                 (ComponentSampleModel) raster2.getSampleModel();
         DataBuffer db = raster.getDataBuffer();
         DataBuffer db2 = raster2.getDataBuffer();
-        switch (db.getDataType()) {
-            case DataBuffer.TYPE_BYTE:
-                return maxDiff(csm, ((DataBufferByte) db).getBankData(),
-                        csm2, ((DataBufferByte) db2).getBankData());
-            case DataBuffer.TYPE_USHORT:
-            case DataBuffer.TYPE_SHORT:
-                return maxDiff(csm, getShortData(db),csm2, getShortData(db2));
-            default:
-                throw new UnsupportedOperationException(
-                        "Unsupported Datatype: " + db.getDataType());
-        }
+        return switch (db.getDataType()) {
+            case DataBuffer.TYPE_BYTE -> maxDiff(csm, ((DataBufferByte) db).getBankData(),
+                    csm2, ((DataBufferByte) db2).getBankData());
+            case DataBuffer.TYPE_USHORT, DataBuffer.TYPE_SHORT ->
+                    maxDiff(csm, getShortData(db), csm2, getShortData(db2));
+            default -> throw new UnsupportedOperationException(
+                    "Unsupported Datatype: " + db.getDataType());
+        };
     }
 
     private static short[] getShortData (DataBuffer db) {

@@ -387,15 +387,13 @@ public class DefaultConfigTypeAdapters {
         public Enum<?> fromConfigNode(Object configNode, ConfigProperty property, LoadingContext ctx, Object parent) throws ConfigurationException {
 
             ConfigurableProperty.EnumRepresentation howToRepresent = property.getEnumRepresentation();
-            switch (howToRepresent) {
-                case ORDINAL:
+            return switch (howToRepresent) {
+                case ORDINAL -> {
                     Enum[] vals = property.getEnumValues();
-                    return vals[(Integer) configNode];
-                default:
-                case STRING:
-                    return property.getEnumValueFor((String) configNode);
-
-            }
+                    yield vals[(Integer) configNode];
+                }
+                default -> property.getEnumValueFor((String) configNode);
+            };
         }
 
         @Override
@@ -403,13 +401,10 @@ public class DefaultConfigTypeAdapters {
 
             ConfigurableProperty.EnumRepresentation howToRepresent = property.getEnumRepresentation();
 
-            switch (howToRepresent) {
-                case ORDINAL:
-                    return object.ordinal();
-                default:
-                case STRING:
-                    return object.name();
-            }
+            return switch (howToRepresent) {
+                case ORDINAL -> object.ordinal();
+                default -> object.name();
+            };
         }
 
         @Override

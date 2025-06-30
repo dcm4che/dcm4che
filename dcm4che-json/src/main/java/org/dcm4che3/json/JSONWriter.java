@@ -165,8 +165,7 @@ public class JSONWriter implements DicomInputHandler {
                 write(item);
             }
             gen.writeEnd();
-        } else if (value instanceof Fragments) {
-            Fragments frags = (Fragments) value;
+        } else if (value instanceof Fragments frags) {
             if (frags.size() > 1 && frags.get(1) instanceof BulkData) {
                 writeBulkData(BulkData.fromFragments(frags));
             } else {

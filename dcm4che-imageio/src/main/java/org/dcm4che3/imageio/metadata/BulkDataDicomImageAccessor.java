@@ -183,8 +183,7 @@ public class BulkDataDicomImageAccessor implements DicomImageAccessor {
             long offset = (long) frameLength * frameIndex;
 
             ImageInputStream iisOfPixelData;
-            if(pixelData instanceof BulkData) {
-                BulkData bulkData = (BulkData) pixelData;
+            if(pixelData instanceof BulkData bulkData) {
                 iisOfPixelData = this.uriLoader.openStream(bulkData.toFileURI());
                 offset += bulkData.offset();
             }

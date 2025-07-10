@@ -275,6 +275,8 @@ public class LookupTableFactory {
                 int maxIndex = inBits.maxValue() - offset;
                 int size_1 = size - 1;
                 int midIndex = size / 2;
+                if (midIndex == size_1)
+                    midIndex--;
                 if (minIndex > 0) {
                     offset += minIndex;
                     size -= minIndex;

@@ -16,13 +16,9 @@ public class ShortLookupTable extends LookupTable {
         } else {
             int outRange = maxOut - minOut;
             int maxIndex = size - 1;
-            int midIndex = size / 2;
-            if (flip)
-                for (int i = 0; i < size; i++)
-                    lut[maxIndex - i] = (short) ((i * outRange + midIndex) / maxIndex + minOut);
-            else
-                for (int i = 0; i < size; i++)
-                    lut[i] = (short) ((i * outRange + midIndex) / maxIndex + minOut);
+            int midIndex = maxIndex / 2;
+            for (int i = 0; i < size; i++)
+                lut[flip ? maxIndex - i : i] = (short) ((i * outRange + midIndex) / maxIndex + minOut);
         }
     }
 

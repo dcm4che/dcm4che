@@ -15,14 +15,10 @@ public class ByteLookupTable extends LookupTable {
             lut[0] = (byte) minOut;
         } else {
             int maxIndex = size - 1;
-            int midIndex = size / 2;
+            int midIndex = maxIndex / 2;
             int outRange = maxOut - minOut;
-            if (flip)
-                for (int i = 0; i < size; i++)
-                    lut[maxIndex - i] = (byte) ((i * outRange + midIndex) / maxIndex + minOut);
-            else
-                for (int i = 0; i < size; i++)
-                    lut[i] = (byte) ((i * outRange + midIndex) / maxIndex + minOut);
+            for (int i = 0; i < size; i++)
+                lut[flip ? maxIndex - i : i] = (byte) ((i * outRange + midIndex) / maxIndex + minOut);
         }
     }
 

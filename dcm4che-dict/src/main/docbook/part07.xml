@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2025b - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2025c - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -1872,7 +1872,7 @@
 <section label="9.1.1.1.9" status="5" xml:id="sect_9.1.1.1.9">
     <title>Status</title>
   
-  <para xml:id="para_98793424-a21b-4a97-b815-a440c853491a">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in the response/confirmation. The following types of status may occur in a response/confirmation (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_98793424-a21b-4a97-b815-a440c853491a">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in the response/confirmation. The following types of status may occur in a response/confirmation (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
   <orderedlist numeration="loweralpha">
     <listitem>
       <para xml:id="para_93acf72d-d182-4d55-b80f-d725e50785dc">Refused: Out of resources (Status value is Service Class specific) - This indicates that the Performing DIMSE Service User was unable to store the composite SOP Instance because it was out of resources.</para>
@@ -2095,7 +2095,7 @@
 </section>
       <section label="9.1.2.1.6" status="5" xml:id="sect_9.1.2.1.6">
           <title>Status</title>
-          <para xml:id="para_60f1880e-1091-4e69-b7d0-d4a343e9a4ea">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+          <para xml:id="para_60f1880e-1091-4e69-b7d0-d4a343e9a4ea">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
           <orderedlist numeration="loweralpha">
               <listitem>
                   <para xml:id="para_d6ff579c-1753-44af-92cb-bc059ded21bb">Success (0000H) - This indicates that processing of the matches is complete. It shall not contain a matching Identifier.</para>
@@ -2166,7 +2166,7 @@
 <para xml:id="para_92133708-bd4a-4aae-b58a-5452d9904a7c">If the C-FIND Cancel Indication is received before the processing of the C-FIND indication has completed, then the C-FIND operation is aborted; otherwise the following procedure does not apply.</para>
 </listitem>
 <listitem>
-<para xml:id="para_e79aee55-7138-4f05-892c-dc02f1d8c862">The Performing DIMSE Service User issues a C-FIND response with a status of Canceled to the DIMSE Service Provider to indicate that the C-FIND operation has been canceled. The following procedures do not apply.</para>
+<para xml:id="para_e79aee55-7138-4f05-892c-dc02f1d8c862">The Performing DIMSE Service User issues a C-FIND response with a status of Cancel to the DIMSE Service Provider to indicate that the C-FIND operation has been canceled. The following procedures do not apply.</para>
 </listitem>
 <listitem>
 <para xml:id="para_cf45e4ab-f1cf-4420-b2a1-364ba6851896">For each match, the Performing DIMSE Service User issues a C-FIND response with the status set to Pending and a matching Identifier.</para>
@@ -2413,7 +2413,7 @@
   </section>
 <section label="9.1.3.1.6" status="5" xml:id="sect_9.1.3.1.6">
     <title>Status</title>
-  <para xml:id="para_e5ad28f0-62a5-4cc8-a934-a2b662e80e71">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_e5ad28f0-62a5-4cc8-a934-a2b662e80e71">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
   <orderedlist numeration="loweralpha">
 <listitem>
 <para xml:id="para_dfd9b94b-f8dc-4824-a455-d1b9ca6732c6">Success (0000H) - This indicates that processing of the matches and all sub-operations are complete.</para>
@@ -2504,7 +2504,7 @@
 <para xml:id="para_ff1ab614-d8b5-4318-864c-f0fcdc7bc97a">If the C-GET Cancel indication is received before the processing of the C-GET indication has completed, then the C-GET operation is terminated; otherwise the following procedure does not apply.</para>
 </listitem>
 <listitem>
-<para xml:id="para_675ec671-e5bd-47ed-8b1c-dead1119376c">The Performing DIMSE Service User issues a C-GET response with a status of Canceled to the DIMSE Service Provider to indicate that the C-GET operation has been canceled. The following procedures do not apply.</para>
+<para xml:id="para_675ec671-e5bd-47ed-8b1c-dead1119376c">The Performing DIMSE Service User issues a C-GET response with a status of Cancel to the DIMSE Service Provider to indicate that the C-GET operation has been canceled. The following procedures do not apply.</para>
 </listitem>
 <listitem>
 <para xml:id="para_7117d8c7-9651-4589-92e9-9b4c18c24814">For each match, the Performing DIMSE Service User initiates a C-STORE sub-operation on the same Association as the C-GET. In this sub-operation, the C-GET Performing DIMSE Service User becomes the C-STORE Invoking DIMSE Service User. The C-STORE Performing DIMSE Service User is the C-GET Invoking DIMSE Service User.</para>
@@ -2773,7 +2773,7 @@
   </section>
 <section label="9.1.4.1.7" status="5" xml:id="sect_9.1.4.1.7">
     <title>Status</title>
-  <para xml:id="para_3167dc22-d371-40b1-88fc-662a1ff197a7">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_3167dc22-d371-40b1-88fc-662a1ff197a7">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
   <orderedlist numeration="loweralpha">
 <listitem>
   <para xml:id="para_0e204a8a-fc83-4c6a-a1aa-e9363bbec73b">Success (0000H) - This indicates that processing of the matches and all sub-operations are complete.</para>
@@ -2831,7 +2831,7 @@
 <section label="9.1.4.1.11" status="5" xml:id="sect_9.1.4.1.11">
     <title>Number of Warning Sub-Operations</title>
   
-  <para xml:id="para_f3e65ce9-d76c-4a5c-84e6-61c491896a59">This specifies the number of C-STORE sub-operation invoked by this C-MOVE operation that generated Warning responses. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
+  <para xml:id="para_f3e65ce9-d76c-4a5c-84e6-61c491896a59">This specifies the number of C-STORE sub-operations invoked by this C-MOVE operation that generated Warning responses. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
   </section>
 </section>
 <section label="9.1.4.2" status="4" xml:id="sect_9.1.4.2">
@@ -2867,7 +2867,7 @@
 <para xml:id="para_ea486470-bf58-4177-ada2-8a73d8ded2c2">If the C-MOVE Cancel indication is received before the processing of the C-MOVE request has completed, then the C-MOVE operation is terminated; otherwise the following procedure does not apply.</para>
 </listitem>
 <listitem>
-<para xml:id="para_be646ff8-45e5-4211-a30a-93519b7c1bd3">The Performing DIMSE Service User issues a C-MOVE response with a status of Canceled to the DIMSE Service Provider to indicate that the C-MOVE operation has been canceled. The following procedures do not apply.</para>
+<para xml:id="para_be646ff8-45e5-4211-a30a-93519b7c1bd3">The Performing DIMSE Service User issues a C-MOVE response with a status of Cancel to the DIMSE Service Provider to indicate that the C-MOVE operation has been canceled. The following procedures do not apply.</para>
 </listitem>
 <listitem>
 <para xml:id="para_76c08a27-70c9-4681-8048-c254d8326185">For each matching composite SOP Instance, the C-MOVE Performing DIMSE Service User initiates a C-STORE sub-operation on a different Association than the C-MOVE. In this sub-operation, the C-MOVE Performing DIMSE Service User becomes the C-STORE Invoking DIMSE Service User. The C-STORE Performing DIMSE Service User may or may not be the C-MOVE Invoking DIMSE Service User.</para>
@@ -3005,7 +3005,7 @@
   </section>
 <section label="9.1.5.1.4" status="5" xml:id="sect_9.1.5.1.4">
     <title>Status</title>
-  <para xml:id="para_db38ffbd-9fca-41c8-a5d9-35d1aa75f87f">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_db38ffbd-9fca-41c8-a5d9-35d1aa75f87f">Indicates the status of the response. It may have any of the following values (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
   <orderedlist numeration="loweralpha">
 <listitem>
     <para xml:id="para_b9bf63c7-79c5-4356-963b-981f8a5eb492">Success (0000H) - This indicates a successful operation.</para>
@@ -4888,7 +4888,7 @@
         <para xml:id="para_5722b983-3433-4ecd-a233-659ce452f628">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_41403a87-8efe-4006-921f-1c2220586368">The number of remaining sub-operations to be invoked for this C-MOVE operation.</para>
+          <para xml:id="para_41403a87-8efe-4006-921f-1c2220586368">The number of remaining C-STORE sub-operations to be invoked for this C-MOVE operation.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -5612,7 +5612,7 @@
   </section>
 <section label="10.1.1.1.8" status="5" xml:id="sect_10.1.1.1.8">
     <title>Status</title>
-  <para xml:id="para_74783bdc-98ef-4a66-8e64-31a37df6b54c">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_74783bdc-98ef-4a66-8e64-31a37df6b54c">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
 <para xml:id="para_2a089c8b-456c-4283-9f86-00190a7e3a40">Class-Instance conflict (0119H) - This indicates that the specified SOP Instance is not a member of the specified SOP class.</para>
@@ -5859,7 +5859,7 @@
 <section label="10.1.2.1.9" status="5" xml:id="sect_10.1.2.1.9">
     <title>Status</title>
   
-  <para xml:id="para_0d753bbb-9e15-4e72-8ddb-d8a6ca195807">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_0d753bbb-9e15-4e72-8ddb-d8a6ca195807">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
 <para xml:id="para_45dfd1c5-2ad6-4247-b826-40e5c68c4326">Attribute List warning (0107H) - This indicates that one or more Attribute Values were not read because the specified Attribute was not recognized. The Attribute Values that could be read are returned.</para>
@@ -6108,7 +6108,7 @@
 <section label="10.1.3.1.9" status="5" xml:id="sect_10.1.3.1.9">
     <title>Status</title>
   
-  <para xml:id="para_9c1720f0-5caa-4a3e-a479-0add7462b9b9">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_9c1720f0-5caa-4a3e-a479-0add7462b9b9">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
 <para xml:id="para_14650a81-a258-4635-a10a-f62fc31d4efc">Class-Instance conflict (0119H) - This indicates that the specified SOP Instance is not a member of the specified SOP Class.</para>
@@ -6398,7 +6398,7 @@
 <section label="10.1.4.1.10" status="5" xml:id="sect_10.1.4.1.10">
     <title>Status</title>
   
-  <para xml:id="para_a03f6014-8875-46b2-a1cc-9fa84fa773ff">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following type of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_a03f6014-8875-46b2-a1cc-9fa84fa773ff">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following type of status may occur (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
 <para xml:id="para_f7ed75e0-39e5-48b5-9157-bc326b9c0b92">Class-Instance conflict (0119H) - This indicates that the specified SOP Instance is not a member of the specified SOP Class.</para>
@@ -6609,7 +6609,7 @@
 <section label="10.1.5.1.6" status="5" xml:id="sect_10.1.5.1.6">
     <title>Status</title>
   
-  <para xml:id="para_a091bbd0-43b4-4cca-a376-6dfdfc6ac5a4">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following type of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_a091bbd0-43b4-4cca-a376-6dfdfc6ac5a4">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following type of status may occur (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
 <para xml:id="para_d7a4d438-ac76-4da0-b101-31b0f64687e2">Duplicate invocation (0210H) - This indicates that the Message ID (0000,0110) specified is allocated to another notification or operation.</para>
@@ -6842,7 +6842,7 @@
 <section label="10.1.6.1.7" status="5" xml:id="sect_10.1.6.1.7">
     <title>Status</title>
   
-  <para xml:id="para_b20afe09-91e6-42f4-a46a-896c3434982e">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>):</para>
+  <para xml:id="para_b20afe09-91e6-42f4-a46a-896c3434982e">This parameter contains the error or success notification for the operation. It shall be included by the Performing DIMSE Service User in any response/confirmation. The following types of status may occur (see also <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>):</para>
 <itemizedlist>
   <listitem>
 <para xml:id="para_946ab28d-f4a6-4ffc-a0d8-5fca8f3c2931">Class-Instance conflict (0119H) - This indicates that the specified SOP Instance is not a member of the specified SOP Class</para>

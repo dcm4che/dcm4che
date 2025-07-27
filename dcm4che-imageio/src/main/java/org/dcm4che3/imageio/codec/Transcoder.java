@@ -594,7 +594,8 @@ public class Transcoder implements Closeable {
                     : originalBi;
             compressFrame(i);
         }
-        dis.skipFully(padding);
+        if(decompressor == null)
+            dis.skipFully(padding);
         dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
     }
 

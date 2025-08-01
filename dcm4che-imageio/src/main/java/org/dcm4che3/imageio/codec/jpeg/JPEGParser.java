@@ -92,6 +92,10 @@ public class JPEGParser implements XPEGParser {
                 '}';
     }
 
+    public Params getParams() {
+        return params;
+    }
+
     @Override
     public long getCodeStreamPosition() {
         return codeStreamPosition;
@@ -114,7 +118,7 @@ public class JPEGParser implements XPEGParser {
 
         int samples = params.samplesPerPixel();
         attrs.setInt(Tag.SamplesPerPixel, VR.US, samples);
-        if (samples == 3) {
+        if (samples == 3 || samples == 4) {
             attrs.setString(Tag.PhotometricInterpretation, VR.CS, params.colorPhotometricInterpretation());
             attrs.setInt(Tag.PlanarConfiguration, VR.US, 0);
         } else {
@@ -210,7 +214,7 @@ public class JPEGParser implements XPEGParser {
             throw new XPEGParserException(String.format("unexpected %2XH on position %d", v, channel.position() - 4));
     }
 
-    private interface Params {
+    public interface Params {
         int samplesPerPixel();
         int rows();
         int columns();
@@ -221,25 +225,48 @@ public class JPEGParser implements XPEGParser {
         String transferSyntaxUID() throws XPEGParserException;
     }
 
-    private class JPEGParams implements Params {
+    class JPEGParams implements Params {
 
         final int sof;
         final ByteBuffer sofParams;
         final ByteBuffer sosParams;
+        boolean rgb = false;
+        boolean jfif = false;
 
         JPEGParams(SeekableByteChannel channel) throws IOException {
             Segment segment;
             while (JPEG.isAPP((segment = nextSegment(channel)).marker)) {
+            if (segment.marker == JPEG.APP0) {
+                jfif = true;
+            }
+              if (segment.marker == JPEG.APP14 && segment.contentSize >= 12) {
+                  ByteBuffer buf = ByteBuffer.allocate(segment.contentSize);
+                  channel.read(buf);
+
+                  byte[] values = buf.array();
+                  if (values[0] == 0x41
+                      && values[1] == 0x64
+                      && values[2] == 0x6F
+                      && values[3] == 0x62
+                      && values[4] == 0x65
+                      && values[11] == 0) {
+                    /* Found Adobe APP14 marker for RGB transform*/
+                    rgb = true;
+                }
+            } else {
                 skip(channel, segment.contentSize);
+            }
                 positionAfterAPP = channel.position();
             }
             while (!JPEG.isSOF(segment.marker)) {
+                checkPosition(channel);
                 skip(channel, segment.contentSize);
                 segment = nextSegment(channel);
             }
             sof = segment.marker;
             channel.read(sofParams = ByteBuffer.allocate(segment.contentSize));
             while ((segment = nextSegment(channel)).marker != JPEG.SOS) {
+                checkPosition(channel);
                 skip(channel, segment.contentSize);
             }
             channel.read(sosParams = ByteBuffer.allocate(segment.contentSize));
@@ -275,13 +302,35 @@ public class JPEGParser implements XPEGParser {
             return !(sof == JPEG.SOF3 || (sof == JPEG.SOF55 && sosParams.get(3) == 0));
         }
 
+        public boolean isRgb() {
+            // Not JFIF or has RGB Components, see
+            // https://entropymine.wordpress.com/2018/10/22/how-is-a-jpeg-images-color-type-determined/
+            return !jfif
+                && (rgb
+                    || (sofParams.limit() > 12
+                        && (sofParams.get(6) & 0xff) == 0x52
+                        && (sofParams.get(9) & 0xff) == 0x47
+                        && (sofParams.get(12) & 0xff) == 0x42));
+        }
         @Override
         public String colorPhotometricInterpretation() {
-            return sof == JPEG.SOF3 || sof == JPEG.SOF55 ? "RGB" : "YBR_FULL_422";
+            if (samplesPerPixel() < 3) {
+              return "MONOCHROME2";
+            }
+
+            if (sof == JPEG.SOF3 || sof == JPEG.SOF55 || isRgb()) {
+              return "RGB";
+            }
+            return sof == JPEG.SOF0 ? "YBR_FULL_422" : "YBR_FULL";
         }
 
         @Override
         public String transferSyntaxUID() throws XPEGParserException {
+            // Validate SOF marker exists
+            if (sof <= 0) {
+              throw new XPEGParserException("Invalid or missing SOF marker");
+            }
+
             switch(sof) {
                 case JPEG.SOF0:
                     return UID.JPEGBaseline8Bit;
@@ -290,11 +339,41 @@ public class JPEGParser implements XPEGParser {
                 case JPEG.SOF2:
                     return UID.JPEGFullProgressionNonHierarchical1012;
                 case JPEG.SOF3:
-                    return sosParams.get(3) == 1 ? UID.JPEGLosslessSV1 : UID.JPEGLossless;
+                    return determineJPEGLosslessUID();
                 case JPEG.SOF55:
-                    return sosParams.get(3) == 0 ? UID.JPEGLSLossless : UID.JPEGLSNearLossless;
+                    return  determineJPEGLSUID();
             }
-            throw new XPEGParserException(String.format("JPEG SOF%d not supported", sof & 0xf));
+            throw new XPEGParserException(String.format("JPEG SOF%d (0x%02X) is not supported or recognized", sof & 0x0F, sof));
+        }
+
+        private String determineJPEGLosslessUID() throws XPEGParserException {
+          if (sosParams == null || sosParams.capacity() < 4) {
+            throw new XPEGParserException(
+                "SOS parameters required for JPEG Lossless (SOF3) but not available");
+          }
+
+          try {
+            int predictor = sosParams.get(3);
+            return predictor == 1 ? UID.JPEGLosslessSV1 : UID.JPEGLossless;
+          } catch (IndexOutOfBoundsException e) {
+            throw new XPEGParserException(
+                "Invalid SOS parameters for JPEG Lossless: predictor value not accessible", e);
+          }
+        }
+
+        private String determineJPEGLSUID() throws XPEGParserException {
+          if (sosParams == null || sosParams.capacity() < 4) {
+            throw new XPEGParserException(
+                "SOS parameters required for JPEG-LS (SOF55) but not available");
+          }
+
+          try {
+            int nearLossless = sosParams.get(3);
+            return nearLossless == 0 ? UID.JPEGLSLossless : UID.JPEGLSNearLossless;
+          } catch (IndexOutOfBoundsException e) {
+            throw new XPEGParserException(
+                "Invalid SOS parameters for JPEG-LS: near-lossless value not accessible", e);
+          }
         }
 
         @Override
@@ -334,7 +413,14 @@ public class JPEGParser implements XPEGParser {
         }
     }
 
-    private class JPEG2000Params implements Params {
+    private static void checkPosition(SeekableByteChannel channel) throws IOException {
+        if (channel.position() >= channel.size()) {
+            throw new XPEGParserException(
+                "Reached end of stream without finding SOT marker in JPEG stream");
+        }
+    }
+
+    class JPEG2000Params implements Params {
 
         final ByteBuffer sizParams;
         final ByteBuffer codParams;
@@ -346,6 +432,7 @@ public class JPEGParser implements XPEGParser {
             boolean tlm = false;
             Segment segment;
             do {
+                checkPosition(channel);
                 segment = nextSegment(channel);
                 switch (segment.marker) {
                     case JPEG.SIZ:
@@ -397,6 +484,9 @@ public class JPEGParser implements XPEGParser {
 
         @Override
         public String colorPhotometricInterpretation() {
+            if (samplesPerPixel() < 3) {
+              return "MONOCHROME2";
+            }
             return codParams.get(4) == 0 ? "RGB"    // Multiple component transformation
                     : lossyImageCompression() ? "YBR_ICT" : "YBR_RCT";
         }

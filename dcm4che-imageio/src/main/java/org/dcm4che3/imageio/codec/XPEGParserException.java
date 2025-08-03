@@ -51,4 +51,8 @@ public class XPEGParserException extends IOException {
     public XPEGParserException(String message) {
         super(message);
     }
+
+    public XPEGParserException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

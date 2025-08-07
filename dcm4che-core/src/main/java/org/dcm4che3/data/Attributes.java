@@ -2069,7 +2069,19 @@ public class Attributes implements Serializable {
      * @return <tt>true</tt> if one ore more attribute are added or
      *          overwritten with a different value
      */
-    public boolean updateRecursive (Attributes other) {
+    public boolean updateRecursive(Attributes other) {
+    	return updateRecursive(other, null);
+    }
+    
+    /**
+     * Updates this Attributes with all the attributes of the "other" object
+     * 
+     * @param other The other Attributes object
+     * @param modified The original attribute values of attributes that were
+     *                 modified in this object.
+     * @return true when at least one attribute was modified
+     */
+    public boolean updateRecursive(Attributes other, Attributes modified) {
 
         boolean toggleEndian = bigEndian != other.bigEndian;
         final int otherSize = other.size;
@@ -2096,40 +2108,70 @@ public class Attributes implements Serializable {
                 creatorTag = 0;
                 privateCreator = null;
             }
+            
+            int indexOfOriginal = indexOf(tag);
+            boolean updateModified = false;
+            Object origValue = null;
+            
+            if (indexOfOriginal >= 0) {
+                if (equalValues(other, indexOfOriginal, i)) {
+                    continue;
+                }
+                origValue = vrs[indexOfOriginal].isStringType() ?
+                        decodeStringValue(indexOfOriginal) : values[indexOfOriginal];
+            
+                if (!isEmpty(origValue) && modified != null) {
+                    updateModified = true;
+             }
+            }
 
             if (value instanceof Sequence) {
+                Sequence updated = (Sequence) value;
 
-                int indexOfOriginalSequence = indexOf(tag);
-
-                if (indexOfOriginalSequence < 0 ) {
+                if (indexOfOriginal < 0 ) {
                     //Trying to recursively update an empty sequence, fallback to whole copy
-                    set(privateCreator, tag, (Sequence) value, null);
+                    set(privateCreator, tag, updated, null);
                 } else {
-                    Sequence original = (Sequence) values[indexOfOriginalSequence];
+                    Sequence original = (Sequence) values[indexOfOriginal];
 
                     if (original.size() == 0) {
                         //as above, fallback to whole copy
-                        set(privateCreator, tag, (Sequence) value, null);
-                    }
-                    else {
-                        Sequence updated = ((Sequence) value);
+                        set(privateCreator, tag, updated, null);
+                    } else {
 
-                        if (updated==null || updated.size() == 0)
+                        if (updated.size() == 0) {
                             continue;
+                        }
 
-                        if (original.size() > 1 || updated.size()>1)
+                        if (original.size() > 1 || updated.size() > 1) {
+                            if (modified != null) {
+                                modified.set(privateCreator, tag, (Sequence) origValue, null);
+                            }
                             //Trying to recursively update a sequence with more than 1 item: fallback to whole copy
                             set(privateCreator, tag, updated, null);
-                        else
+                        } else {
+                            Attributes modifiedSequenceAttributes = null;
+                        
+                            if (modified != null) {
+                                Sequence sequence = modified.ensureSequence(privateCreator, tag, 1);
+                                modifiedSequenceAttributes = new Attributes();
+                                sequence.add(modifiedSequenceAttributes);
+                            }
                             //both original and updated sequences have 1 item
-                            original.get(0).updateRecursive(updated.get(0));
+                            original.get(0).updateRecursive(updated.get(0), modifiedSequenceAttributes);
+                        }
                     }
                 }
             } else if (value instanceof Fragments) {
+                if (updateModified) {
+                    modified.set(privateCreator, tag, (Fragments) origValue);
+                }
                 set(privateCreator, tag, (Fragments) value);
             } else {
-                set(privateCreator, tag, vr,
-                        toggleEndian(vr, value, toggleEndian));
+                if (updateModified) {
+                    modified.set(privateCreator, tag, vr, origValue);
+                }
+                set(privateCreator, tag, vr, toggleEndian(vr, value, toggleEndian));
             }
             numAdd++;
         }

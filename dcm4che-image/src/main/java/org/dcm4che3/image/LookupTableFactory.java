@@ -88,8 +88,9 @@ public class LookupTableFactory {
     public void setModalityLUT(Attributes attrs) {
         rescaleIntercept = attrs.getFloat(Tag.RescaleIntercept, 0);
         rescaleSlope = attrs.getFloat(Tag.RescaleSlope, 1);
+        boolean unsigned = attrs.getInt(Tag.PixelRepresentation, -1) == 0;
         modalityLUT = createLUT(storedValue,
-                attrs.getNestedDataset(Tag.ModalityLUTSequence));
+                attrs.getNestedDataset(Tag.ModalityLUTSequence), unsigned);
     }
 
     public void setPresentationLUT(Attributes attrs) {
@@ -102,9 +103,10 @@ public class LookupTableFactory {
             int[] desc = pLUT.getInts(Tag.LUTDescriptor);
             if (desc != null && desc.length == 3) {
                 int len = desc[0] == 0 ? 0x10000 : desc[0];
+                boolean unsigned = attrs.getInt(Tag.PixelRepresentation, -1) == 0;
                 presentationLUT = createLUT(new StoredValue.Unsigned(log2(len)), 
                         resetOffset(desc), 
-                        pLUT.getSafeBytes(Tag.LUTData), pLUT.bigEndian());
+                        pLUT.getSafeBytes(Tag.LUTData), pLUT.bigEndian(), unsigned);
             }
         } else {
             String pShape;
@@ -152,10 +154,11 @@ public class LookupTableFactory {
         }
         if (vLUT != null) {
             adjustVOILUTDescriptor(vLUT);
+            boolean unsigned = img.getInt(Tag.PixelRepresentation, -1) == 0;
             voiLUT = createLUT(modalityLUT != null
                           ? new StoredValue.Unsigned(modalityLUT.outBits)
                           : storedValue,
-                      vLUT);
+                      vLUT, unsigned);
         }
     }
 
@@ -174,16 +177,16 @@ public class LookupTableFactory {
         }
     }
 
-    private LookupTable createLUT(StoredValue inBits, Attributes attrs) {
+    private LookupTable createLUT(StoredValue inBits, Attributes attrs, boolean unsigned) {
         if (attrs == null)
             return null;
 
         return createLUT(inBits, attrs.getInts(Tag.LUTDescriptor),
-                attrs.getSafeBytes(Tag.LUTData), attrs.bigEndian());
+                attrs.getSafeBytes(Tag.LUTData), attrs.bigEndian(), unsigned);
     }
 
     private LookupTable createLUT(StoredValue inBits, int[] desc, byte[] data,
-            boolean bigEndian) {
+            boolean bigEndian, boolean unsigned) {
 
         if (desc == null)
             return null;
@@ -192,7 +195,7 @@ public class LookupTableFactory {
             return null;
 
         int len = desc[0] == 0 ? 0x10000 : desc[0];
-        int offset = (short) desc[1];
+        int offset = unsigned ? desc[1] & 0xFFFF : (short)desc[1];
         int outBits = desc[2];
         if (data == null)
             return null;

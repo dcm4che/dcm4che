@@ -64,6 +64,7 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.plugins.dcm.DicomImageReader;
 import org.dcm4che3.imageio.plugins.dcm.DicomMetaData;
+import org.dcm4che3.imageio.stream.RAFFileImageInputStream;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.util.ByteUtils;
@@ -119,7 +120,7 @@ public class TestDicomImageReader {
 
     @Test
     public void testReadNoPixelData_ImageInputStream() throws FileNotFoundException, IOException {
-    	try(FileImageInputStream is = new FileImageInputStream(new File(TEST_DATA_DIR+REPORT_DFL))) {
+    	try(FileImageInputStream is = new RAFFileImageInputStream(new File(TEST_DATA_DIR+REPORT_DFL))) {
     		reader.setInput(is);
     		reader.getStreamMetadata();
     		Attributes withPostPixelData = reader.readPostPixeldata();
@@ -129,14 +130,14 @@ public class TestDicomImageReader {
 
     @Test 
     public void testReadCompressedPostPixelData_fromImageInputStream() throws IOException {
-        try(FileImageInputStream is = new FileImageInputStream(new File("target/test-data/" + US_MF_RLE))) {
+        try(FileImageInputStream is = new RAFFileImageInputStream(new File("target/test-data/" + US_MF_RLE))) {
             testReadPostPixelData(is);
         }
     }
     
     @Test 
     public void testReadUncompressedPostPixelData_fromImageInputStream() throws IOException {
-        try(FileImageInputStream is = new FileImageInputStream(new File("target/test-data/" + NM_MF))) {
+        try(FileImageInputStream is = new RAFFileImageInputStream(new File("target/test-data/" + NM_MF))) {
             testReadPostPixelData(is);
         }
     }
@@ -148,7 +149,7 @@ public class TestDicomImageReader {
     @Test
     public void testReadCompressedSingleFrame_fromImageInputStream() throws IOException {
         File file = new File("target/test-data/"+ NM_JPLY);
-        try(FileImageInputStream is = new FileImageInputStream(file)) {
+        try(FileImageInputStream is = new RAFFileImageInputStream(file)) {
             log.trace("Reading file {} iis {}", file, is);
             reader.setInput(is);
             Raster r = reader.readRaster(0, reader.getDefaultReadParam());
@@ -305,7 +306,7 @@ public class TestDicomImageReader {
 
     private Raster testReadRasterFromImageInputStream(String ifname, int imageIndex)
             throws IOException {
-        FileImageInputStream iis = new FileImageInputStream(new File("target/test-data/" + ifname));
+        FileImageInputStream iis = new RAFFileImageInputStream(new File("target/test-data/" + ifname));
         try {
             return testReadRasterFromInput(iis, imageIndex);
         } finally {

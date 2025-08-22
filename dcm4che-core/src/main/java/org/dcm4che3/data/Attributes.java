@@ -2114,7 +2114,6 @@ public class Attributes implements Serializable {
             }
 
             if (value instanceof Sequence updated) {
-                Sequence updated = (Sequence) value;
 
                 if (indexOfOriginal < 0 ) {
                     //Trying to recursively update an empty sequence, fallback to whole copy

@@ -2677,7 +2677,7 @@ public class Attributes implements Serializable {
         out.writeInt(size);
         @SuppressWarnings("resource")
         DicomOutputStream dout = new DicomOutputStream(out,
-                bigEndian ? UID.ExplicitVRBigEndianRetired
+                bigEndian ? UID.ExplicitVRBigEndian
                           : UID.ExplicitVRLittleEndian);
         dout.writeDataset(null, this);
         dout.writeHeader(Tag.ItemDelimitationItem, null, 0);
@@ -2689,7 +2689,7 @@ public class Attributes implements Serializable {
         init(in.readInt());
         @SuppressWarnings("resource")
         DicomInputStream din = new DicomInputStream(in, 
-                bigEndian ? UID.ExplicitVRBigEndianRetired
+                bigEndian ? UID.ExplicitVRBigEndian
                           : UID.ExplicitVRLittleEndian);
         din.readAttributes(this, -1, Tag.ItemDelimitationItem);
     }

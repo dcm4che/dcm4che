@@ -355,7 +355,7 @@ public class StowRS {
 
         static CompressedPixelData valueOf(StowRS instance, Extension ext) {
             if (ext == Extension.jpeg || ext == Extension.jpg) {
-                instance.bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline1;
+                instance.bulkdataType = "image/jpeg; transfer-syntax: " + UID.JPEGBaseline8Bit;
                 instance.sopCUID = UID.SecondaryCaptureImageStorage;
                 return JPEG;
             }

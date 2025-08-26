@@ -160,7 +160,7 @@ public class MppsTest {
         main.getAAssociateRQ().setCalledAET(aeTitle);
         main.getRemoteConnection().setHostname(host);
         main.getRemoteConnection().setPort(port);
-        main.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired});
+        main.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndian});
         main.setAttributes(new Attributes());
 
         // scan

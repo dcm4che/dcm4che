@@ -185,7 +185,7 @@ public class DcmQRSCP {
     private final class StgCmtSCPImpl extends AbstractDicomService {
 
         public StgCmtSCPImpl() {
-            super(UID.StorageCommitmentPushModelSOPClass);
+            super(UID.StorageCommitmentPushModel);
         }
 
         @Override
@@ -276,7 +276,7 @@ public class DcmQRSCP {
         @Override
         protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
                 Attributes rq, Attributes keys) throws DicomServiceException {
-            QueryRetrieveLevel level = withoutBulkData 
+            QueryRetrieveLevel level = withoutBulkData
                     ? QueryRetrieveLevel.IMAGE
                     : QueryRetrieveLevel.valueOf(keys, qrLevels);
             level.validateRetrieveKeys(keys, rootLevel, relational(as, rq));
@@ -426,42 +426,42 @@ public class DcmQRSCP {
         serviceRegistry.addDicomService(new StgCmtSCPImpl());
         serviceRegistry.addDicomService(
                 new CFindSCPImpl(
-                        UID.PatientRootQueryRetrieveInformationModelFIND,
+                        UID.PatientRootQueryRetrieveInformationModelFind,
                         PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CFindSCPImpl(
-                        UID.StudyRootQueryRetrieveInformationModelFIND,
+                        UID.StudyRootQueryRetrieveInformationModelFind,
                         STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CFindSCPImpl(
-                        UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired,
+                        UID.PatientStudyOnlyQueryRetrieveInformationModelFind,
                         PATIENT_STUDY_ONLY_LEVELS));
         serviceRegistry.addDicomService(
                 new CGetSCPImpl(
-                        UID.PatientRootQueryRetrieveInformationModelGET,
+                        UID.PatientRootQueryRetrieveInformationModelGet,
                         PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CGetSCPImpl(
-                        UID.StudyRootQueryRetrieveInformationModelGET,
+                        UID.StudyRootQueryRetrieveInformationModelGet,
                         STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CGetSCPImpl(
-                        UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired,
+                        UID.PatientStudyOnlyQueryRetrieveInformationModelGet,
                         PATIENT_STUDY_ONLY_LEVELS));
         serviceRegistry.addDicomService(
                 new CGetSCPImpl(
-                        UID.CompositeInstanceRetrieveWithoutBulkDataGET));
+                        UID.CompositeInstanceRetrieveWithoutBulkDataGet));
         serviceRegistry.addDicomService(
                 new CMoveSCPImpl(
-                        UID.PatientRootQueryRetrieveInformationModelMOVE,
+                        UID.PatientRootQueryRetrieveInformationModelMove,
                         PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CMoveSCPImpl(
-                        UID.StudyRootQueryRetrieveInformationModelMOVE,
+                        UID.StudyRootQueryRetrieveInformationModelMove,
                         STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CMoveSCPImpl(
-                        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired,
+                        UID.PatientStudyOnlyQueryRetrieveInformationModelMove,
                         PATIENT_STUDY_ONLY_LEVELS));
         return serviceRegistry ;
     }
@@ -768,7 +768,7 @@ public class DcmQRSCP {
         } else {
             ae.addTransferCapability(
                     new TransferCapability(null, 
-                            UID.VerificationSOPClass,
+                            UID.Verification,
                             TransferCapability.Role.SCP,
                             UID.ImplicitVRLittleEndian));
             Properties storageSOPClasses = CLIUtils.loadProperties(

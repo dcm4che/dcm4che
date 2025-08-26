@@ -79,7 +79,7 @@ public class QueryTest {
     private Integer returnTag = null;
 
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
-            UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
+            UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndian };
 
     private Attributes queryatts = new Attributes();
     private int expectedResult = Integer.MIN_VALUE;

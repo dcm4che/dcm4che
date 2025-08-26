@@ -85,7 +85,7 @@ public class IanSCU {
     private final Attributes attrs = new Attributes();
     private String uidSuffix;
     private String refPpsIUID;
-    private String refPpsCUID = UID.ModalityPerformedProcedureStepSOPClass;
+    private String refPpsCUID = UID.ModalityPerformedProcedureStep;
     private String availability = "ONLINE";
     private String retrieveAET;
     private String retrieveURI;
@@ -107,11 +107,11 @@ public class IanSCU {
 
     public void setTransferSyntaxes(String[] tss) {
         rq.addPresentationContext(
-                new PresentationContext(1, UID.VerificationSOPClass,
+                new PresentationContext(1, UID.Verification,
                         UID.ImplicitVRLittleEndian));
         rq.addPresentationContext(
                 new PresentationContext(3,
-                        UID.InstanceAvailabilityNotificationSOPClass,
+                        UID.InstanceAvailabilityNotification,
                         tss));
     }
 
@@ -170,7 +170,7 @@ public class IanSCU {
                     @Override
                     public boolean dicomFile(File f, Attributes fmi, long dsPos,
                             Attributes ds) {
-                        if (UID.InstanceAvailabilityNotificationSOPClass.equals(
+                        if (UID.InstanceAvailabilityNotification.equals(
                                 fmi.getString(Tag.MediaStorageSOPClassUID))) {
                             return main.addIAN(
                                     fmi.getString(Tag.MediaStorageSOPInstanceUID),
@@ -283,7 +283,7 @@ public class IanSCU {
             throws Exception {
         main.setRefPpsIUID(cl.getOptionValue("pps-iuid"));
         main.setRefPpsCUID(cl.getOptionValue("pps-cuid", 
-                UID.ModalityPerformedProcedureStepSOPClass));
+                UID.ModalityPerformedProcedureStep));
         main.setAvailability(cl.getOptionValue("availability", "ONLINE"));
         main.setRetrieveAET(cl.getOptionValue("retrieve-aet"));
         main.setRetrieveURI(cl.getOptionValue("retrieve-uri"));
@@ -312,7 +312,7 @@ public class IanSCU {
     }
 
     private void sendIan(Attributes ian) throws IOException, InterruptedException {
-        as.ncreate(UID.InstanceAvailabilityNotificationSOPClass, null, ian, null,
+        as.ncreate(UID.InstanceAvailabilityNotification, null, ian, null,
                 new DimseRSPHandler(as.nextMessageID()));
     }
 

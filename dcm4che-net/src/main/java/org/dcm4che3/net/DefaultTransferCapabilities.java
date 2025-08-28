@@ -124,7 +124,7 @@ public class DefaultTransferCapabilities {
         UID.SpectaclePrescriptionReportStorage,
         UID.OphthalmicAxialMeasurementsStorage,
         UID.IntraocularLensCalculationsStorage,
-        UID.MacularGridThicknessandVolumeReportStorage,
+        UID.MacularGridThicknessAndVolumeReportStorage,
         UID.OphthalmicVisualFieldStaticPerimetryMeasurementsStorage,
         UID.BasicStructuredDisplayStorage,
         UID.BasicTextSRStorage,

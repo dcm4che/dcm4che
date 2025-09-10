@@ -99,8 +99,8 @@ public class Attributes implements Serializable {
             LoggerFactory.getLogger(Attributes.class);
 
     private static final int INIT_CAPACITY = 16;
-    private static final int TO_STRING_LIMIT = 50;
-    private static final int TO_STRING_WIDTH = 78;
+    private static final int TO_STRING_LIMIT = Integer.getInteger("org.dcm4che3.Attributes.toString.limit", 50);
+    private static final int TO_STRING_WIDTH = Integer.getInteger("org.dcm4che3.Attributes.toString.width", 78);
     private transient Attributes parent;
     private transient String parentSequencePrivateCreator;
     private transient int parentSequenceTag;

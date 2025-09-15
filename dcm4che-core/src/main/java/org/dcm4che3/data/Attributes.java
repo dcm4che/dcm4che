@@ -928,7 +928,6 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
             if (vr == VR.IS)
                 value = decodeISValue(index);
 
@@ -965,7 +964,6 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
 
         try {
-            value = loadBulkData(index);
             if (vr == VR.IS)
                 value = decodeISValue(index);
 
@@ -1911,7 +1909,6 @@ public class Attributes implements Serializable {
     }
 
     public Object setLong(String privateCreator, int tag, VR vr, long... ls) {
-        ensureModifiable();
         return set(privateCreator, tag, vr, vr.toValue(ls, bigEndian));
     }
 

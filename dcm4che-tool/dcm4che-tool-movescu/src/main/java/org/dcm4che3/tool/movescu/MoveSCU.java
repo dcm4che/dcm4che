@@ -83,12 +83,12 @@ import org.slf4j.LoggerFactory;
 public class MoveSCU {
 
     public static enum InformationModel {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelMOVE, "STUDY"),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelMOVE, "STUDY"),
-        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired, "STUDY"),
-        CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveMOVE, "IMAGE"),
-        HangingProtocol(UID.HangingProtocolInformationModelMOVE, null),
-        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelMOVE, null);
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelMove, "STUDY"),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelMove, "STUDY"),
+        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelMove, "STUDY"),
+        CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveMove, "IMAGE"),
+        HangingProtocol(UID.HangingProtocolInformationModelMove, null),
+        ColorPalette(UID.ColorPaletteQueryRetrieveInformationModelMove, null);
 
         final String cuid;
         final String level;
@@ -113,7 +113,7 @@ public class MoveSCU {
     };
 
     private static final Logger LOG = LoggerFactory.getLogger(MoveSCU.class);
-    
+
     private ApplicationEntity ae = new ApplicationEntity("MOVESCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -149,7 +149,7 @@ public class MoveSCU {
        this.model = model;
        rq.addPresentationContext(new PresentationContext(1, model.cuid, tss));
        if (relational)
-           rq.addExtendedNegotiation(new ExtendedNegotiation(model.cuid, 
+           rq.addExtendedNegotiation(new ExtendedNegotiation(model.cuid,
                    QueryOption.toExtendedNegotiationInformation(EnumSet.of(QueryOption.RELATIONAL))));
        if (model.level != null)
            addLevel(model.level);
@@ -162,19 +162,19 @@ public class MoveSCU {
     public Connection getRemoteConnection() {
         return remote;
     }
-    
+
     public AAssociateRQ getAAssociateRQ() {
         return rq;
     }
-    
+
     public Association getAssociation() {
         return as;
     }
 
     public Device getDevice() {
         return device;
-    }    
-    
+    }
+
     public Attributes getKeys() {
         return keys;
     }

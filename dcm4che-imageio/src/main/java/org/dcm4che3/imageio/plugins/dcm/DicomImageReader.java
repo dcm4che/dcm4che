@@ -97,15 +97,15 @@ public class DicomImageReader extends ImageReader implements CloneIt<DicomImageR
 
     private static final Set<String> VIDEO_TSUID = new HashSet<>();
     static {
-        VIDEO_TSUID.add(UID.MPEG2);
-        VIDEO_TSUID.add(UID.MPEG2MainProfileHighLevel);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel41);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For2DVideo);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264HighProfileLevel42For3DVideo);
-        VIDEO_TSUID.add(UID.MPEG4AVCH264StereoHighProfileLevel42);
-        VIDEO_TSUID.add(UID.HEVCH265Main10ProfileLevel51);
-        VIDEO_TSUID.add(UID.HEVCH265MainProfileLevel51);
+        VIDEO_TSUID.add(UID.MPEG2MPML);
+        VIDEO_TSUID.add(UID.MPEG2MPHL);
+        VIDEO_TSUID.add(UID.MPEG4HP41BD);
+        VIDEO_TSUID.add(UID.MPEG4HP41);
+        VIDEO_TSUID.add(UID.MPEG4HP422D);
+        VIDEO_TSUID.add(UID.MPEG4HP423D);
+        VIDEO_TSUID.add(UID.MPEG4HP42STEREO);
+        VIDEO_TSUID.add(UID.HEVCMP51);
+        VIDEO_TSUID.add(UID.HEVCM10P51);
     }
 
     /** Default to reading the entire file for image rendering */

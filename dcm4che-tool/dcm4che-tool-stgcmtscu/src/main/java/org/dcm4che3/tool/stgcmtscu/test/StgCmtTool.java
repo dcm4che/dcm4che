@@ -118,7 +118,7 @@ public class StgCmtTool implements TestTool {
     }
 
     private final DicomService stgcmtResultHandler =
-            new AbstractDicomService(UID.StorageCommitmentPushModelSOPClass) {
+            new AbstractDicomService(UID.StorageCommitmentPushModel) {
 
                 @Override
                 public void onDimseRQ(Association as, PresentationContext pc,
@@ -213,7 +213,7 @@ public class StgCmtTool implements TestTool {
         //ensure secure connection
         stgCmtSCU.getRemoteConnection().setTlsCipherSuites(bound.getTlsCipherSuites());
         stgCmtSCU.getRemoteConnection().setTlsProtocols(bound.tlsProtocols());
-        stgCmtSCU.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired});
+        stgCmtSCU.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndian});
         stgCmtSCU.setAttributes(new Attributes());
         stgCmtSCU.setStorageDirectory(storageDirectory);
 

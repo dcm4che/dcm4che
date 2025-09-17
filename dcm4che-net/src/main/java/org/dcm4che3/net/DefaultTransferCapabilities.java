@@ -9,32 +9,32 @@ import java.util.EnumSet;
  */
 public class DefaultTransferCapabilities {
     public static final String[] IMAGE_TSUIDS = {
+        UID.JPEGLosslessSV1,
         UID.JPEGLossless,
-        UID.JPEGLosslessNonHierarchical14,
         UID.JPEGLSLossless,
-        UID.JPEG2000LosslessOnly,
+        UID.JPEG2000Lossless,
         UID.RLELossless,
-        UID.JPEGBaseline1,
-        UID.JPEGExtended24,
-        UID.JPEGLSLossyNearLossless,
+        UID.JPEGBaseline8Bit,
+        UID.JPEGExtended12Bit,
+        UID.JPEGLSNearLossless,
         UID.JPEG2000,
         UID.DeflatedExplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian,
         UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRBigEndianRetired
+        UID.ExplicitVRBigEndian
     };
     public static final String[] VIDEO_TSUIDS = {
-        UID.JPEGBaseline1,
-        UID.MPEG2,
-        UID.MPEG2MainProfileHighLevel,
-        UID.MPEG4AVCH264BDCompatibleHighProfileLevel41,
-        UID.MPEG4AVCH264HighProfileLevel41
+        UID.JPEGBaseline8Bit,
+        UID.MPEG2MPML,
+        UID.MPEG2MPHL,
+        UID.MPEG4HP41BD,
+        UID.MPEG4HP41
     };
     public static final String[] OTHER_TSUIDS = {
         UID.DeflatedExplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian,
         UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRBigEndianRetired
+        UID.ExplicitVRBigEndian
     };
     public static final String[] IMAGE_CUIDS = {
         UID.ComputedRadiographyImageStorage,
@@ -63,7 +63,7 @@ public class DefaultTransferCapabilities {
         UID.EnhancedXAImageStorage,
         UID.XRayRadiofluoroscopicImageStorage,
         UID.EnhancedXRFImageStorage,
-        UID.XRayAngiographicBiPlaneImageStorageRetired,
+        UID.XRayAngiographicBiPlaneImageStorage,
         UID.XRay3DAngiographicImageStorage,
         UID.XRay3DCraniofacialImageStorage,
         UID.BreastTomosynthesisImageStorage,
@@ -90,8 +90,8 @@ public class DefaultTransferCapabilities {
     public static final String[] OTHER_CUIDS = {
         UID.MRSpectroscopyStorage,
         UID.MultiFrameSingleBitSecondaryCaptureImageStorage,
-        UID.StandaloneOverlayStorageRetired,
-        UID.StandaloneCurveStorageRetired,
+        UID.StandaloneOverlayStorage,
+        UID.StandaloneCurveStorage,
         UID.TwelveLeadECGWaveformStorage,
         UID.GeneralECGWaveformStorage,
         UID.AmbulatoryECGWaveformStorage,
@@ -101,8 +101,8 @@ public class DefaultTransferCapabilities {
         UID.GeneralAudioWaveformStorage,
         UID.ArterialPulseWaveformStorage,
         UID.RespiratoryWaveformStorage,
-        UID.StandaloneModalityLUTStorageRetired,
-        UID.StandaloneVOILUTStorageRetired,
+        UID.StandaloneModalityLUTStorage,
+        UID.StandaloneVOILUTStorage,
         UID.GrayscaleSoftcopyPresentationStateStorage,
         UID.ColorSoftcopyPresentationStateStorage,
         UID.PseudoColorSoftcopyPresentationStateStorage,
@@ -139,7 +139,7 @@ public class DefaultTransferCapabilities {
         UID.ImplantationPlanSRStorage,
         UID.EncapsulatedPDFStorage,
         UID.EncapsulatedCDAStorage,
-        UID.StandalonePETCurveStorageRetired,
+        UID.StandalonePETCurveStorage,
         UID.RTDoseStorage,
         UID.RTStructureSetStorage,
         UID.RTBeamsTreatmentRecordStorage,
@@ -151,19 +151,19 @@ public class DefaultTransferCapabilities {
     };
 
     public static final String[] QUERY_CUIDS = {
-            UID.PatientRootQueryRetrieveInformationModelFIND,
-            UID.StudyRootQueryRetrieveInformationModelFIND,
-            UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired
+            UID.PatientRootQueryRetrieveInformationModelFind,
+            UID.StudyRootQueryRetrieveInformationModelFind,
+            UID.PatientStudyOnlyQueryRetrieveInformationModelFind
             //UID.ModalityWorklistInformationModelFIND - handled separately
     };
 
     public static final String[] RETRIEVE_CUIDS = {
-        UID.PatientRootQueryRetrieveInformationModelGET,
-        UID.PatientRootQueryRetrieveInformationModelMOVE,
-        UID.StudyRootQueryRetrieveInformationModelGET,
-        UID.StudyRootQueryRetrieveInformationModelMOVE,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired
+        UID.PatientRootQueryRetrieveInformationModelGet,
+        UID.PatientRootQueryRetrieveInformationModelMove,
+        UID.StudyRootQueryRetrieveInformationModelGet,
+        UID.StudyRootQueryRetrieveInformationModelMove,
+        UID.PatientStudyOnlyQueryRetrieveInformationModelGet,
+        UID.PatientStudyOnlyQueryRetrieveInformationModelMove
     };
 
     public static void addTCs(ApplicationEntity ae, EnumSet<QueryOption> queryOpts,

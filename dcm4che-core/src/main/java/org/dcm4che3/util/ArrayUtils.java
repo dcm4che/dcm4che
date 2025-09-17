@@ -1,4 +1,5 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ * **** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -15,8 +16,8 @@
  * Java(TM), hosted at https://github.com/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2015-2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,37 +35,29 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che3.tool.storescu;
-
-import java.util.HashMap;
-import java.util.Properties;
-
-import org.dcm4che3.data.UID;
-import org.dcm4che3.net.pdu.CommonExtendedNegotiation;
-import org.dcm4che3.util.StringUtils;
-
-/**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * **** END LICENSE BLOCK *****
  *
  */
-class RelatedGeneralSOPClasses {
 
-    private final HashMap<String,CommonExtendedNegotiation> commonExtNegs =
-            new HashMap<String,CommonExtendedNegotiation>();
+package org.dcm4che3.util;
 
-    public void init(Properties props) {
-        for (String cuid : props.stringPropertyNames())
-            commonExtNegs.put(cuid, new CommonExtendedNegotiation(cuid,
-                    UID.Storage,
-                    StringUtils.split(props.getProperty(cuid), ',')));
+/**
+ * @author Gunter Zeilinger (gunterze@protonmail.com)
+ * @since Oct 2020
+ */
+public class ArrayUtils {
+
+    /* ~170% faster than LongStream.of(in).mapToInt(l -> (int) l).toArray() */
+    public static int[] longsToInts(long[] in) {
+        int[] out = new int[in.length];
+        for (int i = 0; i < in.length; i++) out[i] = (int) in[i];
+        return out;
     }
 
-    public CommonExtendedNegotiation getCommonExtendedNegotiation(String cuid) {
-        CommonExtendedNegotiation commonExtNeg = commonExtNegs.get(cuid);
-        return commonExtNeg != null
-                ? commonExtNeg
-                : new CommonExtendedNegotiation(cuid, UID.Storage);
+    /* ~60% faster than IntStream.of(in).asLongStream().toArray() */
+    public static long[] intsToLong(int[] in) {
+        long[] out = new long[in.length];
+        for (int i = 0; i < in.length; i++) out[i] = in[i];
+        return out;
     }
 }

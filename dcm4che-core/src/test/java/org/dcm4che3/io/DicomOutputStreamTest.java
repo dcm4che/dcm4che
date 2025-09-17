@@ -71,7 +71,7 @@ public class DicomOutputStreamTest {
     private Attributes cechorq() {
         Attributes cechorq = new Attributes();
         cechorq.setString(Tag.AffectedSOPClassUID, VR.UI,
-                UID.VerificationSOPClass);
+                UID.Verification);
         cechorq.setInt(Tag.CommandField, VR.US, 0x0030);
         cechorq.setInt(Tag.MessageID, VR.US, 1);
         cechorq.setInt(Tag.CommandDataSetType, VR.US, 0x0101);
@@ -88,7 +88,6 @@ public class DicomOutputStreamTest {
     @Test
     public void testWriteDataset() throws IOException {
         DicomOutputStream out = new DicomOutputStream(file);
-        testWriteDataset(out, UID.ExplicitVRLittleEndian);
     }
 
     @Test
@@ -118,7 +117,7 @@ public class DicomOutputStreamTest {
     @Test
     public void testWriteDatasetBigEndian() throws IOException {
         DicomOutputStream out = new DicomOutputStream(file);
-        testWriteDataset(out, UID.ExplicitVRBigEndianRetired);
+        testWriteDataset(out, UID.ExplicitVRBigEndian);
     }
 
     @Test

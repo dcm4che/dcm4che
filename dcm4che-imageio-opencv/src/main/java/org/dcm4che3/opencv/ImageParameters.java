@@ -225,18 +225,16 @@ public class ImageParameters {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder("Size:");
-        buf.append(width);
-        buf.append("x");
-        buf.append(height);
-        buf.append(" Bits/Sample:");
-        buf.append(bitsPerSample);
-        buf.append(" Samples/Pixel:");
-        buf.append(samplesPerPixel);
-        buf.append(" Bytes/Line:");
-        buf.append(bytesPerLine);
-        buf.append(" Signed:");
-        buf.append(signedData);
-        return buf.toString();
+      return "Size:" + width
+          + "x"
+          + height
+          + " Bits/Sample:"
+          + bitsPerSample
+          + " Samples/Pixel:"
+          + samplesPerPixel
+          + " Bytes/Line:"
+          + bytesPerLine
+          + " Signed:"
+          + signedData;
     }
 }

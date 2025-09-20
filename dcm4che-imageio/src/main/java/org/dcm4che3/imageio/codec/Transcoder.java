@@ -339,7 +339,13 @@ public class Transcoder implements Closeable {
             case UID.HTJ2KLosslessRPCL:
             case UID.HTJ2K:
                 return bitsStored <= 16 ? dstTsuid : UID.ExplicitVRLittleEndian;
-            default:
+            case UID.JPEGXLLossless:
+                return bitsStored <= 32 ? dstTsuid : UID.ExplicitVRLittleEndian;
+            case UID.JPEGXLJPEGRecompression:
+            case UID.JPEGXL:
+                return bitsStored <= 8  ? dstTsuid
+                        : bitsStored <= 32 ? UID.JPEGXLLossless : UID.ExplicitVRLittleEndian;
+          default:
                 return dstTsuid;
         }
     }

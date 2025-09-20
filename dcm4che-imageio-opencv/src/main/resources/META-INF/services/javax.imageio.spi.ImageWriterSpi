@@ -1,3 +1,4 @@
 org.dcm4che3.opencv.NativeJLSImageWriterSpi
 org.dcm4che3.opencv.NativeJPEGImageWriterSpi
 org.dcm4che3.opencv.NativeJ2kImageWriterSpi
+org.dcm4che3.opencv.NativeJXLImageWriterSpi

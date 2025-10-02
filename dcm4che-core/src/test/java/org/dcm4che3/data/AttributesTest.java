@@ -45,6 +45,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.Date;
 
 import org.dcm4che3.data.Tag;
@@ -947,6 +948,15 @@ public class AttributesTest {
             assertEquals("CONTAINS", modifiedAttributes.getString(Tag.RelationshipType));
             assertEquals("CODE" + i, modifiedAttributes.getString(Tag.ValueType));
         }
+    }
+
+    @Test
+    public void setString_GivenAttributeWithOBVR_SetsAttributeSuccessfully() throws IOException {
+        Attributes attributes = new Attributes();
+        attributes.setString(Tag.FileMetaInformationVersion, VR.OB, "00", "01");
+        byte[] expected = {0, 1};
+        byte[] actual = attributes.getBytes(Tag.FileMetaInformationVersion);
+        assertArrayEquals(expected, actual);
     }
 
     private Attributes createOriginal() {

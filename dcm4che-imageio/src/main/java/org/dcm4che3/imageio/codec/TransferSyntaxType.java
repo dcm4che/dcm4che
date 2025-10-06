@@ -56,6 +56,7 @@ public enum TransferSyntaxType {
     JPEG_LOSSLESS(true, true, true, 16, 0),
     JPEG_LS(true, true, true, 16, 0),
     JPEG_2000(true, true, true, 16, 0),
+    JPEG_XL(true, true, true, 24, 0),
     RLE(true, false, true, 16, 1),
     JPIP(false, false, true, 16, 0),
     MPEG(true, false, false, 8, 0),
@@ -101,7 +102,7 @@ public enum TransferSyntaxType {
         if (maxBitsStored == 12) {
             int bitsStored = attrs.getInt(Tag.BitsStored, 8);
             if (bitsStored > 8 && bitsStored < 12) {
-                attrs.setInt(Tag.BitsStored, VR.US, bitsStored = 12);
+                attrs.setInt(Tag.BitsStored, VR.US, 12);
                 attrs.setInt(Tag.HighBit, VR.US, 11);
                 return true;
             }
@@ -139,6 +140,10 @@ public enum TransferSyntaxType {
             case UID.HTJ2KLosslessRPCL:
             case UID.HTJ2K:
                 return JPEG_2000;
+            case UID.JPEGXLLossless:
+            case UID.JPEGXLJPEGRecompression:
+            case UID.JPEGXL:
+              return JPEG_XL;
             case UID.JPIPReferenced:
             case UID.JPIPReferencedDeflate:
             case UID.JPIPHTJ2KReferenced:
@@ -163,8 +168,9 @@ public enum TransferSyntaxType {
                 return MPEG;
             case UID.RLELossless:
                 return RLE;
+            default:
+              return UNKNOWN;
         }
-        return UNKNOWN;
     }
 
     public static boolean isLossyCompression(String uid) {
@@ -177,6 +183,8 @@ public enum TransferSyntaxType {
             case UID.JPEG2000:
             case UID.JPEG2000MC:
             case UID.HTJ2K:
+            case UID.JPEGXLJPEGRecompression:
+            case UID.JPEGXL:
             case UID.MPEG2MPML:
             case UID.MPEG2MPMLF:
             case UID.MPEG2MPHL:
@@ -194,8 +202,9 @@ public enum TransferSyntaxType {
             case UID.HEVCMP51:
             case UID.HEVCM10P51:
                 return true;
+            default:
+                return false;
         }
-        return false;
     }
 
     public static boolean isYBRCompression(String uid) {
@@ -209,8 +218,12 @@ public enum TransferSyntaxType {
             case UID.HTJ2KLossless:
             case UID.HTJ2KLosslessRPCL:
             case UID.HTJ2K:
+            case UID.JPEGXLLossless: // RGB is also possible
+            case UID.JPEGXLJPEGRecompression:
+            case UID.JPEGXL: // RGB is also possible
                 return true;
+            default:
+                return false;
         }
-        return false;
     }
 }

@@ -53,8 +53,10 @@ import java.nio.file.StandardCopyOption;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.codec.jpeg.JPEGParser;
 import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.util.UIDUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -188,6 +190,30 @@ public class TranscoderTest {
         assertEquals(1, jpegPixelRepresentation("test16signed-J2KI.dcm"));
     }
 
+    @Test
+      public void testJxlToJpeg() throws Exception {
+      test("will-jxl.dcm", "test-jpeg.dcm", UID.JPEGBaseline8Bit, true);
+      assertEquals(8, jpegBitsPerSample("test-jpeg.dcm"));
+    }
+
+    @Test
+    public void testConvertToJxlLossless() throws Exception {
+      test("test16signed.dcm", "test-signed-jxl-lossless.dcm", UID.JPEGXLLossless, true);
+      test("jpeg-ls-Palette.dcm", "jpeg-ls-Palette-jxl-lossless.dcm", UID.JPEGXLLossless, true);
+    }
+
+    @Test
+    public void testConvertToJxlLossy() throws Exception {
+      test("test16signed.dcm", "test-signed-jxl.dcm", UID.JPEGXL, true);
+      test("YBR_422.dcm", "YBR_422-jxl.dcm", UID.JPEGXL, true);
+    }
+
+    @Test
+    public void testConvertToJxlLossyJpegRecompression() throws Exception {
+      test("test16signed.dcm", "test-signed-jxl-recompression.dcm", UID.JPEGXLJPEGRecompression, true);
+      test("YBR_422.dcm", "YBR_422-jxl-recompression.dcm", UID.JPEGXLJPEGRecompression, true);
+    }
+
     private int jpegBitsPerSample(String ofname) throws IOException {
         final File ofile = new File("target/test-out/" + ofname);
         long jpegPos = jpegPos(ofile);
@@ -220,6 +246,8 @@ public class TranscoderTest {
         Transcoder.Handler handler = new Transcoder.Handler() {
             @Override
             public OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException {
+                dataset.setString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
+                dataset.setString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
                 return new FileOutputStream(ofile);
             }
         };

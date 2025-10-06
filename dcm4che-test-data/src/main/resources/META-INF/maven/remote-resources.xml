@@ -64,6 +64,7 @@
         <remoteResource>Tag-0040-A170-VR-CS.dcm</remoteResource>
         <remoteResource>CT-JPEGLosslessSV1.dcm</remoteResource>
         <remoteResource>MR-JPEGLosslessSV1.dcm</remoteResource>
+        <remoteResource>will-jxl.dcm</remoteResource>
     </remoteResources>
     <sourceEncoding>UTF-8</sourceEncoding>
 </remoteResourcesBundle>

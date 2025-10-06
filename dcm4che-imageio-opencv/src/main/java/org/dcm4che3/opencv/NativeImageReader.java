@@ -53,6 +53,7 @@ import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -195,9 +196,7 @@ public class NativeImageReader extends ImageReader implements Closeable {
             }
 
             int[] bits = new int[nBands];
-            for (int i = 0; i < nBands; i++) {
-                bits[i] = nBitDepth;
-            }
+            Arrays.fill(bits, nBitDepth);
             colorModel = new ComponentColorModel(cs, bits, hasAlpha, false,
                 hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE, nType);
         }
@@ -212,7 +211,7 @@ public class NativeImageReader extends ImageReader implements Closeable {
         return Collections.singletonList(imageType).iterator();
     }
 
-    protected static final ImageTypeSpecifier createImageType(ImageParameters params, ColorModel colorModel)
+    protected static ImageTypeSpecifier createImageType(ImageParameters params, ColorModel colorModel)
         throws IOException {
 
         int nType = params.getDataType();
@@ -318,7 +317,7 @@ public class NativeImageReader extends ImageReader implements Closeable {
         }
     }
 
-    public static SOFSegment getSOFSegment(ImageInputStream iis) throws IOException {
+    static SOFSegment getSOFSegment(ImageInputStream iis) throws IOException {
         iis.mark();
         try {
             boolean jfif = false;
@@ -384,7 +383,7 @@ public class NativeImageReader extends ImageReader implements Closeable {
         }
     }
 
-    protected static SOFSegment getSOF(ImageInputStream iis, boolean jfif, int marker) throws IOException {
+    static SOFSegment getSOF(ImageInputStream iis, boolean jfif, int marker) throws IOException {
         readUnsignedShort(iis);
         int samplePrecision = readUnsignedByte(iis);
         int lines = readUnsignedShort(iis);
@@ -393,7 +392,7 @@ public class NativeImageReader extends ImageReader implements Closeable {
         return new SOFSegment(jfif, marker, samplePrecision, lines, samplesPerLine, componentsInFrame);
     }
 
-    public ImageParameters buildImage(ImageInputStream iis) throws IOException {
+    public void buildImage(ImageInputStream iis) throws IOException {
         if (iis != null && params.getBytesPerLine() < 1) {
             SOFSegment sof = getSOFSegment(iis);
             if (sof != null) {
@@ -405,13 +404,11 @@ public class NativeImageReader extends ImageReader implements Closeable {
                 params.setSamplesPerPixel(sof.getComponents());
                 params.setBytesPerLine(
                     params.getWidth() * params.getSamplesPerPixel() * ((params.getBitsPerSample() + 7) / 8));
-                return params;
             }
         }
-        return null;
     }
 
-    private static final int readUnsignedByte(ImageInputStream iis) throws IOException {
+    private static int readUnsignedByte(ImageInputStream iis) throws IOException {
         int ch = iis.read();
         if (ch < 0) {
             throw new EOFException();
@@ -419,7 +416,7 @@ public class NativeImageReader extends ImageReader implements Closeable {
         return ch;
     }
 
-    private static final int readUnsignedShort(ImageInputStream iis) throws IOException {
+    private static int readUnsignedShort(ImageInputStream iis) throws IOException {
         int ch1 = iis.read();
         int ch2 = iis.read();
         if ((ch1 | ch2) < 0) {

@@ -104,7 +104,7 @@ public class MP4FileType {
 
     public int[] compatibleBrands() {
         int[] compatibleBrands = new int[brands.length - 2];
-        System.arraycopy(brands, 2, brands, 0, compatibleBrands.length);
+        System.arraycopy(brands, 2, compatibleBrands, 0, compatibleBrands.length);
         return compatibleBrands;
     }
 }

@@ -69,6 +69,11 @@ enum BinaryValueType implements ValueType {
             b[off] = (byte) i;
             return b;
         }
+
+        @Override
+        protected byte[] toBytes(long l, byte[] b, int off, boolean bigEndian) {
+            return toBytes((int) l, b, off, bigEndian);
+        }
     },
     SHORT(2, 2) {
 

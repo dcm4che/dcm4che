@@ -85,6 +85,28 @@ public class MediaTypes {
             new MediaType("application", "dicom+json");
 
     /**
+     * "application/fhir+xml"
+     */
+    public final static String APPLICATION_FHIR_XML = "application/fhir+xml";
+
+    /**
+     * "application/fhir+xml"
+     */
+    public final static MediaType APPLICATION_FHIR_XML_TYPE =
+            new MediaType("application", "fhir+xml");
+
+    /**
+     * "application/fhir+json"
+     */
+    public final static String APPLICATION_FHIR_JSON = "application/fhir+json";
+
+    /**
+     * "application/fhir+json"
+     */
+    public final static MediaType APPLICATION_FHIR_JSON_TYPE =
+            new MediaType("application", "fhir+json");
+
+    /**
      * "image/*"
      */
     public final static String IMAGE_WILDCARD = "image/*";

@@ -173,6 +173,14 @@ public class Dcm2Dcm {
                 .longOpt("j2ki")
                 .desc(rb.getString("j2ki"))
                 .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jxll")
+                .desc(rb.getString("jxll"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("jxly")
+                .desc(rb.getString("jxly"))
+                .build());
         opts.addOptionGroup(tsGroup);
         OptionGroup fmiGroup = new OptionGroup();
         fmiGroup.addOption(Option.builder("F")
@@ -223,6 +231,20 @@ public class Dcm2Dcm {
                 .type(PatternOptionBuilder.NUMBER_VALUE)
                 .desc(rb.getString("near-lossless"))
                 .build());
+        opts.addOption(Option.builder()
+                .longOpt("effort")
+                .hasArg()
+                .argName("effort")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("effort"))
+                .build());
+        opts.addOption(Option.builder()
+                .longOpt("decoding-speed")
+                .hasArg()
+                .argName("speed")
+                .type(PatternOptionBuilder.NUMBER_VALUE)
+                .desc(rb.getString("decoding-speed"))
+                .build());
         opts.addOption(Option.builder("C")
                 .hasArgs()
                 .argName("name=value")
@@ -272,6 +294,14 @@ public class Dcm2Dcm {
                 main.addCompressionParam("nearLossless",
                         cl.getParsedOptionValue("N"));
 
+            if (cl.hasOption("effort"))
+                main.addCompressionParam("effort",
+                        cl.getParsedOptionValue("effort"));
+
+            if (cl.hasOption("decoding-speed"))
+                main.addCompressionParam("decodingSpeed",
+                        cl.getParsedOptionValue("decoding-speed"));
+
             String[] cparams = cl.getOptionValues("C");
             if (cparams != null)
                 for (int i = 0; i < cparams.length;)
@@ -309,6 +339,8 @@ public class Dcm2Dcm {
                 : cl.hasOption("jlsn") ? UID.JPEGLSNearLossless
                 : cl.hasOption("j2kr") ? UID.JPEG2000Lossless
                 : cl.hasOption("j2ki") ? UID.JPEG2000
+                : cl.hasOption("jxll") ? UID.JPEGXLLossless
+                : cl.hasOption("jxly") ? UID.JPEGXL
                 : cl.getOptionValue("t", def);
     }
 

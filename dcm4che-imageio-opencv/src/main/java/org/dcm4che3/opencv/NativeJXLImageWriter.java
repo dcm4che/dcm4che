@@ -123,6 +123,7 @@ class NativeJXLImageWriter extends ImageWriter {
                 mat = ImageConversion.toMat(renderedImage, param.getSourceRegion(), true);
 
                 int bitCompressed = desc.getBitsCompressed();
+                bitCompressed = ((bitCompressed + 7) / 8) * 8;
                 int cvType = mat.type();
                 int channels = CvType.channels(cvType);
                 int epi = channels == 1 ? Imgcodecs.EPI_Monochrome2 : Imgcodecs.EPI_RGB;

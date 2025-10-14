@@ -824,4 +824,13 @@ public class AttributesTest {
 
         assertEquals(5, attributes.size());
     }
+
+    @Test
+    public void setString_GivenAttributeWithOBVR_SetsAttributeSuccessfully() throws IOException {
+        Attributes attributes = new Attributes();
+        attributes.setString(Tag.FileMetaInformationVersion, VR.OB, "00", "01");
+        byte[] expected = {0, 1};
+        byte[] actual = attributes.getBytes(Tag.FileMetaInformationVersion);
+        assertArrayEquals(expected, actual);
+    }
 }

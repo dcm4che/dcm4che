@@ -11,7 +11,7 @@
         <module name="org.slf4j"/>
 
         <!-- for json config storage -->
-        <module name="om.fasterxml.jackson.core.jackson-databind" export="true"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind" export="true"/>
 
         <module name="org.apache.commons.beanutils"/>
         <module name="org.apache.commons.lang"/>

@@ -61,6 +61,7 @@
   <el tag="7777xx2B" keyword="StudyExpirationState" vr="CS" vm="1">Study Expiration State</el>
   <el tag="7777xx2C" keyword="StudyExpirationExporterID" vr="LO" vm="1">Study Expiration Exporter ID</el>
   <el tag="7777xx2D" keyword="StudyModifiedDateTime" vr="DT" vm="1">Study Modified Date Time</el>
+  <el tag="7777xx2E" keyword="LogicalStudyID" vr="DT" vm="1">Logical Study ID</el>
   <el tag="7777xx30" keyword="SeriesReceiveDateTime" vr="DT" vm="1">Series Receive Date Time</el>
   <el tag="7777xx31" keyword="SeriesUpdateDateTime" vr="DT" vm="1">Series Update Date Time</el>
   <el tag="7777xx33" keyword="SeriesExpirationDate" vr="DA" vm="1">Series Expiration Date</el>

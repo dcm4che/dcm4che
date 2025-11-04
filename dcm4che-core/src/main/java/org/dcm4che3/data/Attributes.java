@@ -1745,6 +1745,7 @@ public class Attributes implements Serializable {
     private DateRange toDateRange(String da, String tm) {
         String[] darange = splitRange(da);
         String[] tmrange = splitRange(tm);
+        TimeZone tz = getTimeZone();
         DatePrecision precision = new DatePrecision();
         return new DateRange(
                 darange[0] == null ? null

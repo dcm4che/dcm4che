@@ -948,6 +948,28 @@ public class AttributesTest {
             assertEquals("CODE" + i, modifiedAttributes.getString(Tag.ValueType));
         }
     }
+    
+    @Test
+    public void updateRecursive_GivenSequenceWithOneItemAndSequenceWithNullInOriginal_UpdatesEntireSequence() {
+    	Attributes original = new Attributes();
+    	original.setValue(Tag.ContentSequence, VR.SQ, Value.NULL);
+        Attributes updated = new Attributes();
+        Sequence updatedSequence = updated.ensureSequence(Tag.ContentSequence, 1);
+
+        Attributes updatedContentItem = new Attributes();
+        updatedContentItem.setString(Tag.ValueType, VR.CS, "TEXT");
+        updatedContentItem.setString(Tag.TextValue, VR.UT, "Text Value");
+        updatedSequence.add(updatedContentItem);
+        
+        original.updateRecursive(updated);
+
+        Sequence sequence = original.getSequence(Tag.ContentSequence);
+        assertEquals(1, sequence.size());
+
+        Attributes attributes = sequence.get(0);
+        assertEquals("TEXT", attributes.getString(Tag.ValueType));
+        assertEquals("Text Value", attributes.getString(Tag.TextValue));
+    }
 
     private Attributes createOriginal() {
         Attributes original = new Attributes();

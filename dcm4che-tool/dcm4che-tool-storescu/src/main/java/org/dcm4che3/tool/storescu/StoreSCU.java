@@ -91,6 +91,8 @@ public class StoreSCU {
     private Attributes attrs;
     private String uidSuffix;
     private boolean relExtNeg;
+    private boolean noImplicitVRLittleEndian;
+    private boolean noExplicitVRLittleEndian;
     private int priority;
     private String tmpPrefix = "storescu-";
     private String tmpSuffix;
@@ -180,6 +182,8 @@ public class StoreSCU {
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
+        opts.addOption(null, "no-ivrle", false, rb.getString("no-ivrle"));
+        opts.addOption(null, "no-evrle", false, rb.getString("no-evrle"));
         addStoreTCOptions(opts);
         addTmpFileOptions(opts);
         addRelatedSOPClassOptions(opts);
@@ -215,6 +219,7 @@ public class StoreSCU {
                 .desc(rb.getString("store-tcs"))
                 .longOpt("store-tcs")
                 .build());
+
     }
 
     public static void addTmpFileOptions(Options opts) {
@@ -263,6 +268,8 @@ public class StoreSCU {
             if (echo) {
                 configureStorageSOPClasses(main, cl);
             } else {
+                main.setNoImplicitVRLittleEndian(cl.hasOption("no-ivrle"));
+                main.setNoExplicitVRLittleEndian(cl.hasOption("no-evrle"));
                 System.out.println(rb.getString("scanning"));
                 t1 = System.currentTimeMillis();
                 main.scanFiles(argList);
@@ -376,6 +383,14 @@ public class StoreSCU {
         relExtNeg = enable;
     }
 
+    public void setNoImplicitVRLittleEndian(boolean noImplicitVRLittleEndian) {
+        this.noImplicitVRLittleEndian = noImplicitVRLittleEndian;
+    }
+
+    public void setNoExplicitVRLittleEndian(boolean noExplicitVRLittleEndian) {
+        this.noExplicitVRLittleEndian = noExplicitVRLittleEndian;
+    }
+
     public void scanFiles(List<String> fnames) throws IOException {
         tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
         tmpFile.deleteOnExit();
@@ -460,11 +475,11 @@ public class StoreSCU {
             if (relExtNeg)
                 rq.addCommonExtendedNegotiation(relSOPClasses
                         .getCommonExtendedNegotiation(cuid));
-            if (!ts.equals(UID.ExplicitVRLittleEndian))
+            if (!ts.equals(UID.ExplicitVRLittleEndian) && !noExplicitVRLittleEndian)
                 rq.addPresentationContext(new PresentationContext(rq
                         .getNumberOfPresentationContexts() * 2 + 1, cuid,
                         UID.ExplicitVRLittleEndian));
-            if (!ts.equals(UID.ImplicitVRLittleEndian))
+            if (!ts.equals(UID.ImplicitVRLittleEndian) && !noImplicitVRLittleEndian)
                 rq.addPresentationContext(new PresentationContext(rq
                         .getNumberOfPresentationContexts() * 2 + 1, cuid,
                         UID.ImplicitVRLittleEndian));

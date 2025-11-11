@@ -62,6 +62,20 @@ Options:
                                           peer AE communicated during
                                           association establishment. 16378
                                           by default
+    --no-evrle                            indicates to do NOT offer a
+                                          Presentation Context with
+                                          Transfer Syntax Explicit VR
+                                          Little Endian
+                                          (1.2.840.10008.1.2.1) for
+                                          sending DICOM files stored with
+                                          a different Transfer Syntax.
+    --no-ivrle                            indicates to do NOT offer a
+                                          Presentation Context with
+                                          Transfer Syntax Implicit VR
+                                          Little Endian
+                                          (1.2.840.10008.1.2) for sending
+                                          DICOM files stored with a
+                                          different Transfer Syntax.
     --not-async                           do not use asynchronous mode;
                                           equivalent to
                                           --max-ops-invoked=1 and

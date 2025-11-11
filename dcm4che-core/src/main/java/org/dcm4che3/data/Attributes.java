@@ -2214,48 +2214,42 @@ public class Attributes implements Serializable {
             
                 if (!isEmpty(origValue) && modified != null) {
                     updateModified = true;
-             }
+                }
             }
 
             if (value instanceof Sequence) {
                 Sequence updated = (Sequence) value;
 
-                if (indexOfOriginal < 0 ) {
+                if (indexOfOriginal < 0 || !(origValue instanceof Sequence) || ((Sequence) origValue).isEmpty()) {
                     //Trying to recursively update an empty sequence, fallback to whole copy
                     set(privateCreator, tag, updated, null);
                 } else {
-                    Sequence original = (Sequence) values[indexOfOriginal];
+                    if (updated.isEmpty()) {
+                        continue;
+                    }
 
-                    if (original.size() == 0) {
-                        //as above, fallback to whole copy
+                    Sequence original = (Sequence) origValue;
+
+                    if (original.size() > 1 || updated.size() > 1) {
+                        if (modified != null) {
+                            modified.set(privateCreator, tag, original, null);
+                        }
+                        //Trying to recursively update a sequence with more than 1 item: fallback to whole copy
                         set(privateCreator, tag, updated, null);
                     } else {
-
-                        if (updated.size() == 0) {
-                            continue;
+                        Attributes modifiedSequenceAttributes = null;
+                    
+                        if (modified != null) {
+                            Sequence sequence = modified.ensureSequence(privateCreator, tag, 1);
+                            modifiedSequenceAttributes = new Attributes();
+                            sequence.add(modifiedSequenceAttributes);
                         }
-
-                        if (original.size() > 1 || updated.size() > 1) {
-                            if (modified != null) {
-                                modified.set(privateCreator, tag, (Sequence) origValue, null);
-                            }
-                            //Trying to recursively update a sequence with more than 1 item: fallback to whole copy
-                            set(privateCreator, tag, updated, null);
-                        } else {
-                            Attributes modifiedSequenceAttributes = null;
-                        
-                            if (modified != null) {
-                                Sequence sequence = modified.ensureSequence(privateCreator, tag, 1);
-                                modifiedSequenceAttributes = new Attributes();
-                                sequence.add(modifiedSequenceAttributes);
-                            }
-                            //both original and updated sequences have 1 item
-                            original.get(0).updateRecursive(updated.get(0), modifiedSequenceAttributes);
-                        }
+                        //both original and updated sequences have 1 item
+                        original.get(0).updateRecursive(updated.get(0), modifiedSequenceAttributes);
                     }
                 }
             } else if (value instanceof Fragments) {
-                if (updateModified) {
+                if (updateModified && origValue instanceof Fragments) {
                     modified.set(privateCreator, tag, (Fragments) origValue);
                 }
                 set(privateCreator, tag, (Fragments) value);

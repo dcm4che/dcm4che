@@ -35,7 +35,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-ear-plugin</artifactId>
-        <version>2.9</version>
+        <version>3.3.0</version>
         <configuration>
           <defaultLibBundleDir>lib</defaultLibBundleDir>
           <modules>
@@ -45,6 +45,8 @@
               <contextRoot>echoscp</contextRoot>
             </webModule>
           </modules>
+            <encoding>UTF-8</encoding>
+            <version>10</version>
         </configuration>
       </plugin>
     </plugins>

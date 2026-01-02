@@ -39,6 +39,7 @@
 package org.dcm4che3.conf.test;
 
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.lang.annotation.Annotation;
@@ -46,7 +47,6 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.Assert.fail;
 
 /**
  * @author Zoe Zhang <zoe.zhang@agfa.com>
@@ -59,7 +59,7 @@ public abstract class ConfigurablePropertiesTestBase {
             Optional<Field> primitiveWrapperField = checkForPrimitiveWrapperFields(clazz);
             if (primitiveWrapperField.isPresent()) {
                 Field theField = primitiveWrapperField.get();
-                fail("Field '" + theField.getName() + "' in class '" + clazz.getCanonicalName()
+                Assert.fail("Field '" + theField.getName() + "' in class '" + clazz.getCanonicalName()
                         + "' is of a primitive wrapper type of '" + theField.getType().getSimpleName() + "'.");
             }
         }

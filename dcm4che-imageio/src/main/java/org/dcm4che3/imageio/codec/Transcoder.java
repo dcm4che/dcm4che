@@ -172,6 +172,8 @@ public class Transcoder implements Closeable {
 
     private byte[] buffer;
 
+    private long encapsulatedPixelDataValueTotalLength;
+
     public Transcoder(File f) throws IOException {
         this(new DicomInputStream(f));
     }
@@ -370,6 +372,10 @@ public class Transcoder implements Closeable {
         return fileMetaInformation;
     }
 
+    public long getEncapsulatedPixelDataValueTotalLength() {
+        return encapsulatedPixelDataValueTotalLength;
+    }
+
     private void initDecompressor() {
         decompressorParam = ImageReaderFactory.getImageReaderParam(srcTransferSyntax);
         if (decompressorParam == null)
@@ -500,6 +506,7 @@ public class Transcoder implements Closeable {
                     dos.write(0);
                 }
             }
+            encapsulatedPixelDataValueTotalLength += dis.unsignedLength();
         }
 
         @Override

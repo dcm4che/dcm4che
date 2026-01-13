@@ -201,8 +201,8 @@ public class Json2Rst {
             out.print(ref.substring(0, ref.length()-12));
             out.print("` ");
             if (items != null) out.print("(s)");
+            refs.add(ref);
             if (totRefs.add(ref)) {
-                refs.add(ref);
                 inFiles.add(new File(indir, ref));
             }
         } else {

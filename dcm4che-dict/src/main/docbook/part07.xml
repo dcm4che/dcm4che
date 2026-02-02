@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2025d - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2026a - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2025</year>
+      <year>2026</year>
       <holder>NEMA</holder>
     </copyright>
       <legalnotice>
@@ -121,11 +121,11 @@
       <author>
         <orgname>ISO/IEC</orgname>
       </author>
-      <date>2016/05</date>
-      <edition>7.0</edition>
+      <date>2021</date>
+      <edition>9.0</edition>
       <title>Rules for the structure and drafting of International Standards</title>
       <bibliosource>
-        <link xl:href="http://www.iec.ch/members_experts/refdocs/iec/isoiecdir-2%7Bed7.0%7Den.pdf"/>
+        <link xl:href="http://www.iso.org/sites/directives/current/part2/index.xhtml"/>
       </bibliosource>
     </biblioentry>
       <biblioentry xml:id="biblio_ISO7498-1">

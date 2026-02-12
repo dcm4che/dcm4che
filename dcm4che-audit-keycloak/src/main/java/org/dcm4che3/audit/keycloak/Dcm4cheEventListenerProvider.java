@@ -96,7 +96,11 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
             case UPDATE_PASSWORD_ERROR:
                 auditLoggers().forEach(logger -> {
                     if (logger.isInstalled())
-                        AuditAuth.audit(event, logger, keycloakSession, suRole);
+                        try {
+                            AuditAuth.audit(event, logger, keycloakSession, suRole);
+                        } catch (Exception e) {
+                            LOG.warn("Unexpected exception on assembling audit message for: {}", event, e);
+                        }
                 });
         }
     }
@@ -106,7 +110,11 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
         LOG.debug("Event: {} {}", adminEvent.getOperationType(), adminEvent.getResourceTypeAsString());
         auditLoggers().forEach(logger -> {
             if (logger.isInstalled())
-                AdminEventsAuditService.audit(adminEvent, logger, keycloakSession);
+                try {
+                    AdminEventsAuditService.audit(adminEvent, logger, keycloakSession);
+                } catch (Exception e) {
+                    LOG.warn("Unexpected exception on assembling audit message for: {}", adminEvent, e);
+                }
         });
     }
 

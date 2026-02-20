@@ -59,6 +59,7 @@ import org.dcm4che3.data.BulkData;
 import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
+import org.dcm4che3.io.RandomAccessFileProvider;
 import org.opencv.osgi.OpenCVNativeLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,18 +119,25 @@ public abstract class StreamSegment {
         try {
 
                 ImageInputStream fstream = iis.getStream();
-                Field fRaf = null;
-                if (fstream instanceof FileImageInputStream) {
-                    fRaf = FileImageInputStream.class.getDeclaredField("raf");
+                RandomAccessFile raf = null;
+                if( fstream instanceof RandomAccessFileProvider) {
+                    raf = ((RandomAccessFileProvider) fstream).getRandomAccessFile();
+                    if( raf==null ) throw new NullPointerException("getRandomAccessFile on "+fstream+" returned null");
+                } else if (fstream instanceof FileImageInputStream) {
+                    // This will fail in later versions of Java
+                    Field fRaf = FileImageInputStream.class.getDeclaredField("raf");
+                    fRaf.setAccessible(true);
+                    raf = (RandomAccessFile) fRaf.get(fstream);
                 } else if (fstream instanceof FileCacheImageInputStream) {
-                    fRaf = FileCacheImageInputStream.class.getDeclaredField("cache");
+                    // This will fail in later versions of Java
+                    Field fRaf = FileCacheImageInputStream.class.getDeclaredField("cache");
+                    fRaf.setAccessible(true);
+                    raf = (RandomAccessFile) fRaf.get(fstream);
                 }
 
-                if (fRaf != null) {
-                    fRaf.setAccessible(true);
+                if (raf != null) {
                     long[][] seg = getSegments(iis);
                     if (seg != null) {
-                        RandomAccessFile raf = (RandomAccessFile) fRaf.get(fstream);
                         /*
                          * PS 3.5.8.2 Though a fragment may not contain encoded data from more than one frame, the
                          * encoded data from one frame may span multiple fragments. See note in Section 8.2.

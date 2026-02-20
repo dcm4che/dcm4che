@@ -9,7 +9,7 @@
   <packaging>bundle</packaging>
   <name>dcm4che-camel</name>
   <properties>
-    <camel.version>2.24.0</camel.version>
+    <camel.version>3.2.0</camel.version>
     <ldap>slapd</ldap>
   </properties>
   <dependencies>

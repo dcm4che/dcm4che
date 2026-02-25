@@ -38,25 +38,15 @@
 
 package org.dcm4che3.data;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.Date;
-
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.DatePrecision;
-import org.dcm4che3.data.DateRange;
-import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StringUtils;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Date;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -979,6 +969,23 @@ public class AttributesTest {
         byte[] expected = {0, 1};
         byte[] actual = attributes.getBytes(Tag.FileMetaInformationVersion);
         assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void addSelected_GivenNonConsecutivePrivateTags_ShouldKeepSelectedPrivateTags() {
+        Attributes original = new Attributes();
+        original.setString("PrivateCreatorA", 0x00991001, VR.LO, "0099xx01A");
+        original.setString("PrivateCreatorB", 0x00991101, VR.LO, "0099xx01B");
+        original.setString("PrivateCreatorC", 0x00991201, VR.LO, "0099xx01C");
+        Attributes selection = new Attributes();
+        selection.setNull("PrivateCreatorA", 0x00991001, VR.LO);
+        selection.setNull("PrivateCreatorC", 0x00991201, VR.LO);
+        Attributes filtered = new Attributes();
+        filtered.addSelected(original, selection);
+        assertTrue("Attributes should keep the element tag for PrivateCreatorA",
+                filtered.contains(0x00991001));
+        assertTrue("Attributes should keep the element tag for PrivateCreatorC",
+                filtered.contains(0x00991201));
     }
 
     private Attributes createOriginal() {

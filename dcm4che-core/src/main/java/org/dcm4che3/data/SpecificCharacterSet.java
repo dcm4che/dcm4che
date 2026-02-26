@@ -79,6 +79,7 @@ public class SpecificCharacterSet {
         ISO_8859_7(true, 0x2842, 0x2d46, 1),
         ISO_8859_8(true, 0x2842, 0x2d48, 1),
         ISO_8859_9(true, 0x2842, 0x2d4d, 1),
+        ISO_8859_15(true, 0x2842, 0x2d62, 1),
         JIS_X_201(true, 0x284a, 0x2949, 1) {
             @Override
             public String toText(String s) {
@@ -93,7 +94,7 @@ public class SpecificCharacterSet {
         UTF_8(true, 0, 0, -1),
         GB18030(false, 0, 0, -1);
 
-        private static final String[] charsetNames = resetCharsetNames(new String[18]);
+        private static final String[] charsetNames = resetCharsetNames(new String[19]);
         private final boolean containsASCII;
         private final int escSeq0;
         private final int escSeq1;
@@ -121,14 +122,15 @@ public class SpecificCharacterSet {
             charsetNames[7] = "ISO-8859-7";
             charsetNames[8] = "ISO-8859-8";
             charsetNames[9] = "ISO-8859-9";
-            charsetNames[10] = "JIS_X0201";
-            charsetNames[11] = "TIS-620";
-            charsetNames[12] = "x-JIS0208";
-            charsetNames[13] = "JIS_X0212-1990";
-            charsetNames[14] = "EUC-KR";
-            charsetNames[15] = "GB2312";
-            charsetNames[16] = "UTF-8";
-            charsetNames[17] = "GB18030";
+            charsetNames[10] = "ISO-8859-15";
+            charsetNames[11] = "JIS_X0201";
+            charsetNames[12] = "TIS-620";
+            charsetNames[13] = "x-JIS0208";
+            charsetNames[14] = "JIS_X0212-1990";
+            charsetNames[15] = "EUC-KR";
+            charsetNames[16] = "GB2312";
+            charsetNames[17] = "UTF-8";
+            charsetNames[18] = "GB18030";
             return charsetNames;
         }
 
@@ -172,6 +174,9 @@ public class SpecificCharacterSet {
                 case "ISO_IR 148":
                 case "ISO 2022 IR 148":
                     return Codec.ISO_8859_9;
+                case "ISO_IR 203":
+                case "ISO 2022 IR 203":
+                    return Codec.ISO_8859_15;
                 case "ISO_IR 13":
                 case "ISO 2022 IR 13":
                     return Codec.JIS_X_201;
@@ -481,6 +486,9 @@ public class SpecificCharacterSet {
                         case 0x2d4d:
                             switchCodec(codec, 1, Codec.ISO_8859_9);
                             break;
+                        case 0x2d62:
+                            switchCodec(codec, 1, Codec.ISO_8859_15);
+                            break;
                         case 0x2d54:
                             switchCodec(codec, 1, Codec.TIS_620);
                             break;
@@ -588,6 +596,8 @@ public class SpecificCharacterSet {
      *     <td>{@code ISO-8859-8}</td></tr>
      * <tr><td>{@code ISO_IR 148}</td>
      *     <td>{@code ISO-8859-9}</td></tr>
+     * <tr><td>{@code ISO_IR 203}</td>
+     *     <td>{@code ISO-8859-15}</td></tr>
      * <tr><td>{@code ISO_IR 13}</td>
      *     <td>{@code JIS_X0201}</td></tr>
      * <tr><td>{@code ISO_IR 166}</td>
@@ -596,7 +606,7 @@ public class SpecificCharacterSet {
      *     <td>{@code x-JIS0208}</td></tr>
      * <tr><td>{@code ISO 2022 IR 159}</td>
      *     <td>{@code JIS_X0212-1990}</td></tr>
-     * <tr><td>{@codeISO 2022 IR 149 }</td>
+     * <tr><td>{@code ISO 2022 IR 149 }</td>
      *     <td>{@code EUC-KR}</td></tr>
      * <tr><td>{@code ISO 2022 IR 58}</td>
      *     <td>{@code GB2312}</td></tr>
@@ -684,6 +694,9 @@ public class SpecificCharacterSet {
                 case "ISO 2022 IR 148":
                     codes[0] = "ISO_IR 148";
                     return true;
+                case "ISO 2022 IR 203":
+                    codes[0] = "ISO_IR 203";
+                    return true;
                 case "ISO 2022 IR 13":
                     codes[0] = "ISO_IR 13";
                     return true;
@@ -710,6 +723,7 @@ public class SpecificCharacterSet {
                     case "ISO_IR 126":
                     case "ISO_IR 138":
                     case "ISO_IR 148":
+                    case "ISO_IR 203":
                     case "ISO_IR 13":
                     case "ISO_IR 166":
                         if (results == codes) results = codes.clone();

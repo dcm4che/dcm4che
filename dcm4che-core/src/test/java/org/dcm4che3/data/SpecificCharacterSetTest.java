@@ -229,60 +229,59 @@ public class SpecificCharacterSetTest {
             (byte) 0x9e, (byte) 0x61 };
 
     private SpecificCharacterSet iso8859_1() {
-        return SpecificCharacterSet.valueOf(new String[] { "ISO_IR 100" });
+        return SpecificCharacterSet.valueOf("ISO_IR 100");
     }
 
     private SpecificCharacterSet iso8859_5() {
-        return SpecificCharacterSet.valueOf(new String[] { "ISO_IR 144" });
+        return SpecificCharacterSet.valueOf("ISO_IR 144");
     }
 
     private SpecificCharacterSet iso8859_6() {
-        return SpecificCharacterSet.valueOf(new String[] { "ISO_IR 127" });
+        return SpecificCharacterSet.valueOf("ISO_IR 127");
     }
 
     private SpecificCharacterSet iso8859_7() {
-        return SpecificCharacterSet.valueOf(new String[] { "ISO_IR 126" });
+        return SpecificCharacterSet.valueOf("ISO_IR 126");
     }
 
     private SpecificCharacterSet iso8859_8() {
-        return SpecificCharacterSet.valueOf(new String[] { "ISO_IR 138" });
+        return SpecificCharacterSet.valueOf("ISO_IR 138");
+    }
+
+    private SpecificCharacterSet iso8859_15() {
+        return SpecificCharacterSet.valueOf("ISO_IR 203");
     }
 
     private SpecificCharacterSet jisX0208() {
-        return SpecificCharacterSet.valueOf(
-                new String[] { null, "ISO 2022 IR 87" });
+        return SpecificCharacterSet.valueOf(null, "ISO 2022 IR 87");
     }
 
     private SpecificCharacterSet jisX0201() {
-        return SpecificCharacterSet.valueOf(
-                new String[] { "ISO 2022 IR 13", "ISO 2022 IR 87" });
+        return SpecificCharacterSet.valueOf("ISO 2022 IR 13", "ISO 2022 IR 87");
     }
 
     private SpecificCharacterSet jisX0201_withAlias() {
-        return SpecificCharacterSet.valueOf(
-                new String[] { "ISO_IR 13", "ISO 2022 IR 87" });
+        return SpecificCharacterSet.valueOf("ISO_IR 13", "ISO 2022 IR 87");
     }
 
     private SpecificCharacterSet ksx1001() {
-        return SpecificCharacterSet.valueOf(
-                new String[] { null, "ISO 2022 IR 149" });
+        return SpecificCharacterSet.valueOf(null, "ISO 2022 IR 149");
     }
 
     private SpecificCharacterSet gb2312() {
-        return SpecificCharacterSet.valueOf(
-                new String[] { null, "ISO 2022 IR 58" });
+        return SpecificCharacterSet.valueOf(null, "ISO 2022 IR 58");
     }
 
     private SpecificCharacterSet utf8() {
-        return SpecificCharacterSet.valueOf(new String[] { "ISO_IR 192" });
+        return SpecificCharacterSet.valueOf("ISO_IR 192");
     }
 
     private SpecificCharacterSet gb18030() {
-        return SpecificCharacterSet.valueOf(new String[] { "GB18030" });
+        return SpecificCharacterSet.valueOf("GB18030");
     }
 
     private SpecificCharacterSet gbk() {
-        return SpecificCharacterSet.valueOf(new String[] { "GBK" });
+        return SpecificCharacterSet.valueOf("GBK");
     }
 
     @Test
@@ -527,24 +526,14 @@ public class SpecificCharacterSetTest {
 
     @Test
     public void testEncodeFinnishPersonName8859_15() {
-        SpecificCharacterSet.setCharsetNameMapping("ISO_IR 100", "ISO-8859-15");
-        try {
-            assertArrayEquals(FINNISH_PERSON_NAME_8859_15_BYTES,
-                    iso8859_1().encode(FINNISH_PERSON_NAME, PN_DELIMS));
-        } finally {
-            SpecificCharacterSet.resetCharsetNameMappings();
-        }
+        assertArrayEquals(FINNISH_PERSON_NAME_8859_15_BYTES,
+                iso8859_15().encode(FINNISH_PERSON_NAME, PN_DELIMS));
     }
 
     @Test
     public void testDecodeFinnishPersonName8859_15() {
-        SpecificCharacterSet.setCharsetNameMapping("ISO_IR 100", "ISO-8859-15");
-        try {
-            assertEquals(FINNISH_PERSON_NAME,
-                    iso8859_1().decode(FINNISH_PERSON_NAME_8859_15_BYTES, PN_DELIMS));
-        } finally {
-            SpecificCharacterSet.resetCharsetNameMappings();
-        }
+        assertEquals(FINNISH_PERSON_NAME,
+                iso8859_15().decode(FINNISH_PERSON_NAME_8859_15_BYTES, PN_DELIMS));
     }
 
     @Test

@@ -833,4 +833,21 @@ public class AttributesTest {
         byte[] actual = attributes.getBytes(Tag.FileMetaInformationVersion);
         assertArrayEquals(expected, actual);
     }
+
+    @Test
+    public void addSelected_GivenNonConsecutivePrivateTags_ShouldKeepSelectedPrivateTags() {
+        Attributes original = new Attributes();
+        original.setString("PrivateCreatorA", 0x00991001, VR.LO, "0099xx01A");
+        original.setString("PrivateCreatorB", 0x00991101, VR.LO, "0099xx01B");
+        original.setString("PrivateCreatorC", 0x00991201, VR.LO, "0099xx01C");
+        Attributes selection = new Attributes();
+        selection.setNull("PrivateCreatorA", 0x00991001, VR.LO);
+        selection.setNull("PrivateCreatorC", 0x00991201, VR.LO);
+        Attributes filtered = new Attributes();
+        filtered.addSelected(original, selection);
+        assertTrue("Attributes should keep the element tag for PrivateCreatorA",
+                filtered.contains(0x00991001));
+        assertTrue("Attributes should keep the element tag for PrivateCreatorC",
+                filtered.contains(0x00991201));
+    }
 }

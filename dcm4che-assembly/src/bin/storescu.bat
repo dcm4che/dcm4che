@@ -44,6 +44,7 @@ set CP=%DCM4CHE_HOME%\etc\storescu\
 set CP=%CP%;%DCM4CHE_HOME%\etc\certs\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-dict-priv-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-${project.version}.jar

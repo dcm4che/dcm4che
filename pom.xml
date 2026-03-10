@@ -104,6 +104,7 @@
     <org.jvnet.mimepull.version>1.10.0</org.jvnet.mimepull.version>
     <org.jvnet.staxex.version>2.1.0</org.jvnet.staxex.version>
     <commons-cli.version>1.9.0</commons-cli.version>
+    <openjph.native.version>0.26.0</openjph.native.version>
 
     <!-- for SonarCloud / SonarQube -->
     <sonar.organization>dcm4che</sonar.organization>
@@ -205,6 +206,7 @@
     <module>dcm4che-image</module>
     <module>dcm4che-imageio</module>
     <module>dcm4che-imageio-opencv</module>
+    <module>dcm4che-imageio-openjph</module>
     <module>dcm4che-imageio-rle</module>
     <module>dcm4che-imageio-test</module>
     <module>dcm4che-json</module>
@@ -344,6 +346,34 @@
         <groupId>org.weasis.core</groupId>
         <artifactId>weasis-core-img</artifactId>
         <version>${weasis.core.img.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dcm4che</groupId>
+        <artifactId>dcm4che-openjph-native</artifactId>
+        <version>${openjph.native.version}</version>
+        <type>so</type>
+        <classifier>linux-x86-64</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.dcm4che</groupId>
+        <artifactId>dcm4che-openjph-native</artifactId>
+        <version>${openjph.native.version}</version>
+        <type>so</type>
+        <classifier>linux-aarch64</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.dcm4che</groupId>
+        <artifactId>dcm4che-openjph-native</artifactId>
+        <version>${openjph.native.version}</version>
+        <type>dll</type>
+        <classifier>windows-x86-64</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.dcm4che</groupId>
+        <artifactId>dcm4che-openjph-native</artifactId>
+        <version>${openjph.native.version}</version>
+        <type>dylib</type>
+        <classifier>macosx-aarch64</classifier>
       </dependency>
     </dependencies>
   </dependencyManagement>

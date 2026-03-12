@@ -43,11 +43,11 @@ import java.io.IOException;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.impl.DefaultConsumer;
-import org.apache.camel.util.AsyncProcessorHelper;
-import org.dcm4che3.data.Tag;
+import org.apache.camel.support.DefaultConsumer;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.net.Association;
+import org.dcm4che3.net.Commands;
 import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.DimseRQHandler;
 import org.dcm4che3.net.PDVInputStream;
@@ -59,7 +59,7 @@ import org.dcm4che3.net.service.DicomServiceException;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DicomConsumer extends DefaultConsumer implements DimseRQHandler{
+public class DicomConsumer extends DefaultConsumer implements DimseRQHandler {
 
     public DicomConsumer(DicomEndpoint endpoint, Processor processor) {
         super(endpoint, processor);
@@ -88,60 +88,66 @@ public class DicomConsumer extends DefaultConsumer implements DimseRQHandler{
 
     @Override
     public void onClose(Association as) {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
             Attributes cmd, PDVInputStream data) throws IOException {
         final int msgid = cmd.getInt(Tag.MessageID, 0);
-        Exchange exchange = getEndpoint().createExchange(dimse, cmd, data, pc.getTransferSyntax());
-        AsyncCallback callback = new EndpointDimseRQHandlerAsyncCallback(
-                as, pc, dimse, msgid, exchange);
-        AsyncProcessorHelper.process(getAsyncProcessor(), exchange, callback);
+
+        Attributes dicomData = new Attributes();
+
+        if (data != null) {
+            dicomData = data.readDataset(pc.getTransferSyntax());
+        }
+
+        Exchange exchange = getEndpoint().createExchange();
+        DicomMessage dicomMessage = new DicomMessage(exchange, dimse, cmd, dicomData, pc.getTransferSyntax());
+
+        exchange.getIn().setBody(dicomMessage);
+
+        AsyncCallback callback = new EndpointDimseRQHandlerAsyncCallback(as, pc, dimse, msgid, exchange, cmd);
+        getAsyncProcessor().process(exchange, callback);
     }
 
     private final class EndpointDimseRQHandlerAsyncCallback
-        implements AsyncCallback {
-    
+            implements AsyncCallback {
+
         private final Association as;
         private final PresentationContext pc;
         private final Dimse dimse;
         private final int msgId;
         private final Exchange exchange;
-    
+        private final Attributes cmds;
+
         public EndpointDimseRQHandlerAsyncCallback(Association as,
                 PresentationContext pc, Dimse dimse, int msgId,
-                Exchange exchange) {
+                Exchange exchange, Attributes cmds) {
             this.as = as;
             this.pc = pc;
             this.dimse = dimse;
             this.msgId = msgId;
             this.exchange = exchange;
+            this.cmds = cmds;
         }
-    
+
         @Override
         public void done(boolean doneSync) {
             Attributes cmd;
-            Attributes data;
+            Attributes data = null;
+
             if (exchange.getException() != null) {
-                DicomServiceException dse;
                 Exception ex = exchange.getException();
-                if (ex instanceof DicomServiceException) {
-                    dse = (DicomServiceException) ex;
-                } else {
-                    dse = new DicomServiceException(Status.ProcessingFailure, ex);
-                }
+                DicomServiceException dse = (ex instanceof DicomServiceException) ? (DicomServiceException) ex : new DicomServiceException(Status.ProcessingFailure, ex);
                 cmd = dse.mkRSP(dimse.commandFieldOfRSP(), msgId);
                 data = dse.getDataset();
             } else {
-                DicomMessage out = exchange.getOut(DicomMessage.class);
-                cmd = out.getCommand();
-                data = out.getBody(Attributes.class);
+                cmd = Commands.mkRSP(cmds, Status.Success, dimse);
             }
+
             as.tryWriteDimseRSP(pc, cmd, data);
         }
-    
+
+
     }
 }

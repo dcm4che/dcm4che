@@ -49,4 +49,11 @@ public interface TCPProtocolHandler {
 
     void onAccept(Connection conn, Socket s) throws IOException;
 
+    /**
+     * Optional extension for proxy info. Default delegates to the simple version.
+     */
+    default void onAccept(Connection conn, Socket s, ProxyProtocol.Info proxyInfo) throws IOException {
+        onAccept(conn, s);
+    }	
+
 }

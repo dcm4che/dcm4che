@@ -1,0 +1,20 @@
+DCM4CHE.elementName.addDictionary({
+"privateCreator":"SIEMENS MED SP DXMG WH AWS 1",
+"0019xx01":"AEC Coordinates",
+"0019xx02":"AEC Coordinates Size",
+"0019xx10":"Derivation Description",
+"0041xx02":"Reason for the Requested Procedure",
+"0051xx10":"?",
+"0051xx20":"?",
+"0051xx21":"?",
+"0051xx32":"?",
+"0051xx37":"?",
+"0051xx50":"?",
+"0051xx60":"Primary Positioner Scan Arc",
+"0051xx61":"Secondary Positioner Scan Arc",
+"0051xx62":"Primary Positioner Scan Start Angle",
+"0051xx63":"Secondary Positioner Scan Start Angle",
+"0051xx64":"Primary Positioner Increment",
+"0051xx65":"Secondary Positioner Increment",
+"0055xx01":"Projection View Display String"
+});

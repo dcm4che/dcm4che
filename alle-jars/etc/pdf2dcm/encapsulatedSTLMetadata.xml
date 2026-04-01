@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NativeDicomModel xml:space="preserve">
+    <DicomAttribute keyword="PatientID" tag="00100020" vr="LO"/>
+    <DicomAttribute keyword="PatientName" tag="00100010" vr="PN"/>
+    <DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA"/>
+    <DicomAttribute keyword="PatientSex" tag="00100040" vr="CS"/>
+    <DicomAttribute keyword="StudyDate" tag="00080020" vr="DA"/>
+    <DicomAttribute keyword="StudyTime" tag="00080030" vr="TM"/>
+    <DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN"/>
+    <DicomAttribute keyword="StudyID" tag="00200010" vr="SH"/>
+    <DicomAttribute keyword="AccessionNumber" tag="00080050" vr="SH"/>
+    <DicomAttribute keyword="SeriesNumber" tag="00200011" vr="IS">
+        <Value number="1">1</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="Modality" tag="00080060" vr="CS">
+        <Value number="1">M3D</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="Manufacturer" tag="00080070" vr="LO">
+        <Value number="1">UNKNOWN</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="ManufacturerModelName" tag="00081090" vr="LO">
+        <Value number="1">UNKNOWN</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="DeviceSerialNumber" tag="00181000" vr="LO">
+        <Value number="1">UNKNOWN</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="SoftwareVersions" tag="00181020" vr="LO">
+        <Value number="1">UNKNOWN</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="InstanceNumber" tag="00200013" vr="IS">
+        <Value number="1">1</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="MIMETypeOfEncapsulatedDocument" tag="00420012" vr="LO">
+        <Value number="1">model/stl</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="SOPClassUID" tag="00080016" vr="UI">
+        <Value number="1">1.2.840.10008.5.1.4.1.1.104.3</Value>
+    </DicomAttribute>
+    <DicomAttribute keyword="DocumentTitle" tag="00420010" vr="ST"/>
+    <DicomAttribute keyword="PositionReferenceIndicator" tag="00201040" vr="LO"/>
+    <DicomAttribute keyword="ConceptNameCodeSequence" tag="0040A043" vr="SQ"/>
+    <DicomAttribute keyword="MeasurementUnitsCodeSequence" tag="004008EA" vr="SQ">
+        <Item number="1">
+            <DicomAttribute keyword="CodeValue" tag="00080100" vr="SH">
+                <Value number="1">mm</Value>
+            </DicomAttribute>
+            <DicomAttribute keyword="CodingSchemeDesignator" tag="00080102" vr="SH">
+                <Value number="1">UCUM</Value>
+            </DicomAttribute>
+            <DicomAttribute keyword="CodeMeaning" tag="00080104" vr="LO">
+                <Value number="1">mm</Value>
+            </DicomAttribute>
+        </Item>
+    </DicomAttribute>
+    <DicomAttribute keyword="BurnedInAnnotation" tag="00280301" vr="CS">
+        <Value number="1">YES</Value>
+    </DicomAttribute>
+</NativeDicomModel>

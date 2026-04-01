@@ -1,0 +1,21 @@
+DCM4CHE.elementName.addDictionary({
+"privateCreator":"Applicare/Workflow/Version 1.0",
+"3113xx01":"Order Control",
+"3113xx10":"Scheduled Action Item Code Value",
+"3113xx11":"Scheduled Action Item Coding Scheme Designator",
+"3113xx12":"Scheduled Action Item Code Meaning",
+"3113xx15":"Requested Action Item Code Value",
+"3113xx16":"Requested Action Item Coding Scheme Designator",
+"3113xx17":"Requested Action Item Code Meaning",
+"3113xx20":"Performed Action Item Code Value",
+"3113xx21":"Performed Action Item Coding Scheme Designator",
+"3113xx22":"Performed Action Item Code Meaning",
+"3113xx25":"Performed Procedure Code Value",
+"3113xx26":"Performed Procedure Coding Scheme Designator",
+"3113xx27":"Performed Procedure Code Meaning",
+"3113xx30":"Referenced Image SOP Class UID",
+"3113xx31":"Referenced Image SOP Instance UID",
+"3113xxE0":"Locked By Hostname",
+"3113xxE1":"Locked By User",
+"3113xxE2":"KfEdit Lock User"
+});

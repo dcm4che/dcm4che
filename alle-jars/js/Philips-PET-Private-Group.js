@@ -1,0 +1,23 @@
+DCM4CHE.elementName.addDictionary({
+"privateCreator":"Philips PET Private Group",
+"0511xx00":"Private Data",
+"7053xx00":"SUV Factor",
+"7053xx03":"Original File Name",
+"7053xx04":"?",
+"7053xx05":"Worklist Info File Name",
+"7053xx06":"?",
+"7053xx07":"?",
+"7053xx08":"?",
+"7053xx09":"Activity Concentration Scale Factor",
+"7053xx0F":"?",
+"7053xx10":"?",
+"7053xx11":"?",
+"7053xx12":"?",
+"7053xx13":"?",
+"7053xx14":"?",
+"7053xx15":"?",
+"7053xx16":"?",
+"7053xx17":"?",
+"7053xx18":"?",
+"7053xxC2":"?"
+});

@@ -1,0 +1,11 @@
+DCM4CHE.elementName.addDictionary({
+"privateCreator":"AgilityRuntime",
+"0011xx20":"?",
+"0011xx21":"?",
+"0011xx22":"?",
+"0029xx11":"?",
+"0029xx12":"?",
+"0029xx13":"?",
+"0029xx14":"?",
+"0029xx1F":"?"
+});

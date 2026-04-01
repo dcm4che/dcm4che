@@ -1,0 +1,22 @@
+DCM4CHE.elementName.addDictionary({
+"privateCreator":"GEMS_CT_CARDIAC_001",
+"0049xx01":"CT Cardiac Sequence",
+"0049xx02":"Heart Rate At Confirm",
+"0049xx03":"Avg Heart Rate Prior To Confirm",
+"0049xx04":"Min Heart Rate Prior To Confirm",
+"0049xx05":"Max Heart Rate Prior To Confirm",
+"0049xx06":"Std Dev Heart Rate Prior To Confirm",
+"0049xx07":"Num Heart Rate Samples Prior To Confirm",
+"0049xx08":"Auto Heart Rate Detect Predict",
+"0049xx09":"System Optimized Heart Rate",
+"0049xx0A":"Ekg Monitor Type",
+"0049xx0B":"Num Recon Sectors",
+"0049xx0C":"Rpeak Time Stamps",
+"0049xx16":"Ekg Gating Type",
+"0049xx1B":"Ekg Wave Time Off First Data Point",
+"0049xx22":"Temporal Alg",
+"0049xx23":"Phase Location",
+"0049xx24":"Pre Blended Cycle 1",
+"0049xx25":"Pre Blended Cycle 2",
+"0049xx26":"Compression Alg"
+});

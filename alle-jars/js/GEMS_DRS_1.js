@@ -1,0 +1,9 @@
+DCM4CHE.elementName.addDictionary({
+"privateCreator":"GEMS_DRS_1",
+"0037xx10":"ReferringDepartment",
+"0037xx20":"ScreenNumber",
+"0037xx40":"LeftOrientation",
+"0037xx42":"RightOrientation",
+"0037xx50":"Inversion",
+"0037xx60":"DSA"
+});

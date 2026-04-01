@@ -1,0 +1,20 @@
+DCM4CHE.elementName.addDictionary({
+"privateCreator":"SPI-P-Private_ICS Release 1;1",
+"0029xx00":"?",
+"0029xx05":"?",
+"0029xx06":"?",
+"0029xx20":"?",
+"0029xx21":"?",
+"0029xxC0":"?",
+"0029xxC1":"?",
+"0029xxCB":"?",
+"0029xxCC":"?",
+"0029xxCD":"?",
+"0029xxD0":"?",
+"0029xxD1":"?",
+"0029xxD2":"?",
+"0029xxD3":"?",
+"0029xxD4":"?",
+"0029xxD5":"?",
+"0029xxD6":"?"
+});

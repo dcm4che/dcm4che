@@ -1,0 +1,20 @@
+DCM4CHE.elementName.addDictionary({
+"privateCreator":"PHILIPS NM -Private",
+"7051xx00":"Current Segment",
+"7051xx01":"Number of Segments",
+"7051xx02":"Segment Start Position",
+"7051xx03":"Segment Stop Position",
+"7051xx04":"Relative COR offset - X direction",
+"7051xx05":"Relative COR offset - Z direction",
+"7051xx06":"Current Rotation Number",
+"7051xx07":"Number of Rotations",
+"7051xx10":"Alignment Translations",
+"7051xx11":"Alignment Rotations",
+"7051xx12":"Alignment Timestamp",
+"7051xx15":"Related Xray Series Instance UID",
+"7051xx25":"?",
+"7051xx26":"?",
+"7051xx27":"?",
+"7051xx28":"?",
+"7051xx29":"?"
+});

@@ -1,0 +1,22 @@
+DCM4CHE.elementName.addDictionary({
+"privateCreator":"Siemens: Thorax/Multix FD Lab Settings",
+"0019xx00":"?",
+"0019xx01":"?",
+"0019xx02":"Total Dose Area Product uGy*cm*cm",
+"0019xx03":"?",
+"0019xx04":"?",
+"0019xx05":"?",
+"0019xx06":"Table Object Distance",
+"0019xx07":"Table Detector Distance",
+"0019xx08":"Ortho Step Distance",
+"0021xx08":"Auto Window Flag",
+"0021xx09":"Auto Window Center",
+"0021xx0A":"Auto Window Width",
+"0021xx0B":"Filter ID",
+"0021xx14":"Anatomic Correct View",
+"0021xx15":"Auto Window Shift",
+"0021xx16":"Auto Window Expansion",
+"0021xx17":"System Type",
+"0021xx30":"Anatomic Sort Number",
+"0021xx31":"AcquisitionSortNumber"
+});

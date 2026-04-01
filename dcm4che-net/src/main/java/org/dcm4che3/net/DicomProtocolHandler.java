@@ -39,6 +39,7 @@
 package org.dcm4che3.net;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
@@ -51,6 +52,19 @@ enum DicomProtocolHandler implements TCPProtocolHandler {
     @Override
     public void onAccept(Connection conn, Socket s) throws IOException {
         new Association(null, conn, s);
+    }
+	
+	/**
+     * Overload called from TCPListener when PROXY protocol is enabled.
+     * This gives us access to both the receiving IP and the proxied (original client) IP.
+     */
+    @Override
+    public void onAccept(Connection conn, Socket s, ProxyProtocol.Info proxyInfo) throws IOException {
+        if (proxyInfo != null) {
+            new Association(null, conn, s, proxyInfo.receivingRemote, proxyInfo.proxiedRemote);
+        } else {
+            new Association(null, conn, s);
+        }
     }
 
 }

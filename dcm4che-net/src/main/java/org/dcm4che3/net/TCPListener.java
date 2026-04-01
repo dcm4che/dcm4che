@@ -40,6 +40,8 @@ package org.dcm4che3.net;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.security.GeneralSecurityException;
@@ -56,6 +58,7 @@ class TCPListener implements Listener {
 
     private final Connection conn;
     private final TCPProtocolHandler handler;
+	private final boolean proxyProtocolEnabled;
     private final ServerSocket ss;
 
     public TCPListener(Connection conn, TCPProtocolHandler handler)
@@ -64,6 +67,7 @@ class TCPListener implements Listener {
         
             this.conn = conn;
             this.handler = handler;
+			this.proxyProtocolEnabled = conn.isProxyProtocolEnabled();
             ss = conn.isTls() ? createTLSServerSocket(conn) : new ServerSocket();
             conn.setReceiveBufferSize(ss);
             ss.bind(conn.getBindPoint(), conn.getBacklog());
@@ -92,44 +96,77 @@ class TCPListener implements Listener {
     private void listen() {
         SocketAddress sockAddr = ss.getLocalSocketAddress();
         Connection.LOG.info("Start TCP Listener on {}", sockAddr);
+
         try {
             while (!ss.isClosed()) {
                 Connection.LOG.debug("Wait for connection on {}", sockAddr);
-                Socket s = ss.accept();
+                Socket rawSocket = ss.accept();   // original socket from accept()
+
+                // === PROXY PROTOCOL SUPPORT - parse as early as possible ===
+                Socket socketToUse = rawSocket;
+                ProxyProtocol.Info proxyInfo = null;
+
+                if (conn.isProxyProtocolEnabled()) {
+                    try {
+						Connection.LOG.info("read Proxy protocol ");
+                        proxyInfo = ProxyProtocol.parse(rawSocket);
+						Connection.LOG.info("Proxy read : {} ",rawSocket.getRemoteSocketAddress() );
+                        socketToUse = new ProxySocket(rawSocket,
+                                proxyInfo.proxiedRemote,
+                                proxyInfo.receivingRemote,proxyInfo.pbInputStream);
+                    } catch (Exception e) {
+                        Connection.LOG.warn("Failed to parse PROXY protocol from {} - falling back to LB IP", rawSocket.getRemoteSocketAddress(), e);
+                        // socketToUse remains rawSocket (LB IP)
+                    }
+                }
+
                 ConnectionMonitor monitor = conn.getDevice() != null
                         ? conn.getDevice().getConnectionMonitor()
                         : null;
-                if (conn.isBlackListed(s.getInetAddress())) {
-                    if (monitor != null)
-                        monitor.onConnectionRejectedBlacklisted(conn, s);
-                    Connection.LOG.info("Reject blacklisted connection {}", s);
-                    conn.close(s);
-                } else {
-                    try {
-                        conn.setSocketSendOptions(s);
-                    } catch (Throwable e) {
-                        if (monitor != null)
-                            monitor.onConnectionRejected(conn, s, e);
-                        Connection.LOG.warn("Reject connection {}:",s, e);
-                        conn.close(s);
-                        continue;
-                    }
 
+                // Blacklist check now always uses the best available client IP
+                InetAddress clientAddress = socketToUse.getInetAddress();
+
+                if (conn.isBlackListed(clientAddress)) {
                     if (monitor != null)
-                        monitor.onConnectionAccepted(conn, s);
-                    Connection.LOG.info("Accept connection {}", s);
-                    try {
-                        handler.onAccept(conn, s);
-                    } catch (Throwable e) {
-                        Connection.LOG.warn("Exception on accepted connection {}:",s, e);
-                        conn.close(s);
-                    }
+                        monitor.onConnectionRejectedBlacklisted(conn, socketToUse);
+                    Connection.LOG.info("Reject blacklisted connection from {}", clientAddress);
+                    conn.close(rawSocket);   // always close the original socket
+                    continue;
+                }
+
+                // Normal processing
+                try {
+                    conn.setSocketSendOptions(socketToUse);
+                } catch (Throwable e) {
+                    if (monitor != null)
+                        monitor.onConnectionRejected(conn, socketToUse, e);
+                    Connection.LOG.warn("Reject connection {}:", socketToUse, e);
+                    conn.close(rawSocket);
+                    continue;
+                }
+
+                if (monitor != null)
+                    monitor.onConnectionAccepted(conn, socketToUse);
+
+                Connection.LOG.info("Accept connection from {}", socketToUse);
+
+                try {
+					if (proxyInfo != null) {
+						handler.onAccept(conn, socketToUse, proxyInfo);
+					} else {
+						handler.onAccept(conn, socketToUse);
+					}
+                } catch (Throwable e) {
+                    Connection.LOG.warn("Exception on accepted connection {}:", socketToUse, e);
+                    conn.close(rawSocket);
                 }
             }
         } catch (Throwable e) {
-            if (!ss.isClosed()) // ignore exception caused by close()
-                Connection.LOG.error("Exception on listing on {}:", sockAddr, e);
+            if (!ss.isClosed())
+                Connection.LOG.error("Exception on listening on {}:", sockAddr, e);
         }
+
         Connection.LOG.info("Stop TCP Listener on {}", sockAddr);
     }
 

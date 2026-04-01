@@ -78,9 +78,6 @@ public final class ProxyProtocol {
      */
     public static Info parse(Socket socket) throws IOException {
 		PushbackInputStream pbIn = new PushbackInputStream(socket.getInputStream(), 512);
-        //InputStream rawIn = socket.getInputStream();
-        //PushbackInputStream pbIn = new PushbackInputStream(rawIn, 512);
-		//rawIn.mark(512);
 
         SocketAddress recvRemoteSA = socket.getRemoteSocketAddress();
         SocketAddress recvLocalSA = socket.getLocalSocketAddress();
@@ -109,9 +106,8 @@ public final class ProxyProtocol {
         } else if (isV1Signature(buf)) {
             return parseV1(pbIn, buf, receivingRemote, receivingLocal);
         } else {
-            // No PROXY header → push the 12 bytes back for DICOM layer
+            // No PROXY header push the 12 bytes back for DICOM layer
             pbIn.unread(buf, 0, 12);
-           // in.reset(); 
             return new Info(receivingRemote, receivingRemote, receivingLocal,pbIn);
         }
     }

@@ -89,7 +89,6 @@ public class ProxySocket extends Socket {
 
     @Override
     public InputStream getInputStream() throws IOException {
-       // return delegate.getInputStream();
 	   return this.pbInputStream;
     }
 

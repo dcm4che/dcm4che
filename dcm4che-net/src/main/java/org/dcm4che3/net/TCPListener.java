@@ -102,7 +102,6 @@ class TCPListener implements Listener {
                 Connection.LOG.debug("Wait for connection on {}", sockAddr);
                 Socket rawSocket = ss.accept();   // original socket from accept()
 
-                // === PROXY PROTOCOL SUPPORT - parse as early as possible ===
                 Socket socketToUse = rawSocket;
                 ProxyProtocol.Info proxyInfo = null;
 
@@ -116,7 +115,6 @@ class TCPListener implements Listener {
                                 proxyInfo.receivingRemote,proxyInfo.pbInputStream);
                     } catch (Exception e) {
                         Connection.LOG.warn("Failed to parse PROXY protocol from {} - falling back to LB IP", rawSocket.getRemoteSocketAddress(), e);
-                        // socketToUse remains rawSocket (LB IP)
                     }
                 }
 

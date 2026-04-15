@@ -567,6 +567,8 @@ public class AuditMessages {
         public static final String Table = "22";
         public static final String RoutingCriteria = "23";
         public static final String Query = "24";
+        public static final String DataSource = "25";
+        public static final String ProcessingElement = "26";
     }
 
     public static final class ParticipantObjectDataLifeCycle {

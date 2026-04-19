@@ -1,11 +1,13 @@
 package org.dcm4che3.data;
 
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
 
@@ -67,6 +69,8 @@ public class BulkDataTest {
 
     @Test
     public void getFile_uncPathWithAuthority() {
+        Assume.assumeTrue("UNC paths only work on Windows",
+                System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("windows"));
         // Reproduces https://github.com/dcm4che/dcm4che/issues/1562
         // file: URI with authority component (e.g. WSL or network share)
         String uri = "file://wsl.localhost/Ubuntu-24.04/home/spe/test/AIRAmed%20Demo%20MS/test.pdf";
@@ -77,6 +81,8 @@ public class BulkDataTest {
 
     @Test
     public void getFile_uncPathWithAuthorityAndOffsetLength() {
+        Assume.assumeTrue("UNC paths only work on Windows",
+                System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("windows"));
         String uri = "file://wsl.localhost/Ubuntu-24.04/home/spe/test/AIRAmed%20Demo%20MS/test.pdf";
         BulkData bd = new BulkData(uri, 1030, 2820688, false);
         File result = bd.getFile();

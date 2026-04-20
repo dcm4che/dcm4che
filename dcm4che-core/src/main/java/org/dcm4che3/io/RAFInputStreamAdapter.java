@@ -45,7 +45,7 @@ import java.io.RandomAccessFile;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class RAFInputStreamAdapter extends InputStream {
+public class RAFInputStreamAdapter extends InputStream implements RandomAccessFileProvider{
 
     private final RandomAccessFile raf;
     private long markedPos;
@@ -92,5 +92,9 @@ public class RAFInputStreamAdapter extends InputStream {
     @Override
     public boolean markSupported() {
         return true;
+    }
+
+    @Override public RandomAccessFile getRandomAccessFile() {
+        return raf;
     }
 }

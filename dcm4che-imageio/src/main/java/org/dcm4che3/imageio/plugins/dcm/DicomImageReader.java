@@ -76,6 +76,7 @@ import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
 import org.dcm4che3.imageio.stream.ImageInputStreamAdapter;
+import org.dcm4che3.imageio.stream.RAFFileImageInputStream;
 import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomInputStream;
@@ -296,7 +297,7 @@ public class DicomImageReader extends ImageReader implements Closeable {
     private void openiis() throws IOException {
         if (iis == null) {
             if (pixelDataFile != null) {
-                iis = new FileImageInputStream(pixelDataFile);
+                iis = new RAFFileImageInputStream(pixelDataFile);
             } else if (pixeldataBytes != null) {
                 iis = new SegmentedInputImageStream(pixeldataBytes);
             }

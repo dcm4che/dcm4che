@@ -72,6 +72,7 @@ import org.dcm4che3.data.Value;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
+import org.dcm4che3.imageio.stream.RAFFileImageInputStream;
 import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
@@ -277,7 +278,7 @@ public class Decompressor {
 
     public FileImageInputStream createImageInputStream()
             throws IOException {
-        return new FileImageInputStream(file);
+        return new RAFFileImageInputStream(file);
     }
 
     public void writeFrameTo(ImageInputStream iis, int frameIndex,

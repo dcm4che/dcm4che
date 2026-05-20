@@ -9,19 +9,6 @@ public class ByteLookupTable extends LookupTable {
         this.lut = lut;
     }
 
-    ByteLookupTable(StoredValue inBits, int outBits, int minOut, int maxOut, int offset, int size, boolean flip) {
-        this(inBits, outBits, offset, new byte[minOut == maxOut ? 1 : size]);
-        if (lut.length == 1) {
-            lut[0] = (byte) minOut;
-        } else {
-            int maxIndex = size - 1;
-            int midIndex = maxIndex / 2;
-            int outRange = maxOut - minOut;
-            for (int i = 0; i < size; i++)
-                lut[flip ? maxIndex - i : i] = (byte) ((i * outRange + midIndex) / maxIndex + minOut);
-        }
-    }
-
     @Override
     public int length() {
         return lut.length;

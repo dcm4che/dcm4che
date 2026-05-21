@@ -161,7 +161,7 @@ public class BasicBulkDataDescriptor implements BulkDataDescriptor {
             sb.append(vr.next());
             while (vr.hasNext())
                 sb.append(',').append(vr.next());
-            ss[i] = sb.append('=').append(entry.getKey()).toString();
+            ss[i++] = sb.append('=').append(entry.getKey()).toString();
         }
         return ss;
     }

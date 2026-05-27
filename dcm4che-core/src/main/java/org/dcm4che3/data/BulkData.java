@@ -41,6 +41,7 @@ package org.dcm4che3.data;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.DicomObjectInputFilter;
 import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
 
@@ -54,6 +55,12 @@ import java.net.URL;
  * @author Bill Wallace <wayfarer3130@gmail.com>
  */
 public class BulkData implements Value, Serializable {
+
+    // Force DicomObjectInputFilter class init so its JVM-wide filter factory
+    // is in place before this class — a known deserialization sink (#1581) —
+    // is involved in any ObjectInputStream construction.
+    @SuppressWarnings("unused")
+    private static final boolean DICOM_FILTER_INITIALIZED = DicomObjectInputFilter.touch();
 
     public static final int MAGIC_LEN = 0xfbfb;
 
@@ -230,10 +237,15 @@ public class BulkData implements Value, Serializable {
 
     private void readObject(ObjectInputStream ois)
             throws IOException, ClassNotFoundException {
-        ois.defaultReadObject();
-        uuid = StringUtils.maskEmpty(ois.readUTF(), null);
-        setURI(StringUtils.maskEmpty(ois.readUTF(), null));
-        bigEndian = ois.readBoolean();
+        DicomObjectInputFilter.install(ois);
+        try {
+            ois.defaultReadObject();
+            uuid = StringUtils.maskEmpty(ois.readUTF(), null);
+            setURI(StringUtils.maskEmpty(ois.readUTF(), null));
+            bigEndian = ois.readBoolean();
+        } finally {
+            DicomObjectInputFilter.uninstall(ois);
+        }
     }
 
     @Override

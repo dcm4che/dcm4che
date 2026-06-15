@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2026a - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2026c - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -186,7 +186,7 @@
           <date>September 1993</date>
           <title>The Kerberos Network Authentication Service (V5)</title>
           <bibliosource>
-              <link xl:href="http://tools.ietf.org/html/rfc1510"/>
+              <link xl:href="http://www.rfc-editor.org/info/rfc1510"/>
           </bibliosource>
       </biblioentry>
       <biblioentry xml:id="biblio_RFC_2289">
@@ -197,7 +197,7 @@
           <date>February 1998</date>
           <title>A One-Time Password System</title>
           <bibliosource>
-              <link xl:href="http://tools.ietf.org/html/rfc2289"/>
+              <link xl:href="http://www.rfc-editor.org/info/rfc2289"/>
           </bibliosource>
       </biblioentry>
       <biblioentry xml:id="biblio_RFC_6750">
@@ -208,7 +208,7 @@
           <date>October 2012</date>
           <title>The OAuth 2.0 Authorization Framework: Bearer Token Usage</title>
           <bibliosource>
-              <link xl:href="http://tools.ietf.org/html/rfc6750"/>
+              <link xl:href="http://www.rfc-editor.org/info/rfc6750"/>
           </bibliosource>
       </biblioentry>
       <biblioentry xml:id="biblio_RFC_7519">
@@ -219,7 +219,7 @@
           <date>May 2015</date>
           <title>JSON Web Token (JWT)</title>
           <bibliosource>
-              <link xl:href="http://tools.ietf.org/html/rfc7519"/>
+              <link xl:href="http://www.rfc-editor.org/info/rfc7519"/>
           </bibliosource>
       </biblioentry>
       <biblioentry xml:id="biblio_RFC_7662">
@@ -230,7 +230,7 @@
           <date>October 2015</date>
           <title>OAuth 2.0 Token Introspection</title>
           <bibliosource>
-              <link xl:href="http://tools.ietf.org/html/rfc7662"/>
+              <link xl:href="http://www.rfc-editor.org/info/rfc7662"/>
           </bibliosource>
       </biblioentry>
       <biblioentry xml:id="biblio_OASIS_SAML_V2">

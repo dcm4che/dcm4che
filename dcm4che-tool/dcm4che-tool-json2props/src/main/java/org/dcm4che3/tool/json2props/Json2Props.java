@@ -41,9 +41,7 @@
 
 package org.dcm4che3.tool.json2props;
 
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
+import jakarta.json.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -151,6 +149,28 @@ public class Json2Props {
                     writer.write(property.getString("description").replace("\\", "\\\\"));
                     writer.write('\r');
                     writer.write('\n');
+                    JsonObject items = property.getJsonObject("items");
+                    JsonArray anEnum = (items != null ? items : property).getJsonArray("enum");
+                    if (anEnum != null) {
+                        for (int i = 0; i < anEnum.size(); i++) {
+                            JsonValue jsonValue = anEnum.get(i);
+                            if (jsonValue instanceof JsonString) {
+                                String s = ((JsonString) jsonValue).getString();
+                                int endIndex = s.indexOf('|');
+                                if (endIndex != -1) {
+                                    writer.write(prefix);
+                                    writer.write(name);
+                                    writer.write('.');
+                                    writer.write(s.substring(0, endIndex));
+                                    writer.write(':');
+                                    writer.write(s.substring(endIndex + 1)
+                                            .replace("\\", "\\\\"));
+                                    writer.write('\r');
+                                    writer.write('\n');
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -195,6 +215,8 @@ public class Json2Props {
                 String line;
                 String indent = "  ";
                 int endTitle = -1;
+                int startEnumValue;
+                int endEnumValue;
                 int field = 3;
                 int fieldAfterDescription = 3;
                 String key = prefix.substring(0, prefix.length() - 1);
@@ -240,6 +262,26 @@ public class Json2Props {
                                         field = 1;
                                     } else {
                                         invalidProperties.add(key);
+                                    }
+                                }
+                            } else if (line.trim().startsWith("\"enum\"")) {
+                                field = 5;
+                            }
+                            break;
+                        case 5:
+                            if (line.trim().startsWith("]")) {
+                                field = 4;
+                            } else {
+                                startEnumValue = line.indexOf('\"') + 1;
+                                endEnumValue = line.indexOf('|', startEnumValue);
+                                if (endEnumValue > 0) {
+                                    value = props.getProperty(key + '.' + line.substring(startEnumValue, endEnumValue));
+                                    if (value != null) {
+                                        line = line.substring(0, endEnumValue + 1)
+                                                + value.trim()
+                                                    .replace("\\", "\\\\")
+                                                    .replace("\"", "\\\"")
+                                                + line.substring(line.lastIndexOf('\"'));
                                     }
                                 }
                             }

@@ -267,7 +267,7 @@
       "description": "network connections of the device",
       "type": "array",
       "order":25,
-      "titleKey":"{dicomHostname}:{dicomPort} {cn}",
+      "titleKey": "{dicomHostname}:{dicomPort} {cn}",
       "items": {
         "$ref": "networkConnection.schema.json"
       }
@@ -276,7 +276,7 @@
       "title": "Network AEs",
       "description": "Application entity provided by the device",
       "type": "array",
-      "titleKey":"{dicomAETitle}",
+      "titleKey": "{dicomAETitle}",
       "order":26,
       "items": {
         "$ref": "networkAE.schema.json"

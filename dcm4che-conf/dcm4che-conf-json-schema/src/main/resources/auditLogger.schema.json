@@ -220,7 +220,7 @@
       "title": "Audit Suppress Criteria",
       "description": "Audit Suppress Criteria",
       "type": "array",
-      "titleKey":"{cn}",
+      "titleKey": "{cn}",
       "items": {
         "$ref": "auditSuppressCriteria.schema.json"
       }

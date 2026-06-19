@@ -38,6 +38,7 @@
 
 package org.dcm4che3.data;
 
+import java.util.Locale;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.util.ByteUtils;
@@ -48,6 +49,7 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -140,10 +142,14 @@ public class BulkData implements Value, Serializable {
 
     public File getFile() {
         try {
-            return new File(new URI(uriWithoutOffsetAndLength()));
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException("uri: " + uri);
-        } catch (IllegalArgumentException e) {
+            URI u = new URI(uriWithoutOffsetAndLength());
+            if (u.getAuthority() != null && System.getProperty("os.name")
+                .toLowerCase(Locale.ENGLISH).startsWith("windows")) {
+                // UNC path (e.g. file://wsl.localhost/... or file://server/share/...)
+                return new File("\\\\" + u.getAuthority() + u.getPath());
+            }
+            return Paths.get(u).toFile();
+        } catch (URISyntaxException | IllegalArgumentException e) {
             throw new IllegalStateException("uri: " + uri);
         }
     }

@@ -185,6 +185,12 @@ public class TransferCapability implements Serializable {
                 StringUtils.requireContainsNoEmpty(transferSyntaxes, "empty transferSyntax");
     }
 
+    public String[] preferredTransferSyntaxes() {
+        return prefTransferSyntaxes.length > 0
+                ? prefTransferSyntaxes
+                : ae.getPreferredTransferSyntaxes();
+    }
+
     public boolean containsTransferSyntax(String ts) {
         return "*".equals(transferSyntaxes[0]) || StringUtils.contains(transferSyntaxes, ts);
     }
@@ -197,9 +203,7 @@ public class TransferCapability implements Serializable {
         if (acceptable.isEmpty())
             return null;
 
-        for (String prefTransferSyntax : prefTransferSyntaxes.length > 0
-                ? prefTransferSyntaxes
-                : ae.getPreferredTransferSyntaxes())
+        for (String prefTransferSyntax : preferredTransferSyntaxes())
             if (acceptable.contains(prefTransferSyntax))
                 return prefTransferSyntax;
 

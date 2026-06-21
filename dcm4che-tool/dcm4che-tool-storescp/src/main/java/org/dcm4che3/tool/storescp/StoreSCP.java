@@ -259,10 +259,18 @@ public class StoreSCP {
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
         addRenameRetryOptions(opts);
+		addProxyProtocolOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StoreSCP.class);
     }
 
-    private static void addStatusOption(Options opts) {
+    private static void addProxyProtocolOption(Options opts) {
+       opts.addOption(Option.builder()
+                .longOpt("proxy")
+                .desc("Enable PROXY protocol v1/v2 support (for load balancers like HAProxy)")
+                .build());
+    }
+	
+	private static void addStatusOption(Options opts) {
         opts.addOption(Option.builder()
                 .hasArg()
                 .argName("code")
@@ -335,6 +343,7 @@ public class StoreSCP {
             main.setResponseDelays(CLIUtils.getIntsOption(cl, "response-delay"));
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);
+			configureProxyProtocol(main, cl);
             main.setRenameRetries(CLIUtils.getIntOption(cl, "rename-retries", 3));
             main.setRenameRetryJitter(CLIUtils.getIntOption(cl, "rename-retry-jitter", 50));
             ExecutorService executorService = Executors.newCachedThreadPool();
@@ -354,6 +363,13 @@ public class StoreSCP {
         }
     }
     
+	private static void configureProxyProtocol(StoreSCP main, CommandLine cl) {
+        if (cl.hasOption("proxy")) {
+            main.conn.setProxyProtocolEnabled(true);
+			LOG.info("PROXY protocol enabled via command line");
+        }
+    }
+	
     private static void configureStorageDirectory(StoreSCP main, CommandLine cl) {
         if (!cl.hasOption("ignore")) {
             main.setStorageDirectory(

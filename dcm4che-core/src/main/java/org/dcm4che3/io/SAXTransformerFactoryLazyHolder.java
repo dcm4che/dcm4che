@@ -65,17 +65,17 @@ public class SAXTransformerFactoryLazyHolder {
                             "JAVAX_XML_ACCESS_EXTERNAL_STYLESHEET",
                             "file"));
         }
-    }
 
-    private static String getPropertyOrEnv(String property, String env, String def) {
-        String value = System.getProperty(property);
-        if (value == null) {
-            value = System.getenv(env);
+        private static String getPropertyOrEnv(String property, String env, String def) {
+            String value = System.getProperty(property);
             if (value == null) {
-                value = def;
+                value = System.getenv(env);
+                if (value == null) {
+                    value = def;
+                }
             }
+            return value;
         }
-        return value;
     }
 
     public static SAXTransformerFactory getInstance() {

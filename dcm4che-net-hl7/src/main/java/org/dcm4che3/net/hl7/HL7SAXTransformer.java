@@ -49,14 +49,13 @@ import org.dcm4che3.hl7.HL7ContentHandler;
 import org.dcm4che3.hl7.HL7Parser;
 import org.dcm4che3.io.ContentHandlerAdapter;
 import org.dcm4che3.io.SAXTransformer;
+import org.dcm4che3.io.SAXTransformerFactoryLazyHolder;
 import org.dcm4che3.io.SAXWriter;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import java.io.*;
 
@@ -68,15 +67,13 @@ public class HL7SAXTransformer {
 
     private HL7SAXTransformer() {}
 
-    private static SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
-
     public static Attributes transform(byte[] data, String hl7charset, String dicomCharset, Templates templates,
             SAXTransformer.SetupTransformer setup)
             throws TransformerConfigurationException, IOException, SAXException {
         Attributes attrs = new Attributes();
         if (dicomCharset != null)
             attrs.setString(Tag.SpecificCharacterSet, VR.CS, dicomCharset);
-        TransformerHandler th = factory.newTransformerHandler(templates);
+        TransformerHandler th = SAXTransformerFactoryLazyHolder.getInstance().newTransformerHandler(templates);
         th.setResult(new SAXResult(new ContentHandlerAdapter(attrs)));
         if (setup != null)
             setup.setup(th.getTransformer());
@@ -92,7 +89,7 @@ public class HL7SAXTransformer {
             throws TransformerConfigurationException, SAXException, UnsupportedEncodingException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        TransformerHandler th = factory.newTransformerHandler(templates);
+        TransformerHandler th = SAXTransformerFactoryLazyHolder.getInstance().newTransformerHandler(templates);
         th.setResult(new SAXResult(new HL7ContentHandler(new OutputStreamWriter(out, HL7Charset.toCharsetName(hl7charset)))));
         if (setup != null)
             setup.setup(th.getTransformer());

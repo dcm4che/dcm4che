@@ -43,9 +43,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.dcm4che3.data.Attributes;
@@ -59,9 +57,6 @@ public abstract class SAXTransformer {
     public interface SetupTransformer {
         void setup(Transformer transformer);
     }
-
-    private static SAXTransformerFactory factory =
-            (SAXTransformerFactory) TransformerFactory.newInstance();
 
     public static SAXWriter getSAXWriter(Templates templates, Attributes result)
             throws TransformerConfigurationException {
@@ -84,7 +79,7 @@ public abstract class SAXTransformer {
     public static SAXWriter getSAXWriter(Templates templates, Result result,
             SetupTransformer setup)
             throws TransformerConfigurationException {
-        return getSAXWriter(factory.newTransformerHandler(templates),
+        return getSAXWriter(SAXTransformerFactoryLazyHolder.getInstance().newTransformerHandler(templates),
                 result,
                 setup);
     }
@@ -96,7 +91,7 @@ public abstract class SAXTransformer {
 
     public static SAXWriter getSAXWriter(Result result, SetupTransformer setup)
             throws TransformerConfigurationException {
-        return getSAXWriter(factory.newTransformerHandler(), result, setup);
+        return getSAXWriter(SAXTransformerFactoryLazyHolder.getInstance().newTransformerHandler(), result, setup);
     }
 
     private static SAXWriter getSAXWriter(TransformerHandler th, Result result,
@@ -129,6 +124,6 @@ public abstract class SAXTransformer {
 
     public static Templates newTemplates(Source source)
             throws TransformerConfigurationException {
-        return factory.newTemplates(source);
+        return SAXTransformerFactoryLazyHolder.getInstance().newTemplates(source);
     }
 }

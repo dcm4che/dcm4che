@@ -52,15 +52,30 @@ public class SAXTransformerFactoryLazyHolder {
         static {
             factory = (SAXTransformerFactory) TransformerFactory.newInstance();
             try {
-                String property = System.getProperty("javax.xml.featureSecureProcessing");
-                if (property == null) {
-                    property = System.getenv("JAVAX_XML_FEATURE_SECURE_PROCESSING");
-                }
-                factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, !"false".equalsIgnoreCase(property));
+                factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, !"false".equalsIgnoreCase(
+                        getPropertyOrEnv(
+                                "javax.xml.featureSecureProcessing",
+                                "JAVAX_XML_FEATURE_SECURE_PROCESSING",
+                                null)));
             } catch (TransformerConfigurationException e) {
                 throw new AssertionError("All implementations are required to support the XMLConstants.FEATURE_SECURE_PROCESSING feature", e);
             }
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET,
+                    getPropertyOrEnv( "javax.xml.accessExternalStylesheet",
+                            "JAVAX_XML_ACCESS_EXTERNAL_STYLESHEET",
+                            "file"));
         }
+    }
+
+    private static String getPropertyOrEnv(String property, String env, String def) {
+        String value = System.getProperty(property);
+        if (value == null) {
+            value = System.getenv(env);
+            if (value == null) {
+                value = def;
+            }
+        }
+        return value;
     }
 
     public static SAXTransformerFactory getInstance() {

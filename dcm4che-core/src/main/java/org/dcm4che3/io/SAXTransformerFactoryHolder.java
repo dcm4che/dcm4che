@@ -46,40 +46,33 @@ import javax.xml.transform.sax.SAXTransformerFactory;
  * @author Gunter Zeilinger <gunterze@protonmail.com>
  * @since Jun 2026
  */
-public class SAXTransformerFactoryLazyHolder {
-    private static class LazyHolder {
-        static final SAXTransformerFactory factory;
-        static {
-            factory = (SAXTransformerFactory) TransformerFactory.newInstance();
-            try {
-                factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, !"false".equalsIgnoreCase(
-                        getPropertyOrEnv(
-                                "javax.xml.featureSecureProcessing",
-                                "JAVAX_XML_FEATURE_SECURE_PROCESSING",
-                                null)));
-            } catch (TransformerConfigurationException e) {
-                throw new AssertionError("All implementations are required to support the XMLConstants.FEATURE_SECURE_PROCESSING feature", e);
-            }
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET,
-                    getPropertyOrEnv( "javax.xml.accessExternalStylesheet",
-                            "JAVAX_XML_ACCESS_EXTERNAL_STYLESHEET",
-                            "file"));
+public class SAXTransformerFactoryHolder {
+    public static final SAXTransformerFactory factory;
+    static {
+        factory = (SAXTransformerFactory) TransformerFactory.newInstance();
+        try {
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, !"false".equalsIgnoreCase(
+                    getPropertyOrEnv(
+                            "javax.xml.featureSecureProcessing",
+                            "JAVAX_XML_FEATURE_SECURE_PROCESSING",
+                            null)));
+        } catch (TransformerConfigurationException e) {
+            throw new AssertionError("All implementations are required to support the XMLConstants.FEATURE_SECURE_PROCESSING feature", e);
         }
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET,
+                getPropertyOrEnv( "javax.xml.accessExternalStylesheet",
+                        "JAVAX_XML_ACCESS_EXTERNAL_STYLESHEET",
+                        "file"));
+    }
 
-        private static String getPropertyOrEnv(String property, String env, String def) {
-            String value = System.getProperty(property);
+    private static String getPropertyOrEnv(String property, String env, String def) {
+        String value = System.getProperty(property);
+        if (value == null) {
+            value = System.getenv(env);
             if (value == null) {
-                value = System.getenv(env);
-                if (value == null) {
-                    value = def;
-                }
+                value = def;
             }
-            return value;
         }
+        return value;
     }
-
-    public static SAXTransformerFactory getInstance() {
-        return LazyHolder.factory;
-    }
-
 }

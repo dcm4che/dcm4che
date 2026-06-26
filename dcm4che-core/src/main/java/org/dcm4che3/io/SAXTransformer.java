@@ -79,7 +79,7 @@ public abstract class SAXTransformer {
     public static SAXWriter getSAXWriter(Templates templates, Result result,
             SetupTransformer setup)
             throws TransformerConfigurationException {
-        return getSAXWriter(SAXTransformerFactoryLazyHolder.getInstance().newTransformerHandler(templates),
+        return getSAXWriter(SAXTransformerFactoryHolder.factory.newTransformerHandler(templates),
                 result,
                 setup);
     }
@@ -91,7 +91,7 @@ public abstract class SAXTransformer {
 
     public static SAXWriter getSAXWriter(Result result, SetupTransformer setup)
             throws TransformerConfigurationException {
-        return getSAXWriter(SAXTransformerFactoryLazyHolder.getInstance().newTransformerHandler(), result, setup);
+        return getSAXWriter(SAXTransformerFactoryHolder.factory.newTransformerHandler(), result, setup);
     }
 
     private static SAXWriter getSAXWriter(TransformerHandler th, Result result,
@@ -124,6 +124,6 @@ public abstract class SAXTransformer {
 
     public static Templates newTemplates(Source source)
             throws TransformerConfigurationException {
-        return SAXTransformerFactoryLazyHolder.getInstance().newTemplates(source);
+        return SAXTransformerFactoryHolder.factory.newTemplates(source);
     }
 }

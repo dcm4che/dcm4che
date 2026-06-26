@@ -49,7 +49,7 @@ import org.dcm4che3.hl7.HL7ContentHandler;
 import org.dcm4che3.hl7.HL7Parser;
 import org.dcm4che3.io.ContentHandlerAdapter;
 import org.dcm4che3.io.SAXTransformer;
-import org.dcm4che3.io.SAXTransformerFactoryLazyHolder;
+import org.dcm4che3.io.SAXTransformerFactoryHolder;
 import org.dcm4che3.io.SAXWriter;
 import org.xml.sax.SAXException;
 
@@ -73,7 +73,7 @@ public class HL7SAXTransformer {
         Attributes attrs = new Attributes();
         if (dicomCharset != null)
             attrs.setString(Tag.SpecificCharacterSet, VR.CS, dicomCharset);
-        TransformerHandler th = SAXTransformerFactoryLazyHolder.getInstance().newTransformerHandler(templates);
+        TransformerHandler th = SAXTransformerFactoryHolder.factory.newTransformerHandler(templates);
         th.setResult(new SAXResult(new ContentHandlerAdapter(attrs)));
         if (setup != null)
             setup.setup(th.getTransformer());
@@ -89,7 +89,7 @@ public class HL7SAXTransformer {
             throws TransformerConfigurationException, SAXException, UnsupportedEncodingException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        TransformerHandler th = SAXTransformerFactoryLazyHolder.getInstance().newTransformerHandler(templates);
+        TransformerHandler th = SAXTransformerFactoryHolder.factory.newTransformerHandler(templates);
         th.setResult(new SAXResult(new HL7ContentHandler(new OutputStreamWriter(out, HL7Charset.toCharsetName(hl7charset)))));
         if (setup != null)
             setup.setup(th.getTransformer());

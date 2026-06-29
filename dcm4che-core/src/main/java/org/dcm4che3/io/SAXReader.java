@@ -57,8 +57,7 @@ public class SAXReader {
             throws ParserConfigurationException, SAXException, IOException {
         if (attrs == null)
             attrs = new Attributes();
-        SAXParserFactory f = SAXParserFactory.newInstance();
-        SAXParser parser = f.newSAXParser();
+        SAXParser parser = SAXParserFactoryHolder.factory.newSAXParser();
         parser.parse(uri, new ContentHandlerAdapter(attrs));
         return attrs;
     }
@@ -67,8 +66,7 @@ public class SAXReader {
             throws ParserConfigurationException, SAXException, IOException {
         if (attrs == null)
             attrs = new Attributes();
-        SAXParserFactory f = SAXParserFactory.newInstance();
-        SAXParser parser = f.newSAXParser();
+        SAXParser parser = SAXParserFactoryHolder.factory.newSAXParser();
         parser.parse(is, new ContentHandlerAdapter(attrs));
         return attrs;
     }

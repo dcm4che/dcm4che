@@ -53,6 +53,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.dcm4che3.io.SAXParserFactoryHolder;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.StringUtils;
@@ -390,8 +391,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
 
     public void parse(String uri) throws IOException {
         try {
-            SAXParserFactory f = SAXParserFactory.newInstance();
-            SAXParser parser = f.newSAXParser();
+            SAXParser parser = SAXParserFactoryHolder.factory.newSAXParser();
             parser.parse(uri, new SAXHandler(this));
         } catch (SAXException e) {
             throw new IOException("Failed to parse " + uri, e);

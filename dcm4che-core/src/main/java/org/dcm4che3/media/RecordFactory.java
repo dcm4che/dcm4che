@@ -53,6 +53,7 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.ContentHandlerAdapter;
+import org.dcm4che3.io.SAXParserFactoryHolder;
 import org.dcm4che3.util.ResourceLocator;
 import org.xml.sax.SAXException;
 
@@ -144,8 +145,7 @@ public class RecordFactory {
     private Attributes parseXML(String uri)
             throws ParserConfigurationException, SAXException, IOException {
         Attributes attrs = new Attributes();
-        SAXParserFactory f = SAXParserFactory.newInstance();
-        SAXParser parser = f.newSAXParser();
+        SAXParser parser = SAXParserFactoryHolder.factory.newSAXParser();
         parser.parse(uri, new ContentHandlerAdapter(attrs));
         return attrs;
     }

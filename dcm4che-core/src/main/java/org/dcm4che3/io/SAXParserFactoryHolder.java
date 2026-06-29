@@ -38,33 +38,30 @@
 package org.dcm4che3.io;
 
 import org.dcm4che3.util.StringUtils;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 import javax.xml.XMLConstants;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@protonmail.com>
  * @since Jun 2026
  */
-public class SAXTransformerFactoryHolder {
-    public static final SAXTransformerFactory factory;
+public class SAXParserFactoryHolder {
+    public static final SAXParserFactory factory;
+
     static {
-        factory = (SAXTransformerFactory) TransformerFactory.newInstance();
+        factory = SAXParserFactory.newInstance();
         try {
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, !"false".equalsIgnoreCase(
                     StringUtils.getPropertyOrEnv(
                             "javax.xml.featureSecureProcessing",
                             "JAVAX_XML_FEATURE_SECURE_PROCESSING",
                             null)));
-        } catch (TransformerConfigurationException e) {
+        } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException e) {
             throw new AssertionError("All implementations are required to support the XMLConstants.FEATURE_SECURE_PROCESSING feature", e);
         }
-        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET,
-                StringUtils.getPropertyOrEnv( "javax.xml.accessExternalStylesheet",
-                        "JAVAX_XML_ACCESS_EXTERNAL_STYLESHEET",
-                        "file"));
     }
-
 }

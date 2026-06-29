@@ -419,4 +419,15 @@ public class StringUtils {
             requireNotEmpty(s, message);
         return ss;
     }
+
+    public static String getPropertyOrEnv(String property, String env, String def) {
+        String value = System.getProperty(property);
+        if (value == null) {
+            value = System.getenv(env);
+            if (value == null) {
+                value = def;
+            }
+        }
+        return value;
+    }
 }

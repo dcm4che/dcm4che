@@ -121,6 +121,7 @@
         <include>org.dcm4che:dcm4che-image</include>
         <include>org.dcm4che:dcm4che-imageio</include>
         <include>org.dcm4che:dcm4che-imageio-opencv</include>
+        <include>org.dcm4che:dcm4che-imageio-openjph</include>
         <include>org.dcm4che:dcm4che-imageio-rle</include>
         <include>org.dcm4che:dcm4che-json</include>
         <include>org.dcm4che:dcm4che-mime</include>
@@ -238,6 +239,17 @@
       <includes>
         <include>*:*:so:linux-x86-64:*</include>
       </includes>
+      <excludes>
+        <exclude>org.dcm4che:dcm4che-openjph-native</exclude>
+      </excludes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>libopenjph_jni.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/linux-x86-64</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-openjph-native:so:linux-x86-64:*</include>
+      </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
@@ -253,6 +265,17 @@
       <outputDirectory>lib/linux-aarch64</outputDirectory>
       <includes>
         <include>*:*:so:linux-aarch64:*</include>
+      </includes>
+      <excludes>
+        <exclude>org.dcm4che:dcm4che-openjph-native</exclude>
+      </excludes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>libopenjph_jni.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/linux-aarch64</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-openjph-native:so:linux-aarch64:*</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
@@ -270,6 +293,17 @@
       <includes>
         <include>*:*:dylib:macosx-aarch64:*</include>
       </includes>
+      <excludes>
+        <exclude>org.dcm4che:dcm4che-openjph-native</exclude>
+      </excludes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>libopenjph_jni.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/macosx-aarch64</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-openjph-native:dylib:macosx-aarch64:*</include>
+      </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
@@ -285,6 +319,17 @@
       <outputDirectory>lib/windows-x86-64</outputDirectory>
       <includes>
         <include>*:*:dll:windows-x86-64:*</include>
+      </includes>
+      <excludes>
+        <exclude>org.dcm4che:dcm4che-openjph-native</exclude>
+      </excludes>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputFileNameMapping>openjph_jni.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>lib/windows-x86-64</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-openjph-native:dll:windows-x86-64:*</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>

@@ -152,7 +152,7 @@ public class IDWithIssuer {
      * Test if this ID equals other ID and this issuer matches other issuer.
      * If this ID equals other ID but only this or other is qualified by an issuer, the test fails.
      *
-     * @param other-the @{code IDWithIssuer} to compare.
+     * @param other the @{code IDWithIssuer} to compare.
      * @return {@code true}, if this ID equals other ID and this issuer matches other issuer, otherwise {@code false}.
      */
     public boolean matches(IDWithIssuer other) {

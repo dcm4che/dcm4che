@@ -22,7 +22,7 @@ public class IntHashMapTest {
     public void setUp() throws Exception {
         map = new IntHashMap<Integer>();
         for (int i = 1; i < 45; i += 3)
-            map.put(i, Integer.valueOf(i));
+            map.put(i, i);
     }
 
     private void removeOdd() {
@@ -55,7 +55,7 @@ public class IntHashMapTest {
     public void testPut() {
         removeOdd();
         for (int i = 0; i < 45; i++)
-            map.put(i, Integer.valueOf(i));
+            map.put(i, i);
         assertEquals(45, map.size());
         for (int i = 0; i < 45; i++)
             assertEquals(Integer.valueOf(i), map.get(i));

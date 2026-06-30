@@ -2,7 +2,11 @@ package org.dcm4che3.util;
 
 import static org.junit.Assert.*;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -11,6 +15,8 @@ import org.dcm4che3.data.DatePrecision;
 import org.dcm4che3.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
+import java.time.LocalDate;
+import java.time.DateTimeException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -52,6 +58,23 @@ public class DateUtilsTest {
     }
 
     @Test
+    public void testParseLocalDA() {
+        assertEquals(LocalDate.of(1970, 1, 1), DateUtils.parseLocalDA("19700101"));
+        assertEquals(LocalDate.of(1970, 1, 1), DateUtils.parseLocalDA("1970.01.01"));
+        assertEquals(LocalDate.of(1970, 1, 1), DateUtils.parseLocalDA("1970-01-01"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testParseLocalDA_MixedSeparators() {
+        DateUtils.parseLocalDA("1970.01-01");
+    }
+
+    @Test(expected = DateTimeException.class)
+    public void testParseLocalDA_InvalidDate() {
+        DateUtils.parseLocalDA("20230229");
+    }
+
+    @Test
     public void testParseDA() {
         assertEquals(-2 * HOUR,
                 DateUtils.parseDA(tz, "19700101").getTime());
@@ -82,6 +105,7 @@ public class DateUtilsTest {
         assertEquals(LocalTime.of(2,0,0,1000), DateUtils.parseLocalTM( "020000.000001", precision));
         assertEquals(LocalTime.of(2,0,0,123_000_000), DateUtils.parseLocalTM( "020000.123", precision));
         assertEquals(LocalTime.of(23,59,59,999_999_000), DateUtils.parseLocalTM( "235959.999999", precision));
+        assertEquals(LocalTime.of(12, 0, 0, 123_456_789), DateUtils.parseLocalTM("120000.123456789", precision));
     }
 
     @Test
@@ -109,6 +133,19 @@ public class DateUtilsTest {
     }
 
     @Test
+    public void testParseTMrounding() {
+        DatePrecision precision = new DatePrecision();
+        assertEquals(123, cal(tz, DateUtils.parseTM(tz, "120000.1234", precision)).get(Calendar.MILLISECOND));
+        assertEquals(124, cal(tz, DateUtils.parseTM(tz, "120000.1235", precision)).get(Calendar.MILLISECOND));
+    }
+
+    private Calendar cal(TimeZone tz, Date date) {
+        Calendar cal = Calendar.getInstance(tz);
+        cal.setTime(date);
+        return cal;
+    }
+
+    @Test
     public void testParseDT() {
         DatePrecision precision = new DatePrecision();
         assertEquals(0,
@@ -133,6 +170,22 @@ public class DateUtilsTest {
                 DateUtils.parseDT(tz, "1970", true, precision).getTime());
         assertEquals(Calendar.YEAR, precision.lastField);
         assertFalse(precision.includeTimezone);
+    }
+
+    @Test
+    public void testFormatTimezoneOffsetFromUTC() {
+        assertEquals("+0200", DateUtils.formatTimezoneOffsetFromUTC(tz));
+        assertEquals("-0500", DateUtils.formatTimezoneOffsetFromUTC(TimeZone.getTimeZone("GMT-05:00")));
+    }
+
+    @Test
+    public void testParseTemporalDT() {
+        DatePrecision precision = new DatePrecision();
+        Temporal result = DateUtils.parseTemporalDT("19700101120000", precision);
+        assertEquals(LocalDateTime.of(1970, 1, 1, 12, 0), result);
+
+        result = DateUtils.parseTemporalDT("19700101120000+0200", precision);
+        assertEquals(OffsetDateTime.of(1970, 1, 1, 12, 0, 0, 0, ZoneOffset.ofHours(2)), result);
     }
 
 }

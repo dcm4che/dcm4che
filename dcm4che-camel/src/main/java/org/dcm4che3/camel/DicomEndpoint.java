@@ -36,19 +36,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.camel;
+ package org.dcm4che3.camel;
 
 import org.apache.camel.Consumer;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.impl.DefaultEndpoint;
+import org.apache.camel.support.DefaultEndpoint;
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.PDVInputStream;
-import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.util.StringUtils;
 
 /**
@@ -83,7 +81,6 @@ public class DicomEndpoint extends DefaultEndpoint {
 
     @Override
     public Producer createProducer() throws Exception {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -94,13 +91,12 @@ public class DicomEndpoint extends DefaultEndpoint {
 
     @Override
     public boolean isSingleton() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     public Exchange createExchange(Dimse dimse, Attributes cmd, PDVInputStream data, String ts) {
         Exchange exchange = super.createExchange();
-        exchange.setIn(new DicomMessage(dimse, cmd, data, ts));
+        exchange.setIn(new DicomMessage(exchange, dimse, cmd, data, ts));
         return exchange;
     }
 

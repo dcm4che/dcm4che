@@ -379,7 +379,7 @@ public class MultiframeExtractor {
         return src.getInt(Tag.Rows, 0)
              * src.getInt(Tag.Columns, 0)
              * (src.getInt(Tag.BitsAllocated, 8) >> 3)
-             * src.getInt(Tag.NumberOfSamples, 1);
+             * src.getInt(Tag.SamplesPerPixel, 1);
     }
 
     private String createInstanceNumber(String mfinstno, int frame) {

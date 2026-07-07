@@ -49,6 +49,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
@@ -61,6 +63,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -285,4 +288,54 @@ public class TranscoderTest {
         }
     }
 
+    @Test
+    public void testTagWriteListenerCapturesPixelDataOffsetNative() throws Exception {
+        testTagWriteListenerCapturesPixelDataOffset(
+                "US-PAL-8-10x-echo", "US-PAL-8-10x-echo-listener.unc", UID.ExplicitVRLittleEndian);
+    }
+
+    @Test
+    public void testTagWriteListenerCapturesPixelDataOffsetEncapsulated() throws Exception {
+        testTagWriteListenerCapturesPixelDataOffset(
+                "cplx_p02.dcm", "cplx_p02_jply-listener.dcm", UID.JPEGBaseline8Bit);
+    }
+
+    private void testTagWriteListenerCapturesPixelDataOffset(String ifname, String ofname, String outts)
+            throws Exception {
+        final File ifile = new File("target/test-data/" + ifname);
+        final File ofile = new File("target/test-out/" + ofname);
+        final List<long[]> captured = new ArrayList<>();
+        Transcoder.Handler handler = new Transcoder.Handler() {
+            @Override
+            public OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException {
+                dataset.setString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
+                dataset.setString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
+                return new FileOutputStream(ofile);
+            }
+        };
+        try (Transcoder transcoder = new Transcoder(ifile)) {
+            transcoder.setIncludeBulkData(DicomInputStream.IncludeBulkData.URI);
+            transcoder.setDestinationTransferSyntax(outts);
+            transcoder.setTagWriteListener((tag, vr, length, byteOffset) -> captured.add(new long[] {tag, byteOffset}));
+            transcoder.transcode(handler);
+        }
+
+        long[] pixelDataEntry = null;
+        for (long[] entry : captured) {
+            if (entry[0] == Tag.PixelData) {
+                pixelDataEntry = entry;
+                break;
+            }
+        }
+        assertFalse("no PixelData offset captured", pixelDataEntry == null);
+
+        try (DicomInputStream dis = new DicomInputStream(ofile)) {
+            dis.readDatasetUntilPixelData();
+            // getPosition() here is the start of the PixelData *value* (readAttributes() stops right after
+            // the header is parsed); subtract the header length to get the start of the tag header itself,
+            // which is what the listener reports.
+            long pixelDataHeaderStart = dis.getPosition() - dis.vr().headerLength();
+            assertEquals(pixelDataEntry[1], pixelDataHeaderStart);
+        }
+    }
 }

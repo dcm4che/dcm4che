@@ -87,6 +87,7 @@
 package org.dcm4che3.dict.</xsl:text><xsl:value-of select="$package"/><xsl:text>;
 
 import org.dcm4che3.data.ElementDictionary;
+import org.dcm4che3.data.VM;
 import org.dcm4che3.data.VR;
 
 /**
@@ -157,6 +158,32 @@ import org.dcm4che3.data.VR;
         }
         return VR.UN;
     }
+
+    @Override
+    public VM vmOf(int tag) {
+    </xsl:text>
+    <xsl:choose>
+      <xsl:when test="$PrivateCreatorID = 'DLX_LKUP_01' or $PrivateCreatorID = 'DLX_ANNOT_01'">
+        <xsl:text>
+        int tmp = tag &amp; 0xFFE00000;
+        tag &amp;= tmp == 0x60000000 || tmp == 0x70000000
+                   ? 0xFFE0FFFF
+                   : 0xFFFF00FF;
+        switch (tag) {
+        </xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>
+        switch (tag &amp; 0xFFFF00FF) {
+        </xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:apply-templates mode="vm"
+        select="//el[@keyword!='' and @vm!='' and @vm!='1']"/>
+<xsl:text>
+        }
+        return VM.VM_1;
+    }
 }
 </xsl:text>
   </xsl:template>
@@ -173,5 +200,23 @@ import org.dcm4che3.data.VR;
       <xsl:value-of select="$vr"/>
       <xsl:text>;</xsl:text>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="el" mode="vm">
+    <xsl:text>
+            case PrivateTag.</xsl:text>
+    <xsl:value-of select="@keyword"/>
+    <xsl:text>:
+                return VM.</xsl:text>
+    <xsl:choose>
+      <xsl:when test="@vm='1-n or 1'">
+        <xsl:text>VM_1_N</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>VM_</xsl:text>
+        <xsl:value-of select="translate(@vm,'-n','_N')"/>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>;</xsl:text>
   </xsl:template>
 </xsl:stylesheet>

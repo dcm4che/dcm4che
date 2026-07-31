@@ -49,6 +49,8 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 
 import org.dcm4che3.imageio.codec.ImageDescriptor;
+import org.dcm4che3.io.PathProvider;
+import org.dcm4che3.io.RandomAccessFileProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,6 +83,9 @@ class FileStreamSegment extends StreamSegment {
     }
 
     public static String getFilePath(RandomAccessFile file) {
+        if( file instanceof PathProvider) {
+            return ((PathProvider) file).getPath();
+        }
         try {
             Field fpath = RandomAccessFile.class.getDeclaredField("path");
             if (fpath != null) {
@@ -94,6 +99,9 @@ class FileStreamSegment extends StreamSegment {
     }
 
     public static RandomAccessFile getRandomAccessFile(FileImageInputStream fstream) {
+        if( fstream instanceof RandomAccessFileProvider ) {
+            return ((RandomAccessFileProvider) fstream).getRandomAccessFile();
+        }
         try {
             Field fRaf = FileImageInputStream.class.getDeclaredField("raf");
             if (fRaf != null) {

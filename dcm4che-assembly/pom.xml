@@ -255,6 +255,11 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-imageio-openjph</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-imageio-rle</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -648,6 +653,30 @@
       <artifactId>opencv_java</artifactId>
       <type>dll</type>
       <classifier>windows-x86-64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-openjph-native</artifactId>
+      <type>so</type>
+      <classifier>linux-x86-64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-openjph-native</artifactId>
+      <type>so</type>
+      <classifier>linux-aarch64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-openjph-native</artifactId>
+      <type>dll</type>
+      <classifier>windows-x86-64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-openjph-native</artifactId>
+      <type>dylib</type>
+      <classifier>macosx-aarch64</classifier>
     </dependency>
   </dependencies>
 </project>

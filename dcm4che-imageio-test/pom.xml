@@ -70,6 +70,7 @@
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
         <lib-file-ext>so</lib-file-ext>
+        <openjph-lib-file-name>libopenjph_jni</openjph-lib-file-name>
       </properties>
     </profile>
     <profile>
@@ -85,6 +86,7 @@
         <cpu-name>aarch64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
         <lib-file-ext>so</lib-file-ext>
+        <openjph-lib-file-name>libopenjph_jni</openjph-lib-file-name>
       </properties>
     </profile>
     <profile>
@@ -115,6 +117,7 @@
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
         <lib-file-ext>dylib</lib-file-ext>
+        <openjph-lib-file-name>libopenjph_jni</openjph-lib-file-name>
       </properties>
     </profile>
     <profile>
@@ -130,6 +133,7 @@
         <cpu-name>aarch64</cpu-name>
         <lib-file-name>libopencv_java</lib-file-name>
         <lib-file-ext>dylib</lib-file-ext>
+        <openjph-lib-file-name>libopenjph_jni</openjph-lib-file-name>
       </properties>
     </profile>
     <profile>
@@ -145,6 +149,7 @@
         <cpu-name>x86-64</cpu-name>
         <lib-file-name>opencv_java</lib-file-name>
         <lib-file-ext>dll</lib-file-ext>
+        <openjph-lib-file-name>openjph_jni</openjph-lib-file-name>
       </properties>
     </profile>
     <profile>
@@ -160,7 +165,46 @@
         <cpu-name>x86</cpu-name>
         <lib-file-name>opencv_java</lib-file-name>
         <lib-file-ext>dll</lib-file-ext>
+        <openjph-lib-file-name>openjph_jni</openjph-lib-file-name>
       </properties>
+    </profile>
+    <profile>
+      <id>with-openjph-native</id>
+      <activation>
+        <property>
+          <name>openjph.native.available</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-openjph</id>
+                <phase>generate-test-resources</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.dcm4che</groupId>
+                      <artifactId>dcm4che-openjph-native</artifactId>
+                      <version>${openjph.native.version}</version>
+                      <type>${lib-file-ext}</type>
+                      <classifier>${os-name}-${cpu-name}</classifier>
+                      <overWrite>false</overWrite>
+                      <outputDirectory>${project.build.directory}/lib/${os-name}-${cpu-name}</outputDirectory>
+                      <destFileName>${openjph-lib-file-name}.${lib-file-ext}</destFileName>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>test-coverage</id>
@@ -279,6 +323,11 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-imageio-opencv</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-imageio-openjph</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

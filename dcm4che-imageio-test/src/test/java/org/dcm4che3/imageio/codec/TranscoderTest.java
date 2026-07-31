@@ -209,6 +209,46 @@ public class TranscoderTest {
     }
 
     @Test
+    public void testCompressToHTJ2KLossless() throws Exception {
+        test("MR2_UNC", "MR2_UNC-HTJ2K-lossless.dcm", UID.HTJ2KLossless, true);
+    }
+
+    @Test
+    public void testCompressToHTJ2KLosslessRPCL() throws Exception {
+        test("MR2_UNC", "MR2_UNC-HTJ2K-lossless-rpcl.dcm", UID.HTJ2KLosslessRPCL, true);
+    }
+
+    @Test
+    public void testCompressToHTJ2KLossy() throws Exception {
+        test("MR2_UNC", "MR2_UNC-HTJ2K-lossy.dcm", UID.HTJ2K, true);
+    }
+
+    @Test
+    public void testCompressRGBToHTJ2KLossless() throws Exception {
+        test("US-RGB-8-esopecho", "US-RGB-8-esopecho-HTJ2K-lossless.dcm", UID.HTJ2KLossless, true);
+    }
+
+    @Test
+    public void testCompressSigned16ToHTJ2KLossless() throws Exception {
+        test("test16signed.dcm", "test16signed-HTJ2K-lossless.dcm", UID.HTJ2KLossless, true);
+    }
+
+    @Test
+    public void testRoundTripHTJ2KLosslessMono() throws Exception {
+        test("MR2_UNC", UID.HTJ2KLossless, UID.ExplicitVRLittleEndian);
+    }
+
+    @Test
+    public void testRoundTripHTJ2KLosslessRGB() throws Exception {
+        test("US-RGB-8-esopecho", UID.HTJ2KLossless, UID.ExplicitVRLittleEndian);
+    }
+
+    @Test
+    public void testRoundTripHTJ2KLosslessSigned() throws Exception {
+        test("test16signed.dcm", UID.HTJ2KLossless, UID.ExplicitVRLittleEndian);
+    }
+
+    @Test
     public void testConvertToJxlLossyJpegRecompression() throws Exception {
       test("test16signed.dcm", "test-signed-jxl-recompression.dcm", UID.JPEGXLJPEGRecompression, true);
       test("YBR_422.dcm", "YBR_422-jxl-recompression.dcm", UID.JPEGXLJPEGRecompression, true);

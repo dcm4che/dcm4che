@@ -71,7 +71,7 @@ public class LookupTableFactory {
     private LookupTable modalityLUT;
     private float windowCenter;
     private float windowWidth;
-    private String voiLUTFunction; // not yet implemented
+    private String voiLUTFunction;
     private LookupTable voiLUT;
     private LookupTable presentationLUT;
     private boolean inverse;
@@ -149,6 +149,7 @@ public class LookupTableFactory {
                         : 0;
                 windowCenter = wcs[index];
                 windowWidth = wws[index];
+                voiLUTFunction = img.getString(Tag.VOILUTFunction);
                 return;
             }
         }
@@ -254,52 +255,52 @@ public class LookupTableFactory {
     }
 
     private LookupTable combineModalityVOILUT(int outBits) {
-        float m = rescaleSlope;
-        float b = rescaleIntercept;
         LookupTable modalityLUT = this.modalityLUT;
         LookupTable lut = this.voiLUT;
-        if (lut == null) {
-            float c = windowCenter;
-            float w = windowWidth;
-
-            if (w == 0 && modalityLUT != null)
-                return modalityLUT.adjustOutBits(outBits);
-
-            int size, offset;
-            StoredValue inBits = modalityLUT != null
-                    ? new StoredValue.Unsigned(modalityLUT.outBits)
-                    : storedValue;
-            int minOut = 0;
-            int maxOut = (1<<outBits)-1;
-            if (w != 0) {
-                float M = Math.abs(m);
-                size = Math.max(2,Math.round(w/M));
-                offset = Math.round((c-w/2-b)/M);
-                int minIndex = inBits.minValue() - offset;
-                int maxIndex = inBits.maxValue() - offset;
-                int size_1 = size - 1;
-                int midIndex = size_1 / 2;
-                if (minIndex > 0) {
-                    offset += minIndex;
-                    size -= minIndex;
-                    minOut = (minIndex * maxOut + midIndex) / size_1;
-                }
-                if (maxIndex < size_1) {
-                    size -= size_1 - maxIndex;
-                    maxOut = (maxIndex * maxOut + midIndex) / size_1;
-                }
-            } else {
-                offset = inBits.minValue();
-                size = inBits.maxValue() - inBits.minValue() + 1;
-            }
-            lut = outBits > 8
-                    ? new ShortLookupTable(inBits, outBits, minOut, maxOut, offset, size, m < 0)
-                    : new ByteLookupTable(inBits, outBits, minOut, maxOut, offset, size, m < 0);
-        } else {
-            //TODO consider m+b
+        if (lut != null) {
             lut = lut.adjustOutBits(outBits);
+            return modalityLUT != null ? modalityLUT.combine(lut) : lut;
         }
-        return modalityLUT != null ? modalityLUT.combine(lut) : lut;
+        if (windowWidth == 0 && modalityLUT != null)
+            return modalityLUT.adjustOutBits(outBits);
+        return createWindowLookupTable(outBits);
+    }
+
+    private LookupTable createWindowLookupTable(int outBits) {
+        StoredValue inBits = storedValue;
+        int minSV = inBits.minValue();
+        int maxSV = inBits.maxValue();
+        long len = (long) maxSV - minSV + 1;
+        if (len > 0x10000)
+            throw new IllegalArgumentException(
+                    "stored value range " + len + " exceeds maximum LUT size 65536");
+        float w = windowWidth == 0 ? 1 : windowWidth;
+        VOILUTFunction fn = VOILUT.parseFunction(voiLUTFunction);
+        int ymax = (1 << outBits) - 1;
+        byte[] data = new byte[(int) len];
+        for (int sv = minSV; sv <= maxSV; sv++) {
+            double x = modalityValue(sv);
+            data[sv - minSV] = (byte) VOILUT.apply(fn, x, windowCenter, w, 0, ymax);
+        }
+        LookupTable lut = new VOIWindowLookupTable(inBits, outBits, minSV, data,
+                modalityLUT, rescaleSlope, rescaleIntercept,
+                fn, windowCenter, w);
+        return outBits > 8 ? lut.adjustOutBits(outBits) : lut;
+    }
+
+    private double modalityValue(int storedValue) {
+        if (modalityLUT == null)
+            return VOILUT.modalityValue(storedValue, rescaleSlope, rescaleIntercept);
+        byte[] bIn = { (byte) storedValue };
+        short[] sIn = { (short) storedValue };
+        if (modalityLUT.outBits > 8) {
+            short[] sOut = { 0 };
+            modalityLUT.lookup(sIn, 0, sOut, 0, 1);
+            return sOut[0];
+        }
+        byte[] bOut = { 0 };
+        modalityLUT.lookup(bIn, 0, bOut, 0, 1);
+        return bOut[0] & 0xff;
     }
 
     public boolean autoWindowing(Attributes img, Raster raster) {

@@ -40,6 +40,7 @@ package org.dcm4che3.io;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.DicomObjectInputFilter;
 import org.dcm4che3.util.LimitedInputStream;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
@@ -62,9 +63,15 @@ import java.util.zip.InflaterInputStream;
 public class DicomInputStream extends FilterInputStream
     implements DicomInputHandler, BulkDataCreator {
 
+    // Force DicomObjectInputFilter class init so its JVM-wide filter factory
+    // is in place before this class — a known deserialization sink (#1581) —
+    // is involved in any ObjectInputStream construction.
+    @SuppressWarnings("unused")
+    private static final boolean DICOM_FILTER_INITIALIZED = DicomObjectInputFilter.touch();
+
     public enum IncludeBulkData { NO, YES, URI }
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
         LoggerFactory.getLogger(DicomInputStream.class);
 
     private static final String UNEXPECTED_NON_ZERO_ITEM_LENGTH =
@@ -812,10 +819,13 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private Object deserializeBulkData(ObjectInputStream ois) throws IOException {
+        DicomObjectInputFilter.install(ois);
         try {
             return ois.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
+        } finally {
+            DicomObjectInputFilter.uninstall(ois);
         }
     }
 

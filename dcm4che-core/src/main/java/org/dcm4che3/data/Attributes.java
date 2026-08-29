@@ -95,8 +95,14 @@ public class Attributes implements Serializable {
     public static final String COERCE = "COERCE";
     public static final String CORRECT = "CORRECT";
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(Attributes.class);
+
+    // Force DicomObjectInputFilter class init so its JVM-wide filter factory
+    // is in place before this class — a known deserialization sink (#1581) —
+    // is involved in any ObjectInputStream construction.
+    @SuppressWarnings("unused")
+    private static final boolean DICOM_FILTER_INITIALIZED = DicomObjectInputFilter.touch();
 
     private static final int INIT_CAPACITY = 16;
     private static final int TO_STRING_LIMIT = Integer.getInteger("org.dcm4che3.Attributes.toString.limit", 50);
@@ -3534,13 +3540,18 @@ public class Attributes implements Serializable {
 
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        init(in.readInt());
-        @SuppressWarnings("resource")
-        DicomInputStream din = new DicomInputStream(in, 
-                bigEndian ? UID.ExplicitVRBigEndian
-                          : UID.ExplicitVRLittleEndian);
-        din.readItemValue(this, -1);
+        DicomObjectInputFilter.install(in);
+        try {
+            in.defaultReadObject();
+            init(in.readInt());
+            @SuppressWarnings("resource")
+            DicomInputStream din = new DicomInputStream(in,
+                    bigEndian ? UID.ExplicitVRBigEndian
+                              : UID.ExplicitVRLittleEndian);
+            din.readItemValue(this, -1);
+        } finally {
+            DicomObjectInputFilter.uninstall(in);
+        }
     }
 
     public ValidationResult validate(IOD iod) {

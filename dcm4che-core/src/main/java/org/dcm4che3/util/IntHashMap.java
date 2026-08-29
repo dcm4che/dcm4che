@@ -45,6 +45,12 @@ import java.util.Arrays;
  */
 public class IntHashMap<V> implements Cloneable, java.io.Serializable {
 
+    // Force DicomObjectInputFilter class init so its JVM-wide filter factory
+    // is in place before this class — a known deserialization sink (#1581) —
+    // is involved in any ObjectInputStream construction.
+    @SuppressWarnings("unused")
+    private static final boolean DICOM_FILTER_INITIALIZED = DicomObjectInputFilter.touch();
+
     private static final int DEFAULT_CAPACITY = 32;
     private static final int MINIMUM_CAPACITY = 4;
     private static final int MAXIMUM_CAPACITY = 1 << 30;
@@ -264,26 +270,31 @@ public class IntHashMap<V> implements Cloneable, java.io.Serializable {
 
     private void readObject(java.io.ObjectInputStream s)
             throws java.io.IOException, ClassNotFoundException  {
-        s.defaultReadObject();
+        DicomObjectInputFilter.install(s);
+        try {
+            s.defaultReadObject();
 
-        int count = s.readInt();
-        init(capacity(count));
-        size = count;
-        free -= count;
+            int count = s.readInt();
+            init(capacity(count));
+            size = count;
+            free -= count;
 
-        byte[] states = this.states;
-        int[] keys = this.keys;
-        Object[] values = this.values;
-        int mask = keys.length - 1;
+            byte[] states = this.states;
+            int[] keys = this.keys;
+            Object[] values = this.values;
+            int mask = keys.length - 1;
 
-        while (count-- > 0) {
-            int key = s.readInt();
-            int i = key & mask;
-            while (states[i] != FREE)
-                i = (i + 1) & mask;
-            states[i] = FULL;
-            keys[i] = key;
-            values[i] = s.readObject();
+            while (count-- > 0) {
+                int key = s.readInt();
+                int i = key & mask;
+                while (states[i] != FREE)
+                    i = (i + 1) & mask;
+                states[i] = FULL;
+                keys[i] = key;
+                values[i] = s.readObject();
+            }
+        } finally {
+            DicomObjectInputFilter.uninstall(s);
         }
     }
 }

@@ -195,7 +195,16 @@ public class MP4Parser implements XPEGParser {
         long pos = channel.position();
         long type = readLong(channel);
         long size = type >>> 32;
-        return new Box((int) type, pos + (size == 0 ? remaining : size == 1 ? readLong(channel) : size));
+        if (size == 1) size = readLong(channel);
+        if (size == 0) size = remaining;
+        long end = pos + size;
+        // A box must contain its own header (ISO/IEC 14496-12 §4.2). Rejecting end
+        // before the header covers not only largesize==0 (end==start) but also a
+        // negative largesize seeking back to a valid offset (e.g. largesize=-8 ->
+        // end=0), which the size resolution above does not stop and findBox() loops on.
+        if (end < channel.position())
+            throw new XPEGParserException(String.format("Invalid MP4 box size at position %d", pos));
+        return new Box((int) type, end);
     }
 
     private Box findBox(SeekableByteChannel channel, long end, int type) throws IOException {

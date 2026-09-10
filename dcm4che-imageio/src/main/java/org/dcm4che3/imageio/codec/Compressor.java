@@ -338,6 +338,11 @@ public class Compressor extends Decompressor implements Closeable {
         public void set(OutputStream out) {
             this.out = out;
         }
+        
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+        	out.write(b, off, len);
+        }
     }
 
     private static class FlushlessMemoryCacheImageOutputStream extends MemoryCacheImageOutputStream

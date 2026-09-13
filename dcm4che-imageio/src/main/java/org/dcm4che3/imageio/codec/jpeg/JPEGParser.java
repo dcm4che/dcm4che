@@ -162,24 +162,27 @@ public class JPEGParser implements XPEGParser {
         }
     }
 
-    private int readUShort(SeekableByteChannel channel) throws IOException {
-        SafeBuffer.clear(buf).limit(2);
-        channel.read(buf);
+    private void readFully(SeekableByteChannel channel, int length) throws IOException {
+        SafeBuffer.clear(buf).limit(length);
+        while (buf.hasRemaining()) {
+            if (channel.read(buf) == -1)
+                throw new XPEGParserException("JPEG stream truncated");
+        }
         SafeBuffer.rewind(buf);
+    }
+
+    private int readUShort(SeekableByteChannel channel) throws IOException {
+        readFully(channel, 2);
         return buf.getShort() & 0xffff;
     }
 
     private int readInt(SeekableByteChannel channel) throws IOException {
-        SafeBuffer.clear(buf).limit(4);
-        channel.read(buf);
-        SafeBuffer.rewind(buf);
+        readFully(channel, 4);
         return buf.getInt();
     }
 
     private long readLong(SeekableByteChannel channel) throws IOException {
-        SafeBuffer.clear(buf);
-        channel.read(buf);
-        SafeBuffer.rewind(buf);
+        readFully(channel, 8);
         return buf.getLong();
     }
 

@@ -3960,15 +3960,11 @@ public class Attributes implements Serializable {
     }
 
     public int removeAllBulkData() {
-        return removeAllBulkData(false);
-    }
-
-    public int removeAllBulkData(boolean containsBulkData) {
         ensureModifiable();
         int removed = 0;
         for (int i = 0; i < size; i++) {
             Object value = values[i];
-            if (isBulkData(value) || containsBulkData && containsBulkData(value)) {
+            if (isBulkData(value)) {
                 int srcPos = i + 1;
                 int len = size - srcPos;
                 System.arraycopy(tags, srcPos, tags, i, len);
@@ -3977,7 +3973,7 @@ public class Attributes implements Serializable {
                 i--;
                 size--;
                 removed++;
-            } else if (!containsBulkData && value instanceof Sequence) {
+            } else if (value instanceof Sequence) {
                 for (Attributes item : (Sequence) value) {
                     removed += item.removeAllBulkData();
                 }
@@ -3990,27 +3986,6 @@ public class Attributes implements Serializable {
         return value instanceof BulkData || (value instanceof Fragments
                 && ((Fragments) value).size() > 1
                 && ((Fragments) value).get(1) instanceof BulkData);
-    }
-
-    private static boolean containsBulkData(Object value) {
-        if (value instanceof Sequence) {
-            for (Attributes item : (Sequence) value) {
-                if (item.containsBulkData()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public boolean containsBulkData() {
-        for (int i = 0; i < size; i++) {
-            Object value = values[i];
-            if (isBulkData(value) || containsBulkData(value)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private int creatorIndexOf(String privateCreator, int groupNumber) {

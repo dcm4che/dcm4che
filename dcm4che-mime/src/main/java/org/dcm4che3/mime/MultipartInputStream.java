@@ -42,7 +42,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -55,17 +54,26 @@ public class MultipartInputStream extends FilterInputStream {
 
     private final byte[] boundary;
     private final byte[] buffer;
+    private final int firstNotDashIndex;
     private byte[] markBuffer;
     private int rpos;
     private int markpos;
     private boolean boundarySeen;
     private boolean markBoundarySeen;
+    private int buffer0;    // value of all buffer[i] or -1 if not all buffer[i] equals
 
     protected MultipartInputStream(InputStream in, String boundary) {
         super(in);
         this.boundary = boundary.getBytes();
         this.buffer = new byte[this.boundary.length];
         this.rpos = buffer.length;
+        this.firstNotDashIndex = indexOfNot(boundary, (byte) '-');
+    }
+
+    private static int indexOfNot(String boundary, byte b) {
+        int i = boundary.length();
+        while (i-- > 0 && boundary.charAt(i) == b);
+        return i;
     }
 
     @Override
@@ -130,16 +138,30 @@ public class MultipartInputStream extends FilterInputStream {
         if (boundarySeen)
             return true;
 
-        if (rpos < buffer.length) {
+        int off = buffer.length - rpos;
+        if (off > 0) {
             if (buffer[rpos] != boundary[0])
                 return false;
-
-            System.arraycopy(buffer, rpos, buffer, 0, buffer.length - rpos);
+            if (buffer0 < 0) // only necessary if not all buffer[i] equals
+                System.arraycopy(buffer, rpos, buffer, 0, off);
         }
-        readFully(in, buffer, buffer.length - rpos, rpos);
+        readFully(in, buffer, off, rpos);
+        if (off == 0) buffer0 = buffer[0];
+        if (buffer0 >= 0) {
+            for (int i = 0; i < rpos; i++) {
+                if (buffer0 != buffer[off + i]) {
+                    buffer0 = -1;
+                    break;
+                }
+            }
+        }
         rpos = 0;
 
-        for (int i = 0; i < buffer.length; i++)
+        for (int i = Math.max(firstNotDashIndex, 0); i < buffer.length; i++)
+            if (buffer[i] != boundary[i])
+                return false;
+
+        for (int i = firstNotDashIndex - 1; i >= 0; i--)
             if (buffer[i] != boundary[i])
                 return false;
 

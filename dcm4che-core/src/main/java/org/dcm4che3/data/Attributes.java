@@ -2387,19 +2387,25 @@ public class Attributes implements Serializable {
     public boolean addAll(Attributes other) {
         ensureModifiable();
         return add(other, null, null, 0, 0, null, null,
-                false, false, null);
+                false, false, false, null);
     }
 
     public boolean addAll(Attributes other, boolean mergeOriginalAttributesSequence) {
         ensureModifiable();
         return add(other, null, null, 0, 0, null, null,
-                mergeOriginalAttributesSequence, false, null);
+                false, mergeOriginalAttributesSequence, false, null);
+    }
+
+    public boolean addAll(Attributes other, boolean mergeItems, boolean mergeOriginalAttributesSequence) {
+        ensureModifiable();
+        return add(other, null, null, 0, 0, null, null,
+                mergeItems, mergeOriginalAttributesSequence, false, null);
     }
 
     public boolean addSelected(Attributes other, Attributes selection) {
         ensureModifiable();
         return add(other, null, null, 0, 0, selection, null,
-                false, false, null);
+                false, false, false, null);
     }
 
     public boolean addSelected(Attributes other, String privateCreator, int tag) {
@@ -2426,7 +2432,7 @@ public class Attributes implements Serializable {
             }
         }
         if (value instanceof Sequence) {
-            set(privateCreator, tag, (Sequence) value, null);
+            set(privateCreator, tag, (Sequence) value, false, null);
         } else if (value instanceof Fragments) {
             set(privateCreator, tag, (Fragments) value);
         } else {
@@ -2477,7 +2483,7 @@ public class Attributes implements Serializable {
     public boolean addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
         ensureModifiable();
-        return add(other, selection, null, fromIndex, toIndex, null, null, false, false, null);
+        return add(other, selection, null, fromIndex, toIndex, null, null, false, false, false, null);
     }
 
     /**
@@ -2507,7 +2513,7 @@ public class Attributes implements Serializable {
     public boolean addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
         ensureModifiable();
-        return add(other, null, selection, fromIndex, toIndex, null, null, false, false, null);
+        return add(other, null, selection, fromIndex, toIndex, null, null, false, false, false, null);
     }
 
     public void supplementEmpty(Attributes selection) {
@@ -2532,7 +2538,7 @@ public class Attributes implements Serializable {
     }
 
     private boolean add(Attributes other, int[] include, int[] exclude, int fromIndex, int toIndex,
-                        Attributes selection, UpdatePolicy updatePolicy, boolean mergeOriginalAttributesSequence,
+                        Attributes selection, UpdatePolicy updatePolicy, boolean mergeItems, boolean mergeOriginalAttributesSequence,
                         boolean simulate, Attributes modified) {
         if (updatePolicy == UpdatePolicy.REPLACE)
             throw new IllegalArgumentException("updatePolicy:" + updatePolicy);
@@ -2629,7 +2635,7 @@ public class Attributes implements Serializable {
                         continue;
                     if (modified != null && !isEmpty(origValue) && !modified.contains(privateCreator, tag)) {
                         if (origValue instanceof Sequence) {
-                            modified.set(privateCreator, tag, (Sequence) origValue, null);
+                            modified.set(privateCreator, tag, (Sequence) origValue, false, null);
                         } else if (origValue instanceof Fragments) {
                             modified.set(privateCreator, tag, (Fragments) origValue);
                         } else {
@@ -2647,7 +2653,7 @@ public class Attributes implements Serializable {
                             && (dest = getSequence(tag)) != null)
                         mergeOriginalAttributesSequence((Sequence) value, dest);
                     else
-                        set(privateCreator0, tag, (Sequence) value,
+                        set(privateCreator0, tag, (Sequence) value, mergeItems,
                             selection != null 
                                 ? selection.getNestedDataset(privateCreator, tag)
                                 : null);
@@ -2748,19 +2754,19 @@ public class Attributes implements Serializable {
     public boolean update(UpdatePolicy updatePolicy, Attributes newAttrs, Attributes modified) {
         ensureModifiable();
         return add(newAttrs, null, null, 0, 0, null, updatePolicy,
-                false, false, modified);
+                false, false, false, modified);
     }
 
     public boolean update(UpdatePolicy updatePolicy, boolean mergeOriginalAttributesSequence, Attributes newAttrs,
                           Attributes modified) {
         ensureModifiable();
         return add(newAttrs, null, null, 0, 0, null, updatePolicy,
-                mergeOriginalAttributesSequence, false, modified);
+                false, mergeOriginalAttributesSequence, false, modified);
     }
 
     public boolean testUpdate(UpdatePolicy updatePolicy, Attributes newAttrs, Attributes modified) {
         return add(newAttrs, null, null, 0, 0, null, updatePolicy,
-                false, true, modified);
+                false, false, true, modified);
     }
 
     /**
@@ -2781,7 +2787,7 @@ public class Attributes implements Serializable {
                                   Attributes modified, int... selection) {
         ensureModifiable();
         return add(newAttrs, selection, null, 0, selection.length, null, updatePolicy,
-                false, false, modified);
+                false, false, false, modified);
     }
 
     /**
@@ -2798,7 +2804,7 @@ public class Attributes implements Serializable {
     public boolean testUpdateSelected(UpdatePolicy updatePolicy, Attributes newAttrs, Attributes modified,
                                       int... selection) {
         return add(newAttrs, selection, null, 0, selection.length, null,
-                updatePolicy, false, true, modified);
+                updatePolicy, false, false, true, modified);
     }
 
     /**
@@ -2819,7 +2825,7 @@ public class Attributes implements Serializable {
                                      Attributes modified, int... selection) {
         ensureModifiable();
         return add(newAttrs, null, selection, 0, selection.length, null, updatePolicy,
-                false, false, modified);
+                false, false, false, modified);
     }
 
     /**
@@ -2836,7 +2842,7 @@ public class Attributes implements Serializable {
     public boolean testUpdateNotSelected(UpdatePolicy updatePolicy, Attributes newAttrs, Attributes modified,
                                       int... selection) {
         return add(newAttrs, null, selection, 0, selection.length, null,
-                updatePolicy, false, true, modified);
+                updatePolicy, false, false, true, modified);
     }
 
     /**
@@ -3011,12 +3017,23 @@ public class Attributes implements Serializable {
     }
 
     private void set(String privateCreator, int tag, Sequence src,
-            Attributes selection) {
-        Sequence dst = newSequence(privateCreator, tag, src.size());
-        for (Attributes item : src)
+                     boolean mergeItems, Attributes selection) {
+        Iterator<Attributes> srcIter = src.iterator();
+        Sequence dst;
+        if (mergeItems && (dst = getSequence(privateCreator, tag)) != null) {
+            Iterator<Attributes> dstIter = dst.iterator();
+            while (dstIter.hasNext() && srcIter.hasNext()) {
+                dstIter.next().add(srcIter.next(), null, null, 0, 0, selection,
+                        null, mergeItems, false, false, null);
+            }
+        } else {
+            dst = newSequence(privateCreator, tag, src.size());
+        }
+        while (srcIter.hasNext()) {
             dst.add(selection != null && !selection.isEmpty()
-                ? new Attributes(item, bigEndian, selection)
-                : new Attributes(item, bigEndian));
+                    ? new Attributes(srcIter.next(), bigEndian, selection)
+                    : new Attributes(srcIter.next(), bigEndian));
+        }
     }
 
     private void set(String privateCreator, int tag, Fragments src) {
@@ -3811,7 +3828,7 @@ public class Attributes implements Serializable {
                 continue;
 
             if (origValue instanceof Sequence) {
-                result.set(privateCreator, tag, (Sequence) origValue, null);
+                result.set(privateCreator, tag, (Sequence) origValue, false, null);
             } else if (origValue instanceof Fragments) {
                 result.set(privateCreator, tag, (Fragments) origValue);
             } else {
@@ -3877,7 +3894,7 @@ public class Attributes implements Serializable {
             }
 
             if (origValue instanceof Sequence) {
-                modified.set(privateCreator, tag, (Sequence) origValue, null);
+                modified.set(privateCreator, tag, (Sequence) origValue, false, null);
             } else if (origValue instanceof Fragments) {
                 modified.set(privateCreator, tag, (Fragments) origValue);
             } else {
@@ -3901,7 +3918,7 @@ public class Attributes implements Serializable {
                     Object value = index < 0 ? Value.NULL : values[index];
                     if (!onlyModified || value != Value.NULL) {
                         if (value instanceof Sequence) {
-                            diff.set(null, tag, (Sequence) value, null);
+                            diff.set(null, tag, (Sequence) value, false, null);
                         } else {
                             diff.set(tag, index < 0 ? other.vrs[otherIndex] : vrs[index], value);
                         }
@@ -3943,15 +3960,11 @@ public class Attributes implements Serializable {
     }
 
     public int removeAllBulkData() {
-        return removeAllBulkData(false);
-    }
-
-    public int removeAllBulkData(boolean containsBulkData) {
         ensureModifiable();
         int removed = 0;
         for (int i = 0; i < size; i++) {
             Object value = values[i];
-            if (isBulkData(value) || containsBulkData && containsBulkData(value)) {
+            if (isBulkData(value)) {
                 int srcPos = i + 1;
                 int len = size - srcPos;
                 System.arraycopy(tags, srcPos, tags, i, len);
@@ -3960,7 +3973,7 @@ public class Attributes implements Serializable {
                 i--;
                 size--;
                 removed++;
-            } else if (!containsBulkData && value instanceof Sequence) {
+            } else if (value instanceof Sequence) {
                 for (Attributes item : (Sequence) value) {
                     removed += item.removeAllBulkData();
                 }
@@ -3973,27 +3986,6 @@ public class Attributes implements Serializable {
         return value instanceof BulkData || (value instanceof Fragments
                 && ((Fragments) value).size() > 1
                 && ((Fragments) value).get(1) instanceof BulkData);
-    }
-
-    private static boolean containsBulkData(Object value) {
-        if (value instanceof Sequence) {
-            for (Attributes item : (Sequence) value) {
-                if (item.containsBulkData()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public boolean containsBulkData() {
-        for (int i = 0; i < size; i++) {
-            Object value = values[i];
-            if (isBulkData(value) || containsBulkData(value)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private int creatorIndexOf(String privateCreator, int groupNumber) {

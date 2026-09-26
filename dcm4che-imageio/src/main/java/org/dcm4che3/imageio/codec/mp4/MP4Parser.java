@@ -195,7 +195,12 @@ public class MP4Parser implements XPEGParser {
         long pos = channel.position();
         long type = readLong(channel);
         long size = type >>> 32;
-        return new Box((int) type, pos + (size == 0 ? remaining : size == 1 ? readLong(channel) : size));
+        if (size == 1) size = readLong(channel);
+        if (size < 0 || size > remaining) {
+            throw new XPEGParserException(String.format("Invalid MP4 box size at position %d", pos));
+        }
+        if (size == 0) size = remaining;
+        return new Box((int) type, pos + size);
     }
 
     private Box findBox(SeekableByteChannel channel, long end, int type) throws IOException {
@@ -225,31 +230,32 @@ public class MP4Parser implements XPEGParser {
         return values;
     }
 
-    private byte readByte(SeekableByteChannel channel) throws IOException {
-        SafeBuffer.clear(buf).limit(1);
-        channel.read(buf);
+    private void readFully(SeekableByteChannel channel, int length) throws IOException {
+        SafeBuffer.clear(buf).limit(length);
+        while (buf.hasRemaining()) {
+            if (channel.read(buf) < 1)
+                throw new XPEGParserException("MPEG-4 stream truncated");
+        }
         SafeBuffer.rewind(buf);
+    }
+
+    private byte readByte(SeekableByteChannel channel) throws IOException {
+        readFully(channel, 1);
         return buf.get();
     }
 
     private short readShort(SeekableByteChannel channel) throws IOException {
-        SafeBuffer.clear(buf).limit(2);
-        channel.read(buf);
-        SafeBuffer.rewind(buf);
+        readFully(channel, 2);
         return buf.getShort();
     }
 
     private int readInt(SeekableByteChannel channel) throws IOException {
-        SafeBuffer.clear(buf).limit(4);
-        channel.read(buf);
-        SafeBuffer.rewind(buf);
+        readFully(channel, 4);
         return buf.getInt();
     }
 
     private long readLong(SeekableByteChannel channel) throws IOException {
-        SafeBuffer.clear(buf);
-        channel.read(buf);
-        SafeBuffer.rewind(buf);
+        readFully(channel, 8);
         return buf.getLong();
     }
 

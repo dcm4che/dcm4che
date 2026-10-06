@@ -167,12 +167,12 @@ public class MultipartInputStream extends FilterInputStream {
         if (boundarySeen)
             return true;
 
-        for (int i = 0, j = rpos; j < boundary.length; i++, j++)
-            if (buffers[rbuf][j] != boundary[i])
+        for (int i = 0, j = rpos; j < boundary.length;)
+            if (buffers[rbuf][j++] != boundary[i++])
                 return false;
 
-        for (int i = boundary.length - rpos, j = 0; j < rpos; i++, j++)
-            if (buffers[1 - rbuf][j] != boundary[i])
+        for (int i = boundary.length - rpos, j = 0; j < rpos;)
+            if (buffers[1 - rbuf][j++] != boundary[i++])
                 return false;
 
         boundarySeen = true;

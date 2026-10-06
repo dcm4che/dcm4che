@@ -53,20 +53,22 @@ import java.util.TreeMap;
 public class MultipartInputStream extends FilterInputStream {
 
     private final byte[] boundary;
-    private final byte[] buffer;
+    private final byte[][] buffers = new byte[2][];
     private final int firstNotDashIndex;
-    private byte[] markBuffer;
+    private byte[][] markBuffers = new byte[2][];
+    private int rbuf;
     private int rpos;
+    private int markbuf;
     private int markpos;
     private boolean boundarySeen;
     private boolean markBoundarySeen;
-    private int buffer0;    // value of all buffer[i] or -1 if not all buffer[i] equals
 
-    protected MultipartInputStream(InputStream in, String boundary) {
+    protected MultipartInputStream(InputStream in, String boundary) throws IOException {
         super(in);
         this.boundary = boundary.getBytes();
-        this.buffer = new byte[this.boundary.length];
-        this.rpos = buffer.length;
+        this.buffers[0] = new byte[this.boundary.length];
+        this.buffers[1] = new byte[this.boundary.length];
+        readFully(in, this.buffers[0], 0, this.boundary.length);
         this.firstNotDashIndex = indexOfNot(boundary, (byte) '-');
     }
 
@@ -78,7 +80,21 @@ public class MultipartInputStream extends FilterInputStream {
 
     @Override
     public int read() throws IOException {
-        return isBoundary() ? -1 : (buffer[rpos++] & 0xff);
+        int b;
+        if (isBoundary() || (b = in.read()) == -1)
+            return -1;
+
+        buffers[1 - rbuf][rpos] = (byte) b;
+        b = buffers[rbuf][rpos++] & 0xff;
+        switchBufferOnEndOfBuffer();
+        return b;
+    }
+
+    private void switchBufferOnEndOfBuffer() {
+        if (rpos >= boundary.length) {
+            rbuf = 1 - rbuf;
+            rpos = 0;
+        }
     }
 
     @Override
@@ -86,9 +102,11 @@ public class MultipartInputStream extends FilterInputStream {
         if (isBoundary())
             return -1;
 
-        int l = Math.min(remaining(), len);
-        System.arraycopy(buffer, rpos, b, off, l);
+        int l = Math.min(remaining(boundary[0], 1), len);
+        System.arraycopy(buffers[rbuf], rpos, b, off, l);
+        readFully(in, buffers[1 - rbuf], rpos, l);
         rpos += l;
+        switchBufferOnEndOfBuffer();
         return l;
     }
 
@@ -97,15 +115,19 @@ public class MultipartInputStream extends FilterInputStream {
         if (isBoundary())
             return 0L;
 
-        long l = Math.min(remaining(), n);
+        int l = (int) Math.min(remaining(boundary[0], 1), n);
+        readFully(in, buffers[1 - rbuf], rpos, l);
         rpos += l;
+        switchBufferOnEndOfBuffer();
         return l;
     }
 
     @Override
     public synchronized void mark(int readlimit) {
         super.mark(readlimit);
-        markBuffer = buffer.clone();
+        markBuffers[0] = buffers[0].clone();
+        markBuffers[1] = buffers[1].clone();
+        markbuf = rbuf;
         markpos = rpos;
         markBoundarySeen = boundarySeen;
     }
@@ -113,7 +135,9 @@ public class MultipartInputStream extends FilterInputStream {
     @Override
     public synchronized void reset() throws IOException {
         super.reset();
-        System.arraycopy(markBuffer, 0, buffer, 0, buffer.length);
+        System.arraycopy(markBuffers[0], 0, buffers[0], 0, boundary.length);
+        System.arraycopy(markBuffers[1], 0, buffers[1], 0, boundary.length);
+        rbuf = markbuf;
         rpos = markpos;
         boundarySeen = markBoundarySeen;
     }
@@ -124,45 +148,42 @@ public class MultipartInputStream extends FilterInputStream {
     }
 
     public void skipAll() throws IOException {
-        while (!isBoundary())
-            rpos += remaining();
+        while (!isBoundary()) {
+            int l = remaining(boundary[0], 1);
+            readFully(in, buffers[1 - rbuf], rpos, l);
+            rpos += l;
+            if (rpos >= boundary.length) {
+                rpos = 0;
+                rbuf = 1 - rbuf;
+            }
+        }
     }
 
     public boolean isZIP() throws IOException {
         return !isBoundary() 
-                && buffer[rpos] == 'P'
-                && buffer[rpos+1] == 'K';
+                && 'P' == buffers[rbuf][rpos]
+                && 'K' == (rpos + 1 < boundary.length
+                    ? buffers[rbuf][rpos+1]
+                    : buffers[1-rbuf][0]);
     }
 
-    private boolean isBoundary() throws IOException {
+    private boolean isBoundary() {
         if (boundarySeen)
             return true;
 
-        int off = buffer.length - rpos;
-        if (off > 0) {
-            if (buffer[rpos] != boundary[0])
-                return false;
-            if (buffer0 < 0) // only necessary if not all buffer[i] equals
-                System.arraycopy(buffer, rpos, buffer, 0, off);
-        }
-        readFully(in, buffer, off, rpos);
-        if (off == 0) buffer0 = buffer[0];
-        if (buffer0 >= 0) {
-            for (int i = 0; i < rpos; i++) {
-                if (buffer0 != buffer[off + i]) {
-                    buffer0 = -1;
-                    break;
-                }
-            }
-        }
-        rpos = 0;
+        int i1 = rpos + firstNotDashIndex;
+        if ((i1 < boundary.length
+                ? buffers[rbuf][i1]
+                : buffers[1 - rbuf][i1 - boundary.length])
+                != boundary[firstNotDashIndex])
+            return false;
 
-        for (int i = Math.max(firstNotDashIndex, 0); i < buffer.length; i++)
-            if (buffer[i] != boundary[i])
+        for (int i = 0, j = rpos; j < boundary.length; i++, j++)
+            if (buffers[rbuf][j] != boundary[i])
                 return false;
 
-        for (int i = firstNotDashIndex - 1; i >= 0; i--)
-            if (buffer[i] != boundary[i])
+        for (int i = boundary.length - rpos, j = 0; j < rpos; i++, j++)
+            if (buffers[1 - rbuf][j] != boundary[i])
                 return false;
 
         boundarySeen = true;
@@ -182,12 +203,12 @@ public class MultipartInputStream extends FilterInputStream {
         }
     }
 
-    private int remaining() {
-        for (int i = rpos+1; i < buffer.length; i++)
-            if (buffer[i] == boundary[0])
+    private int remaining(byte ch1, int min) {
+        for (int i = rpos + min; i < boundary.length; i++)
+            if (buffers[rbuf][i] == ch1)
                 return i - rpos;
 
-        return buffer.length - rpos;
+        return boundary.length - rpos;
     }
 
     public Map<String, List<String>> readHeaderParams() throws IOException {
@@ -232,12 +253,17 @@ public class MultipartInputStream extends FilterInputStream {
 
     private boolean readHeaderParam(Field field) throws IOException {
         field.reset();
-        OUTER:
-        while (!isBoundary()) {
-            field.growBuffer(buffer.length);
-            while (rpos < buffer.length)
-                if (!field.append(buffer[rpos++]))
-                    break OUTER;
+        boolean append = true;
+        while (append) {
+            int l = remaining((byte) '\n', 0);
+            if (rpos + l < boundary.length)
+                l++;  // include LF at buffers[rbuf][rpos + l]
+            int i = rpos;
+            field.growBuffer(l);
+            while (l-- > 0 && (append = field.append(buffers[rbuf][i++])));
+            readFully(in, buffers[1 - rbuf], rpos, i - rpos);
+            rpos = i;
+            switchBufferOnEndOfBuffer();
         }
         return !field.isEmpty();
     }

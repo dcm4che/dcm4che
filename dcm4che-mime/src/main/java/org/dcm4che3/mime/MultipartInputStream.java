@@ -159,7 +159,7 @@ public class MultipartInputStream extends FilterInputStream {
         }
     }
 
-    public boolean isZIP() throws IOException {
+    public boolean isZIP() {
         return !isBoundary() 
                 && 'P' == buffers[rbuf][rpos]
                 && 'K' == (rpos + 1 < boundary.length

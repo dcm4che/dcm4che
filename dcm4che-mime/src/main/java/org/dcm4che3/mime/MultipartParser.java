@@ -59,7 +59,8 @@ public class MultipartParser {
 
     @SuppressWarnings("resource")
     public void parse(InputStream in, Handler handler) throws IOException {
-        new MultipartInputStream(in, "--" + boundary).skipAll(); // skip preamble
+        byte[] crlf2dashBoundary = ("\r\n--" + boundary).getBytes();
+        skipPreamble(in, crlf2dashBoundary);
         for (int i=1;;i++) {
             int ch1 = in.read();
             int ch2 = in.read();
@@ -72,9 +73,24 @@ public class MultipartParser {
             if (ch1 != '\r' || ch2 != '\n')
                 throw new IOException("missing CR/LF after boundary");
 
-            MultipartInputStream mis = new MultipartInputStream(in, "\r\n--" + boundary);
+            MultipartInputStream mis = new MultipartInputStream(in, crlf2dashBoundary);
             handler.bodyPart(i, mis);
             mis.skipAll();
         }
+    }
+
+    private void skipPreamble(InputStream in, byte[] crlf2dashBoundary) throws IOException {
+        byte[] b = new byte[crlf2dashBoundary.length];
+        MultipartInputStream.readFully(in, b, 0, b.length - 2);
+        if (!is2DashBoundary(b, crlf2dashBoundary)) {
+            MultipartInputStream.readFully(in, b, b.length - 2, 2);
+            new MultipartInputStream(in, crlf2dashBoundary, b).skipAll(); // skip preamble
+        }
+    }
+
+    private static boolean is2DashBoundary(byte[] b, byte[] crlf2dashBoundary) {
+        for (int i = 0, j = 2; j < crlf2dashBoundary.length;)
+            if (b[i++] != crlf2dashBoundary[j++]) return false;
+        return true;
     }
 }

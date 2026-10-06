@@ -54,7 +54,6 @@ public class MultipartInputStream extends FilterInputStream {
 
     private final byte[] boundary;
     private final byte[][] buffers = new byte[2][];
-    private final int firstNotDashIndex;
     private byte[][] markBuffers = new byte[2][];
     private int rbuf;
     private int rpos;
@@ -63,19 +62,16 @@ public class MultipartInputStream extends FilterInputStream {
     private boolean boundarySeen;
     private boolean markBoundarySeen;
 
-    protected MultipartInputStream(InputStream in, String boundary) throws IOException {
-        super(in);
-        this.boundary = boundary.getBytes();
-        this.buffers[0] = new byte[this.boundary.length];
-        this.buffers[1] = new byte[this.boundary.length];
-        readFully(in, this.buffers[0], 0, this.boundary.length);
-        this.firstNotDashIndex = indexOfNot(boundary, (byte) '-');
+    protected MultipartInputStream(InputStream in, byte[] boundary) throws IOException {
+        this(in, boundary, new byte[boundary.length]);
+        readFully(in, this.buffers[0], 0, boundary.length);
     }
 
-    private static int indexOfNot(String boundary, byte b) {
-        int i = boundary.length();
-        while (i-- > 0 && boundary.charAt(i) == b);
-        return i;
+    protected MultipartInputStream(InputStream in, byte[] boundary, byte[] b0) {
+        super(in);
+        this.boundary = boundary;
+        this.buffers[0] = b0;
+        this.buffers[1] = new byte[this.boundary.length];
     }
 
     @Override
@@ -171,13 +167,6 @@ public class MultipartInputStream extends FilterInputStream {
         if (boundarySeen)
             return true;
 
-        int i1 = rpos + firstNotDashIndex;
-        if ((i1 < boundary.length
-                ? buffers[rbuf][i1]
-                : buffers[1 - rbuf][i1 - boundary.length])
-                != boundary[firstNotDashIndex])
-            return false;
-
         for (int i = 0, j = rpos; j < boundary.length; i++, j++)
             if (buffers[rbuf][j] != boundary[i])
                 return false;
@@ -190,7 +179,7 @@ public class MultipartInputStream extends FilterInputStream {
         return true;
     }
 
-    private static void readFully(InputStream in, byte b[], int off, int len)
+    static void readFully(InputStream in, byte b[], int off, int len)
             throws IOException {
         if (off < 0 || len < 0 || off + len > b.length)
             throw new IndexOutOfBoundsException();

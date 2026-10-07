@@ -139,6 +139,8 @@ public class Connection implements Serializable {
     private boolean packPDV = true;
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
+	private boolean proxyProtocolEnabled = false;
+
     private String[] tlsCipherSuites = {};
     private String[] tlsProtocols = DEFAULT_TLS_PROTOCOLS;
     private String[] blacklist = {};
@@ -326,6 +328,17 @@ public class Connection implements Serializable {
             return;
 
         this.protocol = protocol;
+        needRebind();
+    }
+	
+	public final boolean isProxyProtocolEnabled() {
+        return proxyProtocolEnabled;
+    }
+
+    public final void setProxyProtocolEnabled(boolean enabled) {
+        if (this.proxyProtocolEnabled == enabled)
+            return;
+        this.proxyProtocolEnabled = enabled;
         needRebind();
     }
 
@@ -1241,6 +1254,7 @@ public class Connection implements Serializable {
                     && port == other.port
                     && protocol == other.protocol;
     }
+	
 
     void reconfigure(Connection from) {
         setCommonName(from.commonName);
@@ -1276,6 +1290,7 @@ public class Connection implements Serializable {
         setTlsEndpointIdentificationAlgorithm(from.tlsEndpointIdentificationAlgorithm);
         setBlacklist(from.blacklist);
         setInstalled(from.installed);
+		setProxyProtocolEnabled(from.proxyProtocolEnabled);
     }
 
 }

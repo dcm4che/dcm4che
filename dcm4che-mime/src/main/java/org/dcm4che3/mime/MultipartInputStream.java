@@ -54,11 +54,9 @@ public class MultipartInputStream extends FilterInputStream {
 
     private final byte[] boundary;
     private final byte[][] buffers = new byte[2][];
-    private byte[][] markBuffers = new byte[2][];
+    private byte[] markBuffer;
     private int rbuf;
     private int rpos;
-    private int markbuf;
-    private int markpos;
     private boolean boundarySeen;
     private boolean markBoundarySeen;
 
@@ -72,6 +70,7 @@ public class MultipartInputStream extends FilterInputStream {
         this.boundary = boundary;
         this.buffers[0] = b0;
         this.buffers[1] = new byte[this.boundary.length];
+        this.markBuffer = new byte[this.boundary.length];
     }
 
     @Override
@@ -121,20 +120,17 @@ public class MultipartInputStream extends FilterInputStream {
     @Override
     public synchronized void mark(int readlimit) {
         super.mark(readlimit);
-        markBuffers[0] = buffers[0].clone();
-        markBuffers[1] = buffers[1].clone();
-        markbuf = rbuf;
-        markpos = rpos;
+        System.arraycopy(buffers[0], rpos, markBuffer, 0, markBuffer.length - rpos);
+        System.arraycopy(buffers[1], 0, markBuffer, markBuffer.length - rpos, rpos);
         markBoundarySeen = boundarySeen;
     }
 
     @Override
     public synchronized void reset() throws IOException {
         super.reset();
-        System.arraycopy(markBuffers[0], 0, buffers[0], 0, boundary.length);
-        System.arraycopy(markBuffers[1], 0, buffers[1], 0, boundary.length);
-        rbuf = markbuf;
-        rpos = markpos;
+        System.arraycopy(markBuffer, 0, buffers[0], 0, markBuffer.length);
+        rbuf = 0;
+        rpos = 0;
         boundarySeen = markBoundarySeen;
     }
 

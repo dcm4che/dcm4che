@@ -9,7 +9,7 @@
   <packaging>bundle</packaging>
   <name>dcm4che-camel</name>
   <properties>
-    <camel.version>2.24.0</camel.version>
+    <camel.version>4.10.2</camel.version>
     <ldap>slapd</ldap>
   </properties>
   <dependencies>
@@ -30,6 +30,12 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+    <groupId>org.apache.camel</groupId>
+    <artifactId>camel-main</artifactId>
+  <version>${camel.version}</version>
+        <scope>test</scope>
+</dependency>
   </dependencies>
   <build>
     <filters>

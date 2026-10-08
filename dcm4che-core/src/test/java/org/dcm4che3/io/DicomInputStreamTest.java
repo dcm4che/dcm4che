@@ -169,6 +169,141 @@ public class DicomInputStreamTest {
     }
 
     @Test
+    public void testCorrectEmptySequenceVRDefinedLength() throws IOException {
+        byte[] b = {  0x08, 0, 0x11, 0x30,
+                      'U', 'N', 0x00, 0x00, // UN
+                      0x00, 0x00, 0x00, 0x00 };
+        Attributes attrs;
+        try (DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b), UID.ExplicitVRLittleEndian)) {
+            attrs = in.readDataset();
+        }
+        assertTrue(attrs.contains(Tag.SourceIrradiationEventSequence));
+        assertEquals(VR.SQ, attrs.getVR(Tag.SourceIrradiationEventSequence));
+        assertEquals(0, attrs.getSequence(Tag.SourceIrradiationEventSequence).size());
+    }
+
+    @Test
+    public void testCorrectEmptySequenceVrUndefinedLength() throws IOException {
+        byte[] b = {  0x08, 0, 0x11, 0x30,
+                'U', 'N', 0, 0, // UN
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, // Undefined Length
+                (byte) 0xFE, (byte) 0xFF, (byte) 0xDD, (byte) 0xE0, //Sequence Delimitation Item
+                0, 0, 0, 0 //Item Length
+                 };
+        Attributes attrs;
+        try (DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b), UID.ExplicitVRLittleEndian)) {
+            attrs = in.readDataset();
+        }
+        assertTrue(attrs.contains(Tag.SourceIrradiationEventSequence));
+        assertEquals(VR.SQ, attrs.getVR(Tag.SourceIrradiationEventSequence));
+        assertEquals(0, attrs.getSequence(Tag.SourceIrradiationEventSequence).size());
+    }
+
+    @Test
+    // 2024c part 5 6.2.2 note 5
+    public void testCorrectableSequenceVrDefinedLength() throws IOException {
+        byte[] b = {  0x08, 0, 0x11, 0x30,
+                'U', 'N', 0, 0, // it should be a SQ
+                (byte) 0x3C, (byte) 0x00, (byte) 0x00, (byte) 0x00, // Length
+                (byte) 0xFE, (byte) 0xFF,           0, (byte) 0xE0, // Item Tag (FFFE, E000)
+                (byte) 0x34, (byte) 0x00, (byte) 0x00, (byte) 0x00, // 52 Length
+                0x08, 0, 0x10, 0x30,
+                0x2c, 0, 0 , 0 ,// length 44
+                '2', '.', '2', '5', '.', '5', '3', '8', '2', '0',
+                '0', '6', '2', '6', '9', '4', '6', '7', '5', '8',
+                '2', '7', '4', '2', '8', '4', '1', '2', '9', '6',
+                '7', '9', '1', '9', '9', '4', '0', '8', '4', '7',
+                '7', '2', '5',   0,
+        };
+
+        Attributes attrs;
+        try (DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b), UID.ExplicitVRLittleEndian)) {
+            attrs = in.readDataset();
+        }
+        assertTrue(attrs.contains(Tag.SourceIrradiationEventSequence));
+        assertEquals(VR.SQ, attrs.getVR(Tag.SourceIrradiationEventSequence));
+        assertEquals(1, attrs.getSequence(Tag.SourceIrradiationEventSequence).size());
+        assertEquals(44, attrs.getSequence(Tag.SourceIrradiationEventSequence).get(0).getBytes(Tag.IrradiationEventUID).length );
+    }
+
+    @Test
+    // 2024c part 5 6.2.2 note 5
+    public void testCorrectableUiVr() throws IOException {
+        byte[] b = {  0x08, 0, 0x10, 0x30,
+                'U', 'N', 0, 0, // it should be a SQ
+                (byte) 0x2C, (byte) 0x00, (byte) 0x00, (byte) 0x00, // Length
+                '2', '.', '2', '5', '.', '5', '3', '8', '2', '0',
+                '0', '6', '2', '6', '9', '4', '6', '7', '5', '8',
+                '2', '7', '4', '2', '8', '4', '1', '2', '9', '6',
+                '7', '9', '1', '9', '9', '4', '0', '8', '4', '7',
+                '7', '2', '5',   0,
+        };
+
+        Attributes attrs;
+        try (DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b), UID.ExplicitVRLittleEndian)) {
+            attrs = in.readDataset();
+        }
+        assertTrue(attrs.contains(Tag.IrradiationEventUID));
+        assertEquals(44, attrs.getBytes(Tag.IrradiationEventUID).length);
+    }
+
+    @Test
+    // 2024c part 5 6.2.2 note 5
+    public void testCorrectableSequenceVrUndefinedLength() throws IOException {
+        byte[] b = {  0x08, 0, 0x11, 0x30,
+                      'U', 'N', 0, 0, // it should be a SQ
+                      (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, // Undefined Length
+                      (byte) 0xFE, (byte) 0xFF,           0, (byte) 0xE0, // Item Tag (FFFE, E000)
+                      (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, // Undefined Length
+                      0x08, 0, 0x10, 0x30,
+                      0x2c, 0, 0 , 0 ,// length 44
+                      '2', '.', '2', '5', '.', '5', '3', '8', '2', '0',
+                      '0', '6', '2', '6', '9', '4', '6', '7', '5', '8',
+                      '2', '7', '4', '2', '8', '4', '1', '2', '9', '6',
+                      '7', '9', '1', '9', '9', '4', '0', '8', '4', '7',
+                      '7', '2', '5',   0,
+                      (byte) 0xFE, (byte) 0xFF,       0x0D, (byte) 0xE0, //Item Delimitation Item
+                      0, 0, 0, 0, //Item Length
+                      (byte) 0xFE, (byte) 0xFF, (byte) 0xDD, (byte) 0xE0, //Sequence Delimitation Item
+                      0, 0, 0, 0 //Item Length
+                   };
+
+        Attributes attrs;
+        try (DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b), UID.ExplicitVRLittleEndian)) {
+            attrs = in.readDataset();
+        }
+        assertTrue(attrs.contains(Tag.SourceIrradiationEventSequence));
+        assertEquals(VR.SQ, attrs.getVR(Tag.SourceIrradiationEventSequence));
+        assertEquals(1, attrs.getSequence(Tag.SourceIrradiationEventSequence).size());
+        assertEquals(44, attrs.getSequence(Tag.SourceIrradiationEventSequence).get(0).getBytes(Tag.IrradiationEventUID).length);
+    }
+
+    @Test
+    public void testUncorrectableUNSequenceVR() throws IOException {
+        byte[] b = {  0x08,  0, 0x11, 0x30,
+                      'U', 'N', 0, 0,
+                      0x48,  0, 0, 0,
+                      0x10, 0x48, (byte) 0xDD, 0x1D,
+                      0x22, 0x02,        0x11, 0x48,
+                      (byte) 0xE6, (byte) 0xB7, (byte) 0xCD, (byte) 0xCD, (byte) 0xED, (byte) 0xFD, (byte) 0xEE, (byte) 0xB7,
+                      (byte) 0xEC, (byte) 0xD3, (byte) 0xDC, (byte) 0x99, (byte) 0xE5, (byte) 0xC9, (byte) 0xDE, (byte) 0x99,
+                      (byte) 0xEC, (byte) 0xCC, (byte) 0xDD, (byte) 0x81, (byte) 0xE5, (byte) 0xCC, (byte) 0xC0, (byte) 0x85,
+                      (byte) 0xE4, (byte) 0xCF, (byte) 0xDE, (byte) 0x82, (byte) 0xE9, (byte) 0xCB, (byte) 0xD8, (byte) 0x80,
+                      (byte) 0xEF, (byte) 0xD3, (byte) 0xDF, (byte) 0x82, (byte) 0xE9, (byte) 0xC9, (byte) 0xDF, (byte) 0x81,
+                      (byte) 0xE8, (byte) 0xC5, (byte) 0xDD, (byte) 0x83, (byte) 0xF3, (byte) 0xC9, (byte) 0xDB, (byte) 0x8E,
+                      (byte) 0xEB, (byte) 0xD3, (byte) 0xDC, (byte) 0x80, (byte) 0xE8, (byte) 0xCE, (byte) 0xDD, (byte) 0x81,
+                             0x10,        0x48, (byte) 0xD0,        0x1D, (byte) 0xDD, (byte) 0xFD, (byte) 0xEE, (byte) 0xB7};
+
+        Attributes attrs;
+        try (DicomInputStream in = new DicomInputStream(new ByteArrayInputStream(b), UID.ExplicitVRLittleEndian)) {
+            attrs = in.readDataset();
+        }
+        assertTrue(attrs.contains(Tag.SourceIrradiationEventSequence));
+        assertEquals(VR.UN, attrs.getVR(Tag.SourceIrradiationEventSequence));
+        assertEquals(72, attrs.getBytes(Tag.SourceIrradiationEventSequence).length);
+    }
+
+    @Test
     public void testSRTag0040A170IsObservationClass() throws Exception {
         Attributes attrs = readFrom("Tag-0040-A170-VR-CS.dcm", IncludeBulkData.NO);
         Attributes findings = attrs.getNestedDataset(Tag.FindingsSequenceTrial);

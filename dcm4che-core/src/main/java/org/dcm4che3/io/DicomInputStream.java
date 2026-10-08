@@ -764,8 +764,26 @@ public class DicomInputStream extends FilterInputStream
                             if (vr == VR.UN && length == UNDEFINED_LENGTH)
                                 vr = VR.SQ; // assumes UN with undefined length are SQ,
                             // will fail on UN fragments!
+
+                            // check if the SQ is valid otherwise keeps it as UN
+                            if (vr == VR.SQ && length != 0 && markSupported()) {
+                                mark(Integer.BYTES);
+                                byte[] tagBytes = new byte[Integer.BYTES];
+                                readFully(tagBytes);
+                                //convert and check
+                                switch (ByteUtils.bytesToTag(tagBytes, 0, bigEndian)){
+                                    case Tag.Item:
+                                    case Tag.ItemDelimitationItem:
+                                    case Tag.SequenceDelimitationItem:
+                                        break;
+                                    default:
+                                        vr = VR.UN;
+                                }
+                                reset();
+                            }
                     }
                 }
+
                 excludeBulkData = includeBulkData == IncludeBulkData.NO && isBulkData(attrs);
                 includeBulkDataURI = length != 0 && vr != VR.SQ
                         && includeBulkData == IncludeBulkData.URI && isBulkData(attrs);

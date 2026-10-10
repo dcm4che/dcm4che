@@ -86,6 +86,10 @@ public abstract class ElementDictionary {
         return getElementDictionary(privateCreator).vrOf(tag);
     }
 
+    public static VM vmOf(int tag, String privateCreator) {
+        return getElementDictionary(privateCreator).vmOf(tag);
+    }
+
     public static String keywordOf(int tag, String privateCreator) {
         return getElementDictionary(privateCreator).keywordOf(tag);
     }
@@ -99,6 +103,10 @@ public abstract class ElementDictionary {
     }
 
     public abstract VR vrOf(int tag);
+
+    public VM vmOf(int tag) {
+        return VM.VM_1;
+    }
 
     public abstract String keywordOf(int tag);
 

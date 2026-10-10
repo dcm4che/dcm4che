@@ -77,6 +77,19 @@ public class ElementDictionaryTest {
         VR.OW
     };
 
+    private static final VM[] VMS = {
+        VM.VM_1,
+        VM.VM_1,
+        VM.VM_1,
+        VM.VM_1,
+        VM.VM_1_N,
+        VM.VM_1,
+        VM.VM_1,
+        VM.VM_1,
+        VM.VM_1,
+        VM.VM_1
+    };
+
     private static final String[] KEYWORDS = {
         "CommandGroupLength",
         "CommandDataSetType",
@@ -143,6 +156,28 @@ public class ElementDictionaryTest {
     public void testVrOf() {
         for (int i = 0; i < TAGS.length; i++)
             assertEquals(VRS[i], ElementDictionary.vrOf(TAGS[i], null));
+    }
+
+    @Test
+    public void testVmOf() {
+        for (int i = 0; i < TAGS.length; i++)
+            assertEquals(VMS[i], ElementDictionary.vmOf(TAGS[i], null));
+        assertEquals(VM.VM_3,
+                ElementDictionary.vmOf(Tag.ImagePositionPatient, null));
+        assertEquals(VM.VM_6,
+                ElementDictionary.vmOf(Tag.ImageOrientationPatient, null));
+        assertEquals(VM.VM_2,
+                ElementDictionary.vmOf(Tag.PixelSpacing, null));
+        assertEquals(VM.VM_1_N,
+                ElementDictionary.vmOf(Tag.WindowCenter, null));
+        assertEquals(VM.VM_1_N,
+                ElementDictionary.vmOf(Tag.LUTData, null));
+        assertEquals(VM.VM_1_N,
+                ElementDictionary.vmOf(Tag.SourceImageIDs | 0x05, null));
+        assertEquals(VM.VM_1,
+                ElementDictionary.vmOf(0x00080000, null)); // group length
+        assertEquals(VM.VM_1,
+                ElementDictionary.vmOf(0xBBBBFFFF, null)); // unknown tag
     }
 
     @Test

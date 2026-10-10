@@ -346,6 +346,33 @@ public class StandardElementDictionary extends ElementDictionary {
         }
         return VR.UN;
     }
+
+    @Override
+    public VM vmOf(int tag) {
+        if ((tag &amp; 0x0000FFFF) == 0)
+            return VM.VM_1;
+        if ((tag &amp; 0x00010000) != 0)
+            return VM.VM_1;
+        if ((tag &amp; 0xFFFFFF00) == Tag.SourceImageIDs)
+            return VM.VM_1_N;
+        int tmp = tag &amp; 0xFFE00000;
+        if (tmp == 0x50000000 || tmp == 0x60000000)
+            tag &amp;= 0xFFE0FFFF;
+        else if ((tag &amp; 0xFF000000) == 0x7F000000
+                &amp;&amp; (tag &amp; 0xFFFF0000) != 0x7FE00000)
+            tag &amp;= 0xFF00FFFF;
+        switch (tag) {</xsl:text>
+    <xsl:apply-templates mode="vm"
+        select="//el[@keyword!='' and @vm!='' and @vm!='1' and @keyword!='SourceImageIDs']"/>
+<xsl:text>
+        }
+        switch (tag &amp; 0xFFFFFF0F) {
+            case Tag.CoefficientCoding:
+            case Tag.CoefficientCodingPointers:
+                return VM.VM_1_N;
+        }
+        return VM.VM_1;
+    }
 }
 </xsl:text>
   </xsl:template>
@@ -362,6 +389,26 @@ public class StandardElementDictionary extends ElementDictionary {
       <xsl:text>
            return VR.</xsl:text>
       <xsl:value-of select="$vr"/>
+      <xsl:text>;</xsl:text>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="el" mode="vm">
+    <xsl:if test="not(starts-with(@tag,'002804x'))">
+      <xsl:text>
+        case Tag.</xsl:text>
+      <xsl:value-of select="@keyword"/>
+      <xsl:text>:
+            return VM.</xsl:text>
+      <xsl:choose>
+        <xsl:when test="@vm='1-n or 1'">
+          <xsl:text>VM_1_N</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>VM_</xsl:text>
+          <xsl:value-of select="translate(@vm,'-n','_N')"/>
+        </xsl:otherwise>
+      </xsl:choose>
       <xsl:text>;</xsl:text>
     </xsl:if>
   </xsl:template>

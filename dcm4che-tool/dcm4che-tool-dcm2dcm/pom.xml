@@ -23,7 +23,6 @@
     	<groupId>org.dcm4che</groupId>
     	<artifactId>dcm4che-imageio-opencv</artifactId>
     	<version>${project.version}</version>
-    	<scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.media</groupId>

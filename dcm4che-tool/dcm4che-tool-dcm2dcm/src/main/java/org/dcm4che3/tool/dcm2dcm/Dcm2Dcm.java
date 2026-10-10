@@ -65,6 +65,9 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.imageio.codec.Compressor;
 import org.dcm4che3.imageio.codec.Decompressor;
 import org.dcm4che3.imageio.codec.Transcoder;
+import org.dcm4che3.opencv.waveform.T261TransferSyntax;
+import org.dcm4che3.opencv.waveform.WaveformTranscoder;
+import org.weasis.opencv.waveform.T261Parameters.SignalType;
 import org.dcm4che3.imageio.codec.TransferSyntaxType;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
@@ -180,6 +183,14 @@ public class Dcm2Dcm {
         tsGroup.addOption(Option.builder()
                 .longOpt("jxly")
                 .desc(rb.getString("jxly"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("t261l")
+                .desc(rb.getString("t261l"))
+                .build());
+        tsGroup.addOption(Option.builder()
+                .longOpt("t261y")
+                .desc(rb.getString("t261y"))
                 .build());
         opts.addOptionGroup(tsGroup);
         OptionGroup fmiGroup = new OptionGroup();
@@ -341,6 +352,8 @@ public class Dcm2Dcm {
                 : cl.hasOption("j2ki") ? UID.JPEG2000
                 : cl.hasOption("jxll") ? UID.JPEGXLLossless
                 : cl.hasOption("jxly") ? UID.JPEGXL
+                : cl.hasOption("t261l") ? T261TransferSyntax.lossless()
+                : cl.hasOption("t261y") ? T261TransferSyntax.lossy()
                 : cl.getOptionValue("t", def);
     }
 
@@ -371,7 +384,9 @@ public class Dcm2Dcm {
 
     private void transcode(File src, File dest) {
         try {
-            if (legacy)
+            if (T261TransferSyntax.isT261(tsuid) || T261TransferSyntax.isT261(transferSyntaxOf(src)))
+                transcodeWaveform(src, dest);
+            else if (legacy)
                 transcodeLegacy(src, dest);
             else
                 transcodeWithTranscoder(src, dest);
@@ -435,6 +450,47 @@ public class Dcm2Dcm {
             transcoder.setDestinationTransferSyntax(tsuid);
             transcoder.setCompressParams(params.toArray(new Property[params.size()]));
             transcoder.transcode((transcoder1, dataset) -> new FileOutputStream(dest));
+        } catch (Exception e) {
+            Files.deleteIfExists(dest.toPath());
+            throw e;
+        }
+    }
+
+    private static String transferSyntaxOf(File src) throws IOException {
+        DicomInputStream dis = new DicomInputStream(src);
+        try {
+            dis.readFileMetaInformation();
+            return dis.getTransferSyntax();
+        } finally {
+            dis.close();
+        }
+    }
+
+    /**
+     * Waveform objects (Supplement 253): native to T.261 lossless / lossy, T.261 to native, lossless
+     * to lossy, streamed per frame sequence. The T.261 options come from the compression parameters
+     * {@code stepSize}, {@code intraPeriod}, {@code signalType} (ECG, EEG, EMG) and
+     * {@code profileLevel}.
+     */
+    public void transcodeWaveform(File src, File dest) throws IOException {
+        try (WaveformTranscoder transcoder = new WaveformTranscoder(src)) {
+            transcoder.setIncludeFileMetaInformation(!nofmi);
+            transcoder.setRetainFileMetaInformation(retainfmi);
+            transcoder.setEncodingOptions(encOpts);
+            transcoder.setDestinationTransferSyntax(tsuid);
+            for (Property param : params) {
+                String name = param.getName();
+                Object value = param.getValue();
+                if (name.equals("stepSize"))
+                    transcoder.setStepSize(((Number) value).doubleValue());
+                else if (name.equals("intraPeriod"))
+                    transcoder.setIntraPeriod(((Number) value).intValue());
+                else if (name.equals("profileLevel"))
+                    transcoder.setProfileLevel(((Number) value).intValue());
+                else if (name.equals("signalType"))
+                    transcoder.setSignalType(SignalType.valueOf(value.toString().toUpperCase()));
+            }
+            transcoder.transcode(dest);
         } catch (Exception e) {
             Files.deleteIfExists(dest.toPath());
             throw e;

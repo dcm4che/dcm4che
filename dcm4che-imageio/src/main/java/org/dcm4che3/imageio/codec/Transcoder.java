@@ -50,6 +50,7 @@ import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
 import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
 import org.dcm4che3.io.*;
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.CountingOutputStream;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StreamUtils;
@@ -133,6 +134,10 @@ public class Transcoder implements Closeable {
     private Attributes fileMetaInformation;
 
     private DicomOutputStream dos;
+
+    private TagWriteListener tagWriteListener;
+
+    private CountingOutputStream countingOutputStream;
 
     private Handler handler;
 
@@ -374,6 +379,17 @@ public class Transcoder implements Closeable {
 
     public long getEncapsulatedPixelDataValueTotalLength() {
         return encapsulatedPixelDataValueTotalLength;
+    }
+
+    /**
+     * Sets a listener to be notified of the byte offset of each DICOM tag header written to the
+     * destination {@code OutputStream} during {@link #transcode(Handler)}, e.g. to track the offset of
+     * {@code PixelData}/{@code Item} tags without a second pass over the transcoded output.
+     *
+     * @param listener the listener to notify, or {@code null} to disable notifications
+     */
+    public void setTagWriteListener(TagWriteListener listener) {
+        this.tagWriteListener = listener;
     }
 
     private void initDecompressor() {
@@ -932,9 +948,17 @@ public class Transcoder implements Closeable {
     }
 
     private void initDicomOutputStream() throws IOException {
-        dos = new DicomOutputStream(handler.newOutputStream(this, dataset),
+        OutputStream outputStream = handler.newOutputStream(this, dataset);
+        if (tagWriteListener != null) {
+            countingOutputStream = new CountingOutputStream(outputStream);
+            outputStream = countingOutputStream;
+        }
+        dos = new DicomOutputStream(outputStream,
                 includeFileMetaInformation ? UID.ExplicitVRLittleEndian : destTransferSyntax);
         dos.setEncodingOptions(encOpts);
+        if (tagWriteListener != null) {
+            dos.setTagWriteListener(tagWriteListener);
+        }
     }
 
     private void writeDataset() throws IOException {

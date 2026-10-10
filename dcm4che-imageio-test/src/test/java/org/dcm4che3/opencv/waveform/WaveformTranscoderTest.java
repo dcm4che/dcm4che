@@ -43,6 +43,7 @@ package org.dcm4che3.opencv.waveform;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +59,8 @@ import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.imageio.codec.Transcoder;
+import org.dcm4che3.imageio.codec.TransferSyntaxType;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.io.DicomOutputStream;
@@ -280,5 +283,21 @@ public class WaveformTranscoderTest {
         assertEquals(UID.ImplicitVRLittleEndian, transferSyntax(copy));
         Attributes group = read(copy, IncludeBulkData.YES).getSequence(Tag.WaveformSequence).get(0);
         assertArrayEquals(littleEndian(samples), (byte[]) group.getValue(Tag.WaveformData));
+    }
+
+    @Test
+    public void testPixelDataTranscoderRejectsEncapsulatedWaveform() throws IOException {
+        File src = writeNativeFile("ecg-native-4.dcm", ecgSamples());
+        File t261 = transcode(src, "ecg-t261-4.dcm", T261TransferSyntax.lossless(), 0);
+        Transcoder transcoder = new Transcoder(t261);
+        try {
+            assertEquals(TransferSyntaxType.T261, transcoder.getSourceTransferSyntaxType());
+            transcoder.setDestinationTransferSyntax(UID.ExplicitVRLittleEndian);
+            fail("Transcoder accepted encapsulated Waveform Data");
+        } catch (UnsupportedOperationException e) {
+            // expected: the pixel data Transcoder cannot decode a T.261 Waveform Data Stream
+        } finally {
+            transcoder.close();
+        }
     }
 }

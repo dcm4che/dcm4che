@@ -40,55 +40,41 @@
  */
 package org.dcm4che3.opencv.waveform;
 
+import org.dcm4che3.data.UID;
+
 /**
  * Transfer syntaxes of DICOM Supplement 253 (waveform compression with ITU-T T.261).
  * <p>
- * The supplement under public comment (v9) does not assign the UIDs yet: it uses the placeholders
- * {@code UID_TS1_lossless} and {@code UID_TS2_lossy}. The values used here default to those
- * placeholders and can be overridden with the system properties {@code dcm4che.t261.lossless.uid} /
- * {@code dcm4che.t261.lossy.uid} or with {@link #setUIDs(String, String)} once the final UIDs are
- * published and added to the dictionary, without any other change in the callers.
+ * The UIDs come from the dictionary ({@link UID#T261Lossless}, {@link UID#T261Lossy}). As long as
+ * the supplement is under public comment (v9) the dictionary carries its placeholders
+ * {@code UID_TS1_lossless} and {@code UID_TS2_lossy}; the final UIDs replace them in
+ * {@code dcm4che-dict} without any change in the callers.
  *
  * @author Nicolas Roduit
  * @since Oct 2026
  */
 public final class T261TransferSyntax {
 
-    /** Placeholder of the lossless transfer syntax in Sup 253 v9. */
-    public static final String PLACEHOLDER_LOSSLESS = "UID_TS1_lossless";
-
-    /** Placeholder of the lossy transfer syntax in Sup 253 v9. */
-    public static final String PLACEHOLDER_LOSSY = "UID_TS2_lossy";
-
-    private static volatile String lossless =
-            System.getProperty("dcm4che.t261.lossless.uid", PLACEHOLDER_LOSSLESS);
-    private static volatile String lossy =
-            System.getProperty("dcm4che.t261.lossy.uid", PLACEHOLDER_LOSSY);
-
     private T261TransferSyntax() {
     }
 
+    /** @return the UID of the T.261 Transfer Syntax for Lossless Waveform Compression. */
     public static String lossless() {
-        return lossless;
+        return UID.T261Lossless;
     }
 
+    /** @return the UID of the T.261 Transfer Syntax for Lossy Waveform Compression. */
     public static String lossy() {
-        return lossy;
+        return UID.T261Lossy;
     }
 
-    /** Replaces the placeholders with the UIDs assigned by the standard. */
-    public static void setUIDs(String losslessUID, String lossyUID) {
-        if (losslessUID == null || lossyUID == null)
-            throw new NullPointerException();
-        lossless = losslessUID;
-        lossy = lossyUID;
-    }
-
+    /** @return {@code true} for both T.261 transfer syntaxes. */
     public static boolean isT261(String tsuid) {
-        return tsuid != null && (tsuid.equals(lossless) || tsuid.equals(lossy));
+        return UID.T261Lossless.equals(tsuid) || UID.T261Lossy.equals(tsuid);
     }
 
+    /** @return {@code true} for the T.261 Transfer Syntax for Lossy Waveform Compression. */
     public static boolean isLossy(String tsuid) {
-        return tsuid != null && tsuid.equals(lossy);
+        return UID.T261Lossy.equals(tsuid);
     }
 }

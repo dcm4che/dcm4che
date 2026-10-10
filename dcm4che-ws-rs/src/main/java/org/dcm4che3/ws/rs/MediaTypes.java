@@ -262,6 +262,18 @@ public class MediaTypes {
             new MediaType("video", "mp4");
 
     /**
+     * "application/mp4": bulk data media type of the T.261 waveform transfer syntaxes
+     * (DICOM Supplement 253).
+     */
+    public final static String APPLICATION_MP4 = "application/mp4";
+
+    /**
+     * "application/mp4"
+     */
+    public final static MediaType APPLICATION_MP4_TYPE =
+            new MediaType("application", "mp4");
+
+    /**
      * "video/quicktime"
      */
     public final static String VIDEO_QUICKTIME = "video/quicktime";
@@ -488,6 +500,10 @@ public class MediaTypes {
             case UID.MPEG4HP41BD:
                 type = VIDEO_MP4_TYPE;
                 break;
+            case UID.T261Lossless:
+            case UID.T261Lossy:
+                type = APPLICATION_MP4_TYPE;
+                break;
             default:
                 throw new IllegalArgumentException("ts: " + ts);
         }
@@ -524,6 +540,12 @@ public class MediaTypes {
                     case "mp4":
                     case "quicktime":
                         return UID.MPEG4HP41;
+                }
+                break;
+            case "application":
+                switch (subtype) {
+                    case "mp4":
+                        return UID.T261Lossless;
                 }
         }
         return UID.ExplicitVRLittleEndian;

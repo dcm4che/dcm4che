@@ -61,6 +61,13 @@ public enum TransferSyntaxType {
     JPIP(false, false, true, 16, 0),
     MPEG(true, false, false, 8, 0),
     DEFLATED(false, false, true, 16, 0),
+    /**
+     * Waveform compression with ITU-T T.261 (DICOM Supplement 253): Waveform Data (5400,1010) is
+     * encapsulated as OB of undefined length with a Basic Offset Table Item followed by the Items
+     * of the encoded Waveform Data Stream of the multiplex group; Pixel Data is not allowed with
+     * these transfer syntaxes. Signed samples only, 8 / 16 / 32 bits allocated, up to 24 bits stored.
+     */
+    T261(false, false, true, 24, 0, true),
     UNKNOWN(false, false, true, 16, 0);
 
     private final boolean pixeldataEncapsulated;
@@ -68,18 +75,35 @@ public enum TransferSyntaxType {
     private final boolean encodeSigned;
     private final int maxBitsStored;
     private final int planarConfiguration;
+    private final boolean waveformDataEncapsulated;
 
     TransferSyntaxType(boolean pixeldataEncapsulated, boolean frameSpanMultipleFragments, boolean encodeSigned,
             int maxBitsStored, int planarConfiguration) {
+        this(pixeldataEncapsulated, frameSpanMultipleFragments, encodeSigned, maxBitsStored, planarConfiguration,
+                false);
+    }
+
+    TransferSyntaxType(boolean pixeldataEncapsulated, boolean frameSpanMultipleFragments, boolean encodeSigned,
+            int maxBitsStored, int planarConfiguration, boolean waveformDataEncapsulated) {
         this.pixeldataEncapsulated = pixeldataEncapsulated;
         this.frameSpanMultipleFragments = frameSpanMultipleFragments;
         this.encodeSigned = encodeSigned;
         this.maxBitsStored = maxBitsStored;
         this.planarConfiguration = planarConfiguration;
+        this.waveformDataEncapsulated = waveformDataEncapsulated;
     }
 
     public boolean isPixeldataEncapsulated() {
         return pixeldataEncapsulated;
+    }
+
+    /**
+     * @return {@code true} if Waveform Data (5400,1010) is encapsulated (Items with a Basic Offset
+     *         Table) instead of being the native sample array, as with the T.261 transfer syntaxes
+     *         of DICOM Supplement 253.
+     */
+    public boolean isWaveformDataEncapsulated() {
+        return waveformDataEncapsulated;
     }
 
     public boolean canEncodeSigned() {
@@ -168,6 +192,9 @@ public enum TransferSyntaxType {
                 return MPEG;
             case UID.RLELossless:
                 return RLE;
+            case UID.T261Lossless:
+            case UID.T261Lossy:
+                return T261;
             default:
               return UNKNOWN;
         }
@@ -201,6 +228,7 @@ public enum TransferSyntaxType {
             case UID.MPEG4HP42STEREOF:
             case UID.HEVCMP51:
             case UID.HEVCM10P51:
+            case UID.T261Lossy:
                 return true;
             default:
                 return false;

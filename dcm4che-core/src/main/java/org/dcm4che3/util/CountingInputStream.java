@@ -93,17 +93,23 @@ public class CountingInputStream extends FilterInputStream {
     }
 
     private int incCount(int read) {
-        if (read >= 0) count++;
+        synchronized(this) {
+            if (read >= 0) count++;
+        }
         return read;
     }
 
     private int addCount(int read) {
-        if (read > 0) count += read;
+        synchronized(this) {
+            if (read > 0) count += read;
+        }
         return read;
     }
 
     private long addCount(long skip) {
-        if (skip > 0) count += skip;
+        synchronized(this) {
+            if (skip > 0) count += skip;
+        }
         return skip;
     }
 

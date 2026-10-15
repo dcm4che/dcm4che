@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -53,6 +54,27 @@ public class AttributesTemporalTest {
         Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
         assertTrue(t instanceof LocalDateTime);
         assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1, 27, 987_654_000), t);
+    }
+
+    @Test
+    public void testGetTemporalDTWithPartialDate() {
+        for (String value : new String[] {"2026", "202610"}) {
+            LocalDateTime dateTime = LocalDateTime.of(2026, value.length() == 4 ? 1 : 10, 1, 0, 0);
+            for (String offset : new String[] {"", "+0530"}) {
+                Attributes a = new Attributes();
+                a.setString(Tag.AcquisitionDateTime, VR.DT, value + offset);
+                Temporal expected = offset.isEmpty() ? dateTime
+                        : dateTime.atOffset(ZoneOffset.ofHoursMinutes(5, 30)).toZonedDateTime();
+
+                assertEquals(expected, a.getTemporal(Tag.AcquisitionDateTime));
+
+                DatePrecision precision = new DatePrecision();
+                assertEquals(expected,
+                        a.getTemporal(null, Tag.AcquisitionDateTime, VR.DT, 0, null, precision));
+                assertEquals(value.length() == 4 ? Calendar.YEAR : Calendar.MONTH, precision.lastField);
+                assertEquals(!offset.isEmpty(), precision.includeTimezone);
+            }
+        }
     }
 
     @Test

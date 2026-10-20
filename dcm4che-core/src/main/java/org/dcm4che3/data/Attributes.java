@@ -386,19 +386,16 @@ public class Attributes implements Serializable {
         }
     }
 
-    private void decodeStringValuesUsingSpecificCharacterSet() {
-        Object value;
-        VR vr;
+    private void decodeStringValuesUsingSpecificCharacterSet(boolean removeSpecificCharacterSetFromItems) {
         SpecificCharacterSet cs = getSpecificCharacterSet();
         for (int i = 0; i < size; i++) {
-            value = values[i];
-            if (value instanceof Sequence) {
-                for (Attributes item : (Sequence) value)
-                    item.decodeStringValuesUsingSpecificCharacterSet();
-            } else if ((vr = vrs[i]).useSpecificCharacterSet())
-                if (value instanceof byte[])
-                    values[i] =
-                        vr.toStrings((byte[]) value, bigEndian, cs);
+            if (values[i] instanceof Sequence) {
+                for (Attributes item : (Sequence) values[i]) {
+                    item.decodeStringValuesUsingSpecificCharacterSet(removeSpecificCharacterSetFromItems);
+                    if (removeSpecificCharacterSetFromItems) item.remove(Tag.SpecificCharacterSet);
+                }
+            } else if (vrs[i].useSpecificCharacterSet())
+                if (values[i] instanceof byte[]) values[i] = vrs[i].toStrings(values[i], bigEndian, cs);
         }
     }
 
@@ -1769,7 +1766,7 @@ public class Attributes implements Serializable {
      */
     public void setSpecificCharacterSet(String... codes) {
         ensureModifiable();
-        decodeStringValuesUsingSpecificCharacterSet();
+        decodeStringValuesUsingSpecificCharacterSet(false);
         setString(Tag.SpecificCharacterSet, VR.CS, codes);
     }
 
@@ -1786,6 +1783,20 @@ public class Attributes implements Serializable {
             cs = SpecificCharacterSet.getDefaultCharacterSet();
 
         return cs;
+    }
+
+    public Set<SpecificCharacterSet> getSpecificCharacterSetsOfItems(Set<SpecificCharacterSet> css) {
+        for (int i = 0; i < size; i++) {
+            if (values[i] instanceof Sequence) {
+                for (Attributes item : (Sequence) values[i]) {
+                    if (item.containsSpecificCharacterSet) {
+                        css.add(item.getSpecificCharacterSet());
+                    }
+                    item.getSpecificCharacterSetsOfItems(css);
+                }
+            }
+        }
+        return css;
     }
 
     public boolean containsTimezoneOffsetFromUTC() {
@@ -2560,7 +2571,7 @@ public class Attributes implements Serializable {
                             " not compatible");
                 }
                 if (updateSpecificCharacterSet) {
-                    decodeStringValuesUsingSpecificCharacterSet();
+                    decodeStringValuesUsingSpecificCharacterSet(false);
                 } else {
                     decodeStringValue = true;
                 }
@@ -2714,7 +2725,7 @@ public class Attributes implements Serializable {
                         return false;
                 case MERGE:
                     if (oscs.length == 0)
-                        return false;;
+                        return false;
             }
 
         return (include == null || Arrays.binarySearch(include, fromIndex, toIndex, Tag.SpecificCharacterSet) >= 0)
@@ -3934,26 +3945,20 @@ public class Attributes implements Serializable {
         if (attrsList.length == 0)
             return;
 
-        SpecificCharacterSet utf8 = SpecificCharacterSet.valueOf("ISO_IR 192");
-        SpecificCharacterSet commonCS = attrsList[0].getSpecificCharacterSet();
-        if (!commonCS.equals(utf8)) {
-            for (int i = 1; i < attrsList.length; i++) {
-                SpecificCharacterSet cs = attrsList[i].getSpecificCharacterSet();
-                if (!(cs.equals(commonCS) || cs.isASCII() && commonCS.containsASCII())) {
-                    if (commonCS.isASCII() && cs.containsASCII())
-                        commonCS = cs;
-                    else {
-                        commonCS = utf8;
-                        break;
-                    }
-                }
-            }
-        }
-        for (Attributes attrs : attrsList) {
+        Set<SpecificCharacterSet>[] cssOfItems = new Set[attrsList.length];
+        SpecificCharacterSet commonCS = null;
+        for (int i = 0; i < attrsList.length; i++) {
+            Attributes attrs = attrsList[i];
             SpecificCharacterSet cs = attrs.getSpecificCharacterSet();
-            if (!(cs.equals(commonCS))) {
-                if (!cs.isASCII() || !commonCS.containsASCII())
-                    attrs.decodeStringValuesUsingSpecificCharacterSet();
+            commonCS = SpecificCharacterSet.common(
+                    commonCS != null ? SpecificCharacterSet.common(commonCS, cs) : cs,
+                    cssOfItems[i] = attrs.getSpecificCharacterSetsOfItems(new HashSet<>()));
+        }
+        for (int i = 0; i < attrsList.length; i++) {
+            Attributes attrs = attrsList[i];
+            SpecificCharacterSet cs = attrs.getSpecificCharacterSet();
+            if (!cs.contains(commonCS) || !commonCS.containedByAll(cssOfItems[i])) {
+                attrs.decodeStringValuesUsingSpecificCharacterSet(true);
                 attrs.setString(Tag.SpecificCharacterSet, VR.CS, commonCS.toCodes());
             }
         }

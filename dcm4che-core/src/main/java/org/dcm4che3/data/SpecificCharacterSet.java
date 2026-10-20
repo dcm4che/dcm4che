@@ -49,6 +49,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.*;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.StringTokenizer;
 
 /**
@@ -60,6 +61,7 @@ public class SpecificCharacterSet {
     private static final Logger LOG = LoggerFactory.getLogger(SpecificCharacterSet.class);
 
     public static final SpecificCharacterSet ASCII = new SpecificCharacterSet(new Codec[]{Codec.ISO_646});
+    public static final SpecificCharacterSet UTF8 = new SpecificCharacterSet(new Codec[]{Codec.UTF_8}, "ISO_IR 192");
 
     private static SpecificCharacterSet DEFAULT = ASCII;
     private static final ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = new ThreadLocal<SoftReference<Encoder>>();
@@ -781,6 +783,10 @@ public class SpecificCharacterSet {
         this.dicomCodes = codes;
     }
 
+    public String toString() {
+        return "SpecificCharacterSet" + Arrays.toString(dicomCodes);
+    }
+
     public byte[] encode(String val, String delimiters) {
         return codecs[0].encode(val);
     }
@@ -803,6 +809,26 @@ public class SpecificCharacterSet {
 
     public boolean contains(SpecificCharacterSet other) {
         return Arrays.equals(codecs, other.codecs) || (other.isASCII() || other == ASCII) && containsASCII();
+    }
+
+    public boolean containedByAll(Collection<SpecificCharacterSet> others) {
+        for (SpecificCharacterSet other : others) {
+            if (!other.contains(this)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static SpecificCharacterSet common(SpecificCharacterSet cs1, SpecificCharacterSet cs2) {
+        return cs1.contains(cs2) ? cs1 : cs2.contains(cs1) ? cs2 : SpecificCharacterSet.UTF8;
+    }
+
+    public static SpecificCharacterSet common(SpecificCharacterSet cs, Collection<SpecificCharacterSet> others) {
+        for (SpecificCharacterSet other : others) {
+            cs = common(cs, other);
+        }
+        return cs;
     }
 
     public String toText(String s) {

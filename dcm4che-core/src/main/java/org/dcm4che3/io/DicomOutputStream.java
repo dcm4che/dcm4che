@@ -76,6 +76,10 @@ public class DicomOutputStream extends FilterOutputStream {
     private final byte[] buf = new byte[12];
     private Deflater deflater;
 
+    public DicomOutputStream(OutputStream out) throws IOException {
+        this(out, UID.ExplicitVRLittleEndian);
+    }
+
     public DicomOutputStream(OutputStream out, String tsuid)
             throws IOException {
         super(out);

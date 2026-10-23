@@ -1,8 +1,11 @@
 package org.dcm4che3.io;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che3.data.*;
+import org.dcm4che3.util.CountingOutputStream;
 import org.dcm4che3.util.UIDUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -217,5 +220,42 @@ public class DicomOutputStreamTest {
             dos.writeDataset(null, attrs);
         }
         assertEquals("odd number of bytes", 0, out.size() & 1);
+    }
+
+    @Test
+    public void testWriteHeaderNotifiesListener() throws IOException {
+        CountingOutputStream counting = new CountingOutputStream(new ByteArrayOutputStream());
+        List<long[]> captured = new ArrayList<>();
+        try (DicomOutputStream out = new DicomOutputStream(counting, UID.ExplicitVRLittleEndian)) {
+            out.setTagWriteListener((tag, vr, length, byteOffset) -> captured.add(new long[] {tag, byteOffset}));
+            Attributes attrs = new Attributes();
+            attrs.setString(Tag.SOPClassUID, VR.UI, UID.CTImageStorage);
+            attrs.setString(Tag.SOPInstanceUID, VR.UI, "1.2.3");
+            out.writeDataset(null, attrs);
+        }
+        assertFalse(captured.isEmpty());
+        assertEquals(Tag.SOPClassUID, captured.get(0)[0]);
+        assertEquals(0L, captured.get(0)[1]);
+    }
+
+    @Test
+    public void testWriteHeaderNoListenerNoOp() throws IOException {
+        Attributes attrs = new Attributes();
+        attrs.setString(Tag.SOPClassUID, VR.UI, UID.CTImageStorage);
+        attrs.setString(Tag.SOPInstanceUID, VR.UI, "1.2.3");
+
+        ByteArrayOutputStream plain = new ByteArrayOutputStream();
+        try (DicomOutputStream out = new DicomOutputStream(plain, UID.ExplicitVRLittleEndian)) {
+            out.writeDataset(null, attrs);
+        }
+
+        ByteArrayOutputStream withListener = new ByteArrayOutputStream();
+        try (DicomOutputStream out = new DicomOutputStream(
+                new CountingOutputStream(withListener), UID.ExplicitVRLittleEndian)) {
+            out.setTagWriteListener((tag, vr, length, byteOffset) -> { });
+            out.writeDataset(null, attrs);
+        }
+
+        assertArrayEquals(plain.toByteArray(), withListener.toByteArray());
     }
 }

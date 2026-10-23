@@ -76,9 +76,15 @@ public class DicomOutputStream extends FilterOutputStream {
     private final byte[] buf = new byte[12];
     private Deflater deflater;
 
+    private TagWriteListener tagWriteListener;
+    private final CountingOutputStream tagWriteCountingOutputStream;
+
     public DicomOutputStream(OutputStream out, String tsuid)
             throws IOException {
         super(out);
+        this.tagWriteCountingOutputStream = out instanceof CountingOutputStream
+                ? (CountingOutputStream) out
+                : null;
         switchTransferSyntax(tsuid);
     }
 
@@ -110,6 +116,18 @@ public class DicomOutputStream extends FilterOutputStream {
         if (encOpts == null)
             throw new NullPointerException();
         this.encOpts = encOpts;
+    }
+
+    /**
+     * Sets a listener to be notified of the byte offset of each DICOM tag header written to this stream.
+     * Notification only occurs when the {@code OutputStream} passed to the constructor is itself a
+     * {@link CountingOutputStream} — without one, there is no byte offset to report and the listener is
+     * never invoked.
+     *
+     * @param listener the listener to notify, or {@code null} to disable notifications
+     */
+    public final void setTagWriteListener(TagWriteListener listener) {
+        this.tagWriteListener = listener;
     }
 
     @Override
@@ -163,6 +181,9 @@ public class DicomOutputStream extends FilterOutputStream {
     }
 
     public void writeHeader(int tag, VR vr, int len) throws IOException {
+        if (tagWriteListener != null && tagWriteCountingOutputStream != null) {
+            tagWriteListener.onTagWrite(tag, vr, len, tagWriteCountingOutputStream.getCount());
+        }
         byte[] b = buf;
         ByteUtils.tagToBytes(tag, b, 0, bigEndian);
         int headerLen;

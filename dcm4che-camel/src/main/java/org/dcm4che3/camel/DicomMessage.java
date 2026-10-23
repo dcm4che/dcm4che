@@ -36,11 +36,12 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.camel;
+ package org.dcm4che3.camel;
 
-import org.apache.camel.impl.DefaultMessage;
-import org.dcm4che3.data.Tag;
+import org.apache.camel.Exchange;
+import org.apache.camel.support.DefaultMessage;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.PDVInputStream;
@@ -54,19 +55,22 @@ public class DicomMessage extends DefaultMessage {
 
     private Attributes cmd;
 
-    public DicomMessage(Dimse dimse, Attributes cmd) {
-        this(dimse, cmd, (Object) null, UID.ImplicitVRLittleEndian);
+    public DicomMessage(Exchange exchange, Dimse dimse, Attributes cmd) {
+    	super(exchange);
+        init(dimse, cmd, (Object) null, UID.ImplicitVRLittleEndian);
     }
 
-    public DicomMessage(Dimse dimse, Attributes cmd, Attributes data, String ts) {
-        this(dimse, cmd, (Object) data, ts);
+    public DicomMessage(Exchange exchange, Dimse dimse, Attributes cmd, Attributes data, String ts) {
+    	super(exchange);
+        init(dimse, cmd, data, ts);
     }
 
-    public DicomMessage(Dimse dimse, Attributes cmd, PDVInputStream data, String ts) {
-        this(dimse, cmd, (Object) data, ts);
+    public DicomMessage(Exchange exchange, Dimse dimse, Attributes cmd, PDVInputStream data, String ts) {
+    	super(exchange);
+        init(dimse, cmd, data, ts);
     }
 
-    private DicomMessage(Dimse dimse, Attributes cmd, Object data, String ts) {
+    private void init(Dimse dimse, Attributes cmd, Object data, String ts) {
         this.cmd = cmd;
         setMessageId(cmd.getString(Tag.MessageID));
         setHeader("dimse", dimse);

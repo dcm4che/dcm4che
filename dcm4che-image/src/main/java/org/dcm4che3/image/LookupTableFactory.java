@@ -274,10 +274,10 @@ public class LookupTableFactory {
             if (w != 0) {
                 float M = Math.abs(m);
                 size = Math.max(2,Math.round(w/M));
-                offset = Math.round((c-w/2-b)/M);
-                int minIndex = inBits.minValue() - offset;
-                int maxIndex = inBits.maxValue() - offset;
+                offset = Math.round(Math.min((c-w/2-b)/m, (c+w/2-b)/m));
                 int size_1 = size - 1;
+                int minIndex = Math.min(Math.max(0, inBits.minValue() - offset), size_1);
+                int maxIndex = Math.min(Math.max(0, inBits.maxValue() - offset), size_1);
                 int midIndex = size_1 / 2;
                 if (minIndex > 0) {
                     offset += minIndex;

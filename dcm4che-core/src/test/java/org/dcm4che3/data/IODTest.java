@@ -39,6 +39,8 @@
 package org.dcm4che3.data;
 
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -78,6 +80,19 @@ public class IODTest {
         attrs.newSequence(Tag.ContentSequence, 1).add(contentNode);
         ValidationResult result = attrs.validate(iod);
         assertTrue(result.isValid());
+    }
+
+    @Test
+    public void testValidateBlankStringValue() {
+        IOD iod = new IOD();
+        iod.add(new IOD.DataElement(Tag.PatientName, VR.PN, IOD.DataElementType.TYPE_2, 1, 1, 0));
+        iod.add(new IOD.DataElement(Tag.PatientID, VR.LO, IOD.DataElementType.TYPE_1, 1, 1, 0));
+        Attributes attrs = new Attributes(2);
+        attrs.setBytes(Tag.PatientName, VR.PN, new byte[] { ' ', ' ' });
+        attrs.setBytes(Tag.PatientID, VR.LO, new byte[] { ' ', ' ' });
+        ValidationResult result = attrs.validate(iod);
+        assertArrayEquals(new int[] { Tag.PatientID }, result.tagsOfMissingAttributeValues());
+        assertFalse(result.hasInvalidAttributeValues());
     }
 
     private static Attributes readDataset(String name)

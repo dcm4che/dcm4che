@@ -18,5 +18,9 @@
       <groupId>org.weasis.core</groupId>
       <artifactId>weasis-core-img</artifactId>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
   </dependencies>
 </project>

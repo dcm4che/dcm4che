@@ -44,6 +44,8 @@ package org.dcm4che3.image;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.color.ColorSpace;
 import java.awt.color.ICC_ColorSpace;
@@ -58,6 +60,9 @@ import java.util.Optional;
  * @since Sep 2020
  */
 public final class ICCProfile {
+
+    private static final Logger LOG =
+            LoggerFactory.getLogger(ICCProfile.class);
 
     private ICCProfile() {}
 
@@ -84,8 +89,15 @@ public final class ICCProfile {
         if (b == null) {
             return frameIndex -> Optional.empty();
         }
-        Optional<ColorSpace> cs = Optional.of(new ICC_ColorSpace(ICC_Profile.getInstance(b)));
-        return frameIndex -> cs;
+
+        try {
+            Optional<ColorSpace> cs = Optional.of(new ICC_ColorSpace(ICC_Profile.getInstance(b)));
+            return frameIndex -> cs;
+        } catch (IllegalArgumentException e) {
+            LOG.warn("Invalid ICC profile tag value in SOP Instance {}", attrs.getString(Tag.SOPInstanceUID), e);
+            return frameIndex -> Optional.empty();
+        }
+
     }
 
     private static Optional<ColorSpace> getColorSpace(Attributes attrs, Sequence opticalPathSequence, int frameIndex) {
@@ -145,7 +157,7 @@ public final class ICCProfile {
         }
 
         Option(String fileName) {
-            try (InputStream is = ICCProfile.class.getResourceAsStream(fileName)){
+            try (InputStream is = ICCProfile.class.getResourceAsStream(fileName)) {
                 colorModel = ColorModelFactory.createRGBColorModel(8, DataBuffer.TYPE_BYTE,
                         new ICC_ColorSpace(ICC_Profile.getInstance(is)));
             } catch (IOException e) {

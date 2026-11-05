@@ -44,6 +44,7 @@ import java.util.Date;
 
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StringUtils;
+import org.dcm4che3.util.TagUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -849,5 +850,69 @@ public class AttributesTest {
                 filtered.contains(0x00991001));
         assertTrue("Attributes should keep the element tag for PrivateCreatorC",
                 filtered.contains(0x00991201));
+    }
+
+    /**
+     * Reproduces issue #1544: Attributes.toString() dropped the closing square
+     * bracket for a long VR.UI value (e.g. a 62-char StudyInstanceUID), leaving
+     * the rendered line malformed. Long values of other VRs (e.g. LO) must be
+     * rendered consistently and remain well-formed too.
+     */
+    @Test
+    public void toString_GivenLongUIValue_TerminatesLineWithClosingBracket() {
+        Attributes dicomObject = new Attributes();
+        String studyInstanceUID =
+                "1.2.826.0.1.3680043.2.403.297.1251010101658487.39.345049564013"; // 62 chars
+        dicomObject.setString(Tag.PatientName, VR.PN, "Doe^John");
+        dicomObject.setString(Tag.PatientID, VR.LO, "123456");
+        dicomObject.setString(Tag.StudyInstanceUID, VR.UI, studyInstanceUID);
+        dicomObject.setString(Tag.RequestingPhysician, VR.PN, "");
+
+        String dicomString = dicomObject.toString();
+
+        assertBalancedBrackets(dicomString);
+        assertLineWellFormed(dicomString, Tag.StudyInstanceUID);
+    }
+
+    @Test
+    public void toString_GivenLongLOValue_TerminatesLineWithClosingBracket() {
+        Attributes dicomObject = new Attributes();
+        String longDescription =
+                "A very long study description value that exceeds the rendering width limit";
+        dicomObject.setString(Tag.StudyDescription, VR.LO, longDescription);
+
+        String dicomString = dicomObject.toString();
+
+        assertBalancedBrackets(dicomString);
+        assertLineWellFormed(dicomString, Tag.StudyDescription);
+    }
+
+    private static void assertBalancedBrackets(String s) {
+        int open = 0;
+        int close = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '[')
+                open++;
+            else if (c == ']')
+                close++;
+        }
+        assertEquals("count of '[' must equal count of ']' in toString() output: " + s,
+                open, close);
+    }
+
+    private static void assertLineWellFormed(String s, int tag) {
+        String tagPrefix = TagUtils.toString(tag);
+        for (String line : s.split("\n")) {
+            if (line.startsWith(tagPrefix)) {
+                assertTrue("line for " + tagPrefix + " must contain an opening '[': " + line,
+                        line.indexOf('[') >= 0);
+                assertTrue("line for " + tagPrefix + " must be terminated with a closing ']': "
+                                + line,
+                        line.indexOf(']') > line.indexOf('['));
+                return;
+            }
+        }
+        fail("no rendered line found for tag " + tagPrefix + " in:\n" + s);
     }
 }

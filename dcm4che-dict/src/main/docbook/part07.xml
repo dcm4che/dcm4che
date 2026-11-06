@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2026c - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2026d - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -12065,7 +12065,7 @@
               <para xml:id="para_e71f5d8f-0b7f-4f3a-9c2e-7ed0c9028da8">As the UID shall not be parsed (their structure is not intended to convey any semantic significance beyond uniqueness), this optional Implementation Version Name provides an adequate mechanism to distinguish two versions of the same implementation (same Implementation Class UID).</para>
           </listitem>
           <listitem>
-              <para xml:id="para_3caa1ef1-d0bd-46a8-b4ea-d35c2deb215c">It is expected that if the Implementation Version Name is present, it will will include version information in addition to the name of the implementation.
+              <para xml:id="para_3caa1ef1-d0bd-46a8-b4ea-d35c2deb215c">It is expected that if the Implementation Version Name is present, it will include version information in addition to the name of the implementation.
                   The Implementation Version Name is expected to be more specific than the Implementation Class UID, and not less;
                   i.e., the Implementation Version Name will not have the same value when there are different values of the Implementation Class UID.</para>
           </listitem>

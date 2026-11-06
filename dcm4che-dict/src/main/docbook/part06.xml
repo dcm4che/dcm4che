@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.6" version="5.0" xml:id="PS3.6">
     <title>PS3.6</title>
-    <subtitle>DICOM PS3.6 2026c - Data Dictionary</subtitle>
+    <subtitle>DICOM PS3.6 2026d - Data Dictionary</subtitle>
     <info>
         <author>
             <orgname>DICOM Standards Committee</orgname>
@@ -50095,12 +50095,12 @@
                             <emphasis role="italic">(0032,1021)</emphasis>
                         </para>
                     </td>
-                    <td align="center" colspan="1" rowspan="1">
+                    <td align="left" colspan="1" rowspan="1">
                         <para xml:id="para_f1ff6051-872e-4916-9512-e5bff8291346">
                             <emphasis role="italic">Scheduled Study Location AE Title</emphasis>
                         </para>
                     </td>
-                    <td align="center" colspan="1" rowspan="1">
+                    <td align="left" colspan="1" rowspan="1">
                         <para xml:id="para_1df4d95b-b394-4def-9715-fe558fbeffdc">
                             <emphasis role="italic">Scheduled​Study​Location​AE​Title</emphasis>
                         </para>
@@ -60706,22 +60706,22 @@
                 </tr>
                 <tr valign="top">
                     <td align="center" colspan="1" rowspan="1">
-                        <para>(0040,E012)</para>
+                        <para xml:id="para_2aeb128a-581e-4e1e-8756-e4b452e33268">(0040,E012)</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>Display URI</para>
+                        <para xml:id="para_595a7e45-0613-412a-9f14-659c95d83aca">Display URI</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>Display​URI</para>
+                        <para xml:id="para_583d9211-1604-483d-9f0c-546d8f8ae8e7">Display​URI</para>
                     </td>
                     <td align="center" colspan="1" rowspan="1">
-                        <para>UR</para>
+                        <para xml:id="para_06b15582-dd08-436b-96c6-39c0f49f3bd7">UR</para>
                     </td>
                     <td align="center" colspan="1" rowspan="1">
-                        <para>1</para>
+                        <para xml:id="para_ad6ee051-a69b-4b8e-bf32-3fddcbb73338">1</para>
                     </td>
                     <td align="center" colspan="1" rowspan="1">
-                        <para/>
+                        <para xml:id="para_1281dcc5-fe24-41e2-8edb-83fa4c15b62e"/>
                     </td>
                 </tr>
                 <tr valign="top">
@@ -86021,6 +86021,26 @@
                     </td>
                     <td align="center" colspan="1" rowspan="1">
                         <para xml:id="para_09d823de-58be-4e47-9462-bd3189f4c4c0"/>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <td align="center" colspan="1" rowspan="1">
+                        <para xml:id="para_9beedb26-3815-436f-bbbd-ecf2c95ca740">(3004,007F)</para>
+                    </td>
+                    <td align="left" colspan="1" rowspan="1">
+                        <para xml:id="para_294706a9-3466-4500-aab2-e94140779a46">Dose Calculation Model Name</para>
+                    </td>
+                    <td align="left" colspan="1" rowspan="1">
+                        <para xml:id="para_3fbb01a5-178f-420c-b4a0-f4401058325f">Dose​Calculation​Mode​lName</para>
+                    </td>
+                    <td align="center" colspan="1" rowspan="1">
+                        <para xml:id="para_dcc684a2-bcc7-41b9-84a5-fd69722709e1">LO</para>
+                    </td>
+                    <td align="center" colspan="1" rowspan="1">
+                        <para xml:id="para_e8be46e9-eedd-438e-abaf-f2d1678f912a">1</para>
+                    </td>
+                    <td align="center" colspan="1" rowspan="1">
+                        <para xml:id="para_29896ead-ede0-4ea5-bde4-f353eb210b9d"/>
                     </td>
                 </tr>
                 <tr valign="top">
@@ -115625,57 +115645,57 @@
                 </tr>
                 <tr valign="top">
                     <td align="left" colspan="1" rowspan="1">
-                        <para>1.2.840.10008.​5.​1.​4.​1.​1.​2.​3</para>
+                        <para xml:id="para_fa16c77f-8bad-4e1b-b5b3-768d0161415d">1.2.840.10008.​5.​1.​4.​1.​1.​2.​3</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>CT Image Storage - For Processing</para>
+                        <para xml:id="para_13b86d9a-85ef-4511-b999-588ffa6101c9">CT Image Storage - For Processing</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>CT​Image​Storage​For​Processing</para>
+                        <para xml:id="para_765cd5da-bd2f-444f-8d77-3990bec847d4">CT​Image​Storage​For​Processing</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>SOP Class</para>
+                        <para xml:id="para_20170e80-17c6-4f98-ac45-e3222435d569">SOP Class</para>
                     </td>
                     <td align="center" colspan="1" rowspan="1">
-                        <para>
+                        <para xml:id="para_0b258346-9e45-4e29-af3c-1a949115ed51">
                             <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>
                         </para>
                     </td>
                 </tr>
                 <tr valign="top">
                     <td align="left" colspan="1" rowspan="1">
-                        <para>1.2.840.10008.​5.​1.​4.​1.​1.​2.​4</para>
+                        <para xml:id="para_c19d2c8c-90d3-4033-af26-fa0ab5cf3ae8">1.2.840.10008.​5.​1.​4.​1.​1.​2.​4</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>Enhanced CT Image Storage - For Processing</para>
+                        <para xml:id="para_6328db0e-9d87-4903-a3f8-fd4156904598">Enhanced CT Image Storage - For Processing</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>Enhanced​CT​Image​Storage​For​Processing</para>
+                        <para xml:id="para_e087ec67-491f-4015-a665-5e93999fb634">Enhanced​CT​Image​Storage​For​Processing</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>SOP Class</para>
+                        <para xml:id="para_ccea287e-b915-4a36-8238-58d3111374b2">SOP Class</para>
                     </td>
                     <td align="center" colspan="1" rowspan="1">
-                        <para>
+                        <para xml:id="para_8719472f-0595-4ed2-89cc-f5daff479834">
                             <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>
                         </para>
                     </td>
                 </tr>
                 <tr valign="top">
                     <td align="left" colspan="1" rowspan="1">
-                        <para>1.2.840.10008.​5.​1.​4.​1.​1.​2.​5</para>
+                        <para xml:id="para_74877d81-692f-4631-8450-0e5eedd7f59e">1.2.840.10008.​5.​1.​4.​1.​1.​2.​5</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>Legacy Converted Enhanced CT Image Storage - For Processing</para>
+                        <para xml:id="para_d465a266-aeb9-4a32-8f55-dba346e05113">Legacy Converted Enhanced CT Image Storage - For Processing</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>Legacy​Converted​Enhanced​CT​Image​Storage​For​Processing</para>
+                        <para xml:id="para_4fd07cd8-98d0-4b43-be46-af7424835db0">Legacy​Converted​Enhanced​CT​Image​Storage​For​Processing</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>SOP Class</para>
+                        <para xml:id="para_2f9c00ca-9344-4b6b-bd1c-c3f788686f9f">SOP Class</para>
                     </td>
                     <td align="center" colspan="1" rowspan="1">
-                        <para>
+                        <para xml:id="para_f390a3d6-0bdd-4cef-8da5-761c17802a08">
                             <olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/>
                         </para>
                     </td>
@@ -148977,20 +148997,20 @@
                 </tr>
                 <tr valign="top">
                     <td align="left" colspan="1" rowspan="1">
-                        <para>1.2.840.10008.6.1.1572</para>
+                        <para xml:id="para_5bec7b45-1a10-45e0-b3fb-f8e71905278d">1.2.840.10008.6.1.1572</para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>
+                        <para xml:id="para_c2ddaa42-c09b-4b82-9288-64db59fc4f68">
                             <olink targetdoc="PS3.16" targetptr="sect_CID_10037" xrefstyle="select: labelnumber"/>
                         </para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para>
+                        <para xml:id="para_cb9caf4d-c08a-4c7a-9579-71da816a4d1c">
                             <olink targetdoc="PS3.16" targetptr="sect_CID_10037" xrefstyle="select: title"/>
                         </para>
                     </td>
                     <td align="left" colspan="1" rowspan="1">
-                        <para/>
+                        <para xml:id="para_1c7d566a-b40a-4caf-b065-76d778308cee"/>
                     </td>
                 </tr>
             </tbody>

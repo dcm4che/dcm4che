@@ -154,14 +154,24 @@ public class WaveformTranscoder implements Closeable {
     }
 
     /**
-     * The quantization step size of the lossy transfer syntax (0 keeps the preset value of the
-     * codec, 1.0 is lossless). The sample error grows with it and is of its order in sample units,
-     * not strictly bounded by it: the quantization applies in the transform domain.
+     * The quantization step size of the lossy transfer syntax, required for it and above 1.0 (1.0
+     * is lossless, so a smaller value would only produce a larger lossless stream labeled lossy).
+     * The sample error grows with it and is of its order in sample units, not strictly bounded by
+     * it: the quantization applies in the transform domain. Ignored by the lossless transfer
+     * syntax.
      */
     public void setStepSize(double stepSize) {
         if (stepSize < 0)
             throw new IllegalArgumentException("Negative step size");
         this.stepSize = stepSize;
+    }
+
+    private void checkStepSize() {
+        if (T261TransferSyntax.isLossy(destTransferSyntax) && stepSize <= 1.0)
+            throw new IllegalArgumentException(stepSize == 0
+                    ? "The T.261 lossy transfer syntax requires a step size above 1.0"
+                    : "T.261 lossy step size " + stepSize
+                            + " must be above 1.0 (1.0 is lossless)");
     }
 
     /** The preset family of the encoder (ECG by default). */
@@ -201,6 +211,7 @@ public class WaveformTranscoder implements Closeable {
         if (desc.getBitsStored() > WaveformDescriptor.T261_MAX_BITS_STORED)
             throw new IllegalArgumentException("Waveform Bits Stored " + desc.getBitsStored()
                     + " exceeds the " + WaveformDescriptor.T261_MAX_BITS_STORED + " bits of T.261");
+        checkStepSize();
         boolean lossless = !T261TransferSyntax.isLossy(destTransferSyntax);
         return new T261Parameters(desc.getChannels(), desc.getBitsAllocated(),
                 desc.getBitsStored(), desc.getSamplingFrequency(), lossless,
@@ -209,6 +220,7 @@ public class WaveformTranscoder implements Closeable {
 
     /** Transcodes to a file. */
     public void transcode(File dest) throws IOException {
+        checkStepSize();
         OutputStream out = new BufferedOutputStream(new FileOutputStream(dest), 1 << 16);
         try {
             transcode(out);
@@ -220,6 +232,7 @@ public class WaveformTranscoder implements Closeable {
 
     /** Reads the data set, transcodes every multiplex group and writes the result. */
     public void transcode(OutputStream out) throws IOException {
+        checkStepSize();
         Attributes dataset = dis.readDataset();
         List<EncodedWaveform> encoded = transcode(dataset, srcTransferSyntax);
         try {

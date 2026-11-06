@@ -42,6 +42,7 @@ package org.dcm4che3.opencv.waveform;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -248,6 +249,21 @@ public class WaveformTranscoderTest {
         assertEquals(VR.OW, vr.vr);
         assertArrayEquals(littleEndian(samples), data);
         assertEquals(src.length(), back.length());
+    }
+
+    @Test
+    public void testLossyRequiresStepSizeAboveOne() throws Exception {
+        File src = writeNativeFile("ecg-native-step.dcm", ecgSamples());
+        for (double stepSize : new double[] { 0, 0.5, 1.0 }) {
+            File dest = new File(DIR, "ecg-lossy-step.dcm");
+            try {
+                transcode(src, dest.getName(), T261TransferSyntax.lossy(), stepSize);
+                fail("lossy with step size " + stepSize + " should be rejected");
+            } catch (IllegalArgumentException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains("1.0"));
+            }
+            assertFalse("no file written for step size " + stepSize, dest.exists());
+        }
     }
 
     @Test

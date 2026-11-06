@@ -317,6 +317,8 @@ public class Dcm2Dcm {
             if (cparams != null)
                 for (int i = 0; i < cparams.length;)
                     main.addCompressionParam(cparams[i++], toValue(cparams[i++]));
+            if (T261TransferSyntax.isLossy(main.tsuid) && !(main.stepSize() > 1.0))
+                throw new ParseException(rb.getString("t261y-step"));
 
             @SuppressWarnings("unchecked")
             final List<String> argList = cl.getArgList();
@@ -454,6 +456,13 @@ public class Dcm2Dcm {
             Files.deleteIfExists(dest.toPath());
             throw e;
         }
+    }
+
+    private double stepSize() {
+        for (Property param : params)
+            if (param.getName().equals("stepSize") && param.getValue() instanceof Number)
+                return ((Number) param.getValue()).doubleValue();
+        return 0;
     }
 
     private static String transferSyntaxOf(File src) throws IOException {

@@ -502,8 +502,8 @@ public class DateUtils {
                         parseDigit(s, pos++) * 100 +
                         parseDigit(s, pos++) * 10 +
                         parseDigit(s, pos++);
-        int month = 0;
-        int day = 0;
+        int month = 1;
+        int day = 1;
         LocalTime time = null;
 
         if (pos < length) {

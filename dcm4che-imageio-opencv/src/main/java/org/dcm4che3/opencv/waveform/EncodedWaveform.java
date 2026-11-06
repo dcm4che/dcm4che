@@ -61,6 +61,7 @@ import org.dcm4che3.data.VR;
 import org.dcm4che3.util.SafeClose;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.weasis.opencv.natives.NativeLibrary;
 import org.weasis.opencv.waveform.T261Parameters;
 import org.weasis.opencv.waveform.T261WaveformWriter;
 import org.weasis.opencv.waveform.WaveformReader;
@@ -81,6 +82,11 @@ import org.weasis.opencv.waveform.WaveformReader;
  * @since Oct 2026
  */
 public final class EncodedWaveform implements Closeable {
+
+    static {
+        // Load the native OpenCV library
+        NativeLibrary.loadLibraryFromLibraryName();
+    }
 
     private final File file;
     private final VR vr;

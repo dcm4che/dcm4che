@@ -56,6 +56,7 @@ import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.util.StreamUtils;
+import org.weasis.opencv.natives.NativeLibrary;
 import org.weasis.opencv.waveform.NativeWaveformReader;
 import org.weasis.opencv.waveform.T261WaveformReader;
 import org.weasis.opencv.waveform.WaveformReader;
@@ -73,6 +74,11 @@ import org.weasis.opencv.waveform.WaveformReader;
  * @since Oct 2026
  */
 public final class WaveformReaders {
+
+    static {
+        // Load the native OpenCV library
+        NativeLibrary.loadLibraryFromLibraryName();
+    }
 
     private WaveformReaders() {
     }

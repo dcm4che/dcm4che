@@ -54,7 +54,7 @@ import org.dcm4che3.data.BulkData;
 import org.dcm4che3.imageio.codec.BytesWithImageImageDescriptor;
 import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
-import org.opencv.osgi.OpenCVNativeLoader;
+import org.weasis.opencv.natives.NativeLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +67,7 @@ public abstract class StreamSegment {
 
     static {
         // Load the native OpenCV library
-        new OpenCVNativeLoader().init();
+        NativeLibrary.loadLibraryFromLibraryName();
     }
 
     private final long[] segPosition;

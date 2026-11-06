@@ -43,6 +43,7 @@ package org.dcm4che3.opencv.waveform;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.util.StringUtils;
 import org.weasis.opencv.waveform.WaveformSampleInterpretation;
 
 /**
@@ -92,7 +93,8 @@ public final class WaveformDescriptor {
     public static WaveformDescriptor of(Attributes item) {
         int channels = item.getInt(Tag.NumberOfWaveformChannels, 0);
         long samples = item.getInt(Tag.NumberOfWaveformSamples, 0) & 0xFFFFFFFFL;
-        double frequency = item.getDouble(Tag.SamplingFrequency, 0.0);
+        // not getDouble(): it caches the parsed DS in the Item, which re-encodes it on write ("500.0" -> "500")
+        double frequency = parseDS(item.getString(Tag.SamplingFrequency));
         int bitsAllocated = item.getInt(Tag.WaveformBitsAllocated, 0);
         WaveformSampleInterpretation interpretation = WaveformSampleInterpretation
                 .fromDicom(item.getString(Tag.WaveformSampleInterpretation));
@@ -101,6 +103,14 @@ public final class WaveformDescriptor {
             bitsStored = Math.min(bitsAllocated, T261_MAX_BITS_STORED);
         return new WaveformDescriptor(channels, samples, frequency, bitsAllocated, bitsStored,
                 interpretation, item.getString(Tag.MultiplexGroupLabel));
+    }
+
+    private static double parseDS(String s) {
+        try {
+            return s == null || s.trim().isEmpty() ? 0.0 : StringUtils.parseDS(s.trim());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
     }
 
     private static int maxBitsStored(Sequence channelDefinitions) {

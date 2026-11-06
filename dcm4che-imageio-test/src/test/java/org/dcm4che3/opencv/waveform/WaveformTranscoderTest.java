@@ -69,7 +69,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.weasis.opencv.natives.NativeLibrary;
 import org.weasis.opencv.waveform.T261WaveformReader;
 import org.weasis.opencv.waveform.WaveformReader;
 
@@ -88,7 +87,6 @@ public class WaveformTranscoderTest {
 
     @BeforeClass
     public static void before() {
-        NativeLibrary.loadLibraryFromLibraryName();
         DIR.mkdirs();
         File[] files = DIR.listFiles();
         if (files != null)

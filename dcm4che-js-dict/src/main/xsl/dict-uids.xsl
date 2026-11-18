@@ -52,7 +52,17 @@ DCM4CHE.</xsl:text><xsl:value-of select="$type"/><xsl:text> = (function (diction
     nameOf:nameOf
   }
 }({</xsl:text>
-        <xsl:apply-templates select="//uid[@type=$type]"/>
+        <xsl:choose>
+            <xsl:when test="$type = 'SOPClass'">
+                <xsl:apply-templates select="//uid[
+                    @type='SOPClass' or
+                    @type='StorageSOPClass' or
+                    @type='ImageStorageSOPClass']"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates select="//uid[@type=$type]"/>
+            </xsl:otherwise>
+        </xsl:choose>
     <xsl:text>
 }));
 </xsl:text>

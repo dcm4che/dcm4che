@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2026d - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2026e - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -2452,23 +2452,24 @@
   </section>
 <section label="9.1.3.1.7" status="5" xml:id="sect_9.1.3.1.7">
     <title>Number of Remaining Sub-Operations</title>
-  
-  <para xml:id="para_ae9f5369-523d-4a42-b0b5-7f62623ff8ba">This specifies the number of remaining C-STORE sub-operations to be invoked by this C-GET operation. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
+    <para xml:id="para_ae9f5369-523d-4a42-b0b5-7f62623ff8ba">This specifies the number of remaining C-STORE sub-operations necessary to complete this C-GET operation.
+        It may be included if the status is equal to Canceled and shall be included if the status is equal to Pending,
+        and shall not be included if the status is equal to Warning, Failure, or Success.</para>
   </section>
 <section label="9.1.3.1.8" status="5" xml:id="sect_9.1.3.1.8">
     <title>Number of Completed Sub-Operations</title>
-  
-  <para xml:id="para_fd2f0b72-8cb0-4848-bf30-31459af469bb">This specifies the number of C-STORE sub-operations invoked by this C-GET operation that have completed successfully. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
+    <para xml:id="para_fd2f0b72-8cb0-4848-bf30-31459af469bb">This specifies the number of C-STORE sub-operations associated with this C-GET operation that yielded a Success status.
+      It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
   </section>
 <section label="9.1.3.1.9" status="5" xml:id="sect_9.1.3.1.9">
     <title>Number of Failed Sub-Operations</title>
-  
-  <para xml:id="para_5aa62307-88e8-4dea-8de6-62d063ef349a">This specifies the number of C-STORE sub-operations invoked by this C-GET operation that have failed. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
+    <para xml:id="para_5aa62307-88e8-4dea-8de6-62d063ef349a">This specifies the number of C-STORE sub-operations associated with this C-GET operation that yielded a Failure status.
+        It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
   </section>
 <section label="9.1.3.1.10" status="5" xml:id="sect_9.1.3.1.10">
     <title>Number of Warning Sub-Operations</title>
-  
-  <para xml:id="para_d3615dae-7ba1-46e5-8473-084a58f6595e">This specifies the number of C-STORE sub-operation invoked by this C-GET operation that generated Warning responses. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
+    <para xml:id="para_d3615dae-7ba1-46e5-8473-084a58f6595e">This specifies the number of C-STORE sub-operation associated with this C-GET operation that yielded a Warning status.
+        It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
   </section>
 </section>
 <section label="9.1.3.2" status="4" xml:id="sect_9.1.3.2">
@@ -2815,23 +2816,25 @@
   </section>
 <section label="9.1.4.1.8" status="5" xml:id="sect_9.1.4.1.8">
     <title>Number of Remaining Sub-Operations</title>
-  
-  <para xml:id="para_351c78d3-9c6e-48c6-9865-dc449dad1a76">This specifies the number of remaining C-STORE sub-operations to be invoked by this C-MOVE operation. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
+    <para xml:id="para_351c78d3-9c6e-48c6-9865-dc449dad1a76">This specifies the number of remaining C-STORE sub-operations necessary to complete this C-MOVE operation.
+        It may be included if the status is equal to Canceled,
+        shall be included if the status is equal to Pending,
+        and shall not be included if the status is equal to Warning, Failure, or Success.</para>
   </section>
 <section label="9.1.4.1.9" status="5" xml:id="sect_9.1.4.1.9">
     <title>Number of Completed Sub-Operations</title>
-  
-  <para xml:id="para_774dc96f-e29e-4cb7-a71e-d97ada548331">This specifies the number of C-STORE sub-operations invoked by this C-MOVE operation that have completed successfully. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
+    <para xml:id="para_774dc96f-e29e-4cb7-a71e-d97ada548331">This specifies the number of C-STORE sub-operations associated with this C-MOVE operation that have yielded a Success status.
+      It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
   </section>
 <section label="9.1.4.1.10" status="5" xml:id="sect_9.1.4.1.10">
     <title>Number of Failed Sub-Operations</title>
-  
-  <para xml:id="para_3a1ac073-9e55-4c31-a9d7-6c0b4d5ef797">This specifies the number of C-STORE sub-operations invoked by this C-MOVE operation that have failed. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
+    <para xml:id="para_3a1ac073-9e55-4c31-a9d7-6c0b4d5ef797">This specifies the number of C-STORE sub-operations associated with this C-MOVE operation that yielded a Failure status.
+      It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
   </section>
 <section label="9.1.4.1.11" status="5" xml:id="sect_9.1.4.1.11">
     <title>Number of Warning Sub-Operations</title>
-  
-  <para xml:id="para_f3e65ce9-d76c-4a5c-84e6-61c491896a59">This specifies the number of C-STORE sub-operations invoked by this C-MOVE operation that generated Warning responses. It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
+    <para xml:id="para_f3e65ce9-d76c-4a5c-84e6-61c491896a59">This specifies the number of C-STORE sub-operations associated with this C-MOVE operation that yielded a Warning status.
+      It may be included in any response/confirmation and shall be included if the status is equal to Pending.</para>
   </section>
 </section>
 <section label="9.1.4.2" status="4" xml:id="sect_9.1.4.2">
@@ -4302,7 +4305,7 @@
         <para xml:id="para_e4f36e82-0102-44c5-9a2e-5c791f91c0b8">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_49919401-4daa-48a5-9686-dde2a75f2e60">The number of remaining C-STORE sub-operations to be invoked for this C-GET operation.</para>
+          <para xml:id="para_49919401-4daa-48a5-9686-dde2a75f2e60">The number of remaining C-STORE sub-operations necessary to complete this C-GET operation.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4319,7 +4322,7 @@
         <para xml:id="para_738f2430-3fb4-46a6-ab07-f81521e498eb">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_a6f326b9-2d06-4660-82a4-0da9fcf41eb7">The number of C-STORE sub-operations invoked by this C-GET operation that have completed successfully.</para>
+          <para xml:id="para_a6f326b9-2d06-4660-82a4-0da9fcf41eb7">The number of C-STORE sub-operations associated with this C-GET operation that have yielded a Success status.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4336,7 +4339,7 @@
         <para xml:id="para_95dbebc1-5ffc-44c7-a129-13b2589f10d2">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_1d639433-1255-464e-b9f5-ef4e633f6f95">The number of C-STORE sub-operations invoked by this C-GET operation that have failed.</para>
+          <para xml:id="para_1d639433-1255-464e-b9f5-ef4e633f6f95">The number of C-STORE sub-operations associated with this C-GET operation that have yielded a Failure status.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4353,7 +4356,7 @@
         <para xml:id="para_48ec6053-3609-4fe6-924d-44459c75f68f">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_0497a642-bac4-417f-8117-c11a443706ac">The number of C-STORE sub-operations invoked by this C-GET operation that generated warning responses.</para>
+          <para xml:id="para_0497a642-bac4-417f-8117-c11a443706ac">The number of C-STORE sub-operations associated with this C-GET operation that have yielded a Warning status.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4737,7 +4740,6 @@
   </section>
 <section label="9.3.4.2" status="4" xml:id="sect_9.3.4.2">
     <title>C-MOVE-RSP</title>
-  
   <para xml:id="para_047b015c-17fe-4bfe-8c29-ea86ffbcf1b4">The C-MOVE-RSP Message contains fields as defined in <xref linkend="table_9.3-10" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-MOVE service definition unless otherwise noted in <xref linkend="table_9.3-10" xrefstyle="select: label"/>. Fields not specified in the C-MOVE service definition but present in <xref linkend="table_9.3-10" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
     <table frame="box" label="9.3-10" rules="all" xml:id="table_9.3-10">
     <caption>C-MOVE-RSP Message Fields</caption>
@@ -4888,7 +4890,7 @@
         <para xml:id="para_5722b983-3433-4ecd-a233-659ce452f628">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-          <para xml:id="para_41403a87-8efe-4006-921f-1c2220586368">The number of remaining C-STORE sub-operations to be invoked for this C-MOVE operation.</para>
+          <para xml:id="para_41403a87-8efe-4006-921f-1c2220586368">The number of remaining C-STORE sub-operations necessary to complete this C-MOVE operation.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4905,7 +4907,7 @@
         <para xml:id="para_1d55d359-c2e8-4022-aa39-3150a7d445c3">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_e8e42acb-8379-4e41-af5d-fc65fe0c359e">The number of C-STORE sub-operations invoked by this C-MOVE operation that have completed successfully.</para>
+          <para xml:id="para_e8e42acb-8379-4e41-af5d-fc65fe0c359e">The number of C-STORE sub-operations associated with this C-MOVE operation that have yielded a Success status.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4922,7 +4924,7 @@
         <para xml:id="para_bd37b157-93f5-4ec8-abd9-0fad778b0b1f">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_58145124-638a-44b8-88a0-42d94cf4300f">The number of C-STORE sub-operations invoked by this C-MOVE operation that have failed.</para>
+          <para xml:id="para_58145124-638a-44b8-88a0-42d94cf4300f">The number of C-STORE sub-operations associated with this C-MOVE operation that yielded a Failure status.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4939,7 +4941,7 @@
         <para xml:id="para_4c9880af-ef19-4f17-a1c6-a3f4ac0f825b">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_d270c984-a391-40f1-ac55-95704a7abcf5">The number of C-STORE sub-operations invoked by this C-MOVE operation that generated warning responses.</para>
+          <para xml:id="para_d270c984-a391-40f1-ac55-95704a7abcf5">The number of C-STORE sub-operations associated with this C-MOVE operation that have yielded a Warning status.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -14005,7 +14007,7 @@
         <para xml:id="para_ff6e91fd-24ea-4856-90f2-596b14277537">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_dba55a4a-45b1-49d9-b842-9a4e7f82ee9d">The number of remaining C-STORE sub-operations to be invoked for the operation.</para>
+          <para xml:id="para_dba55a4a-45b1-49d9-b842-9a4e7f82ee9d">The number of remaining C-STORE sub-operations necessary to complete this operation.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -14025,7 +14027,7 @@
         <para xml:id="para_74974b4d-be11-46b9-bbe1-ab74e1f6bf8f">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_9e476730-d983-41f4-aa7e-6379171b4985">The number of C-STORE sub-operations associated with this operation that have completed successfully.</para>
+          <para xml:id="para_9e476730-d983-41f4-aa7e-6379171b4985">The number of C-STORE sub-operations associated with this operation that have yielded a Success status.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -14045,7 +14047,7 @@
         <para xml:id="para_d4885a31-f759-492b-ab5c-4e297de966f8">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_3dda6818-2101-4fde-8c29-6c2c4c265faa">The number of C-STORE sub-operations associated with this operation that have failed.</para>
+          <para xml:id="para_3dda6818-2101-4fde-8c29-6c2c4c265faa">The number of C-STORE sub-operations associated with this operation that yielded a Failure status.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -14065,7 +14067,7 @@
         <para xml:id="para_bb6ed7fa-4dd3-4acc-aa54-86e745da5bba">1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para xml:id="para_cf2e641c-4dfd-4f27-9f71-ccd1eac5310e">The number of C-STORE sub-operations associated with this operation that generated warning responses.</para>
+          <para xml:id="para_cf2e641c-4dfd-4f27-9f71-ccd1eac5310e">The number of C-STORE sub-operations associated with this operation that have yielded a Warning status.</para>
       </td>
     </tr>
     <tr valign="top">

@@ -79,31 +79,31 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <slf4j.version>2.0.18</slf4j.version>
-    <logback.version>1.5.38</logback.version>
+    <slf4j.version>2.0.20</slf4j.version>
+    <logback.version>1.6.6</logback.version>
     <weasis.core.img.version>5.0.0</weasis.core.img.version>
     <keycloak.version>25.0.6</keycloak.version>
-    <jbossws-cxf-client.version>7.4.1.Final</jbossws-cxf-client.version>
-    <apache-cxf.version>4.1.8</apache-cxf.version>
-    <apache-commons-csv.version>1.11.0</apache-commons-csv.version>
-    <apache-commons-compress.version>1.27.1</apache-commons-compress.version>
-    <jakarta.activation.version>2.1.3</jakarta.activation.version>
-    <eclipse.angus.activation.version>2.0.2</eclipse.angus.activation.version>
-    <jakarta.xml.bind.version>4.0.2</jakarta.xml.bind.version>
-    <jaxb-runtime.version>4.0.5</jaxb-runtime.version>
-    <jakarta.xml.ws.version>4.0.2</jakarta.xml.ws.version>
-    <jakarta.xml.soap-api.version>3.0.1</jakarta.xml.soap-api.version>
-    <jakarta.ws.rs.version>3.1.0</jakarta.ws.rs.version>
+    <jbossws-cxf-client.version>8.0.0.Final</jbossws-cxf-client.version>
+    <apache-cxf.version>4.1.9</apache-cxf.version>
+    <jakarta.activation.version>2.1.4</jakarta.activation.version>
+    <eclipse.angus.activation.version>2.0.3</eclipse.angus.activation.version>
+    <jakarta.xml.bind.version>4.0.5</jakarta.xml.bind.version>
+    <jaxb-runtime.version>4.0.8</jaxb-runtime.version>
+    <jakarta.xml.ws.version>4.0.3</jakarta.xml.ws.version>
+    <jakarta.xml.soap-api.version>3.0.2</jakarta.xml.soap-api.version>
+    <jakarta.ws.rs.version>4.0.0</jakarta.ws.rs.version>
     <jakarta.json.version>2.1.3</jakarta.json.version>
-    <org.eclipse.parsson.version>1.1.7</org.eclipse.parsson.version>
+    <org.eclipse.parsson.version>1.1.9</org.eclipse.parsson.version>
     <com.sun.istack.version>4.1.2</com.sun.istack.version>
-    <com.sun.xml.messaging.saaj.version>3.0.3</com.sun.xml.messaging.saaj.version>
+    <com.sun.xml.messaging.saaj.version>3.0.4</com.sun.xml.messaging.saaj.version>
     <com.sun.xml.stream.buffer.version>2.1.0</com.sun.xml.stream.buffer.version>
-    <com.sun.xml.ws.policy.version>4.0.2</com.sun.xml.ws.policy.version>
+    <com.sun.xml.ws.policy.version>4.0.3</com.sun.xml.ws.policy.version>
     <org.glassfish.gmbal.version>4.0.3</org.glassfish.gmbal.version>
     <org.jvnet.mimepull.version>1.10.0</org.jvnet.mimepull.version>
     <org.jvnet.staxex.version>2.1.0</org.jvnet.staxex.version>
-    <commons-cli.version>1.9.0</commons-cli.version>
+    <apache-commons-csv.version>1.14.1</apache-commons-csv.version>
+    <apache-commons-compress.version>1.28.0</apache-commons-compress.version>
+    <commons-cli.version>1.11.0</commons-cli.version>
 
     <!-- for SonarCloud / SonarQube -->
     <sonar.organization>dcm4che</sonar.organization>

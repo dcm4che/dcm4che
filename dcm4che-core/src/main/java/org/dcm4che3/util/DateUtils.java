@@ -419,6 +419,7 @@ public class DateUtils {
 
             if (sign == '-') {
                 hour *= -1;
+                minute *= -1;
             }
 
             return ZoneOffset.ofHoursMinutes(hour, minute);

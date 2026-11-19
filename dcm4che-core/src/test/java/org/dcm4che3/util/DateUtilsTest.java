@@ -166,4 +166,12 @@ public class DateUtilsTest {
         assertTrue(precision.includeTimezone);
     }
 
+    @Test
+    public void testParseTemporalDTWithNegativeTZAndMinutes() {
+        DatePrecision precision = new DatePrecision();
+        assertEquals(OffsetDateTime.of(2023, 9, 26, 12, 0, 0, 0, ZoneOffset.ofHoursMinutes(-3, -30)),
+                DateUtils.parseTemporalDT("202309261200-0330", precision));
+        assertTrue(precision.includeTimezone);
+    }
+
 }

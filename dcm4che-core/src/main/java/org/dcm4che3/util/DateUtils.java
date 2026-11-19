@@ -488,8 +488,8 @@ public class DateUtils {
     public static Temporal parseTemporalDT(String s, DatePrecision precision) {
         int length = s.length();
         ZoneOffset offset = safeZoneOffset(s);
+        precision.includeTimezone = offset != null;
         if (offset != null) {
-            precision.includeTimezone = true;
             length -= 5;
         }
 

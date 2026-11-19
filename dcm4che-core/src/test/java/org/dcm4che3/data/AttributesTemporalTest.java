@@ -90,6 +90,22 @@ public class AttributesTemporalTest {
     }
 
     @Test
+    public void testGetTemporalOutOfRangeValuesReturnDefault() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20231340");
+        a.setString(Tag.StudyTime, VR.TM, "250000");
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "20230230");
+        Temporal fallback = LocalDate.of(2000, 1, 1);
+
+        assertEquals(fallback, a.getTemporal(Tag.StudyDate, fallback));
+        assertEquals(fallback, a.getTemporal(Tag.StudyTime, fallback));
+        assertEquals(fallback, a.getTemporal(Tag.AcquisitionDateTime, fallback));
+        assertEquals(fallback, a.getTemporal(Tag.StudyDateAndTime, fallback));
+        a.setString(Tag.StudyTime, VR.TM, "1530");
+        assertEquals(LocalTime.of(15, 30), a.getTemporal(Tag.StudyDateAndTime, fallback));
+    }
+
+    @Test
     public void testGetTemporalDTWithTZ() {
         Attributes a = new Attributes();
         a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654+0200");

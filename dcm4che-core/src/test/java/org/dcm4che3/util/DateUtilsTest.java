@@ -174,4 +174,28 @@ public class DateUtilsTest {
         assertTrue(precision.includeTimezone);
     }
 
+    @Test
+    public void testParseLocalDAOutOfRange() {
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseLocalDA("20231340"));
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseLocalDA("20230230"));
+    }
+
+    @Test
+    public void testParseLocalTMOutOfRange() {
+        DatePrecision precision = new DatePrecision();
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseLocalTM("250000", precision));
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseLocalTM("1261", precision));
+    }
+
+    @Test
+    public void testParseTemporalDTOutOfRange() {
+        DatePrecision precision = new DatePrecision();
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseTemporalDT("20230230", precision));
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseTemporalDT("2023092625", precision));
+        assertThrows(IllegalArgumentException.class,
+                () -> DateUtils.parseTemporalDT("202309261200+1900", precision));
+        assertThrows(IllegalArgumentException.class,
+                () -> DateUtils.parseTemporalDT("202309261200+0275", precision));
+    }
+
 }

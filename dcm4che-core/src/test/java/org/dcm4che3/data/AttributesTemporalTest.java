@@ -154,6 +154,23 @@ public class AttributesTemporalTest {
         assertEquals("20110404150000.000", DateUtils.formatDT(null, d));
     }
 
+    @Test
+    public void testGetDateLongPrivateDateOnly() {
+        Attributes a = new Attributes();
+        String creator = "TEMPORAL";
+        int dateTag = 0x00990010;
+        int timeTag = 0x00990011;
+        long combinedTag = ((long) dateTag << 32) | (timeTag & 0xffffffffL);
+        a.setString(creator, dateTag, VR.DA, "20110404");
+
+        assertEquals("20110404", DateUtils.formatDA(null, a.getDate(creator, combinedTag)));
+        Date[] dates = a.getDates(creator, combinedTag);
+        assertEquals(1, dates.length);
+        assertEquals("20110404", DateUtils.formatDA(null, dates[0]));
+        DateRange range = a.getDateRange(creator, combinedTag);
+        assertEquals("20110404", DateUtils.formatDA(null, range.getStartDate()));
+    }
+
     /**
      * Test method for {@link org.dcm4che3.data.Attributes#getDateRange(int, org.dcm4che3.data.DateRange)}.
      */

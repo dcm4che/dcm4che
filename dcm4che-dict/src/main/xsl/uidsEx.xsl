@@ -39,6 +39,12 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
   <xsl:template name="uidsEx">
+    <!-- DICOM Supplement 253 (waveform compression with ITU-T T.261), v9 under public comment:
+         the UIDs are not assigned yet, the values are the placeholders of the supplement and the
+         keywords are those of its Table A-1 without the dot ("T.261Lossless" is not a valid
+         keyword). Remove these two entries when part06.xml carries the final UIDs. -->
+    <uid value="UID_TS1_lossless" keyword="T261Lossless" type="TransferSyntax">T.261 Transfer Syntax for Lossless Waveform Compression</uid>
+    <uid value="UID_TS2_lossy" keyword="T261Lossy" type="TransferSyntax">T.261 Transfer Syntax for Lossy Waveform Compression</uid>
     <uid value="1.2.40.0.13.1.5.1.4.1.1.104.1" keyword="PrivateDcm4cheEncapsulatedGenozipStorage" type="SOPClass">Private Dcm4che Encapsulated Genozip Storage</uid>
     <uid value="1.2.40.0.13.1.5.1.4.1.1.104.2" keyword="PrivateDcm4cheEncapsulatedBzip2VCFStorage" type="SOPClass">Private Dcm4che Encapsulated Bzip2 VCF Storage</uid>
     <uid value="1.2.40.0.13.1.5.1.4.1.1.104.3" keyword="PrivateDcm4cheEncapsulatedBzip2DocumentStorage" type="SOPClass">Private Dcm4che Encapsulated Bzip2 Document Storage</uid>

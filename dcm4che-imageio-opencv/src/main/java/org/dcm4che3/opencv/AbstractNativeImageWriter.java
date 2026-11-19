@@ -60,8 +60,8 @@ import org.dcm4che3.imageio.codec.ImageDescriptor;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.osgi.OpenCVNativeLoader;
 import org.weasis.opencv.data.ImageCV;
+import org.weasis.opencv.natives.NativeLibrary;
 
 /**
  * Base class for the native (OpenCV-backed) DICOM image writers. It owns the boilerplate shared by every codec
@@ -74,7 +74,7 @@ import org.weasis.opencv.data.ImageCV;
 abstract class AbstractNativeImageWriter extends ImageWriter {
 
     static {
-        new OpenCVNativeLoader().init();
+        NativeLibrary.loadLibraryFromLibraryName();
     }
 
     AbstractNativeImageWriter(ImageWriterSpi originatingProvider) {

@@ -292,7 +292,12 @@ public class Transcoder implements Closeable {
     public void setDestinationTransferSyntax(String tsuid) {
         if (tsuid.equals(destTransferSyntax))
             return;
-        this.destTransferSyntaxType = TransferSyntaxType.forUID(tsuid);
+        TransferSyntaxType tstype = TransferSyntaxType.forUID(tsuid);
+        if (srcTransferSyntaxType.isWaveformDataEncapsulated() || tstype.isWaveformDataEncapsulated())
+            throw new UnsupportedOperationException("Transcoding of encapsulated Waveform Data from "
+                    + srcTransferSyntax + " to " + tsuid
+                    + " is not supported by this class, use org.dcm4che3.opencv.waveform.WaveformTranscoder");
+        this.destTransferSyntaxType = tstype;
         this.lossyCompression = TransferSyntaxType.isLossyCompression(tsuid);
         this.destTransferSyntax = tsuid;
 

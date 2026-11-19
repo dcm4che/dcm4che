@@ -1261,7 +1261,8 @@ public class Attributes implements Serializable {
      *
      * For {@link VR#DA} or {@link VR#TM} tags an instance of {@link LocalDate} or {@link LocalTime} will be returned.
      *
-     * In case the value for the given tag itself is not set (or empty), then <code>null</code> (or the supplied
+     * In case the tag is not set, its value is empty, its VR is not a temporal VR, its value is invalid,
+     * or it has no value at the requested value index, then <code>null</code> (or the supplied
      * <code>defVal</code> for other variants of this method) will be returned.
      *
      * @param tag tag number
@@ -1271,7 +1272,248 @@ public class Attributes implements Serializable {
         return getTemporal(null, tag, null, 0, null, new DatePrecision());
     }
 
-    // TODO variants of getTemporal missing here
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param tag tag number
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(int tag, DatePrecision precision) {
+        return getTemporal(null, tag, null, 0, null, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param tag tag number
+     * @param defVal default value when no temporal value is available
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(int tag, Temporal defVal) {
+        return getTemporal(null, tag, null, 0, defVal, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param tag tag number
+     * @param defVal default value when no temporal value is available
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(int tag, Temporal defVal, DatePrecision precision) {
+        return getTemporal(null, tag, null, 0, defVal, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param tag tag number
+     * @param valueIndex value index
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(int tag, int valueIndex) {
+        return getTemporal(null, tag, null, valueIndex, null, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param tag tag number
+     * @param valueIndex value index
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(int tag, int valueIndex, DatePrecision precision) {
+        return getTemporal(null, tag, null, valueIndex, null, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param tag tag number
+     * @param valueIndex value index
+     * @param defVal default value when no temporal value is available
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(int tag, int valueIndex, Temporal defVal) {
+        return getTemporal(null, tag, null, valueIndex, defVal, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param tag tag number
+     * @param valueIndex value index
+     * @param defVal default value when no temporal value is available
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(int tag, int valueIndex, Temporal defVal,
+            DatePrecision precision) {
+        return getTemporal(null, tag, null, valueIndex, defVal, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, int tag) {
+        return getTemporal(privateCreator, tag, null, 0, null, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, int tag, DatePrecision precision) {
+        return getTemporal(privateCreator, tag, null, 0, null, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param defVal default value when no temporal value is available
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(String privateCreator, int tag, Temporal defVal) {
+        return getTemporal(privateCreator, tag, null, 0, defVal, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param defVal default value when no temporal value is available
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(String privateCreator, int tag, Temporal defVal,
+            DatePrecision precision) {
+        return getTemporal(privateCreator, tag, null, 0, defVal, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param vr VR
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, int tag, VR vr) {
+        return getTemporal(privateCreator, tag, vr, 0, null, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param vr VR
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, int tag, VR vr,
+            DatePrecision precision) {
+        return getTemporal(privateCreator, tag, vr, 0, null, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param vr VR
+     * @param defVal default value when no temporal value is available
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(String privateCreator, int tag, VR vr, Temporal defVal) {
+        return getTemporal(privateCreator, tag, vr, 0, defVal, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param vr VR
+     * @param defVal default value when no temporal value is available
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(String privateCreator, int tag, VR vr, Temporal defVal,
+            DatePrecision precision) {
+        return getTemporal(privateCreator, tag, vr, 0, defVal, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param valueIndex value index
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, int tag, int valueIndex) {
+        return getTemporal(privateCreator, tag, null, valueIndex, null,
+                new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param valueIndex value index
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, int tag, int valueIndex,
+            DatePrecision precision) {
+        return getTemporal(privateCreator, tag, null, valueIndex, null, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param valueIndex value index
+     * @param defVal default value when no temporal value is available
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(String privateCreator, int tag, int valueIndex,
+            Temporal defVal) {
+        return getTemporal(privateCreator, tag, null, valueIndex, defVal,
+                new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param valueIndex value index
+     * @param defVal default value when no temporal value is available
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(String privateCreator, int tag, int valueIndex,
+            Temporal defVal, DatePrecision precision) {
+        return getTemporal(privateCreator, tag, null, valueIndex, defVal, precision);
+    }
 
     /**
      * See {@link #getTemporal(int)}.
@@ -1280,12 +1522,59 @@ public class Attributes implements Serializable {
      * @param tag tag number
      * @param vr VR
      * @param valueIndex value index
-     * @param defVal default value, if the tag value is not set or empty
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, int tag, VR vr, int valueIndex) {
+        return getTemporal(privateCreator, tag, vr, valueIndex, null,
+                new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param vr VR
+     * @param valueIndex value index
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, int tag, VR vr, int valueIndex,
+            DatePrecision precision) {
+        return getTemporal(privateCreator, tag, vr, valueIndex, null, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param vr VR
+     * @param valueIndex value index
+     * @param defVal default value when no temporal value is available
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(String privateCreator, int tag, VR vr, int valueIndex,
+            Temporal defVal) {
+        return getTemporal(privateCreator, tag, vr, valueIndex, defVal,
+                new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(int)}.
+     *
+     * @param privateCreator private creator
+     * @param tag tag number
+     * @param vr VR
+     * @param valueIndex value index
+     * @param defVal default value, if no temporal value is available (see {@link #getTemporal(int)})
      * @param precision used as a return value: contains information about the contained date/time precision and
      *                  whether the tag value itself contained timezone information (only for {@link VR#DT} tags).
-     * @return an instance of {@link ZonedDateTime}, {@link LocalDateTime}, {@link LocalDate} or {@link LocalTime}, or defVal
+     * @return an instance of {@link ZonedDateTime}, {@link LocalDateTime}, {@link LocalDate} or {@link LocalTime},
+     *         or defVal
      */
-    public Temporal getTemporal(String privateCreator, int tag, VR vr, int valueIndex, Temporal defVal, DatePrecision precision) {
+    public Temporal getTemporal(String privateCreator, int tag, VR vr, int valueIndex,
+            Temporal defVal, DatePrecision precision) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
             return defVal;
@@ -1508,13 +1797,96 @@ public class Attributes implements Serializable {
         }
     }
 
-    // TODO add Javadoc
+    /**
+     * Gets the temporal value represented by a combined date and time tag. If both values are present,
+     * returns a {@link LocalDateTime}, or a {@link ZonedDateTime} when a timezone is available.
+     * If only one value is present, returns a {@link LocalDate} or {@link LocalTime}; otherwise returns null.
+     *
+     * @param tag combined date and time tag
+     * @return the parsed temporal value, or null
+     */
     public Temporal getTemporal(long tag) {
         return getTemporal(null, tag, null, new DatePrecision());
     }
 
-    // TODO other variants of getTemporal(long tag, ...) method
+    /**
+     * See {@link #getTemporal(long)}.
+     *
+     * @param tag combined date and time tag
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(long tag, DatePrecision precision) {
+        return getTemporal(null, tag, null, precision);
+    }
 
+    /**
+     * See {@link #getTemporal(long)}.
+     *
+     * @param tag combined date and time tag
+     * @param defVal default value if neither value is available
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(long tag, Temporal defVal) {
+        return getTemporal(null, tag, defVal, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(long)}.
+     *
+     * @param tag combined date and time tag
+     * @param defVal default value if neither value is available
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(long tag, Temporal defVal, DatePrecision precision) {
+        return getTemporal(null, tag, defVal, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(long)}.
+     *
+     * @param privateCreator private creator
+     * @param tag combined date and time tag
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, long tag) {
+        return getTemporal(privateCreator, tag, null, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(long)}.
+     *
+     * @param privateCreator private creator
+     * @param tag combined date and time tag
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or null
+     */
+    public Temporal getTemporal(String privateCreator, long tag, DatePrecision precision) {
+        return getTemporal(privateCreator, tag, null, precision);
+    }
+
+    /**
+     * See {@link #getTemporal(long)}.
+     *
+     * @param privateCreator private creator
+     * @param tag combined date and time tag
+     * @param defVal default value if neither value is available
+     * @return the parsed temporal value, or defVal
+     */
+    public Temporal getTemporal(String privateCreator, long tag, Temporal defVal) {
+        return getTemporal(privateCreator, tag, defVal, new DatePrecision());
+    }
+
+    /**
+     * See {@link #getTemporal(long)}.
+     *
+     * @param privateCreator private creator
+     * @param tag combined date and time tag
+     * @param defVal default value if neither value is available
+     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @return the parsed temporal value, or defVal
+     */
     public Temporal getTemporal(String privateCreator, long tag, Temporal defVal, DatePrecision precision) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;

@@ -78,6 +78,18 @@ public class AttributesTemporalTest {
     }
 
     @Test
+    public void testGetTemporalDTWithPartialDateAndDefaultTimeZone() {
+        Attributes a = new Attributes();
+        a.setDefaultTimeZone(DateUtils.timeZone("-0300"));
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "2026");
+
+        Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
+        assertTrue(t instanceof ZonedDateTime);
+        assertEquals(LocalDateTime.of(2026, 1, 1, 0, 0)
+                .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime) t).toInstant());
+    }
+
+    @Test
     public void testGetTemporalDTWithTZ() {
         Attributes a = new Attributes();
         a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654+0200");

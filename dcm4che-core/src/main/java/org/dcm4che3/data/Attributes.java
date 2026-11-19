@@ -1492,7 +1492,7 @@ public class Attributes implements Serializable {
 
         String tm = getString(privateCreator, tmTag, VR.TM, null);
         if (tm == null)
-            return getDate(daTag, defVal, precision);
+            return getDate(privateCreator, daTag, defVal, precision);
 
         String da = getString(privateCreator, daTag, VR.DA, null);
         if (da == null)
@@ -1609,7 +1609,7 @@ public class Attributes implements Serializable {
 
         String[] tm = getStrings(privateCreator, tmTag);
         if (tm == null || tm.length == 0)
-            return getDates(daTag, precisions);
+            return getDates(privateCreator, daTag, precisions);
 
         String[] da = getStrings(privateCreator, daTag);
         if (da == null || da.length == 0)
@@ -1725,7 +1725,7 @@ public class Attributes implements Serializable {
 
         String tm = getString(privateCreator, tmTag, VR.TM, null);
         if (tm == null)
-            return getDateRange(daTag, defVal);
+            return getDateRange(privateCreator, daTag, defVal);
 
         String da = getString(privateCreator, daTag, VR.DA, null);
         if (da == null)

@@ -41,6 +41,7 @@ package org.dcm4che3.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -87,6 +88,8 @@ public class Association {
     private final InputStream in;
     private final OutputStream out;
     private final PDUEncoder encoder;
+	private final InetSocketAddress receivingRemoteSocketAddress;
+    private final InetSocketAddress proxiedRemoteSocketAddress;
     private PDUDecoder decoder;
     private volatile State state;
     private AAssociateRQ rq;
@@ -106,15 +109,37 @@ public class Association {
             new HashMap<String,HashMap<String,PresentationContext>>();
     private final LinkedList<AssociationListener> listeners = new LinkedList<>();
 
-    Association(ApplicationEntity ae, Connection local, Socket sock)
+    /**
+     * Constructor used when PROXY protocol is NOT enabled.
+     */
+	Association(ApplicationEntity ae, Connection local, Socket sock)
             throws IOException {
+        this(ae, local, sock, null, null);
+    }
+
+    /**
+     * Constructor used when PROXY protocol IS enabled.
+     * @param receivingRemote  IP:port the server actually accepted (usually LB IP)
+     * @param proxiedRemote    Original client IP:port from PROXY header
+     */
+    Association(ApplicationEntity ae, Connection local, Socket sock,
+                InetSocketAddress receivingRemote,
+                InetSocketAddress proxiedRemote) throws IOException {
+
         this.connectTime = System.currentTimeMillis();
         this.serialNo = prevSerialNo.incrementAndGet();
         this.ae = ae;
         this.requestor = ae != null;
+
+        // Use proxied address for the name / logging if available
+        InetSocketAddress remoteAddr = (proxiedRemote != null) 
+                ? proxiedRemote 
+                : (InetSocketAddress) sock.getRemoteSocketAddress();
+
         this.name = "" + sock.getLocalSocketAddress()
-             + delim() + sock.getRemoteSocketAddress()
+             + delim() + remoteAddr
              + '(' + serialNo + ')';
+
         this.conn = local;
         this.device = local.getDevice();
         this.monitor = device.getAssociationMonitor();
@@ -122,6 +147,15 @@ public class Association {
         this.in = sock.getInputStream();
         this.out = sock.getOutputStream();
         this.encoder = new PDUEncoder(this, out);
+
+        this.receivingRemoteSocketAddress = receivingRemote != null 
+                ? receivingRemote 
+                : (InetSocketAddress) sock.getRemoteSocketAddress();
+
+        this.proxiedRemoteSocketAddress = proxiedRemote != null 
+                ? proxiedRemote 
+                : this.receivingRemoteSocketAddress;
+
         if (requestor) {
             enterState(State.Sta4);
         } else {
@@ -182,6 +216,23 @@ public class Association {
 
     public String getRemoteHostName() {
         return ReverseDNS.hostNameOf(sock.getInetAddress());
+    }
+	
+	/**
+     * Returns the IP:port the server socket actually sees 
+     * (usually the load-balancer / HAProxy IP when PROXY protocol is used).
+     */
+    public InetSocketAddress getReceivingRemoteSocketAddress() {
+        return receivingRemoteSocketAddress;
+    }
+
+    /**
+     * Returns the original client IP:port sent by the load balancer in the PROXY header.
+     * This is the preferred method for client identification, logging, audit trails, etc.
+     * Falls back to the receiving address if no PROXY header was present.
+     */
+    public InetSocketAddress getProxiedRemoteSocketAddress() {
+        return proxiedRemoteSocketAddress;
     }
 
     public final Connection getConnection() {

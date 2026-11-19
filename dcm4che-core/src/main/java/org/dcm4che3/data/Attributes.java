@@ -1569,7 +1569,8 @@ public class Attributes implements Serializable {
      * @param valueIndex value index
      * @param defVal default value, if no temporal value is available (see {@link #getTemporal(int)})
      * @param precision used as a return value: contains information about the contained date/time precision and
-     *                  whether the tag value itself contained timezone information (only for {@link VR#DT} tags).
+     *                  whether the tag value itself contained timezone information (only for {@link VR#DT} tags,
+     *                  always false for other VRs). Not modified, if defVal is returned.
      * @return an instance of {@link ZonedDateTime}, {@link LocalDateTime}, {@link LocalDate} or {@link LocalTime},
      *         or defVal
      */
@@ -1596,16 +1597,21 @@ public class Attributes implements Serializable {
         }
 
         Temporal t;
+        DatePrecision parsedPrecision = new DatePrecision();
         try {
-            t = vr.toTemporal(value, valueIndex, precision);
+            t = vr.toTemporal(value, valueIndex, parsedPrecision);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
             return defVal;
         }
 
-        if(t == null) {
+        if(t == null)
             return defVal;
-        } else if (t instanceof OffsetDateTime) {
+
+        precision.lastField = parsedPrecision.lastField;
+        precision.includeTimezone = parsedPrecision.includeTimezone;
+
+        if (t instanceof OffsetDateTime) {
             return ((OffsetDateTime) t).toZonedDateTime();
         } else if (t instanceof LocalDateTime) {
             ZoneId zoneId = getZoneId();
@@ -1884,7 +1890,10 @@ public class Attributes implements Serializable {
      * @param privateCreator private creator
      * @param tag combined date and time tag
      * @param defVal default value if neither value is available
-     * @param precision receives the parsed date/time precision; see {@link DatePrecision}
+     * @param precision used as a return value: contains the date/time precision of the returned value; the time
+     *                  precision if a time is present, otherwise {@link Calendar#DAY_OF_MONTH}.
+     *                  {@link DatePrecision#includeTimezone} is always set to false, as {@link VR#DA} and
+     *                  {@link VR#TM} values contain no timezone information. Not modified, if defVal is returned.
      * @return the parsed temporal value, or defVal
      */
     public Temporal getTemporal(String privateCreator, long tag, Temporal defVal, DatePrecision precision) {

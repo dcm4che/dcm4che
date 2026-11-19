@@ -106,6 +106,50 @@ public class AttributesTemporalTest {
     }
 
     @Test
+    public void testGetTemporalPrecisionNotModifiedForInvalidValue() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "2011040x");
+        a.setString(Tag.StudyTime, VR.TM, "15x");
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926x+0200");
+        DatePrecision precision = new DatePrecision(Calendar.SECOND, false);
+
+        assertNull(a.getTemporal(Tag.StudyDate, precision));
+        assertNull(a.getTemporal(Tag.StudyTime, precision));
+        assertNull(a.getTemporal(Tag.AcquisitionDateTime, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertFalse(precision.includeTimezone);
+
+        precision.includeTimezone = true;
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        assertEquals(LocalDate.of(2011, 4, 4), a.getTemporal(Tag.StudyDate, precision));
+        assertEquals(Calendar.DAY_OF_MONTH, precision.lastField);
+        assertFalse(precision.includeTimezone);
+    }
+
+    @Test
+    public void testGetTemporalCombinedTagPrecisionMatchesReturnedValue() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        a.setString(Tag.StudyTime, VR.TM, "15x");
+        DatePrecision precision = new DatePrecision(Calendar.MILLISECOND, true);
+
+        assertEquals(LocalDate.of(2011, 4, 4), a.getTemporal(Tag.StudyDateAndTime, precision));
+        assertEquals(Calendar.DAY_OF_MONTH, precision.lastField);
+        assertFalse(precision.includeTimezone);
+
+        a.setString(Tag.StudyDate, VR.DA, "invalid");
+        a.setString(Tag.StudyTime, VR.TM, "1530");
+        assertEquals(LocalTime.of(15, 30), a.getTemporal(Tag.StudyDateAndTime, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+
+        a.setString(Tag.StudyTime, VR.TM, "invalid");
+        precision = new DatePrecision(Calendar.SECOND, true);
+        assertNull(a.getTemporal(Tag.StudyDateAndTime, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertTrue(precision.includeTimezone);
+    }
+
+    @Test
     public void testGetTemporalDTWithTZ() {
         Attributes a = new Attributes();
         a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654+0200");

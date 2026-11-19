@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -56,6 +57,99 @@ public class AttributesTemporalTest {
     }
 
     @Test
+    public void testGetTemporalDTWithPartialDate() {
+        for (String value : new String[] {"2026", "202610"}) {
+            LocalDateTime dateTime = LocalDateTime.of(2026, value.length() == 4 ? 1 : 10, 1, 0, 0);
+            for (String offset : new String[] {"", "+0530"}) {
+                Attributes a = new Attributes();
+                a.setString(Tag.AcquisitionDateTime, VR.DT, value + offset);
+                Temporal expected = offset.isEmpty() ? dateTime
+                        : dateTime.atOffset(ZoneOffset.ofHoursMinutes(5, 30)).toZonedDateTime();
+
+                assertEquals(expected, a.getTemporal(Tag.AcquisitionDateTime));
+
+                DatePrecision precision = new DatePrecision();
+                assertEquals(expected,
+                        a.getTemporal(null, Tag.AcquisitionDateTime, VR.DT, 0, null, precision));
+                assertEquals(value.length() == 4 ? Calendar.YEAR : Calendar.MONTH, precision.lastField);
+                assertEquals(!offset.isEmpty(), precision.includeTimezone);
+            }
+        }
+    }
+
+    @Test
+    public void testGetTemporalDTWithPartialDateAndDefaultTimeZone() {
+        Attributes a = new Attributes();
+        a.setDefaultTimeZone(DateUtils.timeZone("-0300"));
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "2026");
+
+        Temporal t = a.getTemporal(Tag.AcquisitionDateTime);
+        assertTrue(t instanceof ZonedDateTime);
+        assertEquals(LocalDateTime.of(2026, 1, 1, 0, 0)
+                .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime) t).toInstant());
+    }
+
+    @Test
+    public void testGetTemporalOutOfRangeValuesReturnDefault() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20231340");
+        a.setString(Tag.StudyTime, VR.TM, "250000");
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "20230230");
+        Temporal fallback = LocalDate.of(2000, 1, 1);
+
+        assertEquals(fallback, a.getTemporal(Tag.StudyDate, fallback));
+        assertEquals(fallback, a.getTemporal(Tag.StudyTime, fallback));
+        assertEquals(fallback, a.getTemporal(Tag.AcquisitionDateTime, fallback));
+        assertEquals(fallback, a.getTemporal(Tag.StudyDateAndTime, fallback));
+        a.setString(Tag.StudyTime, VR.TM, "1530");
+        assertEquals(LocalTime.of(15, 30), a.getTemporal(Tag.StudyDateAndTime, fallback));
+    }
+
+    @Test
+    public void testGetTemporalPrecisionNotModifiedForInvalidValue() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "2011040x");
+        a.setString(Tag.StudyTime, VR.TM, "15x");
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926x+0200");
+        DatePrecision precision = new DatePrecision(Calendar.SECOND, false);
+
+        assertNull(a.getTemporal(Tag.StudyDate, precision));
+        assertNull(a.getTemporal(Tag.StudyTime, precision));
+        assertNull(a.getTemporal(Tag.AcquisitionDateTime, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertFalse(precision.includeTimezone);
+
+        precision.includeTimezone = true;
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        assertEquals(LocalDate.of(2011, 4, 4), a.getTemporal(Tag.StudyDate, precision));
+        assertEquals(Calendar.DAY_OF_MONTH, precision.lastField);
+        assertFalse(precision.includeTimezone);
+    }
+
+    @Test
+    public void testGetTemporalCombinedTagPrecisionMatchesReturnedValue() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        a.setString(Tag.StudyTime, VR.TM, "15x");
+        DatePrecision precision = new DatePrecision(Calendar.MILLISECOND, true);
+
+        assertEquals(LocalDate.of(2011, 4, 4), a.getTemporal(Tag.StudyDateAndTime, precision));
+        assertEquals(Calendar.DAY_OF_MONTH, precision.lastField);
+        assertFalse(precision.includeTimezone);
+
+        a.setString(Tag.StudyDate, VR.DA, "invalid");
+        a.setString(Tag.StudyTime, VR.TM, "1530");
+        assertEquals(LocalTime.of(15, 30), a.getTemporal(Tag.StudyDateAndTime, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+
+        a.setString(Tag.StudyTime, VR.TM, "invalid");
+        precision = new DatePrecision(Calendar.SECOND, true);
+        assertNull(a.getTemporal(Tag.StudyDateAndTime, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertTrue(precision.includeTimezone);
+    }
+
+    @Test
     public void testGetTemporalDTWithTZ() {
         Attributes a = new Attributes();
         a.setString(Tag.AcquisitionDateTime, VR.DT, "20230926130127.987654+0200");
@@ -88,6 +182,25 @@ public class AttributesTemporalTest {
         assertTrue(t instanceof ZonedDateTime);
         assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1, 27, 987_654_000)
                 .atOffset(ZoneOffset.ofHours(-3)).toInstant(), ((ZonedDateTime)t).toInstant());
+    }
+
+    @Test
+    public void testGetTemporalPrecisionWithAndWithoutExplicitTimezone() {
+        Attributes a = new Attributes();
+        a.setDefaultTimeZone(DateUtils.timeZone("-0300"));
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "202309261301+0200", "20231027141516");
+        DatePrecision precision = new DatePrecision();
+
+        assertEquals(LocalDateTime.of(2023, 9, 26, 13, 1)
+                        .atOffset(ZoneOffset.ofHours(2)).toZonedDateTime(),
+                a.getTemporal(Tag.AcquisitionDateTime, 0, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(LocalDateTime.of(2023, 10, 27, 14, 15, 16)
+                        .atOffset(ZoneOffset.ofHours(-3)).toInstant(),
+                ((ZonedDateTime) a.getTemporal(Tag.AcquisitionDateTime, 1, precision)).toInstant());
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertFalse(precision.includeTimezone);
     }
 
     @Test
@@ -140,6 +253,218 @@ public class AttributesTemporalTest {
 
         Temporal t = a.getTemporal(Tag.StudyDateAndTime);
         assertNull(t);
+    }
+
+    @Test
+    public void testGetTemporalSingleTagVariants() {
+        Attributes a = new Attributes();
+        a.setString(Tag.AcquisitionDateTime, VR.DT, "202309261301+0200", "20231027141516-0300");
+        Temporal first = LocalDateTime.of(2023, 9, 26, 13, 1)
+                .atOffset(ZoneOffset.ofHours(2)).toZonedDateTime();
+        Temporal second = LocalDateTime.of(2023, 10, 27, 14, 15, 16)
+                .atOffset(ZoneOffset.ofHours(-3)).toZonedDateTime();
+        Temporal fallback = LocalDate.of(2000, 1, 1);
+        DatePrecision precision = new DatePrecision();
+
+        assertEquals(first, a.getTemporal(Tag.AcquisitionDateTime, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(first, a.getTemporal(Tag.AcquisitionDateTime, fallback));
+        precision = new DatePrecision();
+        assertEquals(first, a.getTemporal(Tag.AcquisitionDateTime, fallback, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(second, a.getTemporal(Tag.AcquisitionDateTime, 1));
+        precision = new DatePrecision();
+        assertEquals(second, a.getTemporal(Tag.AcquisitionDateTime, 1, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(second, a.getTemporal(Tag.AcquisitionDateTime, 1, fallback));
+        precision = new DatePrecision();
+        assertEquals(second, a.getTemporal(Tag.AcquisitionDateTime, 1, fallback, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertTrue(precision.includeTimezone);
+
+        assertEquals(fallback, a.getTemporal(Tag.AcquisitionDateTime, 2, fallback));
+        assertEquals(fallback, a.getTemporal(Tag.AcquisitionDateTime, 2, fallback, new DatePrecision()));
+        assertEquals(fallback, a.getTemporal(Tag.StudyDate, fallback));
+        assertEquals(fallback, a.getTemporal(Tag.StudyDate, fallback, new DatePrecision()));
+        assertNull(a.getTemporal(Tag.AcquisitionDateTime, 2));
+        assertNull(a.getTemporal(Tag.AcquisitionDateTime, 2, new DatePrecision()));
+        a.setNull(Tag.StudyDate, VR.DA);
+        assertEquals(fallback, a.getTemporal(Tag.StudyDate, fallback));
+        a.setString(Tag.StudyDate, VR.DA, "invalid");
+        assertEquals(fallback, a.getTemporal(Tag.StudyDate, fallback));
+        a.setString(Tag.PatientName, VR.PN, "Test");
+        assertEquals(fallback, a.getTemporal(Tag.PatientName, fallback));
+    }
+
+    @Test
+    public void testGetTemporalPrivateSingleTagVariants() {
+        Attributes a = new Attributes();
+        String creator = "TEMPORAL";
+        int tag = 0x00990010;
+        a.setString(creator, tag, VR.DT, "202309261301+0200", "20231027141516-0300");
+        Temporal first = LocalDateTime.of(2023, 9, 26, 13, 1)
+                .atOffset(ZoneOffset.ofHours(2)).toZonedDateTime();
+        Temporal second = LocalDateTime.of(2023, 10, 27, 14, 15, 16)
+                .atOffset(ZoneOffset.ofHours(-3)).toZonedDateTime();
+        Temporal fallback = LocalDate.of(2000, 1, 1);
+        DatePrecision precision = new DatePrecision();
+
+        assertEquals(first, a.getTemporal(creator, tag));
+        assertEquals(first, a.getTemporal(creator, tag, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(first, a.getTemporal(creator, tag, fallback));
+        precision = new DatePrecision();
+        assertEquals(first, a.getTemporal(creator, tag, fallback, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(first, a.getTemporal(creator, tag, VR.DT));
+        precision = new DatePrecision();
+        assertEquals(first, a.getTemporal(creator, tag, VR.DT, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(first, a.getTemporal(creator, tag, VR.DT, fallback));
+        precision = new DatePrecision();
+        assertEquals(first, a.getTemporal(creator, tag, VR.DT, fallback, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(second, a.getTemporal(creator, tag, 1));
+        precision = new DatePrecision();
+        assertEquals(second, a.getTemporal(creator, tag, 1, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(second, a.getTemporal(creator, tag, 1, fallback));
+        precision = new DatePrecision();
+        assertEquals(second, a.getTemporal(creator, tag, 1, fallback, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(second, a.getTemporal(creator, tag, VR.DT, 1));
+        precision = new DatePrecision();
+        assertEquals(second, a.getTemporal(creator, tag, VR.DT, 1, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(second, a.getTemporal(creator, tag, VR.DT, 1, fallback));
+        precision = new DatePrecision();
+        assertEquals(second, a.getTemporal(creator, tag, VR.DT, 1, fallback, precision));
+        assertEquals(Calendar.SECOND, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(fallback, a.getTemporal("OTHER", tag, fallback));
+        assertEquals(fallback, a.getTemporal("OTHER", tag, fallback, new DatePrecision()));
+        assertEquals(fallback, a.getTemporal("OTHER", tag, VR.DT, fallback));
+        assertEquals(fallback, a.getTemporal("OTHER", tag, VR.DT, fallback, new DatePrecision()));
+        assertEquals(fallback, a.getTemporal(creator, tag, 2, fallback));
+        assertEquals(fallback, a.getTemporal(creator, tag, 2, fallback, new DatePrecision()));
+        assertEquals(fallback, a.getTemporal(creator, tag, VR.DT, 2, fallback));
+        assertEquals(fallback, a.getTemporal(creator, tag, VR.DT, 2, fallback, new DatePrecision()));
+        assertNull(a.getTemporal(creator, tag, 2));
+        assertNull(a.getTemporal(creator, tag, 2, new DatePrecision()));
+        assertNull(a.getTemporal(creator, tag, VR.DT, 2));
+        assertNull(a.getTemporal(creator, tag, VR.DT, 2, new DatePrecision()));
+
+        int overrideTag = 0x00990011;
+        a.setString(creator, overrideTag, VR.LO, "20110404");
+        assertEquals(LocalDate.of(2011, 4, 4), a.getTemporal(creator, overrideTag, VR.DA));
+    }
+
+    @Test
+    public void testGetTemporalExplicitVrVariants() {
+        Attributes a = new Attributes();
+        String creator = "TEMPORAL";
+        int tag = 0x00990010;
+        Temporal fallback = LocalDate.of(2000, 1, 1);
+        LocalDate first = LocalDate.of(2011, 4, 4);
+        LocalDate second = LocalDate.of(2011, 4, 5);
+        DatePrecision precision = new DatePrecision();
+
+        a.setString(creator, tag, VR.LO, "20110404", "20110405");
+        assertEquals(first, a.getTemporal(creator, tag, VR.DA, precision));
+        assertEquals(Calendar.DAY_OF_MONTH, precision.lastField);
+        a.setString(creator, tag, VR.LO, "20110404", "20110405");
+        assertEquals(first, a.getTemporal(creator, tag, VR.DA, fallback));
+        a.setString(creator, tag, VR.LO, "20110404", "20110405");
+        assertEquals(first, a.getTemporal(creator, tag, VR.DA, fallback, new DatePrecision()));
+        a.setString(creator, tag, VR.LO, "20110404", "20110405");
+        assertEquals(second, a.getTemporal(creator, tag, VR.DA, 1));
+        a.setString(creator, tag, VR.LO, "20110404", "20110405");
+        assertEquals(second, a.getTemporal(creator, tag, VR.DA, 1, new DatePrecision()));
+        a.setString(creator, tag, VR.LO, "20110404", "20110405");
+        assertEquals(second, a.getTemporal(creator, tag, VR.DA, 1, fallback));
+        a.setString(creator, tag, VR.LO, "20110404", "20110405");
+        assertEquals(second, a.getTemporal(creator, tag, VR.DA, 1, fallback, new DatePrecision()));
+    }
+
+    @Test
+    public void testGetTemporalCombinedTagVariants() {
+        Attributes a = new Attributes();
+        a.setString(Tag.StudyDate, VR.DA, "20110404");
+        a.setString(Tag.StudyTime, VR.TM, "1530");
+        Temporal expected = LocalDateTime.of(2011, 4, 4, 15, 30);
+        Temporal fallback = LocalDate.of(2000, 1, 1);
+        DatePrecision precision = new DatePrecision();
+
+        assertEquals(expected, a.getTemporal(Tag.StudyDateAndTime, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertEquals(expected, a.getTemporal(Tag.StudyDateAndTime, fallback));
+        precision = new DatePrecision();
+        assertEquals(expected, a.getTemporal(Tag.StudyDateAndTime, fallback, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertEquals(expected, a.getTemporal(null, Tag.StudyDateAndTime));
+        precision = new DatePrecision();
+        assertEquals(expected, a.getTemporal(null, Tag.StudyDateAndTime, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertEquals(expected, a.getTemporal(null, Tag.StudyDateAndTime, fallback));
+        precision = new DatePrecision();
+        assertEquals(expected, a.getTemporal(null, Tag.StudyDateAndTime, fallback, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+
+        a.setDefaultTimeZone(DateUtils.timeZone("+0200"));
+        assertEquals(((LocalDateTime) expected).atOffset(ZoneOffset.ofHours(2)).toInstant(),
+                ((ZonedDateTime) a.getTemporal(Tag.StudyDateAndTime, fallback)).toInstant());
+        a.remove(Tag.StudyTime);
+        precision = new DatePrecision();
+        assertEquals(LocalDate.of(2011, 4, 4), a.getTemporal(Tag.StudyDateAndTime, fallback, precision));
+        assertEquals(Calendar.DAY_OF_MONTH, precision.lastField);
+        a.remove(Tag.StudyDate);
+        a.setString(Tag.StudyTime, VR.TM, "1530");
+        precision = new DatePrecision();
+        assertEquals(LocalTime.of(15, 30), a.getTemporal(Tag.StudyDateAndTime, fallback, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        a.remove(Tag.StudyTime);
+        assertEquals(fallback, a.getTemporal(Tag.StudyDateAndTime, fallback));
+        assertEquals(fallback, a.getTemporal(Tag.StudyDateAndTime, fallback, new DatePrecision()));
+        assertEquals(fallback, a.getTemporal(null, Tag.StudyDateAndTime, fallback));
+        assertEquals(fallback, a.getTemporal(null, Tag.StudyDateAndTime, fallback, new DatePrecision()));
+    }
+
+    @Test
+    public void testGetTemporalPrivateCombinedTagVariants() {
+        Attributes a = new Attributes();
+        String creator = "TEMPORAL";
+        int dateTag = 0x00990010;
+        int timeTag = 0x00990011;
+        long combinedTag = ((long) dateTag << 32) | (timeTag & 0xffffffffL);
+        a.setString(creator, dateTag, VR.DA, "20110404");
+        a.setString(creator, timeTag, VR.TM, "1530");
+        Temporal expected = LocalDateTime.of(2011, 4, 4, 15, 30);
+        Temporal fallback = LocalDate.of(2000, 1, 1);
+        DatePrecision precision = new DatePrecision();
+
+        assertEquals(expected, a.getTemporal(creator, combinedTag));
+        assertEquals(expected, a.getTemporal(creator, combinedTag, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertEquals(expected, a.getTemporal(creator, combinedTag, fallback));
+        precision = new DatePrecision();
+        assertEquals(expected, a.getTemporal(creator, combinedTag, fallback, precision));
+        assertEquals(Calendar.MINUTE, precision.lastField);
+        assertEquals(fallback, a.getTemporal("OTHER", combinedTag, fallback));
+        assertEquals(fallback, a.getTemporal("OTHER", combinedTag, fallback, new DatePrecision()));
+        a.setNull(creator, timeTag, VR.TM);
+        assertEquals(LocalDate.of(2011, 4, 4), a.getTemporal(creator, combinedTag, fallback));
+        a.setNull(creator, dateTag, VR.DA);
+        assertEquals(fallback, a.getTemporal(creator, combinedTag, fallback));
     }
 
     /**

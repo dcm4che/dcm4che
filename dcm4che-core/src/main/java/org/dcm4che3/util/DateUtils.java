@@ -38,6 +38,7 @@
 
 package org.dcm4che3.util;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -227,7 +228,11 @@ public class DateUtils {
             pos++;
         int dayOfMonth = parseDigit(s, pos++) * 10 + parseDigit(s, pos++);
 
-        return LocalDate.of(year, month, dayOfMonth);
+        try {
+            return LocalDate.of(year, month, dayOfMonth);
+        } catch (DateTimeException e) {
+            throw new IllegalArgumentException(s, e);
+        }
     }
 
     public static Date parseDA(TimeZone tz, String s, boolean ceil) {
@@ -300,7 +305,11 @@ public class DateUtils {
                 }
             }
         }
-        return LocalTime.of(hour, minute, second, nanos);
+        try {
+            return LocalTime.of(hour, minute, second, nanos);
+        } catch (DateTimeException e) {
+            throw new IllegalArgumentException(s, e);
+        }
     }
 
     public static Date parseTM(TimeZone tz, String s, DatePrecision precision) {
@@ -419,10 +428,11 @@ public class DateUtils {
 
             if (sign == '-') {
                 hour *= -1;
+                minute *= -1;
             }
 
             return ZoneOffset.ofHoursMinutes(hour, minute);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | DateTimeException e) {
             return null;
         }
     }
@@ -488,8 +498,8 @@ public class DateUtils {
     public static Temporal parseTemporalDT(String s, DatePrecision precision) {
         int length = s.length();
         ZoneOffset offset = safeZoneOffset(s);
+        precision.includeTimezone = offset != null;
         if (offset != null) {
-            precision.includeTimezone = true;
             length -= 5;
         }
 
@@ -502,8 +512,8 @@ public class DateUtils {
                         parseDigit(s, pos++) * 100 +
                         parseDigit(s, pos++) * 10 +
                         parseDigit(s, pos++);
-        int month = 0;
-        int day = 0;
+        int month = 1;
+        int day = 1;
         LocalTime time = null;
 
         if (pos < length) {
@@ -527,7 +537,12 @@ public class DateUtils {
 
         if(time == null)
             time = LocalTime.of(0,0);
-        LocalDateTime dateTime = LocalDate.of(year, month, day).atTime(time);
+        LocalDateTime dateTime;
+        try {
+            dateTime = LocalDate.of(year, month, day).atTime(time);
+        } catch (DateTimeException e) {
+            throw new IllegalArgumentException(s, e);
+        }
 
         if(offset != null) {
             return dateTime.atOffset(offset);

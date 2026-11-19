@@ -2,7 +2,10 @@ package org.dcm4che3.util;
 
 import static org.junit.Assert.*;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -133,6 +136,66 @@ public class DateUtilsTest {
                 DateUtils.parseDT(tz, "1970", true, precision).getTime());
         assertEquals(Calendar.YEAR, precision.lastField);
         assertFalse(precision.includeTimezone);
+    }
+
+    @Test
+    public void testParseTemporalDTReducedPrecision() {
+        DatePrecision precision = new DatePrecision();
+        assertEquals(LocalDateTime.of(2023, 1, 1, 0, 0),
+                DateUtils.parseTemporalDT("2023", precision));
+        assertEquals(Calendar.YEAR, precision.lastField);
+        assertFalse(precision.includeTimezone);
+        assertEquals(LocalDateTime.of(2023, 9, 1, 0, 0),
+                DateUtils.parseTemporalDT("202309", precision));
+        assertEquals(Calendar.MONTH, precision.lastField);
+        assertEquals(LocalDateTime.of(2023, 9, 26, 0, 0),
+                DateUtils.parseTemporalDT("20230926", precision));
+        assertEquals(Calendar.DAY_OF_MONTH, precision.lastField);
+    }
+
+    @Test
+    public void testParseTemporalDTReducedPrecisionWithTZ() {
+        DatePrecision precision = new DatePrecision();
+        assertEquals(OffsetDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.ofHours(2)),
+                DateUtils.parseTemporalDT("2023+0200", precision));
+        assertEquals(Calendar.YEAR, precision.lastField);
+        assertTrue(precision.includeTimezone);
+        assertEquals(OffsetDateTime.of(2023, 9, 1, 0, 0, 0, 0, ZoneOffset.ofHours(-3)),
+                DateUtils.parseTemporalDT("202309-0300", precision));
+        assertEquals(Calendar.MONTH, precision.lastField);
+        assertTrue(precision.includeTimezone);
+    }
+
+    @Test
+    public void testParseTemporalDTWithNegativeTZAndMinutes() {
+        DatePrecision precision = new DatePrecision();
+        assertEquals(OffsetDateTime.of(2023, 9, 26, 12, 0, 0, 0, ZoneOffset.ofHoursMinutes(-3, -30)),
+                DateUtils.parseTemporalDT("202309261200-0330", precision));
+        assertTrue(precision.includeTimezone);
+    }
+
+    @Test
+    public void testParseLocalDAOutOfRange() {
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseLocalDA("20231340"));
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseLocalDA("20230230"));
+    }
+
+    @Test
+    public void testParseLocalTMOutOfRange() {
+        DatePrecision precision = new DatePrecision();
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseLocalTM("250000", precision));
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseLocalTM("1261", precision));
+    }
+
+    @Test
+    public void testParseTemporalDTOutOfRange() {
+        DatePrecision precision = new DatePrecision();
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseTemporalDT("20230230", precision));
+        assertThrows(IllegalArgumentException.class, () -> DateUtils.parseTemporalDT("2023092625", precision));
+        assertThrows(IllegalArgumentException.class,
+                () -> DateUtils.parseTemporalDT("202309261200+1900", precision));
+        assertThrows(IllegalArgumentException.class,
+                () -> DateUtils.parseTemporalDT("202309261200+0275", precision));
     }
 
 }

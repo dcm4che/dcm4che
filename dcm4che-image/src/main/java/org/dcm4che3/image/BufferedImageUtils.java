@@ -160,8 +160,15 @@ public class BufferedImageUtils {
     }
 
     public static BufferedImage convertShortsToBytes(BufferedImage src, BufferedImage dst) {
+        int numBands = src.getRaster().getNumBands();
         if (dst == null) {
-            dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+            dst = numBands == 1
+                    ? new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_GRAY)
+                    : createByteImage(src, numBands);
+        }
+        if (numBands > 1) {
+            dst.getRaster().setRect(src.getRaster());
+            return dst;
         }
         DataBuffer srcBuffer = src.getRaster().getDataBuffer();
 
@@ -180,6 +187,19 @@ public class BufferedImageUtils {
             dstData[i] = (byte) srcData[i];
         }
         return dst;
+    }
+
+    private static BufferedImage createByteImage(BufferedImage src, int numBands) {
+        int w = src.getWidth();
+        int h = src.getHeight();
+        int[] bits = new int[numBands];
+        Arrays.fill(bits, 8);
+        ColorModel cm = new ComponentColorModel(src.getColorModel().getColorSpace(), bits,
+                false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+        WritableRaster raster = src.getSampleModel() instanceof BandedSampleModel
+                ? Raster.createBandedRaster(DataBuffer.TYPE_BYTE, w, h, numBands, null)
+                : Raster.createInterleavedRaster(DataBuffer.TYPE_BYTE, w, h, numBands, null);
+        return new BufferedImage(cm, raster, false, null);
     }
 
     public static BufferedImage replaceColorModel(BufferedImage bi, ColorModel colorModel) {

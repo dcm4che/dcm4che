@@ -3133,6 +3133,10 @@ public class Attributes implements Serializable {
             sb.append("] ").append(ElementDictionary.keywordOf(tag, privateCreator));
             if (sb.length() > maxLength)
                 sb.setLength(maxLength);
+        } else {
+            // value was truncated for display; still terminate with a closing
+            // bracket so the rendered line stays well-formed (fixes #1544)
+            sb.append(']');
         }
         sb.append('\n');
         return sb;

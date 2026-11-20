@@ -218,4 +218,26 @@ public class DicomOutputStreamTest {
         }
         assertEquals("odd number of bytes", 0, out.size() & 1);
     }
+
+    @Test
+    public void testWriteFmiAndDatasetImplicitVr() throws IOException {
+        Attributes ds = dataset();
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (DicomOutputStream dos = new DicomOutputStream(out)) {
+            Attributes fmi = ds.createFileMetaInformation(UID.ImplicitVRLittleEndian);
+            dos.writeDataset(fmi, ds);
+        }
+
+        // check the contents
+        try (DicomInputStream dis = new DicomInputStream(
+                new ByteArrayInputStream(out.toByteArray()))) {
+            Attributes fmi = dis.readFileMetaInformation();
+            assertEquals(UID.ImplicitVRLittleEndian, fmi.getString(Tag.TransferSyntaxUID));
+            assertEquals(UID.ImplicitVRLittleEndian, dis.getTransferSyntax());
+            Attributes ds2 = dis.readDataset(Tag.PixelData);
+            assertEquals("4.3.2.1", ds2.getString(Tag.SOPInstanceUID));
+        }
+    }
+
 }

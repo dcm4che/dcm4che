@@ -334,6 +334,10 @@ public class NativeImageReader extends ImageReader implements Closeable {
                 if (byte1 != 0xFF) {
                     break;
                 }
+                // Any marker may be preceded by fill bytes (0xFF), see ITU-T T.81 B.1.1.2
+                while (byte2 == 0xFF) {
+                    byte2 = iis.read();
+                }
                 // Start of scan
                 if (byte2 == 0xDA) {
                     break;

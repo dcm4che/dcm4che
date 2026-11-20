@@ -74,11 +74,22 @@ public class JSONReaderTest {
     private static final int[] UINTS = { 0, 1, -2 & 0xffff };
     private static final long[] LONGS = { 0L, 1L, -2L };
 
+    private static final String JSON_EXT = "{" +
+            "\"00100010\":{\"vr\":\"PN\",\"Value\":[{\"Alphabetic\":\"Smith^John\",\"Ideographic\":\"山田^太郎\",\"Phonetic\":\"やま^たろう\"}]}," +
+            "\"00080018\":{\"vr\":\"UI\",\"Value\":[\"1.2.3\"]}," +
+            "\"00091001\":{\"vr\":\"LO\",\"Value\":[\"Private Value\"]}," +
+            "\"7FE00010\":{\"vr\":\"OW\",\"InlineBinary\":\"AQID\"}," +
+            "\"00081110\":{\"vr\":\"SQ\",\"Value\":[{" +
+                "\"00081150\":{\"vr\":\"UI\",\"Value\":[\"1.2.3.4\"]}," +
+                "\"00081155\":{\"vr\":\"UI\",\"Value\":[\"1.2.3.5\"]}" +
+            "}]}" +
+            "}";
+
     @Test
     public void test() {
         StringReader reader = new StringReader(JSON);
         JsonParser parser = Json.createParser(reader);
-        Attributes dataset = new JSONReader(parser).readDataset(null);
+        Attributes dataset = new JSONReader(parser).readDataset(new Attributes());
         assertArrayEquals(IS, dataset.getStrings(Tag.SelectorISValue));
         assertArrayEquals(DS, dataset.getStrings(Tag.SelectorDSValue));
         assertInfinityAndNaN(dataset.getDoubles(Tag.SelectorFDValue));
@@ -89,6 +100,67 @@ public class JSONReaderTest {
         assertArrayEquals(INTS, dataset.getInts(Tag.SelectorSLValue));
         assertArrayEquals(LONGS, dataset.getLongs(Tag.SelectorSVValue));
         assertArrayEquals(LONGS, dataset.getLongs(Tag.SelectorUVValue));
+    }
+
+    @Test
+    public void testExtended() {
+        StringReader reader = new StringReader(JSON_EXT);
+        JsonParser parser = Json.createParser(reader);
+        Attributes dataset = new JSONReader(parser).readDataset(new Attributes());
+
+        assertEquals("Smith^John=山田^太郎=やま^たろう", dataset.getString(Tag.PatientName));
+        assertEquals("1.2.3", dataset.getString(Tag.SOPInstanceUID));
+        assertEquals("Private Value", dataset.getString(0x00091001));
+        assertArrayEquals(new byte[]{1, 2, 3}, dataset.getSafeBytes(Tag.PixelData));
+
+        Sequence seq = dataset.getSequence(0x00081110);
+        assertNotNull("Sequence 00081110 should not be null", seq);
+        assertEquals(1, seq.size());
+        Attributes item = seq.get(0);
+        assertEquals("1.2.3.4", item.getString(Tag.ReferencedSOPClassUID));
+        assertEquals("1.2.3.5", item.getString(Tag.ReferencedSOPInstanceUID));
+    }
+
+    @Test
+    public void testBulkData() {
+        String json = "{\"00420011\":{\"vr\":\"OB\",\"BulkDataURI\":\"http://localhost/bulkdata\"}}";
+        StringReader reader = new StringReader(json);
+        JsonParser parser = Json.createParser(reader);
+        Attributes dataset = new JSONReader(parser).readDataset(new Attributes());
+
+        Object val = dataset.getValue(Tag.EncapsulatedDocument);
+        assertTrue(val instanceof BulkData);
+        assertEquals("http://localhost/bulkdata", ((BulkData) val).getURI());
+    }
+
+    @Test
+    public void testSkipBulkData() {
+        String json = "{\"00420011\":{\"vr\":\"OB\",\"BulkDataURI\":\"http://localhost/bulkdata\"}}";
+        StringReader reader = new StringReader(json);
+        JsonParser parser = Json.createParser(reader);
+        JSONReader jsonReader = new JSONReader(parser);
+        jsonReader.setSkipBulkDataURI(true);
+        Attributes dataset = jsonReader.readDataset(new Attributes());
+
+        assertNull(dataset.getValue(Tag.EncapsulatedDocument));
+    }
+
+    @Test
+    public void testReadDatasets() {
+        String json = "[{\"00080018\":{\"vr\":\"UI\",\"Value\":[\"1.2.3\"]}},{\"00080018\":{\"vr\":\"UI\",\"Value\":[\"1.2.4\"]}}]";
+        StringReader reader = new StringReader(json);
+        JsonParser parser = Json.createParser(reader);
+        final java.util.List<Attributes> datasets = new java.util.ArrayList<>();
+        new JSONReader(parser).readDatasets(new JSONReader.Callback() {
+            @Override
+            public void onDataset(Attributes fmi, Attributes dataset) {
+                datasets.add(dataset);
+            }
+        });
+
+        assertEquals(2, datasets.size());
+        assertEquals("1.2.3", datasets.get(0).getString(Tag.SOPInstanceUID));
+        assertEquals("1.2.4", datasets.get(1).getString(Tag.SOPInstanceUID));
     }
 
     private static void assertInfinityAndNaN(double[] doubles) {

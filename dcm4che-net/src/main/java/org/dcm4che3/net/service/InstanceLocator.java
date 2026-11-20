@@ -42,6 +42,8 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.util.Locale;
 
 
 /**
@@ -76,9 +78,15 @@ public class InstanceLocator implements Serializable {
 
     public File getFile() {
         try {
-            return new File(new URI(uri));
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(e);
+            URI u = new URI(uri);
+            if (u.getAuthority() != null && System.getProperty("os.name")
+                .toLowerCase(Locale.ENGLISH).startsWith("windows")) {
+                // UNC path (e.g. file://server/share/...)
+                return new File("\\\\" + u.getAuthority() + u.getPath());
+            }
+            return Paths.get(u).toFile();
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            throw new IllegalStateException("uri: " + uri);
         }
     }
 }

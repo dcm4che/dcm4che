@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.camel;
+ package org.dcm4che3.camel;
 
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -45,9 +45,10 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
-import org.apache.camel.impl.DefaultComponent;
+import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.util.ObjectHelper;
 import org.dcm4che3.net.Device;
+import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.DicomServiceRegistry;
 
 /**
@@ -78,6 +79,11 @@ public class DicomDeviceComponent extends DefaultComponent {
 
     public void setDevice(Device device) {
         this.device = device;
+    }
+
+    @Override
+    protected void doInit() throws Exception {
+        dicomServiceRegistry.addDicomService(new BasicCEchoSCP());
     }
 
     public void registerDicomConsumer(DicomConsumer dicomConsumer) {
